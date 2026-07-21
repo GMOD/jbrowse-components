@@ -166,7 +166,7 @@ the same window turns the matrix from a standalone summary into something you
 can check: each band of shared or absent genotype sits directly above the
 per-strain alignment it was decomposed from.
 
-<Figure caption="The graph's pangenome variants as a multi-sample matrix on the K12 reference, with the MAF alignment stacked below and the K12 gene lane (elfC, ycbU, pyrD…) above. Each matrix column is one variant the graph called, each row one of the other three strains, each cell that strain's genotype (see the legend). The olive block on the left is where CFT073 and NCTC86 have no called genotype while Sakai carries the alternate, and the dense blue field to its right is where all three diverge from K12." src="/img/pangenome/variant_matrix.png" />
+<Figure caption="The graph's pangenome variants as a multi-sample matrix on the K12 reference, with the MAF alignment stacked below and the K12 gene lane (elfC, ycbU, pyrD…) above. Each matrix column is one variant the graph called, each row one of the other three strains, each cell that strain's genotype (see the legend)." src="/img/pangenome/variant_matrix.png" />
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and
@@ -345,7 +345,7 @@ odgi ships its own one-line renderer,
 the four projections above, because it draws the graph the way the graph is
 stored, which is exactly what makes a pangenome graph hard to read at first.
 
-<Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not (accessory sequence), over a thin band of the graph's links (its topology). Its rows are the per-strain presence figure above read a different way (the white gaps here are the same accessory stretches that drop to 0 in the pav track), but ordered by graph node order (the pangenome sequence) rather than K12 position, so nothing lines up with a gene or a chromosome coordinate. The four JBrowse projections re-plot this same presence/absence and structure on K12's coordinates instead." src="/img/pangenome/graph.png" />
+<Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, filled where the strain traverses the graph and white where it does not (accessory sequence). The axis is graph node order (the pangenome sequence), not K12 coordinates, so nothing lines up with a gene or a chromosome position. The four JBrowse projections re-plot this same presence/absence on K12's coordinates instead." src="/img/pangenome/graph.png" />
 
 `odgi viz` gives one row per strain, as the MAF and per-strain-presence tracks
 do. But its horizontal axis is not any genome's coordinates: it is the graph's

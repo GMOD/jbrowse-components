@@ -95,24 +95,13 @@ the HAL's base-level alignment and emits proper synteny blocks per genome pair,
 so use it here.
 
 `halSynteny` writes PSL and names every sequence `chr` (the HAL sequence name),
-with no sample tag, so inject the PanSN `sample#0#chr` query/target names as you
-convert PSL to PAF. It keeps the query on `+` and flips only the target strand,
-so the PAF strand is the second character of the PSL strand field:
+with no sample tag. The [build script](#reproduce-it-end-to-end) runs it for all
+six strain pairs and converts each PSL to PAF, injecting the PanSN
+`sample#0#chr` query/target names and decoding the strand (halSynteny keeps the
+query on `+` and flips only the target, so the PAF strand is the second
+character of the PSL strand field). Index the combined PAF for range queries:
 
 ```bash
-: > ecoli_cactus_ava.paf
-gen_pair() {   # query target
-  in_cactus halSynteny --queryGenome "$1" --targetGenome "$2" \
-    /data/mc/ecoli.full.hal "/data/hs_$2_$1.psl"
-  awk -v OFS='\t' -v qn="$1#0#chr" -v tn="$2#0#chr" \
-    '{ s = (substr($9,2,1)=="-") ? "-" : "+";
-       print qn,$11,$12,$13,s,tn,$15,$16,$17,$1,($13-$12),255 }' \
-    "hs_$2_$1.psl" >> ecoli_cactus_ava.paf
-}
-for pair in "Sakai K12" "CFT073 K12" "NCTC86 K12" \
-            "CFT073 Sakai" "NCTC86 Sakai" "NCTC86 CFT073"; do
-  gen_pair $pair
-done
 jbrowse make-pif ecoli_cactus_ava.paf   # -> ecoli_cactus_ava.pif.gz (+ .tbi)
 ```
 

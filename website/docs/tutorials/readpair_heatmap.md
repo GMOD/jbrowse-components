@@ -43,7 +43,7 @@ line joining the two ends. `.hic` bins by fixed resolution, so the
 restriction-fragment columns are dummies:
 
 ```bash
-# str1 chr1 pos1 frag1 str2 chr2 pos2 frag2  — sorted the way juicer_tools wants
+# str1 chr1 pos1 frag1 str2 chr2 pos2 frag2: sorted the way juicer_tools wants
 samtools view -q 20 -f 65 -F 2316 chr3q.bam \
   | awk '{
       str1=and($2,16)?1:0; str2=and($2,32)?1:0
@@ -150,8 +150,7 @@ absent), and node for the JBrowse CLI.
 
 ## See also
 
-- [Hi-C track](/docs/user_guides/hic_track) — renders the `.hic` output this
-  tutorial produces
+- [Hi-C track](/docs/user_guides/hic_track)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [Gallery: coverage, copy number, and epigenomics](/gallery/#copynumber)

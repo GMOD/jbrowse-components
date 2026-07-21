@@ -206,17 +206,9 @@ The figures below leave **Show unmethylated** off, for a methylated-only view
 as the presence of red and the three contexts contrast cleanly without the blue.
 
 Type `NC_003070.9:4,398,000-4,412,000` into the location box to reach the window
-below (chromosome 1). It places two methylation regimes side by side. On the
-left, the expressed ARM-repeat gene AT1G12930 carries gene-body methylation,
-with cytosines methylated only in the CpG context. On the right, a silenced
-element (the pseudogene AT1G12935 and the repeat sequence beyond it) is
-methylated in all three contexts.
-
-The figure below shows the three contexts at two levels: the gene annotation,
-the aggregate methylation track (one row per context, from MethylDackel, see the
-previous section), and then the same per-read pileup colored three separate
-ways, one copy per context. Over the gene body (left) only the CpG copy lights
-up red. Over the silenced element (right) all three copies do.
+below (chromosome 1). It places two methylation regimes side by side: a gene
+body methylated only in the CpG context (left), and a silenced element
+methylated in all three contexts (right).
 
 <Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn (methylated-only view). Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Red marks methylation, unmethylated sites are left blank." />
 

@@ -50,47 +50,13 @@ data files you symlink into the folder will load.
 ## Preparing your own data files
 
 The example below loads data hosted on `jbrowse.org`, so you can skip ahead to
-[Setup](#setup) to get a working page first. The prep steps in this section are
-for when you want to serve your _own_ genome and tracks.
-
-### Preparing a bgzip FASTA file
-
-This is generally done with samtools:
-
-```bash
-bgzip file.fa
-samtools faidx file.fa.gz
-```
-
-Running `samtools faidx` on the bgzipped file produces both the `.fa.gz.fai` and
-`.fa.gz.gzi` indexes that the `BgzipFastaAdapter` needs.
-
-### Preparing a tabix indexed GFF3 file
-
-We recommend the [@jbrowse/cli](/docs/cli):
-
-```bash
-npm install -g @jbrowse/cli
-jbrowse --version # ensure the 'jbrowse' command works
-jbrowse sort-gff myfile.gff > myfile.sorted.gff
-bgzip myfile.sorted.gff
-tabix myfile.sorted.gff.gz
-```
-
-### Preparing text searching for your GFF file
-
-You can use the @jbrowse/cli tool to create a text search index with a command
-like this:
-
-```bash
-jbrowse text-index --file file1.gff.gz --fileId ncbi_genes
-```
-
-This produces `.ix` and `.ixx` files plus a `_meta.json` file (all three are
-used by the text-search adapter).
-
-You can add these to a "per-track text search adapter", as shown in the more
-elaborate example below.
+[Setup](#setup) to get a working page first. To serve your _own_ genome and
+tracks, first get each file into the indexed, compressed form JBrowse reads
+(bgzip and index a FASTA, sort/bgzip/tabix a GFF3, and so on). The
+[web quickstart](/docs/quickstart_web#adding-tracks) gives the per-format
+recipes, and
+[`jbrowse text-index`](/docs/quickstart_web#indexing-feature-names-for-searching)
+builds the optional name-search index used in the elaborate example below.
 
 ## Setup
 
@@ -295,5 +261,5 @@ function GenomeBrowser() {
 - [Configuring assemblies](/docs/config_guides/assemblies)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [LGV storybook](https://jbrowse.org/storybook/lgv/)
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) — Python equivalent
-- [JBrowseR](/docs/jbrowser) — R/Shiny equivalent
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) (Python equivalent)
+- [JBrowseR](/docs/jbrowser) (R/Shiny equivalent)

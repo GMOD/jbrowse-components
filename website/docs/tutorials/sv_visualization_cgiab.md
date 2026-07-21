@@ -68,7 +68,7 @@ sudo apt-get install wget apache2 tabix samtools bcftools mosdepth minimap2
 sudo service apache2 start
 
 # Debian/Ubuntu's "nodejs" package is often older than the v18 minimum, so
-# install a current Node.js from NodeSource — see
+# install a current Node.js from NodeSource; see
 # https://github.com/nodesource/distributions
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo apt-get install -y nodejs
@@ -80,7 +80,7 @@ sudo npm install -g @jbrowse/cli
 # confirm the jbrowse CLI is installed
 jbrowse --version
 
-# bedGraphToBigWig is a UCSC binary (not in apt) used by the CNV tracks below —
+# bedGraphToBigWig is a UCSC binary (not in apt) used by the CNV tracks below.
 # fetch it and put it on PATH
 wget https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
 chmod +x bedGraphToBigWig && sudo mv bedGraphToBigWig /usr/local/bin/
@@ -191,7 +191,7 @@ median-normalize each sample to 1, then take log2 of the ratio:
 
 ```bash
 # fixed 500bp windows, no per-base output (-n); -f gives the reference for CRAM.
-# 500bp is safe at this coverage (35x normal / 116x tumor) — adjacent-bin log2
+# 500bp is safe at this coverage (35x normal / 116x tumor); adjacent-bin log2
 # noise stays low (median |Δ|≈0.04); drop to a coarser -b if your depth is lower
 mosdepth -t8 -n -b 500 -f $REF HG008-N $NORMAL
 mosdepth -t8 -n -b 500 -f $REF HG008-T $TUMOR
@@ -276,26 +276,9 @@ bedGraphToBigWig HG008-T_baf.sorted.bedgraph GRCh38_GIABv3.chrom.sizes HG008-T_b
 jbrowse add-track HG008-T_baf.bw --out $OUT --category "CNV" --load move
 ```
 
-`bcftools mpileup` is single-threaded for the pileup itself (`--threads` only
-parallelizes BGZF compression), and this step dominates the runtime on deep
-long-read data. To speed it up, split by region and run one process per
-chromosome, then concatenate. On a 24-core machine this took ~11 minutes versus
-well over an hour for the single streaming pass:
-
-```bash
-mpileup_chrom() {
-  bcftools mpileup -f $REF -r $1 -T hets.vcf.gz -a AD -q 1 -Q 0 $TUMOR \
-    | bcftools query -f '%CHROM\t%POS\t[%AD]\n' \
-    | awk -F'[\t,]' '{d=$3+$4; if(d>=10) printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,$4/d}' \
-    > baf_part.$1.bedgraph
-}
-export -f mpileup_chrom; export REF TUMOR
-printf 'chr%s\n' {1..22} chrX chrY | xargs -P$(nproc) -I{} bash -c 'mpileup_chrom "$@"' _ {}
-cat $(printf 'baf_part.chr%s.bedgraph ' {1..22} chrX chrY) > HG008-T_baf.bedgraph
-```
-
-The concatenated `HG008-T_baf.bedgraph` then feeds into the same sort + dedup +
-`bedGraphToBigWig` commands as the single-pass path above.
+The pileup is single-threaded and dominates the runtime on deep long-read data.
+To parallelize, split it by chromosome, run one `bcftools mpileup` per region,
+and concatenate the parts before the sort/dedup/`bedGraphToBigWig` step above.
 
 Plot BAF from the track menu with a fixed `0`..`1` domain and the **scatter**
 rendering. BAF is one value per SNP, not a continuous signal, so at
@@ -310,128 +293,21 @@ allelic-imbalance signal.
 
 <Figure caption="Chromosome 3, the two-panel CNV view: log2 ratio over the raw BAF over the benchmark CNV calls. The p-arm is a single-copy loss with LOH (negative log2, BAF split off 0.5). The q-arm is balanced (log2 near 0, BAF a single 0.5 band)." src="/img/sv_cgiab/cnv_log2_baf.png" />
 
-### Going further: haplotype-specific copy number with Wakhan
+The raw per-SNP BAF is exact, and its scatter keeps the LOH split visible at
+chromosome zoom. At whole-genome zoom each pixel bins so many SNPs that a raw
+LOH bin (a mix of points near 0 and 1) averages back toward ~0.5,
+indistinguishable from a balanced bin. The production fix is to compute the
+signal per haplotype rather than per allele, which is what the dedicated callers
+below do.
 
-The raw BAF above is exact per SNP, and its scatter keeps the LOH split visible
-at chromosome zoom (above). At whole-genome zoom, though, each on-screen pixel
-bins so many SNPs that any per-bin _average_ of a raw LOH bin (a genuine mix of
-points near 0 and 1) collapses back toward ~0.5, indistinguishable from a
-balanced bin.
-
-The production fix is to compute the allelic signal _per haplotype_ rather than
-per allele. [Wakhan](https://github.com/KolmogorovLab/Wakhan) is a
-haplotype-specific long-read CNV caller that phases the normal's germline
-heterozygous SNPs, assigns each SNP's tumor read support to a haplotype, and
-emits one summarized value per phase block, so the LOH signal stays clean
-instead of being averaged away. C-GIAB publishes Wakhan analyses for HG008-T,
-and Wakhan's `bed_output/` carries haplotype-specific copy-number segments
-(`total`/`hap1`/`hap2` columns) that drop straight into a labeled feature track.
-The figures in this tutorial keep the raw per-SNP BAF, which reads directly as
-allele fraction and is enough for the copy-number states shown below.
-
-### Subclonal copy number from single-cell-derived clones
-
-The bulk log2 ratio averages over every tumor cell, so a copy-number change
-carried by only part of the tumor reads as a muted, intermediate signal rather
-than a clean gain or loss. Sequencing single-cell-derived clonal cell lines
-resolves this. Each clone is a colony grown from one tumor cell, so its
-bulk-depth WGS reports that one subclone's copy number exactly. Stack one clone
-per row and a CNV present in some clones but not others becomes visible
-directly, the heterogeneity the bulk track blends away.
-
-C-GIAB publishes short-read (Illumina) WGS for a panel of HG008-T
-single-cell-derived clones under
-
-```
-https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/NIST/HG008-T_clones/
-```
-
-one clone per subdirectory (`2D6`, `2E6`, `3E4`, ...), each an Illumina CRAM
-aligned to GRCh38. List that directory for the current clone set and their CRAM
-paths. For example, clone 2D6 sits at
-`.../20240718p14/2D6/p15plus12/BCM_ILMN_HG8T-2D6-p15plus12_20250904/BCM_HG008_2D6_HG008_2D6_HG008_2D6_1.cram`.
-
-Compute the same median-normalized log2(clone/normal) coverage as the
-[bulk track above](#log2tumornormal-coverage-ratio), once per clone, against the
-matched HG008-N normal. First factor the bulk section's inline
-normalize-and-log2 step into a small script that takes the two `mosdepth`
-outputs as arguments:
-
-```python
-# log2ratio.py: log2(clone/normal), each median-normalized on autosomes
-import gzip, math, statistics, sys
-
-def load(p):
-    d = {}
-    with gzip.open(p, 'rt') as fh:
-        for line in fh:
-            c, s, e, v = line.split()
-            d[(c, int(s), int(e))] = float(v)
-    return d
-
-clone, normal = load(sys.argv[1]), load(sys.argv[2])
-autosomes = {f'chr{i}' for i in range(1, 23)}
-med = lambda d: statistics.median(v for k, v in d.items() if k[0] in autosomes and v > 0)
-mc, mn = med(clone), med(normal)
-for k in sorted(k for k in clone if k in normal):
-    cv, nv = clone[k] / mc, normal[k] / mn
-    if cv > 0 and nv > 0:
-        print(f'{k[0]}\t{k[1]}\t{k[2]}\t{math.log2(cv / nv):.4f}')
-```
-
-```bash
-# HG008-N.regions.bed.gz: the normal's 500bp mean-depth bins from the bulk section
-# CLONES / CLONE_CRAM: fill from the HG008-T_clones/ listing above
-for clone in "${CLONES[@]}"; do
-  mosdepth -t8 -n -b 500 -f GRCh38_GIABv3.fa "clone_$clone" "${CLONE_CRAM[$clone]}"
-  python3 log2ratio.py "clone_$clone.regions.bed.gz" HG008-N.regions.bed.gz \
-    > "clone_$clone.bedgraph"
-  LC_COLLATE=C sort -k1,1 -k2,2n "clone_$clone.bedgraph" > "clone_$clone.sorted.bedgraph"
-  bedGraphToBigWig "clone_$clone.sorted.bedgraph" GRCh38_GIABv3.chrom.sizes "clone_$clone.bw"
-done
-```
-
-A short-read normal best matches the Illumina clones, but the per-sample median
-normalization keeps the ratio robust against the PacBio normal used above. Load
-the per-clone bigWigs as one `MultiQuantitativeTrack`, one row per clone, the
-same track type as the
-[single-cell ATAC tutorial](/docs/tutorials/scatac_pseudobulk):
-
-```json
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "hg008_clone_cnv",
-  "name": "HG008-T subclonal CNV (log2 clone/normal)",
-  "category": ["CNV"],
-  "assemblyNames": ["GRCh38_GIABv3"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "subadapters": [
-      {
-        "type": "BigWigAdapter",
-        "name": "2D6",
-        "bigWigLocation": { "uri": "clone_2D6.bw" }
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "2E6",
-        "bigWigLocation": { "uri": "clone_2E6.bw" }
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "3E4",
-        "bigWigLocation": { "uri": "clone_3E4.bw" }
-      }
-    ]
-  }
-}
-```
-
-Read the rows against the bulk log2 ratio and the benchmark CNV calls. Clones
-that dip or rise together at a locus share that copy-number change, and a row
-that departs from the rest marks a CNV private to that subclone. Running the BAF
-recipe per clone adds the matching allelic view, so subclonal
-loss-of-heterozygosity reads the same way.
+Going further, C-GIAB also publishes short-read WGS for a panel of HG008-T
+single-cell-derived clones (each a colony grown from one tumor cell, so its
+depth reports that subclone's copy number exactly). Computing the same per-clone
+log2 ratio and stacking the bigWigs as a
+[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track), one row
+per clone, exposes CNVs private to a subclone that the bulk ratio blends away;
+the [single-cell ATAC tutorial](/docs/tutorials/scatac_pseudobulk) covers that
+track type.
 
 ### From signal to calls
 
@@ -496,29 +372,6 @@ with `-a HG008T.hap1,GRCh38_GIABv3` (query then target). See the
 [synteny track config guide](/docs/config_guides/synteny_track) for the adapter
 options and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
-
-## Reproduce it end to end
-
-[`build_sv_visualization_cgiab.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_sv_visualization_cgiab.sh)
-runs the whole data-preparation pipeline above in one shot:
-
-```bash
-bash scripts/build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
-npx --yes serve cgiab_build/jbrowse2
-```
-
-It grabs the C-GIAB GRCh38 build and the V0.4 HG008-T benchmark calls, turns the
-tumor and normal HiFi BAMs into CRAMs, and builds the derived CNV tracks:
-megadepth coverage, the log2 tumor/normal ratio, the per-SNP BAF, and the
-per-base CDKN2A slice. It also aligns both haplotypes of the verkko tumor
-assembly to GRCh38 with minimap2 for the synteny and dotplot views, then
-downloads JBrowse and writes a `config.json` with everything loaded.
-
-You will need `samtools`, `bcftools`, `mosdepth`, `megadepth`, `minimap2`,
-`tabix`, the UCSC `bedGraphToBigWig`, `python3`, and `node`. Be warned that it
-pulls down more than 200 GB, wants roughly 1.5 TB of free disk and 32 GB of RAM,
-and the alignment and pileup steps take hours. It skips the optional Wakhan
-step, since the figures use the raw per-SNP BAF anyway.
 
 ## Walkthroughs
 
@@ -724,6 +577,29 @@ anchors so the large syntenic blocks read clearly.
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
+
+## Reproduce it end to end
+
+[`build_sv_visualization_cgiab.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_sv_visualization_cgiab.sh)
+runs the whole data-preparation pipeline above in one shot:
+
+```bash
+bash scripts/build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
+npx --yes serve cgiab_build/jbrowse2
+```
+
+It grabs the C-GIAB GRCh38 build and the V0.4 HG008-T benchmark calls, turns the
+tumor and normal HiFi BAMs into CRAMs, and builds the derived CNV tracks:
+megadepth coverage, the log2 tumor/normal ratio, the per-SNP BAF, and the
+per-base CDKN2A slice. It also aligns both haplotypes of the verkko tumor
+assembly to GRCh38 with minimap2 for the synteny and dotplot views, then
+downloads JBrowse and writes a `config.json` with everything loaded.
+
+You will need `samtools`, `bcftools`, `mosdepth`, `megadepth`, `minimap2`,
+`tabix`, the UCSC `bedGraphToBigWig`, `python3`, and `node`. Be warned that it
+pulls down more than 200 GB, wants roughly 1.5 TB of free disk and 32 GB of RAM,
+and the alignment and pileup steps take hours. It skips the optional Wakhan
+step, since the figures use the raw per-SNP BAF anyway.
 
 ## Troubleshooting
 

@@ -112,7 +112,7 @@ linear synteny view, showing the alignment at base resolution.
 The linear synteny view stacks two or more genomic regions vertically, one above
 another, with ribbons connecting matching sequence blocks between adjacent
 genomes. It is not limited to two genomes. The screenshots below stack all three
-_H. pylori_ strains in a single multi-way view.
+_H. pylori_ strains in a single multiway view.
 
 ### Launching the linear synteny view
 
@@ -122,7 +122,7 @@ You can launch a linear synteny view in two ways:
   shown above).
 - From the start screen, click **Linear synteny view**, then pick an assembly
   for each row and the synteny track to display between adjacent rows. Use **Add
-  row** to stack a third (or more) genome for a multi-way comparison.
+  row** to stack a third (or more) genome for a multiway comparison.
 
 ### Configuring the linear synteny view
 

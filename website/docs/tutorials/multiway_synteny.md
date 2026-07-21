@@ -107,7 +107,7 @@ through this same Quick start step by step.
 
 To open the stack automatically on load, add a top-level `defaultSession` key to
 your `config.json` holding the view snapshot, the declarative alternative to the
-UI steps above. This demo stacks them peach – cacao – grape:
+UI steps above. This demo stacks them peach–cacao–grape:
 
 ```json
 {
@@ -151,7 +151,7 @@ ribbons run along the diagonal instead of crossing over each other.
 one chromosome keeps a single color across both bands. The view's **Color by**
 menu offers the other modes (`query`, `strand`, `identity`, …).
 
-<Figure caption="Three genomes stacked peach – cacao – grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference anchors both bands on the shared middle row (cacao), so a cacao chromosome keeps one color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" />
+<Figure caption="Three genomes stacked peach–cacao–grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference anchors both bands on the shared middle row (cacao), so a cacao chromosome keeps one color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
 ## Direct vs transitive pairs
 
@@ -161,9 +161,9 @@ where neither side is the reference (peach–cacao above, say) by joining the tw
 columns on their shared grape gene, but that link is transitive rather than a
 direct alignment. So row order is a real choice. When one genome dominates
 (grape's 19 chromosomes against peach's 8 or cacao's 10), put the cleaner pair
-on top. Otherwise put the reference in the middle (peach – grape – cacao) so
-every band is direct. The demo above deliberately stacks grape on the bottom
-instead, to show the transitive-band layout in action.
+on top. Otherwise put the reference in the middle (peach–grape–cacao) so every
+band is direct. The demo above deliberately stacks grape on the bottom instead,
+to show the transitive-band layout in action.
 
 ## Zooming to a conserved block
 

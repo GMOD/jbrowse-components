@@ -19,7 +19,7 @@ reproducible setup is portable across both apps.
 
 ## Install the CLI
 
-The CLI needs [Node.js](https://nodejs.org/) 20 or newer — install it from
+The CLI needs [Node.js](https://nodejs.org/) 18 or newer. Install it from
 [NodeSource](https://github.com/nodesource) or
 [NVM](https://github.com/nvm-sh/nvm) rather than `apt`, which tends to ship old
 versions.

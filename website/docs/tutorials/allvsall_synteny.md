@@ -279,10 +279,10 @@ land on `chr` at coordinates that mean nothing.
 With genes loaded, the gaps become readable. Navigate Sakai's row to
 `chr:1,267,000-1,268,400` and the gap holds `stx2A` and `stx2B`, the Shiga-toxin
 subunits, sitting in a region where no alignment to K-12 exists at all. That
-absence is the point: these are the prophage-borne genes that make O157:H7
-pathogenic and that K-12 simply does not carry.
+absence is the point: these prophage-borne genes are carried by Sakai and not by
+K-12.
 
-<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The ribbon carries the backbone the two strains share (the tor operon, cbpA, wrbA) and runs out at Sakai 1,246,166. Everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
+<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary (Sakai 1,246,166); everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
 The row order matters less than the framing: the K-12 window is placed where
 that shared block ends, so the ribbon terminating mid-figure _is_ the island

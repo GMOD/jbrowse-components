@@ -43,7 +43,7 @@ The same plugins come preconfigured on the public genome browsers at
 [genomes.jbrowse.org](https://genomes.jbrowse.org). Pick a genome (for example
 [hg38](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json)),
 search for a gene, right-click it, and launch the 3D protein-structure view or
-the MSA (multiple sequence alignment) view from its menu.
+the MSA view from its menu.
 
 For a one-click example, this session opens the AlphaFold structure of human
 BRAF (UniProt P15056) directly in the hg38 browser:

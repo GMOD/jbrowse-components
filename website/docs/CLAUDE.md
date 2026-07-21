@@ -85,6 +85,28 @@ point at them, not re-copy their contents (which silently goes stale).
   `rehypeTrailingSlash` adds the trailing slash to the path. CI validates
   fragment targets via `untitaker/hyperlink --check-anchors`.
 
+## Tutorials (`tutorials/*`)
+
+These are about _using JBrowse_, not bioinformatics scripting. Two conventions
+keep them that way:
+
+- **Quarantine the pipeline.** Commands that _produce_ an input file (aligners,
+  `awk`/`python` reshaping, coverage/format converters) belong in the tutorial's
+  `scripts/build_*.sh` (surfaced under `## Reproduce it end to end`), not
+  inline. Keep the `jbrowse` invocations (`add-track`, `make-pif`, track JSON)
+  and the concepts that matter for loading the data (refName matching, PanSN
+  prefixes, which adapter) in the prose; describe the rest and link to the
+  script. A file-producing pipeline is fine inline only when it teaches a
+  JBrowse-loading concept and stays short; a hand-rolled format converter
+  duplicated from the build script is not.
+- **Don't restate file-prep.** The bgzip/samtools/tabix/`text-index` recipes
+  live in `quickstart_web.md` (`#adding-tracks`,
+  `#indexing-feature-names-for-searching`). Link there instead of re-pasting
+  them, especially in tutorials that load hosted data and don't need the prep.
+- **No em-dashes** (`—`) anywhere, including code comments; `See also` items are
+  bare bullet links. Captions name the tracks and the one visual takeaway, not
+  the biology (see the website `CLAUDE.md` caption rules).
+
 ## Frontmatter
 
 Valid fields: `title` (required), `description`, `draft`, `sidebar_label`, and

@@ -97,9 +97,7 @@ pairs) and the recombination track toggle used on the inversion figure.
 
 ## See also
 
-- [Variant track](/docs/user_guides/variant_track) — VCF display with on-the-fly
-  LD heatmaps
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — r² LD coloring to an
-  index SNP
+- [Variant track](/docs/user_guides/variant_track)
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track)
 - [Gallery: variants and populations](/gallery/#variants)
