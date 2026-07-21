@@ -480,6 +480,50 @@ describe('promotable maybeBoolean slot', () => {
   })
 })
 
+// A promotable `maybeColor` slot is the third `undefined`-default `maybe*` type,
+// so — like maybeNumber/maybeBoolean — `matchesSlotShape` keys its shape check
+// on the `type` (a string), not on the `undefined` default. Regression guard for
+// the gap where a maybeColor promoted default / own value was rejected wholesale
+// because the shape check demanded `typeof value === 'undefined'`.
+describe('promotable maybeColor slot', () => {
+  const configSchema = ConfigurationSchema('MaybeColorDisplay', {
+    labelColor: {
+      type: 'maybeColor',
+      description: 'a promotable color that may be unset',
+      defaultValue: undefined,
+      promotedBase: 'black',
+      promotable: true,
+    },
+  })
+
+  test('a track with no own value resolves to promotedBase', () => {
+    const { display } = createDisplay(configSchema)
+    expect(getConf(display, 'labelColor')).toBe('black')
+    expect(isSlotCustomized(display, 'labelColor')).toBe(false)
+  })
+
+  test('a track with no own value follows a color session default', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'labelColor', 'goldenrod')
+    expect(getConf(display, 'labelColor')).toBe('goldenrod')
+  })
+
+  test('an explicit per-track color overrides the session default', () => {
+    const { session, display } = createDisplay(configSchema, {
+      labelColor: 'red',
+    })
+    session.setDisplayTypeDefault('TestDisplay', 'labelColor', 'goldenrod')
+    expect(isSlotCustomized(display, 'labelColor')).toBe(true)
+    expect(getConf(display, 'labelColor')).toBe('red')
+  })
+
+  test('ignores a non-string session default instead of rejecting every value', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'labelColor', 42)
+    expect(getConf(display, 'labelColor')).toBe('black')
+  })
+})
+
 // resolvePromotableConfigSnapshot is the worker-payload safety net: it hands out
 // the config snapshot with every promotable slot resolved in place, so a raw
 // inherit sentinel (an unset maybeBoolean here) never ships to a worker, and a

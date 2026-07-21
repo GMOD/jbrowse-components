@@ -152,14 +152,20 @@ function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
         // key the shape
         type === 'maybeBoolean'
         ? typeof value === 'boolean'
-        : typeof defaultValue === 'object' && defaultValue !== null
-          ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness
-            // — `typeof value === typeof defaultValue` would admit `null` (typeof
-            // null === 'object') and an array against an object default
-            typeof value === 'object' &&
-            value !== null &&
-            Array.isArray(value) === Array.isArray(defaultValue)
-          : typeof value === typeof defaultValue
+        : // `maybeColor` (a string-valued slot) is the third `undefined`-default
+          // `maybe*` type, so it too keys on `type` — the `defaultValue`-typeof
+          // fallback below would demand `typeof value === 'undefined'` and reject
+          // every real color string
+          type === 'maybeColor'
+          ? typeof value === 'string'
+          : typeof defaultValue === 'object' && defaultValue !== null
+            ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness
+              // — `typeof value === typeof defaultValue` would admit `null` (typeof
+              // null === 'object') and an array against an object default
+              typeof value === 'object' &&
+              value !== null &&
+              Array.isArray(value) === Array.isArray(defaultValue)
+            : typeof value === typeof defaultValue
 }
 
 export interface SlotResolution {
