@@ -20,6 +20,18 @@ automatically, so you rarely spell out the nested `bamLocation`/`index` form.
 The full config shape is in the
 [config guide](https://jbrowse.org/jb2/docs/config_guide/).
 
+The hg38 assembly above shows three fields worth knowing when you move past a
+toy genome:
+
+- [`refNameAliases`](https://jbrowse.org/jb2/docs/config/refnamealiasadapter/)
+  maps equivalent reference names so `chr1`, `1`, and `NC_000001.11` all resolve
+  to the same contig. Point it at UCSC's `chromAlias` file and tracks that name
+  chromosomes differently than your sequence still line up.
+- `chromSizes` gives the sequence adapter chromosome lengths directly, so the
+  view can lay out the genome without reading them out of the `.2bit` first.
+- `csi: true` on the track selects a CSI index (`.gff.gz.csi`) instead of the
+  default Tabix `.tbi`, which is required for chromosomes longer than ~512 Mb.
+
 See [Advanced init](../session-setup/#with-init-advanced) for per-track display
 snapshots and view-level settings (cytobands, gridlines, colorByCDS, …), and
 [Default session](../default-session/#default-session) for the full imperative
