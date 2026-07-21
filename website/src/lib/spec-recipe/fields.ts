@@ -2,6 +2,10 @@ import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAl
 import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
+import {
+  MULTI_WIGGLE_RENDERING_GROUPS,
+  WIGGLE_RENDERINGS,
+} from '../../../../plugins/wiggle/src/renderingTypes.ts'
 
 // Maps a session-spec field to the thing a reader would actually click. Every
 // menu label here is either imported from the plugin's own option registry
@@ -103,6 +107,35 @@ const READ_CONNECTIONS: Record<string, string> = {
   cloud: 'Read cloud',
 }
 
+// verified against the inline radio list in makeSummaryScoreModeSubMenu
+// (plugins/wiggle/src/shared/wiggleMenuItems.tsx)
+const SUMMARY_SCORE_MODES: Record<string, string> = {
+  min: 'Minimum',
+  max: 'Maximum',
+  avg: 'Average',
+  whiskers: 'Whiskers',
+}
+
+// The 'Plot type' menu radios come straight from the two exported wiggle tables,
+// so single vs multi-row wording can't drift from the menu.
+function renderingTypeStep(value: unknown): FieldStep | undefined {
+  const single = WIGGLE_RENDERINGS.find(([v]) => v === value)
+  if (single) {
+    return { path: `${TRACK_MENU} → Plot type → ${single[1]}` }
+  }
+  for (const [group, options] of MULTI_WIGGLE_RENDERING_GROUPS) {
+    const opt = options.find(([v]) => v === value)
+    if (opt) {
+      return { path: `${TRACK_MENU} → Plot type → ${group} → ${opt[1]}` }
+    }
+  }
+  return undefined
+}
+
+function resolutionLabel(n: number) {
+  return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
+}
+
 const checkbox = (label: string, note?: string): FieldRecipe => {
   return value =>
     typeof value === 'boolean'
@@ -187,6 +220,43 @@ export const trackFields: Record<string, FieldRecipe> = {
     typeof value === 'number'
       ? { path: `${TRACK_MENU} → Show... → Set max layout height... → ${value}` }
       : undefined,
+  defaultRendering: renderingTypeStep,
+  summaryScoreMode: fromTable('Score → Summary score mode', SUMMARY_SCORE_MODES),
+  showDescriptions: checkbox('Show... → Show descriptions'),
+  resolution: value =>
+    typeof value === 'number'
+      ? {
+          path: `${TRACK_MENU} → Resolution → Finer / Coarser`,
+          note: `Higher fetches finer bins. This figure uses ${resolutionLabel(value)}, stepped by 2× per click.`,
+        }
+      : undefined,
+  minScore: value =>
+    typeof value === 'number'
+      ? {
+          path: `${TRACK_MENU} → Score → Set min/max score...`,
+          note: `Sets the score-axis minimum (${value} here).`,
+        }
+      : undefined,
+  maxScore: value =>
+    typeof value === 'number'
+      ? {
+          path: `${TRACK_MENU} → Score → Set min/max score...`,
+          note: `Sets the score-axis maximum (${value} here).`,
+        }
+      : undefined,
+  coverageHeight: value =>
+    typeof value === 'number'
+      ? {
+          path: `Drag the bottom edge of the coverage band to resize it (${value}px here).`,
+        }
+      : undefined,
+  forceLoad: value =>
+    value === true
+      ? {
+          path: 'Click Force load in the track\'s "Zoom in to see features or force load" message.',
+          note: 'Loads the region even past the byte-size limit, which can be slow.',
+        }
+      : undefined,
 }
 
 const TRACK_LABELS: Record<string, string> = {
@@ -212,6 +282,12 @@ export const viewFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean'
       ? {
           path: `View menu → Color by CDS and draw amino acids (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  drawCurves: value =>
+    typeof value === 'boolean'
+      ? {
+          path: `Synteny view menu → Show curved lines (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   highlight: value =>

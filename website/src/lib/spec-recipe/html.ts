@@ -63,17 +63,21 @@ function panels(recipe: Recipe): Panel[] {
     {
       label: 'Do it yourself',
       body: [
-        '<p class="spec-intro">These are the steps that made the figure above, written for your own data — the figure\'s values are shown as the worked example.</p>',
+        '<p class="spec-intro">Steps that made the figure above, for your own data. The figure\'s values are the worked example.</p>',
         `<ol class="spec-steps">${recipe.steps.map(renderStep).join('')}</ol>`,
+        recipe.unmapped.length
+          ? '<p class="spec-config">A few of this figure\'s settings have no written step yet. The <strong>Session spec</strong> tab lists them all.</p>'
+          : '',
       ].join(''),
     },
     {
       label: 'In Desktop',
       body: [
         `<p class="spec-desktop-open"><a href="${escapeHtml(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
-        `<p class="spec-intro">Opens an installed JBrowse Desktop straight at this view (your browser will ask permission the first time), in <strong>${DESKTOP_LINK_MIN_VERSION} and newer</strong>. If nothing happens — Desktop isn't installed, the link is blocked, or you run the Linux AppImage, which doesn't register links unless you've integrated it with your desktop — copy the link below and paste it into Desktop's <strong>Open .jbrowse or config.json or link → Open JBrowse Web link...</strong>, on the start screen beside the recent sessions (or <strong>File → Session → Open JBrowse Web link...</strong> once a session is open). Either always works.</p>`,
+        `<p class="spec-intro">Opens an installed JBrowse Desktop at this view (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>). Your browser asks permission the first time.</p>`,
+        '<p class="spec-intro">If nothing happens (not installed, blocked, or an un-integrated Linux AppImage), copy the link below into Desktop\'s <strong>Open JBrowse Web link...</strong>, on the start screen or under <strong>File → Session</strong> once open.</p>',
         copyableBlock(recipe.desktopWebUrl, 'spec-json'),
-        '<p class="spec-config">Desktop downloads this config and saves the result as a session on your machine, so you can reopen it later — swap in your own files afterwards, or follow the steps in the first tab to build it from scratch.</p>',
+        '<p class="spec-config">Desktop downloads this config and saves it as a session you can reopen. Swap in your own files afterwards.</p>',
       ].join(''),
     },
     {
@@ -124,6 +128,12 @@ export function recipeDialogHtml(recipe: Recipe, id: string): string {
   ].join('')
 }
 
+// a subtle "steps/recipe" glyph (lucide clipboard-list) — every figure carries
+// one, so it stays muted and out of the way; the tooltip tells the curious
+// reader what it opens
+const RECIPE_ICON =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>'
+
 export function recipeButtonHtml(id: string): string {
-  return `<button type="button" class="spec-help" data-spec-dialog="${id}" aria-label="How to make this view yourself" title="How to make this view yourself">?</button>`
+  return `<button type="button" class="spec-help" data-spec-dialog="${id}" aria-label="How to make this view yourself" title="How to make this view yourself">${RECIPE_ICON}</button>`
 }

@@ -91,30 +91,48 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         .filter(Boolean)
         .map(p => {
           const [label, spec] = p.split('=').map(s => s.trim())
-          return { label: label ?? '', url: screenshotLiveUrls[spec ?? ''] }
+          return {
+            label: label ?? '',
+            name: spec ?? '',
+            url: screenshotLiveUrls[spec ?? ''],
+          }
         })
-        .filter((l): l is { label: string; url: string } => !!l.url)
+        .filter(
+          (l): l is { label: string; name: string; url: string } => !!l.url,
+        )
+
+      // the live link hands the reader the finished view; the dialog next to it
+      // shows how to build the same thing from their own data
+      const helpFor = (url: string, name?: string) => {
+        const recipe = buildRecipe(url, name)
+        if (!recipe) {
+          return { button: '', dialog: '' }
+        }
+        const id = `spec-dialog-${dialogCount++}`
+        return {
+          button: recipeButtonHtml(id),
+          dialog: recipeDialogHtml(recipe, id),
+        }
+      }
 
       // explicit link= wins; otherwise auto-link screenshots that came from a
       // screenshot-spec session
       const live = liveByImg.get(rawSrc)
       const liveUrl = attrs.link ?? live?.url
       if (multi.length) {
-        const linkHtml = multi.map(l => a(l.url, `${l.label} ↗`)).join(' · ')
-        node.value = `<figure>${a(multi[0]!.url, img)}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption></figure>`
+        const dialogs: string[] = []
+        const linkHtml = multi
+          .map(l => {
+            const help = helpFor(l.url, l.name)
+            if (help.dialog) {
+              dialogs.push(help.dialog)
+            }
+            return `${a(l.url, `${l.label} ↗`)}${help.button}`
+          })
+          .join(' · ')
+        node.value = `<figure>${a(multi[0]!.url, img)}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption>${dialogs.join('')}</figure>`
       } else if (liveUrl) {
-        // the live link hands the reader the finished view; the dialog next to
-        // it shows how to build the same thing from their own data
-        const recipe = buildRecipe(liveUrl, live?.name)
-        const help = recipe
-          ? (() => {
-              const id = `spec-dialog-${dialogCount++}`
-              return {
-                button: recipeButtonHtml(id),
-                dialog: recipeDialogHtml(recipe, id),
-              }
-            })()
-          : { button: '', dialog: '' }
+        const help = helpFor(liveUrl, live?.name)
         node.value = `<figure>${a(liveUrl, img)}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}${help.button}</figcaption>${help.dialog}</figure>`
       } else {
         node.value = `<figure>${img}<figcaption>${caption}</figcaption></figure>`
