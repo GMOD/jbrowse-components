@@ -77,6 +77,7 @@ export {
 export { default as ImportFormModeToggle } from './ImportFormModeToggle.tsx'
 export type { ImportFormMode } from './ImportFormModeToggle.tsx'
 export { default as QuickStartPanel } from './QuickStartPanel.tsx'
+export { default as PreConfiguredSyntenyTrackSelect } from './PreConfiguredSyntenyTrackSelect.tsx'
 export { planSyntenyChain } from './planSyntenyChain.ts'
 export { resolveRowTrackAction } from './resolveRowTrackAction.ts'
 export type { RowTrackAction } from './resolveRowTrackAction.ts'

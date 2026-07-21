@@ -11,7 +11,7 @@ import {
 import { Container } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea.tsx'
+import ImportSyntenyTrackSelectorArea from './ImportSyntenyTrackSelectorArea.tsx'
 import LeftPanel from './LeftPanel.tsx'
 import QuickStart from './QuickStart.tsx'
 import { doSubmit } from './doSubmit.tsx'
@@ -160,7 +160,7 @@ const LinearSyntenyViewImportForm = observer(
                 Synteny dataset to display between row {selectedRow + 1} and{' '}
                 {selectedRow + 2}
               </div>
-              <ImportSyntenyTrackSelector
+              <ImportSyntenyTrackSelectorArea
                 key={`${selectedRow}-${selectedAssemblyNames[selectedRow]}-${selectedAssemblyNames[selectedRow + 1]}`}
                 model={model}
                 selectedRow={selectedRow}

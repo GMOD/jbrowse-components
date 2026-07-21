@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/synteny-core'
 import { CircularProgress } from '@mui/material'
 
-import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured.tsx'
+import ImportSyntenyPreConfigured from './ImportSyntenyPreConfigured.tsx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 
@@ -79,7 +79,7 @@ export default function ImportSyntenyTrackSelectorArea({
         />
       ) : null}
       {choice === 'tracklist' ? (
-        <ImportSyntenyTrackSelector
+        <ImportSyntenyPreConfigured
           key={`${assembly1}-${assembly2}`}
           model={model}
           assembly1={assembly1}
