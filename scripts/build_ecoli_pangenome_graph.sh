@@ -278,4 +278,6 @@ echo
 echo "Built $APP/config.json with the four assemblies, gene tracks, and the pggb-graph"
 echo "projections (synteny, variants, MAF, depth, per-strain presence). Serve it, e.g.:"
 echo "  npx serve $(pwd)/$APP"
+echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
+echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
 echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz)."

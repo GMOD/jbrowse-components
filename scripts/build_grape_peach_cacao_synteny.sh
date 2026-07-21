@@ -139,3 +139,5 @@ echo "Built $APP/config.json with the grape/peach/cacao assemblies, gene tracks,
 echo "the MCScan blocks synteny track, and a stacked default session."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"
+echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
+echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."

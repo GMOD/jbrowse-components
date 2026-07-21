@@ -87,5 +87,7 @@ build_hic chr3-chr13_translocation \
 echo
 echo "Done. Serve the demo with:"
 echo "  npx --yes serve $(pwd)/$APP"
+echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
+echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
 echo "Then open a Hi-C track, and for these raw read-pair maps set the display's"
 echo "normalization to NONE with log-scale color so the off-diagonal SV signal reads."

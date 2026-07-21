@@ -96,3 +96,5 @@ echo "the gene body AT1G12930 (CpG-only) beside the silenced AT1G12935 (all thre
 echo "contexts). The pileup is pre-colored Bisulfite / CpG; re-color it CpG / CHG /"
 echo "CHH via Color by -> Bisulfite to see each context. Serve it, e.g.:"
 echo "  npx --yes serve $(pwd)/jbrowse2"
+echo "or open $(pwd)/jbrowse2/config.json in JBrowse Desktop via File -> Session ->"
+echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."

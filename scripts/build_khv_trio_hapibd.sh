@@ -111,3 +111,5 @@ echo
 echo "Built $APP/config.json with the hg38 assembly + trio VCF + hap-ibd tracks."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"
+echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
+echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
