@@ -182,46 +182,4 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
-
-  // Projection 5: KTa004 short reads (a fifth isolate, not in the graph) mapped
-  // through the whole pangenome with vg giraffe and surjected onto K12, stacked
-  // above the same locus's pangenome variant matrix and MAF. The pileup lines up
-  // on the same K12 coordinates as the projections it was placed by.
-  {
-    mode: 'url',
-    name: 'pangenome_cactus/reads',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:1,003,000-1,007,000',
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
-            {
-              trackId: 'ecoli_cactus_reads',
-              type: 'LinearAlignmentsDisplay',
-              height: 240,
-            },
-            {
-              trackId: 'ecoli_cactus_variants',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 120,
-            },
-            { trackId: 'ecoli_cactus_maf', type: 'LinearMafDisplay' },
-          ],
-        },
-      ],
-    }),
-    readyText: '1,005,000',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 760,
-    settleMs: 15000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
 ]
