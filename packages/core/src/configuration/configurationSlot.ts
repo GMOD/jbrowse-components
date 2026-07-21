@@ -50,7 +50,7 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   // value for "unset" — exactly the `maybeNumber` justification above — so an
   // undefined-defaulted boolean lets `undefined` mean "inherit" while both `true`
   // and `false` stay customizable. Pair with `promotedBase` for the value `undefined`
-  // resolves to. Read promotable slots with `getConfResolved` (never raw), which
+  // resolves to. Read promotable slots with `getConf` (never raw), which
   // always yields a concrete boolean.
   maybeBoolean: { model: types.maybe(types.boolean) },
   // a color that may be unset (`undefined`), for a slot whose default isn't a
@@ -112,7 +112,7 @@ export interface ConfigSlotDefinition {
    * a user can promote this slot's current value to a session-wide default for
    * all tracks of the same display type (track menu "make default"). A slot left
    * at its `defaultValue` follows (inherits) that promoted default; any other
-   * value customizes the track. See `getConfResolved` / `promotableDefaults.ts`.
+   * value customizes the track. See `getConf` / `promotableResolve.ts`.
    *
    * By default the `defaultValue` doubles as the "inherit" signal, so a track
    * can't customize that one value back over an opposite session default. A slot whose
@@ -135,7 +135,7 @@ export interface ConfigSlotDefinition {
   /**
    * For a `promotable` slot: an extra semantic check a stored value must pass,
    * on top of the built-in type-shape check, before the cascade
-   * (`promotableDefaults.ts`'s `isUsableValue`) treats it as usable. Applies to
+   * (`promotableResolve.ts`'s `isUsableValue`) treats it as usable. Applies to
    * both cascade tiers — a session-wide promoted default and a track's own saved
    * value. Needed when a slot's shape alone can't catch a semantically-invalid
    * value — e.g. alignments `colorBy`'s `.type` must name a currently-registered

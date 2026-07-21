@@ -55,7 +55,7 @@ export function resolveThemeColor(value: string, fallback: string) {
 }
 
 // The height presets plus `collapsed`. `normal` is the slot default: when left
-// unchanged it inherits the session-wide type default (see getConfResolved /
+// unchanged it inherits the session-wide type default (see getConf /
 // promotable slots); compact/superCompact pin an explicit height. `collapsed`
 // packs every feature onto a single row and suppresses all labels (name,
 // description, and subfeature) for a dense one-line overview.

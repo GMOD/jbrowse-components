@@ -1,17 +1,22 @@
 # Configuration package
 
-## Promotable / display-type defaults (`promotableDefaults.ts`)
+## Promotable / display-type defaults (`promotableResolve.ts`)
 
 A `promotable` slot resolves through a live read-time CSS-cascade (track value →
-session-wide promoted default → base) via `getConfResolved`, never raw `getConf`
-— a **dev-build guard in `getConf` (`util.ts`) logs a `console.error` if you
-read a promotable slot raw** (`readConfObject` is the intentional raw escape
-hatch and stays silent; the resolver uses it). The promoted default lives in a
-personal, un-shared store, so **every boundary that serializes a display's
-config for elsewhere must flatten** — the worker via
-`resolvePromotableConfigSnapshot`, a shared/exported session via
-`bakePromotedDefaultsIntoSnapshot`. Full model + the `ignorePromotedDefaults`
-opt-out: `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
+session-wide promoted default → base). **`getConf` reads it resolved** — it
+detects a promotable slot per-schema (`promotableSlotNames`) and routes it
+through `resolveSlot`, so an ordinary `getConf(self, 'x')` getter follows the
+display-type default and can never surface the inherit sentinel. No separate
+`getConfResolved` and no dev-guard — the failure mode (a raw read handing back a
+sentinel) can't happen through `getConf`. `readConfObject` is the intentional
+**raw** escape hatch (the resolver itself uses it — `getConf` there would
+recurse). The promoted default lives in a personal, un-shared store, so **every
+boundary that serializes a display's config for elsewhere must flatten** — the
+worker via `resolvePromotableConfigSnapshot`, a shared/exported session via
+`bakePromotedDefaultsIntoSnapshot`. Layering: `promotableResolve.ts` (resolver) ←
+`getConf.ts` (reader) ← `promotableDefaults.ts` (control builders + share/worker
+helpers). Full model + the `ignorePromotedDefaults` opt-out:
+`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
 ## `getConf` vs `readConfObject`
 

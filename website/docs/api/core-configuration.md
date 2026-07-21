@@ -37,30 +37,20 @@ Reads a configuration value from a state model that has a `.configuration`
 member (a track or display state model). For a raw configuration model, use
 `readConfObject` instead.
 
-For a `promotable` slot, use `getConfResolved` instead — a raw `getConf` skips
-the session-wide display-type-default tier of the cascade (a dev build warns
-when this happens).
+A `promotable` slot is resolved through the display-type-default cascade (track
+value -> session-wide promoted default -> base) rather than read raw, so a
+display's own value getter can be a plain `getConf(self, 'slot')` and still
+follow the cascade — and can never surface a slot's inherit sentinel. That
+resolution is main-thread only (it consults the session); the worker reads plain
+config snapshots through `readConfObject`, which stays raw. See
+`promotableResolve.ts`.
 
 ```js
 // type signature
 <CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { ...; }, slotPath?: SLOT | undefined, args?: Record<...>) => SLOT extends string ? ConfigurationSlotValue<...> : any
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
-
-## getConfResolved
-
-Read a `promotable` slot, layering the session-wide promoted default under the
-track's own value. Drop-in for `getConf` on the display's own promotable slots,
-and always returns a real value (never a slot's inherit sentinel). Main-thread
-only (consults the session) — the worker reads raw config.
-
-```js
-// type signature
-<T = unknown>(self: PromotableDisplay, slot: string) => T
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
 
 ## getDisplayTypeDefaultChanges
 
@@ -77,11 +67,18 @@ default. Drives the track-selector "affected by a session default" badge.
 
 ## isSlotCustomized
 
-Whether this track has customized the slot (holds a non-default value of its
-own) rather than following the display type's default. The correct "reset to
-default" predicate for a promotable slot: comparing the resolved value to the
-base instead reads as at-default for a track merely _following_ a non-base
-promoted default, so the reset control lights up on a no-op.
+Session-wide "promoted defaults" for display-type config slots — the UI /
+control layer over the read-time cascade in `promotableResolve.ts`. A
+`promotable` slot resolves through three tiers (track's own customized value ->
+session-wide default for this display type -> base); a display reads the
+resolved value with `getConf` (which routes promotable slots through
+`resolveSlot`), and the session store (`get/setDisplayTypeDefault`) holds the
+promoted value. Everything here reads a field off `resolveSlot`. Whether this
+track has customized the slot (holds a non-default value of its own) rather than
+following the display type's default. The correct "reset to default" predicate
+for a promotable slot: comparing the resolved value to the base instead reads as
+at-default for a track merely _following_ a non-base promoted default, so the
+reset control lights up on a no-op.
 
 ```js
 // type signature
@@ -155,9 +152,9 @@ a promotable slot serializes as its raw inherit sentinel — an `'inherit'` enum
 member, or the `undefined` of a `maybeBoolean`/`maybeNumber` — which the worker
 can't interpret. This hands it concrete values instead, with no per-slot
 bookkeeping, so adding a promotable worker-consumed slot needs no rpcProps
-change and can't silently ship a sentinel. Main-thread only (getConfResolved
-consults the session). Display-only promotable slots the worker never reads
-(e.g. displayMode) are still excluded by the caller — resolving them here is a
+change and can't silently ship a sentinel. Main-thread only (`getConf` consults
+the session). Display-only promotable slots the worker never reads (e.g.
+displayMode) are still excluded by the caller — resolving them here is a
 harmless no-op since they're dropped anyway.
 
 ```js
@@ -179,4 +176,4 @@ Write counterpart to `getConf`: sets a slot on a state model that has a
 <CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { ...; }, slotName: SLOT, value: unknown) => void
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)

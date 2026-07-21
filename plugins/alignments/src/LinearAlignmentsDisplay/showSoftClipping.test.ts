@@ -25,7 +25,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // backs get/setDisplayTypeDefault with the same nested-object store BaseSession
 // uses (round-trip-tested in sessionModelFactory.test.ts); here we exercise how
 // the display reads it. showSoftClipping is a promotable `maybeBoolean` slot,
-// resolved through getConfResolved (track pin -> session default -> off).
+// resolved through getConf (track pin -> session default -> off).
 function createDisplay(displayConfig: Record<string, unknown> = {}) {
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
@@ -293,7 +293,7 @@ describe('alignments showSoftClipping session default', () => {
 
 // Compactness is the featureHeight + heightMode promotable slots (spacing is
 // derived from height, not stored). Each resolves independently through
-// getConfResolved (same rule as showSoftClipping): a slot at its schema default
+// getConf (same rule as showSoftClipping): a slot at its schema default
 // follows the session-wide default; any other value pins it. heightMode='fixed'
 // equals its promotedBase, so it never shows up as a displayTypeDefaultChanges
 // diff. The menu's per-preset pins that promote these values are exercised below.
@@ -635,7 +635,7 @@ describe('alignments fit-to-display-height session default', () => {
 })
 
 // mismatchAlpha fades mismatch bases by their per-base Phred quality. It is a
-// promotable `maybeBoolean` slot: resolved through getConfResolved (track pin →
+// promotable `maybeBoolean` slot: resolved through getConf (track pin →
 // session default → off), reaches the renderers via renderState (tier-4
 // rerender), and its "make default" pin is symmetric (unlike showSoftClipping,
 // an explicit off can be customized over an on session default).
@@ -1042,7 +1042,7 @@ describe('alignments colorBy session default', () => {
 // linkedReads (view-as-pairs) is a sentinel promotable slot: 'inherit' is the
 // inherit state (resolving to the session-wide default, else promotedBase
 // 'off'), so a track can pin 'off' back over a session-wide 'normal' default —
-// which a plain slot could not. getConfResolved never returns 'inherit'.
+// which a plain slot could not. getConf never returns 'inherit'.
 describe('alignments linkedReads (view as pairs) session default', () => {
   it('resolves to off by default with no config and no session default', () => {
     const { display } = createDisplay()

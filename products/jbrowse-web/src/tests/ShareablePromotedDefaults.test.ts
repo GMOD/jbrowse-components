@@ -1,4 +1,4 @@
-import { getConfResolved } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { encodeSessionParam, fromUrlSafeB64 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { bakePromotedDefaultsIntoSnapshot } from '@jbrowse/product-core'
@@ -52,10 +52,10 @@ test('a track following a promoted default bakes the resolved value into the sha
   const { rootModel, session, display } = openVcfDisplay()
 
   // sanity: no promotion yet, display resolves to promotedBase
-  expect(getConfResolved(display, SLOT)).toBe('normal')
+  expect(getConf(display, SLOT)).toBe('normal')
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
-  expect(getConfResolved(display, SLOT)).toBe(PROMOTED)
+  expect(getConf(display, SLOT)).toBe(PROMOTED)
 
   const snap = bakePromotedDefaultsIntoSnapshot(
     session as never,
@@ -97,7 +97,7 @@ test('every open display is marked ignorePromotedDefaults in the shared snapshot
 test('the shared snapshot reproduces the sender value in a recipient with no promoted default', () => {
   const { rootModel, session, display } = openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
-  expect(getConfResolved(display, SLOT)).toBe(PROMOTED)
+  expect(getConf(display, SLOT)).toBe(PROMOTED)
 
   const shared = bakePromotedDefaultsIntoSnapshot(
     session as never,
@@ -112,13 +112,13 @@ test('the shared snapshot reproduces the sender value in a recipient with no pro
     t => t.configuration.trackId === TRACK_ID,
   )!.displays[0]! as unknown as PromotableDisplay
 
-  expect(getConfResolved(recipientDisplay, SLOT)).toBe(PROMOTED)
+  expect(getConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })
 
 test("a recipient's own promoted default does not repaint the received track", () => {
   const { rootModel, session, display } = openVcfDisplay()
   // sender saw the schema-resolved base value (no promotion)
-  expect(getConfResolved(display, SLOT)).toBe('normal')
+  expect(getConf(display, SLOT)).toBe('normal')
 
   const shared = bakePromotedDefaultsIntoSnapshot(
     session as never,
@@ -135,7 +135,7 @@ test("a recipient's own promoted default does not repaint the received track", (
   )!.displays[0]! as unknown as PromotableDisplay
 
   // stays at what the sender saw, not the recipient's promoted value
-  expect(getConfResolved(recipientDisplay, SLOT)).toBe('normal')
+  expect(getConf(recipientDisplay, SLOT)).toBe('normal')
 })
 
 test('a user-added (sessionTracks) track bakes into its own config, not a delta', () => {
@@ -217,7 +217,7 @@ test('a promoted default merges into an existing delta without clobbering a prio
   const baked = delta.displays!.find(d => (d.displayId as string).length > 0)!
   expect(baked[SLOT]).toBe(PROMOTED)
   // the live display never changed — bake used it read-only
-  expect(getConfResolved(display, SLOT)).toBe(PROMOTED)
+  expect(getConf(display, SLOT)).toBe(PROMOTED)
 })
 
 test('baking does not mutate the live session (cascade stays live)', () => {
@@ -231,7 +231,7 @@ test('baking does not mutate the live session (cascade stays live)', () => {
   )
 
   // the live display still resolves through the cascade (no own value baked in)
-  expect(getConfResolved(display, SLOT)).toBe(PROMOTED)
+  expect(getConf(display, SLOT)).toBe(PROMOTED)
   // and the serialized live session is unchanged — no delta or flag leaked back
   expect(getSnapshot(rootModel.session)).toEqual(before)
 })
@@ -239,7 +239,7 @@ test('baking does not mutate the live session (cascade stays live)', () => {
 test('fidelity survives the real share encode/decode (long-URL round-trip)', async () => {
   const { rootModel, session, display } = openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
-  expect(getConfResolved(display, SLOT)).toBe(PROMOTED)
+  expect(getConf(display, SLOT)).toBe(PROMOTED)
 
   // exactly what ShareDialog feeds buildShareUrl, then the real deflate+base64
   const shared = bakePromotedDefaultsIntoSnapshot(
@@ -263,5 +263,5 @@ test('fidelity survives the real share encode/decode (long-URL round-trip)', asy
     t => t.configuration.trackId === TRACK_ID,
   )!.displays[0]! as unknown as PromotableDisplay
 
-  expect(getConfResolved(recipientDisplay, SLOT)).toBe(PROMOTED)
+  expect(getConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })

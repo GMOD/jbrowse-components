@@ -46,6 +46,38 @@ const Container = types.model('ConfigNarrowingContainer', {
   configuration: ConfigurationReference(schema),
 })
 
+// Promotable sentinel slots + one plain `maybe` slot, to guard that
+// `SlotValueFromDef` drops the inherit sentinel from a `getConf` read *only* for
+// `promotedBase` slots (see ./CLAUDE.md and DISPLAY_TYPE_DEFAULTS.md).
+const promotableSchema = ConfigurationSchema('ConfigNarrowingPromotable', {
+  mode: {
+    type: 'stringEnum',
+    model: types.enumeration('PromMode', ['inherit', 'a', 'b']),
+    defaultValue: 'inherit',
+    promotedBase: 'a',
+    promotable: true,
+  },
+  chevrons: {
+    type: 'maybeBoolean',
+    defaultValue: undefined,
+    promotedBase: true,
+    promotable: true,
+  },
+  size: {
+    type: 'maybeNumber',
+    defaultValue: undefined,
+    promotedBase: 7,
+    promotable: true,
+  },
+  // no `promotedBase`: an ordinary optional slot, whose read must still surface
+  // `undefined` — the exclusion is keyed on `promotedBase`, not `maybe*`
+  plainSize: { type: 'maybeNumber', defaultValue: undefined },
+})
+
+const PromotableContainer = types.model('ConfigNarrowingPromotableContainer', {
+  configuration: ConfigurationReference(promotableSchema),
+})
+
 describe('getConf slot-value type narrowing', () => {
   test('a concrete schema narrows reads to precise value types', () => {
     const model = Container.create(
@@ -70,6 +102,30 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof enabled, boolean>>()
     assertType<Equal<typeof mode, 'a' | 'b'>>()
     assertType<Equal<typeof thickness, number>>()
+  })
+
+  // A promotable sentinel slot's read type excludes the inherit sentinel that
+  // `getConf` resolves away — so the display's own getter keeps a clean
+  // annotation with no cast. Type-only: `getConf` on a promotable slot resolves
+  // against a session at runtime, so this exercises the return TYPE (computed
+  // from the schema alone) without invoking it.
+  test('a promotable sentinel slot excludes the inherit sentinel from the read type', () => {
+    const check = (model: Instance<typeof PromotableContainer>) => {
+      const mode = getConf(model, 'mode')
+      const chevrons = getConf(model, 'chevrons')
+      const size = getConf(model, 'size')
+      const plainSize = getConf(model, 'plainSize')
+
+      // sentinel dropped: not `'inherit' | 'a' | 'b'`, not `boolean | undefined`,
+      // not `number | undefined`
+      assertType<Equal<typeof mode, 'a' | 'b'>>()
+      assertType<Equal<typeof chevrons, boolean>>()
+      assertType<Equal<typeof size, number>>()
+      // plain `maybe` slot (no `promotedBase`) is unaffected — still optional
+      assertType<Equal<typeof plainSize, number | undefined>>()
+    }
+    void check
+    expect(true).toBe(true)
   })
 
   // A factory that leaves its schema param widened to `AnyConfigurationSchemaType`

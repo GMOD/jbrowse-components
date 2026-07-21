@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  getConfResolved,
   makeDisplayTypeDefaultControl,
   readConfObject,
   resolvePromotableConfigSnapshot,
@@ -502,11 +501,11 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Feature height preset (normal/compact/superCompact). Promotable
-        // sentinel enum (see baseConfigSchema.ts): getConfResolved walks the
+        // sentinel enum (see baseConfigSchema.ts): getConf walks the
         // customized-track -> session-default -> `normal` cascade and always returns
         // a concrete preset, never the `inherit` sentinel.
         get displayMode(): DisplayMode {
-          return getConfResolved(self, 'displayMode')
+          return getConf(self, 'displayMode')
         },
 
         /**

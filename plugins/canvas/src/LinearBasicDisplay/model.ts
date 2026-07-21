@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import {
   getConf,
-  getConfResolved,
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   readConfObject,
@@ -89,22 +88,22 @@ export default function stateModelFactory(
       geneGlyphNoticeDismissed: false,
     }))
     .views(self => ({
-      // Promotable sentinel enum (see baseConfigSchema.ts): getConfResolved walks
+      // Promotable sentinel enum (see baseConfigSchema.ts): getConf walks
       // the cascade (pinned track value -> session default -> base 'none') and
       // always yields a real mode, never the 'inherit' sentinel.
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
-        return getConfResolved(self, 'subfeatureLabels')
+        return getConf(self, 'subfeatureLabels')
       },
 
       get geneGlyphMode() {
         return getConf(self, 'geneGlyphMode')
       },
 
-      // Promotable `maybeBoolean` slot (see baseConfigSchema.ts): getConfResolved
+      // Promotable `maybeBoolean` slot (see baseConfigSchema.ts): getConf
       // walks the cascade (pinned track value -> session default -> base `true`)
       // and always yields a concrete boolean, never the unset sentinel.
       get displayDirectionalChevrons(): boolean {
-        return getConfResolved(self, 'displayDirectionalChevrons')
+        return getConf(self, 'displayDirectionalChevrons')
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {

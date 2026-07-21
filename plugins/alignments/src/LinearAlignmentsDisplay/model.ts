@@ -9,7 +9,6 @@ import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly
 import {
   ConfigurationReference,
   getConf,
-  getConfResolved,
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   makeSlotsValueDisplayTypeDefaultControl,
@@ -121,7 +120,6 @@ import type {
   ColorSchemeType,
   FilterBy,
   GroupBy,
-  PersistedColorBy,
   SortedBy,
 } from '../shared/types'
 import type { ReadColorCategory } from './colorUtils.ts'
@@ -350,10 +348,10 @@ export default function stateModelFactory(
         /** #getter */
         // Resolved through the promotable-slot tiers: a track pins 'off'/'normal'
         // explicitly, else follows the session-wide default (view-as-pairs),
-        // falling back to 'off'. getConfResolved never returns the 'inherit'
+        // falling back to 'off'. getConf never returns the 'inherit'
         // sentinel. See promotableDefaults.ts.
         get linkedReads(): LinkedReadsMode {
-          return getConfResolved<LinkedReadsMode>(self, 'linkedReads')
+          return getConf(self, 'linkedReads')
         },
         /** #getter */
         // "make view-as-pairs the default for all tracks" control (pin): active
@@ -420,10 +418,10 @@ export default function stateModelFactory(
         /** #getter */
         // Resolved through the promotable-slot tiers: a track pins
         // 'off'/'arc'/'cloud' explicitly, else follows the session-wide
-        // default, falling back to 'off'. getConfResolved never returns the
+        // default, falling back to 'off'. getConf never returns the
         // 'inherit' sentinel. See promotableDefaults.ts.
         get readConnections(): ReadConnectionsMode {
-          return getConfResolved<ReadConnectionsMode>(self, 'readConnections')
+          return getConf(self, 'readConnections')
         },
         /** #getter */
         // "make arcs the default for all tracks" control (pin): active when
@@ -439,12 +437,12 @@ export default function stateModelFactory(
           return makeDisplayTypeDefaultControl(self, 'readConnections', 'cloud')
         },
         /** #getter */
-        // Resolved through the promotable-slot tiers (getConfResolved): a
+        // Resolved through the promotable-slot tiers (getConf): a
         // maybeBoolean sentinel (like showSoftClipping) — an unset track follows
-        // the session-wide default, else the promotedBase (true). getConfResolved
+        // the session-wide default, else the promotedBase (true). getConf
         // never surfaces the `undefined` inherit sentinel.
         get readConnectionsDown(): boolean {
-          return getConfResolved(self, 'readConnectionsDown')
+          return getConf(self, 'readConnectionsDown')
         },
         /** #getter */
         // "make this the default for all tracks" control (pin): promotes the
@@ -464,7 +462,7 @@ export default function stateModelFactory(
         // pins 'up' explicitly, else follows the session-wide default, falling
         // back to 'up'.
         get sashimiArcsMode(): SashimiArcsMode {
-          return getConfResolved<SashimiArcsMode>(self, 'sashimiArcsMode')
+          return getConf(self, 'sashimiArcsMode')
         },
         /** #getter */
         // "make below-coverage placement the default for all tracks" control
@@ -493,13 +491,13 @@ export default function stateModelFactory(
           return getConf(self, 'readConnectionsHeight')
         },
         /** #getter */
-        // Resolved through the promotable-slot tiers (getConfResolved): an
+        // Resolved through the promotable-slot tiers (getConf): an
         // explicit track value customizes soft clipping on or off; otherwise it
         // follows the session-wide default, falling back to off. A `maybeBoolean`
         // slot, so (unlike the old plain boolean) an explicit "off" can be customized
         // back over a session default of "on".
         get showSoftClipping(): boolean {
-          return getConfResolved(self, 'showSoftClipping')
+          return getConf(self, 'showSoftClipping')
         },
 
         /** #getter */
@@ -771,10 +769,10 @@ export default function stateModelFactory(
         // (e.g. "color every alignments track by methylation"), resolving to the
         // `promotedBase` `{type:'normal'}` when nothing is promoted; picking any
         // scheme — `normal` included — pins this track over that default.
-        // getConfResolved walks the cascade and never surfaces `inherit`.
+        // getConf walks the cascade and never surfaces `inherit`.
         get colorBy(): ColorBy {
           return normalizeColorBy(
-            getConfResolved<PersistedColorBy>(self, 'colorBy'),
+            getConf(self, 'colorBy'),
           )
         },
 
@@ -800,7 +798,7 @@ export default function stateModelFactory(
          * #getter
          */
         // featureHeight is the one promotable "compactness" slot: it resolves
-        // through getConfResolved (track value, else session-wide default, else
+        // through getConf (track value, else session-wide default, else
         // schema base 7). featureSpacing is derived from it, never stored. In
         // fit-to-height mode featureHeight instead splits the autorun-cached fit
         // pitch (`fittedHeightPx` = pileupSpace/rows) into a read body plus the
@@ -848,7 +846,7 @@ export default function stateModelFactory(
         // `featureHeight` resolves to in fit mode — otherwise opening the dialog
         // while compressed would bake the squeezed height.
         get configuredFeatureHeight(): number {
-          return getConfResolved(self, 'featureHeight')
+          return getConf(self, 'featureHeight')
         },
 
         /**
@@ -861,14 +859,14 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether to draw the supporting-read count on each sashimi arc.
-         * Resolved through the promotable-slot tiers (getConfResolved): an
+         * Resolved through the promotable-slot tiers (getConf): an
          * explicit track value pins labels on or off; otherwise it follows the
          * session-wide default, falling back to off. A `maybeBoolean` slot, so
          * (like mismatchAlpha) a session default of "on" can be customized back
          * off on a single track.
          */
         get showSashimiLabels(): boolean {
-          return getConfResolved(self, 'showSashimiLabels')
+          return getConf(self, 'showSashimiLabels')
         },
         /**
          * #getter
@@ -909,13 +907,13 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // Resolved through the promotable-slot tiers (getConfResolved): an
+        // Resolved through the promotable-slot tiers (getConf): an
         // explicit track value customizes the fade on or off; otherwise it follows the
         // session-wide default, falling back to off. A `maybeBoolean` slot, so
         // (unlike showSoftClipping) a session default of "on" can be customized back
         // off on a single track.
         get mismatchAlpha(): boolean {
-          return getConfResolved(self, 'mismatchAlpha')
+          return getConf(self, 'mismatchAlpha')
         },
 
         /**

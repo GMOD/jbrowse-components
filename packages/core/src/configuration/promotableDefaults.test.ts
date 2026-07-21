@@ -3,7 +3,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import {
-  getConfResolved,
   getDisplayTypeDefaultChanges,
   isPromotableDefault,
   isSlotCustomized,
@@ -13,7 +12,8 @@ import {
   resolvePromotableConfigSnapshot,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
-import { getConf, readConfObject } from './util.ts'
+import { getConf } from './getConf.ts'
+import { readConfObject } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
@@ -153,7 +153,7 @@ describe('apply a promoted default to open tracks', () => {
     expect(isSlotCustomized(other, 'customHeight')).toBe(true)
     resetSlotsToInherit(displays, ['customHeight'])
     expect(isSlotCustomized(other, 'customHeight')).toBe(false)
-    expect(getConfResolved(other, 'customHeight')).toBe(10)
+    expect(getConf(other, 'customHeight')).toBe(10)
   })
 
   test('leaves an already-inheriting track untouched', () => {
@@ -166,7 +166,7 @@ describe('apply a promoted default to open tracks', () => {
 
     resetSlotsToInherit(displays, ['customHeight'])
     expect(isSlotCustomized(other, 'customHeight')).toBe(false)
-    expect(getConfResolved(other, 'customHeight')).toBe(10)
+    expect(getConf(other, 'customHeight')).toBe(10)
   })
 
   // Session shaped as the real one is (isViewContainer + tracks-with-displays),
@@ -253,7 +253,7 @@ describe('apply a promoted default to open tracks', () => {
 
     // setting the default doesn't touch the customized track in the other view
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
-    expect(getConfResolved(otherView, 'customHeight')).toBe(20)
+    expect(getConf(otherView, 'customHeight')).toBe(20)
   })
 
   test('tracksDifferingFrom lists open tracks across views that do not match', () => {
@@ -292,7 +292,7 @@ describe('apply a promoted default to open tracks', () => {
     expect(action?.name).toBe('Apply to 1 open track')
     action!.onClick()
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(false)
-    expect(getConfResolved(otherView, 'customHeight')).toBe(10)
+    expect(getConf(otherView, 'customHeight')).toBe(10)
   })
 
   test('toggling on applies the value to the clicked track immediately and excludes it from the snackbar', () => {
@@ -311,7 +311,7 @@ describe('apply a promoted default to open tracks', () => {
 
     // the clicked track now follows the new default with no further action
     expect(isSlotCustomized(self, 'customHeight')).toBe(false)
-    expect(getConfResolved(self, 'customHeight')).toBe(10)
+    expect(getConf(self, 'customHeight')).toBe(10)
     // ...and the snackbar counts only the one remaining track
     expect(session.lastNotify?.action?.name).toBe('Apply to 1 open track')
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
@@ -324,13 +324,13 @@ describe('apply a promoted default to open tracks', () => {
     const { session, displayOf } = createViews([[{ customHeight: 10 }], [{}]])
     const self = displayOf(0, 0)
     const follower = displayOf(1, 0)
-    expect(getConfResolved(follower, 'customHeight')).toBeUndefined()
+    expect(getConf(follower, 'customHeight')).toBeUndefined()
 
     makeSlotsValueDisplayTypeDefaultControl(self, [
       { slot: 'customHeight', value: 10 },
     ]).toggle()
 
-    expect(getConfResolved(follower, 'customHeight')).toBe(10)
+    expect(getConf(follower, 'customHeight')).toBe(10)
     expect(session.lastNotify?.action).toBeUndefined()
   })
 
@@ -381,10 +381,10 @@ describe('promotable maybeNumber slot', () => {
 
   test('a track with no own value follows a numeric session-wide default', () => {
     const { session, display } = createDisplay(configSchema)
-    expect(getConfResolved(display, 'customHeight')).toBeUndefined()
+    expect(getConf(display, 'customHeight')).toBeUndefined()
 
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 42)
-    expect(getConfResolved(display, 'customHeight')).toBe(42)
+    expect(getConf(display, 'customHeight')).toBe(42)
   })
 
   test('an explicit per-track value overrides the session default', () => {
@@ -393,19 +393,19 @@ describe('promotable maybeNumber slot', () => {
     })
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 42)
     expect(isSlotCustomized(display, 'customHeight')).toBe(true)
-    expect(getConfResolved(display, 'customHeight')).toBe(10)
+    expect(getConf(display, 'customHeight')).toBe(10)
   })
 
   test('ignores a non-numeric session default instead of rejecting every value', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 'tall')
-    expect(getConfResolved(display, 'customHeight')).toBeUndefined()
+    expect(getConf(display, 'customHeight')).toBeUndefined()
   })
 
   test('ignores a non-finite (NaN) session default rather than passing it on', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', NaN)
-    expect(getConfResolved(display, 'customHeight')).toBeUndefined()
+    expect(getConf(display, 'customHeight')).toBeUndefined()
   })
 })
 
@@ -427,21 +427,21 @@ describe('promotable maybeBoolean slot', () => {
 
   test('a track with no own value resolves to promotedBase, never undefined', () => {
     const { display } = createDisplay(configSchema)
-    expect(getConfResolved(display, 'chevrons')).toBe(true)
+    expect(getConf(display, 'chevrons')).toBe(true)
     expect(isSlotCustomized(display, 'chevrons')).toBe(false)
   })
 
   test('a track with no own value follows an off session default', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
-    expect(getConfResolved(display, 'chevrons')).toBe(false)
+    expect(getConf(display, 'chevrons')).toBe(false)
   })
 
   test('a track can override with ON over an OFF session default (the symmetry win)', () => {
     const { session, display } = createDisplay(configSchema, { chevrons: true })
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
     expect(isSlotCustomized(display, 'chevrons')).toBe(true)
-    expect(getConfResolved(display, 'chevrons')).toBe(true)
+    expect(getConf(display, 'chevrons')).toBe(true)
   })
 
   test('a track can override with OFF over an ON session default', () => {
@@ -450,7 +450,7 @@ describe('promotable maybeBoolean slot', () => {
     })
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', true)
     expect(isSlotCustomized(display, 'chevrons')).toBe(true)
-    expect(getConfResolved(display, 'chevrons')).toBe(false)
+    expect(getConf(display, 'chevrons')).toBe(false)
   })
 
   test('promote-current control stores the symmetric false and clears it', () => {
@@ -476,7 +476,7 @@ describe('promotable maybeBoolean slot', () => {
   test('ignores a non-boolean session default instead of rejecting every value', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', 'yes')
-    expect(getConfResolved(display, 'chevrons')).toBe(true)
+    expect(getConf(display, 'chevrons')).toBe(true)
   })
 })
 
@@ -569,7 +569,7 @@ describe('promotable frozen slot structural equality', () => {
       colorBy: 'not-an-object',
     })
     expect(isSlotCustomized(display, 'colorBy')).toBe(false)
-    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
+    expect(getConf(display, 'colorBy')).toEqual({ type: 'normal' })
   })
 })
 
@@ -596,7 +596,7 @@ describe('promotable slot validate hook', () => {
   test('accepts a promoted value that passes validate', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'colorBy', { type: 'strand' })
-    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'strand' })
+    expect(getConf(display, 'colorBy')).toEqual({ type: 'strand' })
   })
 
   test('rejects a structurally-fine but unregistered value instead of passing it through', () => {
@@ -605,7 +605,7 @@ describe('promotable slot validate hook', () => {
       type: 'a-removed-scheme',
     })
     // falls back to base rather than handing a consumer an unrecognized type
-    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
+    expect(getConf(display, 'colorBy')).toEqual({ type: 'normal' })
   })
 
   test("a track's own customized value that fails validate degrades to the base", () => {
@@ -616,7 +616,7 @@ describe('promotable slot validate hook', () => {
     })
     // an unusable own value reads as not customized so every consumer falls back in lockstep
     expect(isSlotCustomized(display, 'colorBy')).toBe(false)
-    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
+    expect(getConf(display, 'colorBy')).toEqual({ type: 'normal' })
   })
 
   test("a track's own customized value that fails validate still follows a usable session default", () => {
@@ -625,7 +625,7 @@ describe('promotable slot validate hook', () => {
     })
     session.setDisplayTypeDefault('TestDisplay', 'colorBy', { type: 'strand' })
     // treated as not customized by the failed validate, so it inherits the promoted default
-    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'strand' })
+    expect(getConf(display, 'colorBy')).toEqual({ type: 'strand' })
   })
 })
 
@@ -633,7 +633,7 @@ describe('promotable slot validate hook', () => {
 // value — inherit" signal) and `promotedBase` is what it resolves to, so — unlike
 // a plain slot — every real value including `promotedBase` stays customizable per-track over an
 // opposite session default. Exercises `isConcreteValue`'s sentinel branch and
-// that `getConfResolved` never surfaces the `'inherit'` member.
+// that `getConf` never surfaces the `'inherit'` member.
 describe('promotable sentinel slot', () => {
   const configSchema = ConfigurationSchema('SentinelDisplay', {
     mode: {
@@ -647,33 +647,33 @@ describe('promotable sentinel slot', () => {
 
   test('a track with no own value resolves to promotedBase, never the inherit sentinel', () => {
     const { display } = createDisplay(configSchema)
-    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(getConf(display, 'mode')).toBe('normal')
     expect(isSlotCustomized(display, 'mode')).toBe(false)
   })
 
   test('a track with no own value follows a usable session default', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
-    expect(getConfResolved(display, 'mode')).toBe('compact')
+    expect(getConf(display, 'mode')).toBe('compact')
   })
 
   test('a track can override with promotedBase over an opposite session default', () => {
     const { session, display } = createDisplay(configSchema, { mode: 'normal' })
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
     expect(isSlotCustomized(display, 'mode')).toBe(true)
-    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(getConf(display, 'mode')).toBe('normal')
   })
 
   test('a promoted inherit sentinel is rejected and falls back to promotedBase', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'inherit')
-    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(getConf(display, 'mode')).toBe('normal')
   })
 
   test('a promoted non-enum value is rejected and falls back to promotedBase', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'bogus')
-    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(getConf(display, 'mode')).toBe('normal')
   })
 })
 
@@ -704,10 +704,10 @@ describe('a display from a received session', () => {
   test('ignores a promoted default on a sentinel slot', () => {
     const { session, display } = createDisplay(sentinelSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
-    expect(getConfResolved(display, 'mode')).toBe('compact')
+    expect(getConf(display, 'mode')).toBe('compact')
 
     display.setIgnorePromotedDefaults(true)
-    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(getConf(display, 'mode')).toBe('normal')
   })
 
   test('ignores a promoted default on a plain slot, which baking cannot do', () => {
@@ -715,10 +715,10 @@ describe('a display from a received session', () => {
     session.setDisplayTypeDefault('TestDisplay', 'showLabels', true)
     // the sender's own value *is* the slot default, so writing it into the
     // config leaves it indistinguishable from "inherit" — the promoted true wins
-    expect(getConfResolved(display, 'showLabels')).toBe(true)
+    expect(getConf(display, 'showLabels')).toBe(true)
 
     display.setIgnorePromotedDefaults(true)
-    expect(getConfResolved(display, 'showLabels')).toBe(false)
+    expect(getConf(display, 'showLabels')).toBe(false)
   })
 
   test('keeps its own baked-in value', () => {
@@ -727,7 +727,7 @@ describe('a display from a received session', () => {
     })
     display.setIgnorePromotedDefaults(true)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'normal')
-    expect(getConfResolved(display, 'mode')).toBe('compact')
+    expect(getConf(display, 'mode')).toBe('compact')
   })
 
   test('reports no session-default changes for the affected-by-a-default badge', () => {
@@ -754,7 +754,7 @@ describe('a display from a received session', () => {
 
     display.setIgnorePromotedDefaults(true)
     // the display no longer FOLLOWS the default...
-    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(getConf(display, 'mode')).toBe('normal')
     // ...but 'compact' is still what's promoted session-wide
     expect(isPromotableDefault(display, entries)).toBe(true)
   })
@@ -768,21 +768,21 @@ describe('a display from a received session', () => {
 
     resetSlotsToInherit([display], ['mode'])
     expect(display.ignorePromotedDefaults).toBe(false)
-    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(getConf(display, 'mode')).toBe('normal')
   })
 })
 
-// The dev guard in getConf: a raw `getConf` of a promotable slot skips the
-// session-wide tier of the cascade, so it warns (dev only). getConfResolved and
-// the raw escape hatch readConfObject do not. A uniquely-named schema keeps the
-// module-global dedup Set from being pre-tripped by another test.
-describe('raw-read guard on promotable slots', () => {
-  const guardSchema = ConfigurationSchema('RawReadGuardDisplay', {
+// `getConf` resolves a promotable slot through the cascade (so a display's own
+// value getter is a plain `getConf` and follows the display-type default), while
+// `readConfObject` is the raw escape hatch that returns the stored value
+// unresolved. The two readers on the same promotable slot are the contract.
+describe('getConf resolves promotable slots; readConfObject stays raw', () => {
+  const schema = ConfigurationSchema('ReaderContractDisplay', {
     guardedHeight: {
       type: 'maybeNumber',
       defaultValue: undefined,
       promotedBase: 7,
-      description: 'a promotable slot that must be read via getConfResolved',
+      description: 'a promotable slot resolved by getConf',
       promotable: true,
     },
     plainLabel: {
@@ -792,37 +792,24 @@ describe('raw-read guard on promotable slots', () => {
     },
   })
 
-  test('getConf on a promotable slot warns; getConfResolved / readConfObject do not', () => {
-    const { display } = createDisplay(guardSchema)
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    try {
-      // raw getConf of a promotable slot: warns, naming the slot + the fix
-      getConf(display, 'guardedHeight')
-      expect(spy).toHaveBeenCalledTimes(1)
-      expect(spy.mock.calls[0]![0]).toContain('guardedHeight')
-      expect(spy.mock.calls[0]![0]).toContain('getConfResolved')
-
-      // deduped: a second raw read of the same (schema, slot) stays silent
-      getConf(display, 'guardedHeight')
-      expect(spy).toHaveBeenCalledTimes(1)
-
-      // the resolution-aware reader and the raw escape hatch never warn
-      getConfResolved(display, 'guardedHeight')
-      readConfObject(display.configuration, 'guardedHeight')
-      expect(spy).toHaveBeenCalledTimes(1)
-    } finally {
-      spy.mockRestore()
-    }
+  test('getConf on an unset promotable slot returns promotedBase, not the sentinel', () => {
+    const { display } = createDisplay(schema)
+    // getConf walks the cascade to the concrete base; the raw read returns the
+    // unset sentinel (undefined) it's stored as
+    expect(getConf(display, 'guardedHeight')).toBe(7)
+    expect(readConfObject(display.configuration, 'guardedHeight')).toBeUndefined()
   })
 
-  test('getConf on a plain (non-promotable) slot does not warn', () => {
-    const { display } = createDisplay(guardSchema)
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    try {
-      expect(getConf(display, 'plainLabel')).toBe('hello')
-      expect(spy).not.toHaveBeenCalled()
-    } finally {
-      spy.mockRestore()
-    }
+  test('getConf on a promotable slot follows the session-wide default', () => {
+    const { session, display } = createDisplay(schema)
+    session.setDisplayTypeDefault('TestDisplay', 'guardedHeight', 42)
+    // getConf picks up the promoted default; readConfObject still sees no own value
+    expect(getConf(display, 'guardedHeight')).toBe(42)
+    expect(readConfObject(display.configuration, 'guardedHeight')).toBeUndefined()
+  })
+
+  test('getConf on a plain (non-promotable) slot reads straight through', () => {
+    const { display } = createDisplay(schema)
+    expect(getConf(display, 'plainLabel')).toBe('hello')
   })
 })

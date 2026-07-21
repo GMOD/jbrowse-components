@@ -36,12 +36,7 @@ import type {
   ConfigurationSlotName,
   ConfigurationSlotValue,
 } from './types.ts'
-import type { IAnyType, IMSTMap } from '@jbrowse/mobx-state-tree'
-
-// This ESM package builds without @types/node, but consuming bundlers
-// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
-// reference and give it a minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
+import type { IMSTMap } from '@jbrowse/mobx-state-tree'
 
 // Evaluate a slot's `jexl:...` callback string against the realm's single jexl
 // instance (carrying plugin-registered functions), read from the config node's
@@ -224,114 +219,6 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
     }
   }
   return result
-}
-
-// The `promotable` slot names of one config schema, cached by MST type (stable
-// per schema). Empty for a non-schema node. Dev-guard support only.
-const promotableSlotsByType = new WeakMap<IAnyType, Set<string>>()
-// (schema\0slot) combinations already warned about, so the guard fires once per
-// call site class rather than every hot-path read.
-const warnedPromotableRawReads = new Set<string>()
-
-function promotableSlotNames(config: AnyConfigurationModel): Set<string> {
-  const type = getType(config)
-  const cached = promotableSlotsByType.get(type)
-  if (cached) {
-    return cached
-  }
-  const names = new Set<string>()
-  const table = getConfigurationSchemaDefinition(config)
-  for (const [name, def] of Object.entries(table ?? {})) {
-    if (isSlotDefinitionEntry(def) && def.promotable) {
-      names.add(name)
-    }
-  }
-  promotableSlotsByType.set(type, names)
-  return names
-}
-
-// Dev-only: a `promotable` slot must be read through `getConfResolved`, which
-// layers the session-wide display-type default under the track's own value; a
-// raw read returns only the stored value (for a sentinel slot, the literal
-// inherit sentinel), silently skipping that tier. The same slot name can be
-// promotable in one schema and a plain slot in another (e.g. `colorBy` is
-// promotable on alignments but not on gwas), so this can't be caught statically
-// — hence a runtime warning, keyed per (schema, slot) and compiled out of prod
-// builds. `readConfObject` is the deliberate raw escape hatch (the resolver
-// itself, and consumers holding a bare config with no session to resolve
-// against, read through it) and intentionally does not warn.
-function warnIfPromotableRawRead(
-  config: AnyConfigurationModel,
-  slotName: string,
-) {
-  if (!isStateTreeNode(config) || !promotableSlotNames(config).has(slotName)) {
-    return
-  }
-  const schemaName = getType(config).name
-  const key = `${schemaName}\0${slotName}`
-  if (!warnedPromotableRawReads.has(key)) {
-    warnedPromotableRawReads.add(key)
-    console.error(
-      `getConf read the promotable slot "${slotName}" on ${schemaName} directly, bypassing the display-type-default cascade. Use getConfResolved(self, "${slotName}") instead (or readConfObject for a deliberate raw read).`,
-    )
-  }
-}
-
-/**
- * #api core/configuration
- * Reads a configuration value from a state model that has a `.configuration`
- * member (a track or display state model). For a raw configuration model, use
- * `readConfObject` instead.
- *
- * For a `promotable` slot, use `getConfResolved` instead — a raw `getConf`
- * skips the session-wide display-type-default tier of the cascade (a dev build
- * warns when this happens).
- *
- * @param model - object containing a 'configuration' member
- * @param slotPaths - array of paths to read
- * @param args - extra arguments e.g. for a feature callback,
- *   will be sent to each of the slotNames
- */
-export function getConf<
-  CONFMODEL extends AnyConfigurationModel,
-  SLOT extends
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] =
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
->(
-  model: { configuration: CONFMODEL },
-  slotPath?: SLOT,
-  args: Record<string, unknown> = {},
-): SLOT extends string
-  ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
-  : any {
-  if (process.env.NODE_ENV !== 'production' && typeof slotPath === 'string') {
-    warnIfPromotableRawRead(model.configuration, slotPath)
-  }
-  return readConfObject(model.configuration, slotPath, args)
-}
-
-/**
- * #api core/configuration
- * Write counterpart to `getConf`: sets a slot on a state model that has a
- * `.configuration` member (a track or display state model). Centralizes the
- * `configuration.setSlot` cast so mixins whose `self` isn't typed with
- * `configuration` don't each re-cast.
- *
- * @param model - object containing a 'configuration' member
- * @param slotName - the slot to write
- * @param value - the new value
- */
-export function setConf<
-  CONFMODEL extends AnyConfigurationModel,
-  SLOT extends
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string =
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
->(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
-  ;(
-    model.configuration as CONFMODEL & {
-      setSlot: (slotName: string, value: unknown) => void
-    }
-  ).setSlot(slotName, value)
 }
 
 /**

@@ -8,7 +8,7 @@
 // real, concrete modes.
 export const HEIGHT_MODE_VALUES = ['inherit', 'fixed', 'grow', 'fit'] as const
 
-// What a resolved `heightMode` getter (getConfResolved) returns — never the
+// What a resolved `heightMode` getter (getConf) returns — never the
 // `inherit` sentinel. `fixed` scrolls, `grow` resizes the track to fit all
 // content, `fit` shrinks content to fill the current height.
 export type HeightMode = 'fixed' | 'grow' | 'fit'

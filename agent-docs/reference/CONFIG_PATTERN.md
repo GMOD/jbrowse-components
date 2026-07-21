@@ -156,7 +156,7 @@ Where to put a new setting:
   serializes into the session and can take a declarative config default.
 - **Read-time default resolution** — when a value must resolve across tiers
   (config default → display-type/session default → per-instance pin), use the
-  promotable-slot mechanism / `getConfResolved` rather than a shadow property.
+  promotable-slot mechanism / `getConf` rather than a shadow property.
 - **Bespoke MST prop** — only for state that isn't a config slot (an ephemeral
   volatile, or a sentinel like `rowHeight === 0` = fit-to-height). When a prop
   encodes a sentinel, expose the resolved value under a distinct getter

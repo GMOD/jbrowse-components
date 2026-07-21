@@ -1,4 +1,4 @@
-import { getConf, getConfResolved } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
@@ -7,10 +7,7 @@ import {
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type {
-  AnyConfigurationModel,
-  PromotableDisplay,
-} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The mixin composes onto a display that supplies `configuration`, but that
@@ -30,9 +27,6 @@ const setConf = (self: unknown, slot: string, val: unknown) => {
 // `prefersOffset` is the optional per-display convention (BaseLinearDisplay)
 // signalling the track label is drawn above the plot, not overlapping it.
 const offsetNode = (self: unknown) => self as { prefersOffset?: boolean }
-// lineWidth is a promotable slot, read through the session-wide default cascade;
-// getConfResolved wants the display node itself (type + configuration + session).
-const promotableNode = (self: unknown) => self as PromotableDisplay
 
 /**
  * #stateModel WiggleScoreConfigMixin
@@ -125,13 +119,13 @@ export function WiggleScoreConfigMixin() {
        * #getter
        */
       get scatterPointSize(): number {
-        return getConfResolved(promotableNode(self), 'scatterPointSize')
+        return getConf(confNode(self), 'scatterPointSize')
       },
       /**
        * #getter
        */
       get lineWidth(): number {
-        return getConfResolved(promotableNode(self), 'lineWidth')
+        return getConf(confNode(self), 'lineWidth')
       },
       /**
        * #getter

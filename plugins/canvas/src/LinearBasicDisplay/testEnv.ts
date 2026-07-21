@@ -112,7 +112,7 @@ export function createTestEnvironment(opts?: {
       configuration: types.map(types.frozen()),
       // same shape as BaseSession's preferencesOverrides.displayTypeDefaults:
       // displayType -> slot -> value, reassigned wholesale so the promotable
-      // display getters (getConfResolved) track it reactively
+      // display getters (getConf) track it reactively
       displayTypeDefaults: types.frozen<
         Record<string, Record<string, unknown>>
       >({}),

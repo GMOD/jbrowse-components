@@ -15,6 +15,7 @@ export type {
 } from './types.ts'
 
 export * from './util.ts'
+export { getConf, setConf } from './getConf.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
 export {
@@ -23,9 +24,9 @@ export {
   makeSlotFacade,
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
+export type { PromotableDisplay } from './promotableResolve.ts'
 export {
   clearPromotedDefaults,
-  getConfResolved,
   getDisplayTypeDefaultChanges,
   isSlotCustomized,
   makeCurrentValueDisplayTypeDefaultControl,
@@ -33,7 +34,4 @@ export {
   makeSlotsValueDisplayTypeDefaultControl,
   resolvePromotableConfigSnapshot,
 } from './promotableDefaults.ts'
-export type {
-  DisplayTypeDefaultControl,
-  PromotableDisplay,
-} from './promotableDefaults.ts'
+export type { DisplayTypeDefaultControl } from './promotableDefaults.ts'

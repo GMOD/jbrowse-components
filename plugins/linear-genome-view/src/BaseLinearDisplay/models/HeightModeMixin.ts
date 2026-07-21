@@ -1,4 +1,4 @@
-import { getConf, getConfResolved } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
@@ -34,11 +34,11 @@ export default function HeightModeMixin<
       /**
        * #getter
        * The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable
-       * sentinel slot: getConfResolved walks the customized-track -> session-default
+       * sentinel slot: getConf walks the customized-track -> session-default
        * -> `fixed` cascade and never returns the `inherit` sentinel.
        */
       get heightMode(): HeightMode {
-        return getConfResolved<HeightMode>(
+        return getConf(
           self as unknown as TConf,
           'heightMode',
         )

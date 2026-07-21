@@ -415,7 +415,7 @@ export function WiggleCommonMixin() {
 > **Superseded:** `ConfigOverrideMixin` has since been removed. Settings that
 > override a config default now write the config slot directly via `setSlot`
 > (read via `getConf`), with read-time tier resolution handled by promotable
-> slots / `getConfResolved` (see `agent-docs/reference/CONFIG_PATTERN.md`). This
+> slots / `getConf` (see `agent-docs/reference/CONFIG_PATTERN.md`). This
 > subsection no longer applies — the extracted mixins have no override-mixin
 > dependency to carry.
 

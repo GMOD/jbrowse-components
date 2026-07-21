@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   ConfigurationSchema,
-  getConfResolved,
+  getConf,
 } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -63,22 +63,22 @@ function createDisplay() {
 describe.each([
   { slot: 'lineWidth', base: 1, promoted: 5 },
   { slot: 'scatterPointSize', base: 2, promoted: 6 },
-])('$slot', ({ slot, base, promoted }) => {
+] as const)('$slot', ({ slot, base, promoted }) => {
   test('resolves to its base with nothing promoted', () => {
     const { display } = createDisplay()
-    expect(getConfResolved(display, slot)).toBe(base)
+    expect(getConf(display, slot)).toBe(base)
   })
 
   test('follows a session-wide default', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault('TestDisplay', slot, promoted)
-    expect(getConfResolved(display, slot)).toBe(promoted)
+    expect(getConf(display, slot)).toBe(promoted)
   })
 
   test('can be pinned back to its base over a session-wide default', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault('TestDisplay', slot, promoted)
     display.configuration.setSlot(slot, base)
-    expect(getConfResolved(display, slot)).toBe(base)
+    expect(getConf(display, slot)).toBe(base)
   })
 })

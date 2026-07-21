@@ -70,7 +70,23 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
 //   dynamic JSON, so callers assert its shape at the read boundary; `unknown`
 //   would only add cast ceremony on legitimately-dynamic values.
 // jexl callbacks are declared to return the slot's own type, correct here too.
-type SlotValueFromDef<DEF> = DEF extends {
+//
+// A `promotable` slot with a `promotedBase` is a *sentinel* slot: its
+// `defaultValue` is the "inherit" signal (an `'inherit'` enum member, or the
+// `undefined` of a `maybe*`), which `getConf` resolves away and never returns.
+// So the read type excludes that sentinel — `Exclude<raw, defaultValue>` turns
+// e.g. `'inherit' | 'normal' | 'compact'` into `'normal' | 'compact'` and
+// `boolean | undefined` into `boolean`, matching what a resolved read yields. A
+// slot without `promotedBase` is unaffected (a plain `maybe*` still surfaces its
+// `undefined`).
+type SlotValueFromDef<DEF> = DEF extends { promotedBase: unknown }
+  ? Exclude<
+      SlotValueRawFromDef<DEF>,
+      DEF extends { defaultValue: infer S } ? S : never
+    >
+  : SlotValueRawFromDef<DEF>
+
+type SlotValueRawFromDef<DEF> = DEF extends {
   model: ISimpleType<infer T extends string>
 }
   ? T
