@@ -101,10 +101,12 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [assembliesNotFound](#getter-assembliesnotfound)                         | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [assemblyErrors](#getter-assemblyerrors)                                 | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [assembliesInitialized](#getter-assembliesinitialized)                   | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [initAssembly](#getter-initassembly)                                     | Getters    | LinearGenomeView                      | the assembly named by a pending `init`, or undefined when no init is set. `init`'s assembly isn't in `assemblyNames` yet (that derives from displayedRegions, still empty pre-navigation), so init-phase readiness and error checks resolve it directly through here.                                                                                                                                                                                   |
 | [initialized](#getter-initialized)                                       | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [hasDisplayedRegions](#getter-hasdisplayedregions)                       | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [loadingMessage](#getter-loadingmessage)                                 | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [hasSomethingToShow](#getter-hassomethingtoshow)                         | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [initPending](#getter-initpending)                                       | Getters    | LinearGenomeView                      | init is set but its async navigation (the afterAttach autorun) hasn't populated displayedRegions yet. `initialized` can already be true here (it only tracks assembly readiness), so without this the container would mount over empty regions and pxToBp/hover would throw.                                                                                                                                                                            |
 | [showLoading](#getter-showloading)                                       | Getters    | LinearGenomeView                      | Whether to show a loading indicator instead of the import form or view                                                                                                                                                                                                                                                                                                                                                                                  |
 | [showImportForm](#getter-showimportform)                                 | Getters    | LinearGenomeView                      | Whether to show the import form                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [scalebarHeight](#getter-scalebarheight)                                 | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -675,6 +677,28 @@ A wrong nesting depth simply yields no prefix.
 
 ```ts
 type scalebarDisplayPrefix = string | undefined
+```
+
+#### getter: initAssembly
+
+the assembly named by a pending `init`, or undefined when no init is set.
+`init`'s assembly isn't in `assemblyNames` yet (that derives from
+displayedRegions, still empty pre-navigation), so init-phase readiness and error
+checks resolve it directly through here.
+
+```ts
+type initAssembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
+```
+
+#### getter: initPending
+
+init is set but its async navigation (the afterAttach autorun) hasn't populated
+displayedRegions yet. `initialized` can already be true here (it only tracks
+assembly readiness), so without this the container would mount over empty
+regions and pxToBp/hover would throw.
+
+```ts
+type initPending = boolean
 ```
 
 #### getter: showLoading

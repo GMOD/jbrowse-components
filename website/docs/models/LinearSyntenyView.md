@@ -530,7 +530,7 @@ includes a subset of view menu options because the full list is a little
 overwhelming
 
 ```ts
-type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 5 more ... | { ...; })[]
+type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
 ```
 
 </details>
