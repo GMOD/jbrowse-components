@@ -251,23 +251,17 @@ jbrowse add-track genes.gff3.gz --load copy \
   --displayDefaults '{"mouseover":"jexl:feature.name","labels":{"description":"jexl:feature.note"}}'
 ```
 
-That covers every appearance recipe. This table maps each recipe family to the
-flag that carries it:
+That covers every appearance recipe. Four `add-track` flags carry all of them:
 
-| Recipe                                            | CLI                                                                       |
-| ------------------------------------------------- | ------------------------------------------------------------------------- |
-| [Colors](#colors), [height](#set-the-drawing-height) | `--color '<value>'`, `--height 200`                                    |
-| Labels, tooltips, `jexlFilters`, `colorBy`, `groupBy`, `scaleType`, `defaultRendering` | `--displayDefaults '<json>'`         |
-| A non-default display ([arc](#draw-features-as-arcs-with-a-jexl-computed-height), [matrix](#variant-tracks)) | `--config '{"displays":[{"type":"...","...":"..."}]}'` |
-| [`metadata`](#add-metadata-shown-in-the-track-details), [`formatDetails`](#customizing-the-feature-details-panel) | `--config '<json>'`  |
-| [Track selector category](#group-tracks-in-the-selector-with-categories) | `--category "RNA-seq,Brain"`                       |
-| [Refname aliases](#refname-aliases-chr1-vs-1-vs-nc_000001) | `jbrowse add-assembly genome.fa --refNameAliases aliases.txt`    |
-| [Synteny](#synteny-and-dotplot-tracks) query,target       | `jbrowse add-track out.paf -a peach,grape`                        |
-| [Opening view](#opening-to-a-specific-view-on-load) | `jbrowse set-default-session --session session.json`                    |
-| [Gene-name search](#text-searching-gene-name-search) | `jbrowse text-index`                                                   |
+| To set                                                                             | Flag                        |
+| ---------------------------------------------------------------------------------- | --------------------------- |
+| Color or height                                                                    | `--color`, `--height`       |
+| Any other display setting: labels, tooltips, `jexlFilters`, `colorBy`, `groupBy`, `scaleType`, `defaultRendering` | `--displayDefaults '<json>'` |
+| A non-default display (arc, matrix), or a top-level field like `metadata`/`formatDetails` | `--config '<json>'`   |
+| Track-selector folders                                                             | `--category "RNA-seq,Brain"` |
 
-Two flags cover the settings that aren't per-track. Alias chromosome names when
-you add the assembly:
+A few settings aren't per-track. Alias chromosome names when you add the
+assembly:
 
 ```bash
 jbrowse add-assembly genome.fa.gz --load copy --refNameAliases aliases.txt
