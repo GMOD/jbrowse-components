@@ -53,12 +53,12 @@ NCTC86  GCF_003697165.2
 EOF
 ```
 
-`gff3` pulls each strain's annotation down in the same call;
+`gff3` pulls each strain's annotation down in the same call, and
 [gene tracks](#add-gene-tracks) use it further below.
 
 Those four FASTAs become the JBrowse assemblies as-is. The PanSN names exist
 only inside the PAF, so make a separate concatenated copy for minimap2 rather
-than renaming the originals — the haplotype is always `1` here, since these are
+than renaming the originals. The haplotype is always `1` here, since these are
 haploid bacterial assemblies:
 
 ```bash
@@ -94,7 +94,7 @@ done
 Each assembly's reference sequence name is the plain `chr` from its FASTA,
 **not** the PanSN name. The PanSN prefix is how the adapter decides which strain
 a PAF record belongs to, and it strips that prefix before matching against the
-assembly — so `K12#1#chr` in the PAF resolves to `chr` in the `K12` assembly. An
+assembly, so `K12#1#chr` in the PAF resolves to `chr` in the `K12` assembly. An
 assembly whose refNames still carry the prefix matches nothing and draws an
 empty view. See the
 [assemblies configuration guide](/docs/config_guides/assemblies) for the
@@ -161,7 +161,7 @@ jbrowse add-track all_vs_all.pif.gz --adapterType AllVsAllIndexedPAFAdapter \
   -a CFT073,K12,NCTC86,Sakai --load copy
 ```
 
-Everything else about the track is unchanged — only the `adapter` block differs
+Everything else about the track is unchanged, only the `adapter` block differs
 from the un-indexed version above:
 
 ```json
@@ -175,7 +175,7 @@ from the un-indexed version above:
 
 `assemblyNames`, `assemblyNameToPanSN`, and stacking the rows all work as above.
 The `.pif.gz` keeps its PanSN sequence names, and `make-pif` emits a coarse
-zoomed-out tier by default so whole-genome views stay responsive — `--coarse`
+zoomed-out tier by default so whole-genome views stay responsive. `--coarse`
 tunes that tier and `--csi` swaps the TBI index for sequences longer than ~512
 Mb (not an issue for _E. coli_).
 
@@ -195,10 +195,10 @@ and you have the stacked view.
 
 **Manual** mode builds the stack by hand (**Add row** per strain, the connector
 button between each pair to pick its track) and inherits whatever Quick start
-had selected — but for an all-vs-all track Quick start already does all of this,
+had selected, but for an all-vs-all track Quick start already does all of this,
 so reach for Manual only when you want to start from a track and then adjust it.
 
-<Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its four assemblies in as rows; Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
+<Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its four assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
 ### Declaratively with defaultSession
 
@@ -244,15 +244,15 @@ to stack is a direct alignment rather than a transitive link.
 
 <Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all four strains, and the gaps are strain-specific islands." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-The gaps in those ribbons are where the strains actually differ — Sakai's
-largest carry its prophage Shiga-toxin genes, CFT073's are its own pathogenicity
+The gaps in those ribbons are where the strains actually differ. Sakai's largest
+carry its prophage Shiga-toxin genes, CFT073's are its own pathogenicity
 islands.
 
 ## Add gene tracks
 
 A gap is just absence of a ribbon, so on its own it only tells you the strains
 differ, not what they differ by. The annotations downloaded alongside each
-genome answer that. They need the same two adjustments the FASTA got — the GFF's
+genome answer that. They need the same two adjustments the FASTA got: the GFF's
 seqid is the chromosome accession, which has to become `chr` to match the
 assembly, and the plasmid features have to be dropped rather than renamed, since
 the assembly kept only the chromosome:
@@ -277,12 +277,12 @@ mistake here: Sakai's two plasmids contribute 183 features that would otherwise
 land on `chr` at coordinates that mean nothing.
 
 With genes loaded, the gaps become readable. Navigate Sakai's row to
-`chr:1,267,000-1,268,400` and the gap holds `stx2A` and `stx2B` — the
-Shiga-toxin subunits, sitting in a region where no alignment to K-12 exists at
-all. That absence is the point: these are the prophage-borne genes that make
-O157:H7 pathogenic and that K-12 simply does not carry.
+`chr:1,267,000-1,268,400` and the gap holds `stx2A` and `stx2B`, the Shiga-toxin
+subunits, sitting in a region where no alignment to K-12 exists at all. That
+absence is the point: these are the prophage-borne genes that make O157:H7
+pathogenic and that K-12 simply does not carry.
 
-<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The ribbon carries the backbone the two strains share — the tor operon, cbpA, wrbA — and runs out at Sakai 1,246,166. Everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
+<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The ribbon carries the backbone the two strains share (the tor operon, cbpA, wrbA) and runs out at Sakai 1,246,166. Everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
 The row order matters less than the framing: the K-12 window is placed where
 that shared block ends, so the ribbon terminating mid-figure _is_ the island
@@ -333,7 +333,7 @@ For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 whole-genome structure (inversions, translocations) that the stacked ribbons
 compress into crossings.
 
-**Scale it up.** Four strains fit in memory comfortably; a real pangenome of
+**Scale it up.** Four strains fit in memory comfortably, but a real pangenome of
 hundreds does not. [Index it with `make-pif`](#large-files-index-with-make-pif)
 and switch to `AllVsAllIndexedPAFAdapter`, as above.
 

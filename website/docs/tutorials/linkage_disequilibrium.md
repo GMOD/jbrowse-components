@@ -29,16 +29,16 @@ recently in dairying populations, dragging a long haplotype with it.
 
 Read the figure top to bottom and it makes one argument:
 
-1. **A causal variant.** ClinVar names rs4988235 as the lactase-persistence
-   allele — an independent annotation, not something derived from the genotypes
-   below it.
-2. **The block it dragged along.** The red triangle beneath it is the stretch of
-   SNPs correlated with each other, all inherited as a unit.
-3. **Where the block ends.** The correlation fades into the paler flanks, where
-   recombination has had time to break the haplotype apart.
+- **A causal variant.** ClinVar names rs4988235 as the lactase-persistence
+  allele, an independent annotation, not something derived from the genotypes
+  below it.
+- **The block it dragged along.** The red triangle beneath it is the stretch of
+  SNPs correlated with each other, all inherited as a unit.
+- **Where the block ends.** The correlation fades into the paler flanks, where
+  recombination has had time to break the haplotype apart.
 
 That bounded shape is the point. Neutral variation doesn't build a block this
-long at this frequency — recombination erodes it. A long, common, sharply
+long at this frequency, because recombination erodes it. A long, common, sharply
 bounded haplotype means it rose to frequency faster than recombination could
 break it up, which is the signature of a recent selective sweep.
 
@@ -55,7 +55,7 @@ Turn on the LD display's recombination track (`showRecombination`) to make block
 boundaries explicit: the 1 − r² curve between adjacent SNPs peaks in the white
 gaps (LD breaking down) and dips inside the red blocks (SNPs locked together).
 
-## LD is a local tool — mind the scale
+## LD is a local tool, so mind the scale
 
 The single most useful thing to know about the LD triangle is what it _cannot_
 show. It is a **local, kb-scale** view: it plots pairwise correlation between
@@ -63,9 +63,9 @@ the SNPs currently on screen, and pairwise r² decays with distance. It is
 excellent for a haplotype block a few kb to a few hundred kb wide.
 
 It is the wrong tool for a large, low-frequency structural variant. A megabase
-inversion segregating at ~10% frequency — like the _Drosophila_ `In(2L)t`
+inversion segregating at ~10% frequency (like the _Drosophila_ `In(2L)t`
 inversion in the
-[population genomics tutorial](/docs/tutorials/population_genomics) — barely
+[population genomics tutorial](/docs/tutorials/population_genomics)) barely
 registers in a pairwise LD triangle: within any local window the SNPs recombine
 normally, only the sparse arrangement-diagnostic SNPs carry the long-range
 signal, and they are diluted to invisibility by the common SNPs around them.
@@ -82,15 +82,15 @@ the Mb scale of a structural variant or a broad sweep.
 Two ways to supply the data, covered in full in the
 [variant track config guide](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display):
 
-- **Computed live from a VCF** — attach an `LDDisplay` to a normal
+- **Computed live from a VCF**: attach an `LDDisplay` to a normal
   `VariantTrack`. r² is computed from the genotypes in the visible region, so no
   extra files are needed, and phased genotypes give exact haplotypic r². This is
   what both figures above use.
-- **Precomputed with PLINK** — for large cohorts, or to publish a fixed matrix,
+- **Precomputed with PLINK**: for large cohorts, or to publish a fixed matrix,
   point an `LDTrack` at PLINK `--r2` output. This is the authoritative route
   when you want LD numbers that match a published analysis.
 
 Two display settings did most of the work in the figures above: the minor allele
 frequency filter (raised to thin the dense 1000 Genomes SNPs to the common,
-block-tagging ones — this also removes the noisy r² speckle from rare-allele
+block-tagging ones, which also removes the noisy r² speckle from rare-allele
 pairs) and the recombination track toggle used on the inversion figure.

@@ -6,22 +6,20 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-Population-genetic scans are per-window statistics running along the genome —
-Fst (differentiation between groups), nucleotide diversity (π) within a group,
-dxy (divergence between groups) — which is the same shape as a wiggle track. So
-once you've computed them from a multi-sample VCF, you can load them into
-JBrowse and read the peaks and troughs against genes.
-
-No single statistic is decisive on its own, so this tutorial reads Fst, π, and
-Tajima's D together. Stacking them on a shared genomic axis lets you see where
-the signals line up, which is what points to a selective sweep, an inversion, or
+Population-genetic scans are per-window statistics running along the genome: Fst
+(differentiation between groups), nucleotide diversity (π) within a group, dxy
+(divergence between groups). Each has the same shape as a wiggle track, so once
+you've computed them from a multi-sample VCF you can load them into JBrowse and
+read the peaks and troughs against genes. No single statistic is decisive on its
+own, so this tutorial stacks Fst, π, and Tajima's D on a shared genomic axis:
+where the signals line up is what points to a selective sweep, an inversion, or
 gene flow.
 
 The [Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
 compute-then-view loop in Python (a windowed Fst scan loaded straight from a
 DataFrame) and is available as a Colab notebook.
 
-JBrowse does no population-genetic inference itself — it just draws the windowed
+JBrowse does no population-genetic inference itself. It just draws the windowed
 statistic your tool produced. Everything below is a reproducible pipeline: each
 command runs against publicly hosted _Drosophila melanogaster_ data on the dm6
 assembly and produces bigWig tracks you can load. Along the way it reproduces
@@ -36,7 +34,7 @@ panel of 205 inbred lines from a single Raleigh, North Carolina population
   suppresses recombination there
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
   This megabase-scale signal is exactly what a windowed scan catches and a
-  pairwise [LD triangle](/docs/tutorials/linkage_disequilibrium) misses — see
+  pairwise [LD triangle](/docs/tutorials/linkage_disequilibrium) misses. See
   that tutorial for why the two tools work at different scales.
 - Genome-wide nucleotide diversity (π): the diversity landscape, dropping in
   low-recombination regions near the centromeres and at loci under selection
@@ -299,7 +297,7 @@ sits at low background Fst. Seeing all the arms at once is what makes the signal
 read as genuinely elevated, rather than a baseline with nothing to compare it
 to.
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines, a tall elevated block across the whole left arm of chromosome 2 (the inverted region, ~2.2–13.2 Mb) that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms. Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines, a tall elevated block across the whole left arm of chromosome 2 that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms."/>
 
 Then we use the search box to jump to `Cyp6g1` (on `2R`) and add the Tajima's D
 track from the pipeline alongside π. Both statistics dip together in the same
@@ -308,7 +306,7 @@ sharply negative while sitting near zero genome-wide. Seeing both drop in the
 same window is what marks a hard sweep, where either one alone would be
 ambiguous.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π drops to under a tenth of the arm-wide background in the same window. The joint dip is the expected footprint of a hard sweep at this insecticide-resistance gene."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π drops to under a tenth of the arm-wide background in the same window."/>
 
 Other resistance and selection loci can be examined the same way, reading the
 signal against the gene:
@@ -338,7 +336,7 @@ see which lines actually carry it, represent the whole arrangement as a single
 structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
 (`2L:2,225,744–13,154,180`), genotyped across every karyotyped line, and load it
 as a [multi-sample variant matrix](/docs/user_guides/multivariant_track). A
-per-SNP matrix can't hold a ~13 Mb inversion on screen: zoom out far enough to
+per-SNP matrix can't hold a ~11 Mb inversion on screen: zoom out far enough to
 see both breakpoints and the individual marker columns shrink to nothing. One SV
 call sidesteps that: the inversion is a single feature no matter how wide it is.
 

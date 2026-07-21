@@ -6,8 +6,8 @@ tutorial_category: Epigenomics & single cell
 ---
 
 JBrowse doesn't process single-cell data itself. To get the look of the
-gallery's "Single-cell ATAC by cell type (CATlas)" card — one coverage row per
-cell type — you first pseudobulk the data outside JBrowse: group cells by
+gallery's "Single-cell ATAC by cell type (CATlas)" card (one coverage row per
+cell type), you first pseudobulk the data outside JBrowse: group cells by
 cluster or cell-type label, sum their reads into one coverage track per group,
 and save each as a BigWig. Then you load all the BigWigs as a single MultiWiggle
 track, which stacks one row per file.
@@ -26,7 +26,7 @@ BigWigs and view them inline in the same session through the
 
 ## The pseudobulk idea
 
-A scATAC experiment gives a sparse per-cell signal — far too sparse to plot one
+A scATAC experiment gives a sparse per-cell signal, far too sparse to plot one
 cell at a time. Pseudobulking collapses each group of cells (a cluster or an
 annotated cell type) into a single aggregated coverage profile, which gives you
 a dense, bulk-ATAC-like track per group. With one BigWig per group loaded as
@@ -133,14 +133,14 @@ barcode→cluster map, then convert each group with standard tools:
 # clusters.tsv: two columns, "<barcode><TAB><cluster>"
 # fragments.tsv.gz columns: chrom  start  end  barcode  count
 
-# 1. split fragments into one BED per cluster (keep only that cluster's barcodes)
+# split fragments into one BED per cluster (keep only that cluster's barcodes)
 for cl in $(cut -f2 clusters.tsv | sort -u); do
   awk -v cl="$cl" 'NR==FNR{if($2==cl)keep[$1];next} ($4 in keep){print $1"\t"$2"\t"$3}' \
     clusters.tsv <(zcat fragments.tsv.gz) \
     | sort -k1,1 -k2,2n > "$cl.bed"
 done
 
-# 2. per cluster: genome-coverage bedGraph -> bigWig
+# per cluster: genome-coverage bedGraph -> bigWig
 for bed in *.bed; do
   name=$(basename "$bed" .bed)
   bedtools genomecov -bg -i "$bed" -g hg38.chrom.sizes \
@@ -172,7 +172,7 @@ web server ([desktop quickstart](/docs/quickstart_desktop)).
 
 Add a track object to your config's `tracks` array. Its `assemblyNames` must
 match an assembly already configured in JBrowse (the BigWigs above were built
-against `hg38`); if you don't have it set up yet, see the
+against `hg38`). If you don't have it set up yet, see the
 [assemblies configuration guide](/docs/config_guides/assemblies). Minimal
 three-cell-type example against hg38:
 

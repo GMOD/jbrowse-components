@@ -15,12 +15,12 @@ read to the reference: a C→T change at a cytosine means it was unmethylated, a
 a retained C means it was methylated.
 
 JBrowse 2 reads all of this straight off the aligned reads through its bisulfite
-color mode — no MM/ML tags and no external methylation caller needed to color
-the pileup. This tutorial runs the whole pipeline on real _Arabidopsis thaliana_
+color mode (no MM/ML tags and no external methylation caller needed to color the
+pileup). This tutorial runs the whole pipeline on real _Arabidopsis thaliana_
 data, from SRA reads to a colored browser view.
 
 Plants make a compelling example here. Mammals methylate almost entirely at CpG,
-but plants also methylate cytosines in three sequence contexts — CpG, CHG, and
+but plants also methylate cytosines in three sequence contexts: CpG, CHG, and
 CHH (where H is A, C, or T). JBrowse can restrict the coloring to any one
 context, so you can see all three on the same reads.
 
@@ -80,7 +80,7 @@ samtools index arabidopsis_wgbs.bam
 (The `_val_1`/`_val_2` inputs are Trim Galore's outputs from the previous step.
 If you skipped trimming, pass the raw
 `DRR029742_1.fastq.gz DRR029742_2.fastq.gz` instead. Bismark is an equally
-common aligner, especially in the plant community; JBrowse reads Bismark BAMs
+common aligner, especially in the plant community. JBrowse reads Bismark BAMs
 the same way.)
 
 ### (Optional) Aggregate methylation calling
@@ -175,7 +175,7 @@ See the [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent assembly JSON.
 
 The figure's top row is the TAIR10 gene models. They come with the reference
-(`datasets download genome accession GCF_000001735.4 --include gff3`); sort,
+(`datasets download genome accession GCF_000001735.4 --include gff3`). Sort,
 compress, and index the GFF3, then add it as a `FeatureTrack`:
 
 ```bash
@@ -185,7 +185,7 @@ jbrowse add-track tair10.gff.gz --name "TAIR10 genes" --load copy
 ```
 
 The Aggregate methylation row is the optional MethylDackel track from the
-section above. Load it too if you built the bigWigs, or leave it out; the
+section above. Load it too if you built the bigWigs, or leave it out. The
 per-read coloring below stands on its own.
 
 **Using JBrowse Desktop?** Every step here works identically on Desktop, which
@@ -198,7 +198,7 @@ Open the alignments track and, from the track menu, choose **Color by →
 Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
 cytosines). Methylated cytosines paint red, and the same submenu's **Show
 unmethylated (blue)** toggle adds the converted sites in blue. It's
-reference-based and only makes sense for bisulfite/EM-seq libraries — no MM/ML
+reference-based and only makes sense for bisulfite/EM-seq libraries. No MM/ML
 tags are involved.
 
 The figures below leave **Show unmethylated** off, for a methylated-only view
@@ -216,15 +216,15 @@ The figure below shows the three contexts at two levels: the gene annotation,
 the aggregate methylation track (one row per context, from MethylDackel, see the
 previous section), and then the same per-read pileup colored three separate
 ways, one copy per context. Over the gene body (left) only the CpG copy lights
-up red; over the silenced element (right) all three copies do.
+up red. Over the silenced element (right) all three copies do.
 
-<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn (methylated-only view). Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Red marks methylation; unmethylated sites are left blank." />
+<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn (methylated-only view). Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Red marks methylation, unmethylated sites are left blank." />
 
 Each per-read copy is just the same alignment track re-colored: switch a
 pileup's context with **Color by → Bisulfite / EM-seq**, then CpG / CHG / CHH /
 all (the last one marks every cytosine at once). Because the call is made per
 read, zooming in to the gene→element boundary lets you follow the methylation on
-individual molecules — in the CHG/CHH copies each read stays blank over the gene
+individual molecules: in the CHG/CHH copies each read stays blank over the gene
 body and picks up red (methylated) marks as it crosses into the silenced
 element.
 
@@ -257,7 +257,7 @@ bwameth, Trim Galore, and the NCBI
 CLI install from their own instructions, and `node` comes from
 [nodejs.org](https://nodejs.org/). The alignment step downloads a full WGBS run,
 so allow time and disk for it. The optional MethylDackel aggregate track above
-is left out of the script; add it by hand if you want it.
+is left out of the script. Add it by hand if you want it.
 
 ## See also
 

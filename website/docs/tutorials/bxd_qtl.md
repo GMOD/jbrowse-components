@@ -35,7 +35,7 @@ one Python or R session.
 
 GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`
 file. Each row is a marker (with a `cM` genetic-map and an mm10 `Mb` physical
-position, we use `Mb`); each column is a strain, with a one-letter genotype,
+position, we use `Mb`). Each column is a strain, with a one-letter genotype,
 `B`, `D`, `H` (heterozygous) or `U` (unknown):
 
 ```
@@ -182,7 +182,7 @@ expects a pre-computed `-log10(p)` value in the column named by
 [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) (that slot page
 shows its default name), so a file matching it needs no extra slots. For a
 differently-named or raw-p-value column, set `scoreColumn` and
-[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform); see the
+[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform). See the
 [GWAS track guide](/docs/config_guides/gwas_track).
 
 ```json
@@ -242,7 +242,7 @@ npx --yes serve bxd_demo/jbrowse2     # then open the printed URL
 ```
 
 It downloads JBrowse and the GeneNetwork/rqtl source files, builds the painting
-and both QTL scans next to it (coat color, trait `11280`, peaking on chr4; and
+and both QTL scans next to it (coat color, trait `11280`, peaking on chr4, plus
 brain weight, trait `10672`, the subtler chr19 peak), and writes a `config.json`
 that opens on mm10 chr4 with the coat-color scan over the painting. It needs
 `python3` (with `pandas`, `numpy`, `scipy`) and htslib (`bgzip`, `tabix`) on

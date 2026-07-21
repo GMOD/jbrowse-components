@@ -58,7 +58,7 @@ low-probability & unmodified in blue** (IGV's "2-color" scheme) also scans the
 read sequence for CpG dinucleotides and paints any CpG the MM tag left uncalled.
 The figure below shows the difference between the two.
 
-<Figure caption="The same nanopore track colored by type (top) and 2-color (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty; the 2-color mode paints every CpG, filling the region with the blue of the low-probability and unmarked ones." src="/img/alignments/modifications2.png" />
+<Figure caption="The same nanopore track colored by type (top) and 2-color (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty. The 2-color mode paints every CpG, filling the region with the blue of the low-probability and unmarked ones." src="/img/alignments/modifications2.png" />
 
 ## Aggregate methylation with modkit bedMethyl
 
@@ -149,7 +149,7 @@ reads into their two haplotypes, each CpG call painted red (5mC) or blue
 (unmethylated). Adding both to one view shows the aggregate profiles and the
 reads they summarize together.
 
-<Figure caption="Allele-specific methylation at the SNRPN / Prader-Willi imprinting center in HG002 ONT data. Top: modkit's phased bedMethyl loaded as one MultiQuantitativeTrack per haplotype (HP1, HP2), each a 0–100% 5mC profile — over the CpG island one allele is ~89% methylated while the other is ~10%. Bottom: the ONT reads those profiles summarize, grouped by HP and colored by methylation, HP1 methylated (red) and HP2 unmethylated (blue) read by read." src="/img/methylation/hg002_snrpn_combined.png" />
+<Figure caption="Allele-specific methylation at the SNRPN / Prader-Willi imprinting center in HG002 ONT data. Top: modkit's phased bedMethyl loaded as one MultiQuantitativeTrack per haplotype (HP1, HP2), each a 0–100% 5mC profile. Over the CpG island one allele is ~89% methylated while the other is ~10%. Bottom: the ONT reads those profiles summarize, grouped by HP and colored by methylation, HP1 methylated (red) and HP2 unmethylated (blue) read by read." src="/img/methylation/hg002_snrpn_combined.png" />
 
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
@@ -187,9 +187,8 @@ the no-enzyme control lacks.
 | Per-read BAM/CRAM coloring       | Haplotype-aware methylation, allele-specific methylation, individual read inspection         |
 | bedMethyl MultiQuantitativeTrack | Whole-genome methylation overview, comparing tumor vs normal, fast loading at any zoom level |
 
-The two are complementary rather than exclusive: keep the bedMethyl track for
-fast, whole-genome navigation to regions of interest, then drop the per-read
-CRAM/BAM below it for single-molecule and
+Keep the bedMethyl track for fast, whole-genome navigation to regions of
+interest, then drop the per-read CRAM/BAM below it for single-molecule and
 [allele-specific](#allele-specific-methylation-by-haplotype) detail once you're
 there.
 

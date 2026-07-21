@@ -45,10 +45,9 @@ into view:
 RNA is spliced before sequencing, so a read mapped back to the genome can skip
 across the introns that were removed. A spliced aligner like
 [STAR](https://github.com/alexdobin/STAR) records this by split-mapping the read
-— part aligns to one exon, part to the next — and encoding the skip in the
-read's CIGAR string. (CIGAR, the Compact Idiosyncratic Gapped Alignment Report,
-is the field in a SAM/BAM record that summarizes how a read aligns to the
-reference.)
+(part aligns to one exon, part to the next) and encoding the skip in the read's
+CIGAR string. (CIGAR, the Compact Idiosyncratic Gapped Alignment Report, is the
+field in a SAM/BAM record that summarizes how a read aligns to the reference.)
 
 A real spliced read from the ACTB pileup above (reads here are 51 bp) has a
 CIGAR like:
@@ -57,14 +56,14 @@ CIGAR like:
 18M 95N 33M
 ```
 
-(CIGAR strings normally have no spaces; they're added here for readability.)
+(CIGAR strings normally have no spaces, but are spaced here for readability.)
 That means 18 bp (`M`, match) aligned to one exon, a 95 bp skip (`N`) across the
 intron, and 33 bp (`M`) aligned to the next. ACTB's introns run from roughly 95
 bp to 860 bp, and every `N` in a read's CIGAR is one skipped intron.
 
 On the fly, JBrowse finds every read whose CIGAR contains a skip and draws each
-one as an arc. It also checks the splice signal — the GT/AG dinucleotides
-flanking the intron — to figure out the strand, so red arcs are forward-strand
+one as an arc. It also checks the splice signal (the GT/AG dinucleotides
+flanking the intron) to figure out the strand, so red arcs are forward-strand
 splice events and blue arcs are reverse-strand.
 
 If you zoom into the pileup with the compact display off, you can see each
@@ -85,7 +84,7 @@ The surfeit locus is a tightly-packed gene cluster with genes alternating
 strands (RPL7A, SURF1, SURF2, SURF4). Coloring each read by its fragment's
 strand cleanly separates them:
 
-<Figure caption="Enabling stranded coloring: open the track menu and choose Color by → Paired end → First of pair strand. Each read is then colored by its fragment's strand." src="/img/rnaseq/strand_specific.png" />
+<Figure caption="The same reads colored by first-of-pair strand: each read takes its fragment's transcription direction, so the oppositely-transcribed neighbors (RPL7A, SURF1, SURF2, SURF4) separate cleanly into two colors." src="/img/rnaseq/strand_specific.png" />
 
 ## Short reads vs long reads
 

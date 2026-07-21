@@ -23,7 +23,7 @@ The two views below open directly into that data.
 This tutorial assumes you already have a JBrowse 2 instance running (see the
 [web quickstart](/docs/quickstart_web), or the
 [desktop quickstart](/docs/quickstart_desktop) if you're on JBrowse Desktop).
-The CLI and config steps below are identical on both; on Desktop the two
+The CLI and config steps below are identical on both. On Desktop the two
 assembly FASTAs and the alignment are local files you can open straight from
 disk, with no web server. You will need:
 
@@ -38,16 +38,20 @@ To generate a PAF alignment, install
 minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 ```
 
-The `-x asm5` preset is tuned for whole-genome assembly comparison at up to ~5%
-divergence; step up to `asm10` or `asm20` for more divergent genomes (the _H.
-pylori_ strains this tutorial's demo uses are aligned with `asm20`, since
-same-species bacterial strains can still diverge well past 5%). `-c` emits the
-base-level CIGAR that the linear synteny view needs to draw alignments at base
-resolution. The `--eqx` flag tells minimap2 to distinguish matches (`=`) from
-mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment identity
-and offer the **Color by → Identity** mode described below. If you'd rather use
-[MUMmer](https://github.com/mummer4/mummer), convert its `.delta` output to PAF
-with `delta2paf` from
+The flags in that command each do one thing:
+
+- `-x asm5` is a preset tuned for whole-genome assembly comparison at up to ~5%
+  divergence. Step up to `asm10` or `asm20` for more divergent genomes (the _H.
+  pylori_ strains this tutorial's demo uses are aligned with `asm20`, since
+  same-species bacterial strains can still diverge well past 5%).
+- `-c` emits the base-level CIGAR that the linear synteny view needs to draw
+  alignments at base resolution.
+- `--eqx` tells minimap2 to distinguish matches (`=`) from mismatches (`X`) in
+  the CIGAR, which lets JBrowse compute per-alignment identity and offer the
+  **Color by → Identity** mode described below.
+
+If you'd rather use [MUMmer](https://github.com/mummer4/mummer), convert its
+`.delta` output to PAF with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
 convert UCSC chain files with `chain2paf` from the same toolkit. For small files
 you can even load `.delta` or `.chain` directly into JBrowse without converting.
@@ -159,7 +163,7 @@ each genome independently. On a gene track, the **Color by attribute** dialog
 deterministic color. In bacteria the gene symbol effectively _is_ the ortholog
 id, since NCBI uses standardized symbols across strains, so coloring every
 strain's gene track by the `gene` attribute makes orthologous genes share a
-color in every panel — and a gene's synteny becomes legible by color alone.
+color in every panel, and a gene's synteny becomes legible by color alone.
 
 ## Troubleshooting
 
@@ -220,11 +224,9 @@ default session that stacks all three in one linear synteny view. It requires:
 - `node`
 
 On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
-these. The NCBI
-[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-CLI is a single-binary download, and `node` comes from
-[nodejs.org](https://nodejs.org/). The same three `.paf` files also open in
-**Add → Dotplot view** — the `26695 vs J99` track is the non-adjacent pair the
+these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
+from [nodejs.org](https://nodejs.org/). The same three `.paf` files also open in
+**Add → Dotplot view**. The `26695 vs J99` track is the non-adjacent pair the
 dotplot figure above shows.
 
 ## See also

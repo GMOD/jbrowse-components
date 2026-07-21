@@ -49,8 +49,8 @@ tabix -p vcf variants.vcf.gz
 ## Build the config directory
 
 Point every command at the same output directory with `--out` (it is created if
-it doesn't exist). The first `add-assembly` writes `myproject/config.json`; each
-later command edits that same file in place.
+it doesn't exist). The first `add-assembly` writes `myproject/config.json`, and
+each later command edits that same file in place.
 
 ```bash
 # assembly: copies GRCh38.fa.gz and its .fai/.gzi index into myproject/
@@ -61,7 +61,7 @@ jbrowse add-track sample.bam --load copy --out myproject --name "My reads"
 jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variants"
 ```
 
-`--name hg38` is the assembly name you'll type into the location box; `--name`
+`--name hg38` is the assembly name you'll type into the location box. `--name`
 on a track is its label in the track list.
 
 `--load` says how the CLI places a local file relative to the config (omit it
@@ -72,7 +72,7 @@ for a remote URL, which is referenced in place):
 | `copy`    | Copy the file (and its index) into the config directory.           |
 | `move`    | Move it into the config directory.                                 |
 | `symlink` | Symlink it into the config directory (no data duplicated).         |
-| `inPlace` | Reference a file already staged in the directory; no file ops.     |
+| `inPlace` | Reference a file already staged in the directory, no file ops.     |
 | _(omit)_  | For a remote `https://…` URL, referenced directly, nothing copied. |
 
 Now `myproject/` is self-contained, with the config next to every file it needs:
@@ -122,8 +122,8 @@ config on both Desktop and the web.)
 
 The same config and data work on the web too. The relative paths resolve against
 the served config's URL instead of a local folder. JBrowse Web is a separate
-app, though, so serving `myproject/` on its own only hosts the files; you still
-need the browser app. Two ways to get there:
+app, though, so serving `myproject/` on its own only hosts the files, so you
+still need the browser app. Two ways to get there:
 
 - Build into a JBrowse Web install: run `jbrowse create jbrowse2` first and pass
   `--out jbrowse2` on the commands above, so the app and your config live in one

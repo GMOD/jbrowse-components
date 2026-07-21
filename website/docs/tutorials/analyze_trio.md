@@ -18,8 +18,8 @@ Kinh-Vietnamese trio HG02024, chr1 only:
 The phased multi-sample variant display below renders inline through the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser) in R), and the hap-ibd and ancestry paintings are the
-DataFrame-to-track pattern — compute a per-segment call, color a BED by it, no
-file written — so the whole analysis and its view fit in one Python or R
+DataFrame-to-track pattern (compute a per-segment call, color a BED by it, no
+file written), so the whole analysis and its view fit in one Python or R
 session.
 
 Everything here is on `hg38`, so set that assembly up first if you haven't (see

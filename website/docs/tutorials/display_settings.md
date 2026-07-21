@@ -106,7 +106,7 @@ state there through `config.json` (the
 
 The display settings can equivalently be nested under an explicit
 `displaySnapshot` key
-(`{ "trackId": "...", "displaySnapshot": { "height": 250 } }`); the inline form
+(`{ "trackId": "...", "displaySnapshot": { "height": 250 } }`). The inline form
 above is shorthand for it. Use the explicit form when you also need
 `trackSnapshot` to set track-config (not display) fields. See
 [URL parameters](/docs/urlparams) for the full session-spec format, including

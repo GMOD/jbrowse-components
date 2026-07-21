@@ -55,7 +55,7 @@ You will need:
     log2-ratio computation
 
 All of the data-preparation commands below are also collected into one
-reproducible script - see [Reproduce it end to end](#reproduce-it-end-to-end).
+reproducible script (see [Reproduce it end to end](#reproduce-it-end-to-end)).
 
 ## Install JBrowse 2 with Apache 2
 
@@ -308,61 +308,26 @@ Restricting to germline-heterozygous sites is deliberate: at a homozygous site
 the alt fraction is ~0 or ~1 regardless of copy number, so it carries no
 allelic-imbalance signal.
 
-<Figure caption="Chromosome 3, the two-panel CNV view: log2 ratio over the raw BAF over the benchmark CNV calls. The p-arm is a single-copy loss with LOH (negative log2, BAF split off 0.5); the q-arm is balanced (log2 near 0, BAF a single 0.5 band)." src="/img/sv_cgiab/cnv_log2_baf.png" />
+<Figure caption="Chromosome 3, the two-panel CNV view: log2 ratio over the raw BAF over the benchmark CNV calls. The p-arm is a single-copy loss with LOH (negative log2, BAF split off 0.5). The q-arm is balanced (log2 near 0, BAF a single 0.5 band)." src="/img/sv_cgiab/cnv_log2_baf.png" />
 
 ### Going further: haplotype-specific copy number with Wakhan
 
 The raw BAF above is exact per SNP, and its scatter keeps the LOH split visible
 at chromosome zoom (above). At whole-genome zoom, though, each on-screen pixel
-bins so many SNPs that they can no longer be plotted individually, and any
-per-bin _average_ of a raw LOH bin (a genuine mix of points near 0 and 1)
-collapses back toward ~0.5, indistinguishable from a balanced bin.
+bins so many SNPs that any per-bin _average_ of a raw LOH bin (a genuine mix of
+points near 0 and 1) collapses back toward ~0.5, indistinguishable from a
+balanced bin.
 
 The production fix is to compute the allelic signal _per haplotype_ rather than
 per allele. [Wakhan](https://github.com/KolmogorovLab/Wakhan) is a
-haplotype-specific long-read CNV caller that does this: it phases the normal's
-germline heterozygous SNPs, assigns each SNP's tumor read support to a
-haplotype, corrects phase-switch errors from coverage, and emits one summarized
-value per phase block. Because that value is already per-haplotype, the LOH
-signal stays clean instead of being averaged away. C-GIAB publishes Wakhan
-analyses for HG008-T.
-
-```bash
-# 1. phase the normal's germline hets against its own long reads
-# (longphase: https://github.com/twolinin/longphase — fast, ~1-3 min
-# genome-wide at 24 threads; works directly on a CRAM with -r for the
-# reference; any variant caller's VCF works as input, not just Clair3)
-longphase phase -s $GERMLINE_VCF -b $NORMAL -r $REF --pb -t 24 -o normal_phased
-bgzip normal_phased.vcf && tabix -p vcf normal_phased.vcf.gz
-
-# 2. tumor-normal mode: for each phased het SNP, pileup the tumor BAM for
-# allele-specific coverage, then segment copy number and estimate
-# purity/ploidy. --change-point-detection-for-cna (or a real --breakpoints
-# SV VCF, e.g. from Severus) is required or Wakhan silently no-ops; an empty
-# placeholder VCF also works and avoids an unrelated crash in segment export.
-printf '##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n' \
-  > empty_breakpoints.vcf
-python wakhan.py all --threads 24 --reference $REF --target-bam $TUMOR \
-  --normal-phased-vcf normal_phased.vcf.gz --genome-name HG008-T \
-  --change-point-detection-for-cna --breakpoints empty_breakpoints.vcf \
-  --out-dir-plots wakhan_out
-
-# 3. fold coverage_data/baf.csv (chrom,pos,minor_haplotype_fraction — ~0.5 in
-# balanced regions, ~0.0 under full LOH, i.e. already inverted relative to a
-# per-allele BAF) into a 0=balanced/0.5=LOH bedGraph, then to bigWig
-awk -F, '{print $1"\t"$2"\t"$2+50000"\t"(0.5-$3)}' wakhan_out/*/coverage_data/baf.csv \
-  | sort -k1,1 -k2,2n > HG008-T_baf_folded.bedgraph
-bedGraphToBigWig HG008-T_baf_folded.bedgraph GRCh38_GIABv3.chrom.sizes HG008-T_baf_folded.bw
-
-jbrowse add-track HG008-T_baf_folded.bw --out $OUT --category "CNV" --load move
-```
-
-Wakhan's `bed_output/` carries haplotype-specific copy-number segments
-(`total`/`hap1`/`hap2` columns), the same shape the benchmark CNV-calls track
-already labels explicitly in the chr17 and driver walkthroughs, so they drop
-straight into a labeled feature track. (Wakhan also writes a per-haplotype BAF
-bigWig; the figures in this tutorial keep the raw per-SNP BAF, which reads
-directly as allele fraction.)
+haplotype-specific long-read CNV caller that phases the normal's germline
+heterozygous SNPs, assigns each SNP's tumor read support to a haplotype, and
+emits one summarized value per phase block, so the LOH signal stays clean
+instead of being averaged away. C-GIAB publishes Wakhan analyses for HG008-T,
+and Wakhan's `bed_output/` carries haplotype-specific copy-number segments
+(`total`/`hap1`/`hap2` columns) that drop straight into a labeled feature track.
+The figures in this tutorial keep the raw per-SNP BAF, which reads directly as
+allele fraction and is enough for the copy-number states shown below.
 
 ### From signal to calls
 
@@ -465,11 +430,10 @@ instance.
 
 ### Walkthrough: a chr3–chr13 translocation
 
-Open `http://yourhost.com/jbrowse2/` or the
-[live demo](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json)
-in a web browser. From the start screen, launch the SV inspector, then use
-**Open from track** to pick the C-GIAB benchmark VCF you loaded earlier. The
-result is a combined data table and circular overview of the SV calls.
+Open `http://yourhost.com/jbrowse2/` (or the live demo linked above) in a web
+browser. From the start screen, launch the SV inspector, then use **Open from
+track** to pick the C-GIAB benchmark VCF you loaded earlier. The result is a
+combined data table and circular overview of the SV calls.
 
 <Figure caption="The SV inspector showing the benchmark VCF as a circular overview alongside a table of calls." src="/img/sv_cgiab/translocation_sv_inspector_view.png" />
 
@@ -482,8 +446,8 @@ connecting the two chromosomes.
 
 The same junction can be read as a contact heatmap. Binning the tumor Illumina
 read pairs into a `.hic` file turns each rearrangement into an off-diagonal
-spot, Hi-C style; here the chr3↔chr13 fusion pairs pile up into one bright
-inter- chromosomal block. See the
+spot, Hi-C style. Here the chr3↔chr13 fusion pairs pile up into one bright
+inter-chromosomal block. See the
 [read-pair heatmaps tutorial](/docs/tutorials/readpair_heatmap) for the
 pipeline.
 
@@ -500,7 +464,7 @@ the **search** (magnifying glass) button in the SV inspector to find a specific
 call, for example `SV_85`, a heterozygous deletion that affects two exons of the
 CUZD1 gene.
 
-<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The SVTYPE column reports a DEL; clicking the row's location link opens it in the linear genome view below, drawn as the <DEL> ALT allele above the NCBI RefSeq gene track." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
+<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The SVTYPE column reports a DEL. Clicking the row's location link opens it in the linear genome view below, drawn as the <DEL> ALT allele above the NCBI RefSeq gene track." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Opening the gene annotations and the tumor PacBio HiFi reads, switching the
 reads to **compact** mode and applying **Sort by base pair** (both from the
@@ -574,7 +538,7 @@ Plotted with the default line/area rendering, this resolves the deletion's
 boundaries: depth drops to 0 at the deletion edges, matching the benchmark call
 closely.
 
-<Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (compact), the per-base coverage BigWig, the PacBio HiFi read pileup, and the benchmark CNV calls. Coverage drops to 0 and the pileup gaps right at the deletion's edges. The pileup has 'View as pairs / link supplementary alignments' on, so each read and its split segments chain onto one row; the salmon reads are split long-read alignments spanning the breakpoints (colored by strand: salmon forward, purple reverse)." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (compact), the per-base coverage BigWig, the PacBio HiFi read pileup, and the benchmark CNV calls. Coverage drops to 0 and the pileup gaps right at the deletion's edges. The pileup has 'View as pairs / link supplementary alignments' on, so each read and its split segments chain onto one row. The salmon reads are split long-read alignments spanning the breakpoints (colored by strand: salmon forward, purple reverse)." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 
@@ -624,7 +588,7 @@ though the shift here is more muted than the chr17 example.
 
 Dedicated callers ([HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV),
 [Wakhan](https://github.com/KolmogorovLab/Wakhan)) model subclonal fraction and
-ploidy explicitly; this walkthrough reads the raw signal off the tracks. See
+ploidy explicitly. This walkthrough reads the raw signal off the tracks. See
 also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for
 tumor vs normal coverage comparison.
@@ -651,7 +615,7 @@ Use **Open linear synteny view** from the drag selection, then enter
 **minimum alignment length** (in the synteny view's menu) drops short, noisy
 anchors so the large syntenic blocks read clearly.
 
-<Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot; base-level alignment makes the breakpoints easy to read. The minimum alignment length was raised (to ~50kb) to drop short, noisy anchors so the large syntenic blocks read clearly." src="/img/sv_cgiab/synteny_view.png" />
+<Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot. Base-level alignment makes the breakpoints easy to read. The minimum alignment length was raised (to ~50kb) to drop short, noisy anchors so the large syntenic blocks read clearly." src="/img/sv_cgiab/synteny_view.png" />
 
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
@@ -674,19 +638,11 @@ If you hit a problem not covered above, please file an issue on the
 Now that you've explored the C-GIAB HG008 dataset, you can:
 
 - Load your own SV data by replacing the C-GIAB VCF and BAM files with your own
-  calls and sequencing data. The same workflows apply. The main difference is
-  that your dataset may have different characteristics (e.g., smaller deletions,
-  germline calls, SNVs instead of SVs).
+  calls and sequencing data.
 - Customize track displays with different color schemes (pair orientation,
   insert size), read filtering (discordant pairs, soft-clipped), and display
   modes (pileup, read arc, linked reads) to find the visualization that best
   highlights your findings.
-- Use JBrowse Desktop, since all of these workflows work identically in JBrowse
-  2 Desktop (Mac, Windows, Linux), which can load files from your local machine
-  without needing a web server.
-- Design a de novo assembly alignment. If you have a phased or
-  haplotype-resolved assembly of your own sample, follow the minimap2 steps
-  above to create a dotplot and synteny view.
 
 For more on customizing JBrowse 2, see the
 [SV visualization guide](/docs/user_guides/sv_visualization).

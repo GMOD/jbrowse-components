@@ -17,12 +17,10 @@ per-cell-type segmentation BEDs into a single multi-row BED, and how to
 configure the multi-row feature display so the file draws as one color-coded row
 per cell type.
 
-Turning a table of colored intervals into a feature track is the
-DataFrame-to-track pattern shown in the
+Building the colored-interval BED is the DataFrame-to-track pattern shown in the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
-[JBrowseR](/docs/jbrowser) in R): build the BED in pandas or an R data frame,
-color each feature by its state, and load it with no file written. The multi-row
-stacking below is a display setting you add on top.
+[JBrowseR](/docs/jbrowser) in R), so you can build and view it in one session
+with no file written.
 
 <Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type, each feature colored by its chromatin state via the BED itemRgb field. White regions are the Quiescent/Low state, which is white in the standard 15-state palette."/>
 
@@ -157,7 +155,7 @@ slot only to override that.
 `wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point
 `bedGzLocation` at the local path), no web server needed. See the
 [desktop quickstart](/docs/quickstart_desktop). (A bigBed loaded with a
-`BigBedAdapter` works too, and is what the hosted demo below uses; the
+`BigBedAdapter` works too, and is what the hosted demo below uses, while the
 tabix-indexed BED just skips the conversion and chrom.sizes step.)
 
 ## Scaling up: 127 epigenomes

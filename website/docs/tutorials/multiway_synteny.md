@@ -162,7 +162,8 @@ columns on their shared grape gene, but that link is transitive rather than a
 direct alignment. So row order is a real choice. When one genome dominates
 (grape's 19 chromosomes against peach's 8 or cacao's 10), put the cleaner pair
 on top. Otherwise put the reference in the middle (peach – grape – cacao) so
-every band is direct.
+every band is direct. The demo above deliberately stacks grape on the bottom
+instead, to show the transitive-band layout in action.
 
 ## Zooming to a conserved block
 

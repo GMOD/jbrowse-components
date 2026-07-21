@@ -39,7 +39,7 @@ samtools view -H "$BAM" | awk -F'\t' '/^@SQ/{for(i=1;i<=NF;i++){if($i~/^SN:/)n=s
 ```
 
 Then emit one contact per read pair. Each pair becomes a Juicer "short format"
-line joining the two ends; `.hic` bins by fixed resolution, so the
+line joining the two ends. `.hic` bins by fixed resolution, so the
 restriction-fragment columns are dummies:
 
 ```bash
@@ -56,7 +56,7 @@ samtools view -q 20 -f 65 -F 2316 chr3q.bam \
 `-f 65` keeps one record per pair (paired, first-in-pair) and `-F 2316` drops
 unmapped, mate-unmapped, secondary, and supplementary reads. This keeps _every_
 pair, which produces the Hi-C-like insert-size diagonal plus off-diagonal SV
-signal. Cue instead emphasises the discordant channels, and it helps here too:
+signal. Cue instead emphasizes the discordant channels, and it helps here too:
 keeping only pairs with an abnormal insert size, wrong orientation, or a mate on
 another chromosome drops the diagonal and leaves the breakpoint signal alone.
 The repo ships
@@ -80,15 +80,15 @@ breakpoint spots read dark while the scattered background fades toward white.
 ## Reading the signatures
 
 The figures below are discordant-pair maps of the HG008-T tumor. The shaded
-columns mark benchmark breakpoints; each SV sits where a pair of those columns
+columns mark benchmark breakpoints. Each SV sits where a pair of those columns
 crosses.
 
 <Figure caption="A read-pair heatmap over a 3 Mb chr3q window. The off-diagonal dot where the two left shaded columns meet is the junction of a 1.4 Mb tandem duplication (benchmark SV_22, 182.47-183.89 Mb): its spanning pairs join the duplication's far end back to its start. Distance from the diagonal is the duplication length." src="/img/readpair_heatmap_chr3q.png" />
 
 A tandem duplication produces pairs that span its junction in an outward-facing
 orientation, joining the duplication's end back to its start, so it reads as a
-single off-diagonal spot. A deletion looks similar but closer to the diagonal;
-an inversion flips pair orientation, and a translocation lands the two ends on
+single off-diagonal spot. A deletion looks similar but closer to the diagonal.
+An inversion flips pair orientation, and a translocation lands the two ends on
 different chromosomes.
 
 <Figure caption="The chr3↔chr13 translocation (benchmark SV_20, chr3:139,976,414 to chr13:114,353,244), the same junction the C-GIAB tutorial drills into with a breakpoint split view. A two-region view (chr3 window left, chr13 window right) renders the inter-chromosomal block of the matrix, and the read pairs spanning the fusion pile up into one bright spot linking the two chromosomes." src="/img/readpair_heatmap_translocation.png" />
@@ -104,7 +104,7 @@ sense:
 **One `.hic` per orientation, loaded as separate tracks.** Split the discordant
 pairs by the signature they carry and build a `.hic` from each. The strand of
 each mate comes straight from the flag, so the filter is a one-line predicate on
-the contact stream — for example, keep only same-strand pairs for the inversion
+the contact stream. For example, keep only same-strand pairs for the inversion
 channel:
 
 ```bash
@@ -114,14 +114,14 @@ awk '(and($2,16)?1:0) == (and($2,32)?1:0)' chr3q.contacts.txt > chr3q.inv.txt
 
 Do the same for outward-facing large-insert pairs (deletions / tandem
 duplications) and inter-chromosomal pairs (translocations), `pre` each, and load
-the tracks side by side — each with its own color ramp. Which track lights up at
+the tracks side by side, each with its own color ramp. Which track lights up at
 a locus reads out the orientation channel.
 
 **A BEDPE arc track, where color is the channel.** Emitting the discordant pairs
 as BEDPE and rendering them with JBrowse's paired-arc display (`BedpeAdapter` +
 `LinearPairedArcDisplay`) draws each pair as an arc, and a `jexl` color
 expression on an orientation column paints inversions, deletions, and
-duplications in different colors within a single track — the closest one-track
+duplications in different colors within a single track, the closest one-track
 analogue to Cue's stacked channels.
 
 ## What this is and isn't
@@ -129,8 +129,8 @@ analogue to Cue's stacked channels.
 Because only discordant pairs contribute, the map is sparse: an isolated event
 is one spot, not the dense fill of a true Hi-C experiment. Scanning a whole
 chromosome this way turns each rearrangement into one such spot, so it is a
-fast, caller-free way to see rearrangement structure at a glance; it
-complements, rather than replaces, a dedicated SV caller.
+fast, caller-free way to see rearrangement structure at a glance. It complements
+rather than replaces a dedicated SV caller.
 
 ## Reproduce it end to end
 
