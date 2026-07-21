@@ -218,6 +218,17 @@ export const trackFields: Record<string, FieldRecipe> = {
   maxHeight: numberField(n => ({
     path: `${TRACK_MENU} → Show... → Set max layout height... → ${n}`,
   })),
+  // Two inline sliders under the multi-sample variant "Filter by..." submenu
+  // (labels verified in shared/multiSampleVariantMenuItems.ts). Both re-fetch
+  // on release; a value of 0 (MAF) / 1 (missingness) turns the filter off.
+  minorAlleleFrequencyFilter: numberField(n => ({
+    path: `${TRACK_MENU} → Filter by... → Minor allele frequency → ${n.toFixed(2)}`,
+    note: 'Hides variants whose minor allele frequency is below this.',
+  })),
+  maxMissingnessFilter: numberField(n => ({
+    path: `${TRACK_MENU} → Filter by... → Missingness → ${n.toFixed(2)}`,
+    note: 'Hides variants whose fraction of no-call genotypes is above this; 1 keeps every variant.',
+  })),
   defaultRendering: renderingTypeStep,
   summaryScoreMode: fromTable('Score → Summary score mode', SUMMARY_SCORE_MODES),
   showDescriptions: checkbox('Show... → Show descriptions'),

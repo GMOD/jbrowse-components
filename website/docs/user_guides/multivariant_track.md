@@ -33,6 +33,46 @@ homozygosity, and population structure become visible at a glance.
 
 <Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype (two per sample), each cell shaded reference vs alt allele. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
 
+## Filtering by allele frequency and missingness
+
+Two inline sliders in the track menu thin a dense callset down to the variants
+worth looking at, with no Jexl expression to write. Both live under **Track menu
+→ Filter by...** and re-fetch as you release the slider:
+
+- **Minor allele frequency** hides variants whose minor allele frequency falls
+  below the threshold, so singletons and near-monomorphic sites drop out and the
+  common, population-informative variants remain.
+- **Missingness** hides variants whose fraction of no-call genotypes rises above
+  the threshold. Its
+  [default](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-maxmissingnessfilter)
+  keeps every variant; lowering it drops the poorly-genotyped columns that are
+  mostly missing data.
+
+Missingness is especially useful on a matrix display, where each variant takes a
+full column no matter how many of its genotypes are no-calls. The tetraploid
+potato callset below is dominated by no-call (yellow) columns until the ceiling
+is lowered to 0.1, which drops every variant with more than 10% missing
+genotypes and leaves the well-genotyped sites.
+
+<Figure src="/img/variants/potato_missingness.png" links="No filter=variants/potato_missingness_before,Max missingness 0.1=variants/potato_missingness_after" caption="Tetraploid potato multi-sample VCF as a genotype matrix. Top: the default missingness ceiling keeps every variant, and no-call (yellow) columns dominate. Bottom: a 0.1 ceiling drops variants with more than 10% no-call genotypes, so the remaining columns are the well-genotyped homozygous-reference, heterozygous, and homozygous-alt sites." />
+
+Set either filter declaratively with the
+[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
+and
+[`maxMissingnessFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-maxmissingnessfilter)
+display slots:
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "maxMissingnessFilter": 0.1
+    }
+  ]
+}
+```
+
 ## Genotype coloring: allele dosage vs phased
 
 Both the regular and matrix displays color each genotype cell, and how they
