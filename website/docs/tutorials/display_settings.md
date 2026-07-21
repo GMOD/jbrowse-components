@@ -3,7 +3,7 @@ title: Display settings
 description:
   Set track display settings via config.json, URL, or embedded session
 guide_category: Tutorials
-tutorial_category: Getting started
+tutorial_category: Configuration & embedding
 ---
 
 Track display settings (height, color scheme, display type, score range, and so

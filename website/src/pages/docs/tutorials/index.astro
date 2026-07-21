@@ -11,12 +11,12 @@ import { entrySlug } from '../../../lib/docs-sidebar.ts'
 // even before it is categorized.
 const CATEGORY_ORDER = new Set([
   'Getting started',
-  'Configuration & embedding',
   'Synteny & comparative genomics',
   'Structural variation',
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',
+  'Configuration & embedding',
 ])
 const FALLBACK = 'More tutorials'
 
@@ -26,22 +26,19 @@ const GETTING_STARTED_DOCS = new Set(['quickstart_web', 'quickstart_desktop'])
 
 // Curated order within each section. Sorting alphabetically floated niche pages
 // to the top (the CLI config walkthrough once led Getting started); instead lead
-// with the most representative / beginner-friendly page. Getting started opens
-// with the two quickstarts, then the more advanced display-settings page; the
-// developer/admin-oriented embedding and CLI-config walkthroughs live in their
-// own Configuration & embedding section. Anything unlisted falls after,
-// alphabetically.
+// with the most representative / beginner-friendly page. Getting started is just
+// the two quickstarts; the domain analysis sections follow; and the more
+// advanced, developer/admin-oriented configuration work (display defaults,
+// embedding, CLI-config walkthroughs) sits last in its own Configuration &
+// embedding section. Anything unlisted falls after, alphabetically.
 const ORDER = [
   'quickstart_web',
   'quickstart_desktop',
-  'display_settings',
-  'embed_linear_genome_view',
-  'embedding_examples',
-  'cli_desktop',
   'synteny_visualization',
   'multiway_synteny',
   'allvsall_synteny',
   'pangenome',
+  'pangenome_cactus',
   'sv_visualization_cgiab',
   'sv_multisamples',
   'readpair_heatmap',
@@ -55,6 +52,10 @@ const ORDER = [
   'scatac_pseudobulk',
   'rnaseq',
   'protein_structure',
+  'display_settings',
+  'embed_linear_genome_view',
+  'embedding_examples',
+  'cli_desktop',
 ]
 const rank = (key: string) => {
   const i = ORDER.indexOf(key)
