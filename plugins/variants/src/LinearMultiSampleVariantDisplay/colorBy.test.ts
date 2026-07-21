@@ -44,6 +44,18 @@ describe('multi-sample variant colorBy', () => {
     expect(byName.HG001).not.toBe(byName.HG002)
   })
 
+  it('preserves an active groupBy ordering when recoloring', () => {
+    const model = makeModel()
+    model.setSources(sources)
+    // group by population: EUR (2 members) sorts ahead of AFR (1)
+    model.setGroupBy('population')
+    expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
+
+    // recoloring must keep the grouped order, not revert to adapter order
+    model.setColorBy('sex')
+    expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
+  })
+
   it('clears the grouping when set to empty', () => {
     const model = makeModel()
     model.setSources(sources)

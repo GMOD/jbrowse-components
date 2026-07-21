@@ -102,6 +102,7 @@ export function useVariantCanvasInteraction<H>(opts: {
       onMenuItemClick={callback => {
         callback()
         setContextMenuCoord(undefined)
+        model.setContextMenuFeature(undefined)
       }}
       onClose={() => {
         setContextMenuCoord(undefined)

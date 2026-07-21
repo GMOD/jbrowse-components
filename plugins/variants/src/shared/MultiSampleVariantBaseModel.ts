@@ -191,6 +191,21 @@ export function maybeApplyGroupBy<S extends Record<string, unknown>>(
   return undefined
 }
 
+// Apply the active colorBy palette and groupBy ordering in one pass, the shared
+// arrangement every layout-resetting action wants: color first, then group the
+// colored rows so a track can set both and get grouped-and-colored together.
+// Returns `[]` when neither applies, the "no arrangement" layout. Keeping this
+// in one place is why setSources/setColorBy/setGroupBy/clearLayout can't drift
+// apart (e.g. recoloring silently dropping an active grouping).
+function arrangeSources(
+  colorBy: string,
+  groupBy: string,
+  sources: Source[],
+): Source[] {
+  const colored = maybeApplyColorByPalette(colorBy, sources)
+  return maybeApplyGroupBy(groupBy, colored ?? sources) ?? colored ?? []
+}
+
 // Regions to fetch + render, by mode. Regular mode draws each variant at its
 // genomic position, so off-screen buffered features simply clip — use the
 // half-screen-buffered regions for smooth scrolling. Matrix mode lays columns
@@ -235,18 +250,11 @@ async function callMultiSampleVariantCellData(args: {
     featureColor: string
   }
   mode: 'regular' | 'matrix'
-  setStatusMessage: (status?: RpcStatus) => void
+  statusCallback: (status: RpcStatus) => void
   ctx: FetchContext
 }): Promise<CellDataResult> {
-  const {
-    node,
-    adapterConfig,
-    regions,
-    rpcProps,
-    mode,
-    setStatusMessage,
-    ctx,
-  } = args
+  const { node, adapterConfig, regions, rpcProps, mode, statusCallback, ctx } =
+    args
   const sessionId = getRpcSessionId(node)
   return getSession(node).rpcManager.call(
     sessionId,
@@ -258,11 +266,7 @@ async function callMultiSampleVariantCellData(args: {
       mode,
       adapterConfig,
       stopToken: ctx.stopToken,
-      statusCallback: (status: RpcStatus) => {
-        if (isAlive(node)) {
-          setStatusMessage(status)
-        }
-      },
+      statusCallback,
     },
   )
 }
@@ -649,14 +653,10 @@ export default function MultiSampleVariantBaseModelF(
           }
           self.sourcesVolatile = sources
           // Apply the colorBy palette and groupBy ordering only when the user
-          // hasn't already arranged the layout themselves. groupBy runs on the
-          // colored rows so a config can set both and get grouped-and-colored
-          // in one pass.
+          // hasn't already arranged the layout themselves.
           if (self.layout.length === 0) {
-            const colored = maybeApplyColorByPalette(self.colorBy, sources)
-            const grouped = maybeApplyGroupBy(self.groupBy, colored ?? sources)
-            const next = grouped ?? colored
-            if (next) {
+            const next = arrangeSources(self.colorBy, self.groupBy, sources)
+            if (next.length) {
               self.layout = next
             }
           }
@@ -664,16 +664,16 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #action
          * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-         * pass '' to clear the grouping. Persists the colored arrangement as the
-         * layout and records the choice in the `colorBy` config slot so it
-         * survives a data refetch and serializes into the session.
+         * pass '' to clear the coloring. Persists the arrangement as the layout
+         * and records the choice in the `colorBy` config slot so it survives a
+         * data refetch and serializes into the session. Re-applies `groupBy` in
+         * the same pass so recoloring doesn't drop an existing grouping.
          */
         setColorBy(colorBy: string) {
           self.configuration.setSlot('colorBy', colorBy)
           const sources = self.sourcesVolatile
           if (sources) {
-            const colored = maybeApplyColorByPalette(colorBy, sources)
-            self.layout = colored ?? []
+            self.layout = arrangeSources(colorBy, self.groupBy, sources)
           }
         },
         /**
@@ -689,9 +689,7 @@ export default function MultiSampleVariantBaseModelF(
           self.configuration.setSlot('groupBy', groupBy)
           const sources = self.sourcesVolatile
           if (sources) {
-            const colored = maybeApplyColorByPalette(self.colorBy, sources)
-            const base = colored ?? sources
-            self.layout = maybeApplyGroupBy(groupBy, base) ?? colored ?? []
+            self.layout = arrangeSources(self.colorBy, groupBy, sources)
           }
         },
         /**
@@ -704,13 +702,9 @@ export default function MultiSampleVariantBaseModelF(
         clearLayout() {
           self.clusterTree = undefined
           const sources = self.sourcesVolatile
-          if (!sources) {
-            self.layout = []
-          } else {
-            const colored = maybeApplyColorByPalette(self.colorBy, sources)
-            const grouped = maybeApplyGroupBy(self.groupBy, colored ?? sources)
-            self.layout = grouped ?? colored ?? []
-          }
+          self.layout = sources
+            ? arrangeSources(self.colorBy, self.groupBy, sources)
+            : []
         },
         /**
          * #action
@@ -1284,7 +1278,7 @@ export default function MultiSampleVariantBaseModelF(
               regions,
               rpcProps,
               mode: cellDataMode,
-              setStatusMessage: self.setStatusMessage,
+              statusCallback: self.makeStatusCallback(),
               ctx,
             })
             if (!ctx.isStale() && isAlive(self)) {

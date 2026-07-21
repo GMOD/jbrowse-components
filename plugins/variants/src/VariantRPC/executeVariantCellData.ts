@@ -416,7 +416,7 @@ export async function executeVariantCellData({
     svTypeColors,
     simplifiedFeatures,
   } = await withProgress(
-    { ...progressOpts, label: 'Computing sample info', total: mafs.length },
+    { ...progressOpts, label: 'Analyzing variants', total: mafs.length },
     report => computeSampleInfo(mafs, genotypesCache, report),
   )
   const hasSvType = Object.keys(svTypeColors).length > 0
