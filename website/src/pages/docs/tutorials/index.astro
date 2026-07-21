@@ -111,6 +111,24 @@ const tutorials = [
   ...EXTERNAL_CARDS,
 ].sort((a, b) => rank(a.key) - rank(b.key) || a.title.localeCompare(b.title))
 
+// A mistyped tutorial_category isn't a visible typo — it silently drops the page
+// into the FALLBACK bucket. Fail the build instead so the frontmatter and
+// CATEGORY_ORDER can't drift apart. Tutorials with no category are fine; they
+// intentionally fall through to FALLBACK.
+const miscategorized = docs
+  .filter(entry => entry.id.startsWith('tutorials/'))
+  .filter(
+    entry =>
+      entry.data.tutorial_category &&
+      !CATEGORY_ORDER.has(entry.data.tutorial_category),
+  )
+  .map(entry => `${entry.id}: "${entry.data.tutorial_category}"`)
+if (miscategorized.length > 0) {
+  throw new Error(
+    `Unknown tutorial_category (add it to CATEGORY_ORDER or fix the typo):\n  ${miscategorized.join('\n  ')}`,
+  )
+}
+
 const grouped = [...CATEGORY_ORDER, FALLBACK]
   .map(category => ({
     category,
@@ -162,7 +180,9 @@ const HAS_THUMB = new Set(
                   alt={`Preview of ${tutorial.title}`}
                 />
               ) : (
-                <span class="tut-thumb tut-thumb-empty">$ jbrowse</span>
+                <span class="tut-thumb tut-thumb-empty">
+                  {tutorial.key === 'cli_desktop' ? '$ jbrowse' : 'JBrowse 2'}
+                </span>
               )}
               <span class="tut-card-body">
                 <span class="tut-card-title">
