@@ -1,7 +1,8 @@
 A `LinearSyntenyView` is not limited to two genomes. Give `init.views` three or
 more assemblies and the view stacks them as rows, each adjacent pair joined by a
 connecting ribbon. This example stacks four _E. coli_ strains (K-12, Sakai,
-CFT073, NCTC86), the pangenome demo from the all-vs-all synteny tutorial.
+CFT073, NCTC86), the pangenome demo from the
+[all-vs-all synteny tutorial](https://jbrowse.org/jb2/docs/tutorials/allvsall_synteny/).
 
 With N rows there are N−1 bands, so `tracks` is an array _per band_: `tracks[i]`
 holds the track(s) connecting `views[i]` and `views[i+1]`. Because a single

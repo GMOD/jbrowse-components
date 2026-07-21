@@ -22,4 +22,6 @@ hand-building two `LinearGenomeView` snapshots plus a synteny view snapshot:
 
 The exact fields each view's `init`/snapshot accepts come from its
 [state model docs](https://jbrowse.org/jb2/docs/models/). See
-[LinearSyntenyView](https://jbrowse.org/jb2/docs/models/linearsyntenyview/).
+[LinearSyntenyView](https://jbrowse.org/jb2/docs/models/linearsyntenyview/). For
+preparing your own alignment (PAF/MUMmer/etc.) and a full walkthrough, see the
+[synteny visualization tutorial](https://jbrowse.org/jb2/docs/tutorials/synteny_visualization/).

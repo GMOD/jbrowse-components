@@ -18,3 +18,5 @@ Like every view type, this is declared as a `defaultSession.views` entry (see
 [Linear synteny view](../comparative-views/#synteny-example) for the general
 pattern). The fields `init` accepts come from the
 [BreakpointSplitView model docs](https://jbrowse.org/jb2/docs/models/breakpointsplitview/).
+For applying this to real structural-variant data, see the
+[cancer SV tutorial](https://jbrowse.org/jb2/docs/tutorials/sv_visualization_cgiab/).
