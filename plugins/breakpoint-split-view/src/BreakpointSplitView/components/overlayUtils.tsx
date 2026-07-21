@@ -268,7 +268,10 @@ export function buildPairTooltip(
 export interface PathSpec {
   id: string
   path: string
-  tooltip?: string
+  // Lazy: only the hovered spec's tooltip is ever rendered, and building one
+  // walks both endpoints' fields, so it's resolved on hover rather than for all
+  // N every frame. Same rule AlignmentConnections follows.
+  tooltip?: () => string
 }
 
 export interface VariantOverlayContext {
@@ -323,7 +326,7 @@ export const VariantOverlay = observer(function VariantOverlay({
         />
       ))}
       {hoveredSpec?.tooltip ? (
-        <BreakpointTooltip contents={hoveredSpec.tooltip} />
+        <BreakpointTooltip contents={hoveredSpec.tooltip()} />
       ) : null}
     </g>
   )
@@ -421,7 +424,7 @@ export function* canonicalPairs(ctx: VariantOverlayContext) {
       x2,
       y1: getY(level1, c1),
       y2: getY(level2, c2),
-      tooltip: buildPairTooltip(f1, f2),
+      tooltip: () => buildPairTooltip(f1, f2),
     }
   }
 }
