@@ -5,11 +5,11 @@ import WithInit from "../examples/WithInit.tsx"
 import WithInitCode from "../examples/WithInit.tsx?raw"
 import UseCreateViewState from "../examples/UseCreateViewState.tsx"
 import UseCreateViewStateCode from "../examples/UseCreateViewState.tsx?raw"
-import { pages, section } from "../examples.ts"
+import { getPage, section } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
 
-const page = pages.find(p => p.slug === "setting-up-the-view")!
+const page = getPage("setting-up-the-view")
 const sec0 = section(page, "one-linear-genome-view")
 const sec1 = section(page, "with-init")
 const sec2 = section(page, "use-create-view-state")

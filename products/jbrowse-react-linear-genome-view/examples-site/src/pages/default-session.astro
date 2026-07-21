@@ -5,11 +5,11 @@ import DisableAddTrack from "../examples/DisableAddTrack.tsx"
 import DisableAddTrackCode from "../examples/DisableAddTrack.tsx?raw"
 import WithDrawerWidget from "../examples/WithDrawerWidget.tsx"
 import WithDrawerWidgetCode from "../examples/WithDrawerWidget.tsx?raw"
-import { pages, section } from "../examples.ts"
+import { getPage, section } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
 
-const page = pages.find(p => p.slug === "default-session")!
+const page = getPage("default-session")
 const sec0 = section(page, "default-session")
 const sec1 = section(page, "disable-add-track")
 const sec2 = section(page, "with-drawer-widget")

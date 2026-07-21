@@ -1,11 +1,11 @@
 ---
 import Example from "../examples/NextstrainMsa.tsx"
 import code from "../examples/NextstrainMsa.tsx?raw"
-import { pages } from "../examples.ts"
+import { getPage } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
 
-const page = pages.find(p => p.slug === "nextstrain-msa")!
+const page = getPage("nextstrain-msa")
 ---
 
 <Layout page={page}>

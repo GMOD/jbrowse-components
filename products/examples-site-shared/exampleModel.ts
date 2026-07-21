@@ -30,6 +30,18 @@ export interface ExamplePage {
   sections: ExampleSection[]
 }
 
+// look up a page by slug — used by every page file to fetch its own ExamplePage
+// off the flat `pages` list. Throws (rather than a silent `!`) so a renamed or
+// mistyped slug fails loudly at build time. Each site's examples.ts wraps this
+// as a bound `getPage(slug)` over its own `pages`.
+export function findPage(pages: ExamplePage[], slug: string): ExamplePage {
+  const found = pages.find(p => p.slug === slug)
+  if (!found) {
+    throw new Error(`no page "${slug}"`)
+  }
+  return found
+}
+
 // look up a section by slug within a page — used by multi-section pages to pass
 // each section's title/description into <ExampleSection> type-safely
 export function section(page: ExamplePage, slug: string): ExampleSection {

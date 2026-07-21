@@ -7,11 +7,11 @@ import WithInternetAccounts from "../examples/WithInternetAccounts.tsx"
 import WithInternetAccountsCode from "../examples/WithInternetAccounts.tsx?raw"
 import WithWebWorker from "../examples/WithWebWorker.tsx"
 import WithWebWorkerCode from "../examples/WithWebWorker.tsx?raw"
-import { pages, section } from "../examples.ts"
+import { getPage, section } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
 
-const page = pages.find(p => p.slug === "plugins")!
+const page = getPage("plugins")
 const sec0 = section(page, "with-external-plugin")
 const sec1 = section(page, "with-inline-plugins")
 const sec2 = section(page, "with-internet-accounts")
