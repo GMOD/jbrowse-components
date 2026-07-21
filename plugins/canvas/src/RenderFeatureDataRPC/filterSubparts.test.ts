@@ -131,6 +131,39 @@ describe('getSubparts implied UTRs', () => {
     ])
   })
 
+  it('implies UTRs from parent bounds for a CDS-only transcript (no exons)', () => {
+    // No exon subfeatures: parent transcript bounds are the only evidence for
+    // coding overhang, so UTRs are implied from parentStart/parentEnd.
+    const cdsOnly = mockFeature({
+      type: 'mRNA',
+      start: 100,
+      end: 500,
+      subfeatures: [mockFeature({ type: 'CDS', start: 200, end: 400 })],
+    })
+    expect(typesOf(getSubparts(cdsOnly, config))).toEqual([
+      'CDS',
+      'five_prime_UTR',
+      'three_prime_UTR',
+    ])
+  })
+
+  it('does not invent parent-bounds UTRs when exons exist but do not overhang the CDS', () => {
+    // Exon exactly equals the CDS, but the mRNA bounds are wider (malformed but
+    // real GFF). Exons are the authority: the sole exon shows no UTR, so none is
+    // synthesized — the parent overhang must NOT become a UTR over untranscribed
+    // sequence.
+    const tightExon = mockFeature({
+      type: 'mRNA',
+      start: 100,
+      end: 500,
+      subfeatures: [
+        mockFeature({ type: 'exon', start: 200, end: 400 }),
+        mockFeature({ type: 'CDS', start: 200, end: 400 }),
+      ],
+    })
+    expect(typesOf(getSubparts(tightExon, config))).toEqual(['CDS'])
+  })
+
   it('does not duplicate explicit UTRs even when impliedUTRs is forced on', () => {
     // impliedUTRs config previously bypassed the !hasUTRs guard, so a transcript
     // with explicit UTRs but no exon subfeatures got a second, parent-derived

@@ -13,14 +13,9 @@ interface LinearGenomeViewLike {
 // of replacing the session. The URL may omit assembly: the view's own is used.
 export function applyDefaultSessionViewInit(
   session: { views: { type: string }[] } | undefined,
-  init: {
-    loc?: string
-    assembly?: string
-    tracks?: string[]
-    tracklist?: boolean
-    nav?: boolean
-    highlight?: string[]
-  },
+  // the URL-param subset of InitState (assembly relaxed to optional — it falls
+  // back to the view's own below). Derived from InitState so it can't drift.
+  init: Partial<InitState>,
 ) {
   const view = session?.views.find(v => v.type === 'LinearGenomeView') as
     LinearGenomeViewLike | undefined

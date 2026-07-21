@@ -1,25 +1,14 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 
-import type { BpOffset } from '../types.ts'
 import type { Region } from '@jbrowse/core/util/types'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export async function fetchSequence(
-  model: {
-    leftOffset?: BpOffset
-    rightOffset?: BpOffset
-    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
-    setOffsets: (left?: BpOffset, right?: BpOffset) => void
-  },
+  model: IAnyStateTreeNode,
   regions: Region[],
 ) {
   const session = getSession(model)
-  const { leftOffset, rightOffset } = model
-
-  if (!leftOffset || !rightOffset) {
-    throw new Error('no offsets on model to use for range')
-  }
-
   const assemblyNames = new Set(regions.map(r => r.assemblyName))
   if (assemblyNames.size > 1) {
     throw new Error(
@@ -27,9 +16,9 @@ export async function fetchSequence(
     )
   }
   const { rpcManager, assemblyManager } = session
-  const assemblyName = leftOffset.assemblyName ?? rightOffset.assemblyName
+  const assemblyName = regions[0]?.assemblyName
   if (!assemblyName) {
-    throw new Error('no assemblyName found on the selected offsets')
+    throw new Error('no assemblyName found on the selected region')
   }
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {

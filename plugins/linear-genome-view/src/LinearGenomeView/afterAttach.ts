@@ -247,39 +247,58 @@ async function applyInit(self: LinearGenomeViewModel, init: InitState) {
   applyInitHighlights(self, session, init)
 }
 
+// Apply one init blob, then clear it — but ONLY when self.init is still the
+// exact object we just applied. A setInit that lands while applyInit is
+// awaiting (React StrictMode remounts, a programmatic re-launch) swaps in a new
+// object; clearing unconditionally would silently drop that pending init (a
+// subtle clobber). Leaving it lets drainInit apply it on the next iteration.
+// isAlive-guarded since the apply may have detached the view.
+async function applyInitOnce(self: LinearGenomeViewModel, init: InitState) {
+  try {
+    await applyInit(self, init)
+  } finally {
+    if (isAlive(self) && self.init === init) {
+      self.setInit(undefined)
+    }
+  }
+}
+
+// Apply pending inits one at a time until none remain. Serializing (rather than
+// letting the autorun run applyInit concurrently) is what keeps re-entrant width
+// churn safe: overlapping applies duplicated init.highlight — most visible under
+// React StrictMode's double mount, which churns volatileWidth and re-triggers
+// the autorun. Looping also guarantees an init set mid-apply is eventually
+// applied instead of stranded.
+async function drainInit(self: LinearGenomeViewModel) {
+  while (isAlive(self) && self.initialized && self.init) {
+    await applyInitOnce(self, self.init)
+  }
+}
+
 /**
  * Autorun that handles the init state - navigating to initial location,
  * showing tracks, etc.
  */
 export function setupInitAutorun(self: LinearGenomeViewModel) {
-  // This autorun is async and only clears `init` at the end, yet it reads
-  // volatileWidth (directly for the tracklist-width settle, and via the
-  // `initialized` getter) — so a width change mid-apply re-triggers it while
-  // `init` is still set, and the second pass re-applies init.highlight as a
-  // duplicate (most visible under React StrictMode's double mount, which
-  // churns volatileWidth). This plain closure flag (intentionally NOT an
-  // observable, so it stays out of the dependency graph) makes re-entrant runs
-  // no-op until the in-flight apply finishes and clears init.
-  let applyingInit = false
+  // `draining` is a plain closure flag, intentionally NOT observable so it stays
+  // out of the dependency graph, ensuring only one drain runs at a time. The
+  // autorun observes init/initialized (read synchronously before any await) so
+  // it re-fires when either changes, but a re-entrant pass while a drain is
+  // in-flight is a no-op — drainInit already consumes whatever init is current.
+  let draining = false
   addDisposer(
     self,
     autorun(
       async function initAutorun() {
         const { init, initialized } = self
-        if (!initialized || !init || applyingInit) {
+        if (!initialized || !init || draining) {
           return
         }
-        applyingInit = true
+        draining = true
         try {
-          await applyInit(self, init)
+          await drainInit(self)
         } finally {
-          // always clear init (even on a thrown apply) so a re-entrant run
-          // early-returns, and release the guard for any future setInit;
-          // guard isAlive since the apply may have detached the view
-          if (isAlive(self)) {
-            self.setInit(undefined)
-          }
-          applyingInit = false
+          draining = false
         }
       },
       {

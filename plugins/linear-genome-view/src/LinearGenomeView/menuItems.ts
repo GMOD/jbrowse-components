@@ -270,11 +270,19 @@ export function buildRubberBandMenuItems(
       label: 'Get sequence',
       icon: MenuOpenIcon,
       onClick: () => {
+        const regions = self.getSelectedRegions(
+          self.leftOffset,
+          self.rightOffset,
+        )
         getSession(self).queueDialog(handleClose => [
           GetSequenceDialog,
           {
             model: self,
-            handleClose,
+            regions,
+            handleClose: () => {
+              handleClose()
+              self.setOffsets()
+            },
           },
         ])
       },

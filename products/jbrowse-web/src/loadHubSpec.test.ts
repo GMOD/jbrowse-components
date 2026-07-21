@@ -125,7 +125,7 @@ describe('loadHubSpec', () => {
       pluginManager,
     )
 
-    const session = rootModel.session as any
+    const session = rootModel.session
     expect(session.sessionConnections[0].name).toBe('my-hub')
   })
 
@@ -141,7 +141,7 @@ describe('loadHubSpec', () => {
       pluginManager,
     )
 
-    const session = rootModel.session as any
+    const session = rootModel.session
     expect(session.sessionConnections[0].name).toBe('My Cool Hub')
   })
 })

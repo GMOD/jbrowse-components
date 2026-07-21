@@ -32,7 +32,7 @@ const MATURE_PROTEIN_TYPES = new Set([
   'propeptide',
 ])
 
-export function isMatureProteinType(feature: Feature) {
+function isMatureProteinType(feature: Feature) {
   return MATURE_PROTEIN_TYPES.has(featureType(feature).toLowerCase())
 }
 

@@ -71,4 +71,4 @@ has to keep coverage-only and arcs-only sections counting as a paint.
 
 
 
-
+One thing I deliberately did not touch: the grow/displayedRegionNames fields exist in InitState but aren't wired through the URL-param builders (buildLgvInit). I couldn't tell if that omission is intentional, so I left it rather than assert intent I can't verify — flagging it in case it's an unintended gap.

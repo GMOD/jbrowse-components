@@ -662,6 +662,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * the assembly named by a pending `init`, or undefined when no init is
+       * set. `init`'s assembly isn't in `assemblyNames` yet (that derives from
+       * displayedRegions, still empty pre-navigation), so init-phase readiness
+       * and error checks resolve it directly through here.
+       */
+      get initAssembly() {
+        return self.init
+          ? getSession(self).assemblyManager.get(self.init.assembly)
+          : undefined
+      },
+
+      /**
+       * #getter
        */
       get initialized() {
         if (self.volatileWidth === undefined) {
@@ -669,8 +682,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         // if init is set, wait for that assembly to have regions loaded
         if (self.init) {
-          const { assemblyManager } = getSession(self)
-          const asm = assemblyManager.get(self.init.assembly)
+          const asm = this.initAssembly
           return !!(asm?.initialized && asm.regions)
         }
         return this.assembliesInitialized
@@ -865,8 +877,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         // Check init assembly for errors (displayedRegions may be empty during init)
         if (self.init) {
-          const { assemblyManager } = getSession(self)
-          const asm = assemblyManager.get(self.init.assembly)
+          const asm = this.initAssembly
           if (!asm) {
             return `Assembly ${self.init.assembly} not found`
           }

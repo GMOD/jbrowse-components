@@ -81,10 +81,10 @@ export function findGlyph(
     //     and lets the CDS child pick up MatureProteinRegion, rather than
     //     collapsing to a single flat CDS box.
     //   - direct CDS child → coding transcript (its CDS children are leaves).
-    if (isTopLevel && containerTypes.includes(type)) {
-      return layoutSubfeatures
-    }
-    if (isTopLevel && hasContainerChildren(feature)) {
+    if (
+      isTopLevel &&
+      (containerTypes.includes(type) || hasContainerChildren(feature))
+    ) {
       return layoutSubfeatures
     }
     if (hasCDSSubfeature(feature)) {

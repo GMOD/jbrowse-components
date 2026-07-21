@@ -21,9 +21,6 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   let codeStart = Number.POSITIVE_INFINITY
   let codeEnd = Number.NEGATIVE_INFINITY
 
-  let haveLeftUTR = false
-  let haveRightUTR = false
-
   for (const sub of subparts) {
     if (isCDS(sub)) {
       const start = sub.get('start')
@@ -50,11 +47,45 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   // it would otherwise visit the synthesized UTRs (they're skipped only because
   // they aren't exons — a fragile invariant to lean on).
   const exons = subparts.filter(isExon)
+
+  // No exons at all (a CDS-only transcript): the parent transcript bounds are
+  // the only evidence for coding overhang, so imply UTRs from parentStart/End.
+  // When exons ARE present they are the authority — UTRs come purely from their
+  // geometry below, never from parent bounds. Deriving a parent-bounds UTR while
+  // exons exist would invent a UTR over an untranscribed region whenever the
+  // transcript's bounds overhang its exon union (malformed but real GFF).
+  if (exons.length === 0) {
+    if (parentStart < codeStart) {
+      subparts.push(
+        new SimpleFeature({
+          uniqueId: `${parent.id()}-utr-left`,
+          refName: parentRefName,
+          start: parentStart,
+          end: codeStart,
+          strand: parentStrand,
+          type: utrType(parentStrand, true),
+        }),
+      )
+    }
+    if (parentEnd > codeEnd) {
+      subparts.push(
+        new SimpleFeature({
+          uniqueId: `${parent.id()}-utr-right`,
+          refName: parentRefName,
+          start: codeEnd,
+          end: parentEnd,
+          strand: parentStrand,
+          type: utrType(parentStrand, false),
+        }),
+      )
+    }
+    return subparts
+  }
+
   for (const sub of exons) {
     const exonStart = sub.get('start')
     const exonEnd = sub.get('end')
     if (exonStart < codeStart) {
-      haveLeftUTR = true
       subparts.push(
         new SimpleFeature({
           uniqueId: `${sub.id()}-utr`,
@@ -67,7 +98,6 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
       )
     }
     if (exonEnd > codeEnd) {
-      haveRightUTR = true
       subparts.push(
         new SimpleFeature({
           uniqueId: `${sub.id()}-utr2`,
@@ -79,32 +109,6 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
         }),
       )
     }
-  }
-
-  if (!haveLeftUTR && parentStart < codeStart) {
-    subparts.push(
-      new SimpleFeature({
-        uniqueId: `${parent.id()}-utr-left`,
-        refName: parentRefName,
-        start: parentStart,
-        end: codeStart,
-        strand: parentStrand,
-        type: utrType(parentStrand, true),
-      }),
-    )
-  }
-
-  if (!haveRightUTR && parentEnd > codeEnd) {
-    subparts.push(
-      new SimpleFeature({
-        uniqueId: `${parent.id()}-utr-right`,
-        refName: parentRefName,
-        start: codeEnd,
-        end: parentEnd,
-        strand: parentStrand,
-        type: utrType(parentStrand, false),
-      }),
-    )
   }
 
   return subparts

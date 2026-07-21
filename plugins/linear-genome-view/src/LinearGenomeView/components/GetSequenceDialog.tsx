@@ -24,42 +24,40 @@ import { observer } from 'mobx-react'
 
 import { fetchSequence } from './fetchSequence.ts'
 
-import type { BpOffset } from '../types.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+// Guard on the requested span, before fetching, so a whole-chromosome request
+// (easy to trigger now that features/regions can open this) never round-trips
+// megabases just to be display-blocked. Above the display limit the sequence is
+// still downloadable; above the fetch limit it is refused outright.
+const MAX_DISPLAY_BP = 1_000_000
+const MAX_FETCH_BP = 10_000_000
 
 const GetSequenceDialog = observer(function GetSequenceDialog({
   model,
+  regions,
   handleClose,
 }: {
-  model: {
-    leftOffset?: BpOffset
-    rightOffset?: BpOffset
-    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
-    setOffsets: (left?: BpOffset, right?: BpOffset) => void
-  }
+  model: IAnyStateTreeNode
+  regions: Region[]
   handleClose: () => void
 }) {
   const [rev, setRev] = useState(false)
   const [comp, setComp] = useState(false)
-  const { leftOffset, rightOffset } = model
+
+  const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
+  const tooLargeToFetch = totalBp > MAX_FETCH_BP
 
   const { data: sequenceChunks, error } = useFetch(
-    [
-      'fetchSequence',
-      leftOffset?.refName,
-      leftOffset?.coord,
-      rightOffset?.refName,
-      rightOffset?.coord,
-    ],
+    tooLargeToFetch
+      ? false
+      : ['fetchSequence', regions.map(r => `${r.refName}:${r.start}-${r.end}`)],
     async () => {
-      // random note: the current selected region can't be a computed because
-      // it uses action on base1dview even though it's on the ephemeral
-      // base1dview
-      const selection = model.getSelectedRegions(leftOffset, rightOffset)
-      if (selection.length === 0) {
+      if (regions.length === 0) {
         throw new Error('Selected region is out of bounds')
       }
-      const chunks = await fetchSequence(model, selection)
+      const chunks = await fetchSequence(model, regions)
       // validate here (in the async path) so a length mismatch surfaces via the
       // dialog's own ErrorBanner rather than throwing during render
       return chunks.map(chunk => {
@@ -78,8 +76,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
       })
     },
   )
-  const loading = sequenceChunks === undefined && !error
-
+  const loading = !tooLargeToFetch && sequenceChunks === undefined && !error
   const sequence = sequenceChunks
     ? formatSeqFasta(
         sequenceChunks.map(({ loc, seq }) => {
@@ -91,8 +88,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         }),
       )
     : ''
-
-  const sequenceTooLarge = sequence ? sequence.length > 1_000_000 : false
+  const sequenceTooLarge = sequence ? sequence.length > MAX_DISPLAY_BP : false
 
   return (
     <Dialog
@@ -101,7 +97,6 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
       title="Reference sequence"
       onClose={() => {
         handleClose()
-        model.setOffsets()
       }}
     >
       <DialogContent style={{ width: '80em' }}>
@@ -180,7 +175,6 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         <Button
           onClick={() => {
             handleClose()
-            model.setOffsets()
           }}
           variant="contained"
         >

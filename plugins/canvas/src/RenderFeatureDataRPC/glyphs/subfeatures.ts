@@ -12,10 +12,15 @@ const TRANSCRIPT_PADDING_RATIO = 0.2
 
 // The isoforms a gene is choosing among: its real transcript children when
 // present, else the raw subfeatures. Single source so the "Isoforms collapsed"
-// notice and the gene-glyph control's visibility can't drift apart.
-function getIsoforms(subfeatures: Feature[], transcriptTypes: string[]) {
+// notice and the gene-glyph control's visibility can't drift apart. Matched
+// case-insensitively, like isCDS/isExon and the featureAdmission gate — real
+// GFFs vary in casing and every type test must agree.
+function getIsoforms(
+  subfeatures: Feature[],
+  transcriptTypes: ReadonlySet<string>,
+) {
   const transcripts = subfeatures.filter(sub =>
-    transcriptTypes.includes(featureType(sub)),
+    transcriptTypes.has(featureType(sub).toLowerCase()),
   )
   return transcripts.length > 0 ? transcripts : subfeatures
 }
@@ -23,27 +28,43 @@ function getIsoforms(subfeatures: Feature[], transcriptTypes: string[]) {
 // Total coding bp across a feature's subtree (0 when non-coding). "Longest
 // coding" means the longest protein, i.e. summed CDS length — not the widest
 // genomic footprint, which an isoform with a large intron could win despite a
-// shorter protein.
+// shorter protein. CDS segments are deduped by start-end (matching
+// dedupedSortedCDS): duplicated CDS rows are a real GFF3 quirk (e.g. Gencode)
+// and, counted twice here, would inflate one isoform's length and win it the
+// "longest coding" pick over a genuinely longer protein.
 function codingLength(feature: Feature): number {
-  return getSubfeatures(feature).reduce(
-    (sum, sub) =>
-      sum +
-      (isCDS(sub) ? sub.get('end') - sub.get('start') : codingLength(sub)),
-    0,
-  )
+  const seen = new Set<string>()
+  let sum = 0
+  const walk = (f: Feature) => {
+    for (const sub of getSubfeatures(f)) {
+      if (isCDS(sub)) {
+        const start = sub.get('start')
+        const end = sub.get('end')
+        const key = `${start}-${end}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          sum += end - start
+        }
+      } else {
+        walk(sub)
+      }
+    }
+  }
+  walk(feature)
+  return sum
 }
 
 // Returns the single longest coding transcript, plus whether an actual choice
 // among multiple isoforms was collapsed (drives the "Isoforms collapsed" notice).
-function longestCodingTranscript(
-  subfeatures: Feature[],
-  transcriptTypes: string[],
-): { result: Feature[]; collapsed: boolean } {
-  if (subfeatures.length <= 1) {
-    return { result: subfeatures, collapsed: false }
+// Takes the pre-resolved isoform list so getIsoforms runs once per gene.
+function longestCodingTranscript(isoforms: Feature[]): {
+  result: Feature[]
+  collapsed: boolean
+} {
+  if (isoforms.length <= 1) {
+    return { result: isoforms, collapsed: false }
   }
 
-  const isoforms = getIsoforms(subfeatures, transcriptTypes)
   const codingCandidates = isoforms.filter(hasCodingSubfeature)
   // Rank coding isoforms by protein length; with no coding isoform at all, fall
   // back to the widest genomic span.
@@ -53,7 +74,7 @@ function longestCodingTranscript(
       : ([isoforms, (f: Feature) => f.get('end') - f.get('start')] as const)
 
   const longest = candidates.reduce((a, b) => (size(a) > size(b) ? a : b))
-  return { result: [longest], collapsed: isoforms.length > 1 }
+  return { result: [longest], collapsed: true }
 }
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
@@ -64,15 +85,18 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   let subfeatures = [...getSubfeatures(feature)]
 
-  // Mode-independent: does this gene actually have multiple isoforms to choose
-  // among? Shares getIsoforms with longestCodingTranscript so the gene-glyph
-  // control appears exactly when switching modes would change anything.
-  const hasMultipleIsoforms =
-    getIsoforms(subfeatures, transcriptTypes).length > 1
+  const transcriptTypeSet = new Set(transcriptTypes.map(t => t.toLowerCase()))
+
+  // Resolve the isoform list once and reuse it for both the gene-glyph control's
+  // visibility (does this gene actually have multiple isoforms to choose among?)
+  // and the longestCoding collapse, so the control appears exactly when switching
+  // modes would change anything.
+  const isoforms = getIsoforms(subfeatures, transcriptTypeSet)
+  const hasMultipleIsoforms = isoforms.length > 1
 
   let isoformsCollapsed = false
   if (geneGlyphMode === 'longestCoding') {
-    const collapsed = longestCodingTranscript(subfeatures, transcriptTypes)
+    const collapsed = longestCodingTranscript(isoforms)
     subfeatures = collapsed.result
     isoformsCollapsed = collapsed.collapsed
   } else {
@@ -88,13 +112,12 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     })
   }
 
-  const transcriptTypeSet = new Set(transcriptTypes)
   const children: FeatureLayout[] = []
   let currentYPx = 0
 
   for (const [i, child] of subfeatures.entries()) {
     const childType = featureType(child)
-    const isChildTranscript = transcriptTypeSet.has(childType)
+    const isChildTranscript = transcriptTypeSet.has(childType.toLowerCase())
     const childLayout = findGlyph(
       child,
       config,

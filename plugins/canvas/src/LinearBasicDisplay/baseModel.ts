@@ -23,6 +23,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GROW_MAX_HEIGHT,
+  GetSequenceDialog,
   HeightModeMixin,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
@@ -33,6 +34,7 @@ import {
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
+import BiotechIcon from '@mui/icons-material/Biotech'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -2551,6 +2553,30 @@ export default function baseStateModelFactory(
                     },
                     0.2,
                   )
+                }
+              },
+            },
+            {
+              label: 'Get sequence',
+              icon: BiotechIcon,
+              onClick: () => {
+                const region = self.loadedRegions.get(displayedRegionIndex)
+                if (region) {
+                  getSession(self).queueDialog(handleClose => [
+                    GetSequenceDialog,
+                    {
+                      model: self,
+                      regions: [
+                        {
+                          assemblyName: region.assemblyName,
+                          refName: region.refName,
+                          start: startBp,
+                          end: endBp,
+                        },
+                      ],
+                      handleClose,
+                    },
+                  ])
                 }
               },
             },
