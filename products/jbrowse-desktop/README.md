@@ -81,6 +81,10 @@ For code signing and notarization, set these environment variables:
 - `APPLE_ID` - Your Apple ID email
 - `APPLE_ID_PASSWORD` - App-specific password
 
+Signing is enabled whenever `APPLE_ID` is set. Notarization additionally
+requires `APPLE_ID_PASSWORD` and only runs in CI (`GITHUB_ACTIONS`); the release
+job notarizes the app and staples the ticket so Gatekeeper validates it offline.
+
 #### Windows
 
 To install the development libraries on Windows:

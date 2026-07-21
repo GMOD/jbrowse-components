@@ -13,8 +13,10 @@ Entitlements:
     Allows creating writable+executable memory. Also required for V8's JIT.
 
   disable-library-validation
-    Allows loading dynamic libraries without signature checks. Needed for
-    native Node modules.
+    Allows loading dynamic libraries not signed by our team. The base app ships
+    no native modules, but JBrowse Desktop loads plugins at runtime, and a
+    plugin can bundle a native Node addon (.node) whose dylib we did not sign.
+    Without this, loading such a plugin would be blocked by the hardened runtime.
 
   network.client
     Allows outbound network connections. JBrowse needs this to fetch remote

@@ -72,6 +72,21 @@ function createMenu(autoUpdater: AppUpdater) {
           },
         },
         {
+          label: 'Documentation',
+          click: () => {
+            shell.openExternal('https://jbrowse.org/jb2/docs/').catch(logError)
+          },
+        },
+        {
+          label: 'Report an issue',
+          click: () => {
+            shell
+              .openExternal('https://github.com/GMOD/jbrowse-components/issues')
+              .catch(logError)
+          },
+        },
+        { type: 'separator' },
+        {
           label: 'Check for updates...',
           click: () => {
             checkForUpdatesManually(autoUpdater)
@@ -147,6 +162,12 @@ export async function createMainWindow(
   await mainWindow.loadURL(appUrl.href)
 
   if (process.platform === 'darwin') {
+    app.setAboutPanelOptions({
+      applicationName: 'JBrowse 2',
+      applicationVersion: app.getVersion(),
+      copyright: 'Apache License 2.0',
+      website: 'https://jbrowse.org',
+    })
     Menu.setApplicationMenu(createMenu(autoUpdater))
   } else {
     Menu.setApplicationMenu(null)
