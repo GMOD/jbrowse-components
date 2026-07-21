@@ -1519,8 +1519,8 @@
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T21:13:31.540Z",
-    "hash": "e12a6ff0b1eb1389a2e0b506fbfe5a0d01805823"
+    "reviewedAt": "2026-07-21T18:11:41.599Z",
+    "hash": "eeb122fd66562e60f569cecd7fba611f92e76f54"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
@@ -1706,5 +1706,19 @@
     "note": "FIXED: rewrote the caption plainer (dropped the semicolon and em-dash list-dash; kept the class list as a plain colon list). Names what's shown without the AI-voice flourish.",
     "reviewedAt": "2026-07-20T21:18:45.000Z",
     "hash": "f6734ed89a8ac91dbea6bd069c6c873bdb253ce8"
+  },
+  "scatac/alb_hepatocyte": {
+    "name": "scatac/alb_hepatocyte",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-21T18:11:49.163Z",
+    "hash": "5e7aa630c68fa235c83fe60730be91b0687caadb"
+  },
+  "sv_ont_breakpoint": {
+    "name": "sv_ont_breakpoint",
+    "status": "bad",
+    "note": "",
+    "reviewedAt": "2026-07-21T18:11:51.452Z",
+    "hash": "b0357624edd1994c900bf3080b96a0aec38d17e5"
   }
 }
