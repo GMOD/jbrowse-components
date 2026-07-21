@@ -8,8 +8,17 @@ import {
   LoadingEllipses,
   MonospaceTextField,
 } from '@jbrowse/core/ui'
-import { getRpcSessionId, getSession, toLocale, useFetch } from '@jbrowse/core/util'
+import {
+  addAndShowTrack,
+  getRpcSessionId,
+  getSession,
+  isSessionWithAddTracks,
+  toLocale,
+  useFetch,
+} from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { variantsToVcf } from '@jbrowse/alignments-core'
+import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
@@ -23,6 +32,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type { FilterBy } from '../shared/types.ts'
+import type { ConsensusVariant } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -55,7 +65,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_CONSENSUS_BP
 
-  const { data: records, error } = useFetch(
+  const { data, error } = useFetch(
     tooLargeToFetch
       ? false
       : [
@@ -70,14 +80,14 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
     async () => {
       const session = getSession(model)
       const sessionId = getRpcSessionId(display)
-      return Promise.all(
+      const results = await Promise.all(
         regions.map(async region => {
           const sequenceAdapter = getSequenceAdapterConfig(
             region.assemblyName
               ? session.assemblyManager.get(region.assemblyName)
               : undefined,
           )
-          const { consensus } = (await session.rpcManager.call(
+          const { consensus, variants } = (await session.rpcManager.call(
             sessionId,
             'GetConsensusSequence',
             {
@@ -89,18 +99,31 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               callFract,
               includeInsertions,
             },
-          )) as { consensus: string }
+          )) as { consensus: string; variants: ConsensusVariant[] }
           return {
             header: `${region.refName}:${region.start + 1}-${region.end} consensus`,
             seq: consensus,
+            refName: region.refName,
+            variants,
           }
         }),
       )
+      return {
+        records: results.map(r => ({ header: r.header, seq: r.seq })),
+        vcfEntries: results.map(r => ({
+          refName: r.refName,
+          variants: r.variants,
+        })),
+      }
     },
   )
 
-  const loading = !tooLargeToFetch && records === undefined && !error
-  const sequence = records ? formatSeqFasta(records) : ''
+  const loading = !tooLargeToFetch && data === undefined && !error
+  const sequence = data ? formatSeqFasta(data.records) : ''
+  const vcf = data ? variantsToVcf(data.vcfEntries) : ''
+  const variantCount = data
+    ? data.vcfEntries.reduce((a, e) => a + e.variants.length, 0)
+    : 0
   const sequenceTooLarge = sequence.length > MAX_DISPLAY_BP
 
   return (
@@ -199,6 +222,55 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           startIcon={<GetAppIcon />}
         >
           Download FASTA
+        </Button>
+        <Button
+          variant="contained"
+          onClick={async () => {
+            const { saveAs } = await import('@jbrowse/core/util')
+            saveAs(
+              new Blob([vcf], { type: 'text/plain;charset=utf-8' }),
+              'jbrowse_consensus.vcf',
+            )
+          }}
+          disabled={loading || !!error || tooLargeToFetch || !variantCount}
+          color="primary"
+          startIcon={<GetAppIcon />}
+        >
+          Download VCF ({variantCount})
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            const session = getSession(model)
+            if (!isSessionWithAddTracks(session)) {
+              session.notify('This session cannot add tracks', 'warning')
+              return
+            }
+            const region = regions[0]!
+            addAndShowTrack(
+              session,
+              {
+                type: 'VariantTrack',
+                trackId: `consensus-variants-${Date.now()}`,
+                name: `Consensus variants ${region.refName}:${region.start + 1}-${region.end}`,
+                assemblyNames: [region.assemblyName],
+                adapter: {
+                  type: 'VcfAdapter',
+                  vcfLocation: {
+                    locationType: 'UriLocation',
+                    uri: `data:text/plain;base64,${btoa(vcf)}`,
+                  },
+                },
+              },
+              model,
+            )
+            handleClose()
+          }}
+          disabled={loading || !!error || tooLargeToFetch || !variantCount}
+          color="primary"
+          startIcon={<AddIcon />}
+        >
+          Open as variant track
         </Button>
         <Button
           onClick={() => {

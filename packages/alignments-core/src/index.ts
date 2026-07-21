@@ -122,6 +122,7 @@ export {
   buildConsensusTally,
   computeConsensus,
   consensusToFasta,
+  walkConsensus,
 } from './consensus/computeConsensus.ts'
 export type {
   ConsensusFeature,
@@ -129,3 +130,11 @@ export type {
   ConsensusRegion,
   ConsensusTally,
 } from './consensus/computeConsensus.ts'
+export {
+  computeConsensusVariants,
+  variantsToVcf,
+} from './consensus/consensusVariants.ts'
+export type {
+  ConsensusVariant,
+  ConsensusVcfEntry,
+} from './consensus/consensusVariants.ts'

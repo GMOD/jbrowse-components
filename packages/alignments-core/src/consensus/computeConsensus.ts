@@ -199,16 +199,31 @@ function callColumn(
   return call1 === -1 ? 'N' : CALL_CHARS[call1]!
 }
 
-// reference is the region's reference sequence, aligned to tally position 0.
-export function computeConsensus(
+// Per-column visitor. call is the raw call ('A'/'C'/'G'/'T'/'*'/'N', before any
+// gapChar substitution); insertions is the (already thresholded) inserted bases
+// following this column, or '' if none. callScore/tscore are the winning and
+// total weighted scores at this column (for allele-fraction reporting).
+export type ConsensusColumnVisitor = (
+  refPos: number,
+  refCode: number,
+  call: string,
+  depth: number,
+  callScore: number,
+  tscore: number,
+  insertions: string,
+) => void
+
+// The single per-position pass both the sequence and variant projections share,
+// so a call can never differ between the FASTA and the VCF.
+export function walkConsensus(
   reference: string,
   tally: ConsensusTally,
-  opts: ConsensusOptions = {},
+  opts: ConsensusOptions,
+  visit: ConsensusColumnVisitor,
 ) {
   const minDepth = opts.minDepth ?? 1
   const callFract = opts.callFract ?? 0.75
   const includeInsertions = opts.includeInsertions ?? true
-  const gapChar = opts.gapChar ?? ''
   const {
     length,
     regionStart,
@@ -222,7 +237,6 @@ export function computeConsensus(
     insertionAfter,
   } = tally
 
-  const out: string[] = []
   let cov = 0
   let del = 0
   for (let i = 0; i < length; i++) {
@@ -236,21 +250,39 @@ export function computeConsensus(
     const sC = scoreC[i]! + SEQI2C[refSeqi]! * refMatch
     const sG = scoreG[i]! + SEQI2G[refSeqi]! * refMatch
     const sT = scoreT[i]! + SEQI2T[refSeqi]! * refMatch
+    const gap = del * GAP_WEIGHT
 
-    const call = callColumn(
-      [sA, sC, sG, sT, del * GAP_WEIGHT],
-      cov,
-      minDepth,
-      callFract,
-    )
-    if (call === '*') {
-      if (gapChar) {
-        out.push(gapChar)
-      }
+    const tscore = sA + sC + sG + sT + gap
+    let call1 = -1
+    let score1 = 0
+    if (sA > score1) {
+      score1 = sA
+      call1 = 0
+    }
+    if (sC > score1) {
+      score1 = sC
+      call1 = 1
+    }
+    if (sG > score1) {
+      score1 = sG
+      call1 = 2
+    }
+    if (sT > score1) {
+      score1 = sT
+      call1 = 3
+    }
+    if (gap > score1) {
+      score1 = gap
+      call1 = 4
+    }
+    let call: string
+    if (cov < minDepth || score1 < callFract * tscore) {
+      call = call1 === 4 ? '*' : 'N'
     } else {
-      out.push(call)
+      call = call1 === -1 ? 'N' : CALL_CHARS[call1]!
     }
 
+    let insStr = ''
     if (includeInsertions) {
       const ins = insertionAfter.get(regionStart + i)
       if (ins) {
@@ -283,12 +315,36 @@ export function computeConsensus(
             callFract,
           )
           if (ichar !== '*') {
-            out.push(ichar)
+            insStr += ichar
           }
         }
       }
     }
+
+    visit(regionStart + i, refCode, call, cov, score1, tscore, insStr)
   }
+}
+
+// reference is the region's reference sequence, aligned to tally position 0.
+export function computeConsensus(
+  reference: string,
+  tally: ConsensusTally,
+  opts: ConsensusOptions = {},
+) {
+  const gapChar = opts.gapChar ?? ''
+  const out: string[] = []
+  walkConsensus(reference, tally, opts, (_pos, _refCode, call, _d, _s, _t, ins) => {
+    if (call === '*') {
+      if (gapChar) {
+        out.push(gapChar)
+      }
+    } else {
+      out.push(call)
+    }
+    if (ins) {
+      out.push(ins)
+    }
+  })
   return out.join('')
 }
 
