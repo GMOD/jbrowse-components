@@ -19,9 +19,11 @@ page"** panel (top right) to jump to a recipe.
 
 ## TL;DR: a complete config on one screen {#tldr-a-complete-config-on-one-screen}
 
-This is a full, working `config.json` (one assembly, three tracks, and an
-opening view) written as compactly as JBrowse allows. Every recipe on this page
-is a variation on one of these blocks.
+Here's a full, working `config.json`: one assembly, four tracks, an opening
+view, and a custom theme. It's written with all the shorthand JBrowse allows,
+and it quietly puts about a dozen of the recipes below to work. Read it for the
+shape of a config; every section after it zooms in on one piece. It's long on
+purpose, so skim past it once you have the gist.
 
 ```json
 {
@@ -31,16 +33,34 @@ is a variation on one of these blocks.
       "type": "FeatureTrack",
       "trackId": "genes",
       "name": "Genes",
+      "category": ["Annotation"],
       "assemblyNames": ["volvox"],
       "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-      "displayDefaults": { "color": "jexl:feature.strand==1?'blue':'red'" }
+      "displayDefaults": {
+        "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+        "height": 200,
+        "mouseover": "jexl:feature.name"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "regions",
+      "name": "Regions of interest",
+      "category": ["Annotation"],
+      "assemblyNames": ["volvox"],
+      "adapter": { "type": "BedTabixAdapter", "uri": "volvox-bed12.bed.gz" },
+      "displayDefaults": { "color": "#6a3d9a" }
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "reads",
       "name": "Reads",
       "assemblyNames": ["volvox"],
-      "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" }
+      "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
+      "displayDefaults": {
+        "heightMode": "fit",
+        "colorBy": { "type": "mappingQuality" }
+      }
     },
     {
       "type": "QuantitativeTrack",
@@ -59,17 +79,27 @@ is a variation on one of these blocks.
         "init": {
           "loc": "ctgA:1-50000",
           "assembly": "volvox",
-          "tracks": ["genes", "reads", "coverage"]
+          "tracks": ["genes", "regions", "reads", "coverage"]
         }
       }
     ]
+  },
+  "configuration": {
+    "theme": {
+      "palette": {
+        "primary": { "main": "#311b92" },
+        "secondary": { "main": "#0097a7" }
+      }
+    }
   }
 }
 ```
 
-No index paths, no display IDs, no renderer names: the next section explains
-why. The floor is even smaller than this: one assembly plus one track (no
-`defaultSession`) is already a complete config.
+Nearly everything there is a plain CSS color, a `jexl:` one-liner, or a bare
+`uri`: no index paths, no display IDs, no renderer names. The next section
+explains why so little is needed. And the floor is much lower than this too. One
+assembly plus one track, no `defaultSession` and no theme, is already a complete
+config.
 
 ---
 
@@ -208,6 +238,38 @@ as plain properties (`feature.type`, `feature.strand`, `feature.INFO.SVTYPE`):
 
 See [using jexl callbacks](/docs/config_guides/jexl) for the full function
 catalog.
+
+### One important thing: these settings aren't config-only
+
+Everything on this page is either a `displayDefaults` object or a view
+definition, and neither one is tied to `config.json`. JBrowse treats config and
+session as the same vocabulary, so the identical object works in four places:
+
+- in **`config.json`**, as a track's `displayDefaults` and a `defaultSession`,
+  so it loads for everyone
+- in a **URL**, as a `session=spec-…` or a track's `displaySnapshot`, so you can
+  hand one view to one person (see
+  [from config to a URL](#from-config-to-a-url))
+- in an **embedded component**, passed to `createViewState`, so it renders
+  inside your own web page
+- in the **running app**, where the track menu writes those same slots back out
+  when you change a color or a height by hand
+
+So a color callback or a `heightMode` you work out here is never throwaway. Copy
+it into a share link, a notebook widget, or a colleague's config and it behaves
+exactly the same. The recipes below are written as `config.json` because that's
+the easiest form to read, but read "config" as "config, session, URL, or embed"
+the whole way down. The
+[same view definition works everywhere](#the-same-view-definition-works-everywhere)
+section at the end shows the same idea for a whole view.
+
+The alignment also runs the other way, which is often the easier route: tune a
+track by clicking in the running app until it looks right, then read the JSON
+back out. A track's **About** dialog has a **Copy config** button that gives you
+that track's config with your session tweaks already folded in, and **File ▸
+Export session** does the same for the whole view. Both paste straight into
+`config.json` because they speak the same field names, so "poke at it in the UI,
+then paste the result" is a real workflow, not a dead end.
 
 ---
 
@@ -568,6 +630,52 @@ hand. See [inline data](#inline-data-no-files) below.
 ```json
 "displayDefaults": { "height": 200 }
 ```
+
+### Fit, grow, or fix the track height
+
+`height` sets the box the track lives in. `heightMode` decides what happens when
+there are more features than fit that box:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "genes",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "displayDefaults": { "height": 200, "heightMode": "fit" }
+}
+```
+
+- `fixed` (the default) keeps the height you set and scrolls the overflow
+- `grow` expands the track downward until every feature shows, no scrollbar
+- `fit` shrinks the features themselves so the whole stack fits the current
+  height
+
+`fit` is the one people go looking for: it's how you get a full pileup or a
+dense annotation into a screenshot without a scrollbar cutting it off. The same
+slot lives on alignments tracks too (it's the "Track sizing" menu on any track).
+
+### Pack features onto fewer rows
+
+`displayMode` controls how much vertical room each feature gets, independent of
+the track height above. `collapsed` drops everything onto a single row with
+labels off, which is handy for a repeat or mappability track you just want as a
+thin stripe:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "repeats",
+  "name": "Repeats",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "BedTabixAdapter", "uri": "volvox-bed12.bed.gz" },
+  "displayDefaults": { "displayMode": "collapsed" }
+}
+```
+
+`normal` is the default, and `compact` or `superCompact` sit in between,
+shrinking the rows without fully flattening them.
 
 ### Draw features as arcs, with a jexl-computed height
 
@@ -945,6 +1053,49 @@ slot used in the [TL;DR config](#tldr-a-complete-config-on-one-screen) above:
 
 See [default session](/docs/config_guides/default_session), and
 [URL params](/docs/urlparams) for linking to a view without editing the config.
+
+---
+
+## Building many tracks from a samplesheet
+
+`config.json` is plain JSON, so once you have more than a handful of similar
+tracks (an RNA-seq timecourse, a ModENCODE-style panel, anything a pipeline
+emits one file per sample for) the sane approach is to generate it with a small
+script instead of hand-writing each track. A `MultiWiggleAdapter`'s
+`subadapters` array is just a list, so it lines up one row per sample with the
+kind of metadata table a workflow like Nextflow already produces:
+
+```js
+const samples = [
+  { name: 't0', uri: 's3://foo/RNAseq/timecourse_t0.bw', color: '#1f77b4' },
+  { name: 't1', uri: 's3://foo/RNAseq/timecourse_t1.bw', color: '#ff7f0e' },
+  { name: 't2', uri: 's3://foo/RNAseq/timecourse_t2.bw', color: '#2ca02c' },
+]
+
+const track = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'rnaseq_timecourse',
+  name: 'RNA-seq timecourse',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: samples.map(s => ({
+      type: 'BigWigAdapter',
+      name: s.name,
+      uri: s.uri,
+      color: s.color,
+    })),
+  },
+}
+```
+
+Push `track` onto your config's `tracks` array (or loop the whole thing to build
+a hundred of them) and write the result out. None of this is JBrowse-specific
+tooling: read the samplesheet with whatever your pipeline already uses, a
+Nextflow channel, a pandas frame, `jq`, and emit JSON at the end. For a quick
+one-off from the shell instead, `jbrowse add-track --multiwig` takes the same
+rows as a `.json` sources file, see the
+[multi-signal recipe](#multiple-signals-on-one-track-each-its-own-color).
 
 ---
 
