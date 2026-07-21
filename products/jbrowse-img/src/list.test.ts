@@ -7,7 +7,7 @@ test('formatAssemblies lists names sorted with organism/description', () => {
     hg19: { organism: 'Human', description: 'Feb. 2009 (GRCh37/hg19)' },
     danRer11: { organism: 'Zebrafish', description: 'May 2017 (GRCz11)' },
   })
-  expect(out).toContain('Assemblies on genomes.jbrowse.org (2):')
+  expect(out).toContain('Assemblies on jbrowse.org (2):')
   // sorted: danRer11 before hg19
   expect(out.indexOf('danRer11')).toBeLessThan(out.indexOf('hg19'))
   expect(out).toContain('Human — Feb. 2009 (GRCh37/hg19)')
