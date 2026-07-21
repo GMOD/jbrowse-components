@@ -71,10 +71,7 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
-import {
-  resolveFeatureHighlights,
-  targetMatchesHighlight,
-} from './featureHighlight.ts'
+import { resolveFeatureHighlights } from './featureHighlight.ts'
 import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
 import {
   computeLaidOutData,
@@ -153,7 +150,7 @@ const FeatureHighlightModel = types.model('FeatureHighlight', {
   start: types.number,
   end: types.number,
   name: types.maybe(types.string),
-  subfeature: types.maybe(types.boolean),
+  featureId: types.maybe(types.string),
 })
 
 // Compile-time proof the persisted model's snapshot and the plain
@@ -1689,20 +1686,13 @@ export default function baseStateModelFactory(
         // Additively highlight one rendered feature (right-click "Highlight
         // feature"). Unlike setFeatureHighlights, which replaces the set so a new
         // search supersedes the old one, manual highlights accumulate so a user
-        // can mark several features at once; skip the add if this feature already
-        // resolves to a stored highlight (idempotent re-highlight).
-        //
-        // That dedupe holds only within the target's own scope. An unscoped
-        // (search) highlight fuzzily matches a transcript whose span equals its
-        // gene's while boxing the gene, not the transcript — counting that as a
-        // duplicate would make the menu's "Highlight this transcript" a dead
-        // click, since the entry is offered precisely because the transcript
-        // ISN'T boxed.
+        // can mark several features at once; skip the add if this exact feature
+        // (by id) is already highlighted (idempotent re-highlight). Dedupe on the
+        // stored featureId, so re-highlighting a gene never collides with a
+        // separately highlighted transcript that shares its span.
         addFeatureHighlightForItem(target: HighlightTarget, refName: string) {
           const already = self.featureHighlights.some(
-            h =>
-              !!h.subfeature === !!target.subfeature &&
-              targetMatchesHighlight(target, refName, h),
+            h => h.featureId === target.featureId,
           )
           if (!already) {
             self.featureHighlights.push({
@@ -1710,7 +1700,7 @@ export default function baseStateModelFactory(
               start: target.startBp,
               end: target.endBp,
               name: target.name,
-              subfeature: target.subfeature,
+              featureId: target.featureId,
             })
           }
         },
@@ -2502,12 +2492,11 @@ export default function baseStateModelFactory(
           const subfeatureNoun = subfeature?.type ?? 'subfeature'
           const featureNoun = type ?? 'feature'
           // One toggle shared by both highlight scopes: when already boxed,
-          // remove by the boxed id; otherwise add a highlight for the target.
+          // remove by the target's id; otherwise add a highlight for the target.
           function highlightItem(
             active: boolean,
             addLabel: string,
             removeLabel: string,
-            boxedId: string,
             target: HighlightTarget,
           ) {
             return {
@@ -2515,7 +2504,7 @@ export default function baseStateModelFactory(
               icon: Highlighter,
               onClick: () => {
                 if (active) {
-                  self.removeFeatureHighlightsForId(boxedId)
+                  self.removeFeatureHighlightsForId(target.featureId)
                 } else {
                   const region = self.loadedRegions.get(displayedRegionIndex)
                   if (region) {
@@ -2531,8 +2520,7 @@ export default function baseStateModelFactory(
             subfeature
               ? `Remove whole ${featureNoun} highlight`
               : 'Remove highlight',
-            featureId,
-            { startBp, endBp, name },
+            { startBp, endBp, name, featureId },
           )
           return [
             {
@@ -2577,21 +2565,20 @@ export default function baseStateModelFactory(
                     label: 'Highlight',
                     icon: Highlighter,
                     subMenu: [
-                      // The subfeature scope is keyed to subfeatures so it
-                      // resolves to this isoform rather than its gene even when
-                      // the two share a span (the common GFF3 case).
+                      // The subfeature scope carries the subfeature's own id, so
+                      // it resolves to this isoform rather than its gene even
+                      // when the two share a span (the common GFF3 case).
                       highlightItem(
                         subfeatureHighlighted,
                         subfeature.displayLabel
                           ? `${subfeatureNoun} ${subfeature.displayLabel}`
                           : `This ${subfeatureNoun}`,
                         `Remove ${subfeatureNoun} highlight`,
-                        subfeature.featureId,
                         {
                           startBp: subfeature.startBp,
                           endBp: subfeature.endBp,
                           name: subfeature.displayLabel,
-                          subfeature: true,
+                          featureId: subfeature.featureId,
                         },
                       ),
                       wholeFeatureItem,

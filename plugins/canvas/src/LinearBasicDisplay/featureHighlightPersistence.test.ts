@@ -224,24 +224,107 @@ describe('feature highlight declarative persistence', () => {
     const { display } = createDisplay({ featureHighlights: [brca1] })
 
     display.addFeatureHighlightForItem(
-      { startBp: 5000, endBp: 6000, name: 'TP53' },
+      { startBp: 5000, endBp: 6000, name: 'TP53', featureId: 'tp53-1' },
       'ctgA',
     )
     expect(getSnapshot(display.featureHighlights)).toEqual([
       brca1,
-      { refName: 'ctgA', start: 5000, end: 6000, name: 'TP53' },
+      {
+        refName: 'ctgA',
+        start: 5000,
+        end: 6000,
+        name: 'TP53',
+        featureId: 'tp53-1',
+      },
     ])
   })
 
-  it('addFeatureHighlightForItem is idempotent for an already-highlighted feature', () => {
+  it('addFeatureHighlightForItem is idempotent for the same featureId', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay({ featureHighlights: [brca1] })
+    const { display } = createDisplay()
+
+    const target = {
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+      featureId: 'feat-1',
+    }
+    display.addFeatureHighlightForItem(target, 'ctgA')
+    display.addFeatureHighlightForItem(target, 'ctgA')
+    expect(display.featureHighlights.length).toBe(1)
+  })
+
+  it('boxes only the right-clicked feature, not a same-named overlapping one', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    // two features sharing a name and an overlapping span — span+name matching
+    // used to box both; the right-click highlight carries the clicked id
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        flatbushItems: [
+          makeFlatbushItem({
+            featureId: 'copy-a',
+            startBp: 1000,
+            endBp: 2000,
+            name: 'BRCA1',
+          }),
+          makeFlatbushItem({
+            featureId: 'copy-b',
+            startBp: 1000,
+            endBp: 2000,
+            name: 'BRCA1',
+          }),
+        ],
+      }),
+      10,
+      ctgA,
+    )
 
     display.addFeatureHighlightForItem(
-      { startBp: 1000, endBp: 2000, name: 'BRCA1' },
+      { startBp: 1000, endBp: 2000, name: 'BRCA1', featureId: 'copy-b' },
       'ctgA',
     )
-    expect(getSnapshot(display.featureHighlights)).toEqual([brca1])
+    expect([...display.highlightedFeatureIdSet]).toEqual(['copy-b'])
+  })
+
+  it('right-click on a subfeature boxes the subfeature and pins its parent', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    loadGeneWithTranscript(display)
+
+    // the gene and transcript share a name; the id resolves to the transcript
+    display.addFeatureHighlightForItem(
+      {
+        startBp: 1000,
+        endBp: 2000,
+        name: 'BRCA1',
+        featureId: 'transcript-1',
+      },
+      'ctgA',
+    )
+    expect([...display.highlightedFeatureIdSet]).toEqual(['transcript-1'])
+    expect([...display.layoutPinnedFeatureIdSet]).toEqual(['gene-1'])
+  })
+
+  it('removeFeatureHighlightsForId drops a right-click highlight by its id', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    loadFeature(display, {
+      featureId: 'feat-1',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
+    display.addFeatureHighlightForItem(
+      { startBp: 1000, endBp: 2000, name: 'BRCA1', featureId: 'feat-1' },
+      'ctgA',
+    )
+    expect([...display.highlightedFeatureIdSet]).toEqual(['feat-1'])
+
+    display.removeFeatureHighlightsForId('feat-1')
+    expect(display.featureHighlights.length).toBe(0)
   })
 
   it('removeFeatureHighlightsForId drops an exact manual highlight', () => {
