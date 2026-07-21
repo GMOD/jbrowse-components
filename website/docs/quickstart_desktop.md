@@ -164,8 +164,8 @@ JBrowse desktop autosaves your work continuously, and autosaves show up in
 
 To save a named session to a file, use **File → Session → Save session as...**
 This writes a `.jbrowse` file you can reopen later (or share). Reopen one with
-**File → Session → Open session...**, or from the start screen's **Open .jbrowse
-or config.json or link** menu.
+**File → Session → Open config.json or .jbrowse file...**, or from the start
+screen's **Open .jbrowse or config.json or link** menu.
 
 To hand a session off to someone running JBrowse web, use **File → Session →
 Export session to web...**, which produces a shareable URL.
