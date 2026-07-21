@@ -530,9 +530,12 @@ export type IConfigurationReference<SCHEMA extends AnyConfigurationSchemaType> =
  * options through `preprocessConfigurationSchemaArguments`).
  *
  * The return is annotated `IConfigurationReference<SCHEMATYPE>` (see its doc)
- * so `self.configuration` carries the concrete schema; the three runtime
- * branches all produce union types MST can't relate to that hand-written
- * instance type, hence the single cast at the choke point.
+ * so `self.configuration` carries the concrete schema. The three runtime
+ * branches produce MST reference/union types over `schemaType` that are
+ * assignable to that annotation, so `return ref` needs no cast — and must not
+ * get one: a prior `as SCHEMATYPE` was dropped because it narrowed `SnapshotIn`
+ * to just the object branch and forced callers pushing string ids to
+ * `@ts-expect-error` (see `TrackConfigurationReference`'s note).
  */
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
