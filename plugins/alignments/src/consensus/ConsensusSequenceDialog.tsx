@@ -61,6 +61,18 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   const [minDepth, setMinDepth] = useState(1)
   const [callFract, setCallFract] = useState(0.75)
   const [includeInsertions, setIncludeInsertions] = useState(true)
+  const [excludeSecondary, setExcludeSecondary] = useState(true)
+
+  // The track's active filterBy flows through, but its default (1540) keeps
+  // secondary alignments, unlike samtools' 0x704. OR SECONDARY (0x100) back in
+  // so the consensus matches samtools by default, while leaving the user a way
+  // to opt out.
+  const filterBy = excludeSecondary
+    ? {
+        ...(display.filterBy ?? { flagInclude: 0, flagExclude: 1540 }),
+        flagExclude: (display.filterBy?.flagExclude ?? 1540) | 0x100,
+      }
+    : display.filterBy
 
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_CONSENSUS_BP
@@ -72,7 +84,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           'getConsensus',
           regions.map(r => `${r.refName}:${r.start}-${r.end}`),
           display.adapterConfig,
-          display.filterBy,
+          filterBy,
           minDepth,
           callFract,
           includeInsertions,
@@ -94,7 +106,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               adapterConfig: display.adapterConfig,
               sequenceAdapter,
               regions: [region],
-              filterBy: display.filterBy,
+              filterBy,
               minDepth,
               callFract,
               includeInsertions,
@@ -183,6 +195,17 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               />
             }
             label="Include insertions"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={excludeSecondary}
+                onChange={event => {
+                  setExcludeSecondary(event.target.checked)
+                }}
+              />
+            }
+            label="Exclude secondary alignments"
           />
         </div>
         <MonospaceTextField
