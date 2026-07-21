@@ -52,23 +52,3 @@ LD differs in blast radius (call sites enumerated at
 `LDDisplay/components/LinesConnectingMatrixToGenomicPosition.tsx:20`): it's
 all-or-nothing, and its index positioning mode mirrors over indices rather than
 genomic px.
-
-## Canvas2D vs GPU `canvasDrawn` contract drift
-
-`drawAlignmentBlocks` returns `true` whenever `regions.size > 0` — decided before
-it knows whether any band painted. `GpuAlignmentsRenderer.drawSection` returns
-`drewCoverage || drewPileup || sec.arcBand !== undefined`. The three cases
-`coverageParity.test.ts:516` pins for the GPU ("returns false when no band
-paints", "returns false when the block has no synced region") would fail against
-Canvas2D.
-
-Latent, not biting: the model already gates first paint on
-`laidOutPileupMap.size === 0` (`model.ts:2882`), so the loading overlay behaves.
-Worth extending those same parity cases to the Canvas2D backend — but note the
-trap the GPU comment records: gating the return on the pileup band once left
-read-cloud (arcs-only, empty pileup) stuck on "Loading" forever. Any tightening
-has to keep coverage-only and arcs-only sections counting as a paint.
-
-
-
-One thing I deliberately did not touch: the grow/displayedRegionNames fields exist in InitState but aren't wired through the URL-param builders (buildLgvInit). I couldn't tell if that omission is intentional, so I left it rather than assert intent I can't verify — flagging it in case it's an unintended gap.
