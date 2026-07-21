@@ -5,11 +5,19 @@ import { observer } from 'mobx-react'
 import type { LinearComparativeViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
+interface TrackSelectorModel {
+  views: {
+    assemblyNames: string[]
+    activateTrackSelector: () => void
+  }[]
+  activateTrackSelector: (level: number) => void
+}
+
 // Track selectors for each synteny level (between adjacent rows) and each
 // individual genome row. Shown flat for a two-genome view, grouped into
 // submenus once there are more rows.
-function getTrackSelectorMenuItems(
-  model: LinearComparativeViewModel,
+export function getTrackSelectorMenuItems(
+  model: TrackSelectorModel,
 ): MenuItem[] {
   const { views } = model
   const syntenySelectors = views.slice(0, -1).map((view, idx) => ({

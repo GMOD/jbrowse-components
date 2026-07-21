@@ -516,6 +516,126 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           },
         ])
       }
+      // Header menu sections, each gated on the state that gives it meaning.
+      // Return [] when inapplicable so they spread cleanly into the flat list.
+      function removeRowMenuItems() {
+        return self.views.length > 2
+          ? [
+              {
+                label: 'Remove bottom row',
+                icon: RemoveIcon,
+                onClick: () => {
+                  self.removeLastRow()
+                },
+              },
+            ]
+          : []
+      }
+      function autoScaleMenuItems() {
+        return self.levels.length > 1
+          ? [
+              {
+                label: 'Auto-scale level heights',
+                onClick: () => {
+                  self.autoScaleLevelHeights()
+                },
+              },
+            ]
+          : []
+      }
+      function genomeViewsMenuItems() {
+        return self.views.length > 2
+          ? [
+              {
+                label: 'Genome views',
+                subMenu: [
+                  {
+                    label: 'Compact all views',
+                    onClick: () => {
+                      self.compactAllViews()
+                    },
+                  },
+                  {
+                    label: 'Expand all views',
+                    onClick: () => {
+                      self.expandAllViews()
+                    },
+                  },
+                  ...self.views.map((view, idx) => ({
+                    label: view.assemblyNames[0] ?? `View ${idx + 1}`,
+                    type: 'checkbox' as const,
+                    checked: !self.isViewCompact(idx),
+                    onClick: () => {
+                      self.toggleCompactView(idx)
+                    },
+                  })),
+                ],
+              },
+            ]
+          : []
+      }
+      function cigarModeMenuItems() {
+        return self.hasCigarData
+          ? [
+              {
+                label: 'CIGAR display mode',
+                subMenu: (
+                  [
+                    { label: 'Colored indels', mode: 'full' },
+                    { label: 'Transparent indels', mode: 'matches' },
+                    { label: 'None', mode: 'off' },
+                  ] as const
+                ).map(({ label, mode }) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: self.cigarMode === mode,
+                  onClick: () => {
+                    self.setCigarMode(mode)
+                  },
+                })),
+              },
+            ]
+          : []
+      }
+      function lodMenuItems() {
+        return self.hasLodCapableAdapter
+          ? [
+              {
+                label: 'Level of detail',
+                subMenu: (
+                  [
+                    {
+                      label: 'Automatic (by zoom)',
+                      value: 'auto',
+                      helpText:
+                        'Show base-level detail when zoomed in, blocks-only when zoomed out.',
+                    },
+                    {
+                      label: 'Indels + mismatches',
+                      value: 'fine',
+                      helpText:
+                        'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
+                    },
+                    {
+                      label: 'Alignment blocks only',
+                      value: 'coarse',
+                      helpText:
+                        'Skip base-level detail for speed — no indel or mismatch coloring.',
+                    },
+                  ] as const
+                ).map(({ label, value, helpText }) => ({
+                  helpText,
+                  label,
+                  type: 'radio' as const,
+                  checked: self.lodMode === value,
+                  onClick: () => {
+                    self.setLodMode(value)
+                  },
+                })),
+              },
+            ]
+          : []
+      }
       return {
         /**
          * #method
@@ -575,17 +695,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ])
               },
             },
-            ...(self.views.length > 2
-              ? [
-                  {
-                    label: 'Remove bottom row',
-                    icon: RemoveIcon,
-                    onClick: () => {
-                      self.removeLastRow()
-                    },
-                  },
-                ]
-              : []),
+            ...removeRowMenuItems(),
             {
               label: 'Re-order chromosomes',
               onClick: () => {
@@ -599,103 +709,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               },
               icon: ShuffleIcon,
             },
-            ...(self.levels.length > 1
-              ? [
-                  {
-                    label: 'Auto-scale level heights',
-                    onClick: () => {
-                      self.autoScaleLevelHeights()
-                    },
-                  },
-                ]
-              : []),
-            ...(self.views.length > 2
-              ? [
-                  {
-                    label: 'Genome views',
-                    subMenu: [
-                      {
-                        label: 'Compact all views',
-                        onClick: () => {
-                          self.compactAllViews()
-                        },
-                      },
-                      {
-                        label: 'Expand all views',
-                        onClick: () => {
-                          self.expandAllViews()
-                        },
-                      },
-                      ...self.views.map((view, idx) => ({
-                        label: view.assemblyNames[0] ?? `View ${idx + 1}`,
-                        type: 'checkbox' as const,
-                        checked: !self.isViewCompact(idx),
-                        onClick: () => {
-                          self.toggleCompactView(idx)
-                        },
-                      })),
-                    ],
-                  },
-                ]
-              : []),
-            ...(self.hasCigarData
-              ? [
-                  {
-                    label: 'CIGAR display mode',
-                    subMenu: (
-                      [
-                        { label: 'Colored indels', mode: 'full' },
-                        { label: 'Transparent indels', mode: 'matches' },
-                        { label: 'None', mode: 'off' },
-                      ] as const
-                    ).map(({ label, mode }) => ({
-                      label,
-                      type: 'radio' as const,
-                      checked: self.cigarMode === mode,
-                      onClick: () => {
-                        self.setCigarMode(mode)
-                      },
-                    })),
-                  },
-                ]
-              : []),
-            ...(self.hasLodCapableAdapter
-              ? [
-                  {
-                    label: 'Level of detail',
-                    subMenu: (
-                      [
-                        {
-                          label: 'Automatic (by zoom)',
-                          value: 'auto',
-                          helpText:
-                            'Show base-level detail when zoomed in, blocks-only when zoomed out.',
-                        },
-                        {
-                          label: 'Indels + mismatches',
-                          value: 'fine',
-                          helpText:
-                            'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
-                        },
-                        {
-                          label: 'Alignment blocks only',
-                          value: 'coarse',
-                          helpText:
-                            'Skip base-level detail for speed — no indel or mismatch coloring.',
-                        },
-                      ] as const
-                    ).map(({ label, value, helpText }) => ({
-                      helpText,
-                      label,
-                      type: 'radio' as const,
-                      checked: self.lodMode === value,
-                      onClick: () => {
-                        self.setLodMode(value)
-                      },
-                    })),
-                  },
-                ]
-              : []),
+            ...autoScaleMenuItems(),
+            ...genomeViewsMenuItems(),
+            ...cigarModeMenuItems(),
+            ...lodMenuItems(),
             {
               label: 'Link views',
               type: 'checkbox',
