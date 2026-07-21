@@ -20,9 +20,15 @@ const CATEGORY_ORDER = new Set([
 ])
 const FALLBACK = 'More tutorials'
 
-// The quickstarts live outside tutorials/ but are, in practice, the first
-// tutorials a new user follows, so surface them at the top of Getting started.
-const GETTING_STARTED_DOCS = new Set(['quickstart_web', 'quickstart_desktop'])
+// Some docs live outside tutorials/ but belong on this landing page: the
+// quickstarts are, in practice, the first tutorials a new user follows, and the
+// cookbook is a natural companion to the configuration walkthroughs. Map each to
+// the section it should appear in.
+const EXTRA_DOCS = new Map([
+  ['quickstart_web', 'Getting started'],
+  ['quickstart_desktop', 'Getting started'],
+  ['cookbook', 'Configuration & embedding'],
+])
 
 // Curated order within each section. Sorting alphabetically floated niche pages
 // to the top (the CLI config walkthrough once led Getting started); instead lead
@@ -52,6 +58,7 @@ const ORDER = [
   'scatac_pseudobulk',
   'rnaseq',
   'protein_structure',
+  'cookbook',
   'display_settings',
   'embed_linear_genome_view',
   'embedding_examples',
@@ -96,8 +103,8 @@ const EXTERNAL_CARDS = [
 
 const tutorials = [
   ...docs
-    .filter(entry => GETTING_STARTED_DOCS.has(entry.id))
-    .map(entry => cardFrom(entry, 'Getting started')),
+    .filter(entry => EXTRA_DOCS.has(entry.id))
+    .map(entry => cardFrom(entry, EXTRA_DOCS.get(entry.id)!)),
   ...docs
     .filter(entry => entry.id.startsWith('tutorials/'))
     .map(entry => cardFrom(entry, entry.data.tutorial_category ?? FALLBACK)),
@@ -115,10 +122,13 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
   }))
   .filter(group => group.items.length > 0)
 
-// Pages that have a generated thumbnail (everything but the text-only CLI
-// walkthrough). Keep in sync with static/img/tutorial-thumbs/.
+// Pages with no generated thumbnail render a compact chromeless card instead of
+// a broken image. Keep in sync with static/img/tutorial-thumbs/: the text-only
+// CLI walkthrough and cookbook have none, and the cactus tutorial's is pending
+// a figure re-capture.
+const NO_THUMB = new Set(['cli_desktop', 'cookbook', 'pangenome_cactus'])
 const HAS_THUMB = new Set(
-  tutorials.map(t => t.key).filter(k => k !== 'cli_desktop'),
+  tutorials.map(t => t.key).filter(k => !NO_THUMB.has(k)),
 )
 ---
 
