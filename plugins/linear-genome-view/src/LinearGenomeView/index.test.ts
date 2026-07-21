@@ -1027,6 +1027,38 @@ test('init without loc shows whole genome', async () => {
   })
 })
 
+test('init with loc keeps loading until navigation populates regions', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testInitPending',
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+        loc: 'ctgA:1-100',
+      },
+    }),
+  )
+  model.setWidth(800)
+
+  // navToLocString awaits the assembly asynchronously, so right after setWidth
+  // the assembly is initialized but displayedRegions is still empty. The
+  // container must not mount in this window (its hover pxToBp throws on empty
+  // regions) — showLoading has to stay true, not fall through to the view.
+  expect(model.initialized).toBe(true)
+  expect(model.hasDisplayedRegions).toBe(false)
+  expect(model.initPending).toBe(true)
+  expect(model.showLoading).toBe(true)
+  expect(model.showImportForm).toBe(false)
+
+  await waitFor(() => {
+    expect(model.hasDisplayedRegions).toBe(true)
+  })
+  expect(model.initPending).toBe(false)
+  expect(model.showLoading).toBe(false)
+})
+
 describe('get sequence for selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   /* the start of all the results should be +1

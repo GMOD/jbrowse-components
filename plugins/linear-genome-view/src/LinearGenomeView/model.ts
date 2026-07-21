@@ -699,10 +699,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * init is set but its async navigation (the afterAttach autorun) hasn't
+       * populated displayedRegions yet. `initialized` can already be true here
+       * (it only tracks assembly readiness), so without this the container
+       * would mount over empty regions and pxToBp/hover would throw.
+       */
+      get initPending() {
+        return !!self.init && !this.hasDisplayedRegions
+      },
+
+      /**
+       * #getter
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return !this.initialized && !this.error && this.hasSomethingToShow
+        return (
+          this.hasSomethingToShow &&
+          !this.error &&
+          (!this.initialized || this.initPending)
+        )
       },
 
       /**
