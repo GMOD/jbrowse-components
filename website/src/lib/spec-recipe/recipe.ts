@@ -9,7 +9,7 @@ import { IGNORED_FIELDS, trackFields, viewFields } from './fields.ts'
 import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/launchTarget.ts'
 
 import type { SpecTrackEntry, SpecView } from './decode.ts'
-import type { FieldContext } from './fields.ts'
+import type { FieldContext, FieldRecipe } from './fields.ts'
 
 // Turns a figure's session spec into an ordered "do this yourself" recipe.
 //
@@ -54,6 +54,31 @@ function trackNoun(trackType: string | undefined): string {
   return trackType === 'AlignmentsTrack' ? 'read' : 'feature'
 }
 
+// Walks a set of spec fields, skipping the ones that describe the figure rather
+// than a setting, and turns each mapped field into a step (or records it as
+// unmapped). Shared by tracks and views so both surface the same fields —
+// including a mapper that returns undefined on an unexpected value shape.
+function fieldSteps(
+  entries: [string, unknown][],
+  table: Record<string, FieldRecipe>,
+  context: FieldContext,
+) {
+  const steps: RecipeStep[] = []
+  const unmapped: string[] = []
+  for (const [field, value] of entries) {
+    if (IGNORED_FIELDS.has(field)) {
+      continue
+    }
+    const step = table[field]?.(value, context)
+    if (step) {
+      steps.push({ title: step.path, note: step.note })
+    } else {
+      unmapped.push(field)
+    }
+  }
+  return { steps, unmapped }
+}
+
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
@@ -62,19 +87,11 @@ function trackStep(
   const info = lookupTrack(config, trackId)
   const kind = info ? fileKind(info.adapterType) : undefined
   const context: FieldContext = { noun: trackNoun(info?.type) }
-  const settings: RecipeStep[] = []
-  const unmapped: string[] = []
-  for (const [field, value] of specTrackSettings(entry)) {
-    if (IGNORED_FIELDS.has(field)) {
-      continue
-    }
-    const step = trackFields[field]?.(value, context)
-    if (step) {
-      settings.push({ title: step.path, note: step.note })
-    } else {
-      unmapped.push(field)
-    }
-  }
+  const { steps: settings, unmapped } = fieldSteps(
+    specTrackSettings(entry),
+    trackFields,
+    context,
+  )
   return {
     title: kind
       ? `Add your own track: **File → Open track...**, then paste a URL or choose a local file. This one needs ${kind}.`
@@ -90,10 +107,11 @@ function pythonSnippet(view: SpecView, config: string): string | undefined {
   if (view.type !== PYTHON_VIEW_TYPE || !assembly) {
     return undefined
   }
-  const assemblyArg = HUB_GENOMES.has(assembly)
+  const isHub = HUB_GENOMES.has(assembly)
+  const assemblyArg = isHub
     ? `fetch_hub("${assembly}")`
     : `make_assembly("${assembly}", "https://your-server/your-genome.fa.gz")`
-  const imports = HUB_GENOMES.has(assembly)
+  const imports = isHub
     ? 'from jbrowse_anywidget import LinearGenomeView, fetch_hub'
     : 'from jbrowse_anywidget import LinearGenomeView, make_assembly'
   const entries = specTracks(view)
@@ -157,17 +175,11 @@ function viewSteps(
     })
   }
 
-  const viewContext: FieldContext = { noun: 'feature' }
-  for (const [field, value] of Object.entries(view)) {
-    const step = IGNORED_FIELDS.has(field)
-      ? undefined
-      : viewFields[field]?.(value, viewContext)
-    if (step) {
-      steps.push({ title: step.path, note: step.note })
-    } else if (!IGNORED_FIELDS.has(field) && !viewFields[field]) {
-      unmapped.push(field)
-    }
-  }
+  const viewFieldSteps = fieldSteps(Object.entries(view), viewFields, {
+    noun: 'feature',
+  })
+  steps.push(...viewFieldSteps.steps)
+  unmapped.push(...viewFieldSteps.unmapped)
 
   for (const subView of view.views ?? []) {
     const sub = viewSteps(subView, config)

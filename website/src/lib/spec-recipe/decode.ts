@@ -74,6 +74,6 @@ export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
 // (indexing an array as an object otherwise yields "0" as a field name).
 export function specTracks(view: SpecView): SpecTrackEntry[] {
   return (view.tracks ?? []).flatMap(entry =>
-    Array.isArray(entry) ? (entry) : [entry],
+    Array.isArray(entry) ? entry : [entry],
   )
 }

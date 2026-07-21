@@ -156,6 +156,11 @@ const fromTable = (
   }
 }
 
+const numberField =
+  (build: (n: number) => FieldStep): FieldRecipe =>
+  value =>
+    typeof value === 'number' ? build(value) : undefined
+
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
   geneGlyphMode: geneGlyphStep,
@@ -178,12 +183,9 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${heightMenu(noun)} → Track sizing → ${option.label}` }
       : undefined
   },
-  height: value =>
-    typeof value === 'number'
-      ? {
-          path: `Drag the bar at the bottom edge of the track to resize it (${value}px here).`,
-        }
-      : undefined,
+  height: numberField(() => ({
+    path: 'Drag the bar at the bottom edge of the track to resize it.',
+  })),
   subfeatureLabels: fromTable('Subfeature labels', SUBFEATURE_LABELS),
   sashimiArcsMode: fromTable('Sashimi arcs → Arc placement', SASHIMI_PLACEMENT),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
@@ -209,47 +211,31 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  minSashimiScore: value =>
-    typeof value === 'number'
-      ? {
-          path: `${TRACK_MENU} → Sashimi arcs → Filter by score → ${value}`,
-          note: 'Hides splice junctions supported by fewer reads than this.',
-        }
-      : undefined,
-  maxHeight: value =>
-    typeof value === 'number'
-      ? { path: `${TRACK_MENU} → Show... → Set max layout height... → ${value}` }
-      : undefined,
+  minSashimiScore: numberField(n => ({
+    path: `${TRACK_MENU} → Sashimi arcs → Filter by score → ${n}`,
+    note: 'Hides splice junctions supported by fewer reads than this.',
+  })),
+  maxHeight: numberField(n => ({
+    path: `${TRACK_MENU} → Show... → Set max layout height... → ${n}`,
+  })),
   defaultRendering: renderingTypeStep,
   summaryScoreMode: fromTable('Score → Summary score mode', SUMMARY_SCORE_MODES),
   showDescriptions: checkbox('Show... → Show descriptions'),
-  resolution: value =>
-    typeof value === 'number'
-      ? {
-          path: `${TRACK_MENU} → Resolution → Finer / Coarser`,
-          note: `Higher fetches finer bins. This figure uses ${resolutionLabel(value)}, stepped by 2× per click.`,
-        }
-      : undefined,
-  minScore: value =>
-    typeof value === 'number'
-      ? {
-          path: `${TRACK_MENU} → Score → Set min/max score...`,
-          note: `Sets the score-axis minimum (${value} here).`,
-        }
-      : undefined,
-  maxScore: value =>
-    typeof value === 'number'
-      ? {
-          path: `${TRACK_MENU} → Score → Set min/max score...`,
-          note: `Sets the score-axis maximum (${value} here).`,
-        }
-      : undefined,
-  coverageHeight: value =>
-    typeof value === 'number'
-      ? {
-          path: `Drag the bottom edge of the coverage band to resize it (${value}px here).`,
-        }
-      : undefined,
+  resolution: numberField(n => ({
+    path: `${TRACK_MENU} → Resolution → Finer / Coarser`,
+    note: `Higher fetches finer bins. This figure uses ${resolutionLabel(n)}, stepped by 2× per click.`,
+  })),
+  minScore: numberField(n => ({
+    path: `${TRACK_MENU} → Score → Set min/max score...`,
+    note: `Sets the score-axis minimum (${n} here).`,
+  })),
+  maxScore: numberField(n => ({
+    path: `${TRACK_MENU} → Score → Set min/max score...`,
+    note: `Sets the score-axis maximum (${n} here).`,
+  })),
+  coverageHeight: numberField(() => ({
+    path: 'Drag the bottom edge of the coverage band to resize it.',
+  })),
   forceLoad: value =>
     value === true
       ? {
