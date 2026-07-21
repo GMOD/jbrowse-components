@@ -230,9 +230,9 @@ hand-edit.
 
 ### Applying a recipe from the CLI
 
-`add-track` has `--color` and `--height` flags that drop straight into
-`displayDefaults`, so you don't have to hand-edit the config. The "color by
-strand" recipe is just:
+Every recipe on this page is reachable from `jbrowse add-track` without
+hand-editing the config. `--color` and `--height` are shortcuts for the two most
+common `displayDefaults` settings, so the "color by strand" recipe is just:
 
 ```bash
 jbrowse add-track genes.gff3.gz --load copy --name Genes \
@@ -240,17 +240,53 @@ jbrowse add-track genes.gff3.gz --load copy --name Genes \
 ```
 
 The trick that keeps it readable: wrap the value in single quotes and use double
-quotes _inside_ the jexl, so there's nothing to escape. For any other appearance
-setting (`mouseover`, `labels`, `jexlFilters`, a specific display type), pass
-inline JSON to `--displayDefaults` (and the catch-all `--config` for non-display
-fields like `metadata`):
+quotes _inside_ the jexl, so there's nothing to escape. Anything else lands in
+one of two catch-all flags: `--displayDefaults` takes inline JSON for any display
+setting (the same object the recipes put under `displayDefaults`), and `--config`
+takes inline JSON for the rest of the track (top-level fields like `metadata` and
+`formatDetails`, or a full `displays` array).
 
 ```bash
 jbrowse add-track genes.gff3.gz --load copy \
   --displayDefaults '{"mouseover":"jexl:feature.name","labels":{"description":"jexl:feature.note"}}'
 ```
 
-See the [CLI reference](/docs/cli) for every flag.
+That covers every appearance recipe. This table maps each recipe family to the
+flag that carries it:
+
+| Recipe                                            | CLI                                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------------------- |
+| [Colors](#colors), [height](#set-the-drawing-height) | `--color '<value>'`, `--height 200`                                    |
+| Labels, tooltips, `jexlFilters`, `colorBy`, `groupBy`, `scaleType`, `defaultRendering` | `--displayDefaults '<json>'`         |
+| A non-default display ([arc](#draw-features-as-arcs-with-a-jexl-computed-height), [matrix](#variant-tracks)) | `--config '{"displays":[{"type":"...","...":"..."}]}'` |
+| [`metadata`](#add-metadata-shown-in-the-track-details), [`formatDetails`](#customizing-the-feature-details-panel) | `--config '<json>'`  |
+| [Track selector category](#group-tracks-in-the-selector-with-categories) | `--category "RNA-seq,Brain"`                       |
+| [Refname aliases](#refname-aliases-chr1-vs-1-vs-nc_000001) | `jbrowse add-assembly genome.fa --refNameAliases aliases.txt`    |
+| [Synteny](#synteny-and-dotplot-tracks) query,target       | `jbrowse add-track out.paf -a peach,grape`                        |
+| [Opening view](#opening-to-a-specific-view-on-load) | `jbrowse set-default-session --session session.json`                    |
+| [Gene-name search](#text-searching-gene-name-search) | `jbrowse text-index`                                                   |
+
+Two flags cover the settings that aren't per-track. Alias chromosome names when
+you add the assembly:
+
+```bash
+jbrowse add-assembly genome.fa.gz --load copy --refNameAliases aliases.txt
+```
+
+And open JBrowse to a curated view by writing the `defaultSession` from a file,
+which takes the same shape as the [TL;DR config's](#tldr-a-complete-config-on-one-screen)
+`defaultSession` (the `init` shorthand works here too):
+
+```bash
+echo '{"views":[{"type":"LinearGenomeView","init":{"assembly":"volvox","loc":"ctgA:1-50000","tracks":["genes","coverage"]}}]}' > session.json
+jbrowse set-default-session --session session.json
+```
+
+The one recipe with no add-track shortcut is the
+[multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color): its
+`MultiWiggleAdapter` bundles several files into one track, so write that track's
+config by hand (or with `--config`). See the [CLI reference](/docs/cli) for every
+flag.
 
 ---
 
