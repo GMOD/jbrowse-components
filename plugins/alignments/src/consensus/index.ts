@@ -4,8 +4,8 @@ import NotesIcon from '@mui/icons-material/Notes'
 
 import ConsensusSequenceDialog from './ConsensusSequenceDialog.tsx'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   PluggableElementType,
   ViewType,

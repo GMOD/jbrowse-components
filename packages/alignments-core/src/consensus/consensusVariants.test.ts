@@ -37,7 +37,15 @@ function mockFeature(r: ReadSpec): ConsensusFeature {
         cb(DELETION_TYPE, d.pos - r.start, d.len, '*', -1, 0, 0)
       }
       for (const i of r.ins ?? []) {
-        cb(INSERTION_TYPE, i.afterPos + 1 - r.start, 0, i.bases, -1, 0, i.bases.length)
+        cb(
+          INSERTION_TYPE,
+          i.afterPos + 1 - r.start,
+          0,
+          i.bases,
+          -1,
+          0,
+          i.bases.length,
+        )
       }
     },
   }
@@ -102,11 +110,30 @@ describe('variantsToVcf', () => {
     const vcf = variantsToVcf([
       {
         refName: 'ctgA',
-        variants: [{ pos: 1, ref: 'C', alt: 'G', depth: 5, af: 1, type: 'snv' }],
+        variants: [
+          { pos: 1, ref: 'C', alt: 'G', depth: 5, af: 1, type: 'snv' },
+        ],
       },
     ])
     expect(vcf).toContain('##fileformat=VCFv4.3')
     expect(vcf).toContain('##contig=<ID=ctgA>')
     expect(vcf).toContain('ctgA\t2\t.\tC\tG\t.\t.\tDP=5;AF=1.000;TYPE=snv')
+  })
+
+  test('merges same-refName blocks into one sorted contig', () => {
+    const vcf = variantsToVcf([
+      {
+        refName: 'ctgA',
+        variants: [{ pos: 20, ref: 'A', alt: 'G', depth: 5, af: 1, type: 'snv' }],
+      },
+      {
+        refName: 'ctgA',
+        variants: [{ pos: 5, ref: 'T', alt: 'C', depth: 5, af: 1, type: 'snv' }],
+      },
+    ])
+    // one contig line, records position-sorted (pos 6 before pos 21)
+    expect(vcf.match(/##contig=<ID=ctgA>/g)).toHaveLength(1)
+    const rows = vcf.trim().split('\n').filter(l => !l.startsWith('#'))
+    expect(rows.map(r => r.split('\t')[1])).toEqual(['6', '21'])
   })
 })

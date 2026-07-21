@@ -11,7 +11,10 @@ import type { ConsensusFeature } from '@jbrowse/alignments-core'
 
 // Reference ctgA sequence, loaded once and sliced per region.
 function loadCtgA() {
-  const fa = fs.readFileSync(require.resolve('../../test_data/volvox.fa'), 'utf8')
+  const fa = fs.readFileSync(
+    require.resolve('../../test_data/volvox.fa'),
+    'utf8',
+  )
   const lines = fa.split('\n')
   const seq: string[] = []
   let inCtgA = false

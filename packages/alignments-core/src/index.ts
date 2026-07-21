@@ -121,7 +121,6 @@ export type {
 export {
   buildConsensusTally,
   computeConsensus,
-  consensusToFasta,
   walkConsensus,
 } from './consensus/computeConsensus.ts'
 export type {

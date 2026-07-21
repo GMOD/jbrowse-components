@@ -176,23 +176,46 @@ const CALL_CHARS = 'ACGT*'
 // checked against the weighted total (tscore), exactly as samtools does, so
 // ambiguity codes dilute the winner the same way. Returns the winning base, '*'
 // for a called gap, or 'N' when too shallow / no base clears the fraction.
-function callColumn(
-  scores: [number, number, number, number, number],
+// Writes the winning and total weighted scores into out[0]/out[1] (a caller-
+// owned scratch reused across the loop, so no per-position allocation). One
+// implementation shared by every column — main and insertion sub-columns — so a
+// call can never differ between them.
+function decideCall(
+  sA: number,
+  sC: number,
+  sG: number,
+  sT: number,
+  gap: number,
   totDepth: number,
   minDepth: number,
   callFract: number,
+  out: Float64Array,
 ) {
+  const tscore = sA + sC + sG + sT + gap
   let call1 = -1
   let score1 = 0
-  let tscore = 0
-  for (let i = 0; i < 5; i++) {
-    const v = scores[i]!
-    tscore += v
-    if (v > score1) {
-      score1 = v
-      call1 = i
-    }
+  if (sA > score1) {
+    score1 = sA
+    call1 = 0
   }
+  if (sC > score1) {
+    score1 = sC
+    call1 = 1
+  }
+  if (sG > score1) {
+    score1 = sG
+    call1 = 2
+  }
+  if (sT > score1) {
+    score1 = sT
+    call1 = 3
+  }
+  if (gap > score1) {
+    score1 = gap
+    call1 = 4
+  }
+  out[0] = score1
+  out[1] = tscore
   if (totDepth < minDepth || score1 < callFract * tscore) {
     return call1 === 4 ? '*' : 'N'
   }
@@ -237,6 +260,7 @@ export function walkConsensus(
     insertionAfter,
   } = tally
 
+  const scratch = new Float64Array(2)
   let cov = 0
   let del = 0
   for (let i = 0; i < length; i++) {
@@ -250,37 +274,20 @@ export function walkConsensus(
     const sC = scoreC[i]! + SEQI2C[refSeqi]! * refMatch
     const sG = scoreG[i]! + SEQI2G[refSeqi]! * refMatch
     const sT = scoreT[i]! + SEQI2T[refSeqi]! * refMatch
-    const gap = del * GAP_WEIGHT
 
-    const tscore = sA + sC + sG + sT + gap
-    let call1 = -1
-    let score1 = 0
-    if (sA > score1) {
-      score1 = sA
-      call1 = 0
-    }
-    if (sC > score1) {
-      score1 = sC
-      call1 = 1
-    }
-    if (sG > score1) {
-      score1 = sG
-      call1 = 2
-    }
-    if (sT > score1) {
-      score1 = sT
-      call1 = 3
-    }
-    if (gap > score1) {
-      score1 = gap
-      call1 = 4
-    }
-    let call: string
-    if (cov < minDepth || score1 < callFract * tscore) {
-      call = call1 === 4 ? '*' : 'N'
-    } else {
-      call = call1 === -1 ? 'N' : CALL_CHARS[call1]!
-    }
+    const call = decideCall(
+      sA,
+      sC,
+      sG,
+      sT,
+      del * GAP_WEIGHT,
+      cov,
+      minDepth,
+      callFract,
+      scratch,
+    )
+    const callScore = scratch[0]!
+    const tscore = scratch[1]!
 
     let insStr = ''
     if (includeInsertions) {
@@ -308,11 +315,16 @@ export function walkConsensus(
               iT += SEQI2T[seqi]!
             }
           }
-          const ichar = callColumn(
-            [iA, iC, iG, iT, (cov - present) * GAP_WEIGHT],
+          const ichar = decideCall(
+            iA,
+            iC,
+            iG,
+            iT,
+            (cov - present) * GAP_WEIGHT,
             cov,
             minDepth,
             callFract,
+            scratch,
           )
           if (ichar !== '*') {
             insStr += ichar
@@ -321,7 +333,7 @@ export function walkConsensus(
       }
     }
 
-    visit(regionStart + i, refCode, call, cov, score1, tscore, insStr)
+    visit(regionStart + i, refCode, call, cov, callScore, tscore, insStr)
   }
 }
 
@@ -333,25 +345,22 @@ export function computeConsensus(
 ) {
   const gapChar = opts.gapChar ?? ''
   const out: string[] = []
-  walkConsensus(reference, tally, opts, (_pos, _refCode, call, _d, _s, _t, ins) => {
-    if (call === '*') {
-      if (gapChar) {
-        out.push(gapChar)
+  walkConsensus(
+    reference,
+    tally,
+    opts,
+    (_pos, _refCode, call, _d, _s, _t, ins) => {
+      if (call === '*') {
+        if (gapChar) {
+          out.push(gapChar)
+        }
+      } else {
+        out.push(call)
       }
-    } else {
-      out.push(call)
-    }
-    if (ins) {
-      out.push(ins)
-    }
-  })
+      if (ins) {
+        out.push(ins)
+      }
+    },
+  )
   return out.join('')
-}
-
-export function consensusToFasta(header: string, seq: string, lineLen = 60) {
-  const lines = [`>${header}`]
-  for (let i = 0; i < seq.length; i += lineLen) {
-    lines.push(seq.slice(i, i + lineLen))
-  }
-  return `${lines.join('\n')}\n`
 }

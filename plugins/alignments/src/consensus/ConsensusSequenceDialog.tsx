@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { variantsToVcf } from '@jbrowse/alignments-core'
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   CopyToClipboardButton,
@@ -17,7 +18,6 @@ import {
   useFetch,
 } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
-import { variantsToVcf } from '@jbrowse/alignments-core'
 import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'

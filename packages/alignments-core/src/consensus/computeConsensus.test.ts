@@ -5,11 +5,7 @@ import {
   SKIP_TYPE,
 } from '@jbrowse/cigar-utils'
 
-import {
-  buildConsensusTally,
-  computeConsensus,
-  consensusToFasta,
-} from './computeConsensus.ts'
+import { buildConsensusTally, computeConsensus } from './computeConsensus.ts'
 
 import type { ConsensusFeature, ConsensusOptions } from './computeConsensus.ts'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
@@ -45,7 +41,15 @@ function mockFeature(r: ReadSpec): ConsensusFeature {
         cb(SKIP_TYPE, s.pos - r.start, s.len, 'N', -1, 0, 0)
       }
       for (const i of r.ins ?? []) {
-        cb(INSERTION_TYPE, i.afterPos + 1 - r.start, 0, i.bases, -1, 0, i.bases.length)
+        cb(
+          INSERTION_TYPE,
+          i.afterPos + 1 - r.start,
+          0,
+          i.bases,
+          -1,
+          0,
+          i.bases.length,
+        )
       }
     },
   }
@@ -167,8 +171,3 @@ describe('computeConsensus', () => {
   })
 })
 
-describe('consensusToFasta', () => {
-  test('wraps sequence at the line length with a header', () => {
-    expect(consensusToFasta('chr1:1-6', 'ACGTAC', 4)).toBe('>chr1:1-6\nACGT\nAC\n')
-  })
-})

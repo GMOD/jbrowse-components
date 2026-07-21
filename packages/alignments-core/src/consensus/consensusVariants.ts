@@ -113,6 +113,18 @@ export interface ConsensusVcfEntry {
 }
 
 export function variantsToVcf(entries: ConsensusVcfEntry[]) {
+  // Merge entries by refName (a rubber-band can span several blocks of the same
+  // refName) so each contig appears once and its records are position-sorted.
+  const byRef = new Map<string, ConsensusVariant[]>()
+  for (const { refName, variants } of entries) {
+    const arr = byRef.get(refName)
+    if (arr) {
+      arr.push(...variants)
+    } else {
+      byRef.set(refName, [...variants])
+    }
+  }
+
   const lines = [
     '##fileformat=VCFv4.3',
     '##source=jbrowse-consensus',
@@ -120,11 +132,12 @@ export function variantsToVcf(entries: ConsensusVcfEntry[]) {
     '##INFO=<ID=AF,Number=A,Type=Float,Description="Consensus allele fraction">',
     '##INFO=<ID=TYPE,Number=1,Type=String,Description="snv, ins, or del">',
   ]
-  for (const { refName } of entries) {
+  for (const refName of byRef.keys()) {
     lines.push(`##contig=<ID=${refName}>`)
   }
   lines.push('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO')
-  for (const { refName, variants } of entries) {
+  for (const [refName, variants] of byRef) {
+    variants.sort((a, b) => a.pos - b.pos)
     for (const v of variants) {
       lines.push(
         `${refName}\t${v.pos + 1}\t.\t${v.ref}\t${v.alt}\t.\t.\tDP=${v.depth};AF=${v.af.toFixed(3)};TYPE=${v.type}`,

@@ -1,7 +1,7 @@
 import fs from 'fs'
 
-import PluginManager from '@jbrowse/core/PluginManager'
 import { buildConsensusTally, computeConsensus } from '@jbrowse/alignments-core'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -18,7 +18,10 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 // base decode path (readFeaturesToMismatches) end to end.
 
 function loadCtgA() {
-  const fa = fs.readFileSync(require.resolve('../../test_data/volvox.fa'), 'utf8')
+  const fa = fs.readFileSync(
+    require.resolve('../../test_data/volvox.fa'),
+    'utf8',
+  )
   const seq: string[] = []
   let inCtgA = false
   for (const line of fa.split('\n')) {
