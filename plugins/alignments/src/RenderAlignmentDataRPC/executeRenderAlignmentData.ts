@@ -486,7 +486,7 @@ export async function executeRenderAlignmentData({
   // same key so partitionChains keeps the chain whole. A disallowed dimension
   // (e.g. an old session with strand + chain) degrades to ungrouped rather than
   // splitting chains. See ./CLAUDE.md.
-  const groupBy =
+  const effectiveGroupBy =
     isChain && !isChainGroupableType(groupByArg?.type) ? undefined : groupByArg
 
   const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
@@ -527,8 +527,8 @@ export async function executeRenderAlignmentData({
   }
 
   const featureGroups = isChain
-    ? partitionChains(inputFeatures, groupBy)
-    : partitionFeatures(inputFeatures, groupBy)
+    ? partitionChains(inputFeatures, effectiveGroupBy)
+    : partitionFeatures(inputFeatures, effectiveGroupBy)
   const buildFeatureData = isChain
     ? buildChainFeatureData
     : buildBaseFeatureData
@@ -577,8 +577,9 @@ export async function executeRenderAlignmentData({
   // stacked sections. Same cross-section comparability as the simplex-mod set
   // above. `insertSize` is `abs(template_length)`, so chain and pileup share
   // this one denominator.
-  const allFeatures = extractions.flatMap(e => e.features)
-  const sharedInsertSizeStats = computePairedInsertSizeStats(allFeatures)
+  const sharedInsertSizeStats = computePairedInsertSizeStats(
+    extractions.map(e => e.features),
+  )
 
   checkStopToken2(stopTokenCheck)
 

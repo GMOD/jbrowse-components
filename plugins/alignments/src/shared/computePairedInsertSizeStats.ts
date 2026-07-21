@@ -22,13 +22,17 @@ function isPrimaryProperPair(flags: number) {
  * The insert-size distribution is a property of the whole fetched read set, so
  * the caller pools every read of a region (across groups) and feeds one shared
  * scale to all stacked sections — not a per-group denominator that would color
- * the same insert size differently between sections.
+ * the same insert size differently between sections. Takes the per-group feature
+ * arrays and iterates them in place, so pooling across groups costs no flattened
+ * copy of every read.
  */
-export function computePairedInsertSizeStats(features: FeatureData[]) {
+export function computePairedInsertSizeStats(groups: FeatureData[][]) {
   const pairedInsertSizes: number[] = []
-  for (const f of features) {
-    if (isPrimaryProperPair(f.flags) && f.insertSize > 0) {
-      pairedInsertSizes.push(f.insertSize)
+  for (const features of groups) {
+    for (const f of features) {
+      if (isPrimaryProperPair(f.flags) && f.insertSize > 0) {
+        pairedInsertSizes.push(f.insertSize)
+      }
     }
   }
   return pairedInsertSizes.length > 0

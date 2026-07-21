@@ -508,7 +508,12 @@ export function computeSortedLayout(
 
   sortOverlappingByIndex(overlapping, data, sortedBy, data.sortTagValues)
 
-  const ext = buildReadExtents(data, expansions, numReads)
+  // Soft-clip-expanded extents only when clips are shown; otherwise the read's
+  // raw genomic span is its extent, read straight from readPositions (mirrors
+  // computeLayout's plain path — no per-read Float64Array pair to allocate).
+  const ext = expansions
+    ? buildReadExtents(data, expansions, numReads)
+    : undefined
   const readYs = new Uint16Array(numReads)
   const rows: number[][] = []
   let truncated = false
@@ -516,7 +521,9 @@ export function computeSortedLayout(
   // sortPos), then the rest fills gaps around them.
   const place = (ids: number[]) => {
     for (const i of ids) {
-      const y = placeRectCapped(rows, ext.starts[i]!, ext.ends[i]!, maxRows)
+      const start = ext ? ext.starts[i]! : readPositions[i * 2]!
+      const end = ext ? ext.ends[i]! : readPositions[i * 2 + 1]!
+      const y = placeRectCapped(rows, start, end, maxRows)
       readYs[i] = y
       truncated = truncated || y === maxRows
     }
