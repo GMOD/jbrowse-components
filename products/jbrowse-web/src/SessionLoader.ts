@@ -71,6 +71,12 @@ const SessionLoader = types
     tracks: types.maybe(types.string),
     /**
      * #property
+     * comma-separated chromosome names to restrict a whole-genome view to (no
+     * `loc`), e.g. the main chromosomes without unplaced/alt contigs
+     */
+    regions: types.maybe(types.string),
+    /**
+     * #property
      */
     tracklist: types.maybe(types.boolean),
     /**
@@ -241,6 +247,7 @@ const SessionLoader = types
             tracklist: self.tracklist,
             nav: self.nav,
             highlight: self.highlight,
+            regions: self.regions,
           })
         : undefined
     },
@@ -521,6 +528,7 @@ const SessionLoader = types
           tracklist: self.tracklist,
           nav: self.nav,
           highlight: self.highlight,
+          regions: self.regions,
           sessionTracks: self.sessionTracksParsed,
         }),
       })

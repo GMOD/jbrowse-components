@@ -18,6 +18,7 @@ const paramsToDelete = [
   'tracklist',
   'nav',
   'highlight',
+  'regions',
   'sessionName',
   'extendSession',
 ] as const
@@ -40,6 +41,7 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     'tracklist',
     'highlight',
     'nav',
+    'regions',
     'hubURL',
     'sessionName',
     'extendSession',
@@ -52,6 +54,7 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     loc: p.loc,
     assembly: p.assembly,
     tracks: p.tracks,
+    regions: p.regions,
     sessionTracks: p.sessionTracks,
     tracklist: p.tracklist === 'true',
     highlight: p.highlight,

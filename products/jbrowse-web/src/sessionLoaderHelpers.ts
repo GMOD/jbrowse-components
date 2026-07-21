@@ -94,6 +94,7 @@ export function buildLgvInit(args: {
   tracklist?: boolean
   nav?: boolean
   highlight?: string
+  regions?: string
 }) {
   return {
     loc: args.loc,
@@ -102,6 +103,9 @@ export function buildLgvInit(args: {
     tracklist: args.tracklist,
     nav: args.nav,
     highlight: args.highlight ? splitHighlights(args.highlight) : undefined,
+    // restrict a whole-genome view (no loc) to these named chromosomes, in
+    // order; resolved through assembly aliases in afterAttach's showNamedRegions
+    displayedRegionNames: args.regions?.split(','),
   }
 }
 
@@ -112,6 +116,7 @@ export function buildJb1SessionSpec(args: {
   tracklist?: boolean
   nav?: boolean
   highlight?: string
+  regions?: string
   sessionTracks: Record<string, unknown>[]
 }) {
   return {

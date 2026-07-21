@@ -15,10 +15,10 @@ A simplified URL format for launching a single linear genome view:
 
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
-The allowed query parameters are listed below. `&assembly=`, `&loc=`, `&nav=`,
-`&tracks=`, `&tracklist=`, and `&highlight=` apply only to this single linear
-genome view launch. `?config=`, `&sessionName=`, `&hubURL=`, and `&session=`
-work for any launch type.
+The allowed query parameters are listed below. `&assembly=`, `&loc=`,
+`&regions=`, `&nav=`, `&tracks=`, `&tracklist=`, and `&highlight=` apply only to
+this single linear genome view launch. `?config=`, `&sessionName=`, `&hubURL=`,
+and `&session=` work for any launch type.
 
 ### ?config=
 
@@ -68,6 +68,19 @@ By default `&loc=` (and `&assembly=`) start a fresh session, ignoring the
 config's `defaultSession`. Add `&extendSession=true` to navigate _within_ the
 `defaultSession` instead (keeping its tracks and settings), see
 [Navigating within the default session](#navigating-within-the-default-session).
+
+### &regions=
+
+Example
+
+`&assembly=hg38&regions=chr1,chr2,chr3`
+
+Restricts the whole-genome overview to this comma-separated subset of the
+assembly's chromosomes, in the order given, handy for dropping unplaced/alt
+contigs or reordering. Names resolve through the assembly's aliases. It is
+ignored when `&loc=` is set (which navigates to a single region instead), and it
+requires `&assembly=`. This is the simple-URL form of the session-spec
+[`displayedRegionNames`](#linear-genome-view) field.
 
 ### &highlight=
 
