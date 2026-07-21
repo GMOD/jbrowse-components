@@ -17,6 +17,7 @@ import { methylationSpecs } from './specs/methylation.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { qtlSpecs } from './specs/qtl.ts'
+import { scatacSpecs } from './specs/scatac.ts'
 import { svSpecs } from './specs/sv.ts'
 import { syntenySpecs } from './specs/synteny.ts'
 import { trioSpecs } from './specs/trio.ts'
@@ -37,6 +38,7 @@ export const specs: ScreenshotSpec[] = [
   ...methylationSpecs,
   ...ldSpecs,
   ...popgenSpecs,
+  ...scatacSpecs,
   ...svSpecs,
   ...gwasSpecs,
   ...hicSpecs,

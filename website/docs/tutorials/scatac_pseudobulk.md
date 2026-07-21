@@ -24,6 +24,17 @@ BigWigs and view them inline in the same session through the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser)).
 
+## What a genome browser adds for single cell
+
+Clustering and cell-type labeling happen upstream, in your single-cell analysis.
+A genome browser picks up from there: pseudobulk each cell type into one
+coverage track, and you can read along the genome which open chromatin each type
+carries and at which genes. One row per cell type, lined up against the gene
+models, so a cluster becomes a concrete set of accessible promoters and
+enhancers you can point at.
+
+<Figure caption="CATlas single-cell ATAC over the albumin (ALB) gene on chr4, one accessibility row per cell type. The Hepatocyte row is open across the whole locus while the other 15 cell types stay flat, the cell-type-restricted accessibility that a pseudobulk-by-cell-type track makes visible at a glance." src="/img/scatac/alb_hepatocyte.png" />
+
 ## The pseudobulk idea
 
 A scATAC experiment gives a sparse per-cell signal, far too sparse to plot one
