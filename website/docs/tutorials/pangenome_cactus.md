@@ -1,6 +1,8 @@
 ---
 title: Pangenome graphs with Minigraph-Cactus
-description: Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
+description:
+  Build a Minigraph-Cactus pangenome graph and load its linear projections in
+  JBrowse
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -8,9 +10,10 @@ tutorial_category: Synteny & comparative genomics
 [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
 (`cactus-pangenome`) is the Cactus toolkit's pangenome-graph builder. Like
 [pggb](https://github.com/pangenome/pggb) it collapses many genomes into one
-graph, but it works reference-first: [minigraph](https://github.com/lh3/minigraph)
-lays down a backbone from the chosen reference, every other sample is aligned
-onto it, and Cactus normalizes the result into a graph.
+graph, but it works reference-first:
+[minigraph](https://github.com/lh3/minigraph) lays down a backbone from the
+chosen reference, every other sample is aligned onto it, and Cactus normalizes
+the result into a graph.
 
 This tutorial builds a graph from the **same four _E. coli_ strains** as the
 [pggb tutorial](/docs/tutorials/pangenome) and loads the same four linear
@@ -18,14 +21,15 @@ projections onto the K12 reference, so the two are a side-by-side comparison of
 the builders on identical input. The pggb tutorial explains what each projection
 _means_; this one focuses on producing them from Minigraph-Cactus. What differs:
 
-| Step             | pggb                                      | Minigraph-Cactus                                                   |
-| ---------------- | ----------------------------------------- | ------------------------------------------------------------------ |
-| Build            | wfmash + seqwish + smoothxg, then `-V`/`-M` | one `cactus-pangenome` run emits the graph, VCF, odgi, and a HAL   |
-| Reference        | symmetric all-vs-all, `-V` picks a path   | explicit `--reference`; the minigraph backbone is that genome      |
-| Variants         | `pggb -V`, CHROM is the PanSN path        | `--vcf` (vg deconstruct), CHROM already the reference contig       |
-| Whole-genome MAF | `pggb -M`, re-rooted on the reference      | the HAL, `hal2maf --refGenome` (already reference-rooted)          |
-| Synteny          | the wfmash all-vs-all PAF                  | `halSynteny` from the HAL (or `odgi untangle`)                     |
-| Depth / presence | `odgi depth` / `odgi pav`                  | same (odgi ships in the cactus image)                              |
+| Step             | pggb                                        | Minigraph-Cactus                                                     |
+| ---------------- | ------------------------------------------- | -------------------------------------------------------------------- |
+| Build            | wfmash + seqwish + smoothxg, then `-V`/`-M` | one `cactus-pangenome` run emits the graph, VCF, odgi, and a HAL     |
+| Reference        | symmetric all-vs-all, `-V` picks a path     | explicit `--reference`; the minigraph backbone is that genome        |
+| Variants         | `pggb -V`, CHROM is the PanSN path          | `--vcf` (vg deconstruct), CHROM already the reference contig         |
+| Whole-genome MAF | `pggb -M`, re-rooted on the reference       | the HAL, `hal2maf --refGenome` (already reference-rooted)            |
+| Synteny          | the wfmash all-vs-all PAF                   | `halSynteny` from the HAL (or `odgi untangle`)                       |
+| Depth / presence | `odgi depth` / `odgi pav`                   | same (odgi ships in the cactus image)                                |
+| Read mapping     | not available (graph's own genomes only)    | `--giraffe` indexes let `vg giraffe` map new reads, surjected to K12 |
 
 Every projection lands on a JBrowse track type you already have. The four are
 laid out in the [pggb tutorial's projection table](/docs/tutorials/pangenome);
@@ -35,9 +39,9 @@ the sections below build each from the Cactus outputs.
 
 Minigraph-Cactus takes a **seqFile**: one `name<TAB>path` line per sample. Input
 contigs stay simply named (`chr` here); Cactus applies
-[PanSN](https://github.com/pangenome/PanSN-spec) `sample#haplotype#contig` naming
-to the graph internally, so no pre-naming step is needed (unlike pggb, which
-wants a PanSN-named concatenated FASTA).
+[PanSN](https://github.com/pangenome/PanSN-spec) `sample#haplotype#contig`
+naming to the graph internally, so no pre-naming step is needed (unlike pggb,
+which wants a PanSN-named concatenated FASTA).
 
 ```bash
 cat > seqfile.txt <<'EOF'
@@ -56,36 +60,41 @@ docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
   quay.io/comparative-genomics-toolkit/cactus:v3.2.1 \
   cactus-pangenome /data/js /data/seqfile.txt \
     --outDir /data/mc --outName ecoli --reference K12 \
-    --vcf --gfa --gbz --odgi --viz --draw --consCores 8
+    --vcf --gfa --gbz --odgi --viz --draw --giraffe --consCores 8
 ```
 
 Pinning the image to a dated version tag (not `:latest`) keeps the graph
 reproducible. `/data/js` is the [Toil](https://toil.readthedocs.io/) job store
-(must not already exist on a fresh run); `--outName ecoli` prefixes every output.
-The one flag that is easy to miss is `--vcf`: without it Cactus builds the graph
-but never deconstructs it, so the variant projection has no input. `--odgi`
-writes the `.og` the depth and presence projections read, and `--viz` writes the
-odgi 1D raster shown at the end.
+(must not already exist on a fresh run); `--outName ecoli` prefixes every
+output. The one flag that is easy to miss is `--vcf`: without it Cactus builds
+the graph but never deconstructs it, so the variant projection has no input.
+`--odgi` writes the `.og` the depth and presence projections read, `--viz`
+writes the odgi 1D raster shown at the end, and `--giraffe` writes the
+short-read mapping indexes the
+[read-mapping section](#mapping-short-reads-through-the-graph) uses.
 
 A single run emits everything the sections below use:
 
-- `mc/ecoli.gfa.gz`, `mc/ecoli.full.og` — the graph (GFA and odgi)
-- `mc/ecoli.vcf.gz` — the pangenome variants
-- `mc/ecoli.full.hal` — the multiple alignment as a HAL (the synteny and MAF
+- `mc/ecoli.gfa.gz`, `mc/ecoli.full.og`: the graph (GFA and odgi)
+- `mc/ecoli.vcf.gz`: the pangenome variants
+- `mc/ecoli.full.hal`: the multiple alignment as a HAL (the synteny and MAF
   projections read this)
-- `mc/ecoli.viz/chr.full.viz.png` — the odgi 1D graph raster
+- `mc/ecoli.d2.gbz`, `mc/ecoli.d2.dist`, `mc/ecoli.d2.shortread.withzip.min`,
+  `mc/ecoli.d2.shortread.zipcodes`: the `vg giraffe` mapping indexes
+- `mc/ecoli.viz/chr.full.viz.png`: the odgi 1D graph raster
 
 The cactus image also carries [odgi](https://github.com/pangenome/odgi),
-`halSynteny`, `hal2maf`, and [taffy](https://github.com/ComparativeGenomicsToolkit/taffy),
-so no other tool is needed for the projections. Every `in_cactus` command below
-is that same `docker run … cactus:v3.2.1` wrapper.
+`halSynteny`, `hal2maf`, and
+[taffy](https://github.com/ComparativeGenomicsToolkit/taffy), so no other tool
+is needed for the projections. Every `in_cactus` command below is that same
+`docker run … cactus:v3.2.1` wrapper.
 
 ## All-vs-all synteny projection
 
-Cactus does not emit an all-vs-all alignment PAF the way pggb's wfmash step does.
-Two graph outputs can stand in. `odgi untangle` projects the graph to a synteny
-PAF, but on a near-colinear bacterial graph its cut points are sparse and it
-collapses each pair to a few whole-chromosome blocks.
+Cactus does not emit an all-vs-all alignment PAF the way pggb's wfmash step
+does. Two graph outputs can stand in. `odgi untangle` projects the graph to a
+synteny PAF, but on a near-colinear bacterial graph its cut points are sparse
+and it collapses each pair to a few whole-chromosome blocks.
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) instead reads
 the HAL's base-level alignment and emits proper synteny blocks per genome pair,
 so use it here.
@@ -173,11 +182,11 @@ genotype.
 ## Whole-genome alignment (MAF) projection
 
 `cactus-pangenome` writes `mc/ecoli.full.hal` by default. This is the Cactus
-signature output and the cleanest route to a MAF: `hal2maf --refGenome K12` roots
-every block on K12 directly, so there is no re-rooting step (pggb's `-M` MAF has
-no fixed reference row and needs one). The HAL's `genome.sequence` rows come out
-`K12.chr`, `Sakai.chr`, … which is exactly the `sample.contig` naming the MAF
-display splits each species off on:
+signature output and the cleanest route to a MAF: `hal2maf --refGenome K12`
+roots every block on K12 directly, so there is no re-rooting step (pggb's `-M`
+MAF has no fixed reference row and needs one). The HAL's `genome.sequence` rows
+come out `K12.chr`, `Sakai.chr`, … which is exactly the `sample.contig` naming
+the MAF display splits each species off on:
 
 ```bash
 in_cactus hal2maf --refGenome K12 --noAncestors /data/mc/ecoli.full.hal /data/ecoli_cactus.maf
@@ -208,8 +217,9 @@ Load the bgzipped-TAF with a
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity, and codon view, all derived from the alignment with no extra
 files. Because the whole-genome alignment here comes from a HAL, the same
-`hal2maf` route works for a [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
-HAL of more divergent species.
+`hal2maf` route works for a
+[progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus) HAL of
+more divergent species.
 
 ## Pangenome depth and per-strain presence
 
@@ -272,6 +282,77 @@ builders produce the same kind of graph and the same odgi renders it.
 
 <Figure caption="The four-strain Minigraph-Cactus graph drawn by odgi viz (--viz): one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The four JBrowse projections re-plot this same presence/absence on K12's coordinates." src="/img/pangenome_cactus/graph.png" />
 
+## Mapping short reads through the graph
+
+Every section above projects the graph's own four genomes onto K12. This does
+what pggb's outputs cannot: it maps **a new sample, not in the graph**, through
+it. `--giraffe` makes `cactus-pangenome` emit the
+[`vg giraffe`](https://github.com/vgteam/vg/wiki/Mapping-short-reads-with-Giraffe)
+short-read indexes (`mc/ecoli.d2.gbz` and its `.dist`/`.min`/`.zipcodes`), so
+reads align against the whole pangenome instead of against K12 alone. A read
+over a non-K12 allele still has a graph path to sit on (the one another strain
+contributed), so it places cleanly instead of mismatching against K12.
+`vg surject` then rewrites each alignment in K12 coordinates as a plain BAM.
+
+Grab reads from a real isolate not in the graph,
+[_E. coli_ KTa004](https://www.ebi.ac.uk/ena/browser/view/DRR063408) (ENA
+`DRR063408`, Illumina MiSeq). 150k pairs is ~9× over the 4.6 Mb genome:
+
+```bash
+mkdir -p reads
+for r in 1 2; do
+  wget -qO "reads/DRR063408_$r.fastq.gz" \
+    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_$r.fastq.gz"
+  zcat "reads/DRR063408_$r.fastq.gz" | head -600000 | gzip > "reads/sub_$r.fastq.gz"
+done
+```
+
+Map through the graph, then surject the alignments onto the K12 path:
+
+```bash
+in_cactus vg giraffe -p \
+  -Z /data/mc/ecoli.d2.gbz -d /data/mc/ecoli.d2.dist \
+  -m /data/mc/ecoli.d2.shortread.withzip.min -z /data/mc/ecoli.d2.shortread.zipcodes \
+  -f /data/reads/sub_1.fastq.gz -f /data/reads/sub_2.fastq.gz > mapped.gam
+
+in_cactus vg surject -x /data/mc/ecoli.d2.gbz -b -p "K12#0#chr" \
+  -N KTa004 -R KTa004 /data/mapped.gam > mapped.raw.bam
+```
+
+`surject` labels the reference by its PanSN path (`K12#0#chr`); rename it to the
+`chr` contig, drop unmapped reads, and sort:
+
+```bash
+in_cactus bash -c '
+  samtools view -H /data/mapped.raw.bam | sed "s/SN:K12#0#chr/SN:chr/" > /data/hdr.sam
+  samtools reheader /data/hdr.sam /data/mapped.raw.bam \
+    | samtools view -b -F 4 - \
+    | samtools sort -o /data/ecoli_cactus_reads.bam
+  samtools index /data/ecoli_cactus_reads.bam'
+```
+
+The BAM is a standard format, so `jbrowse add-track` autodetects it as an
+[`AlignmentsTrack`](/docs/config_guides/alignments_track) on K12:
+
+```bash
+jbrowse add-track ecoli_cactus_reads.bam --name "KTa004 reads (vs K12)" -a K12
+```
+
+<Figure caption="KTa004 reads (a fifth isolate, not in the graph) mapped through the Minigraph-Cactus pangenome with vg giraffe and surjected onto K12, stacked above the same locus's pangenome variant matrix and MAF. The reads were placed by the whole graph, then re-expressed in K12 coordinates, so the pileup lines up directly under the projections." src="/img/pangenome_cactus/reads.png" />
+
+An ordinary pileup (coverage, mismatches, mapping quality), but placed by the
+whole pangenome rather than K12 alone, so it stacks on the same coordinates as
+the projections. The
+[alignments track guide](/docs/user_guides/alignments_track) covers the pileup,
+coverage, and sort/color options.
+
+`vg surject` also takes several `-p` paths at once (or `-F` with a file of
+them), so where each strain has a full-length path you can project the same
+reads onto each one, load a track per assembly, and stack them in a
+[linear synteny view](/docs/tutorials/allvsall_synteny) to see how the reads
+land across strains. Here only K12 is a full-length path (the others are stored
+as subpaths), so K12 makes the cleanest track.
+
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_cactus.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_cactus.sh)
@@ -283,14 +364,15 @@ npx --yes serve ecoli_cactus_build/jbrowse2
 ```
 
 It downloads the same four RefSeq genomes as the pggb build, runs
-`cactus-pangenome`, converts the HAL, VCF, `odgi depth`, and `odgi pav` into the
-projections above, downloads JBrowse, and writes a `config.json` with the four
-assemblies, per-strain gene tracks, the five graph-derived tracks, and a default
-session. It needs `docker` (the cactus image, which carries odgi/halSynteny/
-hal2maf/taffy), the NCBI
+`cactus-pangenome` (with `--giraffe`), converts the HAL, VCF, `odgi depth`, and
+`odgi pav` into the projections above, maps the KTa004 reads through the graph
+and surjects them onto K12, downloads JBrowse, and writes a `config.json` with
+the four assemblies, per-strain gene tracks, the five graph projections plus the
+read pileup, and a default session. It needs `docker` (the cactus image, which
+carries odgi/halSynteny/hal2maf/taffy and `vg`/`samtools`), the NCBI
 [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-CLI, `samtools`, `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`),
-`unzip`, and `node`.
+CLI, `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
+`wget`, and `node`.
 
 ## See also
 
@@ -299,8 +381,11 @@ CLI, `samtools`, `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`),
 - [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - stacking genomes in a
   linear synteny view
 - [MAF track](/docs/user_guides/maf_track),
-  [Multi-sample variant track](/docs/user_guides/multivariant_track) - the
-  display types the MAF and variant projections use
+  [Multi-sample variant track](/docs/user_guides/multivariant_track),
+  [Alignments track](/docs/user_guides/alignments_track) - the display types the
+  MAF, variant, and read-mapping projections use
+- [vg giraffe](https://github.com/vgteam/vg/wiki/Mapping-short-reads-with-Giraffe) -
+  mapping short reads through the pangenome graph
 - [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md),
   [odgi](https://github.com/pangenome/odgi),
   [taffy](https://github.com/ComparativeGenomicsToolkit/taffy) - the tools this

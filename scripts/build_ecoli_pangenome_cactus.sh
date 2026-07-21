@@ -3,12 +3,13 @@
 # Reproducibly build the E. coli Minigraph-Cactus pangenome-graph demo shown in
 # website/docs/tutorials/pangenome_cactus.md: build a graph from four strains
 # with `cactus-pangenome` and load its linear projections into a runnable
-# JBrowse — the all-vs-all synteny (halSynteny from the HAL), the pangenome
-# variants (`--vcf`), the whole-genome multiple alignment (the HAL, `hal2maf`,
-# re-rooted on K12 as a MAF), the pangenome depth (`odgi depth`, core vs
+# JBrowse. The projections: all-vs-all synteny (halSynteny from the HAL),
+# pangenome variants (`--vcf`), the whole-genome multiple alignment (the HAL,
+# `hal2maf`, re-rooted on K12 as a MAF), pangenome depth (`odgi depth`, core vs
 # accessory over K12 as a bigWig), and per-strain presence (`odgi pav`, one
-# bigWig per strain as a MultiWiggle). It also copies the `--viz` odgi 1D raster
-# as a static comparison figure.
+# bigWig per strain as a MultiWiggle). It also maps a fifth isolate's short reads
+# (E. coli KTa004, ENA DRR063408) through the graph with `--giraffe`/`vg giraffe`
+# and surjects them onto K12, and copies the `--viz` odgi 1D raster as a figure.
 #
 # It downloads the same four RefSeq E. coli chromosomes as the pggb tutorial
 # (build_ecoli_pangenome_graph.sh), so the two demos are a direct pggb-vs-MC
@@ -20,9 +21,9 @@
 # the projections below are derived from those outputs afterward.
 #
 # Requires: docker (the cactus image, which also carries odgi, halSynteny,
-#           hal2maf, and taffy), the NCBI `datasets` CLI, samtools,
-#           bedGraphToBigWig (UCSC kentUtils), bgzip/tabix (htslib), unzip, and
-#           node (JBrowse CLI, via npx unless `jbrowse` is on PATH).
+#           hal2maf, taffy, and vg), the NCBI `datasets` CLI, samtools,
+#           bedGraphToBigWig (UCSC kentUtils), bgzip/tabix (htslib), unzip, wget,
+#           and node (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_cactus.sh [outdir]
 #
 set -euo pipefail
@@ -74,7 +75,7 @@ if [ ! -f mc/ecoli.full.og ]; then
   rm -rf js
   in_cactus cactus-pangenome /data/js /data/seqfile.txt \
     --outDir /data/mc --outName ecoli --reference "$REF" \
-    --vcf --gfa --gbz --odgi --viz --draw \
+    --vcf --gfa --gbz --odgi --viz --draw --giraffe \
     --consCores "$(getconf _NPROCESSORS_ONLN)" --workDir /data/tmp
 fi
 
@@ -157,6 +158,35 @@ done
 # contrasts this graph-native axis against the reference-anchored projections.
 # Copy ecoli_cactus_graph.png to website/static/img/pangenome_cactus/graph.png.
 in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x 1500 -a 40 -y 200
+
+# ── Projection 5: map a new isolate's short reads through the graph ────────────
+# Unlike every projection above (which re-plots the graph's own four genomes),
+# this maps a FIFTH sample that is not in the graph. --giraffe made cactus emit
+# vg giraffe's indexes (mc/ecoli.d2.gbz + .dist/.min/.zipcodes). Map E. coli
+# KTa004 (ENA DRR063408, Illumina MiSeq) through the whole pangenome, then surject
+# the graph alignment onto K12 as a plain BAM: a read over a non-K12 allele still
+# has a graph path to sit on, so it places instead of mismatching against K12
+# alone. Subsample to ~9x to keep the demo BAM small; drop unmapped reads.
+READS_ACC=DRR063408
+mkdir -p reads
+for r in 1 2; do
+  [ -f "reads/sub_$r.fastq.gz" ] && continue
+  [ -f "reads/${READS_ACC}_$r.fastq.gz" ] || wget -qO "reads/${READS_ACC}_$r.fastq.gz" \
+    "https://ftp.sra.ebi.ac.uk/vol1/fastq/${READS_ACC:0:6}/${READS_ACC}/${READS_ACC}_$r.fastq.gz"
+  zcat "reads/${READS_ACC}_$r.fastq.gz" | head -600000 | gzip > "reads/sub_$r.fastq.gz"
+done
+
+in_cactus vg giraffe -p \
+  -Z /data/mc/ecoli.d2.gbz -d /data/mc/ecoli.d2.dist \
+  -m /data/mc/ecoli.d2.shortread.withzip.min -z /data/mc/ecoli.d2.shortread.zipcodes \
+  -f /data/reads/sub_1.fastq.gz -f /data/reads/sub_2.fastq.gz > mapped.gam
+in_cactus vg surject -x /data/mc/ecoli.d2.gbz -b -p "$REFPATH" \
+  -N KTa004 -R KTa004 /data/mapped.gam > mapped.raw.bam
+in_cactus samtools view -H /data/mapped.raw.bam | sed "s|SN:${REFPATH}|SN:chr|" > reads_hdr.sam
+in_cactus samtools reheader /data/reads_hdr.sam /data/mapped.raw.bam > reads_reheader.bam
+in_cactus samtools view -b -F 4 /data/reads_reheader.bam > reads_mapped.bam
+in_cactus samtools sort -o /data/ecoli_cactus_reads.bam /data/reads_mapped.bam
+in_cactus samtools index /data/ecoli_cactus_reads.bam
 
 # ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ─────────────────
 if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
@@ -259,6 +289,11 @@ cat > pav_track.json <<'JSON'
 JSON
 jb add-track-json pav_track.json --update --out "$APP"
 
+# projection 5: KTa004 reads mapped through the graph, surjected onto K12
+# (a standard BAM, so add-track autodetects it as an AlignmentsTrack)
+jb add-track ecoli_cactus_reads.bam --trackId ecoli_cactus_reads \
+  --name "KTa004 reads mapped through the graph (vs K12)" -a K12 --load copy --force --out "$APP"
+
 # ── Default session: all four projections ─────────────────────────────────────
 cat > session.json <<'JSON'
 {
@@ -283,7 +318,7 @@ cat > session.json <<'JSON'
       "init": {
         "assembly": "K12",
         "loc": "chr:1,000,000-1,010,000",
-        "tracks": ["K12_genes", "ecoli_cactus_depth", "ecoli_cactus_pav", "ecoli_cactus_variants", "ecoli_cactus_maf"]
+        "tracks": ["K12_genes", "ecoli_cactus_reads", "ecoli_cactus_variants", "ecoli_cactus_maf", "ecoli_cactus_depth", "ecoli_cactus_pav"]
       }
     }
   ]
@@ -292,8 +327,8 @@ JSON
 jb set-default-session --session session.json --out "$APP"
 
 echo
-echo "Built $APP/config.json with the four assemblies, gene tracks, and the"
+echo "Built $APP/config.json with the four assemblies, gene tracks, the"
 echo "Minigraph-Cactus projections (synteny, variants, MAF, depth, per-strain"
-echo "presence). Serve it, e.g.:"
+echo "presence), and the KTa004 read pileup mapped through the graph. Serve it:"
 echo "  npx serve $(pwd)/$APP"
 echo "The graph overview raster is ecoli_cactus_graph.png (odgi viz, from --viz)."
