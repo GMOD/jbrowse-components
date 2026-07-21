@@ -81,8 +81,8 @@ pggb runs [wfmash](https://github.com/waveygang/wfmash) (all-vs-all alignment),
 [seqwish](https://github.com/ekg/seqwish) (induces the graph), and
 [smoothxg](https://github.com/pangenome/smoothxg) (normalizes it), then the `-V`
 and `-M` steps. The output directory holds the graph (`*.smooth.final.gfa`), the
-all-vs-all PAF, the VCF, and the MAF, the outputs the sections below load
-(the depth projection reads the graph itself).
+all-vs-all PAF, the VCF, and the MAF, the outputs the sections below load (the
+depth projection reads the graph itself).
 
 ### Other builders
 
@@ -125,6 +125,8 @@ Stack the four strains in a linear synteny view exactly as the
 describes. The PanSN `sample#` prefix on every PAF record is how the adapter
 maps a record to its strain.
 
+<Figure caption="The all-vs-all synteny projection: the four strains stacked K12 to NCTC86, a ribbon between each adjacent pair drawn from the graph's wfmash PAF. Continuous diagonal ribbons are shared backbone, and the crossings and gaps are where the strains rearrange or carry accessory sequence." src="/img/multiway_synteny/ecoli_pangenome.png" />
+
 ## Pangenome variants projection
 
 `pggb -V K12` writes a VCF of every variant the graph decomposes against the K12
@@ -158,10 +160,9 @@ sample:
 ```
 
 Stacking the MAF alignment (the whole-genome alignment projection, below) over
-the same window turns the
-matrix from a standalone summary into something you can check: each band of
-shared or absent genotype sits directly above the per-strain alignment it was
-decomposed from.
+the same window turns the matrix from a standalone summary into something you
+can check: each band of shared or absent genotype sits directly above the
+per-strain alignment it was decomposed from.
 
 <Figure caption="The graph's pangenome variants as a multi-sample matrix on the K12 reference, with the MAF alignment stacked below and the K12 gene lane (elfC, ycbU, pyrD…) above. Each matrix column is one variant the graph called, each row one of the other three strains, each cell that strain's genotype (see the legend). The olive block on the left is where CFT073 and NCTC86 have no called genotype while Sakai carries the alternate, and the dense blue field to its right is where all three diverge from K12." src="/img/pangenome/variant_matrix.png" />
 
