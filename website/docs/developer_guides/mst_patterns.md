@@ -190,9 +190,6 @@ on every map write.
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) - these
-  patterns in action across the fetch autoruns
-- [Configuration schema](/docs/developer_guides/configuration_schema) -
-  `ConfigurationReference` and `getConf` in models
-- [Creating custom view types](/docs/developer_guides/creating_view) - the view
-  state model
+- [Data fetching pipeline](/docs/developer_guides/data_fetching)
+- [Configuration schema](/docs/developer_guides/configuration_schema)
+- [Creating custom view types](/docs/developer_guides/creating_view)

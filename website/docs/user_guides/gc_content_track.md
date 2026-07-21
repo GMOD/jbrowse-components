@@ -60,10 +60,6 @@ and manual min/max) all from the same track menu.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track) - the wiggle
-  rendering, autoscale, and scale options the GC track inherits
-- [Sequence track](/docs/user_guides/sequence_track) - the reference sequence
-  the GC signal is computed from, and where the "Add GC content track" action
-  lives
-- [GCContentAdapter configuration](/docs/config/gccontentadapter) - window size,
-  window delta, and GC mode config slots
+- [Quantitative track](/docs/user_guides/quantitative_track)
+- [Sequence track](/docs/user_guides/sequence_track)
+- [GCContentAdapter configuration](/docs/config/gccontentadapter)

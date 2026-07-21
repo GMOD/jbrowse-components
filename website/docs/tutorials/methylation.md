@@ -194,17 +194,9 @@ there.
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track#grouping-reads) -
-  per-read modification coloring plus grouping/sorting reads by the `HP`
-  haplotype tag
-- [Phased trio](/docs/tutorials/analyze_trio) - generating and working with
-  `HP`-tagged reads alongside a phased VCF, the basis for allele-specific
-  methylation
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) -
-  display modes for the bedMethyl subtracks (multirow, overlap, shared scales)
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - another
-  long-read cancer workflow, using the HG008 PacBio HiFi dataset
-- [modkit documentation](https://nanoporetech.github.io/modkit/) - generating
-  bedMethyl pileups and phased output
-- [Gallery: methylation and base modifications](/gallery/#alignments) - a live
-  nanopore methylation-coloring example to open and explore
+- [Alignments track](/docs/user_guides/alignments_track#grouping-reads)
+- [Phased trio](/docs/tutorials/analyze_trio)
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)
+- [modkit documentation](https://nanoporetech.github.io/modkit/)
+- [Gallery: methylation and base modifications](/gallery/#alignments)

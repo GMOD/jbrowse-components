@@ -252,9 +252,6 @@ authoritative reference:
 
 ## See also
 
-- [Extension points](/docs/developer_guides/extension_points) -
-  `Core-extendPluggableElement` and the full extension-point API
-- [Custom track and display types](/docs/developer_guides/creating_display) -
-  where `trackMenuItems` / `contextMenuItems` live
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - menus are
-  one of the element types surveyed there
+- [Extension points](/docs/developer_guides/extension_points)
+- [Custom track and display types](/docs/developer_guides/creating_display)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

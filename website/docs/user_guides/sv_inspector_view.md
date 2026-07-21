@@ -67,16 +67,9 @@ appear automatically.
 
 ## See also
 
-- [Circular genome view](/docs/user_guides/circular_view) - the whole-genome
-  chord overview on its own, for plotting a single SV track without the table
-- [Spreadsheet view](/docs/user_guides/spreadsheet_view) - the tabular half on
-  its own, for importing CSV/TSV/BED/VCF as a searchable feature table
-- [Structural variant visualization](/docs/user_guides/sv_visualization) -
-  interpreting SV signals across alignment colorings, arcs, and the breakpoint
-  split view
-- [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab) -
-  end-to-end workflow on real tumor/normal data
-- [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples) -
-  population-scale SV genotypes
-- [Gallery: structural variant examples](/gallery/#sv) - the live SV inspector,
-  breakpoint split view, and inversion sessions to open and explore
+- [Circular genome view](/docs/user_guides/circular_view)
+- [Spreadsheet view](/docs/user_guides/spreadsheet_view)
+- [Structural variant visualization](/docs/user_guides/sv_visualization)
+- [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
+- [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples)
+- [Gallery: structural variant examples](/gallery/#sv)

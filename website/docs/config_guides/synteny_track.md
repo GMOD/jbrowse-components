@@ -216,8 +216,6 @@ for all options.
 
 ## See also
 
-- [Linear synteny view](/docs/user_guides/linear_synteny_view), side-by-side
-  alignment of two genomes
-- [Dotplot view](/docs/user_guides/dotplot_view), whole-genome synteny overview
-- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization),
-  generating a PAF with minimap2 end-to-end
+- [Linear synteny view](/docs/user_guides/linear_synteny_view)
+- [Dotplot view](/docs/user_guides/dotplot_view)
+- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)

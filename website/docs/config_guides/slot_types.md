@@ -87,7 +87,5 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 
 ## See also
 
-- [Using jexl callbacks](/docs/config_guides/jexl), for the `color` and other
-  slots that accept `jexl:` expressions
-- [Configuring tracks](/docs/config_guides/tracks), where `fileLocation` and
-  other slots appear in a real track config
+- [Using jexl callbacks](/docs/config_guides/jexl)
+- [Configuring tracks](/docs/config_guides/tracks)

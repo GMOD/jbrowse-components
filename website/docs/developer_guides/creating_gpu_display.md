@@ -513,16 +513,8 @@ section of the architecture spec is the full quick-scan list.
 
 ## See also
 
-- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-  - the canonical spec this guide walks through
-
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
-  `MultiRegionDisplayMixin` autorun chain, `rpcProps`, and `renderState`
-- [RPC and worker system](/docs/developer_guides/rpc_workers) - the worker that
-  packs the upload buffers this display renders
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)
-- [Creating custom display types](/docs/developer_guides/creating_display) - the
-  Canvas2D-only path and display registration
+- [Data fetching pipeline](/docs/developer_guides/data_fetching)
+- [RPC and worker system](/docs/developer_guides/rpc_workers)
+- [Creating custom display types](/docs/developer_guides/creating_display)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
-  all element types, including displays

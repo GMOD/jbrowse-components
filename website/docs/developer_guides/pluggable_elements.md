@@ -180,18 +180,8 @@ menu items.
 
 ## See also
 
-- [Custom track and display types](/docs/developer_guides/creating_display) -
-  define new track categories and control how a track renders in a given view
-  type
-- [Custom view types](/docs/developer_guides/creating_view) - add entirely new
-  view panels such as `DotplotView` or `CircularView`
-- [Custom widgets](/docs/developer_guides/creating_widget) - add new
-  drawer/panel UI components
-- [Configuration schema](/docs/developer_guides/configuration_schema) - config
-  slot types, defaults, and how configuration schemas work
-- [Writing a plugin](/docs/developer_guides/simple_plugin) - scaffold a plugin
-  that registers pluggable elements from an official template
-- [Text search adapters](/docs/developer_guides/creating_text_search_adapter) -
-  implement a custom backend for the search box
-- [Custom connections](/docs/developer_guides/creating_connection) - add a new
-  way to import remote/external data sources
+- [Writing a plugin](/docs/developer_guides/simple_plugin)
+- [Custom track and display types](/docs/developer_guides/creating_display)
+- [Custom view types](/docs/developer_guides/creating_view)
+- [Custom widgets](/docs/developer_guides/creating_widget)
+- [Configuration schema](/docs/developer_guides/configuration_schema)

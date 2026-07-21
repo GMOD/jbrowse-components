@@ -250,16 +250,9 @@ your `PATH`.
 
 ## See also
 
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm) - the same multi-row
-  feature display, one row per cell type instead of per strain
-- [Phased trio analysis](/docs/tutorials/analyze_trio) - multi-row painting of
-  inheritance blocks in a human trio
-- [Population genomics](/docs/tutorials/population_genomics) - more variant- and
-  cohort-scale visualizations
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - the same
-  `LinearManhattanDisplay` driven by human GWAS summary statistics, with
-  LocusZoom-style LD coloring
-- [GWAS track configuration](/docs/config_guides/gwas_track) - preparing GWAS
-  and LD files, `scoreColumn`/`scoreTransform`, and significance thresholds
-- [jexl](/docs/config_guides/jexl) - the callback syntax for coloring features
-  by an attribute other than the BED itemRgb this painting reads
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm)
+- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [Population genomics](/docs/tutorials/population_genomics)
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [GWAS track configuration](/docs/config_guides/gwas_track)
+- [jexl](/docs/config_guides/jexl)

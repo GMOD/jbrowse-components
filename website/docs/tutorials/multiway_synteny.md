@@ -197,13 +197,8 @@ and `tabix`, `wget`, and node (for the JBrowse CLI).
 
 ## See also
 
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - the whole-genome,
-  complete-graph workflow for strains and accessions of one species
-- [Synteny visualization](/docs/tutorials/synteny_visualization) - pairwise
-  dotplot and linear synteny basics
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) - full reference
-  for the multi-row `views`/`tracks` structure used above
-- [Synteny track config guide](/docs/config_guides/synteny_track) - adapter and
-  display options for synteny tracks in general
-- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter) - full schema
-  for the adapter used above
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [Synteny visualization](/docs/tutorials/synteny_visualization)
+- [Linear synteny view](/docs/user_guides/linear_synteny_view)
+- [Synteny track config guide](/docs/config_guides/synteny_track)
+- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter)

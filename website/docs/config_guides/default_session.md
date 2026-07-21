@@ -74,9 +74,6 @@ To configure sessions via URL, see [URL parameters](/docs/urlparams).
 
 ## See also
 
-- [Intro to the config.json format](/docs/config_guides/intro), where
-  `defaultSession` sits alongside `assemblies` and `tracks`
-- [URL parameters](/docs/urlparams), passing a session via the URL instead of
-  baking one into `config.json`
-- [Deploying JBrowse Web](/docs/config_guides/deploying), scripting the config
-  (and its default session) in a pipeline
+- [Intro to the config.json format](/docs/config_guides/intro)
+- [URL parameters](/docs/urlparams)
+- [Deploying JBrowse Web](/docs/config_guides/deploying)

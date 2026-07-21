@@ -170,4 +170,3 @@ describe('computeConsensus', () => {
     expect(run('A', reads)).toBe('N')
   })
 })
-

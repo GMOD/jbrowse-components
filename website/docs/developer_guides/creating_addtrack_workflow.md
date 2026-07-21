@@ -55,10 +55,6 @@ export default class WigglePlugin extends Plugin {
 
 ## See also
 
-- [Creating custom connections](/docs/developer_guides/creating_connection) -
-  another way to add tracks in bulk
-- [Extension points](/docs/developer_guides/extension_points) -
-  `Core-guessAdapterForLocation` and `Core-guessTrackTypeForLocation` are the
-  related add-track inference hooks
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
-  all element types a plugin can register, including add-track workflows
+- [Creating custom connections](/docs/developer_guides/creating_connection)
+- [Extension points](/docs/developer_guides/extension_points)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

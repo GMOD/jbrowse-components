@@ -25,7 +25,5 @@ instead of hand-editing. See
 
 ## See also
 
-- [Deploying JBrowse Web](/docs/config_guides/deploying), the pipeline that
-  injects this snippet into index.html at build time
-- [config.json format](/docs/config_guides/intro), clarifies why this one
-  setting must live outside config.json
+- [Deploying JBrowse Web](/docs/config_guides/deploying)
+- [config.json format](/docs/config_guides/intro)

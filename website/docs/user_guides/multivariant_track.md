@@ -231,15 +231,9 @@ have the full field reference.
 
 ## See also
 
-- [Variant track](/docs/user_guides/variant_track) - single-sample VCF display
-  and the per-sample genotype table
-- [Phased trio analysis](/docs/tutorials/analyze_trio) - matrix display with a
-  phased SNP trio
-- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) - regular
-  display across a large SV cohort
-- [Variant track configuration](/docs/config_guides/variant_track) - config-file
-  options
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) -
-  the featureColor/Jexl mechanism behind the impactColor example above
-- [Gallery: variants and populations](/gallery/#variants) - live multi-sample
-  trio and cohort examples to open and explore
+- [Variant track](/docs/user_guides/variant_track)
+- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
+- [Variant track configuration](/docs/config_guides/variant_track)
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
+- [Gallery: variants and populations](/gallery/#variants)

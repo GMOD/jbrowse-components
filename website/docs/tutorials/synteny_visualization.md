@@ -231,20 +231,11 @@ dotplot figure above shows.
 
 ## See also
 
-- [Synteny track config guide](/docs/config_guides/synteny_track) - adapter and
-  display options for dotplot/synteny tracks
-- [Dotplot view](/docs/user_guides/dotplot_view) - full reference for the
-  dotplot view covered above
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) - full reference
-  for the linear synteny view covered above
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - stacking closely
-  related strains from a single all-vs-all PAF
-- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - the
-  cross-species, gene-level `.blocks` workflow for N-way synteny
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - the same
-  dotplot/synteny views applied to a tumor de novo assembly
-- [PIF format](/docs/developer_guides/pif_format) - the indexed alignment format
-  for large genomes, introduced above
+- [Synteny track config guide](/docs/config_guides/synteny_track)
+- [Dotplot view](/docs/user_guides/dotplot_view)
+- [Linear synteny view](/docs/user_guides/linear_synteny_view)
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
 
 ## References
 

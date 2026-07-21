@@ -339,17 +339,8 @@ and switch to `AllVsAllIndexedPAFAdapter`, as above.
 
 ## See also
 
-- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - the
-  cross-species, gene-based `.blocks` workflow
-- [Synteny visualization](/docs/tutorials/synteny_visualization) - pairwise
-  dotplot and linear synteny basics
-- [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter) - full schema for
-  the un-indexed adapter used above
-- [AllVsAllIndexedPAFAdapter config](/docs/config/allvsallindexedpafadapter) -
-  the tabix-backed adapter for whole-genome pangenomes
-- [LGVSyntenyDisplay config](/docs/config/lgvsyntenydisplay) - the display that
-  draws the one-vs-all view in a plain linear genome view
-- [PIF format](/docs/developer_guides/pif_format) - the indexed alignment format
-  `make-pif` produces
-- [Multi-way synteny in an embedded app](https://jbrowse.org/storybook/app/multiway-synteny-example/)
-  - this same four-strain all-vs-all view running live in `@jbrowse/react-app2`
+- [Synteny visualization](/docs/tutorials/synteny_visualization)
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
+- [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter)
+- [AllVsAllIndexedPAFAdapter config](/docs/config/allvsallindexedpafadapter)
+- [PIF format](/docs/developer_guides/pif_format)

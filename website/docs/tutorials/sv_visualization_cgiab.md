@@ -753,14 +753,10 @@ For more on customizing JBrowse 2, see the
 
 ## See also
 
-- [Synteny visualization](/docs/tutorials/synteny_visualization) - the same
-  dotplot/synteny views, worked with bacterial genome assemblies
-- [SV visualization](/docs/user_guides/sv_visualization) - reference for the SV
-  display types and read-signal patterns used throughout
-- [SV inspector view](/docs/user_guides/sv_inspector_view) - the SV inspector
-  workflow used in the translocation and CUZD1 walkthroughs
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) -
-  tumor/normal coverage comparison referenced in the CNV section
+- [Synteny visualization](/docs/tutorials/synteny_visualization)
+- [SV visualization](/docs/user_guides/sv_visualization)
+- [SV inspector view](/docs/user_guides/sv_inspector_view)
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
 
 ## References
 

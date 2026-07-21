@@ -322,9 +322,6 @@ reference.
 
 ## See also
 
-- [Variant track](/docs/user_guides/variant_track), using variant tracks in the
-  app
-- [Multi-sample variant display](/docs/user_guides/multivariant_track),
-  population-scale displays and clustering
-- [Structural variant visualization](/docs/user_guides/sv_visualization),
-  interpreting SV calls
+- [Variant track](/docs/user_guides/variant_track)
+- [Multi-sample variant display](/docs/user_guides/multivariant_track)
+- [Structural variant visualization](/docs/user_guides/sv_visualization)

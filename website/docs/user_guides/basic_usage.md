@@ -299,15 +299,9 @@ See the [configuration guide](/docs/config_guides/track_selector) for more.
 
 ## See also
 
-- [Connections](/docs/user_guides/connections) - load an entire UCSC or JBrowse
-  track hub at once
-- [Bookmark widget](/docs/user_guides/bookmark_widget) - save and revisit
-  regions
-- [Plugin store](/docs/user_guides/plugin_store) - add new track, view, and
-  adapter types
-- [Track selector configuration](/docs/config_guides/track_selector) - metadata
-  columns and faceted filtering
-- [Avoiding stale config](/docs/config_guides/avoiding_stale_config) - how admin
-  edits and session-track overrides interact
-- [Supported file types](/docs/config_guides/file_types) - the config-level
-  companion to the format list above
+- [Connections](/docs/user_guides/connections)
+- [Bookmark widget](/docs/user_guides/bookmark_widget)
+- [Plugin store](/docs/user_guides/plugin_store)
+- [Track selector configuration](/docs/config_guides/track_selector)
+- [Avoiding stale config](/docs/config_guides/avoiding_stale_config)
+- [Supported file types](/docs/config_guides/file_types)

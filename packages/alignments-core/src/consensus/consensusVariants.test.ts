@@ -124,16 +124,23 @@ describe('variantsToVcf', () => {
     const vcf = variantsToVcf([
       {
         refName: 'ctgA',
-        variants: [{ pos: 20, ref: 'A', alt: 'G', depth: 5, af: 1, type: 'snv' }],
+        variants: [
+          { pos: 20, ref: 'A', alt: 'G', depth: 5, af: 1, type: 'snv' },
+        ],
       },
       {
         refName: 'ctgA',
-        variants: [{ pos: 5, ref: 'T', alt: 'C', depth: 5, af: 1, type: 'snv' }],
+        variants: [
+          { pos: 5, ref: 'T', alt: 'C', depth: 5, af: 1, type: 'snv' },
+        ],
       },
     ])
     // one contig line, records position-sorted (pos 6 before pos 21)
     expect(vcf.match(/##contig=<ID=ctgA>/g)).toHaveLength(1)
-    const rows = vcf.trim().split('\n').filter(l => !l.startsWith('#'))
+    const rows = vcf
+      .trim()
+      .split('\n')
+      .filter(l => !l.startsWith('#'))
     expect(rows.map(r => r.split('\t')[1])).toEqual(['6', '21'])
   })
 })

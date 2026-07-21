@@ -261,9 +261,6 @@ is left out of the script. Add it by hand if you want it.
 
 ## See also
 
-- [DNA methylation](/docs/tutorials/methylation) - per-read methylation from
-  long-read modBAM (MM/ML tags), haplotype-grouped and imprinting examples
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) -
-  loading the MethylDackel bedGraphs as an aggregate methylation-fraction track
-- [Alignments track](/docs/user_guides/alignments_track) - the track menu,
-  coloring, and sorting options used above
+- [DNA methylation](/docs/tutorials/methylation)
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
+- [Alignments track](/docs/user_guides/alignments_track)

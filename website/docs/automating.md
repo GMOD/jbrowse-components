@@ -210,9 +210,6 @@ and the reusable wait helpers (`waitForLoadingComplete`, `waitForDisplaysDone`,
 
 ## See also
 
-- [Embedded components](/docs/embedded_components) - choosing a package before
-  wiring up `init`
-- [Default session](/docs/config_guides/default_session) - the config-file
-  equivalent of shipping an `init` block
-- [URL query parameter API](/docs/urlparams) - full parameter and session-spec
-  reference for every view type
+- [Embedded components](/docs/embedded_components)
+- [Default session](/docs/config_guides/default_session)
+- [URL query parameter API](/docs/urlparams)

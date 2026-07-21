@@ -35,15 +35,9 @@ full walkthrough of the regular and matrix multi-sample displays.
 
 ## See also
 
-- [Multi-sample variant display](/docs/user_guides/multivariant_track) -
-  population-scale VCFs as per-sample rows or a genotype matrix
-- [Structural variant visualization](/docs/user_guides/sv_visualization) -
-  interpreting SV calls across views
-- [Alignments track](/docs/user_guides/alignments_track) - inspect the read
-  evidence behind a call
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - r² LD coloring to an
-  index SNP, the same linkage concept behind variant LD displays
-- [Variant track configuration](/docs/config_guides/variant_track) - SVTYPE
-  coloring, multi-sample display defaults, and LD displays
-- [Gallery: variants and populations](/gallery/#variants) - live trio,
-  diploid-assembly, and GWAS LD examples to open and explore
+- [Multi-sample variant display](/docs/user_guides/multivariant_track)
+- [Structural variant visualization](/docs/user_guides/sv_visualization)
+- [Alignments track](/docs/user_guides/alignments_track)
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [Variant track configuration](/docs/config_guides/variant_track)
+- [Gallery: variants and populations](/gallery/#variants)

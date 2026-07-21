@@ -197,12 +197,7 @@ On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib
 
 ## See also
 
-- [Phased trio analysis](/docs/tutorials/analyze_trio) - another multi-row
-  feature display use case, painting hap-ibd inheritance blocks
-- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) - the
-  continuous-signal analog of this one-row-per-group pattern, using MultiWiggle
-  instead of discrete features
-- [jexl](/docs/config_guides/jexl) - the callback syntax for coloring features
-  off an attribute other than `itemRgb`
-- [Configuring tracks](/docs/config_guides/tracks) - general
-  FeatureTrack/BedTabixAdapter config referenced above
+- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk)
+- [jexl](/docs/config_guides/jexl)
+- [Configuring tracks](/docs/config_guides/tracks)

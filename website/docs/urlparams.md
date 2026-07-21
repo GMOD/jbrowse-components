@@ -991,11 +991,7 @@ See
 
 ## See also
 
-- [Automating JBrowse](/docs/automating) - the shared `init` model behind every
-  launch surface
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) -
-  `createViewState`/`location` as an alternative to URL params
-- [Default session](/docs/config_guides/default_session) - baking a session spec
-  into config.json instead of a URL
-- [Extension points](/docs/developer_guides/extension_points) - how plugins
-  register `LaunchView-<type>` handlers
+- [Automating JBrowse](/docs/automating)
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
+- [Default session](/docs/config_guides/default_session)
+- [Extension points](/docs/developer_guides/extension_points)

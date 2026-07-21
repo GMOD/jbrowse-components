@@ -513,18 +513,8 @@ you add a GPU renderer and swap `createCanvas2DBackend` for
 
 ## See also
 
-- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-  - the canonical spec this guide walks through
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) - the autorun
-  chain, `rpcProps`, cancellation, and `regionTooLarge` behind `fetchNeeded`
-- [RPC and worker system](/docs/developer_guides/rpc_workers) - implementing the
-  `GetScoreData` method the model calls
-- [GPU displays](/docs/developer_guides/creating_gpu_display) - the scale-up
-  path for dense datasets
+- [Custom track and display types](/docs/developer_guides/creating_display)
+- [Data fetching pipeline](/docs/developer_guides/data_fetching)
+- [RPC and worker system](/docs/developer_guides/rpc_workers)
+- [GPU displays](/docs/developer_guides/creating_gpu_display)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
-- [Custom track and display types](/docs/developer_guides/creating_display) -
-  track vs display, registration, and view pairing
-- [Configuration schema](/docs/developer_guides/configuration_schema) - defining
-  the `color`/`height` slots this display reads
-- [Writing a plugin](/docs/developer_guides/simple_plugin) - scaffolding and
-  build setup

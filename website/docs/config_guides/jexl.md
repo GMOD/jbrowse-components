@@ -171,11 +171,7 @@ for the full walkthrough.
 
 ## See also
 
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors),
-  worked color-callback examples
-- [Customizing feature details](/docs/config_guides/customizing_feature_details),
-  jexl in the feature-details panel
-- [Variant track](/docs/user_guides/variant_track), reading VCF `INFO` fields
-  (e.g. `feature.INFO.SVTYPE`) in callbacks
-- [Alignments track](/docs/user_guides/alignments_track), BAM/CRAM tags and
-  `getTag` in callbacks
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
+- [Customizing feature details](/docs/config_guides/customizing_feature_details)
+- [Variant track](/docs/user_guides/variant_track)
+- [Alignments track](/docs/user_guides/alignments_track)

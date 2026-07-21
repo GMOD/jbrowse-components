@@ -305,14 +305,9 @@ Example display config that starts taller and in density mode:
 ## See also
 
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
-  - the MultiWiggle track type in depth, including in-app clustering
-- [MultiWiggleAdapter config](/docs/config/multiwiggleadapter) - the subadapter
-  schema used above
-- [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay) - the
-  rendering-mode options detailed in this tutorial
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm) - the discrete-interval
-  analog of this one-row-per-group pattern, using multi-row feature display
-  instead of MultiWiggle
+- [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
+- [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay)
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm)
 
 ## Sources
 

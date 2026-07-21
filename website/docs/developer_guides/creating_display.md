@@ -88,18 +88,8 @@ In-tree references:
 
 ## See also
 
-- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-  - the canonical spec behind this page
-- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-  - for large or dense datasets
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) - how a display
-  fetches its data via the autorun chain
-- [Adding SVG export to a display](/docs/developer_guides/svg_export)
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) - a track
-  combines an adapter with its displays
-- [Configuration schema](/docs/developer_guides/configuration_schema) - define a
-  custom config schema for a track category
-- [Creating custom widgets](/docs/developer_guides/creating_widget)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
-  all element types, including tracks and displays
+- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+- [Data fetching pipeline](/docs/developer_guides/data_fetching)
+- [Adding SVG export to a display](/docs/developer_guides/svg_export)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

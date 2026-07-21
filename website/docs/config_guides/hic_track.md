@@ -64,7 +64,5 @@ example draws only the high-scoring calls, in dark red, as thin arcs:
 
 ## See also
 
-- [Hi-C track](/docs/user_guides/hic_track), loading and interpreting contact
-  matrices in the app
-- [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay),
-  arc display slots
+- [Hi-C track](/docs/user_guides/hic_track)
+- [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay)

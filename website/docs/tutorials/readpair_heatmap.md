@@ -147,3 +147,11 @@ It only fetches the two small regions (under 1 GB), not the whole genome, and
 pins the C-GIAB FTP path and benchmark regions so re-running reproduces the same
 files. It needs `samtools`, `java` (for `juicer_tools`, fetched automatically if
 absent), and node for the JBrowse CLI.
+
+## See also
+
+- [Hi-C track](/docs/user_guides/hic_track) — renders the `.hic` output this
+  tutorial produces
+- [Structural variant visualization](/docs/user_guides/sv_visualization)
+- [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#copynumber)

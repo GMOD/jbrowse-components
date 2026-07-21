@@ -70,9 +70,6 @@ session.showWidget(widget)
 ## See also
 
 - [Drawer widgets in embedded components](/docs/developer_guides/drawer_widgets)
-  - show a widget as a resizable side panel
-- [Extension points](/docs/developer_guides/extension_points) -
-  `Core-replaceWidget` and `Core-extraFeaturePanel` customize existing widgets
-- [Configuration schema](/docs/developer_guides/configuration_schema) - define
-  the widget's `configSchema`
+- [Extension points](/docs/developer_guides/extension_points)
+- [Configuration schema](/docs/developer_guides/configuration_schema)
 - [Pluggable elements](/docs/developer_guides/pluggable_elements)

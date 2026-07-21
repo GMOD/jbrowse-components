@@ -337,10 +337,6 @@ It needs `bcftools`, htslib (`bgzip`/`tabix`), Java 8+, `python3`, `curl`, and
 
 ## See also
 
-- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) -
-  structural variant analysis with the 1000 Genomes dataset: multi-sample
-  genotypes, trio inheritance of SVs, and a large chromosomal inversion.
-- [Multi-sample variant display](/docs/user_guides/multivariant_track) - the
-  matrix/phased display this tutorial builds on.
-- [Variant track config](/docs/config_guides/variant_track) - loading the phased
-  VCF used throughout.
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
+- [Multi-sample variant display](/docs/user_guides/multivariant_track)
+- [Variant track config](/docs/config_guides/variant_track)

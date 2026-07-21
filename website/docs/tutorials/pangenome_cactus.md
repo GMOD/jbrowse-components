@@ -376,17 +376,8 @@ CLI, `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
 
 ## See also
 
-- [Pangenome graphs (pggb)](/docs/tutorials/pangenome) - the same four
-  projections built with pggb, and what each one means
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - stacking genomes in a
-  linear synteny view
-- [MAF track](/docs/user_guides/maf_track),
-  [Multi-sample variant track](/docs/user_guides/multivariant_track),
-  [Alignments track](/docs/user_guides/alignments_track) - the display types the
-  MAF, variant, and read-mapping projections use
-- [vg giraffe](https://github.com/vgteam/vg/wiki/Mapping-short-reads-with-Giraffe) -
-  mapping short reads through the pangenome graph
-- [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md),
-  [odgi](https://github.com/pangenome/odgi),
-  [taffy](https://github.com/ComparativeGenomicsToolkit/taffy) - the tools this
-  tutorial drives
+- [Pangenome graphs (pggb)](/docs/tutorials/pangenome)
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [MAF track](/docs/user_guides/maf_track)
+- [vg giraffe](https://github.com/vgteam/vg/wiki/Mapping-short-reads-with-Giraffe)
+- [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)

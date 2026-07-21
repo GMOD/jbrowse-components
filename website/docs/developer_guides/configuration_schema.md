@@ -313,10 +313,7 @@ resolution.
 
 ## See also
 
-- [Configuration API reference](/docs/api/core-configuration) - `getConf`,
-  `readConfObject`, `ConfigurationReference` signatures
+- [Configuration API reference](/docs/api/core-configuration)
 - [jexl config callbacks](/docs/config_guides/jexl)
-- [MST patterns](/docs/developer_guides/mst_patterns) - `types.frozen` and model
-  composition
-- [Custom track and display types](/docs/developer_guides/creating_display) - a
-  concrete pluggable element that declares a `configSchema` like the ones above
+- [MST patterns](/docs/developer_guides/mst_patterns)
+- [Custom track and display types](/docs/developer_guides/creating_display)

@@ -163,10 +163,7 @@ specific state.
 
 ## See also
 
-- [Configuring tracks](/docs/config_guides/tracks) - the full `displays` array
-  and other track config
-- [URL parameters](/docs/urlparams) - the session-spec format, including
-  `trackSnapshot` and multi-view specs
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - passing
-  snapshots through an embedded component
-- [Config schema docs](/docs/config_guide) - every display type's settable keys
+- [Configuring tracks](/docs/config_guides/tracks)
+- [URL parameters](/docs/urlparams)
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
+- [Config schema docs](/docs/config_guide)

@@ -160,9 +160,6 @@ load a small plugin like this from config.
 
 ## See also
 
-- [Theming (developer guide)](/docs/developer_guides/theming), the full palette
-  and the exported color constants for use in plugin code
-- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration), the
-  `theme`, `extraThemes`, and `logoPath` global slots in the schema reference
-- [Configuring plugins](/docs/config_guides/plugins), loading the small plugin
-  needed for callback-based style overrides
+- [Theming (developer guide)](/docs/developer_guides/theming)
+- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration)
+- [Configuring plugins](/docs/config_guides/plugins)

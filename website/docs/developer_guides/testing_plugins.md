@@ -143,9 +143,6 @@ Run the suite with `pnpm test:browser` (builds `@jbrowse/web` first), or
 
 ## See also
 
-- [Creating a simple plugin](/docs/developer_guides/simple_plugin) - the
-  template ships with the Jest setup used above
-- [Creating a data adapter](/docs/developer_guides/creating_adapter) - the
-  adapter tests above test-construct from its config schema
-- [Creating a widget](/docs/developer_guides/creating_widget) - the component
-  tests above render a widget's `ReactComponent`
+- [Creating a simple plugin](/docs/developer_guides/simple_plugin)
+- [Creating a data adapter](/docs/developer_guides/creating_adapter)
+- [Creating a widget](/docs/developer_guides/creating_widget)

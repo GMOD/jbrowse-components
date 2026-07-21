@@ -463,16 +463,11 @@ rows.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track) - loading and
-  displaying a single bigWig signal
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) -
-  stacking the Fst and π scans as one track
-- [Multi-sample variant track](/docs/user_guides/multivariant_track) - the
-  genotype-matrix display, grouping and coloring samples by metadata
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - the same
-  genome-wide-statistic-as-track pattern for association scans
-- [Configuring assemblies](/docs/config_guides/assemblies) - loading a non-human
-  reference such as dm6
+- [Quantitative track](/docs/user_guides/quantitative_track)
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
+- [Multi-sample variant track](/docs/user_guides/multivariant_track)
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [Configuring assemblies](/docs/config_guides/assemblies)
 
 ## References
 

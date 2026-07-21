@@ -100,6 +100,6 @@ and repaint** live.
 
 ## See also
 
-- [Embedded components](/docs/embedded_components) - the underlying JS/React
-  linear genome view this wraps
-- [JBrowseR](/docs/jbrowser) - the R/Shiny equivalent
+- [Embedded components](/docs/embedded_components) — the JS/React view this
+  wraps
+- [JBrowseR](/docs/jbrowser) — R/Shiny equivalent

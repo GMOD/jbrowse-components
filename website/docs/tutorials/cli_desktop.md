@@ -149,9 +149,7 @@ jbrowse text-index --out myproject
 
 ## See also
 
-- [CLI command reference](/docs/cli) - every `jbrowse` command and flag
-- [Desktop quickstart](/docs/quickstart_desktop) - installing and using JBrowse
-  Desktop
-- [Web quickstart](/docs/quickstart_web) - serving a config directory on the web
-- [Configuring assemblies](/docs/config_guides/assemblies) and
-  [tracks](/docs/config_guides/tracks) - the config the CLI writes, by hand
+- [CLI command reference](/docs/cli)
+- [Desktop quickstart](/docs/quickstart_desktop)
+- [Web quickstart](/docs/quickstart_web)
+- [Configuring assemblies](/docs/config_guides/assemblies)

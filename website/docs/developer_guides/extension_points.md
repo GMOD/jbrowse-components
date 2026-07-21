@@ -1015,12 +1015,7 @@ avoid collisions.
 
 ## See also
 
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
-  every element type, including extension points
-- [Custom view types](/docs/developer_guides/creating_view) - the
-  `LaunchView-<type>` pattern referenced above
-- [Top-level menu items](/docs/developer_guides/menus) - a worked example using
-  `Core-extendPluggableElement` to add context menu items
-- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow) -
-  where `Core-guessAdapterForLocation`/`Core-guessTrackTypeForLocation` fit into
-  adding tracks
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [Custom view types](/docs/developer_guides/creating_view)
+- [Top-level menu items](/docs/developer_guides/menus)
+- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow)

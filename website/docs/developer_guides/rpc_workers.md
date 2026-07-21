@@ -206,14 +206,10 @@ shape is still read and hoisted to the flat `workerCount` slot on load.)
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
-  main-thread caller side that drives `rpcManager.call` from `fetchNeeded`
+- [Data fetching pipeline](/docs/developer_guides/data_fetching)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-  - RPC methods that pack and transfer GPU buffers with `rpcResult`
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) - adapters
-  run inside these workers
-- [RefName aliasing](/docs/developer_guides/refname_aliasing) - what
-  `renameRegions` resolves before args cross the worker boundary
+- [Creating custom adapters](/docs/developer_guides/creating_adapter)
+- [RefName aliasing](/docs/developer_guides/refname_aliasing)
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)
 
 [sca]:

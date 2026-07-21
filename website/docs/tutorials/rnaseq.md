@@ -136,11 +136,7 @@ strand-specific BigWig produced by your aligner), load it separately as a
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track) - splice arcs,
-  soft-clipping, coloring, and the other display options for BAM/CRAM
-- [Quantitative track](/docs/user_guides/quantitative_track) - loading a
-  precomputed coverage signal such as a strand-specific BigWig
-- [Gene tracks](/docs/user_guides/gene_track) - displaying the reference gene
-  annotations that RNA-seq reads are compared against
-- [Gallery: alignments and long reads](/gallery/#alignments) - the RNA-seq
-  splice-junction example alongside other long-read alignment views
+- [Alignments track](/docs/user_guides/alignments_track)
+- [Quantitative track](/docs/user_guides/quantitative_track)
+- [Gene tracks](/docs/user_guides/gene_track)
+- [Gallery: alignments and long reads](/gallery/#alignments)

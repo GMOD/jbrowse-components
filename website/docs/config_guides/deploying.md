@@ -111,4 +111,4 @@ tracks, default session) is all `config.json` and can be fully scripted.
 - [Configuring tracks](/docs/config_guides/tracks)
 - [Avoiding stale config](/docs/config_guides/avoiding_stale_config)
 - [`@jbrowse/cli` command reference](/docs/cli)
-- [URL query param API](/docs/urlparams), linking to specific locations/tracks
+- [URL query param API](/docs/urlparams)

@@ -242,8 +242,7 @@ only if WebGL is also unavailable.
 
 ## See also
 
-- [User guide](/docs/user_guide) - track types, views, and UI features
-- [Config guide](/docs/config_guide) - advanced track and assembly configuration
-- [Web quick start](/docs/quickstart_web) - file format preparation commands
-  (indexing FASTA/BAM/VCF/GFF) that apply to desktop too
-- [FAQ](/docs/faq) - common questions including text searching
+- [User guide](/docs/user_guide)
+- [Config guide](/docs/config_guide)
+- [Web quick start](/docs/quickstart_web)
+- [FAQ](/docs/faq)

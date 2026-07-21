@@ -163,9 +163,6 @@ have it added to the list.
 
 ## See also
 
-- [Writing a plugin](/docs/developer_guides/simple_plugin) - the build-step
-  templates that externalize this re-export list automatically
-- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin) -
-  `jbrequire` is the no-build equivalent of importing a re-export
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - the
-  `@jbrowse/core` APIs listed above are what you register these against
+- [Writing a plugin](/docs/developer_guides/simple_plugin)
+- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

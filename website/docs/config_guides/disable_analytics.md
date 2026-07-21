@@ -25,7 +25,5 @@ for the other global slots.
 
 ## See also
 
-- [config.json format](/docs/config_guides/intro), where global `configuration`
-  slots like this one sit
-- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration), the
-  rest of the global slots
+- [config.json format](/docs/config_guides/intro)
+- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration)

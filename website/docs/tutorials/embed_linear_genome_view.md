@@ -291,29 +291,9 @@ function GenomeBrowser() {
 
 ## See also
 
-- [Configuring assemblies](/docs/config_guides/assemblies) - the bgzip-FASTA and
-  refname-aliasing setup used above
-- [Configuring tracks](/docs/config_guides/tracks) - common track config and the
-  `displayDefaults` shorthand
-- [Supported file types](/docs/config_guides/file_types) - per-format adapters
-  and the tabix/bgzip prep steps
-- [Text searching](/docs/config_guides/text_searching) - building the trix
-  indexes referenced above
-- [Vanilla JS demo](https://jbrowse.org/demos/lgv-vanillajs/) - a live example
-  of the instance set up above
-  ([source](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo))
-- [LGV storybook](https://jbrowse.org/storybook/lgv/) - runnable examples
-  covering most of the component's customizations
-- [Embedded components](/docs/embedded_components) - every embedded package
-  (app, linear, circular) plus ready-to-clone bundler demos (Vite, Next.js,
-  rsbuild, vanilla JS)
-- [@jbrowse/react-app2 demo](https://jbrowse.org/demos/app-vanillajs) - like
-  this tutorial but supports multiple assemblies, synteny, and more
-  ([storybook](https://jbrowse.org/storybook/app/))
-- [Web quickstart](/docs/quickstart_web) - a full JBrowse deployment, with the
-  shareable session URLs, track hub connections, and admin panel that the
-  embedded components don't provide
-- [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter) - embed the same linear
-  genome view in a Python notebook (Jupyter, Colab, VS Code)
-- [JBrowseR](/docs/jbrowser) - embed it from R, in R Markdown, Shiny, or the R
-  console
+- [Embedded components](/docs/embedded_components)
+- [Configuring assemblies](/docs/config_guides/assemblies)
+- [Configuring tracks](/docs/config_guides/tracks)
+- [LGV storybook](https://jbrowse.org/storybook/lgv/)
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) — Python equivalent
+- [JBrowseR](/docs/jbrowser) — R/Shiny equivalent

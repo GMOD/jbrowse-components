@@ -70,11 +70,7 @@ polylinker sites, or any other named motif set - not only enzymes.
 
 ## See also
 
-- [Gene track](/docs/user_guides/gene_track) - per-transcript translation,
-  color-by-CDS, and peptide lettering
-- [Feature sequence panel](/docs/user_guides/feature_sequence) - extract a
-  feature's CDS, protein, cDNA, or genomic sequence
-- [Assembly configuration](/docs/config_guides/assemblies) - reference sequence
-  adapters and alternative genetic codes
-- [GC content track](/docs/user_guides/gc_content_track) - computed on the fly
-  from this track's sequence, launched from its track menu
+- [Gene track](/docs/user_guides/gene_track)
+- [Feature sequence panel](/docs/user_guides/feature_sequence)
+- [Assembly configuration](/docs/config_guides/assemblies)
+- [GC content track](/docs/user_guides/gc_content_track)

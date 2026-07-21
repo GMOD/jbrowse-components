@@ -400,16 +400,9 @@ output (on real disk) so a fresh run works out of the box. Export your own
 
 ## See also
 
-- [Pangenome graphs with Minigraph-Cactus](/docs/tutorials/pangenome_cactus) -
-  the same four strains and four projections, built with `cactus-pangenome`
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - the four-strain
-  synteny projection on its own, from a minimap2 all-vs-all PAF
-- [MAF track](/docs/user_guides/maf_track) - the multiple-alignment display and
-  its conservation, identity, and codon views
-- [Multi-sample variant track](/docs/user_guides/multivariant_track) - the
-  matrix and per-position genotype displays
-- [PIF format](/docs/developer_guides/pif_format) - the indexed alignment format
-  `make-pif` produces
-- [pggb](https://github.com/pangenome/pggb),
-  [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md),
-  [odgi](https://github.com/pangenome/odgi) - the graph builders
+- [Pangenome graphs with Minigraph-Cactus](/docs/tutorials/pangenome_cactus)
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [MAF track](/docs/user_guides/maf_track)
+- [Multi-sample variant track](/docs/user_guides/multivariant_track)
+- [PIF format](/docs/developer_guides/pif_format)
+- [pggb](https://github.com/pangenome/pggb)

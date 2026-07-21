@@ -190,13 +190,8 @@ For more on navigating the breakpoint split view, see
 
 ## See also
 
-- [SV visualization guide](/docs/user_guides/sv_visualization) - reference for
-  all SV display types and SV-type read signatures
-- [SV inspector guide](/docs/user_guides/sv_inspector_view) - loading data into
-  the SV inspector
-- [Multi-sample variant displays](/docs/user_guides/multivariant_track) -
-  regular and matrix display mode details
-- [Phased trio analysis](/docs/tutorials/analyze_trio) - SNP-level trio phasing
-  and IBD block analysis
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - end-to-end SV
-  workflow with a cancer dataset
+- [SV visualization guide](/docs/user_guides/sv_visualization)
+- [SV inspector guide](/docs/user_guides/sv_inspector_view)
+- [Multi-sample variant displays](/docs/user_guides/multivariant_track)
+- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)

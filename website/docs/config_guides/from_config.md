@@ -70,8 +70,5 @@ Example `FromConfigSequenceAdapter`:
 
 ## See also
 
-- [Configuring tracks](/docs/config_guides/tracks), the track config these
-  adapters plug into
-- [FromConfigAdapter config docs](/docs/config/fromconfigadapter) and
-  [FromConfigSequenceAdapter config docs](/docs/config/fromconfigsequenceadapter),
-  the full slot reference
+- [Configuring tracks](/docs/config_guides/tracks)
+- [FromConfigAdapter config docs](/docs/config/fromconfigadapter)

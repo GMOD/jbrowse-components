@@ -36,9 +36,6 @@ whole-genome circular overview and cross-filters the two together.
 
 ## See also
 
-- [SV inspector view](/docs/user_guides/sv_inspector_view) - this table paired
-  with a circular SV overview
-- [Circular genome view](/docs/user_guides/circular_view) - the whole-genome
-  chord overview on its own
-- [Structural variant visualization](/docs/user_guides/sv_visualization) -
-  interpreting SV signals and the breakpoint split view
+- [SV inspector view](/docs/user_guides/sv_inspector_view)
+- [Circular genome view](/docs/user_guides/circular_view)
+- [Structural variant visualization](/docs/user_guides/sv_visualization)

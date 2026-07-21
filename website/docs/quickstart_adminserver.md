@@ -139,11 +139,8 @@ session, or any of your previously saved sessions.
 
 ## See also
 
-- [Quickstart web](/docs/quickstart_web) - the recommended CLI-first setup path
-- [Supported file types](/docs/config_guides/file_types) - formats the Add Track
-  form accepts
-- [Default session](/docs/config_guides/default_session) - the config-file
-  equivalent of the "Set default session" form
-- [Assembly configuration guide](/docs/config_guides/assemblies) - aliasing and
-  genetic-code options beyond the GUI form
-- [Config guide](/docs/config_guide) - more configuration topics
+- [Quickstart web](/docs/quickstart_web)
+- [Supported file types](/docs/config_guides/file_types)
+- [Default session](/docs/config_guides/default_session)
+- [Assembly configuration guide](/docs/config_guides/assemblies)
+- [Config guide](/docs/config_guide)

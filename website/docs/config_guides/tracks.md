@@ -180,11 +180,7 @@ sidebar.
 
 ## See also
 
-- [Supported file types](/docs/config_guides/file_types), per-format adapter
-  reference
-- [Hierarchical track selector](/docs/config_guides/track_selector), where the
-  `category` field described above is consumed
-- [Deploying JBrowse Web](/docs/config_guides/deploying#generating-configjson-from-a-script),
-  generating track configs from a script
-- [Display settings](/docs/tutorials/display_settings), opening a track in a
-  particular display state via URL instead of editing the config default
+- [Supported file types](/docs/config_guides/file_types)
+- [Hierarchical track selector](/docs/config_guides/track_selector)
+- [Deploying JBrowse Web](/docs/config_guides/deploying#generating-configjson-from-a-script)
+- [Display settings](/docs/tutorials/display_settings)

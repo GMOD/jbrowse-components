@@ -150,9 +150,6 @@ From simplest to most complex:
 
 ## See also
 
-- [Creating custom display types](/docs/developer_guides/creating_display) -
-  `renderSvg` is a display-model action
-- [Renderer architecture](/docs/developer_guides/renderer_architecture) -
-  `paintLayer` is the shared on-screen/export draw path
+- [Creating custom display types](/docs/developer_guides/creating_display)
+- [Renderer architecture](/docs/developer_guides/renderer_architecture)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-  - `buildRenderBlocks`/`renderBlocks` come from the same GPU render-block utils

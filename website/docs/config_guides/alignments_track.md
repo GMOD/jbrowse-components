@@ -91,7 +91,5 @@ embedded view instead of changing the default, see
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track), sorting, coloring,
-  grouping, and filtering reads in the app
-- [Structural variant visualization](/docs/user_guides/sv_visualization),
-  interpreting SV signals in alignments
+- [Alignments track](/docs/user_guides/alignments_track)
+- [Structural variant visualization](/docs/user_guides/sv_visualization)

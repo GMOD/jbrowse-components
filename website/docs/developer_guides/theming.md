@@ -128,10 +128,6 @@ Colors shared with worker code must be exported as plain `const` strings from
 
 ## See also
 
-- [Coloring/theming](/docs/config_guides/theme) - the end-user walkthrough for
-  changing colors, dark mode, the logo, and sizing via config
-- [Writing a plugin](/docs/developer_guides/simple_plugin) - where a plugin
-  would register the palette augmentation described above
-- [Renderer architecture](/docs/developer_guides/renderer_architecture) and
-  [RPC and worker system](/docs/developer_guides/rpc_workers) - why worker code
-  has no MUI theme context, motivating the plain-constant color exports
+- [Config guide: coloring/theming](/docs/config_guides/theme)
+- [Writing a plugin](/docs/developer_guides/simple_plugin)
+- [Renderer architecture](/docs/developer_guides/renderer_architecture)

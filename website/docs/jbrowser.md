@@ -99,6 +99,6 @@ Full documentation is at
 
 ## See also
 
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) - the Python/Jupyter equivalent
-- [Embedded components](/docs/embedded_components) - the underlying JS/React
-  linear genome view this wraps
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) — Python equivalent
+- [Embedded components](/docs/embedded_components) — the JS/React view this
+  wraps

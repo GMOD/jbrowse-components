@@ -28,8 +28,6 @@ yourself.
 
 ## See also
 
-- [Plugin store page](/plugin_store) - the browsable catalog of white-listed
-  plugins with ready-to-paste config snippets
-- [Developer guide](/docs/developer_guide) - writing your own plugin
-- [Plugin configuration](/docs/config_guides/plugins) - adding plugins to a
-  config file
+- [Plugin store page](/plugin_store)
+- [Developer guide](/docs/developer_guide)
+- [Plugin configuration](/docs/config_guides/plugins)

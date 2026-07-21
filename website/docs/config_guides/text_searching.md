@@ -124,7 +124,5 @@ jbrowse text-index --attributes=Name,ID,symbol,gene_name
 
 ## See also
 
-- [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box),
-  searching for gene names and regions once an index is built
-- [Connections](/docs/user_guides/connections), loading track hubs that ship
-  their own indexes
+- [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box)
+- [Connections](/docs/user_guides/connections)

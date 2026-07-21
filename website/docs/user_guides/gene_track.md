@@ -131,13 +131,8 @@ for installation and connected-view examples.
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track) - the reference sequence
-  and six-frame translation the peptide lettering lines up against
-- [Feature sequence panel](/docs/user_guides/feature_sequence) - extract a
-  transcript's protein, CDS, or cDNA
-- [RNA-seq tutorial](/docs/tutorials/rnaseq) - sashimi arcs and collapsing
-  introns with spliced alignments
-- [Track configuration](/docs/config_guides/tracks) - config-file options for
-  tracks and displays
-- [Gallery: genes and proteins](/gallery/#genes) - live polyprotein,
-  selenoprotein, and flipped-view examples to open and explore
+- [Sequence track](/docs/user_guides/sequence_track)
+- [Feature sequence panel](/docs/user_guides/feature_sequence)
+- [RNA-seq tutorial](/docs/tutorials/rnaseq)
+- [Track configuration](/docs/config_guides/tracks)
+- [Gallery: genes and proteins](/gallery/#genes)

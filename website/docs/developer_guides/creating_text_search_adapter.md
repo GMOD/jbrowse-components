@@ -200,10 +200,8 @@ Per-track:
 
 ## See also
 
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) - feature,
-  region, and sequence adapters
-- [Configuration schema](/docs/developer_guides/configuration_schema) - slot
-  types and `explicitIdentifier`
+- [Creating custom adapters](/docs/developer_guides/creating_adapter)
+- [Configuration schema](/docs/developer_guides/configuration_schema)
 - Built-in adapter configs:
   [TrixTextSearchAdapter](/docs/config/trixtextsearchadapter) and
   [JBrowse1TextSearchAdapter](/docs/config/jbrowse1textsearchadapter)

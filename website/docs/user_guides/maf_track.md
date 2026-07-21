@@ -123,10 +123,6 @@ single clade. **Clear subtree filter** restores all species.
 
 ## See also
 
-- [MAF track configuration](/docs/config_guides/maf_track) - adapters, supplying
-  the species list or Newick tree, and the CDS-frames overlay setup
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) - pairwise
-  alignment of two genomes, complementary to MAF's multiple alignment against
-  one reference
-- [Gene track](/docs/user_guides/gene_track) - the same reading-frame coloring
-  and peptide lettering, applied to a single genome's CDS
+- [MAF track configuration](/docs/config_guides/maf_track)
+- [Linear synteny view](/docs/user_guides/linear_synteny_view)
+- [Gene track](/docs/user_guides/gene_track)

@@ -102,13 +102,8 @@ See `jbrowse add-connection --help` or the
 
 ## See also
 
-- [Configuring connections](/docs/config_guides/connections) - the connection
-  config format and how connections are stored in config vs. the session
-- [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks) -
-  opening individual tracks and connections from the menu
-- [Plugin store](/docs/user_guides/plugin_store) - add new connection and
-  adapter types
-- [Text searching configuration](/docs/config_guides/text_searching) - indexing
-  feature names for the search box
-- [Live demos: full instances and hubs](/demos/#instances) - a UCSC GenArk hub
-  imported live in the app, plus a full multi-track demo instance
+- [Configuring connections](/docs/config_guides/connections)
+- [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks)
+- [Plugin store](/docs/user_guides/plugin_store)
+- [Text searching configuration](/docs/config_guides/text_searching)
+- [Live demos: full instances and hubs](/demos/#instances)

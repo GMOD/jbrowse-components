@@ -392,14 +392,9 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track) - sorting, coloring,
-  grouping, and filtering reads in general use
-- [SV inspector](/docs/user_guides/sv_inspector_view) - whole-genome SV triage
-- [Circular genome view](/docs/user_guides/circular_view) - plot a single SV
-  track as chords and launch the breakpoint split view from one
-- [Variant track](/docs/user_guides/variant_track) - VCF display and the
-  per-sample genotype table
-- [Alignments track configuration](/docs/config_guides/alignments_track) -
-  config-file options for color and filter defaults
-- [Gallery: structural variant examples](/gallery/#sv) - live breakpoint split
-  views, read-vs-reference insertions, and inversions to open and explore
+- [Alignments track](/docs/user_guides/alignments_track)
+- [SV inspector](/docs/user_guides/sv_inspector_view)
+- [Circular genome view](/docs/user_guides/circular_view)
+- [Variant track](/docs/user_guides/variant_track)
+- [Alignments track configuration](/docs/config_guides/alignments_track)
+- [Gallery: structural variant examples](/gallery/#sv)

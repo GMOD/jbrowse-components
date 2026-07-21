@@ -65,11 +65,7 @@ createViewState({
 
 ## See also
 
-- [Configuring assemblies](/docs/config_guides/assemblies), the first thing
-  every config.json needs
-- [Configuring tracks](/docs/config_guides/tracks), the second thing every
-  config.json needs
-- [Deploying JBrowse Web](/docs/config_guides/deploying), scripting config.json
-  instead of hand-writing it
-- [`@jbrowse/cli` command reference](/docs/cli), `add-assembly`/`add-track`
-  generate this file for you
+- [Configuring assemblies](/docs/config_guides/assemblies)
+- [Configuring tracks](/docs/config_guides/tracks)
+- [Deploying JBrowse Web](/docs/config_guides/deploying)
+- [`@jbrowse/cli` command reference](/docs/cli)

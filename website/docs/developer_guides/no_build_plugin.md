@@ -252,15 +252,9 @@ example in the `@jbrowse/react-app2` examples site for a live example.
 
 ## See also
 
-- [Writing a plugin](/docs/developer_guides/simple_plugin) - the build-step
-  alternative, needed for JSX, TypeScript, or bundled dependencies
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - the full
-  list of element types a no-build plugin can also register
-- [Top-level menu items](/docs/developer_guides/menus) - a fuller worked example
-  of the menu registration used above
-- [Custom widgets](/docs/developer_guides/creating_widget) - the `WidgetType`
-  API used in the citation-widget example
-- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) -
-  what `jbrequire` can and can't load in a no-build plugin
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) -
-  a common motivation for writing a no-build plugin's jexl callback
+- [Writing a plugin](/docs/developer_guides/simple_plugin)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [Top-level menu items](/docs/developer_guides/menus)
+- [Custom widgets](/docs/developer_guides/creating_widget)
+- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+- [Config guide: customizing feature colors](/docs/config_guides/customizing_feature_colors)

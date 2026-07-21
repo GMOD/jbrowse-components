@@ -286,11 +286,7 @@ slot. For the full set of configuration topics, see the
 
 ## See also
 
-- [Configuring tracks](/docs/config_guides/tracks), common track fields shared
-  by every adapter listed here
-- [Configuring assemblies](/docs/config_guides/assemblies), sequence-adapter
-  setup for the Sequence/assembly section
-- [Deploying JBrowse Web](/docs/config_guides/deploying), scripting config.json
-  generation across many formats
-- [`@jbrowse/cli` command reference](/docs/cli), `add-track` auto-detects most
-  of these adapters from the file extension
+- [Configuring tracks](/docs/config_guides/tracks)
+- [Configuring assemblies](/docs/config_guides/assemblies)
+- [Deploying JBrowse Web](/docs/config_guides/deploying)
+- [`@jbrowse/cli` command reference](/docs/cli)

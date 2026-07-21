@@ -373,9 +373,6 @@ chromosome:
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track), the reference sequence and
-  six-frame translation in the app
-- [Basic usage](/docs/user_guides/basic_usage), the overview scale bar that
-  draws the cytoband ideogram configured here
-- [BaseAssembly config docs](/docs/config/baseassembly/), the full slot
-  reference (auto-generated from the schema)
+- [Sequence track](/docs/user_guides/sequence_track)
+- [Basic usage](/docs/user_guides/basic_usage)
+- [BaseAssembly config docs](/docs/config/baseassembly/)

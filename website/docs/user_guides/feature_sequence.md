@@ -51,9 +51,6 @@ bases is configurable from the gear icon.
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track) - the reference sequence
-  and six-frame translation
-- [Gene track](/docs/user_guides/gene_track) - color-by-CDS and peptide
-  lettering directly on the track
-- [Assembly configuration: alternative genetic codes](/docs/config_guides/assemblies#configuring-alternative-genetic-codes-translation-tables) -
-  `transl_table` and per-sequence translation tables
+- [Sequence track](/docs/user_guides/sequence_track)
+- [Gene track](/docs/user_guides/gene_track)
+- [Assembly configuration: alternative genetic codes](/docs/config_guides/assemblies#configuring-alternative-genetic-codes-translation-tables)

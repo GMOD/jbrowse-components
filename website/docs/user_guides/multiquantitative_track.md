@@ -133,11 +133,7 @@ the display's full config reference.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track) for single-signal
-  BigWig/BedGraph display
-- [Methylation tutorial](/docs/tutorials/methylation) for loading modkit
-  bedMethyl as signal
+- [Quantitative track](/docs/user_guides/quantitative_track)
+- [Methylation tutorial](/docs/tutorials/methylation)
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
-  for config-file options
-- [Gallery: coverage, copy number, and epigenomics](/gallery/#copynumber) for
-  live CNV tumor/normal and clustered copy-number examples to open and explore
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#copynumber)

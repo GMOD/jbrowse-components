@@ -260,9 +260,6 @@ these extension points (see
 
 ## See also
 
-- [Using jexl callbacks](/docs/config_guides/jexl), the expression syntax used
-  in `formatDetails` callbacks
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors),
-  the same jexl-and-plugin pattern applied to per-feature coloring
-- [Extension points](/docs/developer_guides/extension_points), the
-  `Core-extraFeaturePanel` / `Core-replaceWidget` hooks above
+- [Using jexl callbacks](/docs/config_guides/jexl)
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
+- [Extension points](/docs/developer_guides/extension_points)

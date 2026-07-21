@@ -60,7 +60,5 @@ reduced `uri` form. See the [BigWigAdapter](/docs/config/bigwigadapter),
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track), renderer types,
-  autoscaling, and CNV profiling in the app
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track),
-  combining several signals on a shared axis
+- [Quantitative track](/docs/user_guides/quantitative_track)
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)

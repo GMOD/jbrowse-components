@@ -138,5 +138,4 @@ back to `Sequence name`; all four columns become aliases for it.
   [RefNameAliasAdapter](/docs/config/refnamealiasadapter) and
   [NcbiSequenceReportAliasAdapter](/docs/config/ncbisequencereportaliasadapter)
 - [Creating custom adapters](/docs/developer_guides/creating_adapter)
-- [RPC and worker system](/docs/developer_guides/rpc_workers) - documents
-  `renameRegions`, the resolution mechanism described above
+- [RPC and worker system](/docs/developer_guides/rpc_workers)

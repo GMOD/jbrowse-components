@@ -113,13 +113,7 @@ connection track saves the change there as well.
 
 ## See also
 
-- [Connections user guide](/docs/user_guides/connections), opening, browsing,
-  and removing connections in the app
-- [BaseConnection](/docs/config/baseconnection),
-  [UCSCTrackHubConnection](/docs/config/ucsctrackhubconnection),
-  [JB2TrackHubConnection](/docs/config/jb2trackhubconnection),
-  [JBrowse1Connection](/docs/config/jbrowse1connection), full config schema
-  reference
-- [Configuring tracks](/docs/config_guides/tracks), the track config format
-- [Loading from a config file](/docs/config_guides/from_config), the JB2 track
-  hub source format
+- [Connections user guide](/docs/user_guides/connections)
+- [BaseConnection](/docs/config/baseconnection)
+- [Configuring tracks](/docs/config_guides/tracks)
+- [Loading from a config file](/docs/config_guides/from_config)

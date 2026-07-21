@@ -94,3 +94,12 @@ Two display settings did most of the work in the figures above: the minor allele
 frequency filter (raised to thin the dense 1000 Genomes SNPs to the common,
 block-tagging ones, which also removes the noisy r² speckle from rare-allele
 pairs) and the recombination track toggle used on the inversion figure.
+
+## See also
+
+- [Variant track](/docs/user_guides/variant_track) — VCF display with on-the-fly
+  LD heatmaps
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — r² LD coloring to an
+  index SNP
+- [Variant track configuration](/docs/config_guides/variant_track)
+- [Gallery: variants and populations](/gallery/#variants)
