@@ -329,6 +329,110 @@ and Wakhan's `bed_output/` carries haplotype-specific copy-number segments
 The figures in this tutorial keep the raw per-SNP BAF, which reads directly as
 allele fraction and is enough for the copy-number states shown below.
 
+### Subclonal copy number from single-cell-derived clones
+
+The bulk log2 ratio averages over every tumor cell, so a copy-number change
+carried by only part of the tumor reads as a muted, intermediate signal rather
+than a clean gain or loss. Sequencing single-cell-derived clonal cell lines
+resolves this. Each clone is a colony grown from one tumor cell, so its
+bulk-depth WGS reports that one subclone's copy number exactly. Stack one clone
+per row and a CNV present in some clones but not others becomes visible
+directly, the heterogeneity the bulk track blends away.
+
+C-GIAB publishes short-read (Illumina) WGS for a panel of HG008-T
+single-cell-derived clones under
+
+```
+https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/NIST/HG008-T_clones/
+```
+
+one clone per subdirectory (`2D6`, `2E6`, `3E4`, ...), each an Illumina CRAM
+aligned to GRCh38. List that directory for the current clone set and their CRAM
+paths. For example, clone 2D6 sits at
+`.../20240718p14/2D6/p15plus12/BCM_ILMN_HG8T-2D6-p15plus12_20250904/BCM_HG008_2D6_HG008_2D6_HG008_2D6_1.cram`.
+
+Compute the same median-normalized log2(clone/normal) coverage as the
+[bulk track above](#log2tumornormal-coverage-ratio), once per clone, against the
+matched HG008-N normal. First factor the bulk section's inline
+normalize-and-log2 step into a small script that takes the two `mosdepth`
+outputs as arguments:
+
+```python
+# log2ratio.py: log2(clone/normal), each median-normalized on autosomes
+import gzip, math, statistics, sys
+
+def load(p):
+    d = {}
+    with gzip.open(p, 'rt') as fh:
+        for line in fh:
+            c, s, e, v = line.split()
+            d[(c, int(s), int(e))] = float(v)
+    return d
+
+clone, normal = load(sys.argv[1]), load(sys.argv[2])
+autosomes = {f'chr{i}' for i in range(1, 23)}
+med = lambda d: statistics.median(v for k, v in d.items() if k[0] in autosomes and v > 0)
+mc, mn = med(clone), med(normal)
+for k in sorted(k for k in clone if k in normal):
+    cv, nv = clone[k] / mc, normal[k] / mn
+    if cv > 0 and nv > 0:
+        print(f'{k[0]}\t{k[1]}\t{k[2]}\t{math.log2(cv / nv):.4f}')
+```
+
+```bash
+# HG008-N.regions.bed.gz: the normal's 500bp mean-depth bins from the bulk section
+# CLONES / CLONE_CRAM: fill from the HG008-T_clones/ listing above
+for clone in "${CLONES[@]}"; do
+  mosdepth -t8 -n -b 500 -f GRCh38_GIABv3.fa "clone_$clone" "${CLONE_CRAM[$clone]}"
+  python3 log2ratio.py "clone_$clone.regions.bed.gz" HG008-N.regions.bed.gz \
+    > "clone_$clone.bedgraph"
+  LC_COLLATE=C sort -k1,1 -k2,2n "clone_$clone.bedgraph" > "clone_$clone.sorted.bedgraph"
+  bedGraphToBigWig "clone_$clone.sorted.bedgraph" GRCh38_GIABv3.chrom.sizes "clone_$clone.bw"
+done
+```
+
+A short-read normal best matches the Illumina clones, but the per-sample median
+normalization keeps the ratio robust against the PacBio normal used above. Load
+the per-clone bigWigs as one `MultiQuantitativeTrack`, one row per clone, the
+same track type as the
+[single-cell ATAC tutorial](/docs/tutorials/scatac_pseudobulk):
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "hg008_clone_cnv",
+  "name": "HG008-T subclonal CNV (log2 clone/normal)",
+  "category": ["CNV"],
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "2D6",
+        "bigWigLocation": { "uri": "clone_2D6.bw" }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "2E6",
+        "bigWigLocation": { "uri": "clone_2E6.bw" }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "3E4",
+        "bigWigLocation": { "uri": "clone_3E4.bw" }
+      }
+    ]
+  }
+}
+```
+
+Read the rows against the bulk log2 ratio and the benchmark CNV calls. Clones
+that dip or rise together at a locus share that copy-number change, and a row
+that departs from the rest marks a CNV private to that subclone. Running the BAF
+recipe per clone adds the matching allelic view, so subclonal
+loss-of-heterozygosity reads the same way.
+
 ### From signal to calls
 
 The depth ratio and BAF built here are the same signals production somatic-CNV
