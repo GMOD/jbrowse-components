@@ -123,23 +123,6 @@ export default function f(_pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       */
-      get bookmarkAssemblies() {
-        return [...new Set(self.bookmarks.map(r => r.assemblyName))]
-      },
-      /**
-       * #getter
-       */
-      get validAssemblies() {
-        const { assemblyManager } = getSession(self)
-        return new Set(
-          this.bookmarkAssemblies.filter(
-            a => assemblyManager.assemblyNameMap[a],
-          ),
-        )
-      },
-      /**
-       * #getter
        * assemblies currently displayed in any open view; the grids only show
        * bookmarks/highlights belonging to these
        */
@@ -225,18 +208,6 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      // keeps bookmarks from unknown assemblies (they have no valid home to
-      // navigate to, but discarding them silently would lose user data)
-      clearBookmarksForLoadedAssemblies() {
-        self.setBookmarkedRegions(
-          self.bookmarks.filter(
-            bookmark => !self.validAssemblies.has(bookmark.assemblyName),
-          ),
-        )
-      },
       /**
        * #action
        */

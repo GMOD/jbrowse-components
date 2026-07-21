@@ -88,7 +88,10 @@ const HighlightGrid = observer(function HighlightGrid({
     <DataGridFlexContainer>
       <SelectionActions
         count={selectedIds.size}
-        color={rows.find(r => selectedIds.has(r.id))?.color}
+        color={
+          rows.find(r => selectedIds.has(r.id))?.color ??
+          theme.palette.highlight.main
+        }
         onDelete={() => {
           const selectedRows = rows.filter(r => selectedIds.has(r.id))
           for (const r of selectedRows) {

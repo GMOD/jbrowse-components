@@ -45,17 +45,13 @@ export async function navToBookmark(
 ) {
   const session = getSession(model)
   try {
-    // get the focused view
-    let view = views.find(view => view.id === session.focusedViewId) as MaybeLGV
-
-    // check if the focused view is the appropriate assembly, if not proceed
-    if (view?.assemblyNames[0] !== assembly) {
-      view = views.find(
-        elt =>
-          elt.type === 'LinearGenomeView' &&
-          elt.assemblyNames?.[0] === assembly,
-      ) as MaybeLGV
-    }
+    // prefer the focused view when it's an LGV on the right assembly, else the
+    // first such LGV. the type guard matters: a non-LGV (dotplot, circular) on
+    // this assembly has no navToLocString, so navigating to it would throw
+    const isTarget = (v: AbstractViewModel) =>
+      v.type === 'LinearGenomeView' && v.assemblyNames?.[0] === assembly
+    const view = (views.find(v => v.id === session.focusedViewId && isTarget(v)) ??
+      views.find(isTarget)) as MaybeLGV
 
     // slightly zoom out (grow 0.2) so the bookmarked region has context on
     // either side

@@ -10,6 +10,11 @@ import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
 
 import type { IExtendedLGV } from '../../model.ts'
 
+// a band narrower than the link-icon chip clips it into a smudge, so below this
+// width the chip is dropped and the band falls back to its plain label (matches
+// the native LGV highlight)
+const CHIP_MIN_WIDTH = 24
+
 const Highlight = observer(function Highlight({
   model,
 }: {
@@ -31,7 +36,7 @@ const Highlight = observer(function Highlight({
             background={r.highlight}
             label={label}
           >
-            {showHighlightChips ? (
+            {showHighlightChips && coords.width >= CHIP_MIN_WIDTH ? (
               <HighlightChip
                 color={colord(r.highlight)}
                 label={label}
