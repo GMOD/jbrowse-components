@@ -1,8 +1,10 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
-import { getSession, max, measureText } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
-import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
+import { getSession } from '@jbrowse/core/util'
+import {
+  totalHeight,
+  trackLabelLeftOffset,
+} from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
@@ -80,16 +82,12 @@ export async function renderToSvg(
     ),
   ])
 
-  const trackLabelMaxLen =
-    max(
-      visibleTracksByView
-        .flat()
-        .map(track =>
-          measureText(getTrackName(track.configuration, session), fontSize),
-        ),
-      0,
-    ) + 40
-  const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
+  const trackLabelOffset = trackLabelLeftOffset({
+    tracks: visibleTracksByView.flat(),
+    trackLabels,
+    fontSize,
+    session,
+  })
   const w = width + trackLabelOffset
 
   // The export is a vertical stack, top to bottom: each genome view, and

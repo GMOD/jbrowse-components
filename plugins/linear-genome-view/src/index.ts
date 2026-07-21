@@ -198,6 +198,7 @@ export {
 export { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 export {
+  labelOffset,
   totalHeight,
   trackBoxHeight,
   trackLabelLeftOffset,
