@@ -19,6 +19,8 @@
     "check-spec-recipes": "node --experimental-strip-types scripts/check-spec-recipes.ts",
     "gen:gallery-links": "node --experimental-strip-types scripts/gen-gallery-links.ts",
     "gen:gallery-links-check": "node --experimental-strip-types scripts/gen-gallery-links.ts --check",
+    "gen:tutorial-thumbs": "node --experimental-strip-types scripts/gen-tutorial-thumbs.ts",
+    "gen:tutorial-thumbs-check": "node --experimental-strip-types scripts/gen-tutorial-thumbs.ts --check",
     "review-screenshots-web": "node --experimental-strip-types scripts/review-screenshots-web.ts",
     "audit-figures": "node --experimental-strip-types scripts/audit-figures.ts"
   },
