@@ -4,7 +4,7 @@ import { toJS } from 'mobx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 
-export async function doSubmit({
+export function doSubmit({
   selectedAssemblyNames,
   model,
 }: {
@@ -12,29 +12,18 @@ export async function doSubmit({
   model: LinearSyntenyViewModel
 }) {
   const session = getSession(model)
-  const { assemblyManager } = session
 
+  // each row is a LinearGenomeView built from a declarative `init` — its
+  // afterAttach autorun loads the assembly regions and shows the whole genome,
+  // so we don't wait for assemblies or navigate here (see LinearGenomeView
+  // model.ts). Width flows in from the comparative view's width autorun.
   model.setViews(
-    await Promise.all(
-      selectedAssemblyNames.map(async assemblyName => {
-        const asm = await assemblyManager.waitForAssembly(assemblyName)
-        if (!asm) {
-          throw new Error(`Assembly "${assemblyName}" failed to load`)
-        }
-        return {
-          type: 'LinearGenomeView' as const,
-          bpPerPx: 1,
-          offsetPx: 0,
-          hideHeader: true,
-          displayedRegions: asm.regions,
-        }
-      }),
-    ),
+    selectedAssemblyNames.map(assembly => ({
+      type: 'LinearGenomeView' as const,
+      hideHeader: true,
+      init: { assembly },
+    })),
   )
-  for (const view of model.views) {
-    view.setWidth(model.width)
-    view.showAllRegions()
-  }
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {

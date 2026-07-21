@@ -87,11 +87,11 @@ const LinearSyntenyViewImportForm = observer(
       }
     }
 
-    const launch = async (rows: string[]) => {
+    const launch = (rows: string[]) => {
       try {
         setError(undefined)
         setSubmitting(true)
-        await doSubmit({
+        doSubmit({
           selectedAssemblyNames: rows,
           model,
         })
@@ -136,7 +136,7 @@ const LinearSyntenyViewImportForm = observer(
             }}
             onLaunch={() => {
               applyQuickSelections(quickRows, quickTrackId)
-              void launch(quickRows)
+              launch(quickRows)
             }}
           />
         ) : (
@@ -151,7 +151,7 @@ const LinearSyntenyViewImportForm = observer(
                 defaultAssemblyName={defaultAssemblyName}
                 submitting={submitting}
                 onLaunch={() => {
-                  void launch(selectedAssemblyNames)
+                  launch(selectedAssemblyNames)
                 }}
               />
             </div>
