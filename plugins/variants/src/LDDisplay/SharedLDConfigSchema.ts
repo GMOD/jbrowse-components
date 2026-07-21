@@ -177,6 +177,5 @@ export default function sharedLDConfigFactory() {
   )
 }
 
-export type LDDisplayConfigModel = Instance<
-  ReturnType<typeof sharedLDConfigFactory>
->
+export type LDDisplayConfigSchema = ReturnType<typeof sharedLDConfigFactory>
+export type LDDisplayConfigModel = Instance<LDDisplayConfigSchema>

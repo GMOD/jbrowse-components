@@ -29,8 +29,8 @@ import type {
   LDMetric,
   LDSnp,
 } from '../VariantRPC/getLDMatrix.ts'
+import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
 import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -59,7 +59,7 @@ function upperBoundFloat32(arr: Float32Array, val: number) {
  * Shared state model for LD displays
  */
 export default function sharedModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LDDisplayConfigSchema,
 ) {
   return (
     types

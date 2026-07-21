@@ -67,10 +67,11 @@ work:
 param to its concrete schema type**
 (`configSchema: LinearArcDisplayConfigModel = ReturnType<typeof configSchemaFactory>`)
 instead of `AnyConfigurationSchemaType`. Every `getConf(self, …)` in that body
-then narrows for free. Done for the leaf display factories and two shared bases
+then narrows for free. Done for the leaf display factories and three shared bases
 (`MultiSampleVariantBaseModel` → `SharedVariantConfigModel`,
-`LinearAlignmentsDisplay` → its config-schema type, retyping subclass factories
-to pass an assignable schema in).
+`LinearAlignmentsDisplay` → its config-schema type, and the LD `sharedModelFactory`
+→ `LDDisplayConfigSchema`), retyping subclass factories to pass an assignable
+schema in.
 
 **Don't pin a shared base if any consumer reads its _own_ (non-shared) slots via
 `getConf(self, …)`.** The base owns the `configuration` prop, so pinning turns a
