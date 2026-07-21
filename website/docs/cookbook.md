@@ -67,9 +67,9 @@ is a variation on one of these blocks.
 }
 ```
 
-No index paths, no display IDs, no renderer names: the next section explains
-why. The floor is even smaller than this: one assembly plus one track (no
-`defaultSession`) is already a complete config.
+No index paths, display IDs, or renderer names, and the next section explains
+why. You can go smaller still: one assembly plus one track (no `defaultSession`)
+is already a complete config.
 
 ---
 
@@ -239,19 +239,16 @@ jbrowse add-track genes.gff3.gz --load copy --name Genes \
   --color 'jexl:feature.strand==1?"blue":"red"' --height 200
 ```
 
-The trick that keeps it readable: wrap the value in single quotes and use double
-quotes _inside_ the jexl, so there's nothing to escape. Anything else lands in
-one of two catch-all flags: `--displayDefaults` takes inline JSON for any
-display setting (the same object the recipes put under `displayDefaults`), and
-`--config` takes inline JSON for the rest of the track (top-level fields like
-`metadata` and `formatDetails`, or a full `displays` array).
+Wrap the value in single quotes and use double quotes _inside_ the jexl, so
+there's nothing to escape. Anything else lands in a catch-all flag that takes
+inline JSON, as in this labels-and-tooltips example:
 
 ```bash
 jbrowse add-track genes.gff3.gz --load copy \
   --displayDefaults '{"mouseover":"jexl:feature.name","labels":{"description":"jexl:feature.note"}}'
 ```
 
-That covers every appearance recipe. Four `add-track` flags carry all of them:
+Four `add-track` flags carry every appearance recipe on this page:
 
 | To set                                                                                                            | Flag                         |
 | ----------------------------------------------------------------------------------------------------------------- | ---------------------------- |
@@ -278,14 +275,9 @@ jbrowse set-default-session --session session.json
 ```
 
 The [multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color) is
-the one recipe that bundles several files into one track, so it has its own flag
-in place of the positional track argument. `--multiwig` takes a comma-separated
-list of BigWigs, or a `.json` sources file whose entries carry a per-row
-`name`/`color`, and builds the `MultiWiggleAdapter` for you:
-
-```bash
-jbrowse add-track --multiwig s1.bw,s2.bw,s3.bw --load copy --name "Coverage"
-```
+the one recipe that bundles several files into one track, so it takes a
+`--multiwig` flag in place of the positional track argument (see that recipe for
+the details).
 
 See the [CLI reference](/docs/cli) for every flag.
 
@@ -834,9 +826,7 @@ already exist in `assemblies`.
 **Track loads blank?** That's almost always swapped assemblies: the alignment's
 coordinates don't line up with the assemblies on screen, so nothing draws. Flip
 `queryAssembly` and `targetAssembly` (or, if you used the positional
-`assemblyNames: [query, target]` array instead, reverse it). minimap2's
-`target query` argument order is the _reverse_ of the array's `[query, target]`,
-the usual culprit.
+`assemblyNames: [query, target]` array instead, reverse it).
 
 To open a dotplot or linear synteny view pointed at this track, see the
 [synteny track guide](/docs/config_guides/synteny_track) and the
@@ -844,9 +834,9 @@ To open a dotplot or linear synteny view pointed at this track, see the
 
 ---
 
-## The instance
+## Instance-wide settings
 
-Settings for the whole JBrowse instance, rather than one track.
+These apply to the whole JBrowse instance, rather than one track.
 
 ### Group tracks in the selector with categories
 
@@ -985,11 +975,7 @@ Reading it left to right, every piece is just a value copied out of the config:
 - `&tracks=genes,coverage` - a comma-separated list of `trackId`s to turn on,
   taken straight from the `tracks` array.
 
-Building a link is mostly reading `trackId`s and the assembly `name` out of your
-config and stringing them together. Nothing in the URL exists that isn't already
-in the config.
-
-One thing to know: a link like this starts a **fresh** view and ignores any
+Note that a link like this starts a **fresh** view and ignores any
 `defaultSession` you configured. To jump to a different region within a curated
 default session instead, add `&extendSession=true`. JBrowse keeps the session's
 tracks and settings and only changes the location (and you can drop

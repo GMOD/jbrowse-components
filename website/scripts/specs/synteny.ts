@@ -1,5 +1,5 @@
 import {
-  CGIAB_HAP1_PIF_TRACK,
+  CGIAB_ASM_PIF_TRACK,
   DOTPLOT_CONFIG,
   HS1_MM39_CONFIG,
   PICALM_ALU_LOCUS,
@@ -495,18 +495,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // refName ("haplotype1-…") and the dotplot renders empty. Override the track
     // with the correct PairwiseIndexedPAFAdapter (tabix .pif.gz) so the dots paint.
     url: cgiabUrl({
-      sessionTracks: [CGIAB_HAP1_PIF_TRACK],
+      sessionTracks: [CGIAB_ASM_PIF_TRACK],
       views: [
         {
           type: 'DotplotView',
           // GRCh38 on x (stays in its natural chr1->chrX order) and the
-          // fragmented HG008T.hap1 assembly on y: autoDiagonalize reorders the
+          // fragmented HG008T v3.2 assembly on y: autoDiagonalize reorders the
           // vertical axis, so putting the assembly there reorders/flips its
           // contigs to form a clean diagonal against a readable reference axis.
           // (Reordering the reference axis instead scrambles the familiar
           // chromosome order and breaks the single diagonal into a staircase.)
-          views: [{ assembly: 'GRCh38_GIABv3' }, { assembly: 'HG008T.hap1' }],
-          tracks: ['HG008T.hap1_pif'],
+          views: [{ assembly: 'GRCh38_GIABv3' }, { assembly: 'HG008T_v3.2' }],
+          tracks: ['HG008T_v3.2_pif'],
           autoDiagonalize: true,
         },
       ],
@@ -523,10 +523,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 60000,
   },
 
-  // The dotplot import form with HG008T.hap1 on one axis and GRCh38 on the other
+  // The dotplot import form with HG008T v3.2 on one axis and GRCh38 on the other
   // (tutorial caption). An empty DotplotView (views:[{},{}]) shows the form; both
   // selectors default to the config's first assembly (GRCh38_GIABv3), so open the
-  // first (x-axis) selector and pick HG008T.hap1. Replaces a stale hand-made
+  // first (x-axis) selector and pick HG008T v3.2. Replaces a stale hand-made
   // capture that showed unrelated generic assembly names. Selecting via the UI
   // (not pre-setting assemblies in the snapshot) keeps the form open — pre-set
   // assemblies auto-launch the view.
@@ -545,7 +545,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 400,
     actions: [
       // Manual inherits Quick start's track, so the axes already read
-      // HG008T.hap1 / GRCh38_GIABv3 with the synteny track selected — exactly
+      // HG008T v3.2 / GRCh38_GIABv3 with the synteny track selected — exactly
       // the pairing this figure wants. No menu-driving needed to set them.
       { type: 'click', text: 'Manual' },
       { type: 'waitForText', text: 'Select assemblies for dotplot view' },
@@ -558,11 +558,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'sv_cgiab/synteny_view',
     // Same fix as sv_cgiab/dotplot_result: the config's plain PAFAdapter can't
     // strip the PIF q/t refName prefixes, so ribbons never map. Override with
-    // PairwiseIndexedPAFAdapter. hap1 contigs 16 (↔chr3, ↔chr13) and 11 (↔chr13)
-    // are the ones that actually align to the displayed GRCh38 chromosomes, so
-    // the ribbons connect (contig 15 maps to chr1/chr5, not shown here).
+    // PairwiseIndexedPAFAdapter.
+    // TODO(v3.2): the assembly-side loc below uses the OLD verkko hap1 scaffold
+    // names. After building HG008T_v3.2.pif.gz, replace them with the v3.2
+    // scaffolds that align to chr3/chr13 (read from the .fai / the PAF).
     url: cgiabUrl({
-      sessionTracks: [CGIAB_HAP1_PIF_TRACK],
+      sessionTracks: [CGIAB_ASM_PIF_TRACK],
       views: [
         {
           type: 'LinearSyntenyView',
@@ -581,7 +582,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // fans) read as clean syntenic blocks
           minAlignmentLength: 50000,
           alpha: 0.2,
-          tracks: ['HG008T.hap1_pif'],
+          tracks: ['HG008T_v3.2_pif'],
           views: [
             {
               loc: 'chr3:1-198295559 chr13:1-114364328',
@@ -589,7 +590,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
             {
               loc: 'haplotype1-0000016:1-212902875 haplotype1-0000011:1-99479325',
-              assembly: 'HG008T.hap1',
+              assembly: 'HG008T_v3.2',
             },
           ],
         },

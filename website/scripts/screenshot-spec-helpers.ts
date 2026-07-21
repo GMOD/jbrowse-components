@@ -149,31 +149,32 @@ export const HG38_GENCODE_PROMOTER_TRACK = {
   },
 }
 
-// HG008-T (CGIAB) copy-number session tracks reused across the sv_cgiab CNV
-// figures: the log2(tumor/normal) coverage ratio and the B-allele frequency,
-// both hosted BigWigs on jbrowse.org/demos/cgiab.
-export const HG008_LOG2RATIO_TRACK = {
+// HG008-T (CGIAB) HiFiCNV copy-number session tracks reused across the sv_cgiab
+// CNV figures: the depth track and the minor-allele-frequency (MAF) track, both
+// hosted BigWigs on jbrowse.org/demos/cgiab (HiFiCNV output uploaded there — see
+// the tutorial's "Add copy-number tracks" section / build_sv_visualization_cgiab.sh).
+export const HG008_DEPTH_TRACK = {
   type: 'QuantitativeTrack',
-  trackId: 'hg008_log2ratio',
-  name: 'HG008 log2(tumor/normal) coverage ratio',
+  trackId: 'hg008_depth',
+  name: 'HG008-T HiFiCNV depth',
   assemblyNames: ['GRCh38_GIABv3'],
   adapter: {
     type: 'BigWigAdapter',
     bigWigLocation: {
-      uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T.hificnv.depth.bw',
       locationType: 'UriLocation',
     },
   },
 }
-export const HG008_BAF_TRACK = {
+export const HG008_MAF_TRACK = {
   type: 'QuantitativeTrack',
-  trackId: 'hg008_baf',
-  name: 'HG008-T B-allele frequency (BAF)',
+  trackId: 'hg008_maf',
+  name: 'HG008-T HiFiCNV minor-allele frequency',
   assemblyNames: ['GRCh38_GIABv3'],
   adapter: {
     type: 'BigWigAdapter',
     bigWigLocation: {
-      uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T.hificnv.maf.bw',
       locationType: 'UriLocation',
     },
   },
@@ -195,27 +196,27 @@ export const HPYLORI_26695_SEQ_ADAPTER = {
   },
 }
 
-// HG008-T hap1 vs GRCh38 synteny as a session track, shared by the sv_cgiab
-// dotplot and synteny figures. The cgiab config wires this .pif.gz through a
-// plain PAFAdapter, which doesn't strip the PIF q/t refName prefixes (so the
-// features never map); overriding with PairwiseIndexedPAFAdapter fixes it.
-// Referenced as a const so both figures encode byte-identically.
-export const CGIAB_HAP1_PIF_TRACK = {
+// HG008-T v3.2 T2T assembly vs GRCh38 synteny as a session track, shared by the
+// sv_cgiab dotplot and synteny figures. Overriding with PairwiseIndexedPAFAdapter
+// keeps the PIF q/t refName prefixes mapped. Referenced as a const so both
+// figures encode byte-identically. Needs the v3.2 PIF uploaded to
+// jbrowse.org/demos/cgiab and the HG008T_v3.2 assembly in the hosted config.
+export const CGIAB_ASM_PIF_TRACK = {
   type: 'SyntenyTrack',
-  trackId: 'HG008T.hap1_pif',
-  name: 'HG008T.hap1',
-  assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+  trackId: 'HG008T_v3.2_pif',
+  name: 'HG008T v3.2',
+  assemblyNames: ['HG008T_v3.2', 'GRCh38_GIABv3'],
   adapter: {
     type: 'PairwiseIndexedPAFAdapter',
-    assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+    assemblyNames: ['HG008T_v3.2', 'GRCh38_GIABv3'],
     pifGzLocation: {
-      uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
+      uri: 'https://jbrowse.org/demos/cgiab/HG008T_v3.2.pif.gz',
       locationType: 'UriLocation',
     },
     index: {
       indexType: 'TBI',
       location: {
-        uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
+        uri: 'https://jbrowse.org/demos/cgiab/HG008T_v3.2.pif.gz.tbi',
         locationType: 'UriLocation',
       },
     },
