@@ -36,9 +36,19 @@ const globalOmit = [
   'subfeatures',
   'uniqueId',
   'exonFrames',
+  '_exonFrames',
   'parentId',
   'thickStart',
   'thickEnd',
+  // BED12/bigGenePred parsing internals (block/CDS-shape bookkeeping, not
+  // meaningful feature attributes)
+  'chromStarts',
+  'blockStarts',
+  'blockSizes',
+  'blockCount',
+  'reserved',
+  'cdsStartStat',
+  'cdsEndStat',
 ]
 
 export default function Attributes(props: {
