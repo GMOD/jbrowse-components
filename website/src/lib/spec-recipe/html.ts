@@ -35,6 +35,12 @@ function copyableBlock(text: string, className: string): string {
   ].join('')
 }
 
+// The dialog's connective prose between the steps and code blocks; a helper
+// keeps the panels readable and the wording easy to edit in one place.
+function note(html: string): string {
+  return `<p class="spec-note">${html}</p>`
+}
+
 function renderStep(step: RecipeStep): string {
   return [
     '<li>',
@@ -63,10 +69,10 @@ function panels(recipe: Recipe): Panel[] {
     {
       label: 'Do it yourself',
       body: [
-        '<p class="spec-intro">Steps that made the figure above, for your own data. The figure\'s values are the worked example.</p>',
+        note('The steps behind the figure above, run against your own data.'),
         `<ol class="spec-steps">${recipe.steps.map(renderStep).join('')}</ol>`,
         recipe.unmapped.length
-          ? '<p class="spec-config">A few of this figure\'s settings have no written step yet. The <strong>Session spec</strong> tab lists them all.</p>'
+          ? note('Some settings have no written step yet — see the <strong>Session spec</strong> tab.')
           : '',
       ].join(''),
     },
@@ -74,18 +80,17 @@ function panels(recipe: Recipe): Panel[] {
       label: 'In Desktop',
       body: [
         `<p class="spec-desktop-open"><a href="${escapeHtml(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
-        `<p class="spec-intro">Opens an installed JBrowse Desktop at this view (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>). Your browser asks permission the first time.</p>`,
-        '<p class="spec-intro">If nothing happens (not installed, blocked, or an un-integrated Linux AppImage), copy the link below into Desktop\'s <strong>Open JBrowse Web link...</strong>, on the start screen or under <strong>File → Session</strong> once open.</p>',
+        note(`Opens JBrowse Desktop (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>) at this view and saves it as a reopenable session — swap in your own files afterwards.`),
+        note('Nothing happens? Paste this link into Desktop\'s <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):'),
         copyableBlock(recipe.desktopWebUrl, 'spec-json'),
-        '<p class="spec-config">Desktop downloads this config and saves it as a session you can reopen. Swap in your own files afterwards.</p>',
       ].join(''),
     },
     {
       label: 'Session spec',
       body: [
-        '<p class="spec-intro">The link above encodes this <a href="/docs/urlparams/#session-spec">session spec</a>. Paste it after <code>&amp;session=spec-</code> on any JBrowse Web instance, or adapt it with your own <code>trackId</code>s.</p>',
+        note('This <a href="/docs/urlparams/#session-spec">session spec</a> pastes after <code>&amp;session=spec-</code> on any JBrowse Web instance.'),
         copyableBlock(recipe.specJson, 'spec-json'),
-        `<p class="spec-config">Loaded against config: <code>${escapeHtml(recipe.config)}</code></p>`,
+        note(`Loaded against config: <code>${escapeHtml(recipe.config)}</code>`),
       ].join(''),
     },
     ...(recipe.python
@@ -93,7 +98,7 @@ function panels(recipe: Recipe): Panel[] {
           {
             label: 'In a notebook',
             body: [
-              '<p class="spec-intro">The same view in a notebook with <a href="/docs/jbrowse_jupyter/">jbrowse-anywidget</a>. Point the adapter at your own file.</p>',
+              note('The same view with <a href="/docs/jbrowse_jupyter/">jbrowse-anywidget</a>. Point the adapter at your own file.'),
               copyableBlock(recipe.python, 'spec-python'),
             ].join(''),
           },

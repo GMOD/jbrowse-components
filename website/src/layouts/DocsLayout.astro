@@ -432,6 +432,7 @@ const mdHref = isRealDoc
     overflow-y: auto;
     text-align: left;
     font-style: normal;
+    font-size: 0.9rem;
   }
   /* Pairs the nth tab with the nth panel. One rule per panel panels() can emit
      (spec-recipe/html.ts) — a figure with fewer panels just leaves later rules
@@ -454,10 +455,8 @@ const mdHref = isRealDoc
     ) {
     display: block;
   }
-  .docs-content :global(.spec-intro) {
-    margin: 0 0 0.85rem;
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
+  .docs-content :global(.spec-note) {
+    margin: 0.5rem 0;
   }
   .docs-content :global(.spec-desktop-open) {
     margin: 0 0 0.5rem;
@@ -467,7 +466,6 @@ const mdHref = isRealDoc
   .docs-content :global(.spec-steps) {
     margin: 0;
     padding-left: 1.25rem;
-    font-size: 0.9rem;
   }
   .docs-content :global(.spec-steps li) {
     margin-bottom: 0.7rem;
@@ -479,8 +477,6 @@ const mdHref = isRealDoc
   .docs-content :global(.spec-step-example) {
     display: block;
     margin-top: 0.15rem;
-    color: var(--color-text-muted);
-    font-size: 0.82rem;
   }
   /* the docs `pre` rule pairs --color-code-text with --color-code-bg; keep both
      together here (a light background with that text color is unreadable) */
@@ -518,11 +514,6 @@ const mdHref = isRealDoc
   .docs-content :global(.spec-copy.copied) {
     color: var(--color-accent);
     border-color: var(--color-accent);
-  }
-  .docs-content :global(.spec-config) {
-    margin-top: 0.6rem;
-    color: var(--color-text-muted);
-    font-size: 0.82rem;
   }
 
   @media (max-width: 768px) {

@@ -57,23 +57,31 @@ function trackNoun(trackType: string | undefined): string {
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
-): RecipeStep & { settings: RecipeStep[] } {
+): RecipeStep & { settings: RecipeStep[]; unmapped: string[] } {
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId)
   const kind = info ? fileKind(info.adapterType) : undefined
   const context: FieldContext = { noun: trackNoun(info?.type) }
-  const settings = specTrackSettings(entry).flatMap(([field, value]) => {
-    const step = IGNORED_FIELDS.has(field)
-      ? undefined
-      : trackFields[field]?.(value, context)
-    return step ? [{ title: step.path, note: step.note }] : []
-  })
+  const settings: RecipeStep[] = []
+  const unmapped: string[] = []
+  for (const [field, value] of specTrackSettings(entry)) {
+    if (IGNORED_FIELDS.has(field)) {
+      continue
+    }
+    const step = trackFields[field]?.(value, context)
+    if (step) {
+      settings.push({ title: step.path, note: step.note })
+    } else {
+      unmapped.push(field)
+    }
+  }
   return {
     title: kind
       ? `Add your own track: **File → Open track...**, then paste a URL or choose a local file. This one needs ${kind}.`
       : 'Add your own track: **File → Open track...**, then paste a URL or choose a local file.',
     example: info ? `This figure uses “${info.name}”.` : `This figure uses the “${trackId}” track.`,
     settings,
+    unmapped,
   }
 }
 
@@ -137,16 +145,9 @@ function viewSteps(
   }
 
   for (const entry of specTracks(view)) {
-    const { settings, ...step } = trackStep(entry, config)
+    const { settings, unmapped: trackUnmapped, ...step } = trackStep(entry, config)
     steps.push(step, ...settings)
-    const context: FieldContext = {
-      noun: trackNoun(lookupTrack(config, specTrackId(entry))?.type),
-    }
-    for (const [field, value] of specTrackSettings(entry)) {
-      if (!IGNORED_FIELDS.has(field) && !trackFields[field]?.(value, context)) {
-        unmapped.push(field)
-      }
-    }
+    unmapped.push(...trackUnmapped)
   }
 
   if (view.loc) {
