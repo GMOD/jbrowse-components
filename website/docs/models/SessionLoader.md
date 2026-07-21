@@ -26,6 +26,7 @@ loading/error state the app shell renders around.
 | [sessionTracks](#property-sessiontracks)                   | Properties | SessionLoader |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [assembly](#property-assembly)                             | Properties | SessionLoader |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [tracks](#property-tracks)                                 | Properties | SessionLoader |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [regions](#property-regions)                               | Properties | SessionLoader | comma-separated chromosome names to restrict a whole-genome view to (no `loc`), e.g. the main chromosomes without unplaced/alt contigs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [tracklist](#property-tracklist)                           | Properties | SessionLoader |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [highlight](#property-highlight)                           | Properties | SessionLoader |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [nav](#property-nav)                                       | Properties | SessionLoader |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -81,6 +82,18 @@ loading/error state the app shell renders around.
 
 <details>
 <summary>SessionLoader - Properties</summary>
+
+#### property: regions
+
+comma-separated chromosome names to restrict a whole-genome view to (no `loc`),
+e.g. the main chromosomes without unplaced/alt contigs
+
+```ts
+// type signature
+type regions = IMaybe<ISimpleType<string>>
+// code
+regions: types.maybe(types.string)
+```
 
 #### property: extendSession
 
@@ -378,6 +391,7 @@ type defaultSessionViewInit =
       tracklist: boolean | undefined
       nav: boolean | undefined
       highlight: string[] | undefined
+      displayedRegionNames: string[] | undefined
     }
   | undefined
 ```

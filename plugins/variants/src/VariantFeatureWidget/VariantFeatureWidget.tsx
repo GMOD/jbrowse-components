@@ -9,8 +9,8 @@ import { observer } from 'mobx-react'
 
 import { getTraMate } from '../VcfFeature/util.ts'
 import AltFormatter from './AltFormatter.tsx'
-import { isSvLaunchType } from './svLaunchType.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
+import { isSvLaunchType } from './svLaunchType.ts'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
 import type { VariantFeatureWidgetModel } from './stateModelFactory.ts'
