@@ -1,3 +1,5 @@
+import { getOrCreate } from '../../shared/util.ts'
+
 import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -18,12 +20,7 @@ export function buildSegmentArrays(
   const skipsByFeature = new Map<number, GapData[]>()
   for (const g of gaps) {
     if (g.type === 'skip') {
-      let list = skipsByFeature.get(g.readIndex)
-      if (!list) {
-        list = []
-        skipsByFeature.set(g.readIndex, list)
-      }
-      list.push(g)
+      getOrCreate(skipsByFeature, g.readIndex, () => []).push(g)
     }
   }
 

@@ -4,6 +4,7 @@ import {
   connectionEndpoints,
   readGroupConnections,
 } from '../../shared/readGroupConnections.ts'
+import { getOrCreate } from '../../shared/util.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
@@ -97,13 +98,7 @@ export function groupReadsByName(
   for (const [idx, data] of laidOutPileupMap) {
     const { readIds, readNames } = data
     for (let i = 0; i < readIds.length; i++) {
-      const name = readNames[i]!
-      let list = readsByName.get(name)
-      if (!list) {
-        list = []
-        readsByName.set(name, list)
-      }
-      list.push({
+      getOrCreate(readsByName, readNames[i]!, () => []).push({
         displayedRegionIndex: idx,
         readIdx: i,
         data,
@@ -198,11 +193,11 @@ export function computeLinkedReadLinesByRegion(
     const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
     if (sameRegion && c.isNormal) {
       const idx = e1.displayedRegionIndex
-      let bucket = acc.get(idx)
-      if (!bucket) {
-        bucket = { positions: [], ys: [], colorTypes: [] }
-        acc.set(idx, bucket)
-      }
+      const bucket = getOrCreate(acc, idx, () => ({
+        positions: [],
+        ys: [],
+        colorTypes: [],
+      }))
       bucket.positions.push(c.bp1, c.bp2)
       bucket.ys.push(e1.data.readYs[e1.readIdx]!, e2.data.readYs[e2.readIdx]!)
       bucket.colorTypes.push(c.colorType)

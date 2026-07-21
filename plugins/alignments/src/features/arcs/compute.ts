@@ -19,6 +19,7 @@ import {
   connectionEndpoints,
   resolveReadGroup,
 } from '../../shared/readGroupConnections.ts'
+import { getOrCreate } from '../../shared/util.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -383,13 +384,7 @@ function groupReadsByName(
     const data = rpcDataMap.get(region.displayedRegionIndex)
     if (data) {
       for (let i = 0; i < data.readIds.length; i++) {
-        const name = data.readNames[i]!
-        let list = readsByName.get(name)
-        if (!list) {
-          list = []
-          readsByName.set(name, list)
-        }
-        list.push({
+        getOrCreate(readsByName, data.readNames[i]!, () => []).push({
           displayedRegionIndex: region.displayedRegionIndex,
           refName: region.refName,
           readIdx: i,
@@ -745,13 +740,7 @@ export function computeArcsFromPileupData(
 function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
   const byRef = new Map<string, T[]>()
   for (const item of items) {
-    const ref = refOf(item)
-    let bucket = byRef.get(ref)
-    if (!bucket) {
-      bucket = []
-      byRef.set(ref, bucket)
-    }
-    bucket.push(item)
+    getOrCreate(byRef, refOf(item), () => []).push(item)
   }
   return byRef
 }
