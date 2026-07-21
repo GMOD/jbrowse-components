@@ -51,6 +51,15 @@ describe('itemToName', () => {
     expect(itemToName({ name: 'n' })).toBe('n')
   })
 
+  it('derives the basename from bigWigLocation when source/name absent', () => {
+    expect(
+      itemToName({
+        type: 'BigWigAdapter',
+        bigWigLocation: { uri: 'https://host/real.bw' },
+      }),
+    ).toBe('real')
+  })
+
   it('falls back to "unnamed" when neither present', () => {
     expect(itemToName({})).toBe('unnamed')
   })
@@ -155,6 +164,17 @@ describe('applyName', () => {
     expect(applyName({ type: 'BigWigAdapter', source: 'old' }, 'new')).toEqual({
       type: 'BigWigAdapter',
       source: 'new',
+    })
+  })
+
+  it('leaves an unedited source-less object untouched so the adapter derives the name', () => {
+    const item = {
+      type: 'BigWigAdapter',
+      bigWigLocation: { uri: 'https://host/real.bw' },
+    }
+    expect(applyName(item, itemToName(item))).toBe(item)
+    expect(buildAdapterPayload([applyName(item, itemToName(item))])).toEqual({
+      subadapters: [item],
     })
   })
 

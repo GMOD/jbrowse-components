@@ -75,7 +75,7 @@ function doSubmit({
     addMultiWiggleTrack({
       session,
       view: model.view,
-      name: trackName,
+      name: trackName.trim(),
       assemblyNames: [assembly],
       adapter: buildAdapterPayload(tracks.map(t => applyName(t.item, t.name))),
     })
@@ -130,7 +130,7 @@ const MultiWiggleAddTrackWorkflow = observer(
           value={inputMode}
           onChange={(_event, val) => {
             if (val) {
-              setInputMode(val === 'upload' ? 'upload' : 'paste')
+              setInputMode(val)
             }
           }}
         >

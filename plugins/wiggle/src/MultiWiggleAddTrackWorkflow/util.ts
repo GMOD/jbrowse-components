@@ -33,11 +33,28 @@ export function parseItems(val: string): TrackItem[] {
   return lineSplit(val)
 }
 
+// Mirror MultiWiggleAdapter's filename derivation so a source-less pasted
+// subadapter shows (and later resolves to) the same basename the adapter would
+// pick, rather than the bare 'unnamed' fallback.
+function locationName(item: Record<string, unknown>) {
+  const loc = item.bigWigLocation
+  if (loc && typeof loc === 'object') {
+    const l = loc as Record<string, unknown>
+    const path =
+      (typeof l.uri === 'string' ? l.uri : undefined) ??
+      (typeof l.localPath === 'string' ? l.localPath : undefined)
+    if (path) {
+      return getFilename(path)
+    }
+  }
+  return undefined
+}
+
 export function itemToName(item: TrackItem) {
   if (typeof item === 'string') {
     return item
   }
-  return `${item.source ?? item.name ?? 'unnamed'}`
+  return `${item.source ?? item.name ?? locationName(item) ?? 'unnamed'}`
 }
 
 // A bare URL with no explicit source is left source-less so the adapter derives
@@ -59,9 +76,11 @@ export function urlToSubadapter(uri: string, source?: string) {
 export function applyName(item: TrackItem, name: string): TrackItem {
   if (typeof item === 'string') {
     return name === item ? item : urlToSubadapter(item, name)
-  } else {
-    return { ...item, source: name }
   }
+  // Only pin `source` when the name was actually edited; otherwise leave the
+  // object untouched so an unnamed subadapter still derives its basename in the
+  // adapter instead of getting the display fallback baked in.
+  return name === itemToName(item) ? item : { ...item, source: name }
 }
 
 // Strip the extension so a dropped file names its subtrack the same way a
