@@ -32,7 +32,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "build:css": "node --experimental-strip-types ../../scripts/flattenCss.ts src/styles.css dist/styles.css",
+    "build:css": "node ../../scripts/flattenCss.ts src/styles.css dist/styles.css",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",

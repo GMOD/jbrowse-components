@@ -65,7 +65,7 @@ Verify against source, not memory.
   locally.
 - **Unit tests** for changed paths (`pnpm test <path>`).
 - **Browser test** when UI behavior changed, on the backend(s) you touched
-  (`node --experimental-strip-types browser-tests/runner.ts --filter=<suite>`;
+  (`node browser-tests/runner.ts --filter=<suite>`;
   flags in `guides/TEST_INFRASTRUCTURE.md`).
 - **Lint** with `--cache --fix` on changed files.
 - **Snapshots** regenerated only after intentional, visually verified change

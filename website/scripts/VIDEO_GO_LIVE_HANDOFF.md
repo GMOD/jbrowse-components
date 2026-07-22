@@ -10,7 +10,7 @@ make these live." Do these steps when ready.
 - `website/scripts/generate-video.ts` — produces
   `website/static/video/volvox_tour.{webm,mp4,gif}` (widescreen 1600×620,
   button-driven zoom + visible cursor). Committed; run with
-  `node --experimental-strip-types scripts/generate-video.ts`.
+  `node scripts/generate-video.ts`.
 - **`website/src/lib/remark-video.ts` — a DRAFT `<Video>` remark plugin**
   (committed but **NOT registered**, so inert). Parallels `remark-figure.ts`.
 - `website/static/video/` is **gitignored** (`.gitignore:1`) — the binaries
@@ -98,8 +98,8 @@ neither. Add a dedicated script and keep videos off the `pnpm screenshots` path:
 
 ```jsonc
 // website/package.json
-"video": "node --experimental-strip-types scripts/generate-video.ts",
-"video:build": "pnpm --filter @jbrowse/web build && node --experimental-strip-types scripts/generate-video.ts"
+"video": "node scripts/generate-video.ts",
+"video:build": "pnpm --filter @jbrowse/web build && node scripts/generate-video.ts"
 ```
 
 Regenerate on demand only, never in the default screenshot regen.

@@ -13,12 +13,12 @@ motion, not just stills. Requested "using puppeteer".
 
 ```bash
 cd website
-node --experimental-strip-types scripts/generate-video.ts           # headless (CI path)
-node --experimental-strip-types scripts/generate-video.ts --headed  # real GPU, local
+node scripts/generate-video.ts           # headless (CI path)
+node scripts/generate-video.ts --headed  # real GPU, local
 ```
 
-(Use `node --experimental-strip-types`, NOT tsx — same reason as
-generate-screenshots.ts: tsx's keepNames breaks `page.evaluate`'d fns.)
+(Use `node`, NOT tsx — same reason as generate-screenshots.ts: tsx's keepNames
+breaks `page.evaluate`'d fns.)
 
 ### What it does
 

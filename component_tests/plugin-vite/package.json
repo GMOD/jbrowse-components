@@ -10,7 +10,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "pree2e": "pnpm build",
-    "e2e": "node --experimental-strip-types smoke.ts"
+    "e2e": "node smoke.ts"
   },
   "dependencies": {
     "@jbrowse/plugin-score-example": "file:./packed/jbrowse-plugin-score-example.tgz",

@@ -19,7 +19,7 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
 1. Edit the spec in `website/scripts/screenshot-specs.ts` (find by `name:`).
 2. Regenerate that one figure (run from `website/`):
    ```bash
-   node --experimental-strip-types scripts/generate-screenshots.ts \
+   node scripts/generate-screenshots.ts \
      --filter '<spec-name>' --exact --force
    ```
    - **Use `--force`.** The content-stable gate keeps the old PNG when a
@@ -122,7 +122,7 @@ CliSpecs are in `screenshot-spec-helpers.ts`.
   parts + live-link targets of the `bxd_sort_before_after` compose, not
   standalone figures.
 
-After deleting specs, ran `cd website && node --experimental-strip-types
+After deleting specs, ran `cd website && node
 scripts/gen-gallery-links.ts` to drop stale galleryLinks entries (CI gate).
 
 **Synteny autoDiagonalize completion gate (CODE FIX — needs browser-test verify

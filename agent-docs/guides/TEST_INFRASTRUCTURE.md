@@ -13,11 +13,11 @@ Browser tests (Puppeteer) in `products/jbrowse-web/browser-tests/`; unit tests
 Build first: `pnpm --filter @jbrowse/web build`.
 
 ```sh
-node --experimental-strip-types browser-tests/runner.ts                 # canvas2d (default)
-node --experimental-strip-types browser-tests/runner.ts --backend=webgl
-node --experimental-strip-types browser-tests/runner.ts --filter=alignments
-node --experimental-strip-types browser-tests/runner.ts --headed         # debug
-node --experimental-strip-types browser-tests/runner.ts --update-snapshots
+node browser-tests/runner.ts                 # canvas2d (default)
+node browser-tests/runner.ts --backend=webgl
+node browser-tests/runner.ts --filter=alignments
+node browser-tests/runner.ts --headed         # debug
+node browser-tests/runner.ts --update-snapshots
 ```
 
 ~29 suites in `browser-tests/suites/` (alignments, variants, the synteny family,

@@ -14,7 +14,7 @@ stale, so trust the json over it.
 - PNGs are rendered by `website/scripts/generate-screenshots.ts` (puppeteer).
   From `website/`:
   ```
-  node --experimental-strip-types scripts/generate-screenshots.ts --filter <name> --exact
+  node scripts/generate-screenshots.ts --filter <name> --exact
   ```
   NOT `npx tsx` (its keepNames breaks `page.evaluate`). Add `--force` to rewrite
   even a near-identical PNG (default only writes on >0.5% pixel diff — an

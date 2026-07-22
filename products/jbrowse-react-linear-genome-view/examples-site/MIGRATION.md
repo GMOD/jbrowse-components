@@ -182,7 +182,7 @@ No `playwright`/`chromium-cli` available in this sandbox. Use
 `waitForLoadingComplete`, `waitForDisplaysDone`
 (`packages/browser-test-utils/src/`). Write a throwaway script importing those
 via relative path (`./src/browser.ts` etc. — package self-import doesn't
-resolve), run with `node --experimental-strip-types <script>.mjs` from inside
+resolve), run with `node <script>.mjs` from inside
 `packages/browser-test-utils/`, and delete it afterward.
 
 ## Removal checklist (do last, once examples-site replaces each package)
