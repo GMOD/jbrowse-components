@@ -7,8 +7,8 @@ guide_category: Core concepts
 ---
 
 JBrowse configuration is built with `ConfigurationSchema`, a thin wrapper around
-MST models. Every adapter, track, display, and renderer declares a schema;
-instances are created from config JSON and observed reactively.
+MST models. Every adapter, track, and display declares a schema; instances are
+created from config JSON and observed reactively.
 
 ## Defining a schema
 
