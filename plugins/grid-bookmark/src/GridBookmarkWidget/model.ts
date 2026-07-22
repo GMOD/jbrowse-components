@@ -167,6 +167,9 @@ export default function f(_pluginManager: PluginManager) {
        */
       addBookmark(region: Region) {
         self.bookmarks.push(region)
+        // a new bookmark's overlay is gated on the session-wide flag, so an
+        // earlier "highlights off" would otherwise silently swallow it
+        getSession(self).revealHighlights()
       },
       /**
        * #action

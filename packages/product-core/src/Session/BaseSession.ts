@@ -305,6 +305,14 @@ export function BaseSessionModel<
       },
       /**
        * #action
+       * turn highlight bands back on, so a newly made highlight or bookmark is
+       * never silently swallowed by an earlier "highlights off"
+       */
+      revealHighlights() {
+        self.highlightsVisible = true
+      },
+      /**
+       * #action
        * set a runtime user-preference override (see `getPreference`). Mutates
        * volatile state; products persist these to localStorage. An `undefined`
        * value deletes the key (rather than leaving a phantom entry that

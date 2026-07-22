@@ -49,6 +49,21 @@ test('highlightsVisible is a single session-level flag gating overlays', () => {
   expect(getBookmarkHighlights(view).bookmarks).toHaveLength(0)
 })
 
+test('a new bookmark reveals the bands so it is not silently swallowed', () => {
+  const { session, widget } = setup()
+  session.setHighlightsVisible(false)
+  widget.addBookmark({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  expect(session.highlightsVisible).toBe(true)
+  expect(
+    getBookmarkHighlights(session.views[0] as IExtendedLGV).bookmarks,
+  ).toHaveLength(1)
+})
+
 test('visibleBookmarks only includes assemblies open in a view', () => {
   const { widget } = setup()
   expect([...widget.assembliesInViews]).toEqual(['volvox'])

@@ -11,6 +11,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { getSession } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
@@ -147,6 +148,9 @@ function initialize() {
       // presence of `widgets` is what isSessionModelWithWidgets keys off, so
       // activateTrackSelector (used by init.tracklist) works in the stub
       widgets: types.map(types.frozen<{ type: string; id: string }>()),
+      // mirrors BaseSession's session-wide highlight band toggle, which
+      // view.revealHighlights writes through
+      highlightsVisible: types.optional(types.boolean, true),
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
@@ -185,6 +189,12 @@ function initialize() {
       },
       showWidget() {},
       hideWidget() {},
+      setHighlightsVisible(arg: boolean) {
+        self.highlightsVisible = arg
+      },
+      revealHighlights() {
+        self.highlightsVisible = true
+      },
     }))
 
   return { Session, LinearGenomeModel, Assembly }
@@ -1835,25 +1845,15 @@ describe('highlights', () => {
     expect(model.highlight.length).toBe(0)
   })
 
-  test('revealHighlightChips turns chips on, honoring a recent dismissal', () => {
+  test('revealHighlights turns chips and the session-wide bands back on', () => {
     const model = setupHighlightModel()
-    expect(model.showHighlightChips).toBe(false)
-
-    model.revealHighlightChips()
-    expect(model.showHighlightChips).toBe(true)
-
-    // a manual "chips off" suppresses the auto-reveal for the next hour
+    const session = getSession(model)
+    session.setHighlightsVisible(false)
     model.setShowHighlightChips(false)
-    model.revealHighlightChips()
-    expect(model.showHighlightChips).toBe(false)
 
-    // once the suppression window lapses, a fresh highlight reveals again
-    const future = Date.now() + 60 * 60 * 1000 + 1
-    jest.useFakeTimers()
-    jest.setSystemTime(future)
-    model.revealHighlightChips()
-    jest.useRealTimers()
+    model.revealHighlights()
     expect(model.showHighlightChips).toBe(true)
+    expect(session.highlightsVisible).toBe(true)
   })
 
   test('setHighlight replaces the array', () => {

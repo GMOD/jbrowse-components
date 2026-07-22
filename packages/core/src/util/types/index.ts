@@ -134,6 +134,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   // are drawn; one session-wide toggle shared by all views
   highlightsVisible: boolean
   setHighlightsVisible: (arg: boolean) => void
+  revealHighlights: () => void
   getPreference: (key: string) => unknown
   setPreferenceOverride?: (key: string, value: unknown) => void
   clearPreferenceOverrides?: () => void
