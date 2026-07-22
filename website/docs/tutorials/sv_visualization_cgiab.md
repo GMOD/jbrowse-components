@@ -524,8 +524,8 @@ base level.
 
 HG008-T v3.2 is haplotype-resolved, so its scaffold names end in `_hap1` or
 `_hap2` and a single plot stacks both haplotypes on one axis — every GRCh38
-chromosome gets two counterparts and the diagonal doubles. Restrict the y axis to
-one haplotype at a time and each plot reads as a plain assembly-vs-reference
+chromosome gets two counterparts and the diagonal doubles. Restrict the y axis
+to one haplotype at a time and each plot reads as a plain assembly-vs-reference
 diagonal.
 
 <Figure caption="Haplotype 1 of HG008-T v3.2 (y) against GRCh38 chromosomes (x). Each scaffold is one diagonal segment; scaffolds named for two chromosomes (chr3_chr13_hap1) break into two, which is the translocation." src="/img/sv_cgiab/dotplot_hap1.png" />

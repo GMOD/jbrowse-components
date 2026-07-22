@@ -144,7 +144,10 @@ describe('name fallback', () => {
       subfeatureInfos: [],
     }
     const h = [{ refName: 'chr12', name: 'DUP' }]
-    expect([...resolveFeatureHighlights([dup], h).box].sort()).toEqual(['a', 'b'])
+    expect([...resolveFeatureHighlights([dup], h).box].sort()).toEqual([
+      'a',
+      'b',
+    ])
   })
 
   it('falls back to a subfeature name and pins its parent', () => {
@@ -163,9 +166,10 @@ describe('name fallback', () => {
         },
       ],
     }
-    const r = resolveFeatureHighlights([withSub], [
-      { refName: 'chr12', name: 'GENE-201' },
-    ])
+    const r = resolveFeatureHighlights(
+      [withSub],
+      [{ refName: 'chr12', name: 'GENE-201' }],
+    )
     expect([...r.box]).toEqual(['tx'])
     expect([...r.pin]).toEqual(['gene'])
   })

@@ -92,15 +92,15 @@ Cleared 12 of the then-13 bad items. Two app-code changes came out of it:
 
 - **`selectNamedRegions` (new, `packages/core/src/util/`)** — resolves a list of
   region names against an assembly's own regions, and an entry containing `*` is
-  a **glob**. LinearGenomeView's `init.displayedRegionNames` now goes through it,
-  and DotplotView gained a **per-axis** `displayedRegionNames` (new field on each
-  `init.views` entry, applied before `autoDiagonalize` so the reorder runs over
-  the restricted set). This is what makes a haplotype-resolved assembly
+  a **glob**. LinearGenomeView's `init.displayedRegionNames` now goes through
+  it, and DotplotView gained a **per-axis** `displayedRegionNames` (new field on
+  each `init.views` entry, applied before `autoDiagonalize` so the reorder runs
+  over the restricted set). This is what makes a haplotype-resolved assembly
   tractable: `['*_hap1']` instead of hand-listing 16 scaffolds. 7 unit tests.
-- **Dotplot "could not be mapped" warning no longer false-positives.** The worker
-  only knows what each axis *displays*, so it counted "refName not on this
-  restricted axis" as "refName not in the assembly" and told the user to go fix a
-  nonexistent alias problem — it fired on every restricted-axis plot.
+- **Dotplot "could not be mapped" warning no longer false-positives.** The
+  worker only knows what each axis _displays_, so it counted "refName not on
+  this restricted axis" as "refName not in the assembly" and told the user to go
+  fix a nonexistent alias problem — it fired on every restricted-axis plot.
   `executeDotplotFeaturesAndPositions` now returns the distinct skipped refNames
   (`skippedHRefNames`/`skippedVRefNames`, bounded by scaffold count), and
   `DotplotDisplay/afterAttach` clears them against the assembly's own regions —
@@ -110,9 +110,10 @@ Cleared 12 of the then-13 bad items. Two app-code changes came out of it:
 
 Figure-side:
 
-- **sv_cgiab/dotplot_result → `dotplot_hap1` + `dotplot_hap2`** (spec + PNG + doc
-  + json entry). Uses the glob above. Old PNG `git rm`'d, gallery links and
-  figure manifest regenerated.
+- **sv_cgiab/dotplot_result → `dotplot_hap1` + `dotplot_hap2`** (spec + PNG +
+  doc
+  - json entry). Uses the glob above. Old PNG `git rm`'d, gallery links and
+    figure manifest regenerated.
 - **sv_cgiab/driver_kras_gain** — root-caused: `featureHighlights` matches on
   span within ±1bp and **ignores `name`**, and the spec's end coord was 7bp past
   ncbiRefSeq's KRAS span, so nothing ever boxed. Fixed the coord; deleted the
@@ -124,20 +125,20 @@ Figure-side:
   updated to match.
 - **sv_cgiab/cdkn2a_tumor_normal_coverage** — crosshatches off, `longestCoding`,
   taller so the CNV-call lane fits.
-- **tcga/cohort_cnv_genome** — four recurrent stripes labeled. The x positions are
-  **derived** (`wgX()` from chromosome lengths + a calibration fitted over all 23
-  region boundaries, max residual 0.3 CSS px), not hand-tuned. Every labeled
-  locus was checked against the pixels first (3.5-7x its neighborhood's saturated
-  fraction). BRCA1 was *not* labeled — it isn't a recurrent CNA and lands 2px from
-  ERBB2; PTEN was dropped at ~1.4x contrast.
+- **tcga/cohort_cnv_genome** — four recurrent stripes labeled. The x positions
+  are **derived** (`wgX()` from chromosome lengths + a calibration fitted over
+  all 23 region boundaries, max residual 0.3 CSS px), not hand-tuned. Every
+  labeled locus was checked against the pixels first (3.5-7x its neighborhood's
+  saturated fraction). BRCA1 was _not_ labeled — it isn't a recurrent CNA and
+  lands 2px from ERBB2; PTEN was dropped at ~1.4x contrast.
 - **tcga/cohort_cnv_erbb2** — MANE gene lane + ERBB2 highlight band. The lane's
   row count is fixed by feature overlap and height only controls how many are
   VISIBLE, so it is pinned to exactly two rows (40px pitch) rather than chasing
   a height that clears the last one.
 - **variants/potato_missingness** — smaller viewport, annotations cut to a bare
   label at fontSize 22.
-- **pangenome_cactus/{depth,pav,variant_matrix}** — depth caption now explains the
-  blue tones as one bigWig summary bin (max/mean/min, verified against
+- **pangenome_cactus/{depth,pav,variant_matrix}** — depth caption now explains
+  the blue tones as one bigWig summary bin (max/mean/min, verified against
   `makeWhiskersLayers`); pav resized so all three strains fit; variant_matrix
   switched off the matrix display onto `LinearMultiSampleVariantDisplay`.
 - **sv_cgiab/dotplot_import_form** — taller, card no longer clipped.
@@ -188,8 +189,8 @@ The Cactus graph was NOT in the checkout, so it was rebuilt with
 again:** `cactus-pangenome` on these four E. coli genomes takes **11 minutes**
 (not hours), and every downstream projection — 6× halSynteny, hal2maf, taffy,
 odgi depth, odgi pav, odgi viz — finishes in about **15 seconds** after it. The
-run reproduced the committed raster near byte-identically, so the pinning
-(fixed RefSeq accessions + pinned cactus image) genuinely holds.
+run reproduced the committed raster near byte-identically, so the pinning (fixed
+RefSeq accessions + pinned cactus image) genuinely holds.
 
 **Hosting the graph on jbrowse.org was considered and rejected.** It would save
 11 minutes and remove no dependency: the cactus docker image is required anyway
