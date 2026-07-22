@@ -14,6 +14,7 @@ import type { ErrorState, SeqState } from '../../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
+  SequenceHoverTarget,
 } from '../model.ts'
 
 const useStyles = makeStyles()({
@@ -34,6 +35,7 @@ const SequenceDialog = observer(function SequenceDialog({
   error,
   assemblyGeneticCodeId,
   assemblyName,
+  hoverTarget,
   onForceLoad,
 }: {
   handleClose: () => void
@@ -47,6 +49,7 @@ const SequenceDialog = observer(function SequenceDialog({
   error: unknown
   assemblyGeneticCodeId?: number
   assemblyName?: string
+  hoverTarget?: SequenceHoverTarget
   onForceLoad: () => void
 }) {
   const { classes } = useStyles()
@@ -87,6 +90,7 @@ const SequenceDialog = observer(function SequenceDialog({
           revcomp={revcomp}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
           assemblyName={assemblyName}
+          hoverTarget={hoverTarget}
           onForceLoad={onForceLoad}
         />
       </DialogContent>

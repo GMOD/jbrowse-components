@@ -10,7 +10,24 @@ import { getSequencePlaintext } from './util.ts'
 
 import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
 import type { SeqState } from '../util.tsx'
-import type { SequenceDisplayMode } from './model.ts'
+import type {
+  SequenceDisplayMode,
+  SequenceHoverPosition,
+} from './model.ts'
+
+// the panel publishes hovered bases to whoever opened it (a feature-detail
+// widget, a track's sequence dialog); tests stand in a plain recorder
+function makeHoverTarget() {
+  const positions: (SequenceHoverPosition | undefined)[] = []
+  return {
+    get position() {
+      return positions.at(-1)
+    },
+    setSequenceHoverPosition(pos: SequenceHoverPosition | undefined) {
+      positions.push(pos)
+    },
+  }
+}
 
 // Usage reference for the public SequencePanel component (it has external
 // consumers): each test below renders <SequencePanel> with a different mode and
@@ -359,6 +376,7 @@ function mockRowRect(span: Element) {
 
 test('hovering the genomic sequence reports the genomic base under the cursor', () => {
   const model = SequenceFeatureDetailsF().create()
+  const hover = makeHoverTarget()
   model.setShowCoordinates('genomic')
   const feature = {
     start: 1200,
@@ -372,6 +390,7 @@ test('hovering the genomic sequence reports the genomic base under the cursor', 
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      hoverTarget={hover}
       mode="genomic"
       sequence={{ seq: 'A'.repeat(100) }}
       feature={feature}
@@ -382,7 +401,7 @@ test('hovering the genomic sequence reports the genomic base under the cursor', 
 
   // cursor at the row start => first feature base (0-based 1200)
   fireEvent.mouseMove(span, { clientX: 0 })
-  expect(model.hoverPosition).toEqual({
+  expect(hover.position).toEqual({
     refName: 'chr1',
     start: 1200,
     end: 1201,
@@ -390,19 +409,20 @@ test('hovering the genomic sequence reports the genomic base under the cursor', 
 
   // 5.5 columns in => 6th base (0-based 1205)
   fireEvent.mouseMove(span, { clientX: 55 })
-  expect(model.hoverPosition).toEqual({
+  expect(hover.position).toEqual({
     refName: 'chr1',
     start: 1205,
     end: 1206,
   })
 
   fireEvent.mouseLeave(getByTestId('sequence_panel'))
-  expect(model.hoverPosition).toBeUndefined()
+  expect(hover.position).toBeUndefined()
   rectSpy.mockRestore()
 })
 
 test('hovering a reverse-strand genomic sequence counts positions down', () => {
   const model = SequenceFeatureDetailsF().create()
+  const hover = makeHoverTarget()
   model.setShowCoordinates('genomic')
   const feature = {
     start: 0,
@@ -416,6 +436,7 @@ test('hovering a reverse-strand genomic sequence counts positions down', () => {
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      hoverTarget={hover}
       mode="genomic"
       sequence={{ seq: 'A'.repeat(100) }}
       feature={feature}
@@ -426,20 +447,22 @@ test('hovering a reverse-strand genomic sequence counts positions down', () => {
 
   // display char 0 is the last genomic base (0-based 99)
   fireEvent.mouseMove(span, { clientX: 0 })
-  expect(model.hoverPosition).toEqual({ refName: 'chr1', start: 99, end: 100 })
+  expect(hover.position).toEqual({ refName: 'chr1', start: 99, end: 100 })
 
   // 5 columns in counts down to base 94
   fireEvent.mouseMove(span, { clientX: 55 })
-  expect(model.hoverPosition).toEqual({ refName: 'chr1', start: 94, end: 95 })
+  expect(hover.position).toEqual({ refName: 'chr1', start: 94, end: 95 })
   rectSpy.mockRestore()
 })
 
 test('hovering does not report positions when coordinates are not genomic', () => {
   const model = SequenceFeatureDetailsF().create()
+  const hover = makeHoverTarget()
   model.setShowCoordinates('relative')
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      hoverTarget={hover}
       mode="genomic"
       sequence={{ seq: 'A'.repeat(100) }}
       feature={{
@@ -456,7 +479,7 @@ test('hovering does not report positions when coordinates are not genomic', () =
   const span = getByTestId('sequence_panel').querySelector('span')!
   const rectSpy = mockRowRect(span)
   fireEvent.mouseMove(span, { clientX: 55 })
-  expect(model.hoverPosition).toBeUndefined()
+  expect(hover.position).toBeUndefined()
   rectSpy.mockRestore()
 })
 
@@ -674,10 +697,12 @@ test('coordinate labels stay column-aligned when a row gains a digit', () => {
 
 test('hovering publishes the assembly so the refName can be canonicalized', () => {
   const model = SequenceFeatureDetailsF().create()
+  const hover = makeHoverTarget()
   model.setShowCoordinates('genomic')
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      hoverTarget={hover}
       mode="genomic"
       sequence={{ seq: 'A'.repeat(100) }}
       assemblyName="hg38"
@@ -697,7 +722,7 @@ test('hovering publishes the assembly so the refName can be canonicalized', () =
   const span = getByTestId('sequence_panel').querySelector('span')!
   const rectSpy = mockRowRect(span)
   fireEvent.mouseMove(span, { clientX: 0 })
-  expect(model.hoverPosition).toEqual({
+  expect(hover.position).toEqual({
     refName: '1',
     start: 1200,
     end: 1201,

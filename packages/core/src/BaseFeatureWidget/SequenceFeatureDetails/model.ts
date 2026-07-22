@@ -1,5 +1,4 @@
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   localStorageGetBoolean,
@@ -30,6 +29,13 @@ export interface SequenceHoverPosition {
   assemblyName?: string
 }
 
+// What the sequence panel needs from whoever opened it in order to publish
+// hovers: the widget or display that owns the panel, which is the tree node the
+// LGV crosshair overlay can find. A caller with nowhere to draw omits it.
+export interface SequenceHoverTarget {
+  setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
+}
+
 export type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
@@ -43,6 +49,11 @@ export type SequenceDisplayMode =
 
 const p = 'sequenceFeatureDetails'
 
+// User preferences for the sequence readout, seeded from and written straight
+// back to localStorage. Nothing here is snapshotted or reads the tree, so an
+// instance is cheap and needs no lifecycle: a holder that only sometimes shows
+// a panel (e.g. a track's right-click dialog) creates one when it opens rather
+// than carrying it around.
 export function SequenceFeatureDetailsF() {
   return types
     .model('SequenceFeatureDetails')
@@ -69,11 +80,6 @@ export function SequenceFeatureDetailsF() {
        * #volatile
        */
       charactersPerRow: 100,
-      /**
-       * #volatile
-       * genomic base currently hovered in the sequence panel, or undefined
-       */
-      hoverPosition: undefined as SequenceHoverPosition | undefined,
     }))
     .actions(self => ({
       /**
@@ -81,41 +87,28 @@ export function SequenceFeatureDetailsF() {
        */
       setUpDownBp(f: number) {
         self.upDownBp = f
+        localStorageSetNumber(`${p}-upDownBp`, f)
       },
       /**
        * #action
        */
       setIntronBp(f: number) {
         self.intronBp = f
+        localStorageSetNumber(`${p}-intronBp`, f)
       },
       /**
        * #action
        */
       setUpperCaseCDS(f: boolean) {
         self.upperCaseCDS = f
+        localStorageSetBoolean(`${p}-upperCaseCDS`, f)
       },
       /**
        * #action
        */
       setShowCoordinates(f: ShowCoordinatesMode) {
         self.showCoordinatesSetting = f
-      },
-      /**
-       * #action
-       */
-      setHoverPosition(pos: SequenceHoverPosition | undefined) {
-        // skip no-op updates: mousemove fires per pixel but the base under the
-        // cursor changes far less often, and each change re-renders the LGV
-        // crosshair overlay
-        const prev = self.hoverPosition
-        const same =
-          prev === pos ||
-          (prev?.refName === pos?.refName &&
-            prev?.start === pos?.start &&
-            prev?.end === pos?.end)
-        if (!same) {
-          self.hoverPosition = pos
-        }
+        localStorageSetItem(`${p}-showCoordinatesSetting`, f)
       },
     }))
     .views(self => ({
@@ -124,25 +117,6 @@ export function SequenceFeatureDetailsF() {
        */
       get showCoordinates() {
         return self.showCoordinatesSetting !== 'none'
-      },
-    }))
-    .actions(self => ({
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(
-            function sequenceFeatureLocalStorageAutorun() {
-              localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
-              localStorageSetNumber(`${p}-intronBp`, self.intronBp)
-              localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
-              localStorageSetItem(
-                `${p}-showCoordinatesSetting`,
-                self.showCoordinatesSetting,
-              )
-            },
-            { name: 'SequenceFeatureLocalStorage' },
-          ),
-        )
       },
     }))
 }

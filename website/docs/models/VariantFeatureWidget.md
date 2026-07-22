@@ -16,25 +16,27 @@ variant-specific fields such as genotypes and INFO.
 
 ## Members
 
-| Member                                                     | Kind       | Defined by                                | Description |
-| ---------------------------------------------------------- | ---------- | ----------------------------------------- | ----------- |
-| [type](#property-type)                                     | Properties | VariantFeatureWidget                      |             |
-| [descriptions](#property-descriptions)                     | Properties | VariantFeatureWidget                      |             |
-| [id](#property-id)                                         | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [featureData](#property-featuredata)                       | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [unformattedFeatureData](#property-unformattedfeaturedata) | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [view](#property-view)                                     | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [track](#property-track)                                   | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [trackId](#property-trackid)                               | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [trackType](#property-tracktype)                           | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [maxDepth](#property-maxdepth)                             | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [sequenceFeatureDetails](#property-sequencefeaturedetails) | Properties | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [error](#volatile-error)                                   | Volatiles  | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [setFeatureData](#action-setfeaturedata)                   | Actions    | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [clearFeatureData](#action-clearfeaturedata)               | Actions    | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [setFormattedData](#action-setformatteddata)               | Actions    | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [setExtra](#action-setextra)                               | Actions    | [BaseFeatureWidget](../basefeaturewidget) |             |
-| [setError](#action-seterror)                               | Actions    | [BaseFeatureWidget](../basefeaturewidget) |             |
+| Member                                                       | Kind       | Defined by                                | Description                                                                                       |
+| ------------------------------------------------------------ | ---------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                       | Properties | VariantFeatureWidget                      |                                                                                                   |
+| [descriptions](#property-descriptions)                       | Properties | VariantFeatureWidget                      |                                                                                                   |
+| [id](#property-id)                                           | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [featureData](#property-featuredata)                         | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [unformattedFeatureData](#property-unformattedfeaturedata)   | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [view](#property-view)                                       | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [track](#property-track)                                     | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [trackId](#property-trackid)                                 | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [trackType](#property-tracktype)                             | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [maxDepth](#property-maxdepth)                               | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [sequenceFeatureDetails](#property-sequencefeaturedetails)   | Properties | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [error](#volatile-error)                                     | Volatiles  | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [sequenceHoverPosition](#volatile-sequencehoverposition)     | Volatiles  | [BaseFeatureWidget](../basefeaturewidget) | genomic base currently hovered in this widget's sequence panel, read by the LGV crosshair overlay |
+| [setSequenceHoverPosition](#action-setsequencehoverposition) | Actions    | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [setFeatureData](#action-setfeaturedata)                     | Actions    | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [clearFeatureData](#action-clearfeaturedata)                 | Actions    | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [setFormattedData](#action-setformatteddata)                 | Actions    | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [setExtra](#action-setextra)                                 | Actions    | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
+| [setError](#action-seterror)                                 | Actions    | [BaseFeatureWidget](../basefeaturewidget) |                                                                                                   |
 
 <details>
 <summary>VariantFeatureWidget - Properties</summary>
@@ -159,7 +161,7 @@ maxDepth: types.maybe(types.number)
 
 ```ts
 // type signature
-type sequenceFeatureDetails = IOptionalIType<IModelType<{}, { showCoordinatesSetting: ShowCoordinatesMode; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; hoverPosition: SequenceHoverPosition | undefined; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+type sequenceFeatureDetails = IOptionalIType<IModelType<{}, { showCoordinatesSetting: ShowCoordinatesMode; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; } & { setUpDownBp(f: number): void; setIntronBp(f: number): void; setUpperCaseCDS(f: boolean): void; setShowCoordinates(f: ShowCoordinatesMode): void; } & ...
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```
@@ -175,7 +177,25 @@ type error = undefined
 error: undefined
 ```
 
+#### volatile: sequenceHoverPosition
+
+genomic base currently hovered in this widget's sequence panel, read by the LGV
+crosshair overlay
+
+```ts
+// type signature
+type sequenceHoverPosition = undefined
+// code
+sequenceHoverPosition: undefined
+```
+
 **Actions**
+
+#### action: setSequenceHoverPosition
+
+```ts
+type setSequenceHoverPosition = (pos: SequenceHoverPosition | undefined) => void
+```
 
 #### action: setFeatureData
 

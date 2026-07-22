@@ -44,6 +44,7 @@ const SequencePanel = observer(function SequencePanel({
   revcomp = false,
   assemblyGeneticCodeId,
   assemblyName,
+  hoverTarget,
   ref,
 }: SequencePanelProps) {
   const { showCoordinates } = model
@@ -52,9 +53,9 @@ const SequencePanel = observer(function SequencePanel({
   // is hidden) so it doesn't linger
   useEffect(
     () => () => {
-      model.setHoverPosition(undefined)
+      hoverTarget?.setSequenceHoverPosition(undefined)
     },
-    [model],
+    [hoverTarget],
   )
   return (
     <div
@@ -62,7 +63,7 @@ const SequencePanel = observer(function SequencePanel({
       ref={ref}
       style={{ maxHeight: 300, overflow: 'auto' }}
       onMouseLeave={() => {
-        model.setHoverPosition(undefined)
+        hoverTarget?.setSequenceHoverPosition(undefined)
       }}
     >
       <Container>
@@ -80,7 +81,7 @@ const SequencePanel = observer(function SequencePanel({
           revcomp={revcomp}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
           onHoverBase={base0 => {
-            model.setHoverPosition({
+            hoverTarget?.setSequenceHoverPosition({
               refName: feature.refName,
               start: base0,
               end: base0 + 1,

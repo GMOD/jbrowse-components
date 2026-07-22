@@ -9,6 +9,7 @@ import { formatSubfeatures, nullReplacer } from './util.tsx'
 
 import type PluginManager from '../PluginManager.ts'
 import type { SimpleFeatureSerialized } from '../util/index.ts'
+import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
 import type { MaybeSerializedFeat } from './types.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -90,15 +91,41 @@ export function stateModelFactory(pluginManager: PluginManager) {
         undefined,
       ),
     })
-    .volatile<{ error: unknown }>(() => ({
+    .volatile<{
+      error: unknown
+      sequenceHoverPosition: SequenceHoverPosition | undefined
+    }>(() => ({
       /**
        * #volatile
        */
 
       error: undefined,
+      /**
+       * #volatile
+       * genomic base currently hovered in this widget's sequence panel, read by
+       * the LGV crosshair overlay
+       */
+      sequenceHoverPosition: undefined,
     }))
 
     .actions(self => ({
+      /**
+       * #action
+       */
+      setSequenceHoverPosition(pos: SequenceHoverPosition | undefined) {
+        // skip no-op updates: mousemove fires per pixel but the base under the
+        // cursor changes far less often, and each change re-renders the LGV
+        // crosshair overlay
+        const prev = self.sequenceHoverPosition
+        const same =
+          prev === pos ||
+          (prev?.refName === pos?.refName &&
+            prev?.start === pos?.start &&
+            prev?.end === pos?.end)
+        if (!same) {
+          self.sequenceHoverPosition = pos
+        }
+      },
       /**
        * #action
        */

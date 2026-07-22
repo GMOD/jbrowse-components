@@ -3,6 +3,7 @@ import type { SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
+  SequenceHoverTarget,
 } from './model.ts'
 import type { RefObject } from 'react'
 
@@ -17,5 +18,9 @@ export interface SequencePanelProps {
   // aliases; without it a non-canonical refName (e.g. '1' vs 'chr1') never
   // matches the displayed region and the crosshair silently doesn't draw
   assemblyName?: string
+  // where hovered bases are published for the LGV crosshair. Must be referen-
+  // tially stable (it is the owning widget/display), since a fresh identity
+  // each render would clear the hover it just set
+  hoverTarget?: SequenceHoverTarget
   ref?: RefObject<HTMLDivElement | null>
 }

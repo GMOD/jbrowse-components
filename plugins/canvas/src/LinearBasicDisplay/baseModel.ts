@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { SequenceFeatureDetailsF } from '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/model'
 import {
   ConfigurationReference,
   getConf,
@@ -117,6 +116,7 @@ import type {
 import type { FitStage } from './fitLadder.ts'
 import type { IncrementalLayout } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
+import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
@@ -376,18 +376,6 @@ export default function baseStateModelFactory(
             types.array(FeatureHighlightModel),
             [],
           ),
-          /**
-           * #property
-           * Settings (intron/updownstream bp, coordinates, case) for the
-           * feature sequence panel opened from the feature right-click menu.
-           * Same model the feature-detail widget uses, so the two readouts
-           * share behavior; its state is all volatile + localStorage-backed, so
-           * this contributes nothing to the snapshot.
-           */
-          sequenceFeatureDetails: types.stripDefault(
-            SequenceFeatureDetailsF(),
-            {},
-          ),
         }),
       )
       .volatile(() => ({
@@ -407,6 +395,12 @@ export default function baseStateModelFactory(
          * #volatile
          */
         mouseoverExtraInformation: undefined as string | undefined,
+        /**
+         * #volatile
+         * genomic base currently hovered in a feature sequence dialog opened
+         * from this display, read by the LGV crosshair overlay
+         */
+        sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
         /**
          * #volatile
          */
@@ -1893,6 +1887,25 @@ export default function baseStateModelFactory(
            */
           setUtrColor(color?: string) {
             self.configuration.setSlot('utrColor', color)
+          },
+
+          /**
+           * #action
+           */
+          // Published by a feature sequence dialog opened off this display's
+          // right-click menu, so the LGV can draw a crosshair at the base the
+          // sequence readout is hovering. Skips no-op updates: mousemove fires
+          // per pixel but the base under the cursor changes far less often.
+          setSequenceHoverPosition(pos: SequenceHoverPosition | undefined) {
+            const prev = self.sequenceHoverPosition
+            const same =
+              prev === pos ||
+              (prev?.refName === pos?.refName &&
+                prev?.start === pos?.start &&
+                prev?.end === pos?.end)
+            if (!same) {
+              self.sequenceHoverPosition = pos
+            }
           },
 
           /**

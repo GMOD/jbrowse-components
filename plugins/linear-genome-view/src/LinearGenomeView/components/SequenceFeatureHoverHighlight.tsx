@@ -11,7 +11,7 @@ import type {
 
 // A feature-detail widget is "connected" to this view when its `view` reference
 // points back at it; that widget's sequence panel publishes the hovered base as
-// `sequenceFeatureDetails.hoverPosition`.
+// `sequenceHoverPosition`.
 function isFeatureWidgetForView(
   w: unknown,
   viewId: string,
@@ -29,9 +29,9 @@ function isFeatureWidgetForView(
 // publish hover positions too.
 function displayHoverPosition(display: unknown) {
   const candidate = display as {
-    sequenceFeatureDetails?: { hoverPosition?: SequenceHoverPosition }
+    sequenceHoverPosition?: SequenceHoverPosition
   } | null
-  return candidate?.sequenceFeatureDetails?.hoverPosition
+  return candidate?.sequenceHoverPosition
 }
 
 // Draws a crosshair on the LGV at the base a connected feature-detail sequence
@@ -48,7 +48,7 @@ const SequenceFeatureHoverHighlight = observer(
           model={model}
           getPosition={(widget, viewId) =>
             isFeatureWidgetForView(widget, viewId)
-              ? widget.sequenceFeatureDetails.hoverPosition
+              ? widget.sequenceHoverPosition
               : undefined
           }
         />

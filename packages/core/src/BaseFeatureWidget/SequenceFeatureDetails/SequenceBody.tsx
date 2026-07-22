@@ -8,6 +8,7 @@ import type { ErrorState, SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
+  SequenceHoverTarget,
 } from './model.ts'
 import type { RefObject } from 'react'
 
@@ -21,6 +22,7 @@ export default function SequenceBody({
   revcomp,
   assemblyGeneticCodeId,
   assemblyName,
+  hoverTarget,
   onForceLoad,
 }: {
   error: unknown
@@ -32,6 +34,7 @@ export default function SequenceBody({
   revcomp: boolean
   assemblyGeneticCodeId?: number
   assemblyName?: string
+  hoverTarget?: SequenceHoverTarget
   onForceLoad: () => void
 }) {
   return (
@@ -61,6 +64,7 @@ export default function SequenceBody({
           revcomp={revcomp}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
           assemblyName={assemblyName}
+          hoverTarget={hoverTarget}
         />
       )}
     </div>

@@ -17,7 +17,10 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '../../util/index.ts'
-import type { SequenceFeatureDetailsModel } from './model.ts'
+import type {
+  SequenceFeatureDetailsModel,
+  SequenceHoverTarget,
+} from './model.ts'
 
 // lazies
 const SequenceBody = lazy(() => import('./SequenceBody.tsx'))
@@ -31,12 +34,14 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   session,
   assemblyName,
   feature,
+  hoverTarget,
   showOpenInDialog = true,
 }: {
   model: SequenceFeatureDetailsModel
   session: AbstractSessionModel
   assemblyName: string | undefined
   feature: SimpleFeatureSerialized
+  hoverTarget?: SequenceHoverTarget
   showOpenInDialog?: boolean
 }) {
   const { upDownBp } = model
@@ -118,6 +123,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             error={error}
             assemblyGeneticCodeId={assemblyGeneticCodeId}
             assemblyName={assemblyName}
+            hoverTarget={hoverTarget}
             onForceLoad={onForceLoad}
             handleClose={() => {
               setOpenInDialog(false)
@@ -136,6 +142,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             revcomp={revcomp}
             assemblyGeneticCodeId={assemblyGeneticCodeId}
             assemblyName={assemblyName}
+            hoverTarget={hoverTarget}
             onForceLoad={onForceLoad}
           />
         </Suspense>

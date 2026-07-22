@@ -74,6 +74,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
             session={getSession(model)}
             assemblyName={model.view?.assemblyNames?.[0]}
             feature={feature}
+            hoverTarget={model}
           />
         </Suspense>
       ) : null}

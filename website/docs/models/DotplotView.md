@@ -912,7 +912,9 @@ type setAssemblyNames = (target: string, query: string) => void
 type getCoords = (
   mousedown: Coord,
   mouseup: Coord,
-) => PxToBpResult[] | undefined
+) =>
+  | { x1: PxToBpResult; x2: PxToBpResult; y1: PxToBpResult; y2: PxToBpResult }
+  | undefined
 ```
 
 #### action: showAllRegions

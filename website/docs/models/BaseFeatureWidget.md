@@ -18,25 +18,27 @@ see: formatDetails-\>feature,formatDetails-\>subfeatures
 
 ## Members
 
-| Member                                                     | Kind       | Defined by        | Description |
-| ---------------------------------------------------------- | ---------- | ----------------- | ----------- |
-| [id](#property-id)                                         | Properties | BaseFeatureWidget |             |
-| [type](#property-type)                                     | Properties | BaseFeatureWidget |             |
-| [featureData](#property-featuredata)                       | Properties | BaseFeatureWidget |             |
-| [unformattedFeatureData](#property-unformattedfeaturedata) | Properties | BaseFeatureWidget |             |
-| [view](#property-view)                                     | Properties | BaseFeatureWidget |             |
-| [track](#property-track)                                   | Properties | BaseFeatureWidget |             |
-| [trackId](#property-trackid)                               | Properties | BaseFeatureWidget |             |
-| [trackType](#property-tracktype)                           | Properties | BaseFeatureWidget |             |
-| [maxDepth](#property-maxdepth)                             | Properties | BaseFeatureWidget |             |
-| [sequenceFeatureDetails](#property-sequencefeaturedetails) | Properties | BaseFeatureWidget |             |
-| [descriptions](#property-descriptions)                     | Properties | BaseFeatureWidget |             |
-| [error](#volatile-error)                                   | Volatiles  | BaseFeatureWidget |             |
-| [setFeatureData](#action-setfeaturedata)                   | Actions    | BaseFeatureWidget |             |
-| [clearFeatureData](#action-clearfeaturedata)               | Actions    | BaseFeatureWidget |             |
-| [setFormattedData](#action-setformatteddata)               | Actions    | BaseFeatureWidget |             |
-| [setExtra](#action-setextra)                               | Actions    | BaseFeatureWidget |             |
-| [setError](#action-seterror)                               | Actions    | BaseFeatureWidget |             |
+| Member                                                       | Kind       | Defined by        | Description                                                                                       |
+| ------------------------------------------------------------ | ---------- | ----------------- | ------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                           | Properties | BaseFeatureWidget |                                                                                                   |
+| [type](#property-type)                                       | Properties | BaseFeatureWidget |                                                                                                   |
+| [featureData](#property-featuredata)                         | Properties | BaseFeatureWidget |                                                                                                   |
+| [unformattedFeatureData](#property-unformattedfeaturedata)   | Properties | BaseFeatureWidget |                                                                                                   |
+| [view](#property-view)                                       | Properties | BaseFeatureWidget |                                                                                                   |
+| [track](#property-track)                                     | Properties | BaseFeatureWidget |                                                                                                   |
+| [trackId](#property-trackid)                                 | Properties | BaseFeatureWidget |                                                                                                   |
+| [trackType](#property-tracktype)                             | Properties | BaseFeatureWidget |                                                                                                   |
+| [maxDepth](#property-maxdepth)                               | Properties | BaseFeatureWidget |                                                                                                   |
+| [sequenceFeatureDetails](#property-sequencefeaturedetails)   | Properties | BaseFeatureWidget |                                                                                                   |
+| [descriptions](#property-descriptions)                       | Properties | BaseFeatureWidget |                                                                                                   |
+| [error](#volatile-error)                                     | Volatiles  | BaseFeatureWidget |                                                                                                   |
+| [sequenceHoverPosition](#volatile-sequencehoverposition)     | Volatiles  | BaseFeatureWidget | genomic base currently hovered in this widget's sequence panel, read by the LGV crosshair overlay |
+| [setSequenceHoverPosition](#action-setsequencehoverposition) | Actions    | BaseFeatureWidget |                                                                                                   |
+| [setFeatureData](#action-setfeaturedata)                     | Actions    | BaseFeatureWidget |                                                                                                   |
+| [clearFeatureData](#action-clearfeaturedata)                 | Actions    | BaseFeatureWidget |                                                                                                   |
+| [setFormattedData](#action-setformatteddata)                 | Actions    | BaseFeatureWidget |                                                                                                   |
+| [setExtra](#action-setextra)                                 | Actions    | BaseFeatureWidget |                                                                                                   |
+| [setError](#action-seterror)                                 | Actions    | BaseFeatureWidget |                                                                                                   |
 
 <details>
 <summary>BaseFeatureWidget - Properties</summary>
@@ -137,7 +139,7 @@ maxDepth: types.maybe(types.number)
 
 ```ts
 // type signature
-type sequenceFeatureDetails = IOptionalIType<IModelType<{}, { showCoordinatesSetting: ShowCoordinatesMode; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; hoverPosition: SequenceHoverPosition | undefined; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+type sequenceFeatureDetails = IOptionalIType<IModelType<{}, { showCoordinatesSetting: ShowCoordinatesMode; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; } & { setUpDownBp(f: number): void; setIntronBp(f: number): void; setUpperCaseCDS(f: boolean): void; setShowCoordinates(f: ShowCoordinatesMode): void; } & ...
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```
@@ -166,6 +168,23 @@ descriptions: types.optional(
 <details>
 <summary>BaseFeatureWidget - Volatiles</summary>
 
+#### volatile: sequenceHoverPosition
+
+genomic base currently hovered in this widget's sequence panel, read by the LGV
+crosshair overlay
+
+```ts
+// type signature
+type sequenceHoverPosition = undefined
+// code
+sequenceHoverPosition: undefined
+```
+
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Volatiles (other undocumented members)</summary>
+
 #### volatile: error
 
 ```ts
@@ -179,6 +198,12 @@ error: undefined
 
 <details>
 <summary>BaseFeatureWidget - Actions</summary>
+
+#### action: setSequenceHoverPosition
+
+```ts
+type setSequenceHoverPosition = (pos: SequenceHoverPosition | undefined) => void
+```
 
 #### action: setFeatureData
 
