@@ -1,5 +1,4 @@
 import { unified } from '@astrojs/markdown-remark'
-import react from '@astrojs/react'
 import { defineConfig, fontProviders } from 'astro/config'
 import icon from 'astro-icon'
 import fs from 'node:fs/promises'
@@ -63,8 +62,10 @@ export default defineConfig({
   // whitespace (the browser collapses runs to one space); the size cost is
   // negligible for a static docs site.
   compressHTML: false,
+  // No React integration: every component here is .astro and there are no
+  // client: directives, so adding it only emits an unreferenced ~190KB React
+  // runtime chunk. Re-add it (and the react deps) if an island comes back.
   integrations: [
-    react(),
     icon(),
     fixAbsoluteLinks(),
     emitRawMarkdownIntegration(),

@@ -36,6 +36,11 @@ function jbrowseDocsLoader(): Loader {
     // their cross-links — and hand-written links to them — use the lowercase
     // Docusaurus `id:` slug (../basetrack). Lowercase ids so routes match.
     generateId: ({ entry }) => entry.replace(/\.md$/, '').toLowerCase(),
+    // Nothing calls astro:content's render() — pages run entry.body through the
+    // richer pipeline in src/lib/markdown.ts — so Astro's own render pass is
+    // pure waste. Deferring it halves .astro/data-store.json (27MB -> 12MB) and
+    // takes cold `astro dev` startup from ~28s to ~5s.
+    deferRender: true,
   })
   return {
     name: 'jbrowse-docs-loader',
@@ -56,6 +61,8 @@ export const collections = {
       base: blogBase,
       pattern: '*.md',
       generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+      // see jbrowseDocsLoader above
+      deferRender: true,
     }),
     schema: z.object({
       title: z.string(),
