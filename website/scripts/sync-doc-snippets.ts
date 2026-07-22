@@ -21,6 +21,11 @@
 // Region bodies are dedented; the marker lines themselves are never emitted.
 // Fences with no marker are left completely alone, so migration is incremental.
 //
+// Because unmarked fences are ignored, nothing would otherwise stop a *new*
+// hand-written one appearing. `--check` therefore also ratchets: it counts the
+// un-included TS/JS fences under developer_guides and fails if that total rises
+// above DOC_FENCE_BASELINE, so the debt can only shrink.
+//
 // Run `pnpm sync-doc-snippets` to update, `--check` to fail on drift (CI).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -29,6 +34,7 @@ import { walkFiles } from './check-utils.ts'
 
 const root = join(import.meta.dirname, '..', '..')
 const docsDir = join(import.meta.dirname, '..', 'docs')
+const guidesDir = join(docsDir, 'developer_guides')
 const check = process.argv.includes('--check')
 
 const MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
@@ -73,11 +79,50 @@ function resolve(spec: string) {
 const problems: string[] = []
 const stale: string[] = []
 
+// Ratchet: the guides still carry hand-written TS/JS fences that predate this
+// script, and nothing stops a new one being added. Counting the un-included
+// ones and failing when the total *rises* freezes that debt without demanding a
+// big-bang conversion — the number only ever goes down, one guide at a time.
+// Same shape as SPEC_RECIPE_BASELINE in check-spec-recipes.ts.
+//
+// Only TS/JS fences count: a `json` config sample or a `bash` command has no
+// compiled source to point an include at.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '117')
+const INCLUDABLE = new Set([
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'typescript',
+  'javascript',
+])
+let unIncluded = 0
+
 for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
   const text = readFileSync(path, 'utf8')
   const lines = text.split('\n')
   const out: string[] = []
   let changed = false
+
+  if (path.startsWith(guidesDir)) {
+    let inFence = false
+    lines.forEach((line, i) => {
+      const fence = /^\s*```(\S*)/.exec(line)
+      if (!fence) {
+        return
+      }
+      if (inFence) {
+        inFence = false
+        return
+      }
+      inFence = true
+      // The marker sits one or two lines up (prettier inserts a blank line).
+      const marked = [1, 2].some(k => MARKER.test((lines[i - k] ?? '').trim()))
+      if (!marked && INCLUDABLE.has(fence[1]!.toLowerCase())) {
+        unIncluded++
+      }
+    })
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const marker = MARKER.exec(lines[i]!.trim())
@@ -150,4 +195,19 @@ if (stale.length > 0) {
   }
 } else {
   console.log('All doc snippet includes match their source.')
+}
+
+if (unIncluded > FENCE_BASELINE) {
+  console.error(
+    `\n${unIncluded} hand-written TS/JS fences in developer_guides exceeds the ` +
+      `baseline of ${FENCE_BASELINE}. Point the new fence at real source with ` +
+      `an <!-- include: --> marker (see example-plugins/score-example), or ` +
+      `raise DOC_FENCE_BASELINE if it genuinely can't be.`,
+  )
+  process.exit(1)
+} else if (unIncluded < FENCE_BASELINE) {
+  console.log(
+    `${unIncluded} hand-written TS/JS fences remain in developer_guides ` +
+      `(baseline ${FENCE_BASELINE}) — lower DOC_FENCE_BASELINE to ${unIncluded} to hold the gain.`,
+  )
 }

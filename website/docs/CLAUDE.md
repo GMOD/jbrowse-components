@@ -113,7 +113,19 @@ point at them, not re-copy their contents (which silently goes stale).
   code that no longer compiles. Fences without the marker are untouched, so
   migrate one at a time. This is the only check that sees _inside_ a fence:
   `check-doc-imports.ts` validates import specifiers but nothing about the code
-  around them, which is how a guide came to reference an undefined type.
+  around them, which is how a guide came to reference an undefined type. Because
+  unmarked fences are skipped, `--check` also **ratchets**: it counts
+  un-included TS/JS fences under `developer_guides/` and fails if the total
+  rises above `DOC_FENCE_BASELINE` (currently 117). Convert a guide, then lower
+  the baseline to lock in the gain; the script prints the new number for you.
+- **Don't name a symbol in prose that source doesn't define.**
+  `check-doc-imports.ts` cross-checks every backticked `PascalCase` identifier
+  in `developer_guides/` against the symbols in
+  `packages`/`plugins`/`products`/`example-plugins`, so a rename can't leave the
+  prose behind (this is how `AlignmentsFeatureDetailWidget` and
+  `PluggableElement` survived — both were plausible, neither existed). `My*` is
+  the reserved placeholder prefix and is skipped; the check is scoped to the
+  developer guides because tutorials legitimately name genes and accessions.
 - **Cross-page anchor links:** write `/docs/page#anchor` (no slash before `#`);
   `rehypeTrailingSlash` adds the trailing slash to the path. CI validates
   fragment targets via `untitaker/hyperlink --check-anchors`.

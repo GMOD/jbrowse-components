@@ -165,7 +165,7 @@ The detailed reference for the core extension points follows.
 
 type: synchronous
 
-- `args` - `PluggableElement` - the pluggable element being installed
+- `args` - `PluggableElementType` - the pluggable element being installed
 - `props` - none
 
 Used to add extra functionality to e.g. state tree models, for example extra

@@ -43,14 +43,11 @@ enumerates the three foundations every in-tree display is built from:
   but no fetch autoruns; the display installs its own via
   `installGlobalFetchAutorun`. Used by Hi-C (`LinearHicDisplay`) and LD.
 - **`RegionTooLargeMixin` + custom `renderSvg`** — lightweight React-SVG, no GPU
-  upload. Used only by the low-volume arc displays.
-
-## Low-volume displays
-
-A few low-volume displays skip the GPU path and draw with plain main-thread SVG:
-the arc display (`@jbrowse/plugin-arc`, `LinearArcDisplay`) and the circular
-chord display (`@jbrowse/plugin-circular-view`, `ChordVariantDisplay`). New
-track types should use the GPU path above rather than emitting SVG per feature.
+  upload, no canvas at all. Used only by the low-volume displays: the arc
+  display (`@jbrowse/plugin-arc`, `LinearArcDisplay`) and the circular chord
+  display (`@jbrowse/plugin-circular-view`, `ChordVariantDisplay`). New track
+  types should use one of the two foundations above rather than emitting SVG per
+  feature.
 
 ## See also
 
