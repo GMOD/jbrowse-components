@@ -11,7 +11,7 @@ import {
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import { Button, CircularProgress, IconButton, Tooltip } from '@mui/material'
+import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -183,7 +183,6 @@ const LeftPanel = observer(function LeftPanel({
   selectedRow,
   setSelectedRow,
   defaultAssemblyName,
-  submitting,
   onLaunch,
 }: {
   model: LinearSyntenyViewModel
@@ -192,7 +191,6 @@ const LeftPanel = observer(function LeftPanel({
   selectedRow: number
   setSelectedRow: (row: number) => void
   defaultAssemblyName: string
-  submitting: boolean
   onLaunch: () => void
 }) {
   const { classes } = useStyles()
@@ -273,19 +271,14 @@ const LeftPanel = observer(function LeftPanel({
           <span>
             <Button
               className={classes.button}
-              disabled={!canLaunch || submitting}
-              startIcon={
-                submitting ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : undefined
-              }
+              disabled={!canLaunch}
               onClick={() => {
                 onLaunch()
               }}
               variant="contained"
               color="primary"
             >
-              {submitting ? 'Launching…' : 'Launch'}
+              Launch
             </Button>
           </span>
         </Tooltip>

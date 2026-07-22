@@ -110,7 +110,6 @@ const DotplotImportForm = observer(function DotplotImportForm({
             tracks={quickTracks}
             trackId={quickTrackId}
             rows={quickRows}
-            submitting={false}
             onChange={setQuickTrackId}
             onSwap={() => {
               setQuickSwapped(!quickSwapped)

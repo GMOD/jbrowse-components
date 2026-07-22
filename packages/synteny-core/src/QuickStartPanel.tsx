@@ -4,7 +4,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import {
   Button,
-  CircularProgress,
   FormControl,
   InputLabel,
   MenuItem,
@@ -44,7 +43,6 @@ const QuickStartPanel = observer(function QuickStartPanel({
   onLaunch,
   onSwap,
   swapTitle,
-  submitting,
   children,
 }: {
   model: IAnyStateTreeNode
@@ -54,7 +52,6 @@ const QuickStartPanel = observer(function QuickStartPanel({
   onLaunch: () => void
   onSwap: () => void
   swapTitle: string
-  submitting: boolean
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
@@ -95,19 +92,13 @@ const QuickStartPanel = observer(function QuickStartPanel({
       </div>
       <Button
         style={{ marginTop: 10 }}
-        disabled={submitting}
-        startIcon={
-          submitting ? (
-            <CircularProgress size={16} color="inherit" />
-          ) : undefined
-        }
         onClick={() => {
           onLaunch()
         }}
         variant="contained"
         color="primary"
       >
-        {submitting ? 'Launching…' : 'Launch'}
+        Launch
       </Button>
     </div>
   ) : (

@@ -14,7 +14,6 @@ const QuickStart = observer(function QuickStart({
   tracks,
   trackId,
   rows,
-  submitting,
   onChange,
   onLaunch,
   onSwap,
@@ -23,7 +22,6 @@ const QuickStart = observer(function QuickStart({
   tracks: AnyConfigurationModel[]
   trackId: string
   rows: string[]
-  submitting: boolean
   onChange: (trackId: string) => void
   onLaunch: () => void
   onSwap: () => void
@@ -33,7 +31,6 @@ const QuickStart = observer(function QuickStart({
       model={model}
       tracks={tracks}
       trackId={trackId}
-      submitting={submitting}
       onChange={onChange}
       onLaunch={onLaunch}
       onSwap={onSwap}

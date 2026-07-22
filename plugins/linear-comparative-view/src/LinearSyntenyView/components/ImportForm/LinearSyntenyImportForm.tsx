@@ -69,7 +69,6 @@ const LinearSyntenyViewImportForm = observer(
       secondAssemblyName,
     ])
     const [error, setError] = useState<unknown>()
-    const [submitting, setSubmitting] = useState(false)
 
     const quickTrack = quickTracks.find(t => t.trackId === quickTrackId)
     const trackRows = quickTrack ? syntenyTrackRows(quickTrack) : []
@@ -90,7 +89,6 @@ const LinearSyntenyViewImportForm = observer(
     const launch = (rows: string[]) => {
       try {
         setError(undefined)
-        setSubmitting(true)
         doSubmit({
           selectedAssemblyNames: rows,
           model,
@@ -98,7 +96,6 @@ const LinearSyntenyViewImportForm = observer(
       } catch (e) {
         console.error(e)
         setError(e)
-        setSubmitting(false)
       }
     }
 
@@ -129,7 +126,6 @@ const LinearSyntenyViewImportForm = observer(
             tracks={quickTracks}
             trackId={quickTrackId}
             rows={quickRows}
-            submitting={submitting}
             onChange={setQuickTrackId}
             onSwap={() => {
               setQuickSwapped(!quickSwapped)
@@ -149,7 +145,6 @@ const LinearSyntenyViewImportForm = observer(
                 selectedRow={selectedRow}
                 setSelectedRow={setSelectedRow}
                 defaultAssemblyName={defaultAssemblyName}
-                submitting={submitting}
                 onLaunch={() => {
                   launch(selectedAssemblyNames)
                 }}
