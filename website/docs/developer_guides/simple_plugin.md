@@ -16,15 +16,21 @@ step-by-step setup.
 
 ## Official templates
 
-| Template                                                                                   | Bundler | Package manager | Testing                |
-| ------------------------------------------------------------------------------------------ | ------- | --------------- | ---------------------- |
-| [jbrowse-plugin-esbuild-template](https://github.com/GMOD/jbrowse-plugin-esbuild-template) | esbuild | pnpm            | vitest + Puppeteer E2E |
-| [jbrowse-plugin-template](https://github.com/GMOD/jbrowse-plugin-template)                 | rollup  | yarn/npm        | Jest                   |
+| Template                                                                                   | Bundler |
+| ------------------------------------------------------------------------------------------ | ------- |
+| [jbrowse-plugin-esbuild-template](https://github.com/GMOD/jbrowse-plugin-esbuild-template) | esbuild |
+| [jbrowse-plugin-template](https://github.com/GMOD/jbrowse-plugin-template)                 | rollup  |
 
-The esbuild template is recommended for new plugins: faster builds and
-end-to-end tests against JBrowse nightly builds. The rollup template is older
-but more widely referenced in existing examples. Both follow the same plugin
-structure, so the guides here apply to either.
+They are otherwise the same: pnpm, vitest unit tests, and Puppeteer end-to-end
+tests against a nightly JBrowse build. Pick esbuild for faster builds; rollup is
+older and more widely referenced in existing examples.
+
+Both ship a custom **view** (`src/HelloView`) as their worked example. For a
+custom track/display, which is the more common case, scaffold from a template
+and then follow
+[Plotting features in a custom display](/docs/developer_guides/plotting_features).
+Its complete plugin lives in `example-plugins/score-example/`, and every code
+block in that guide is generated from that source.
 
 ## What's in a plugin
 
