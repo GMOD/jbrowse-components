@@ -1,5 +1,10 @@
-import { colord } from './colord.ts'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
+import { colord } from './colord.ts'
+import { getSession } from './mstUtils.ts'
+
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { Theme } from '@mui/material'
 
 // A translucent band drawn over a genomic region. Shared by the LGV and dotplot
@@ -17,6 +22,31 @@ export interface HighlightType {
   color?: string
   // shown in the chip tooltip; otherwise a generic label is used
   label?: string
+}
+
+// Bands and bookmark overlays both render only while the session-wide
+// `highlightsVisible` flag is on, so anything added while it is off draws
+// nothing at all, which reads as "it didn't work". Watching the collection
+// grow reveals for every path that adds to it rather than asking each call
+// site to remember. `count` is seeded before the autorun so restoring a
+// session that deliberately persisted bands-off doesn't flip it back on, and
+// removals only lower the baseline — they never re-reveal, or the toggle could
+// never be turned off.
+export function revealHighlightsOnGrowth(
+  node: IAnyStateTreeNode,
+  count: () => number,
+) {
+  let prevCount = count()
+  addDisposer(
+    node,
+    autorun(function highlightRevealAutorun() {
+      const newCount = count()
+      if (newCount > prevCount) {
+        getSession(node).revealHighlights()
+      }
+      prevCount = newCount
+    }),
+  )
 }
 
 // Highlight regions have no id and can duplicate, so the trailing index only

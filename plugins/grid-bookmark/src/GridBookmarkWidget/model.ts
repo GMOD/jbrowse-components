@@ -3,6 +3,7 @@ import {
   localStorageGetJSON,
   localStorageSetItem,
 } from '@jbrowse/core/util'
+import { revealHighlightsOnGrowth } from '@jbrowse/core/util/highlights'
 import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -251,21 +252,8 @@ export default function f(_pluginManager: PluginManager) {
             { name: 'BookmarkLocalStorage' },
           ),
         )
-        // a bookmark's overlay is gated on the session-wide highlight flag, so
-        // an earlier "highlights off" would silently swallow a new one. Covers
-        // every path that grows the list (single add, file import, cross-tab
-        // sync); seeded so merely loading stored bookmarks doesn't reveal
-        let prevCount = self.bookmarks.length
-        addDisposer(
-          self,
-          autorun(function bookmarkRevealAutorun() {
-            const count = self.bookmarks.length
-            if (count > prevCount) {
-              getSession(self).revealHighlights()
-            }
-            prevCount = count
-          }),
-        )
+        // covers a single add, a file import and a cross-tab sync alike
+        revealHighlightsOnGrowth(self, () => self.bookmarks.length)
       },
     }))
     .preProcessSnapshot(snap => {
