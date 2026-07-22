@@ -1585,6 +1585,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     // subject is the assembly-manager dialog opened over a view with no
     // assembly assigned, so the empty view legitimately fails to launch
     expectedConsole: ['No assembly provided when launching linear genome view'],
+    // empty view behind the dialog never settles (no assembly), which is the point
+    allowUnsettled: true,
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
@@ -1612,6 +1614,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     // subject is the manager table; the hg38 assembly exists in config but
     // isn't assigned to the view, so the empty view fails to launch
     expectedConsole: ['No assembly provided when launching linear genome view'],
+    // empty view behind the dialog never settles (no assembly), which is the point
+    allowUnsettled: true,
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
@@ -1642,6 +1646,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     // subject is the set-default-session dialog opened over a view with no
     // assembly assigned, so the empty view legitimately fails to launch
     expectedConsole: ['No assembly provided when launching linear genome view'],
+    // empty view behind the dialog never settles (no assembly), which is the point
+    allowUnsettled: true,
     stages: [
       {
         actions: [
@@ -1677,6 +1683,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       'HTTP 404 fetching config.json',
       'Failed to load resource',
     ],
+    // subject IS the missing-config landing page
+    allowUnsettled: true,
   },
 
   {

@@ -135,6 +135,12 @@ export interface CommonSpecFields {
   // state (e.g. the config-not-found landing page, or an assembly-manager shot
   // captured over a view with no assembly). Anything not listed still surfaces.
   expectedConsole?: string[]
+  // by default the generator fails a capture that still shows a visible loading
+  // overlay, an error banner, or a region-too-large message at shoot time (a
+  // silently-saved "Loading" PNG is the failure mode this guards against). Set
+  // true only for specs whose subject IS such a state (an error landing page, a
+  // deliberately-too-large view), so the guard doesn't flag the intended content.
+  allowUnsettled?: boolean
 }
 
 // Navigate directly to a session spec URL. Every browser-rendered spec uses this

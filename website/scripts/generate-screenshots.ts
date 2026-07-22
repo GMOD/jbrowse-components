@@ -227,6 +227,94 @@ async function assertViewsRendered(page: Page, name: string) {
   }
 }
 
+// Guard against silently saving a half-rendered capture: at shoot time no
+// display should still show a *visible* loading overlay, an error banner, or a
+// region-too-large message. These slip past the readiness waits when a fetch
+// starts after them (the FetchVisibleRegions autorun debounces ~600ms, so
+// waitForLoadingComplete can pass before the overlay even appears) or when a
+// worker RPC errors/hangs — exactly the states that otherwise render as an
+// unnoticed "Loading" PNG. Detection mirrors waitForQuiescent's visibility rules
+// (an element counts only if it and its ancestors aren't display:none /
+// visibility:hidden / opacity:0 / zero-size) so the opacity-hidden idle overlay
+// doesn't false-positive. Opt out per spec with `allowUnsettled` when the state
+// IS the subject.
+async function assertRenderSettled(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+) {
+  if (spec.allowUnsettled) {
+    return
+  }
+  const problems = await page.evaluate(() => {
+    const isVisible = (el: Element) => {
+      let cur: Element | null = el
+      while (cur) {
+        const s = getComputedStyle(cur)
+        if (
+          s.display === 'none' ||
+          s.visibility === 'hidden' ||
+          Number(s.opacity) === 0
+        ) {
+          return false
+        }
+        cur = cur.parentElement
+      }
+      const r = el.getBoundingClientRect()
+      return r.width > 0 && r.height > 0
+    }
+    const found: { kind: string; text: string }[] = []
+
+    // loading overlay (LoadingOverlay: data-testid="loading-overlay")
+    for (const el of document.querySelectorAll('[data-testid="loading-overlay"]')) {
+      if (isVisible(el)) {
+        found.push({
+          kind: 'loading-overlay',
+          text: (el as HTMLElement).innerText.slice(0, 200),
+        })
+      }
+    }
+    // error banner (ErrorBar renders a data-testid="reload_button")
+    for (const el of document.querySelectorAll('[data-testid="reload_button"]')) {
+      if (isVisible(el)) {
+        const bar = el.closest('div')
+        found.push({
+          kind: 'error-banner',
+          text: ((bar ?? el) as HTMLElement).innerText.slice(0, 300),
+        })
+      }
+    }
+    // region-too-large message + any other visible loading/rendering status text
+    // whose own text nodes (not descendants) match the status pattern
+    const re = /^(loading|rendering|computing|aligning)\b|force load \(may be slow\)/i
+    for (const el of document.querySelectorAll('body *')) {
+      const own = Array.from(el.childNodes)
+        .filter(n => n.nodeType === Node.TEXT_NODE)
+        .map(n => n.textContent ?? '')
+        .join('')
+        .trim()
+      if (own && re.test(own) && isVisible(el)) {
+        found.push({ kind: 'status-text', text: own.slice(0, 200) })
+      }
+    }
+    // dedupe by kind+text
+    const seen = new Set<string>()
+    return found.filter(f => {
+      const k = `${f.kind}:${f.text}`
+      return seen.has(k) ? false : (seen.add(k), true)
+    })
+  })
+  if (problems.length > 0) {
+    await debugDump(page, spec.name)
+    const detail = problems
+      .map(p => `${p.kind}: ${p.text.replaceAll(/\s+/g, ' ').trim()}`)
+      .join(' | ')
+    throw new Error(
+      `capture not settled (still shows loading/error/too-large): ${detail}. ` +
+        `If this state is the intended subject, set allowUnsettled: true on the spec.`,
+    )
+  }
+}
+
 async function debugDump(page: Page, name: string) {
   const bodyText = await page
     .evaluate(() => document.body.innerText.substring(0, 800))
@@ -463,6 +551,7 @@ async function renderSpecToTemp(
 
   await runActions(page, spec.name, spec.actions)
   await assertViewsRendered(page, spec.name)
+  await assertRenderSettled(page, spec)
 
   const renderPath = tempPath('jb-final', spec.name, suffix)
   if (spec.stages && spec.stages.length > 0) {
