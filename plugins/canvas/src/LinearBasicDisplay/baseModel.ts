@@ -72,7 +72,10 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
-import { resolveFeatureHighlights } from './featureHighlight.ts'
+import {
+  resolveFeatureHighlights,
+  warnUnresolvedHighlights,
+} from './featureHighlight.ts'
 import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
 import {
   computeLaidOutData,
@@ -147,10 +150,12 @@ export const displayModeOptions: { value: DisplayMode; label: string }[] = [
 // bridge use the interface, this MST model persists it, and
 // setFeatureHighlights(cast(...)) silently DROPS any field the model lacks — so
 // the assertion below fails typecheck if the two ever drift.
+// start/end are maybe so a highlight can be authored by name alone
+// (`{ refName: 'chr12', name: 'KRAS' }`); see FeatureHighlight.
 const FeatureHighlightModel = types.model('FeatureHighlight', {
   refName: types.string,
-  start: types.number,
-  end: types.number,
+  start: types.maybe(types.number),
+  end: types.maybe(types.number),
   name: types.maybe(types.string),
   featureId: types.maybe(types.string),
 })
@@ -750,10 +755,19 @@ export default function baseStateModelFactory(
         // on the raw items, no row/topPx needed). See resolveFeatureHighlights for
         // the box/pin/boxedBy resolution rules.
         get resolvedHighlights(): ResolvedHighlights {
-          return resolveFeatureHighlights(
+          const resolved = resolveFeatureHighlights(
             self.rpcDataMap.values(),
             self.featureHighlights,
           )
+          // exact-span matching makes a mistyped coordinate draw nothing at all;
+          // say so once rather than leaving it silent (warnUnresolvedHighlights
+          // dedupes, so recomputing this getter doesn't spam)
+          warnUnresolvedHighlights(
+            self.featureHighlights,
+            resolved,
+            self.rpcDataMap.size > 0,
+          )
+          return resolved
         },
 
         /**

@@ -1245,11 +1245,13 @@ export const svSpecs: ScreenshotSpec[] = [
               // feature-specific highlight: box the KRAS gene glyph itself rather
               // than a fixed region band, so the eye lands on the oncogene within
               // the ~4.5Mb gained arm even though it's tiny at this scale.
-              // resolveFeatureHighlights matches on span within ±1bp and IGNORES
-              // `name`, so these must be the track's own coords: ncbiRefSeq.gff
-              // records KRAS as chr12:25,205,246-25,250,929 (1-based) =
-              // 25205245..25250929 interbase. The old end (25250936) was 7bp past
-              // that, so nothing ever boxed.
+              // Coords are the track's own: ncbiRefSeq.gff records KRAS as
+              // chr12:25,205,246-25,250,929 (1-based) = 25205245..25250929
+              // interbase. The old end (25250936) was 7bp past that and boxed
+              // nothing, because resolveFeatureHighlights matches a span within
+              // ±1bp. `name` is now a fallback matcher, so that exact typo would
+              // resolve today — but keep the coords right anyway and let the
+              // fallback be the safety net, not the mechanism.
               featureHighlights: [
                 {
                   refName: 'chr12',
