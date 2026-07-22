@@ -44,9 +44,12 @@ const THUMB_WIDTH = 700
 const THUMB_HEIGHT = 324
 
 const THUMBS: Record<string, ImageSpec> = {
+  // The whole comparative view, not just the ribbon band: a band narrower than
+  // the card aspect gets center-cropped left/right by the `cover` resize, which
+  // threw away half the ribbon fan and read as a zoomed-in smear.
   synteny: {
     src: 'linear_synteny_gallery.png',
-    band: [0.26, 0.72],
+    band: [0.055, 0.925],
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
@@ -88,11 +91,12 @@ const THUMBS: Record<string, ImageSpec> = {
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
-  // Two-panel figure — the 3D structure is the right-hand panel.
+  // Two-panel figure — the 3D structure is the right-hand panel. Frame the
+  // whole molecule, stopping short of the panel's right-hand tool strip.
   protein: {
     src: 'protein/connected.png',
-    band: [0.55, 1],
-    xband: [0.5, 0.96],
+    band: [0.575, 1],
+    xband: [0.51, 0.93],
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
