@@ -70,6 +70,19 @@ test('a new bookmark reveals the bands so it is not silently swallowed', () => {
   ])
   expect(session.highlightsVisible).toBe(true)
 
+  // recoloring from the grid reveals too: the grid lists bookmarks with the
+  // overlays off, so the picked color would otherwise go nowhere
+  session.setHighlightsVisible(false)
+  const region = widget.bookmarks[0]!
+  // the grid row shape BookmarkGrid builds, which is what the color picker
+  // hands back
+  widget.updateBookmarkHighlight(
+    { ...region, id: 0, correspondingObj: region },
+    'rgb(255,0,0)',
+  )
+  expect(region.highlight).toBe('rgb(255,0,0)')
+  expect(session.highlightsVisible).toBe(true)
+
   // deleting must not re-reveal, otherwise the toggle can't be turned off
   session.setHighlightsVisible(false)
   widget.removeBookmarkObject(widget.bookmarks[0]!)

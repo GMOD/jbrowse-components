@@ -186,6 +186,9 @@ export default function f(_pluginManager: PluginManager) {
         color: string,
       ) {
         bookmark.correspondingObj.setHighlight(color)
+        // the grid lists bookmarks even with the overlays off, so recoloring
+        // there would otherwise do nothing visible
+        getSession(self).revealHighlights()
       },
       /**
        * #action
