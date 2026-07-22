@@ -238,13 +238,7 @@ async function assertViewsRendered(page: Page, name: string) {
 // visibility:hidden / opacity:0 / zero-size) so the opacity-hidden idle overlay
 // doesn't false-positive. Opt out per spec with `allowUnsettled` when the state
 // IS the subject.
-async function assertRenderSettled(
-  page: Page,
-  spec: BrowserScreenshotSpec,
-) {
-  if (spec.allowUnsettled) {
-    return
-  }
+async function assertRenderSettled(page: Page, spec: BrowserScreenshotSpec) {
   const problems = await page.evaluate(() => {
     const isVisible = (el: Element) => {
       let cur: Element | null = el
@@ -265,7 +259,9 @@ async function assertRenderSettled(
     const found: { kind: string; text: string }[] = []
 
     // loading overlay (LoadingOverlay: data-testid="loading-overlay")
-    for (const el of document.querySelectorAll('[data-testid="loading-overlay"]')) {
+    for (const el of document.querySelectorAll(
+      '[data-testid="loading-overlay"]',
+    )) {
       if (isVisible(el)) {
         found.push({
           kind: 'loading-overlay',
@@ -274,7 +270,9 @@ async function assertRenderSettled(
       }
     }
     // error banner (ErrorBar renders a data-testid="reload_button")
-    for (const el of document.querySelectorAll('[data-testid="reload_button"]')) {
+    for (const el of document.querySelectorAll(
+      '[data-testid="reload_button"]',
+    )) {
       if (isVisible(el)) {
         const bar = el.closest('div')
         found.push({
@@ -285,7 +283,8 @@ async function assertRenderSettled(
     }
     // region-too-large message + any other visible loading/rendering status text
     // whose own text nodes (not descendants) match the status pattern
-    const re = /^(loading|rendering|computing|aligning)\b|force load \(may be slow\)/i
+    const re =
+      /^(loading|rendering|computing|aligning)\b|force load \(may be slow\)/i
     for (const el of document.querySelectorAll('body *')) {
       const own = Array.from(el.childNodes)
         .filter(n => n.nodeType === Node.TEXT_NODE)
@@ -551,7 +550,9 @@ async function renderSpecToTemp(
 
   await runActions(page, spec.name, spec.actions)
   await assertViewsRendered(page, spec.name)
-  await assertRenderSettled(page, spec)
+  if (!spec.allowUnsettled) {
+    await assertRenderSettled(page, spec)
+  }
 
   const renderPath = tempPath('jb-final', spec.name, suffix)
   if (spec.stages && spec.stages.length > 0) {
