@@ -26,10 +26,53 @@
 # RAM:      ~32 GB for the minimap2 assembly-to-reference step.
 # Usage:    bash scripts/build_sv_visualization_cgiab.sh [outdir]
 #
+# Remote / headless runs (the usual case, given the size):
+#   - Linux x86_64 only if you rely on the auto-fetch below. megadepth and
+#     HiFiCNV are pulled as linux_x86_64 release binaries; on any other arch
+#     install both yourself and put them on PATH first.
+#   - Outbound ftp:// must work. The tumor/normal reads are streamed from
+#     ftp-trace.ncbi.nlm.nih.gov because the https mirror cannot range-seek a
+#     BAM. Many cloud firewalls block passive FTP, which shows up as samtools
+#     hanging on the first read. Test it in one line before committing hours:
+#       samtools view -H "$PB/$NORMAL_BAM" | head -1
+#     (with PB/NORMAL_BAM as built below) and expect an @HD line back.
+#   - Run it detached (tmux/screen/nohup). The whole thing takes hours.
+#   - Safe to re-run. Every step is guarded on its output file existing, so an
+#     interrupted run resumes where it stopped instead of re-downloading.
+#     Corollary: to force a step, delete its output.
+#   - THREADS=N controls samtools/minimap2/HiFiCNV parallelism (default 8).
+#
+# Publishing after a build: the hosted demo only needs 5 small files, so you do
+# not need rclone/AWS credentials on the remote box. Copy these back and run
+# website/scripts/upload-cgiab-demo.sh locally:
+#   hificnv.<sample>.depth.bw -> HG008-T.hificnv.depth.bw
+#   hificnv.<sample>.maf.bw   -> HG008-T.hificnv.maf.bw
+#   HG008T_<ver>.pif.gz(.tbi)  (from `jbrowse make-pif HG008T_<ver>.paf`)
+#   jbrowse2/config.json
+# Then regenerate the tutorial figures: cd website && pnpm gen-screenshots --filter sv_cgiab
+#
 set -euo pipefail
 
 OUTDIR="${1:-cgiab_build}"
 THREADS="${THREADS:-8}"
+
+# ── Pinned dataset versions ──────────────────────────────────────────────────
+# Everything version-specific lives here, so moving to a newer C-GIAB release
+# is an edit to this block rather than a hunt through the script. Browse
+# https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/
+# for what is current, then bump these and delete the corresponding files from
+# $OUTDIR so the guards below re-fetch them (the script skips any output that
+# already exists, so a stale file will otherwise be kept).
+BENCH_VER=V0.5                                                   # benchmark release
+BENCH_DIR=NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318
+PB_RUN=PacBio_Revio_20240125                                     # HiFi tumor/normal run
+NORMAL_DEPTH=35x
+TUMOR_DEPTH=116x
+GERMLINE_RUN=pacbio-wgs-wdl_germline_20240206                    # normal small-variant calls
+WAKHAN_RUN=NIH_HiFi_Wakhan-CNA_20240308                          # published CNA segments
+ASM_VER=v3.2                                                     # T2T tumor assembly
+REF_BUILD=GRCh38_GIABv3                                          # C-GIAB reference build
+
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
@@ -45,13 +88,13 @@ APP=jbrowse2
 FTP=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab
 
 # ── Human reference: the C-GIAB build of GRCh38 (decoys + masked regions) ─────
-REF=GRCh38_GIABv3.fa
+REF=$REF_BUILD.fa
 if [ ! -f "$REF" ]; then
-  curl -L "$FTP/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz" > "$REF.gz"
+  curl -L "$FTP/release/references/GRCh38/${REF_BUILD}_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz" > "$REF.gz"
   gunzip "$REF.gz"
 fi
 [ -f "$REF.fai" ] || samtools faidx "$REF"
-jb add-assembly "$REF" --name GRCh38_GIABv3 --load copy --force --out "$APP"
+jb add-assembly "$REF" --name "$REF_BUILD" --load copy --force --out "$APP"
 
 # NCBI RefSeq genes, kept as a remote URL track (no --load)
 jb add-track https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz \
@@ -59,15 +102,15 @@ jb add-track https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz \
   --force --out "$APP"
 
 # ── V0.5 HG008-T benchmark SV (VCF, kept remote) and CNV (BED, header added) ──
-BENCH=$FTP/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318
-jb add-track "$BENCH/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz" \
+BENCH=$FTP/data_somatic/HG008/Liss_lab/analysis/$BENCH_DIR
+jb add-track "$BENCH/GRCh38_HG008-T-${BENCH_VER}_somatic-stvar_PASS.draftbenchmark.vcf.gz" \
   --category "Variant calls" --force --out "$APP"
 
-CNV_BED=GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed
+CNV_BED=GRCh38_HG008-T-${BENCH_VER}_somatic-CNV_PASS.draftbenchmark.calls.bed
 if [ ! -f "$CNV_BED" ]; then
   # the benchmark BED ships without a header; prepend one to name each column
   (printf '#chrom\tstart\tend\ttotal_copy_number\thap1_copy_number\thap2_copy_number\tname\n' \
-    && curl -L "$BENCH/GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed") > "$CNV_BED"
+    && curl -L "$BENCH/$CNV_BED") > "$CNV_BED"
 fi
 jb add-track "$CNV_BED" --category "Variant calls" --load copy --force --out "$APP"
 
@@ -75,12 +118,13 @@ jb add-track "$CNV_BED" --category "Variant calls" --load copy --force --out "$A
 # CRAM adds MD-tag-free SNP display and is far faster to serve than the remote
 # BAM. This downloads >200 GB.
 # samtools reads the remote BAMs over ftp:// (the https FTP mirror can't range-seek a BAM)
-PB=ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125
-NORMAL=HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram
-TUMOR=HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.cram
-[ -f "$NORMAL" ] || samtools view -@"$THREADS" "$PB/HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.bam" \
+PB=ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/$PB_RUN
+PB_TAG=${PB_RUN//PacBio_Revio_/PacBio-HiFi-Revio_}
+NORMAL=HG008-N-P_${PB_TAG}_${NORMAL_DEPTH}_GRCh38-GIABv3.cram
+TUMOR=HG008-T_${PB_TAG}_${TUMOR_DEPTH}_GRCh38-GIABv3.cram
+[ -f "$NORMAL" ] || samtools view -@"$THREADS" "$PB/${NORMAL%.cram}.bam" \
   --write-index -o "$NORMAL" -T "$REF"
-[ -f "$TUMOR" ] || samtools view -@"$THREADS" "$PB/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam" \
+[ -f "$TUMOR" ] || samtools view -@"$THREADS" "$PB/${TUMOR%.cram}.bam" \
   --write-index -o "$TUMOR" -T "$REF"
 
 if [ ! -x ./megadepth ]; then
@@ -107,7 +151,7 @@ fi
 
 # germline small-variant calls for the normal drive the MAF track
 GERMLINE_VCF=HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
-[ -f "$GERMLINE_VCF" ] || curl -L -O "$FTP/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/$GERMLINE_VCF"
+[ -f "$GERMLINE_VCF" ] || curl -L -O "$FTP/data_somatic/HG008/Liss_lab/analysis/$PB_RUN/$GERMLINE_RUN/$GERMLINE_VCF"
 
 if ! ls hificnv.*.depth.bw >/dev/null 2>&1; then
   "$HIFICNV" --bam "$TUMOR" --ref "$REF" --maf "$GERMLINE_VCF" \
@@ -122,22 +166,23 @@ for v in hificnv.*.vcf.gz; do
 done
 
 # ── CNV: published Wakhan haplotype-specific copy-number/LOH segments ─────────
-WAKHAN=$FTP/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/bed_output
+WAKHAN=$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_RUN/bed_output
 jb add-track "$WAKHAN/HG008_HiFi_copynumbers_segments.bed" --category "CNV" --force --out "$APP"
 jb add-track "$WAKHAN/HG008_HiFi_loh_segments.bed" --category "CNV" --force --out "$APP"
 
 # ── T2T tumor assembly (v3.2) -> GRCh38 (minimap2), for synteny/dotplot ───────
-ASM=HG008T_v3.2.fasta
+ASM_NAME=HG008T_$ASM_VER
+ASM=$ASM_NAME.fasta
 if [ ! -f "$ASM" ]; then
-  curl -L "https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz" > "$ASM.gz"
+  curl -L "https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/$ASM_NAME/$ASM_NAME.fasta.gz" > "$ASM.gz"
   gunzip "$ASM.gz"
 fi
 [ -f "$ASM.fai" ] || samtools faidx "$ASM"
-jb add-assembly "$ASM" --name HG008T_v3.2 --load copy --force --out "$APP"
+jb add-assembly "$ASM" --name "$ASM_NAME" --load copy --force --out "$APP"
 # minimap2 target query: asm5 same-species, -c emits base-level CIGAR
-[ -f HG008T_v3.2.paf ] || minimap2 -t"$THREADS" -cx asm5 "$REF" "$ASM" > HG008T_v3.2.paf
+[ -f "$ASM_NAME.paf" ] || minimap2 -t"$THREADS" -cx asm5 "$REF" "$ASM" > "$ASM_NAME.paf"
 # add-track -a is query,target (reverse of minimap2's target query order)
-jb add-track HG008T_v3.2.paf -a "HG008T_v3.2,GRCh38_GIABv3" --load copy --force --out "$APP"
+jb add-track "$ASM_NAME.paf" -a "$ASM_NAME,$REF_BUILD" --load copy --force --out "$APP"
 
 echo
 echo "Built $APP/config.json with the C-GIAB GRCh38 assembly, RefSeq genes, the"
