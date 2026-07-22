@@ -1894,6 +1894,22 @@ describe('highlights', () => {
     expect(model.highlight[0]!.start).toBe(100)
   })
 
+  test('recoloring from the grid reveals the bands', () => {
+    const model = setupHighlightModel()
+    const session = getSession(model)
+    model.addToHighlights({
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      assemblyName: 'volvox',
+    })
+    // the highlight grid lists entries with the bands off, so a color picked
+    // there has to bring them back or nothing appears to happen
+    session.setHighlightsVisible(false)
+    model.updateHighlight(model.highlight[0]!, { color: '#ff0000' })
+    expect(session.highlightsVisible).toBe(true)
+  })
+
   test('getHighlightCoords maps to pixel position', () => {
     const model = setupHighlightModel()
     // 1 bp/px and offset 0, so start=100 -> left=100, width=100
@@ -2270,5 +2286,31 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     await waitFor(() => {
       expect(model.init).toBeUndefined()
     })
+  })
+})
+
+describe('showsWholeChromosome', () => {
+  function makeView(regions: unknown[]) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    // @ts-expect-error
+    model.setDisplayedRegions(regions)
+    return model
+  }
+
+  test('true for a region spanning the entire refseq', () => {
+    expect(makeView([volvoxDisplayedRegions[0]]).showsWholeChromosome).toBe(true)
+  })
+
+  test('false for a sub-region, so cytobands stay off', () => {
+    const region = { ...volvoxDisplayedRegions[0]!, start: 100, end: 20000 }
+    expect(makeView([region]).showsWholeChromosome).toBe(false)
+  })
+
+  test('false for multiple regions', () => {
+    expect(makeView(volvoxDisplayedRegions).showsWholeChromosome).toBe(false)
   })
 })

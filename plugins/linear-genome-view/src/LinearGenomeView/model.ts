@@ -1515,13 +1515,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get showsWholeChromosome() {
+        const { displayedRegions } = self
+        const region =
+          displayedRegions.length === 1 ? displayedRegions[0] : undefined
+        const full = region
+          ? getSession(self)
+              .assemblyManager.get(region.assemblyName)
+              ?.regions?.find(r => r.refName === region.refName)
+          : undefined
+        return region && full
+          ? region.start === full.start && region.end === full.end
+          : false
+      },
+      /**
+       * #getter
+       * an ideogram only reads correctly against an entire chromosome: on a
+       * sub-region it is a meaningless slice of bands, and the centromere shows
+       * up as a lone half-triangle
+       */
       get canShowCytobands() {
-        return self.displayedRegions.length === 1 && this.anyCytobandsExist
+        return this.showsWholeChromosome && this.anyCytobandsExist
       },
       /**
        * #getter
        * the `showCytobands` setting gated by whether cytobands can be shown at
-       * all (single region + data present) — i.e. actually on screen
+       * all (whole chromosome + data present) — i.e. actually on screen
        */
       get effectiveShowCytobands() {
         return this.canShowCytobands && self.showCytobands
