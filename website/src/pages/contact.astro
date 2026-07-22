@@ -1,6 +1,7 @@
 ---
-import NewsletterSignup from '../components/NewsletterSignup.tsx'
+import NewsletterSignup from '../components/NewsletterSignup.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { newsletterApiUrl } from '../lib/newsletter.ts'
 import page from '../styles/page.module.css'
 ---
 
@@ -41,9 +42,15 @@ import page from '../styles/page.module.css'
       </li>
     </ul>
 
-    <h2>Newsletter</h2>
-    <p>Subscribe to receive JBrowse release announcements by email:</p>
-    <NewsletterSignup client:load />
+    {
+      newsletterApiUrl && (
+        <>
+          <h2>Newsletter</h2>
+          <p>Subscribe to receive JBrowse release announcements by email:</p>
+          <NewsletterSignup />
+        </>
+      )
+    }
 
     <h2>Social media</h2>
     <ul>

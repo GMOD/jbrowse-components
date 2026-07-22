@@ -1,10 +1,11 @@
 ---
 import { getCollection } from 'astro:content'
 
-import NewsletterSignup from '../../components/NewsletterSignup.tsx'
+import NewsletterSignup from '../../components/NewsletterSignup.astro'
 import BlogLayout from '../../layouts/BlogLayout.astro'
 import { baseUrl } from '../../lib/base-url.ts'
 import { blogPath } from '../../lib/blog-path.ts'
+import { newsletterApiUrl } from '../../lib/newsletter.ts'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
 
@@ -83,10 +84,16 @@ const { html } = await renderMarkdown(post.body ?? '')
       <Fragment set:html={html} />
     </div>
     <footer>
-      <div class="newsletter-cta">
-        <p class="newsletter-label">Get notified about new JBrowse releases</p>
-        <NewsletterSignup client:load />
-      </div>
+      {
+        newsletterApiUrl && (
+          <div class="newsletter-cta">
+            <p class="newsletter-label">
+              Get notified about new JBrowse releases
+            </p>
+            <NewsletterSignup />
+          </div>
+        )
+      }
       <div class="post-nav">
         <div class="post-nav-prev">
           {

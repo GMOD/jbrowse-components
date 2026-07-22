@@ -1,0 +1,68 @@
+---
+import styles from './NewsletterSignup.module.css'
+import { newsletterApiUrl } from '../lib/newsletter.ts'
+---
+
+{
+  newsletterApiUrl && (
+    <div class={styles.wrap} data-newsletter data-api={newsletterApiUrl}>
+      <form class={styles.form}>
+        <input
+          type="email"
+          name="email"
+          placeholder="your@email.com"
+          aria-label="Email address"
+          required
+          class={styles.input}
+        />
+        <button type="submit" class={styles.btn}>
+          Subscribe
+        </button>
+        <p class={styles.error} data-newsletter-error role="alert" hidden />
+      </form>
+      <p class={styles.success} data-newsletter-success role="status" hidden />
+    </div>
+  )
+}
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>(
+    '[data-newsletter]',
+  )) {
+    const api = root.dataset.api!
+    const form = root.querySelector('form')!
+    const input = form.querySelector('input')!
+    const btn = form.querySelector('button')!
+    const error = form.querySelector<HTMLElement>('[data-newsletter-error]')!
+    const success = root.querySelector<HTMLElement>(
+      '[data-newsletter-success]',
+    )!
+    form.addEventListener('submit', async e => {
+      e.preventDefault()
+      error.hidden = true
+      input.disabled = btn.disabled = true
+      btn.textContent = 'Subscribing…'
+      try {
+        const res = await fetch(`${api}/subscribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: input.value }),
+        })
+        const data = (await res.json()) as { message?: string; error?: string }
+        if (res.ok) {
+          success.textContent = data.message ?? 'Subscribed!'
+          success.hidden = false
+          form.remove()
+          return
+        }
+        error.textContent =
+          data.error ?? 'Something went wrong, please try again.'
+      } catch {
+        error.textContent = 'Network error, please try again.'
+      }
+      error.hidden = false
+      input.disabled = btn.disabled = false
+      btn.textContent = 'Subscribe'
+    })
+  }
+</script>

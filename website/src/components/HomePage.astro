@@ -1,8 +1,9 @@
 ---
 import { Icon } from 'astro-icon/components'
 
-import NewsletterSignup from './NewsletterSignup.tsx'
+import NewsletterSignup from './NewsletterSignup.astro'
 import { baseUrl } from '../lib/base-url.ts'
+import { newsletterApiUrl } from '../lib/newsletter.ts'
 import btn from '../styles/button.module.css'
 
 // Teaser cards for the gallery preview grid. `img` names a thumbnail in
@@ -45,8 +46,8 @@ const galleryPreview: GalleryCard[] = [
       <h1 class="hero-title">JBrowse</h1>
       <p class="hero-subtitle">The next-generation genome browser</p>
       <p class="body-text">
-        JBrowse is a genome browser that runs on the web, on your desktop, or
-        embedded in your app.
+        Open source, and runs on the web, on your desktop, or embedded in your
+        app.
       </p>
       <div class="btn-row">
         <a class:list={[btn.btn, btn.btnPrimary]} href={`${baseUrl}/download/`}>
@@ -58,22 +59,25 @@ const galleryPreview: GalleryCard[] = [
           Live demos
         </a>
       </div>
-      <div class="newsletter-hero">
-        <p class="newsletter-label">
-          Get notified about new releases &mdash; <a href={`${baseUrl}/blog/`}
-            >see latest release notes</a
-          >
-        </p>
-        <NewsletterSignup client:load />
-      </div>
+      {
+        newsletterApiUrl && (
+          <div class="newsletter-hero">
+            <p class="newsletter-label">
+              Get notified about new releases (
+              <a href={`${baseUrl}/blog/`}>latest release notes</a>)
+            </p>
+            <NewsletterSignup />
+          </div>
+        )
+      }
     </div>
     <div class="hero-image">
       <img
         src={`${baseUrl}/img/screenshot.webp`}
-        width="1362"
-        height="731"
+        width="1400"
+        height="747"
         fetchpriority="high"
-        alt="JBrowse linear genome view showing read alignments, coverage, and gene annotations"
+        alt="JBrowse linear genome view of a human chr10 locus: NCBI RefSeq genes, a structural-variant VCF track, and a PacBio HiFi long-read pileup with coverage, showing a 1.8kb deletion as a gap across the reads"
       />
     </div>
   </div>
@@ -84,8 +88,7 @@ const galleryPreview: GalleryCard[] = [
   <div class="section-box">
     <h2 class="section-title">Explore the gallery</h2>
     <p class="body-text">
-      Worked examples across the data types and views JBrowse supports. Most
-      open live in the browser, and many have a step-by-step tutorial.
+      Worked examples that open live in the browser, most with a tutorial.
     </p>
     <div class="gallery-grid">
       {
@@ -103,14 +106,14 @@ const galleryPreview: GalleryCard[] = [
               src={`${baseUrl}/img/home-gallery/${g.img}.webp`}
               loading="lazy"
               decoding="async"
-              alt={g.label}
+              alt=""
             />
             <span class="gallery-card-label">{g.label}</span>
           </a>
         ))
       }
     </div>
-    <div class="btn-row gallery-btn-row">
+    <div class="btn-row">
       <a class:list={[btn.btn, btn.btnPrimary]} href={`${baseUrl}/gallery/`}>
         Browse the full gallery
       </a>
@@ -129,23 +132,19 @@ const galleryPreview: GalleryCard[] = [
     <div class="hubs-row">
       <div class="hubs-text">
         <p class="body-text">
-          JBrowse Genome Hubs has browsers for thousands of species on the web,
-          and the same assemblies are built into the <a
+          Browsers for thousands of species, also built into the <a
             href={`${baseUrl}/download/`}>JBrowse Desktop</a
           > genome picker.
         </p>
         <ul class="hubs-list">
           <li>
-            Rich genome browsers for hg38, hg19, and more bulk loaded with track
-            data from UCSC Genome Browser
+            hg38, hg19 and more, preloaded with UCSC Genome Browser tracks
           </li>
           <li>
-            Thousands of plant, animal, and microbial assemblies from UCSC
+            Thousands of plant, animal and microbial assemblies from UCSC
             GenArk/NCBI Genomes
           </li>
-          <li>
-            Specialized pages for browsing orthologs across species and more
-          </li>
+          <li>Ortholog browsing across species</li>
         </ul>
         <p class="body-text">
           <a
@@ -180,10 +179,7 @@ const galleryPreview: GalleryCard[] = [
           height="28"
         />
         <h3 class="card-title">Install &amp; run</h3>
-        <p class="card-desc">
-          Open your first genome in the desktop app or straight from the
-          browser.
-        </p>
+        <p class="card-desc">Open your first genome.</p>
         <ul class="card-links">
           <li>
             <a href={`${baseUrl}/docs/quickstart_desktop/`}
@@ -203,9 +199,7 @@ const galleryPreview: GalleryCard[] = [
           height="28"
         />
         <h3 class="card-title">Learn</h3>
-        <p class="card-desc">
-          Guides for using, configuring, and extending JBrowse.
-        </p>
+        <p class="card-desc">Using, configuring and extending JBrowse.</p>
         <ul class="card-links">
           <li><a href={`${baseUrl}/docs/user_guide/`}>User guide</a></li>
           <li><a href={`${baseUrl}/docs/config_guide/`}>Config guide</a></li>
@@ -219,9 +213,7 @@ const galleryPreview: GalleryCard[] = [
       <div class="card">
         <Icon class="card-icon" name="mdi:code-tags" width="28" height="28" />
         <h3 class="card-title">Build with it</h3>
-        <p class="card-desc">
-          Embed JBrowse in your app and extend it with plugins.
-        </p>
+        <p class="card-desc">Embed JBrowse and extend it with plugins.</p>
         <ul class="card-links">
           <li>
             <a href={`${baseUrl}/docs/tutorials/embed_linear_genome_view/`}
@@ -247,15 +239,8 @@ const galleryPreview: GalleryCard[] = [
   <div class="section-box">
     <h2 class="section-title">Citation</h2>
     <p class="body-text">
-      We at the JBrowse Consortium are working to make JBrowse a pluggable,
-      open-source computational platform for integrating many kinds of
-      biological data from many different places.
-    </p>
-    <p class="body-text">
-      Research citations are one of the main metrics the consortium uses to
-      demonstrate our relevance and utility when applying for funding to
-      continue our work. If you use JBrowse in research that you publish, please
-      cite the most recent JBrowse paper:
+      Citations are how the consortium demonstrates JBrowse's value when
+      applying for funding. If you publish research using JBrowse, please cite:
     </p>
     <cite>
       Diesh <em>et al</em>, 2023. JBrowse 2: a modular genome browser with views
@@ -270,11 +255,10 @@ const galleryPreview: GalleryCard[] = [
   <div class="section-box">
     <h2 class="section-title">Funding and collaboration</h2>
     <p class="body-text">
-      JBrowse development has received support from the US National Institutes
-      of Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
-      Institute for Cancer Research (OICR), and the University of California,
-      Berkeley. JBrowse is released under the{' '}
-      <a href="https://www.apache.org/licenses/LICENSE-2.0"
+      Supported by the US National Institutes of Health (U41 HG003751), the Chan
+      Zuckerberg Initiative, the Ontario Institute for Cancer Research (OICR),
+      and the University of California, Berkeley. Released under the <a
+        href="https://www.apache.org/licenses/LICENSE-2.0"
         >Apache License, Version 2.0</a
       >.
     </p>
@@ -355,6 +339,11 @@ const galleryPreview: GalleryCard[] = [
     padding-left: 1.2rem;
     line-height: 1.6;
   }
+  /* A desktop-app screenshot scaled to a phone width is unreadable, and it's
+     only reinforcing the text beside it. */
+  .hubs-image {
+    display: none;
+  }
   .hubs-image img {
     border-radius: 8px;
     border: 1px solid var(--color-border);
@@ -363,10 +352,12 @@ const galleryPreview: GalleryCard[] = [
     display: block;
   }
 
+  /* 8 cards, so cap at 4 columns — auto-fit picks 5 on a wide screen and
+     leaves a two-cell hole in the second row. */
   .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
     margin-top: 0.5rem;
   }
   .gallery-card {
@@ -390,24 +381,21 @@ const galleryPreview: GalleryCard[] = [
   }
   .gallery-thumb {
     width: 100%;
-    height: 150px;
+    height: 110px;
     object-fit: cover;
     object-position: center top;
     display: block;
     border-bottom: 1px solid var(--color-border);
   }
   .gallery-card-label {
-    padding: 0.55rem 0.75rem;
-    font-size: 0.9rem;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.8rem;
     font-weight: 500;
-  }
-  .btn-row.gallery-btn-row {
-    justify-content: flex-start;
   }
 
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
     gap: 1rem;
     margin-top: 0.5rem;
   }
@@ -445,7 +433,7 @@ const galleryPreview: GalleryCard[] = [
     margin: 0 0 0.35rem;
   }
   .card-links {
-    margin: auto 0 0;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -460,11 +448,16 @@ const galleryPreview: GalleryCard[] = [
     display: block;
   }
 
+  /* Buttons stretch to share the row on phones, then size to content and sit
+     under the left-aligned copy they belong to. */
   .btn-row {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-evenly;
     gap: 8px;
+  }
+  .btn-row > * {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .section-box {
@@ -485,7 +478,24 @@ const galleryPreview: GalleryCard[] = [
     }
   }
 
+  @media (min-width: 640px) {
+    .btn-row > * {
+      flex: 0 0 auto;
+    }
+  }
+
   @media (min-width: 900px) {
+    .gallery-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    .gallery-thumb {
+      height: 150px;
+    }
+    .gallery-card-label {
+      padding: 0.55rem 0.75rem;
+      font-size: 0.9rem;
+    }
     .hero-row {
       flex-direction: row;
       align-items: center;
@@ -497,7 +507,7 @@ const galleryPreview: GalleryCard[] = [
       flex: 50%;
     }
     .btn-row {
-      margin: 16px;
+      margin: 16px 0;
     }
     .hubs-row {
       flex-direction: row;
@@ -507,6 +517,7 @@ const galleryPreview: GalleryCard[] = [
       flex: 50%;
     }
     .hubs-image {
+      display: block;
       flex: 50%;
     }
   }
