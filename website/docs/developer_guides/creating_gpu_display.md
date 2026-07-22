@@ -223,6 +223,14 @@ modules (`hpmath`, `colorPack`) resolve from your installed
 `@jbrowse/render-core`. Inside this repo the same tool runs as
 `pnpm gen:shaders`.
 
+:::note
+
+`@jbrowse/shader-tools` and `@jbrowse/render-core` first publish to npm in the
+next release. Until then, author `.slang` against a `jbrowse-components`
+checkout and copy the emitted `*.generated.ts` into your plugin.
+
+:::
+
 Use `bpHi`/`bpLo` (high/low float32 split) for genomic positions in shader code.
 In TypeScript outside shader uniform writes, use plain `bp - bpStart`. The hi/lo
 split is only needed inside the shader.
