@@ -1845,15 +1845,23 @@ describe('highlights', () => {
     expect(model.highlight.length).toBe(0)
   })
 
-  test('revealHighlights turns chips and the session-wide bands back on', () => {
+  test('a new highlight reveals the session-wide bands', () => {
     const model = setupHighlightModel()
     const session = getSession(model)
     session.setHighlightsVisible(false)
-    model.setShowHighlightChips(false)
 
-    model.revealHighlights()
-    expect(model.showHighlightChips).toBe(true)
+    model.addToHighlights({
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      assemblyName: 'volvox',
+    })
     expect(session.highlightsVisible).toBe(true)
+
+    // removing one must not re-reveal, otherwise the toggle can't be turned off
+    session.setHighlightsVisible(false)
+    model.removeHighlight(model.highlight[0]!)
+    expect(session.highlightsVisible).toBe(false)
   })
 
   test('setHighlight replaces the array', () => {

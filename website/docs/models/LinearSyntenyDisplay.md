@@ -420,7 +420,7 @@ render and fetch depend only on those two views, not the whole stack. Single
 source of truth for that gate.
 
 ```ts
-type connectedViews = { v0: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>; v1: ModelInstanceTypeProps<...> & ... 20 more ... & IStateTree...
+type connectedViews = { v0: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>; v1: ModelInstanceTypeProps<...> & ... 21 more ... & IStateTree...
 ```
 
 #### getter: bpPerPxBucketKey

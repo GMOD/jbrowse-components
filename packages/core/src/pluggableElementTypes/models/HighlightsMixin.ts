@@ -1,4 +1,5 @@
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { getSession } from '../../util/index.ts'
 
@@ -68,14 +69,26 @@ export default function HighlightsMixin() {
       setShowHighlightChips(arg: boolean) {
         self.showHighlightChips = arg
       },
-      /**
-       * #action
-       * after an interactive highlight, turn the session-wide bands on and show
-       * the chips, so the new band is both visible and immediately manageable
-       */
-      revealHighlights() {
-        getSession(self).revealHighlights()
-        self.showHighlightChips = true
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // a highlight added while the session-wide bands are off would render
+        // nothing at all, which reads as "the highlight didn't work". Watching
+        // the array here reveals for every path that grows it (rubber-band
+        // menu, dotplot drag, URL init) rather than relying on each call site
+        // to remember. Seeded on the first run so loading a session that
+        // deliberately persisted bands-off doesn't flip it back on.
+        let prevCount = self.highlight.length
+        addDisposer(
+          self,
+          autorun(function highlightRevealAutorun() {
+            const count = self.highlight.length
+            if (count > prevCount) {
+              getSession(self).revealHighlights()
+            }
+            prevCount = count
+          }),
+        )
       },
     }))
 }

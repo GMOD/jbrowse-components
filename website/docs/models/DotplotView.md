@@ -147,7 +147,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [removeHighlight](#action-removehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [updateHighlight](#action-updatehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [setShowHighlightChips](#action-setshowhighlightchips)                         | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [revealHighlights](#action-revealhighlights)                                   | Actions    | [HighlightsMixin](../highlightsmixin)           | after an interactive highlight, turn the session-wide bands on and show the chips, so the new band is both visible and immediately manageable                                                                                                                                                                                                                                                                               |
 
 <details>
 <summary>DotplotView - Properties</summary>
@@ -1199,15 +1198,6 @@ type updateHighlight = (
 
 ```ts
 type setShowHighlightChips = (arg: boolean) => void
-```
-
-#### action: revealHighlights
-
-after an interactive highlight, turn the session-wide bands on and show the
-chips, so the new band is both visible and immediately manageable
-
-```ts
-type revealHighlights = () => void
 ```
 
 </details>

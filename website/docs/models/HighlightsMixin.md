@@ -20,16 +20,15 @@ hand-kept copies. Visibility across all views is the session-wide
 
 ## Members
 
-| Member                                                 | Kind       | Defined by      | Description                                                                                                                                   |
-| ------------------------------------------------------ | ---------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| [highlight](#property-highlight)                       | Properties | HighlightsMixin | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu                          |
-| [showHighlightChips](#property-showhighlightchips)     | Properties | HighlightsMixin | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                    |
-| [addToHighlights](#action-addtohighlights)             | Actions    | HighlightsMixin |                                                                                                                                               |
-| [setHighlight](#action-sethighlight)                   | Actions    | HighlightsMixin |                                                                                                                                               |
-| [removeHighlight](#action-removehighlight)             | Actions    | HighlightsMixin |                                                                                                                                               |
-| [updateHighlight](#action-updatehighlight)             | Actions    | HighlightsMixin |                                                                                                                                               |
-| [setShowHighlightChips](#action-setshowhighlightchips) | Actions    | HighlightsMixin |                                                                                                                                               |
-| [revealHighlights](#action-revealhighlights)           | Actions    | HighlightsMixin | after an interactive highlight, turn the session-wide bands on and show the chips, so the new band is both visible and immediately manageable |
+| Member                                                 | Kind       | Defined by      | Description                                                                                                                |
+| ------------------------------------------------------ | ---------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [highlight](#property-highlight)                       | Properties | HighlightsMixin | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu       |
+| [showHighlightChips](#property-showhighlightchips)     | Properties | HighlightsMixin | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default |
+| [addToHighlights](#action-addtohighlights)             | Actions    | HighlightsMixin |                                                                                                                            |
+| [setHighlight](#action-sethighlight)                   | Actions    | HighlightsMixin |                                                                                                                            |
+| [removeHighlight](#action-removehighlight)             | Actions    | HighlightsMixin |                                                                                                                            |
+| [updateHighlight](#action-updatehighlight)             | Actions    | HighlightsMixin |                                                                                                                            |
+| [setShowHighlightChips](#action-setshowhighlightchips) | Actions    | HighlightsMixin |                                                                                                                            |
 
 <details>
 <summary>HighlightsMixin - Properties</summary>
@@ -65,20 +64,6 @@ showHighlightChips: types.stripDefault(types.boolean, false)
 
 <details>
 <summary>HighlightsMixin - Actions</summary>
-
-#### action: revealHighlights
-
-after an interactive highlight, turn the session-wide bands on and show the
-chips, so the new band is both visible and immediately manageable
-
-```ts
-type revealHighlights = () => void
-```
-
-</details>
-
-<details>
-<summary>HighlightsMixin - Actions (other undocumented members)</summary>
 
 #### action: addToHighlights
 

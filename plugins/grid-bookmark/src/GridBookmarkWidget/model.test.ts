@@ -62,6 +62,32 @@ test('a new bookmark reveals the bands so it is not silently swallowed', () => {
   expect(
     getBookmarkHighlights(session.views[0] as IExtendedLGV).bookmarks,
   ).toHaveLength(1)
+
+  // an imported file reveals too; the reveal watches the list, not the caller
+  session.setHighlightsVisible(false)
+  widget.importBookmarks([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 200, end: 300 },
+  ])
+  expect(session.highlightsVisible).toBe(true)
+
+  // deleting must not re-reveal, otherwise the toggle can't be turned off
+  session.setHighlightsVisible(false)
+  widget.removeBookmarkObject(widget.bookmarks[0]!)
+  expect(session.highlightsVisible).toBe(false)
+})
+
+test('loading stored bookmarks does not override a persisted bands-off', () => {
+  const { session } = setup()
+  session.setHighlightsVisible(false)
+  // a widget created with bookmarks already present must not reveal: the count
+  // is seeded at attach, so only growth after that counts
+  const widget = session.addWidget('GridBookmarkWidget', 'GridBookmark2', {
+    bookmarks: [
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+    ],
+  }) as GridBookmarkModel
+  expect(widget.bookmarks).toHaveLength(1)
+  expect(session.highlightsVisible).toBe(false)
 })
 
 test('visibleBookmarks only includes assemblies open in a view', () => {

@@ -128,7 +128,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 ```ts
 // type signature
-type view = IModelType<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, { ...; }>
+type view = IModelType<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & ... 19 more ... & { ...; }, _NotCustomized, { ...; }>
 // code
 view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel
@@ -166,7 +166,7 @@ type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelTyp
 #### getter: views
 
 ```ts
-type views = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>)[]
+type views = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>)[]
 ```
 
 </details>
@@ -177,7 +177,7 @@ type views = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOption
 #### action: addView
 
 ```ts
-type addView = (typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>
+type addView = (typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>
 ```
 
 #### action: removeView

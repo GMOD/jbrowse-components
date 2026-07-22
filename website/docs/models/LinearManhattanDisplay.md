@@ -281,7 +281,7 @@ the containing LGV, typed once here so downstream getters don't repeat the
 `getContainingView` cast
 
 ```ts
-type view = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>
+type view = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>
 ```
 
 #### getter: prefersOffset
