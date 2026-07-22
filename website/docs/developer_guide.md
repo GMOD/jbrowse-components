@@ -71,7 +71,7 @@ own via pull request.
 ### Core concepts
 
 - [Configuration schema](/docs/developer_guides/configuration_schema) - Slot types, inheritance, callbacks, preProcessSnapshot, and reading config values
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) - How BaseLinearDisplay fetches data, the autorun chain, and rpcProps
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) - How MultiRegionDisplayMixin fetches data, the autorun chain, and rpcProps
 - [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app
 - [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) - What JBrowse provides as shared libraries (re-exports) versus what your plugin bundles itself from npm, and how to import each
 - [MST patterns](/docs/developer_guides/mst_patterns) - Common MobX-State-Tree patterns used across JBrowse plugins

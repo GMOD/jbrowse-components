@@ -139,6 +139,7 @@ that follow are hand-written.
 | `DotplotView-ImportFormSyntenyOptions`        | sync  | Add options to the dotplot view import form                     |
 | `DotplotView-OverlayHTMLComponent`            | sync  | Add an HTML overlay component to the dotplot view               |
 | `DotplotView-OverlaySVGComponent`             | sync  | Add an SVG overlay component to the dotplot view                |
+| `DotplotView-SyntenyFileFormats`              | sync  | Add synteny file formats to the dotplot import form             |
 | `LaunchView-BreakpointSplitView`              | async | Programmatically launch a breakpoint split view                 |
 | `LaunchView-CircularView`                     | async | Programmatically launch a circular view                         |
 | `LaunchView-DotplotView`                      | async | Programmatically launch a dotplot view                          |
@@ -152,6 +153,8 @@ that follow are hand-written.
 | `LinearGenomeView-searchResultSelected`       | async | Invoked when a search result is selected                        |
 | `LinearGenomeView-TracksContainerComponent`   | sync  | Add a component into the LGV tracks container                   |
 | `LinearSyntenyView-ImportFormSyntenyOptions`  | sync  | Add options to the linear synteny view import form              |
+| `LinearSyntenyView-SyntenyFileFormats`        | sync  | Add synteny file formats to the linear synteny import form      |
+| `TrackSelector-folderDialog`                  | sync  | Replace the dialog shown when a folder category is clicked      |
 | `TrackSelector-multiTrackMenuItems`           | sync  | Add items to the multi-track (shopping cart) menu               |
 
 <!-- EXTENSION_POINTS_INDEX END -->

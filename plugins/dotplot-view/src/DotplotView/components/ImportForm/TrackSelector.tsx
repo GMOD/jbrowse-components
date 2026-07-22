@@ -76,6 +76,7 @@ const TrackSelector = observer(function TrackSelector({
           key={`${assembly1}-${assembly2}`}
           model={model}
           rowIndex={0}
+          /** #extensionPoint DotplotView-SyntenyFileFormats | sync | Add synteny file formats to the dotplot import form */
           extensionPoint="DotplotView-SyntenyFileFormats"
           assembly1={assembly1}
           assembly2={assembly2}

@@ -50,6 +50,7 @@ const FolderDialog = observer(function FolderDialog(props: FolderDialogProps) {
   return (
     <PluggableComponent
       pluginManager={pluginManager}
+      /** #extensionPoint TrackSelector-folderDialog | sync | Replace the dialog shown when a folder category is clicked */
       name="TrackSelector-folderDialog"
       component={DefaultFolderDialog}
       props={props}

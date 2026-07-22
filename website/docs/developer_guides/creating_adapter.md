@@ -12,8 +12,8 @@ format JBrowse understands.
 
 To display data from a new source using JBrowse's existing gene displays, write
 a custom adapter. For custom rendering, you'll also need a
-[custom display](/docs/developer_guides/creating_display) and/or a
-[renderer](/docs/developer_guides/renderer_architecture).
+[custom display](/docs/developer_guides/creating_display), which owns the
+drawing as well as the state and menus.
 
 ## Adapter types
 

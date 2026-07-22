@@ -8,10 +8,11 @@ guide_category: Creating pluggable elements
 
 A **track** owns the high-level identity (an ID, a name, a default set of
 displays), while **display types** do the work of showing that track inside a
-particular view, and **renderers** turn features into pixels.
+particular view. The display owns the drawing: there is no separate renderer
+pluggable element to register.
 
 ```
-Track  ─owns→  Display(s)  ─call→  Renderer
+Track  ─owns→  Display(s)  ─draw→  canvas
 ```
 
 Tracks are deliberately thin. For example:
@@ -51,15 +52,16 @@ the full set of slots. Useful in-tree references:
   clipping", "Modifications")
 - Wiring a [custom widget](/docs/developer_guides/creating_widget) into feature
   clicks (e.g. `VariantFeatureWidget`)
-- Bundling a specific adapter + renderer pair so users get the right combination
-  by default, instead of relying on the generic `FeatureTrack` /
-  `LinearBasicDisplay`
+- Bundling a specific adapter with drawing code tuned for it, so users get the
+  right combination by default instead of relying on the generic `FeatureTrack`
+  / `LinearBasicDisplay`
 
-The display owns view-specific state, menu items, and overlays; the
-[renderer](/docs/developer_guides/renderer_architecture) it invokes does the
-per-feature drawing. Which foundation mixin a display composes
-(`MultiRegionDisplayMixin` for per-region data, `GlobalDataDisplayMixin` for a
-single whole-view dataset like a heatmap) is spelled out in the
+The display owns view-specific state, menu items, overlays, and the drawing
+itself. The [rendering backend](/docs/developer_guides/renderer_architecture) it
+instantiates is a plain class, not a registered pluggable element. Which
+foundation mixin a display composes (`MultiRegionDisplayMixin` for per-region
+data, `GlobalDataDisplayMixin` for a single whole-view dataset like a heatmap)
+is spelled out in the
 [architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks).
 
 ## Pairing displays with tracks and views

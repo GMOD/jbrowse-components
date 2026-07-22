@@ -73,6 +73,7 @@ export default function ImportSyntenyTrackSelectorArea({
           key={`${assembly1}-${assembly2}`}
           model={model}
           rowIndex={selectedRow}
+          /** #extensionPoint LinearSyntenyView-SyntenyFileFormats | sync | Add synteny file formats to the linear synteny import form */
           extensionPoint="LinearSyntenyView-SyntenyFileFormats"
           assembly1={assembly1}
           assembly2={assembly2}

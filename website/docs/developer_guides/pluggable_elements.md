@@ -87,8 +87,8 @@ Example tracks:
 - `AlignmentsTrack` (from `@jbrowse/plugin-alignments`) - shows both a pileup of
   reads and the coverage as a quantitative track
 - `VariantTrack` (from `@jbrowse/plugin-variants`) - displays variant features
-- `FeatureTrack` (from `@jbrowse/plugin-gff3`) - displays generic features
-  including gene glyphs
+- `FeatureTrack` (from `@jbrowse/plugin-linear-genome-view`) - displays generic
+  features including gene glyphs
 
 ## Displays
 
@@ -141,11 +141,11 @@ Widgets can do multiple types of things, including:
 - etc.
 
 These widgets can be extended via plugins, so for example, the
-`@jbrowse/plugin-alignments` extends the `BaseFeatureDetailWidget` to have
-custom display of the alignments.
+`@jbrowse/plugin-alignments` extends the `BaseFeatureWidget` to have custom
+display of the alignments.
 
-- `AlignmentsFeatureDetailWidget` - this provides a custom widget for viewing
-  the feature details of alignments features that customizes the basic feature
+- `AlignmentsFeatureWidget` - this provides a custom widget for viewing the
+  feature details of alignments features that customizes the basic feature
   detail widget
 
 ## RPC methods

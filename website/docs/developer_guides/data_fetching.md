@@ -1,25 +1,29 @@
 ---
 title: Data fetching pipeline
-description: How BaseLinearDisplay fetches data, the autorun chain, and rpcProps
+description:
+  How MultiRegionDisplayMixin fetches data, the autorun chain, and rpcProps
 guide_category: Core concepts
 ---
 
 Every linear display that fetches data composes `MultiRegionDisplayMixin`, which
-installs four autoruns that collectively manage fetch lifecycle, cancellation,
+installs five autoruns that collectively manage fetch lifecycle, cancellation,
 and cache invalidation. Understanding this chain is essential for writing a
 custom display that doesn't use the GPU path, and for debugging unexpected
 refetches in one that does.
 
-## The four autoruns
+## The five autoruns
 
-```
-Observable change            Autorun                   Action
-─────────────────────        ──────────────────────    ──────────────────
-displayedRegions ref  →  DisplayedRegionsChange   →  clearAllRpcData()
-visibleRegions        →  FetchVisibleRegions       →  fetchNeeded() [600ms delay]
-rpcProps() fields     →  SettingsInvalidate        →  clearAllRpcData()
-visibleRegions        →  ClearBlockingStateOnViewportChange → clearAllRpcData() if regionTooLarge/error
-```
+| Autorun                              | Fires on               | Action                                        |
+| ------------------------------------ | ---------------------- | --------------------------------------------- |
+| `DisplayedRegionsChange`             | `displayedRegions` ref | `clearAllRpcData()`                           |
+| `FetchVisibleRegions`                | `visibleRegions`       | `fetchNeeded()` after a 600 ms delay          |
+| `SettingsInvalidate`                 | `rpcProps()` fields    | `clearAllRpcData()`                           |
+| `ClearBlockingStateOnViewportChange` | `visibleRegions`       | `clearAllRpcData()` if `regionTooLarge`/error |
+| `ClearHoverOnRegionTooLarge`         | `regionTooLarge` set   | `onRegionTooLarge()` hook                     |
+
+`ClearHoverOnRegionTooLarge` fires the overridable `onRegionTooLarge` hook when
+the banner replaces the rendered content, so a lingering hover doesn't pin to a
+now-hidden feature. It is a no-op unless your display overrides the hook.
 
 `clearAllRpcData()` resets `rpcDataMap`, `loadedRegions`, `regionTooLarge`, and
 `error`. It also bumps `fetchGeneration`, which causes `FetchVisibleRegions` to
@@ -59,7 +63,8 @@ stale-data write, so the wrapper is a correctness primitive, not just a
 convenience. Prefer it:
 
 ```ts
-import { getRpcSessionId, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 // Inside your display's .actions(self => ({ ... }))
@@ -98,7 +103,8 @@ fetches summary vs detail, alignments builds a chain payload. You then own both
 `ctx.isStale()` guards by hand:
 
 ```ts
-import { getRpcSessionId, getSession, isAlive } from '@jbrowse/core/util'
+import { getSession, isAlive } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
@@ -226,16 +232,29 @@ a reactive dependency.
 
 ## Composing the mixin
 
+`MultiRegionDisplayMixin` supplies only the fetch/render lifecycle. Compose it
+alongside `BaseDisplay` and `TrackHeightMixin`, which supply the display
+identity and `height` respectively:
+
 ```ts
-import { MultiRegionDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
-    .model('LinearMyDisplay', {
-      type: types.literal('LinearMyDisplay'),
-      configuration: ConfigurationReference(configSchema),
-    })
-    .compose(MultiRegionDisplayMixin())
+    .compose(
+      'LinearMyDisplay',
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
+      types.model({
+        type: types.literal('LinearMyDisplay'),
+        configuration: ConfigurationReference(configSchema),
+      }),
+    )
     .volatile(() => ({
       rpcDataMap: observable.map<number, MyData>(),
     }))
