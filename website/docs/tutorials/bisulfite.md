@@ -201,8 +201,7 @@ unmethylated (blue)** toggle adds the converted sites in blue. It's
 reference-based and only makes sense for bisulfite/EM-seq libraries. No MM/ML
 tags are involved.
 
-The figures below leave **Show unmethylated** off, for a methylated-only view
-(red marks only, unmethylated sites left blank), so methylation reads directly
+The figures below leave **Show unmethylated** off, so methylation reads directly
 as the presence of red and the three contexts contrast cleanly without the blue.
 
 Type `NC_003070.9:4,398,000-4,412,000` into the location box to reach the window
@@ -210,15 +209,11 @@ below (chromosome 1). It places two methylation regimes side by side: a gene
 body methylated only in the CpG context (left), and a silenced element
 methylated in all three contexts (right).
 
-<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn (methylated-only view). Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Red marks methylation, unmethylated sites are left blank." />
-
-Each per-read copy is just the same alignment track re-colored: switch a
-pileup's context with **Color by → Bisulfite / EM-seq**, then CpG / CHG / CHH /
-all (the last one marks every cytosine at once). Because the call is made per
-read, zooming in to the gene→element boundary lets you follow the methylation on
-individual molecules: in the CHG/CHH copies each read stays blank over the gene
-body and picks up red (methylated) marks as it crosses into the silenced
-element.
+Each per-read copy is the same alignment track re-colored for one context.
+Because the call is made per read, zooming in to the gene→element boundary lets
+you follow the methylation on individual molecules: in the CHG/CHH copies each
+read stays blank over the gene body and picks up red marks as it crosses into
+the silenced element.
 
 ## Reproduce it end to end
 

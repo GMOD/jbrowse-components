@@ -13,11 +13,10 @@ and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
 them.
 
-JBrowse does not draw the graph itself. It has no graph-native track. What it
-draws are the graph's **linear projections**: the same graph flattened onto one
-reference genome's coordinates, in four complementary views. Every builder can
-emit all four, so a graph built with any of these tools lands on JBrowse track
-types you already have:
+JBrowse has no graph-native track. What it draws are the graph's **linear
+projections**: the same graph flattened onto one reference genome's coordinates,
+in four complementary views. Every builder can emit all four, so a graph built
+with any of these tools lands on JBrowse track types you already have:
 
 | Projection             | What it shows                                               | From the graph                                           | JBrowse track                                                      |
 | ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -36,7 +35,6 @@ graph additionally gives you.
 The synteny projection alone also builds in a notebook: a `synteny_view` in
 Python ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or R
 ([JBrowseR](/docs/jbrowser)) stacks these same strains from the all-vs-all PAF.
-The variant and MAF projections load as ordinary file-based tracks the same way.
 
 ## Building the graph with pggb
 
@@ -278,7 +276,7 @@ stretches the variant and MAF projections zoom into. (Collapsed repeats can push
 a window above the strain count, so read the signal as relative, not an exact
 genome tally.)
 
-<Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near 4 (all four strains traverse the graph there, so the sequence is core) and drops toward 1 over the accessory stretches private to fewer strains. This is odgi viz's per-column path coverage summed into one curve, replotted on K12 coordinates." src="/img/pangenome/depth.png" />
+<Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near 4 (all four strains traverse the graph there, so the sequence is core) and drops toward 1 over the accessory stretches private to fewer strains." src="/img/pangenome/depth.png" />
 
 ### Per-strain presence
 
@@ -335,7 +333,7 @@ missing: one row falls to 0 over its own accessory stretch while the others hold
 at 1. It is the per-genome read of the same core/accessory signal the depth
 curve summarizes.
 
-<Figure caption="odgi pav over the same K12 windows, one row per non-K12 strain. Each row holds near 1 where that strain is present and drops to 0 over its own accessory stretches, and the gap patterns differ per strain, so a single dip in the aggregate depth curve resolves here into which strain accounts for it. These are odgi viz's filled-vs-gap rows, windowed onto K12 coordinates." src="/img/pangenome/pav.png" />
+<Figure caption="odgi pav over the same K12 windows, one row per non-K12 strain. Each row holds near 1 where that strain is present and drops to 0 over its own accessory stretches, and the gap patterns differ per strain, so a single dip in the aggregate depth curve resolves here into which strain accounts for it." src="/img/pangenome/pav.png" />
 
 ## Compared to `odgi viz`
 
@@ -348,13 +346,13 @@ stored, which is exactly what makes a pangenome graph hard to read at first.
 <Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, filled where the strain traverses the graph and white where it does not (accessory sequence). The axis is graph node order (the pangenome sequence), not K12 coordinates, so nothing lines up with a gene or a chromosome position. The four JBrowse projections re-plot this same presence/absence on K12's coordinates instead." src="/img/pangenome/graph.png" />
 
 `odgi viz` gives one row per strain, as the MAF and per-strain-presence tracks
-do. But its horizontal axis is not any genome's coordinates: it is the graph's
-node order: the "pangenome sequence", the order odgi lays the nodes out in.
-Sequence every strain walks appears as a filled column across all rows.
-Accessory sequence appears as a gap in the rows that skip it. That is the real
-structure of the graph, but you cannot point at a gene on that axis, because no
-gene (and no genome) is numbered in node order, and a locus can even sit in a
-different left-to-right position than it occupies on any chromosome.
+do. But its horizontal axis is the graph's node order (the "pangenome sequence",
+the order odgi lays the nodes out in), not any genome's coordinates. Sequence
+every strain walks appears as a filled column across all rows, and accessory
+sequence appears as a gap in the rows that skip it. That is the real structure
+of the graph, but you cannot point at a gene on that axis, because no gene (and
+no genome) is numbered in node order, and a locus can even sit in a different
+left-to-right position than it occupies on any chromosome.
 
 The four JBrowse projections keep the one-row-per-strain idea and throw the
 node-order axis away, re-drawing everything on K12's actual coordinates:
