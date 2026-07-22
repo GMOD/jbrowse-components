@@ -44,6 +44,19 @@ afterEach(() => {
   jest.useRealTimers()
 })
 
+// CanvasFeatureGateMixin must be composed AFTER MultiRegionDisplayMixin in
+// baseModel.ts. Both define derivedRegionTooLargeEnabled: the base computes it
+// from `getByteEstimateConfig() !== null`, which canvas never overrides (it
+// folds the byte check into its feature RPC instead), so the base returns false.
+// The gate works only because the mixin's hardcoded `true` wins by composition
+// order — swap those two lines and the byte/density gate silently turns off with
+// nothing else failing. This test is the pin.
+test('composition order keeps the derived gate enabled', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  expect(display.getByteEstimateConfig()).toBeNull()
+  expect(display.derivedRegionTooLargeEnabled).toBe(true)
+})
+
 describe('FetchVisibleRegions autorun', () => {
   it('fetches regions on initial load', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()

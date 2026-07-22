@@ -18,7 +18,7 @@ import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapte
 // one (BaseDisplay via MultiRegionDisplayMixin, or the SVG arc displays
 // directly). Cast once so the config-slot defaults below read it type-safely —
 // the same pattern CanvasFeatureGateMixin uses.
-function host(self: unknown) {
+function host(self: object) {
   return self as { configuration: AnyConfigurationModel }
 }
 
@@ -38,10 +38,11 @@ function host(self: unknown) {
  * `regionTooLarge` is a pure function of the cached byte estimate scaled to the
  * current viewport (`tooLargeStatus`), so the banner self-releases on zoom-in
  * without a flag-clear round trip and doesn't flicker on pan. A byte-gated
- * display opts in by overriding three hooks — `derivedRegionTooLargeEnabled` →
- * true, `configuredFetchSizeLimit` (the mixin owns no `configuration`), and, if
- * it has a second gating axis, `densityTooLargeForDerivedGate` (canvas's
- * feature-density gate) — and clears the cached estimate on chromosome nav with
+ * display opts in by flipping `derivedRegionTooLargeEnabled` true, plus
+ * `densityTooLargeForDerivedGate` if it has a second gating axis (canvas's
+ * feature-density gate). The budget hooks default off the display config, so
+ * nothing else needs overriding. It also clears the cached estimate on
+ * chromosome nav with
  * `onDisplayedRegionsChange(self, () => self.setFeatureDensityStats(undefined))`
  * in its `afterAttach` (the estimate intentionally survives viewport-change
  * clears, so only region navigation drops it). Used by

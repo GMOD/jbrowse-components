@@ -159,6 +159,19 @@ function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
   return { createDisplay, mockRpcCall }
 }
 
+// CanvasFeatureGateMixin must be composed AFTER MultiRegionDisplayMixin. Both
+// define derivedRegionTooLargeEnabled: MultiRegionDisplayMixin computes it from
+// `getByteEstimateConfig() !== null`, which canvas never overrides (it folds the
+// byte check into its feature RPC instead), so that base returns false. The gate
+// works only because the mixin's hardcoded `true` wins by composition order.
+// Swap the two lines in model.ts and the whole byte/density gate silently turns
+// off — no banner, no error, nothing else fails. This test is the pin.
+test('composition order keeps the derived gate enabled', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  expect(display.getByteEstimateConfig()).toBeNull()
+  expect(display.derivedRegionTooLargeEnabled).toBe(true)
+})
+
 describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('is false with no estimate yet', () => {
     const { display } = createTestEnvironment().createDisplay()

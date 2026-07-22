@@ -40,9 +40,7 @@ opt-in contract" shape DisplayChrome uses for loading/error/retry.
 | [userFeatureDensityLimit](#volatile-userfeaturedensitylimit)           | Volatiles | CanvasFeatureGateMixin | density force-load ceiling; the density-axis counterpart to `RegionTooLargeMixin.userByteSizeLimit`, volatile for the same reason (a force-load must not leak into a saved session).                                                                                                                                                                                                                                                          |
 | [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters   | CanvasFeatureGateMixin |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [densityGateDisabled](#getter-densitygatedisabled)                     | Getters   | CanvasFeatureGateMixin | Turns off the density (features-per-pixel) axis, leaving only the byte budget. Byte-only displays override this to `true`: e.g. `LinearMultiRowFeatureDisplay` paints features into fixed lanes, so a high total feature count is not a per-glyph render cost — only the download (byte) budget should gate it.                                                                                                                               |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters   | CanvasFeatureGateMixin |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)                 | Getters   | CanvasFeatureGateMixin | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type has none); `resolveByteLimit` prefers it over the display config.                                                                                                                                                                                                                                                                                                    |
-| [configForceLoad](#getter-configforceload)                             | Getters   | CanvasFeatureGateMixin | Declarative force-load (the `forceLoad` config slot).                                                                                                                                                                                                                                                                                                                                                                                         |
 | [visibleFeatureDensityPerPx](#getter-visiblefeaturedensityperpx)       | Getters   | CanvasFeatureGateMixin | Current density across the visible regions at the debounced coarseBpPerPx, so the verdict shares the layout cadence and doesn't flicker mid-zoom.                                                                                                                                                                                                                                                                                             |
 | [maxFeatureDensity](#getter-maxfeaturedensity)                         | Getters   | CanvasFeatureGateMixin | The density budget passed to the worker and used by the derived verdict: undefined (gate off) under a declarative/byte force-load or below AUTO_FORCE_LOAD_BP; otherwise the density force-load ceiling or the config.                                                                                                                                                                                                                        |
 | [densityTooLarge](#getter-densitytoolarge)                             | Getters   | CanvasFeatureGateMixin |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -52,7 +50,7 @@ opt-in contract" shape DisplayChrome uses for loading/error/retry.
 | [setDensityStats](#action-setdensitystats)                             | Actions   | CanvasFeatureGateMixin |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [clearFeatureGateStats](#action-clearfeaturegatestats)                 | Actions   | CanvasFeatureGateMixin | Drop the whole cached estimate on chromosome navigation (displayedRegion indices get reused, so a stale entry would gate the new region against the wrong stats). Driven by the mixin's own `afterAttach` below — no composing display has to wire it up.                                                                                                                                                                                     |
 | [commitFeatureGateStats](#action-commitfeaturegatestats)               | Actions   | CanvasFeatureGateMixin | Commit a batch of per-region fetch outcomes: record the per-region byte **max** (not sum — each region is gated against the same per-region budget, so a multi-region view where every region individually fits is never blanked by the cross-region total) and the per-region density, then publish the byte estimate + adapter limit to `RegionTooLargeMixin` so the banner's `resolveByteLimit` picks the same budget the worker gated on. |
-| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)     | Actions   | CanvasFeatureGateMixin | Dual-axis force-load: clear both user ceilings, then raise exactly the one axis that's actually blocking (`resolveForceLoadLimits` — byte only when it lifts the baseline, else density). One decision, shared with the inline `LinearBasicDisplay` gate, so the "don't lower the ceiling" guard can't drift between them.                                                                                                                    |
+| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)     | Actions   | CanvasFeatureGateMixin | Dual-axis force-load: clear both user ceilings, then raise exactly the one axis that's actually blocking (`resolveForceLoadLimits` — byte only when it lifts the baseline, else density).                                                                                                                                                                                                                                                     |
 
 <details>
 <summary>CanvasFeatureGateMixin - Volatiles</summary>
@@ -109,14 +107,6 @@ none); `resolveByteLimit` prefers it over the display config.
 type adapterFetchSizeLimit = number | undefined
 ```
 
-#### getter: configForceLoad
-
-Declarative force-load (the `forceLoad` config slot).
-
-```ts
-type configForceLoad = boolean
-```
-
 #### getter: visibleFeatureDensityPerPx
 
 Current density across the visible regions at the debounced coarseBpPerPx, so
@@ -153,12 +143,6 @@ type densityTooLargeForDerivedGate = boolean
 
 ```ts
 type derivedRegionTooLargeEnabled = boolean
-```
-
-#### getter: configuredFetchSizeLimit
-
-```ts
-type configuredFetchSizeLimit = number
 ```
 
 #### getter: densityTooLarge
@@ -225,9 +209,7 @@ type commitFeatureGateStats = (results: FeatureGateRegionResult[]) => void
 
 Dual-axis force-load: clear both user ceilings, then raise exactly the one axis
 that's actually blocking (`resolveForceLoadLimits` — byte only when it lifts the
-baseline, else density). One decision, shared with the inline
-`LinearBasicDisplay` gate, so the "don't lower the ceiling" guard can't drift
-between them.
+baseline, else density).
 
 ```ts
 type setFeatureDensityStatsLimit = (

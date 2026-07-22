@@ -19,24 +19,27 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 /**
  * The members a composing display provides that this gate reads but doesn't own:
  * the config (via `getConf`), the adapter config, and the `RegionTooLargeMixin`
- * surface (byte estimate + commit). Declared once so the gate can reference them
- * type-safely without threading them through every getter — the runtime instance
- * has them because the final model also composes `MultiRegionDisplayMixin` (which
- * brings `RegionTooLargeMixin`) and `BaseDisplay` (which brings `adapterConfig`).
+ * surface (byte estimate, the config-slot budgets, commit). Declared once so the
+ * gate can reference them type-safely without threading them through every getter
+ * — the runtime instance has them because the final model also composes
+ * `MultiRegionDisplayMixin` (which brings `RegionTooLargeMixin`) and `BaseDisplay`
+ * (which brings `adapterConfig`).
  */
 interface GateHost {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   userByteSizeLimit?: number
   estimatedVisibleBytes?: number
+  configuredFetchSizeLimit: number
+  configForceLoad: boolean
   setFeatureDensityStats: (stats?: FeatureDensityStats) => void
 }
 
-function host(self: unknown) {
+function host(self: object) {
   return self as GateHost
 }
 
-function gateView(self: unknown) {
+function gateView(self: object) {
   return getContainingView(self) as LinearGenomeViewModel
 }
 
@@ -118,24 +121,11 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #getter
-       */
-      get configuredFetchSizeLimit(): number {
-        return getConf(host(self), 'fetchSizeLimit')
-      },
-      /**
-       * #getter
        * The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
        * has none); `resolveByteLimit` prefers it over the display config.
        */
       get adapterFetchSizeLimit(): number | undefined {
         return readConfObject(host(self).adapterConfig, 'fetchSizeLimit')
-      },
-      /**
-       * #getter
-       * Declarative force-load (the `forceLoad` config slot).
-       */
-      get configForceLoad(): boolean {
-        return getConf(host(self), 'forceLoad')
       },
       /**
        * #method
@@ -169,7 +159,7 @@ export default function CanvasFeatureGateMixin() {
        */
       get maxFeatureDensity(): number | undefined {
         return self.densityGateDisabled ||
-          self.configForceLoad ||
+          host(self).configForceLoad ||
           host(self).userByteSizeLimit !== undefined ||
           gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
           ? undefined
@@ -202,13 +192,13 @@ export default function CanvasFeatureGateMixin() {
        * (user force-load → adapter limit → display config).
        */
       byteSizeLimit(): number | undefined {
-        return self.configForceLoad ||
+        return host(self).configForceLoad ||
           gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
           ? undefined
           : resolveByteLimit({
               userByteSizeLimit: host(self).userByteSizeLimit,
               adapterFetchSizeLimit: self.adapterFetchSizeLimit,
-              configFetchSizeLimit: self.configuredFetchSizeLimit,
+              configFetchSizeLimit: host(self).configuredFetchSizeLimit,
             })
       },
     }))
@@ -266,9 +256,7 @@ export default function CanvasFeatureGateMixin() {
        * #action
        * Dual-axis force-load: clear both user ceilings, then raise exactly the one
        * axis that's actually blocking (`resolveForceLoadLimits` — byte only when it
-       * lifts the baseline, else density). One decision, shared with the inline
-       * `LinearBasicDisplay` gate, so the "don't lower the ceiling" guard can't
-       * drift between them.
+       * lifts the baseline, else density).
        */
       setFeatureDensityStatsLimit(stats?: { bytes?: number }) {
         // Clear first so maxFeatureDensity (undefined while userByteSizeLimit is
@@ -281,7 +269,7 @@ export default function CanvasFeatureGateMixin() {
           baselineByteLimit: resolveByteLimit({
             userByteSizeLimit: undefined,
             adapterFetchSizeLimit: self.adapterFetchSizeLimit,
-            configFetchSizeLimit: self.configuredFetchSizeLimit,
+            configFetchSizeLimit: host(self).configuredFetchSizeLimit,
           }),
           densityGateActive: self.maxFeatureDensity !== undefined,
           observedMaxDensity: self.observedMaxDensity(gateView(self).bpPerPx),

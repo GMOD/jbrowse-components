@@ -20,13 +20,13 @@ interface ConfNode {
     setSlot: (slotName: string, value: unknown) => void
   }
 }
-const confNode = (self: unknown) => self as ConfNode
-const setConf = (self: unknown, slot: string, val: unknown) => {
+const confNode = (self: object) => self as ConfNode
+const setConf = (self: object, slot: string, val: unknown) => {
   confNode(self).configuration.setSlot(slot, val)
 }
 // `prefersOffset` is the optional per-display convention (BaseLinearDisplay)
 // signalling the track label is drawn above the plot, not overlapping it.
-const offsetNode = (self: unknown) => self as { prefersOffset?: boolean }
+const offsetNode = (self: object) => self as { prefersOffset?: boolean }
 
 /**
  * #stateModel WiggleScoreConfigMixin
