@@ -92,6 +92,10 @@ export async function run(args?: string[]) {
       short: 'f',
       description: 'Overwrite existing assembly and skip file existence checks',
     },
+    config: {
+      type: 'string',
+      description: 'Any extra config settings to add to the assembly',
+    },
   } as const
   const { positionals, values: runFlags } = parseArgs({
     args,
@@ -102,6 +106,14 @@ export async function run(args?: string[]) {
   const description = 'Add an assembly to a JBrowse 2 configuration'
 
   const usage = 'jbrowse add-assembly <sequence> [options]'
+
+  const notes =
+    '--config takes inline JSON (not a file path) that is merged into the ' +
+    'generated assembly config, so you can set fields the dedicated flags do ' +
+    'not cover. A "sequence" object in it is merged into the generated ' +
+    'ReferenceSequenceTrack rather than replacing it, e.g. --config ' +
+    '\'{"sequence":{"formatAbout":{"hideUris":true}}}\' hides file URIs in the ' +
+    "assembly's About dialog."
 
   const examples = [
     '# add assembly to installation in current directory. assumes .fai file also exists, and copies GRCh38.fa and GRCh38.fa.fai to current directory',
@@ -127,12 +139,16 @@ export async function run(args?: string[]) {
     '',
     '# add a bgzip indexed fasta inferred by fa.gz extension. assumes .fa.gz.gzi and .fa.gz.fai files also exists',
     '$ jbrowse add-assembly myfile.fa.gz --load copy',
+    '',
+    '# hide file URIs in the assembly About dialog',
+    '$ jbrowse add-assembly GRCh38.fa --load copy --config \'{"sequence":{"formatAbout":{"hideUris":true}}}\'',
   ]
 
   if (runFlags.help) {
     printHelp({
       description,
       examples,
+      notes,
       usage,
       options,
     })

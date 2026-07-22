@@ -365,6 +365,64 @@ test('can specify a custom name and alias and refNameColors', async () => {
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
+test('can use --config to add extra assembly settings', async () => {
+  await runInTmpDir(async ctx => {
+    await runCommand([
+      'add-assembly',
+      dataDir('simple.2bit'),
+      '--load',
+      'copy',
+      '--config',
+      '{"sequence":{"formatAbout":{"hideUris":true}},"refNameColors":["red"]}',
+    ])
+
+    // the sequence hunk layers onto the generated ReferenceSequenceTrack
+    // instead of replacing it, so the adapter survives
+    expect(readConf(ctx)).toMatchSnapshot()
+  })
+})
+
+test('typed flags win over --config', async () => {
+  await runInTmpDir(async ctx => {
+    await runCommand([
+      'add-assembly',
+      dataDir('simple.2bit'),
+      '--load',
+      'copy',
+      '--displayName',
+      'from flag',
+      '--config',
+      '{"displayName":"from config"}',
+    ])
+
+    expect(readConf(ctx)).toMatchSnapshot()
+  })
+})
+
+test('fails on invalid --config JSON', async () => {
+  const { error } = await runCommand([
+    'add-assembly',
+    dataDir('simple.2bit'),
+    '--load',
+    'copy',
+    '--config',
+    '{invalid}',
+  ])
+  expect(error?.message).toMatchSnapshot()
+})
+
+test('fails when --config sets name', async () => {
+  const { error } = await runCommand([
+    'add-assembly',
+    dataDir('simple.2bit'),
+    '--load',
+    'copy',
+    '--config',
+    '{"name":"other"}',
+  ])
+  expect(error?.message).toMatchSnapshot()
+})
+
 test('can use an existing config file', async () => {
   await runInTmpDir(async ctx => {
     await writeFile('config.json', '{}')

@@ -10,7 +10,10 @@ import {
   readJsonFile,
 } from '../../utils.ts'
 import { mapLocationForFiles } from '../add-track-utils/track-config.ts'
-import { validateLoadAndLocation } from '../add-track-utils/validators.ts'
+import {
+  parseConfigFlag,
+  validateLoadAndLocation,
+} from '../add-track-utils/validators.ts'
 import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
@@ -51,6 +54,7 @@ interface AssemblyFlags {
   refNameColors?: string
   load?: string
   force?: boolean
+  config?: string
 }
 
 export function isValidJSON(string: string) {
@@ -252,6 +256,33 @@ async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+// --config is merged shallowly, except for `sequence`: the generated
+// ReferenceSequenceTrack already holds the adapter built from the sequence
+// file, so a `sequence` hunk layers onto it (e.g. formatAbout) rather than
+// replacing it and dropping the adapter
+function applyExtraConfig(assembly: Assembly, config?: string): Assembly {
+  if (config === undefined) {
+    return assembly
+  }
+  const { sequence, name, ...rest } = parseConfigFlag(config)
+  if (sequence !== undefined && !isRecord(sequence)) {
+    throw new Error('--config "sequence" must be an object')
+  }
+  if (name !== undefined) {
+    throw new Error('use --name rather than "name" in --config')
+  }
+  return {
+    ...assembly,
+    ...rest,
+    name: assembly.name,
+    sequence: { ...assembly.sequence, ...sequence },
+  }
+}
+
 export async function enhanceAssembly(
   assembly: Assembly,
   runFlags: AssemblyFlags,
@@ -267,9 +298,11 @@ export async function enhanceAssembly(
       ? [refNameAliases]
       : []
 
+  // typed flags layer over --config, so the most specific flag a user reaches
+  // for wins
   return {
     assembly: {
-      ...assembly,
+      ...applyExtraConfig(assembly, runFlags.config),
       ...(runFlags.alias?.length && { aliases: runFlags.alias }),
       ...(runFlags.refNameColors && {
         refNameColors: parseCommaSeparatedString(runFlags.refNameColors),

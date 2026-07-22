@@ -466,6 +466,39 @@ exports[`can specify a refNameAliases file type custom 1`] = `
 }
 `;
 
+exports[`can use --config to add extra assembly settings 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "simple",
+      "refNameColors": [
+        "red",
+      ],
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "simple.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "formatAbout": {
+          "hideUris": true,
+        },
+        "trackId": "simple-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [],
+}
+`;
+
 exports[`can use --force to replace an existing assembly 1`] = `
 {
   "assemblies": [
@@ -534,7 +567,11 @@ exports[`fails if using invalid inline JSON 1`] = `"Error: Error: ENOENT: no suc
 
 exports[`fails on an unrecognized --type value 1`] = `"Error: --type must be one of: indexedFasta, bgzipFasta, twoBit, chromSizes, custom"`;
 
+exports[`fails on invalid --config JSON 1`] = `"Error: --config is not valid JSON: {invalid}"`;
+
 exports[`fails on invalid --load value 1`] = `"Error: --load must be one of: copy, symlink, move, inPlace"`;
+
+exports[`fails when --config sets name 1`] = `"Error: use --name rather than "name" in --config"`;
 
 exports[`relative path 1`] = `
 {
@@ -546,6 +583,34 @@ exports[`relative path 1`] = `
           "twoBitLocation": {
             "locationType": "UriLocation",
             "uri": "../simple.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "trackId": "simple-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [],
+}
+`;
+
+exports[`typed flags win over --config 1`] = `
+{
+  "assemblies": [
+    {
+      "displayName": "from flag",
+      "name": "simple",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "simple.2bit",
           },
           "type": "TwoBitAdapter",
         },
