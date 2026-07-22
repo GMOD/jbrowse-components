@@ -407,17 +407,24 @@ coverage changes line up with the called intervals.
 <Figure caption="A multi-bigwig track with tumor (red) and normal (blue) coverage zoomed to chromosome 5, in overlapping-scatter rendering, above the benchmark CNV BED track. Orange boxes mark individual CNVs (clicking one shows its feature details), and coverage drops and gains line up with the called intervals below." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 Raw coverage is only a sanity check on existing calls. For a signal that reads
-directly as copy number, use the HiFiCNV depth, MAF, and copy-number tracks
-built above. Four loci in HG008-T each carry a different copy-number state, so
-together they make a compact tour of how depth, MAF, and the benchmark CNV calls
-read against one another:
+directly as copy number, use the depth, BAF, and copy-number tracks built above.
+Four loci in HG008-T each carry a different copy-number state, so together they
+make a compact tour of how depth, BAF, and the benchmark CNV calls read against
+one another:
 
-| Locus  | State in HG008-T                 | Signature on the tracks            |
-| ------ | -------------------------------- | ---------------------------------- |
-| CDKN2A | Focal homozygous deletion (CN 0) | depth → 0, copy number 0           |
-| TP53   | 17p loss + LOH (CN 1, 1+0)       | depth halved, MAF falls off 0.5    |
-| SMAD4  | 18q loss + LOH (CN 1, 0+1)       | depth halved, MAF falls off 0.5    |
-| KRAS   | Allelic gain (CN 3, 2+1)         | depth raised, MAF modestly off 0.5 |
+| Locus  | State in HG008-T                 | Signature on the tracks             |
+| ------ | -------------------------------- | ----------------------------------- |
+| CDKN2A | Focal homozygous deletion (CN 0) | depth to 0, copy number 0           |
+| TP53   | 17p loss + LOH (CN 1, 1+0)       | depth halved, BAF splits to 0 and 1 |
+| SMAD4  | 18q loss + LOH (CN 1, 0+1)       | depth halved, BAF splits to 0 and 1 |
+| KRAS   | Allelic gain (CN 3, 2+1)         | depth raised, BAF to 1/3 and 2/3    |
+
+The BAF column is why the unfolded track earns its place: each copy-number state
+has its own band pattern, and the bands are symmetric about 0.5. A balanced
+region is one band at 0.5, a single-copy loss splits to 0 and 1, and a CN 3 gain
+sits at 1/3 and 2/3 because one of the three copies carries the B allele (or two
+of three do). Folding the track onto 0 to 0.5 collapses each of those pairs onto
+one line and throws that away.
 
 #### CDKN2A: a homozygous deletion vs a single-copy loss
 
@@ -434,37 +441,46 @@ edges, matching the benchmark call.
 
 <Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (compact), the HiFiCNV depth track, the PacBio HiFi read pileup, and the benchmark CNV calls. Depth and the pileup both drop to 0 at the deletion's edges. The pileup has 'View as pairs / link supplementary alignments' on, so each read and its split segments chain onto one row; the salmon and purple reads are split long-read alignments spanning the breakpoints (colored by strand)." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
+Nothing above proves the deletion is *somatic*. A homozygous drop-out looks the
+same whether it was acquired by the tumor or inherited, and the answer is in the
+matched normal: load the tumor and normal coverage tracks together over the same
+locus. Pin both to the same score range, since the whole point is one track's
+height read against the other's, and independent autoscaling would rescale the
+normal to fill its row and destroy the comparison.
+
+<Figure caption="The same CDKN2A locus with the matched normal underneath: NCBI RefSeq genes, HG008-T per-base coverage, HG008-N coverage, and the benchmark CNV calls. Both coverage tracks share a fixed 0 to 80 range. The tumor floors at 0 across the deletion while the normal runs flat through it, which is what makes the event somatic rather than inherited." src="/img/sv_cgiab/cdkn2a_tumor_normal_coverage.png" />
+
 #### chr17: loss-with-LOH vs copy-neutral LOH
 
-Chromosome 17 shows why the MAF track is read alongside depth. Open the whole
-chromosome with the depth track above the MAF:
+Chromosome 17 shows why the BAF track is read alongside depth. Open the whole
+chromosome with the depth track above the BAF:
 
 - the p-arm (covering `TP53`) is a single-copy loss with LOH (`CNA_20`, CN 1,
-  1+0): depth is halved and the MAF falls off 0.5.
+  1+0): depth is halved and the BAF splits away from 0.5.
 - the q-arm is copy-neutral LOH (`CNA_21`, CN 2, 2+0): one parental haplotype
   was lost and the other duplicated, so total copy number is still 2 and depth
-  stays flat, yet the MAF still falls off 0.5.
+  stays flat, yet the BAF still splits away from 0.5.
 
-The q-arm event is invisible to depth alone. Only the MAF reveals it, which is
+The q-arm event is invisible to depth alone. Only the BAF reveals it, which is
 why the two are read together.
 
-<Figure caption="Chromosome 17 with the HiFiCNV depth track (top) over the MAF track (middle) over the benchmark CNV calls. The p-arm (covering TP53) is a single-copy loss with LOH (CNA_20, CN 1, 1+0): depth halved, MAF off 0.5. The q-arm is copy-neutral LOH (CNA_21, CN 2, 2+0): depth flat, yet MAF still off 0.5, invisible to depth alone." src="/img/sv_cgiab/cnv_chr17_loh.png" />
+<Figure caption="Chromosome 17 with the HiFiCNV depth track (top) over the BAF track (middle) over the benchmark CNV calls. The p-arm (covering TP53) is a single-copy loss with LOH (CNA_20, CN 1, 1+0): depth halved, BAF split to 0 and 1. The q-arm is copy-neutral LOH (CNA_21, CN 2, 2+0): depth flat, yet the BAF is still split, invisible to depth alone." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
-The depth × MAF combinations read as a compact decision table:
+The depth and BAF combinations read as a compact decision table:
 
-| depth       | MAF              | Interpretation            |
-| ----------- | ---------------- | ------------------------- |
-| flat (CN 2) | near 0.5         | balanced diploid          |
-| flat (CN 2) | off 0.5          | copy-neutral LOH          |
-| halved      | off 0.5          | single-copy loss with LOH |
-| raised      | modestly off 0.5 | allelic gain              |
+| depth       | BAF             | Interpretation            |
+| ----------- | --------------- | ------------------------- |
+| flat (CN 2) | one band at 0.5 | balanced diploid          |
+| flat (CN 2) | split to 0, 1   | copy-neutral LOH          |
+| halved      | split to 0, 1   | single-copy loss with LOH |
+| raised      | 1/3 and 2/3     | allelic gain              |
 
 The benchmark BED's per-haplotype columns (`hap1_copy_number`,
 `hap2_copy_number`) encode this allelic state: any segment with a `0` haplotype
-(e.g. `1+0`, `2+0`) has lost one parental allele and will show an MAF shift,
-regardless of its total copy number. Clicking a CNV feature shows these values
-in the feature details, so you can confirm the allelic call against the MAF
-track directly.
+(e.g. `1+0`, `2+0`) has lost one parental allele and its BAF splits away from
+0.5, regardless of its total copy number. Clicking a CNV feature shows these
+values in the feature details, so you can confirm the allelic call against the
+BAF track directly.
 
 #### KRAS and SMAD4
 

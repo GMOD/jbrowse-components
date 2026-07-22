@@ -1137,6 +1137,62 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 30000,
   },
 
+  // The same CDKN2A deletion, but as the tumor/normal contrast that makes it
+  // somatic rather than inherited: tumor coverage floors at 0 through the
+  // event while the matched normal holds its baseline straight across. Both
+  // wiggles are pinned to the SAME 0..80 scale, because the whole read of this
+  // figure is one track's height against the other's; autoscaling them
+  // independently would rescale the normal to fill its row and quietly destroy
+  // the comparison. Measured over chr9:21,953,000-21,971,000 the tumor mean is
+  // 0.0 (56.8x and 69.2x in the flanks) against the normal's 41.9x.
+  //
+  // This is also what the hosted per-base coverage bigWigs are FOR. They were
+  // sitting on jbrowse.org/demos/cgiab unreferenced by any figure, which is how
+  // hosted data quietly becomes dead weight nobody can justify keeping.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cdkn2a_tumor_normal_coverage',
+    url: cgiabUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr9:21,930,000-21,990,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              height: 90,
+            },
+            {
+              trackId: 'HG008-T_coverage_perbase',
+              type: 'LinearWiggleDisplay',
+              minScore: 0,
+              maxScore: 80,
+              height: 160,
+              displayCrossHatches: true,
+            },
+            {
+              trackId:
+                'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all',
+              type: 'LinearWiggleDisplay',
+              minScore: 0,
+              maxScore: 80,
+              height: 160,
+              displayCrossHatches: true,
+            },
+            'hg008_cnv_calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'CDKN2A',
+    readyTimeout: 120000,
+    viewportWidth: 1500,
+    viewportHeight: 780,
+    settleMs: 20000,
+  },
+
   // KRAS, the central PDAC oncogene: a low-level allelic gain (CN 3, 2+1) on
   // chr12 — positive log2 ratio with an imbalanced (but not fully split) BAF,
   // the fourth entry in the log2xBAF decision table. The raw

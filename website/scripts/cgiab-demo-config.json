@@ -97,7 +97,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all",
-      "name": "HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all",
+      "name": "HG008-N matched normal coverage",
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
