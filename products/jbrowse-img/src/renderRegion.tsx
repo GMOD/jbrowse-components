@@ -81,6 +81,21 @@ async function navToLocOrGene(
   assemblyName: string,
   hasSearchIndex: boolean,
 ) {
+  // Load the assembly up front and report a load failure as itself.
+  // waitForAssembly resolves only once regions AND refNameAliases are in, but
+  // navToLocString swallows its rejection and falls through to the locstring
+  // parse — so a chromAlias fetch that fails (hg19's comes from
+  // hgdownload.soe.ucsc.edu, and does fail under a concurrent regen) surfaced as
+  // `UnknownRefNameError: unknown reference sequence name in location "1:..."`,
+  // which reads as a broken alias table rather than the transient fetch it is.
+  const assembly = await session.assemblyManager
+    .waitForAssembly(assemblyName)
+    .catch((e: unknown) => {
+      throw new Error(
+        `Failed to load assembly "${assemblyName}" (sequence, regions or refName aliases)`,
+        { cause: e },
+      )
+    })
   const hit = hasSearchIndex
     ? (
         await fetchResults({
@@ -88,7 +103,7 @@ async function navToLocOrGene(
           searchType: 'exact',
           searchScope: view.searchScope(assemblyName),
           textSearchManager: session.textSearchManager,
-          assembly: await session.assemblyManager.waitForAssembly(assemblyName),
+          assembly,
         })
       ).find(r => r.hasLocation())
     : undefined
