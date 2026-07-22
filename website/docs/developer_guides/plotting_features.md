@@ -109,39 +109,40 @@ The worker fetches from the adapter and packs the result. See
 [RPC and worker system](/docs/developer_guides/rpc_workers) for the full
 `RpcMethodType` contract; the shape is:
 
-```ts
-// ScoreRPC/GetScoreData.ts
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { firstValueFrom, toArray } from 'rxjs'
+`ScoreRPC/GetScoreData.ts`:
 
-import type { ScoreRegionData } from '../LinearScoreDisplay/components/scoreTypes.ts'
+<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts -->
+
+```ts
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+
+import { buildScoreResult } from './buildScoreResult.ts'
+
+import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    GetScoreData: {
+      args: GetScoreDataArgs
+      return: ScoreRegionData
+    }
+  }
+}
 
 export default class GetScoreData extends RpcMethodType {
   name = 'GetScoreData'
 
-  async execute(args: ScoreRpcArgs, rpcDriverClassName: string) {
-    const { sessionId, adapterConfig, region, stopToken } =
+  async execute(args: GetScoreDataArgs, rpcDriverClassName: string) {
+    const { sessionId, adapterConfig, region, scoreColumn, stopToken } =
       await this.deserializeArguments(args, rpcDriverClassName)
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
-    )
-    const features = await firstValueFrom(
-      dataAdapter.getFeatures(region, { stopToken }).pipe(toArray()),
-    )
-
-    const numFeatures = features.length
-    const starts = new Uint32Array(numFeatures)
-    const ends = new Uint32Array(numFeatures)
-    const scores = new Float32Array(numFeatures)
-    features.forEach((f, i) => {
-      starts[i] = f.get('start') // absolute bp — no region offset
-      ends[i] = f.get('end')
-      scores[i] = f.get('score') ?? 0
     })
-    return { starts, ends, scores, numFeatures } satisfies ScoreRegionData
+    const features = await dataAdapter.getFeaturesArray(region, { stopToken })
+    return buildScoreResult(features, scoreColumn)
   }
 }
 ```
@@ -503,6 +504,9 @@ you add a GPU renderer and swap `createCanvas2DBackend` for
 
 ## In-tree references
 
+- `example-plugins/score-example/` - the complete plugin this guide builds, as a
+  standalone package. CI installs it from a packed tarball and asserts it
+  renders, so it stays buildable against the published packages
 - `plugins/sequence/src/LinearReferenceSequenceDisplay/` - the simplest
   Canvas2D-only display (this guide mirrors it)
 - `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display

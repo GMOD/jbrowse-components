@@ -30,12 +30,14 @@ them. CI installs `glslang-tools` so GLSL validation runs there; set
 
 ## Invariants
 
-- **Repo-coupled, for now.** `build-shaders.ts` derives `REPO_ROOT` from its own
-  location (three levels up from `src/`) and walks the whole workspace;
-  `SHARED_INCLUDE` is hardcoded to `packages/render-core/src/shaders` (the
-  shared `.slang` modules `hpmath`/`colorPack`). It is **not yet** parameterized
-  for use in an external plugin repo — making it a portable third-party CLI (per
-  ADR-030) means lifting those two assumptions into args/config first.
+- **Portable (published, per ADR-030).** The scan root is `--root=` / cwd, not
+  this file's location, and `SHARED_INCLUDE` resolves
+  `packages/render-core/src/shaders` first, then
+  `node_modules/@jbrowse/render-core/src/shaders` (render-core ships
+  `src/shaders` for this), with `--shared-include=` to override. In this repo
+  `pnpm gen:shaders` runs from the root, so cwd is the repo root and behavior is
+  unchanged. Don't reintroduce a path derived from `import.meta.url` — it
+  resolves into the consumer's `node_modules` once installed.
 - **Never hand-edit `*.generated.ts`.** Edit the `.slang` source and run
   `pnpm gen:shaders`; CI's `git diff --exit-code` catches stale output. See
   ADR-005.

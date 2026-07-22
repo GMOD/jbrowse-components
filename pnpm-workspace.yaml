@@ -3,6 +3,10 @@ packages:
   - 'products/*'
   - 'products/*/examples-site'
   - 'plugins/*'
+  # Worked examples backing the developer guides. Private (never published);
+  # consumed as packed tarballs by component_tests/plugin-vite, which is how a
+  # third-party plugin actually resolves @jbrowse/* packages.
+  - 'example-plugins/*'
   - 'website'
 overrides:
   '@babel/core': '^8.0.1'

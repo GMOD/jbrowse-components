@@ -12,6 +12,17 @@ invariants, definition of done, and pointers to the ADRs, reference notes, and
 guides under `agent-docs/`. Start there before non-trivial work on the rendering
 pipeline.
 
+## Example plugins
+
+Worked examples backing the developer guides live in `example-plugins/*`, not
+`plugins/*` (which is for shipping plugins and publishes to npm). They are
+`private: true` but still packed, because `component_tests/plugin-vite` installs
+`example-plugins/score-example` from a packed tarball and renders it in
+puppeteer on every push. That is the only CI job resolving `@jbrowse/*` through
+the `publishConfig` exports map and built `esm/` instead of workspace-linked
+source, so it's what catches a packaging break before it reaches external plugin
+authors. Don't turn it into a workspace dependency.
+
 ## GPU rendering (`plugins/canvas`, `packages/render-core`)
 
 - **Never hand-edit `*.generated.ts` shader files.** Edit `.slang` source and

@@ -133,6 +133,14 @@ jobs:
       - name: Check doc code/path references resolve
         run:
           node --experimental-strip-types website/scripts/check-doc-imports.ts
+      # Fences carrying an `<!-- include: -->` marker must match the real source
+      # file they name. check-doc-imports only validates import *specifiers*, so
+      # without this a guide can teach an undefined type or a renamed API while
+      # every other check stays green.
+      - name: Check doc snippets match their source
+        run:
+          node --experimental-strip-types website/scripts/sync-doc-snippets.ts
+          --check
       - name: Check every doc is reachable from the sidebar
         run: node --experimental-strip-types website/scripts/check-sidebar.ts
       - name: Check tutorial build scripts are valid
@@ -450,16 +458,11 @@ jobs:
             (cd $dir && yarn install && yarn e2e)
           done
 
-  # The external-plugin-author guard. component_tests/plugin-vite installs
-  # example-plugins/score-example and its @jbrowse/* closure from packed
-  # tarballs, so it is the only consumer that resolves through each package's
-  # publishConfig `exports` map and built `esm/` output rather than through
-  # workspace-linked TypeScript source. A renamed subpath, a path missing from a
-  # package's `files`, or a broken esm build reddens here on every push —
-  # before publish, which is the whole point: an out-of-tree canary consuming
-  # released versions can only report the break after it has shipped.
-  # No permissions: installs from a lockfile-less manifest, same as the other
-  # component_tests jobs.
+  # The external-plugin-author guard: the only job that resolves @jbrowse/*
+  # through publishConfig exports maps and built esm/ (from packed tarballs)
+  # rather than workspace-linked source, so a packaging break reddens here
+  # before publish rather than in someone's plugin repo after. No permissions:
+  # installs from a lockfile-less manifest, like the other component_tests.
   plugin_component_test:
     name: Test third-party plugin build
     needs: build_and_pack_artifacts

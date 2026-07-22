@@ -1,0 +1,56 @@
+{
+  "name": "@jbrowse/plugin-score-example",
+  "version": "4.3.0",
+  "type": "module",
+  "private": true,
+  "description": "Worked example: a custom LinearGenomeView display that plots a score per feature with a GPU renderer and a Canvas2D fallback. Backs the 'Plotting features' and 'GPU displays' developer guides.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "example-plugins/score-example"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "build": "pnpm run /^build:/",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns example-plugins/score-example",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "clean": "rimraf esm *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.13.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/render-core": "workspace:^",
+    "mobx": "^6.16.1",
+    "mobx-react": "^9.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0"
+  },
+  "//publishConfig": "Never published (private). pnpm applies publishConfig when packing, so these fields are what component_tests/plugin-vite resolves against — the same exports shape a real plugin ships.",
+  "publishConfig": {
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

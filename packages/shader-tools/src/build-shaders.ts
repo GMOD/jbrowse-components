@@ -37,16 +37,23 @@ import {
 } from './shader-codegen/codegen.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
 
-// This file lives at packages/shader-tools/src/build-shaders.ts, so the repo
-// root is three levels up. The codegen still walks the whole repo and writes
-// each `*.generated.ts` next to its `.slang` source.
-const REPO_ROOT = path.resolve(
-  path.dirname(import.meta.url.replace('file://', '')),
-  '../../..',
+const flagValue = (name: string) =>
+  process.argv
+    .slice(2)
+    .find(a => a.startsWith(`--${name}=`))
+    ?.slice(name.length + 3)
+
+// The tree to scan for `*.slang` and the base for cache/log paths. Deriving it
+// from this file's own location worked only while the package was repo-private:
+// once installed, `../../..` resolves to the consumer's node_modules. cwd is
+// the same directory in the monorepo (pnpm runs `gen:shaders` from the root),
+// so this is a no-op here and portable everywhere else.
+const PROJECT_ROOT = path.resolve(
+  flagValue('root') ?? process.env.JBROWSE_SHADER_ROOT ?? process.cwd(),
 )
 
 const SLANG_VERSION = 'v2026.5.2'
-const SLANGC_CACHE = `${REPO_ROOT}/.cache/slangc/bin/slangc`
+const SLANGC_CACHE = `${PROJECT_ROOT}/.cache/slangc/bin/slangc`
 
 // `naga` (WGSL) and `glslangValidator` (GLSL-ES) are optional validators: they
 // don't affect the generated output (that's driven entirely by the pinned
@@ -75,11 +82,29 @@ const GLSLANG = resolveValidator(
   'glslangValidator',
 )
 // Shaders live alongside their plugin, but shared modules (hpmath, etc.) live
-// in render-core so any shader can `import hpmath;`.
-const SHARED_INCLUDE = path.resolve(
-  REPO_ROOT,
-  'packages/render-core/src/shaders',
-)
+// in render-core so any shader can `import hpmath;`. In this repo that's the
+// workspace path; for an out-of-tree plugin it's the installed package, which
+// ships src/shaders for exactly this reason.
+function resolveSharedInclude() {
+  const override = flagValue('shared-include')
+  if (override) {
+    return path.resolve(override)
+  }
+  const candidates = [
+    path.resolve(PROJECT_ROOT, 'packages/render-core/src/shaders'),
+    path.resolve(PROJECT_ROOT, 'node_modules/@jbrowse/render-core/src/shaders'),
+  ]
+  const found = candidates.find(c => existsSync(c))
+  if (!found) {
+    throw new Error(
+      `Could not find the shared .slang modules. Looked in:\n` +
+        candidates.map(c => `  ${c}`).join('\n') +
+        `\nInstall @jbrowse/render-core, or pass --shared-include=<dir>.`,
+    )
+  }
+  return found
+}
+const SHARED_INCLUDE = resolveSharedInclude()
 
 function ensureSlangc() {
   if (process.env.SLANGC) {
@@ -497,12 +522,12 @@ function compileOne(slangPath: string) {
     writeFileSync(generatedPath, emitShaderStrings(codegenInputs))
     const ifacePath = path.join(dir, `${base}.iface.generated.ts`)
     writeFileSync(ifacePath, emitInterface(codegenInputs))
-    console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT}/`, '')}`)
-    console.log(`  ok: ${ifacePath.replace(`${REPO_ROOT}/`, '')}`)
+    console.log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
+    console.log(`  ok: ${ifacePath.replace(`${PROJECT_ROOT}/`, '')}`)
 
     const layoutOut = parseLayoutOut(source)
     if (layoutOut) {
-      const layoutPath = path.join(REPO_ROOT, layoutOut)
+      const layoutPath = path.join(PROJECT_ROOT, layoutOut)
       writeFileSync(layoutPath, emitLayoutOnly({ baseName: base, reflection }))
       console.log(`  ok: ${layoutOut}`)
     }
@@ -513,7 +538,7 @@ function compileOne(slangPath: string) {
 
 function main() {
   const argPaths = process.argv.slice(2).filter(a => !a.startsWith('--'))
-  const paths = argPaths.length > 0 ? argPaths : walk(REPO_ROOT)
+  const paths = argPaths.length > 0 ? argPaths : walk(PROJECT_ROOT)
   console.log(`Found ${paths.length} .slang file(s)`)
   for (const p of paths) {
     const source = readFileSync(p, 'utf8')
@@ -532,11 +557,11 @@ function main() {
           lines.push(`export const ${name} = ${value}`, ``)
         }
         writeFileSync(generatedPath, lines.join('\n'))
-        console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT}/`, '')}`)
+        console.log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
       }
       continue
     }
-    console.log(p.replace(`${REPO_ROOT}/`, ''))
+    console.log(p.replace(`${PROJECT_ROOT}/`, ''))
     compileOne(p)
   }
 }

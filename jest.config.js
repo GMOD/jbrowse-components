@@ -22,6 +22,7 @@ const baseConfig = {
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
     'products/*/src/**/*.{js,jsx,ts,tsx}',
     'plugins/*/src/**/*.{js,jsx,ts,tsx}',
+    'example-plugins/*/src/**/*.{js,jsx,ts,tsx}',
   ],
   coveragePathIgnorePatterns: [
     '\\.d\\.ts$',
@@ -80,6 +81,7 @@ export default {
         '<rootDir>/packages/**/*.test.{ts,tsx,js,jsx}',
         '<rootDir>/products/**/*.test.{ts,tsx,js,jsx}',
         '<rootDir>/plugins/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/example-plugins/**/*.test.{ts,tsx,js,jsx}',
       ],
       testPathIgnorePatterns: [
         '/dist/',

@@ -64,6 +64,11 @@ See the
 for the full lifecycle spec and `packages/render-core/CLAUDE.md` for HAL
 invariants.
 
+`example-plugins/score-example/` is the plugin this guide builds, as a
+standalone package: one `.slang` shader, a GPU renderer, and a Canvas2D
+fallback. CI installs it from a packed tarball and asserts it renders, so it
+stays buildable against the published packages.
+
 The simplest per-region streamed reference is
 `plugins/gwas/src/LinearManhattanDisplay/` (a scored scatter with both a GPU and
 a Canvas2D renderer behind one model). `plugins/canvas/src/LinearBasicDisplay/`
@@ -167,19 +172,18 @@ Run `pnpm gen:shaders` after every edit. This emits `my.generated.ts` with:
 
 **Never hand-edit `*.generated.ts`.**
 
-The codegen (`@jbrowse/shader-tools`) is currently repo-coupled: it derives the
-repo root from its own location and hardcodes the shared-module include path to
-`packages/render-core/src/shaders` (the `hpmath` / `colorPack` modules). It is
-not yet packaged for an out-of-tree plugin repo, so today you author `.slang`
-shaders inside a `jbrowse-components` checkout (or a fork) and copy the emitted
-`*.generated.ts` into your plugin. `build-shaders.ts` accepts explicit paths, so
-you can regenerate a single shader instead of walking the whole workspace:
+The codegen runs in your own repo:
 
 ```bash
-node --experimental-strip-types \
-  packages/shader-tools/src/build-shaders.ts \
-  plugins/myplugin/src/LinearMyDisplay/components/shaders/my.slang
+pnpm add -D @jbrowse/shader-tools
+npx jbrowse-build-shaders          # or: ... build-shaders src/.../my.slang
 ```
+
+Run it from your project root. It scans for `*.slang`, fetches a pinned `slangc`
+on first use, and writes each `*.generated.ts` next to its source. The shared
+modules (`hpmath`, `colorPack`) resolve from your installed
+`@jbrowse/render-core`. Inside this repo the same tool runs as
+`pnpm gen:shaders`.
 
 Use `bpHi`/`bpLo` (high/low float32 split) for genomic positions in shader code.
 In TypeScript outside shader uniform writes, use plain `bp - bpStart`. The hi/lo

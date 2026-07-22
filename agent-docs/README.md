@@ -49,6 +49,8 @@ Verify against source, not memory.
 | Shader codegen              | `packages/shader-tools/src/build-shaders.ts` (`pnpm gen:shaders`), `packages/shader-tools/src/shader-codegen/` |
 | Shared slang modules        | `packages/render-core/src/shaders/`                      |
 | Browser tests               | `products/jbrowse-web/browser-tests/`                    |
+| Worked example plugin       | `example-plugins/score-example/` (guide reference; never published) |
+| External-consumer guard     | `component_tests/plugin-vite/` (installs the above from packed tarballs) |
 | Canvas display              | `plugins/canvas/`                                        |
 | Wiggle / multi-wiggle       | `plugins/wiggle/`                                        |
 | Alignments + coverage       | `plugins/alignments/`                                    |

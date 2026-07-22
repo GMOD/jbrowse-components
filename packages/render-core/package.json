@@ -20,8 +20,10 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
+  "//files": "src/shaders ships the shared .slang modules (hpmath, colorPack, pointGlyph) that any shader imports. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
   "files": [
-    "esm"
+    "esm",
+    "src/shaders"
   ],
   "exports": {
     ".": "./src/index.ts",
