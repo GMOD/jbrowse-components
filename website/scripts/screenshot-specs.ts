@@ -21,6 +21,7 @@ import { qtlSpecs } from './specs/qtl.ts'
 import { scatacSpecs } from './specs/scatac.ts'
 import { svSpecs } from './specs/sv.ts'
 import { syntenySpecs } from './specs/synteny.ts'
+import { tcgaSpecs } from './specs/tcga.ts'
 import { trioSpecs } from './specs/trio.ts'
 import { uiSpecs } from './specs/ui.ts'
 import { variantsSpecs } from './specs/variants.ts'
@@ -41,6 +42,7 @@ export const specs: ScreenshotSpec[] = [
   ...popgenSpecs,
   ...scatacSpecs,
   ...svSpecs,
+  ...tcgaSpecs,
   ...gwasSpecs,
   ...hicSpecs,
   ...qtlSpecs,

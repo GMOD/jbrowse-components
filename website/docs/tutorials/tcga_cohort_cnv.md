@@ -222,6 +222,22 @@ What to look for:
   tumors. Clustering pulls these together, so they read as a band rather than
   scattered noise.
 
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile. Blue is loss, red is gain, on the caller's log2 ratio. Recurrent events read as vertical stripes through the stack; whole rows tending red or blue are the heavily aneuploid tumors that clustering groups together." src="/img/tcga/cohort_cnv_genome.png" />
+
+Zooming to a single locus turns the stripe back into per-tumor calls, and
+clustering on just that window sorts the cohort into its copy-number classes at
+that locus: amplified at one end, balanced in the middle, lost at the other.
+
+<Figure caption="chr17:39.0-40.5Mb, spanning ERBB2, across the same 1104 tumors with clustering run on this window alone. The cohort separates into bands from top to bottom: amplification (dark red), gain (salmon), loss (blue), and finally the balanced majority, which is near-white because neutral copy number is drawn near-white throughout. That pale lower band is tumors, not empty track. The same locus is one vertical stripe in the genome-wide view above." src="/img/tcga/cohort_cnv_erbb2.png" />
+
+Read proportions off the data rather than off the picture. At 1104 rows in a few
+hundred pixels each tumor is well under one pixel tall, so rows alias together
+and the saturated colors crowd out the neutral ones: the figure is a faithful
+map of _where_ events are, not of _how many_ tumors carry them. Computed from
+the BED, ERBB2 itself is amplified (log2 > 1) in 114 of the 1104 tumors (10.3%),
+gained in a further 108 (9.8%), balanced in 756 (68.5%), and lost in 126
+(11.4%).
+
 The single-tumor tutorials show you _that_ a locus is altered in one sample.
 This view shows you _how often_ it is altered across a disease, which is the
 question a cohort is there to answer.
