@@ -28,6 +28,10 @@ interface ImageSpec {
   // multi-panel figure where only one panel is the subject. Omit for full
   // width.
   xband?: [number, number]
+  // Letterbox the framed region onto this background instead of cropping it to
+  // the card aspect. Only worth it when the region is a uniform-background
+  // panel (the molstar canvas) whose subject would otherwise be cropped.
+  pad?: string
   // Output size. Omit height to scale the framed region to width.
   width: number
   height?: number
@@ -67,9 +71,12 @@ const THUMBS: Record<string, ImageSpec> = {
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
+  // Down to the gene track rather than stopping mid-Manhattan: a band shorter
+  // than the card aspect gets center-cropped left/right, and at [0.26, 0.86]
+  // that kept under half the width, cutting the shoulders off the peak.
   variants: {
     src: 'gwas/locuszoom_ld.png',
-    band: [0.26, 0.86],
+    band: [0.28, 1],
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
@@ -85,18 +92,28 @@ const THUMBS: Record<string, ImageSpec> = {
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
+  // Bottom (post-collapse) frame of the two-stage figure, framed on the exons
+  // themselves: PTEN's nine exons side by side with the region boundaries and
+  // the sashimi arcs spanning between them. Stops short of the "Introns
+  // collapsed" snackbar, which reads as a cut-off chip at card size.
   genes: {
-    src: 'gallery/sarscov2_polyprotein.png',
-    band: [0.38, 0.88],
+    src: 'gene_track_collapse_introns.png',
+    band: [0.645, 0.925],
+    xband: [0, 0.39],
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
-  // Two-panel figure — the 3D structure is the right-hand panel. Frame the
-  // whole molecule, stopping short of the panel's right-hand tool strip.
+  // Two-panel figure — the 3D structure is the right-hand panel. The band is
+  // the molstar canvas, from under its toolbar to the source's own bottom edge
+  // (the capture viewport clips the canvas there, so the molecule's tails are
+  // already cut in the source and no wider band brings them back). That region
+  // is narrower than the card aspect, so it pads onto the canvas background
+  // rather than cropping — cover would zoom back into the molecule.
   protein: {
     src: 'protein/connected.png',
-    band: [0.575, 1],
-    xband: [0.51, 0.93],
+    band: [0.578, 1],
+    xband: [0.512, 0.945],
+    pad: '#fcfbf9',
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
@@ -125,7 +142,11 @@ async function render(spec: ImageSpec) {
     })
   })()
   return pipeline
-    .resize(spec.width, spec.height, { fit: 'cover', position: 'top' })
+    .resize(spec.width, spec.height, {
+      fit: spec.pad ? 'contain' : 'cover',
+      position: 'top',
+      background: spec.pad,
+    })
     .webp({ quality: spec.quality ?? DEFAULT_QUALITY })
     .toBuffer()
 }
