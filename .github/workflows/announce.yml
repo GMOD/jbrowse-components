@@ -64,4 +64,4 @@ jobs:
           args=()
           [ -n "$INPUT_TAG" ] && args+=(--tag "$INPUT_TAG")
           [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
-          node scripts/announce.mjs "${args[@]}"
+          node scripts/announce.ts "${args[@]}"

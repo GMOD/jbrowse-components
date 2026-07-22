@@ -1,5 +1,5 @@
 // Render, locate, and parse release blog posts. release.ts writes the post,
-// releasenotes.mjs turns it back into the GitHub release body, and announce.mjs
+// releasenotes.ts turns it back into the GitHub release body, and announce.ts
 // into the social/newsletter copy — so the template and the parsers that must
 // agree with it live together, covered by releaseBlog.test.ts.
 //

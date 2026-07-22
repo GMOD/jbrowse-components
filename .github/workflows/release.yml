@@ -56,7 +56,7 @@ jobs:
       # draft to collect binaries, just an empty body.
       - name: Generate release notes
         run: |
-          node scripts/releasenotes.mjs --tag "${RELEASE_VERSION}" > /tmp/notes.md ||
+          node scripts/releasenotes.ts --tag "${RELEASE_VERSION}" > /tmp/notes.md ||
             echo "_Release notes pending._" > /tmp/notes.md
       # The flag, not just the '-', is what the desktop auto-updater,
       # `jbrowse create`/`upgrade`, and announce.yml gate on.
