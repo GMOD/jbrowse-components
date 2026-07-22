@@ -2532,11 +2532,14 @@ export default function baseStateModelFactory(
               },
             }
           }
+          const wholeSuffix = name ? ` (${name})` : ''
           const wholeFeatureItem = highlightItem(
             highlighted,
-            subfeature ? `Whole ${featureNoun}` : 'Highlight feature',
             subfeature
-              ? `Remove whole ${featureNoun} highlight`
+              ? `Whole ${featureNoun}${wholeSuffix}`
+              : 'Highlight feature',
+            subfeature
+              ? `Remove whole ${featureNoun}${wholeSuffix} highlight`
               : 'Remove highlight',
             { startBp, endBp, name, featureId },
           )
@@ -2615,9 +2618,11 @@ export default function baseStateModelFactory(
                       highlightItem(
                         subfeatureHighlighted,
                         subfeature.displayLabel
-                          ? `${subfeatureNoun} ${subfeature.displayLabel}`
+                          ? `${subfeatureNoun} (${subfeature.displayLabel})`
                           : `This ${subfeatureNoun}`,
-                        `Remove ${subfeatureNoun} highlight`,
+                        subfeature.displayLabel
+                          ? `Remove ${subfeatureNoun} (${subfeature.displayLabel}) highlight`
+                          : `Remove ${subfeatureNoun} highlight`,
                         {
                           startBp: subfeature.startBp,
                           endBp: subfeature.endBp,
