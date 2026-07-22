@@ -813,6 +813,14 @@ export function parseTaggedComment(
       // file types guide). Dropped here so it doesn't leak into the config
       // page's prose.
       endGotcha()
+    } else if (
+      containsTag(line, 'displayFoundation') ||
+      containsTag(line, 'displayFoundationDef')
+    ) {
+      // Consumed by generateDisplayFoundationDocs (the foundations table in the
+      // creating_display guide). Dropped here for the same reason as
+      // #fileFormat above.
+      endGotcha()
     } else if (containsTag(line, 'gotcha')) {
       endGotcha()
       currentGotcha = [line.replace(/.*#gotcha\s*/, '')]

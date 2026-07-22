@@ -292,6 +292,7 @@ function getGenotypeMapForFeature(
 
 /**
  * #stateModel MultiSampleVariantBaseModel
+ * #displayFoundation MultiRegionDisplayMixin
  * #category display
  *
  * #example

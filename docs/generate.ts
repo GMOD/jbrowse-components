@@ -7,6 +7,7 @@ import {
 } from './generateApiDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
 import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
+import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import {
   writeDisplayTypeDocs,
@@ -84,6 +85,7 @@ async function main() {
   writeColorDocs()
   writeJexlDocs()
   writeExtensionPointDocs()
+  writeDisplayFoundationDocs()
   writeFileTypeDocs(files)
   writeDisplayTypeDocs(displayTypesByTrack, configNames)
   writeGotchaDocs(

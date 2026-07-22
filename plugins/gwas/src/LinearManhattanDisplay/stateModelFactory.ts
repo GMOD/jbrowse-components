@@ -60,6 +60,7 @@ const LinearManhattanDisplayComponent = lazy(
 
 /**
  * #stateModel LinearManhattanDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  * GWAS Manhattan-plot display drawing -log10 p-values as a scored scatter along
  * the genome, with a feature widget on click.
  */

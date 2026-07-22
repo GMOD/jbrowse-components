@@ -23,6 +23,7 @@ import type React from 'react'
 
 /**
  * #stateModel LinearPairedArcDisplay
+ * #displayFoundation GlobalFetchMixin
  * a non-block-based display that draws one arc per feature from its position to
  * its mate breakend (parsed from the VCF `ALT`), connecting the two loci of a
  * structural variant even across displayed regions / chromosomes; rendered as

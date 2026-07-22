@@ -29,6 +29,7 @@ export {
  * `shouldFetch` gate + `fetch` action.
  *
  * #stateModel GlobalDataDisplayMixin
+ * #displayFoundationDef One non-regional dataset with no per-region partitioning, plus the GPU render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`.
  * #category display
  */
 export default function GlobalDataDisplayMixin() {

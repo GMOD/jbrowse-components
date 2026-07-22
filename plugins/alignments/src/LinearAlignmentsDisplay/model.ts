@@ -245,6 +245,7 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
 
 /**
  * #stateModel LinearAlignmentsDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  * #category display
  * State model factory for LinearAlignmentsDisplay
  *

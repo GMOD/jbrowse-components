@@ -272,6 +272,7 @@ function showHiddenFeaturesMenuItems(self: {
 
 /**
  * #stateModel LinearCanvasBaseDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  * #category display
  *
  * Shared GPU-accelerated feature display base for canvas-rendered tracks.

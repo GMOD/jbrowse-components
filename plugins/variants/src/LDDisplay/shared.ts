@@ -55,6 +55,7 @@ function upperBoundFloat32(arr: Float32Array, val: number) {
 
 /**
  * #stateModel SharedLDModel
+ * #displayFoundation GlobalDataDisplayMixin
  * #category display
  * Shared state model for LD displays
  */

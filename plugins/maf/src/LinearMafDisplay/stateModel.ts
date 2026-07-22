@@ -101,6 +101,7 @@ export interface MafSource {
 
 /**
  * #stateModel LinearMafDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  *
  * #example
  * A complete `MafTrack` config to paste into `tracks`. `samples` lists the

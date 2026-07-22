@@ -20,13 +20,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Consumed below so the prerelease flag and the latest/ gate can't drift.
+    outputs:
+      prerelease: ${{ steps.tag.outputs.prerelease }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: Set release version
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
+      - name: Classify the release tag
+        id: tag
+        run: |
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
+          # A prerelease tag carries a '-' (v4.4.0-beta.1).
+          case "${GITHUB_REF#refs/tags/}" in
+            *-*) echo 'prerelease=true' >> "$GITHUB_OUTPUT" ;;
+            *) echo 'prerelease=false' >> "$GITHUB_OUTPUT" ;;
+          esac
       - name: Build jbrowse-web
         uses: ./.github/actions/build-jbrowse-web
       # Upload the pristine build (before the versioned zip is added to it) so
@@ -41,20 +51,30 @@ jobs:
       - name: Zip jbrowse-web build
         working-directory: products/jbrowse-web/build
         run: zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
-      # A prerelease tag must carry GitHub's prerelease flag, not just a '-' in
-      # its name: the desktop auto-updater, `jbrowse create`/`upgrade`, and the
-      # announce workflow all gate on that flag, so setting it by hand on the
-      # draft is three silent failure modes waiting on one checkbox.
+      # The blog post is committed in the tag, so the body no longer needs
+      # pasting in by hand. Best-effort: a tag without a post still gets a
+      # draft to collect binaries, just an empty body.
+      - name: Generate release notes
+        run: |
+          node scripts/releasenotes.mjs --tag "${RELEASE_VERSION}" > /tmp/notes.md ||
+            echo "_Release notes pending._" > /tmp/notes.md
+      # The flag, not just the '-', is what the desktop auto-updater,
+      # `jbrowse create`/`upgrade`, and announce.yml gate on.
+      #
+      # Stays a draft: the desktop jobs upload binaries into it long after this
+      # job ends, and publishing fires announce.yml. That click is the gate.
       - name: Create draft release with jbrowse-web artifact
         run: |
           gh release create "${RELEASE_VERSION}" \
             ./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip \
             --draft ${PRERELEASE_FLAG} \
-            --title "Release ${RELEASE_VERSION}"
+            --title "Release ${RELEASE_VERSION}" \
+            --notes-file /tmp/notes.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRERELEASE_FLAG:
-            ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}
+            ${{ steps.tag.outputs.prerelease == 'true' && '--prerelease' || ''
+            }}
   buildwindows:
     needs: createrelease
     name: Build Windows desktop app
@@ -195,8 +215,8 @@ jobs:
     # Reuse the build createrelease already produced instead of rebuilding.
     needs: createrelease
     # Only stable tags update the canonical latest/ folder; a prerelease tag
-    # (v4.4.0-beta.1 etc, which carries a '-') must not overwrite it.
-    if: ${{ !contains(github.ref_name, '-') }}
+    # must not overwrite it.
+    if: ${{ needs.createrelease.outputs.prerelease == 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Download jbrowse-web build

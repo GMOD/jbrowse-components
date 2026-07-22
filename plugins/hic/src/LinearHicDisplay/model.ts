@@ -37,6 +37,7 @@ import type React from 'react'
 
 /**
  * #stateModel LinearHicDisplay
+ * #displayFoundation GlobalDataDisplayMixin
  * #category display
  * Hi-C display that renders contact matrix using WebGL
  *

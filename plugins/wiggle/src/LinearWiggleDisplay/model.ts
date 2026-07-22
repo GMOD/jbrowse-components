@@ -55,6 +55,7 @@ const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 /**
  * #stateModel LinearWiggleDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  * #category display
  *
  * State model factory for the single-source wiggle display.

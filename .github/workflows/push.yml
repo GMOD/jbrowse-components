@@ -130,6 +130,10 @@ jobs:
         run:
           node --experimental-strip-types website/scripts/gen-gallery-links.ts
           --check
+      - name: Check homepage images are up to date
+        run:
+          node --experimental-strip-types website/scripts/gen-home-images.ts
+          --check
       - name: Check doc code/path references resolve
         run:
           node --experimental-strip-types website/scripts/check-doc-imports.ts
@@ -156,6 +160,10 @@ jobs:
       - name: Check file type tables are up to date
         run:
           node --experimental-strip-types docs/generateFileTypeDocs.ts --check
+      - name: Check display foundations table is up to date
+        run:
+          node --experimental-strip-types docs/generateDisplayFoundationDocs.ts
+          --check
       - name: Check config/model/api docs are up to date
         # config_guides is included because gendocs also rewrites the marker
         # blocks embedded in the hand-written guides (DISPLAY_TYPES, which needs

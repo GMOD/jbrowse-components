@@ -67,11 +67,16 @@ config base. Which foundation you compose is the primary axis of code sharing;
 _how_ you render (GPU or Canvas2D) is a separate axis layered on top. Two fetch
 foundations cover every in-tree display:
 
-| Foundation                                  | Brings                                                                                                                                                             | Used by                                                                                           |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `MultiRegionDisplayMixin()`                 | per-region fetch + render: the five fetch autoruns, `rpcProps()` refetch wiring, byte gating                                                                       | wiggle, Manhattan, alignments, multi-sample variants, reference sequence, and the canvas displays |
-| `GlobalDataDisplayMixin()`                  | one non-regional dataset with no per-region partitioning, plus the GPU render lifecycle; **no** fetch autoruns (install your own with `installGlobalFetchAutorun`) | Hi-C (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`)                                  |
-| `GlobalFetchMixin()` bare + main-thread SVG | the same fetch foundation without the render lifecycle, so a non-GPU display doesn't drag it in                                                                    | `LinearArcDisplay`, `LinearPairedArcDisplay` (via arc's `ArcFetchModel`)                          |
+<!-- DISPLAY_FOUNDATIONS START -->
+
+<!-- prettier-ignore -->
+| Foundation | Brings | Used by |
+| --- | --- | --- |
+| `MultiRegionDisplayMixin()` | Per-region fetch + render: the five fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case. | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearReferenceSequenceDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
+| `GlobalDataDisplayMixin()` | One non-regional dataset with no per-region partitioning, plus the GPU render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`. | `LinearHicDisplay`, `SharedLDModel` |
+| `GlobalFetchMixin()` | The same single-global fetch foundation without the render lifecycle, so a non-GPU display that paints main-thread SVG does not drag it in. | `LinearArcDisplay`, `LinearPairedArcDisplay` |
+
+<!-- DISPLAY_FOUNDATIONS END -->
 
 Both walkthroughs — [Canvas2D](/docs/developer_guides/plotting_features) and
 [GPU](/docs/developer_guides/creating_gpu_display) — use

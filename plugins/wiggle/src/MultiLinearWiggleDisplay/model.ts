@@ -70,6 +70,7 @@ const WiggleClusterDialog = lazy(
 
 /**
  * #stateModel MultiLinearWiggleDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  * Wiggle display overlaying/stacking multiple quantitative subtracks in one
  * area, with optional clustering and a tree sidebar.
  *

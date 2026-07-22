@@ -24,6 +24,7 @@ import FetchMixin from './FetchMixin.ts'
  * RenderLifecycleMixin — the one genuinely GPU-only piece.
  *
  * #stateModel GlobalFetchMixin
+ * #displayFoundationDef The same single-global fetch foundation without the render lifecycle, so a non-GPU display that paints main-thread SVG does not drag it in.
  * #category display
  */
 export default function GlobalFetchMixin() {

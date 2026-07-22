@@ -86,6 +86,7 @@ export interface HoveredFeature extends MultiRowHit {
 
 /**
  * #stateModel LinearMultiRowFeatureDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  * Multi-row interval painter (chromosome / ancestry painting). Partitions a
  * single feature track into stacked rows by a feature attribute and paints each
  * feature as a colored block on its row. GPU-rendered (WebGL/Canvas2D

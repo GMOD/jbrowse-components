@@ -58,6 +58,7 @@ export interface SequenceRegionData {
 
 /**
  * #stateModel LinearReferenceSequenceDisplay
+ * #displayFoundation MultiRegionDisplayMixin
  * base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
  *
  * #example

@@ -54,6 +54,7 @@ export function isBlockCovered(
 
 /**
  * #stateModel MultiRegionDisplayMixin
+ * #displayFoundationDef Per-region fetch + render: the five fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case.
  * #category display
  *
  * Per-region fetch lifecycle for LGV-based GPU displays. Installs five autoruns
