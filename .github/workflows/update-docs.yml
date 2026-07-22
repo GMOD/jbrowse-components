@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,7 +20,12 @@ jobs:
   build:
     name: Build and upload website to production
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.message, 'update docs')
+    # Release tags always deploy: the release commit's message is the bare tag,
+    # which never matched the 'update docs' gate, so the release blog post sat
+    # undeployed while announce.yml was already linking to it.
+    if:
+      contains(github.event.head_commit.message, 'update docs') ||
+      startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:

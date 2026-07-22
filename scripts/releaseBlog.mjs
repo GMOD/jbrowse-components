@@ -31,6 +31,22 @@ export function findLatestReleasePost(blogDir = BLOG_DIR) {
   return newest
 }
 
+// The post for a tag, or the newest without one. Selecting by tag matters:
+// relabeling only the URLs would announce one release's notes under another's.
+export function findReleasePost(tag, blogDir = BLOG_DIR) {
+  if (!tag) {
+    return findLatestReleasePost(blogDir)
+  }
+  const match = readdirSync(blogDir)
+    .filter(f => RELEASE_FILE.test(f))
+    .sort()
+    .findLast(f => parseReleaseFilename(f).tag === tag)
+  if (!match) {
+    throw new Error(`no release blog post for ${tag} in ${blogDir}`)
+  }
+  return match
+}
+
 export function parseReleaseFilename(filename) {
   const m = RELEASE_FILE.exec(filename)
   if (!m) {
