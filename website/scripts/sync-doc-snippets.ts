@@ -46,22 +46,28 @@ function extractRegion(source: string, file: string, region: string) {
   if (end === -1) {
     throw new Error(`${file}: "#region ${region}" has no "#endregion"`)
   }
-  const body = rest
-    .slice(0, end)
-    .filter(l => !/^\s*(\/\/|#)\s*#(end)?region\b/.test(l))
+  const body = rest.slice(0, end).filter(l => !REGION_MARKER.test(l))
   const indent = Math.min(
     ...body.filter(l => l.trim()).map(l => l.length - l.trimStart().length),
   )
   return body.map(l => l.slice(indent)).join('\n')
 }
 
+const REGION_MARKER = /^\s*(\/\/|#)\s*#(end)?region\b/
+
 function resolve(spec: string) {
   const [file, region] = spec.split('#')
   const source = readFileSync(join(root, file!), 'utf8')
-  return region
-    ? extractRegion(source, file!, region)
-    : // whole-file includes keep the trailing newline out of the fence
-      source.replace(/\n+$/, '')
+  if (region) {
+    return extractRegion(source, file!, region)
+  }
+  // A whole-file include still drops the region markers: they exist so *other*
+  // docs can pull a slice, and they'd read as noise here.
+  return source
+    .replace(/\n+$/, '')
+    .split('\n')
+    .filter(l => !REGION_MARKER.test(l))
+    .join('\n')
 }
 
 const problems: string[] = []
@@ -76,11 +82,24 @@ for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
   for (let i = 0; i < lines.length; i++) {
     const marker = MARKER.exec(lines[i]!.trim())
     out.push(lines[i]!)
-    if (!marker || !lines[i + 1]?.startsWith('```')) {
+    if (!marker) {
       continue
     }
-    const fenceOpen = lines[i + 1]!
-    const closeAt = lines.indexOf('```', i + 2)
+    // prettier puts a blank line between the marker and the fence, so skip
+    // blanks rather than silently ignoring the marker (which would leave a
+    // stale fence passing --check — the exact drift this script prevents).
+    let openAt = i + 1
+    while (lines[openAt]?.trim() === '') {
+      openAt++
+    }
+    if (!lines[openAt]?.startsWith('```')) {
+      problems.push(
+        `${path}: include marker for ${marker[1]} has no code fence`,
+      )
+      continue
+    }
+    const fenceOpen = lines[openAt]!
+    const closeAt = lines.indexOf('```', openAt + 1)
     if (closeAt === -1) {
       problems.push(`${path}: unterminated fence after ${marker[1]}`)
       continue
@@ -92,11 +111,16 @@ for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
       problems.push(`${path}: ${String(e)}`)
       continue
     }
-    const current = lines.slice(i + 2, closeAt).join('\n')
+    const current = lines.slice(openAt + 1, closeAt).join('\n')
     if (current !== body) {
       changed = true
     }
-    out.push(fenceOpen, ...body.split('\n'), '```')
+    out.push(
+      ...lines.slice(i + 1, openAt),
+      fenceOpen,
+      ...body.split('\n'),
+      '```',
+    )
     i = closeAt
   }
 

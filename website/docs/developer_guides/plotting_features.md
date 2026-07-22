@@ -73,32 +73,38 @@ is the canonical reference for the lifecycle below (see
 ## Files to create
 
 ```
-plugins/myplugin/src/LinearScoreDisplay/
+src/LinearScoreDisplay/
 ├── model.ts                       MST model: fetch + renderState + lifecycle
 ├── index.ts                       registers the display type
 ├── configSchema.ts                config slots (color, height, …)
 └── components/
     ├── ScoreDisplayComponent.tsx  React: <DisplayChrome> + <canvas>
-    ├── ScoreRenderer.ts           Canvas2DPerRegionRenderingBackend + factory
+    ├── ScoreRendererFactory.ts    createRenderingBackend dispatch
+    ├── Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend
     ├── drawScore.ts               pure draw function (also used by SVG export)
-    └── scoreTypes.ts              ScoreRegionData + ScoreRenderState interfaces
-plugins/myplugin/src/ScoreRPC/
+    └── scoreTypes.ts              ScoreRenderState + backend type
+src/ScoreRPC/
 ├── index.ts                       RPC registration
-└── GetScoreData.ts                worker: fetch features → ScoreRegionData
+├── GetScoreData.ts                worker: fetch features -> ScoreRegionData
+├── buildScoreResult.ts            pure packer (unit-tested)
+└── rpcTypes.ts                    ScoreRegionData + RPC arg types
 ```
 
 ## Step 1: Define the data the worker returns
 
 Keep it compact and structured-clone-friendly. Use absolute genomic positions.
 
+<!-- include: example-plugins/score-example/src/ScoreRPC/rpcTypes.ts#region-data -->
+
 ```ts
-// components/scoreTypes.ts
-// what the worker returns per region, stored in the model's rpcDataMap
+// One region's worth of features packed into parallel typed arrays. Positions
+// are absolute genomic uint32 (never region-relative) so they cross the worker
+// boundary without precision loss and the renderer can map them directly.
 export interface ScoreRegionData {
-  // parallel arrays, one entry per feature
-  starts: Uint32Array // absolute genomic bp
-  ends: Uint32Array // absolute genomic bp
-  scores: Float32Array // 0..1, drives the box height/color
+  starts: Uint32Array
+  ends: Uint32Array
+  // score normalized to 0..1 (fraction of the region's max), driving box height
+  scores: Float32Array
   numFeatures: number
 }
 ```
@@ -154,13 +160,14 @@ render lifecycle) and `TrackHeightMixin`. You supply four things: a place to
 store fetched data (`rpcDataMap`), a per-frame `renderState`, a `fetchNeeded`
 action, and a `startRenderingBackend` action.
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts -->
+
 ```ts
-// model.ts
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { type Instance, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -169,16 +176,17 @@ import {
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 
-import type { Canvas2DScoreRenderer } from './components/ScoreRenderer.ts'
+import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
 import type {
   ScoreRenderState,
-  ScoreRegionData,
+  ScoreRenderingBackend,
 } from './components/scoreTypes.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function modelFactory(configSchema: AnyConfigurationSchemaType) {
+export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
   return types
     .compose(
       'LinearScoreDisplay',
@@ -199,21 +207,17 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       get view() {
         return getContainingView(self) as LinearGenomeViewModel
       },
-      /**
-       * fetch inputs watched by SettingsInvalidate — any change triggers a
-       * refetch. Put settings that change *what the worker computes* here;
-       * never scroll/zoom (those change every frame) or the fetch results.
-       */
+      // fetch inputs watched by SettingsInvalidate — any change refetches. Put
+      // settings that change what the worker computes here; never scroll/zoom
+      // (those change every frame) or the fetch results themselves.
       rpcProps() {
-        return { color: getConf(self, 'color') }
+        return { scoreColumn: getConf(self, 'scoreColumn') }
       },
-      /**
-       * recomputed cheaply every frame without fetching — carries the canvas
-       * dimensions (required) plus anything the draw function needs
-       */
+      // recomputed cheaply every frame without fetching; carries the canvas
+      // dimensions (required) plus whatever the draw path reads
       get renderState(): ScoreRenderState {
         return {
-          canvasWidth: self.view.trackWidthPx,
+          canvasWidth: this.view.trackWidthPx,
           canvasHeight: self.height,
           color: getConf(self, 'color'),
         }
@@ -226,50 +230,46 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
       },
-      /**
-       * called by the fetch autorun for the regions that need loading;
-       * fetchEachRegion handles cancellation, stop tokens and staleness
-       */
+    }))
+    .actions(self => ({
+      // called by the fetch autorun for the regions that need loading;
+      // fetchEachRegion handles cancellation, stop tokens and staleness
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         const { adapterConfig } = self
-        if (adapterConfig) {
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
-          return fetchEachRegion(self, needed, {
-            call: (region, ctx, displayedRegionIndex) =>
-              rpcManager.call(sessionId, 'GetScoreData', {
-                sessionId,
-                adapterConfig,
-                region,
-                ...self.rpcProps(),
-                stopToken: ctx.stopToken,
-                statusCallback:
-                  self.makeRegionStatusCallback(displayedRegionIndex),
-              }),
-            onResult: (idx, result) => {
-              self.setRpcData(idx, result)
-            },
-          })
+        if (!adapterConfig) {
+          return undefined
         }
-        return undefined
+        const sessionId = getRpcSessionId(self)
+        const { rpcManager } = getSession(self)
+        return fetchEachRegion(self, needed, {
+          // rpcManager.call injects sessionId itself, so it is not in the args
+          call: (region, ctx, displayedRegionIndex) =>
+            rpcManager.call(sessionId, 'GetScoreData', {
+              adapterConfig,
+              region,
+              ...self.rpcProps(),
+              stopToken: ctx.stopToken,
+              statusCallback:
+                self.makeRegionStatusCallback(displayedRegionIndex),
+            }),
+          onResult: (idx, result) => {
+            self.setRpcData(idx, result)
+          },
+        })
       },
-      /**
-       * called once by the canvas machinery when the backend is created.
-       * installPerRegionLifecycle streams each region into the backend and
-       * runs the render callback every frame. `data => data` is the identity
-       * encoder — use it when the RPC result is already the render payload.
-       */
-      startRenderingBackend(backend: Canvas2DScoreRenderer) {
+      // called once by DisplayChrome when the backend is created. Streams each
+      // region into the backend and draws every frame from renderState.
+      startRenderingBackend(backend: ScoreRenderingBackend) {
         installPerRegionLifecycle(
           self,
           self.rpcDataMap,
           backend,
           data => data,
-          b => {
-            if (self.rpcDataMap.size === 0) {
+          (b, regions) => {
+            if (regions.size === 0) {
               return false // keep the loading overlay up until data lands
             }
-            b.renderBlocks(self.renderBlocks, self.rpcDataMap, self.renderState)
+            b.renderBlocks(self.renderBlocks, regions, self.renderState)
             return true
           },
         )
@@ -293,79 +293,85 @@ The renderer has two parts: a **pure draw function** that paints blocks into any
 logic pure means SVG export reuses it unchanged (see
 [SVG export](/docs/developer_guides/svg_export)).
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/drawScore.ts -->
+
 ```ts
-// components/drawScore.ts
 import {
   bpToScreenPx,
   clipBlockForCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import type { ScoreRenderState, ScoreRegionData } from './scoreTypes.ts'
+import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
+import type { ScoreRenderState } from './scoreTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// Ctx2D = CanvasRenderingContext2D | SvgCanvas, so this drives both on-screen
-// rendering and SVG export from one implementation.
+// Pure draw function: paints the visible blocks into any 2D context. Ctx2D =
+// CanvasRenderingContext2D | SvgCanvas, so the same implementation backs both
+// on-screen Canvas2D rendering and SVG export.
 export function drawScoreBlocks(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, ScoreRegionData>,
   blocks: RenderBlock[],
   state: ScoreRenderState,
 ) {
-  const { canvasHeight, color } = state
+  const { canvasWidth, canvasHeight, color } = state
   ctx.fillStyle = color
   for (const block of blocks) {
     const data = regions.get(block.displayedRegionIndex)
-    const clip = data ? clipBlockForCanvas(block, state.canvasWidth) : undefined
-    if (data && clip) {
-      const { start, end, screenStartPx, screenEndPx, reversed } = block
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-      ctx.clip()
-      for (let i = 0; i < data.numFeatures; i++) {
-        const left = bpToScreenPx(
-          data.starts[i]!,
-          start,
-          end,
-          screenStartPx,
-          screenEndPx,
-          reversed,
-        )
-        const right = bpToScreenPx(
-          data.ends[i]!,
-          start,
-          end,
-          screenStartPx,
-          screenEndPx,
-          reversed,
-        )
-        const h = data.scores[i]! * canvasHeight
-        ctx.fillRect(
-          Math.min(left, right),
-          canvasHeight - h,
-          Math.abs(right - left) || 1,
-          h,
-        )
-      }
-      ctx.restore()
+    const clip = data ? clipBlockForCanvas(block, canvasWidth) : undefined
+    if (!data || !clip) {
+      continue
     }
+    const { start, end, screenStartPx, screenEndPx, reversed } = block
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+    ctx.clip()
+    for (let i = 0; i < data.numFeatures; i++) {
+      const left = bpToScreenPx(
+        data.starts[i]!,
+        start,
+        end,
+        screenStartPx,
+        screenEndPx,
+        reversed,
+      )
+      const right = bpToScreenPx(
+        data.ends[i]!,
+        start,
+        end,
+        screenStartPx,
+        screenEndPx,
+        reversed,
+      )
+      const h = data.scores[i]! * canvasHeight
+      ctx.fillRect(
+        Math.min(left, right),
+        canvasHeight - h,
+        Math.abs(right - left) || 1,
+        h,
+      )
+    }
+    ctx.restore()
   }
 }
 ```
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/Canvas2DScoreRenderer.ts -->
+
 ```ts
-// components/ScoreRenderer.ts
-import { createCanvas2DBackend } from '@jbrowse/render-core/createRenderingBackend'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import { drawScoreBlocks } from './drawScore.ts'
 
-import type { ScoreRenderState, ScoreRegionData } from './scoreTypes.ts'
+import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
+import type { ScoreRenderState } from './scoreTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The base class owns renderBlocks (DPR-aware canvas sizing, then calls draw);
-// you implement only the pure paint step.
+// this subclass implements only the pure paint step. Runs both as the WebGPU/
+// WebGL2 fallback and as the SVG-export path.
 export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
   ScoreRegionData,
   ScoreRenderState
@@ -378,20 +384,18 @@ export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
     drawScoreBlocks(this.ctx, regions, blocks, state)
   }
 }
-
-// createCanvas2DBackend skips the GPU/HAL ladder entirely — no shader passes,
-// no uniform sizing. This is the Canvas2D-only factory.
-export function ScoreRenderer(canvas: HTMLCanvasElement) {
-  return createCanvas2DBackend(canvas, c => new Canvas2DScoreRenderer(c))
-}
 ```
 
 `ScoreRenderState` must include `canvasWidth` and `canvasHeight` (the
 `FrameDimensions` the base class needs to size the backing store); add whatever
 else your draw function reads:
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/scoreTypes.ts#render-state -->
+
 ```ts
-// components/scoreTypes.ts
+// Recomputed cheaply every frame without fetching. Carries the canvas
+// dimensions (required by the base class to size the backing store) plus the
+// one setting the draw path reads.
 export interface ScoreRenderState {
   canvasWidth: number
   canvasHeight: number
@@ -409,15 +413,20 @@ display gets identical status behavior. You give it your factory and render the
 `<canvas>` from the `canvasRef` it hands back; the canvas is the only part your
 display draws itself.
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
+
 ```tsx
-// components/ScoreDisplayComponent.tsx
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import { ScoreRenderer } from './ScoreRenderer.ts'
+import { ScoreRenderer } from './ScoreRendererFactory.ts'
 
 import type { LinearScoreDisplayModel } from '../model.ts'
 
+// DisplayChrome supplies the display's chrome (loading scrim, error bar,
+// region-too-large banner) and WebGL/WebGPU context-loss recovery, and is the
+// only place useRenderingBackend is called. Its render-prop hands back the
+// canvasRef to attach to the <canvas>.
 const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
   model,
 }: {
@@ -445,29 +454,34 @@ export default ScoreDisplayComponent
 
 ## Step 6: Register the display
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/index.ts -->
+
 ```ts
-// index.ts
+import { lazy } from 'react'
+
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-import ScoreDisplayComponent from './components/ScoreDisplayComponent.tsx'
 import { configSchema } from './configSchema.ts'
 import { modelFactory } from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+const ScoreDisplayComponent = lazy(
+  () => import('./components/ScoreDisplayComponent.tsx'),
+)
+
 export default function LinearScoreDisplayF(pluginManager: PluginManager) {
-  pluginManager.addDisplayType(
-    () =>
-      new DisplayType({
-        name: 'LinearScoreDisplay',
-        configSchema,
-        stateModel: modelFactory(configSchema),
-        displayName: 'Score display',
-        trackType: 'FeatureTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: ScoreDisplayComponent,
-      }),
-  )
+  pluginManager.addDisplayType(() => {
+    return new DisplayType({
+      name: 'LinearScoreDisplay',
+      configSchema,
+      stateModel: modelFactory(configSchema),
+      displayName: 'Score display (example)',
+      trackType: 'FeatureTrack',
+      viewType: 'LinearGenomeView',
+      ReactComponent: ScoreDisplayComponent,
+    })
+  })
 }
 ```
 

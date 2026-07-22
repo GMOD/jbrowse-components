@@ -10,6 +10,7 @@ export interface GetScoreDataArgs {
   statusCallback?: StatusCallback
 }
 
+// #region region-data
 // One region's worth of features packed into parallel typed arrays. Positions
 // are absolute genomic uint32 (never region-relative) so they cross the worker
 // boundary without precision loss and the renderer can map them directly.
@@ -20,3 +21,4 @@ export interface ScoreRegionData {
   scores: Float32Array
   numFeatures: number
 }
+// #endregion

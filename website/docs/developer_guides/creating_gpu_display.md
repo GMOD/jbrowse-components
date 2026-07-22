@@ -80,45 +80,43 @@ regions are independent.
 ## Files to create
 
 ```
-plugins/myplugin/src/LinearMyDisplay/
-├── model.ts                         MST model: startRenderingBackend + renderState
-├── components/
-│   ├── MyComponent.tsx              React: <DisplayChrome> + <canvas>
-│   ├── MyRendererFactory.ts         createRenderingBackend dispatch function
-│   ├── GpuMyRenderer.ts             extends GpuPerRegionRenderingBackend
-│   ├── Canvas2DMyRenderer.ts        extends Canvas2DPerRegionRenderingBackend
-│   ├── myRenderingBackendTypes.ts            MyUploadData, MyRenderState types
-│   └── shaders/
-│       ├── myUniforms.slang         uniform struct (shared by all passes)
-│       └── my.slang                 vertex + fragment for one pass
-└── RenderMyDataRPC/
-    ├── index.ts                     RPC registration
-    └── executeRenderMyData.ts       worker: fetch + pack → MyUploadData
+src/LinearScoreDisplay/
+├── model.ts                       MST model: startRenderingBackend + renderState
+├── index.ts                       registers the display type
+├── configSchema.ts                config slots
+└── components/
+    ├── ScoreDisplayComponent.tsx  React: <DisplayChrome> + <canvas>
+    ├── ScoreRendererFactory.ts    createRenderingBackend dispatch
+    ├── GpuScoreRenderer.ts        extends GpuPerRegionRenderingBackend
+    ├── Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend
+    ├── scoreTypes.ts              ScoreRenderState + backend type
+    └── shaders/score.slang        vertex + fragment for one pass
+src/ScoreRPC/
+├── index.ts                       RPC registration
+├── GetScoreData.ts                worker: fetch features -> ScoreRegionData
+└── rpcTypes.ts                    RPC arg + result types
 ```
 
 ## Step 1: Define data types
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/scoreTypes.ts -->
+
 ```ts
-// myRenderingBackendTypes.ts
+import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-// What the RPC worker returns per region
-export interface MyUploadData {
-  featureCount: number
-  positionsU32: Uint32Array // interleaved absolute-bp start, width per feature
-  colorsU32: Uint32Array
-}
-
-// What the model computes fresh each frame (cheap, no fetch)
-export interface MyRenderState {
-  bpPerPx: number
+// Recomputed cheaply every frame without fetching. Carries the canvas
+// dimensions (required by the base class to size the backing store) plus the
+// one setting the draw path reads.
+export interface ScoreRenderState {
   canvasWidth: number
   canvasHeight: number
-  colorBy: string
+  color: string
 }
 
-export type MyRenderingBackend = PerRegionRenderingBackend<
-  MyUploadData,
-  MyRenderState
+export type ScoreRenderingBackend = PerRegionRenderingBackend<
+  ScoreRegionData,
+  ScoreRenderState
 >
 ```
 
@@ -130,38 +128,78 @@ compiles to both WGSL (WebGPU) and GLSL (WebGL2):
 Modules are referenced by bare name (`import hpmath;`), not by file path. The
 shared helpers live in `packages/render-core/src/shaders/` (`hpmath` for the
 high-precision genomic→pixel transform, `colorPack` for unpacking packed
-colors); your own uniform struct goes in a sibling module (`myUniforms.slang`,
-which starts with `module myUniforms;` and declares a `public struct`).
+colors). The example below declares its uniforms inline; if several passes share
+a struct, put it in a sibling module (`scoreUniforms.slang`, starting with
+`module scoreUniforms;` and declaring a `public struct`).
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/shaders/score.slang -->
 
 ```slang
-// shaders/my.slang
+// Score display: one box per feature. The box spans start->end horizontally and
+// its height is score (0..1) x canvasHeight, grown up from the bottom. A single
+// uniform ABGR color fills every box. This is the minimal per-region GPU pass
+// used by the "GPU displays" developer guide.
+//! targets: wgsl, glsl
+
 import hpmath;
 import colorPack;
-import myUniforms;
 
-// Bind the uniform buffer declared by the myUniforms module
-[[vk::binding(1, 0)]] ConstantBuffer<MyUniforms> u;
+public static const uint VERTS_PER_INSTANCE = 6u;
 
-struct InstanceInput {
-  uint startBp : ATTR0;   // absolute genomic position (uint32)
-  uint widthBp : ATTR1;
-  uint color   : ATTR2;   // packed ABGR
+struct ScoreInstance {
+  uint  startBp : ATTR0;
+  uint  endBp   : ATTR1;
+  float score   : ATTR2;
+};
+
+struct Uniforms {
+  // hpmath genomic->clip transform (hi, lo, +/-clippedLengthBp)
+  float3 bpRangeX;
+  float  zero;
+  float  canvasWidth;
+  float  canvasHeight;
+  uint   color;
+};
+[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+
+float bpToClipX(uint bp, Uniforms u) {
+  return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
+struct VsOut {
+  float4 position : SV_Position;
+  float4 color    : COLOR0;
+};
+
 [shader("vertex")]
-float4 vertexMain(InstanceInput inst, uint vertexId: SV_VertexID) -> float4 {
-  // hpmath converts an absolute genomic bp position to clip-space x
-  float x = bpToClipX(inst.startBp, u);
-  // ... standard quad expansion via vertexId
+VsOut vs_main(ScoreInstance inst, uint vid : SV_VertexID) {
+  // quadLocal maps the 6 vertices to the corners of a unit box: x/y each 0 or 1.
+  float2 local = quadLocal(vid);
+
+  float x1 = bpToClipX(inst.startBp, u);
+  float x2 = bpToClipX(inst.endBp, u);
+  // widen a sub-pixel feature so a 1bp box still paints (reversal-safe: reversal
+  // is baked into bpRangeX's negated length, so x2 < x1 on reversed blocks).
+  x2 = extendToMinWidthX(x1, x2, 1.0, u.canvasWidth);
+  float x = local.x < 0.5 ? x1 : x2;
+
+  float barHeightPx = clamp(inst.score, 0.0, 1.0) * u.canvasHeight;
+  // local.y: 0 = top of the box, 1 = bottom (canvas bottom edge).
+  float yPx = (u.canvasHeight - barHeightPx) + local.y * barHeightPx;
+
+  VsOut o;
+  o.position = float4(x, yPxToClipY(yPx, u.canvasHeight), 0.0, 1.0);
+  o.color = unpackRGBA(u.color);
+  return o;
 }
 
 [shader("fragment")]
-float4 fragmentMain(InstanceInput inst) -> SV_Target {
-  return colorPack.unpackRGBA(inst.color);
+float4 fs_main(VsOut fragIn) : SV_Target {
+  return fragIn.color;
 }
 ```
 
-Run `pnpm gen:shaders` after every edit. This emits `my.generated.ts` with:
+Run `pnpm gen:shaders` after every edit. This emits `score.generated.ts` with:
 
 - `WGSL_SOURCE`, `GLSL_VERTEX`, `GLSL_FRAGMENT`
 - `INSTANCE_STRIDE_BYTES` / `FIELD_OFFSET_F32` and a typed `packInstances()`
@@ -176,7 +214,7 @@ The codegen runs in your own repo:
 
 ```bash
 pnpm add -D @jbrowse/shader-tools
-npx jbrowse-build-shaders          # or: ... build-shaders src/.../my.slang
+npx jbrowse-build-shaders        # or: ... build-shaders src/.../score.slang
 ```
 
 Run it from your project root. It scans for `*.slang`, fetches a pinned `slangc`
@@ -200,64 +238,72 @@ implement only two methods: `uploadRegion` (pack a region's features into a HAL
 buffer) and `drawRegion` (write uniforms and issue the draw pass for one
 already-clipped block).
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/GpuScoreRenderer.ts -->
+
 ```ts
-// GpuMyRenderer.ts
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
-import * as shader from './shaders/my.generated.ts'
 
+import * as shader from './shaders/score.generated.ts'
+
+import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
+import type { ScoreRenderState } from './scoreTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { MyUploadData, MyRenderState } from './myRenderingBackendTypes.ts'
 
-const PASS = 'my'
+const PASS = 'score'
 const U = shader.UNIFORM_OFFSET_F32
+const UU = shader.UNIFORM_OFFSET_U32
 
-// exported so the factory (Step 5) can hand the pass list to the HAL
-export const MY_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS, mod: shader }),
+// Exported so the factory can hand the pass list to the HAL. Six vertices per
+// instance = two triangles, so the boxes need a triangle-list topology.
+export const SCORE_PASSES: PassDescriptor[] = [
+  slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
 ]
 
-export class GpuMyRenderer extends GpuPerRegionRenderingBackend<
-  MyUploadData,
-  MyRenderState
+export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
+  ScoreRegionData,
+  ScoreRenderState
 > {
   private uniformF32: Float32Array
+  private uniformU32: Uint32Array
 
   constructor(hal: GpuHal) {
-    // the base class allocates a reusable this.uniformData scratch buffer
+    // the base allocates the reusable this.uniformData scratch buffer
     super(hal, shader.UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
+    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
-  // pack one region's features into a GPU buffer (or drop the buffer when empty)
-  uploadRegion(regionIndex: number, data: MyUploadData) {
-    if (data.featureCount === 0) {
-      this.hal.deleteRegion(regionIndex)
-    } else {
-      // the generated packInstances() interleaves your parallel arrays into the
-      // GL_ATTRIBUTES layout — no manual DataView offsets
-      const buf = shader.packInstances(
-        { startBp: data.positionsU32, color: data.colorsU32 },
-        data.featureCount,
-      )
-      this.hal.uploadBuffer(regionIndex, PASS, buf, data.featureCount)
+  uploadRegion(displayedRegionIndex: number, data: ScoreRegionData) {
+    if (data.numFeatures === 0) {
+      this.hal.deleteRegion(displayedRegionIndex)
+      return
     }
+    // the generated packInstances interleaves the parallel arrays into the
+    // GL_ATTRIBUTES layout — no manual DataView offsets
+    const buf = shader.packInstances(
+      { startBp: data.starts, endBp: data.ends, score: data.scores },
+      data.numFeatures,
+    )
+    this.hal.uploadBuffer(displayedRegionIndex, PASS, buf, data.numFeatures)
   }
 
-  // draw one block whose scissor/viewport the base already set to its span
   protected drawRegion(
     block: RenderBlock,
     clip: BlockClipResult,
-    _region: MyUploadData,
-    state: MyRenderState,
+    _region: ScoreRegionData,
+    state: ScoreRenderState,
   ) {
-    // writeBpRangeUniforms fills the hp-split genomic→clip transform for you
-    writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
+    // fills the hp-split genomic->clip transform (and negates it on reversal)
+    writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
+    this.uniformF32[U.zero] = 0
+    this.uniformF32[U.canvasWidth] = state.canvasWidth
     this.uniformF32[U.canvasHeight] = state.canvasHeight
-    // ... set the remaining uniform fields by UNIFORM_OFFSET_F32 index
+    this.uniformU32[UU.color] = cssColorToABGR(state.color)
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(PASS, block.displayedRegionIndex)
   }
@@ -275,71 +321,57 @@ Implement the same interface using `ctx.fillRect` etc. Canvas2D is
 accelerator layered on top. This renderer also runs when WebGPU and WebGL2 are
 both unavailable:
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/Canvas2DScoreRenderer.ts -->
+
 ```ts
-// Canvas2DMyRenderer.ts
-import {
-  clipBlockForCanvas,
-  makeBpMapper,
-  prepareCanvas,
-} from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { MyUploadData, MyRenderState } from './myRenderingBackendTypes.ts'
+import { drawScoreBlocks } from './drawScore.ts'
 
-export class Canvas2DMyRenderer extends Canvas2DPerRegionRenderingBackend<
-  MyUploadData,
-  MyRenderState
+import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
+import type { ScoreRenderState } from './scoreTypes.ts'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+
+// The base class owns renderBlocks (DPR-aware canvas sizing, then calls draw);
+// this subclass implements only the pure paint step. Runs both as the WebGPU/
+// WebGL2 fallback and as the SVG-export path.
+export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
+  ScoreRegionData,
+  ScoreRenderState
 > {
-  renderBlocks(
+  protected draw(
     blocks: RenderBlock[],
-    regions: ReadonlyMap<number, MyUploadData>,
-    state: MyRenderState,
+    regions: ReadonlyMap<number, ScoreRegionData>,
+    state: ScoreRenderState,
   ) {
-    const { canvas, ctx } = this
-    prepareCanvas(canvas, ctx, state.canvasWidth, state.canvasHeight)
-    for (const block of blocks) {
-      const data = regions.get(block.displayedRegionIndex)
-      const clip = data
-        ? clipBlockForCanvas(block, state.canvasWidth)
-        : undefined
-      if (clip) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(clip.scissorX, 0, clip.scissorW, state.canvasHeight)
-        ctx.clip()
-        // makeBpMapper(block) returns a bp → screen-x function for drawing
-        const toX = makeBpMapper(block)
-        // ... draw features using toX
-        ctx.restore()
-      }
-    }
+    drawScoreBlocks(this.ctx, regions, blocks, state)
   }
 }
 ```
 
 ## Step 5: RenderingBackend factory
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreRendererFactory.ts -->
+
 ```ts
-// MyRendererFactory.ts
 import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
 
-import { GpuMyRenderer, MY_PASSES } from './GpuMyRenderer.ts'
-import { Canvas2DMyRenderer } from './Canvas2DMyRenderer.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/myUniforms.generated.ts'
+import { Canvas2DScoreRenderer } from './Canvas2DScoreRenderer.ts'
+import { GpuScoreRenderer, SCORE_PASSES } from './GpuScoreRenderer.ts'
+import { UNIFORMS_SIZE_BYTES } from './shaders/score.generated.ts'
 
-import type { MyRenderingBackend } from './myRenderingBackendTypes.ts'
+import type { ScoreRenderingBackend } from './scoreTypes.ts'
 
-// createRenderingBackend is async (it awaits GPU device creation), so the factory
-// returns Promise<MyRenderingBackend> — useRenderingBackend awaits it for you.
-export function MyRendererFactory(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<MyRenderingBackend>(
-    canvas,
-    MY_PASSES,
-    UNIFORMS_SIZE_BYTES,
-    hal => new GpuMyRenderer(hal),
-    c => new Canvas2DMyRenderer(c),
-  )
+// createRenderingBackend tries the GPU HAL first (WebGPU, then WebGL2) and
+// falls back to Canvas2D when no GPU device is available. It's async (it awaits
+// device creation), so this returns a Promise; DisplayChrome awaits it.
+export function ScoreRenderer(canvas: HTMLCanvasElement) {
+  return createRenderingBackend<ScoreRenderingBackend>(canvas, {
+    passes: SCORE_PASSES,
+    uniformByteSize: UNIFORMS_SIZE_BYTES,
+    createGpuBackend: hal => new GpuScoreRenderer(hal),
+    createCanvas2DBackend: c => new Canvas2DScoreRenderer(c),
+  })
 }
 ```
 
@@ -355,70 +387,106 @@ coupling). It's identical in structure to the Canvas2D model in
 [Plotting features](/docs/developer_guides/plotting_features#step-3-the-mst-model);
 only the renderer differs.
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts -->
+
 ```ts
-// model.ts
-import {
-  ConfigurationReference,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { MultiRegionDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
-import { getContainingView } from '@jbrowse/core/util'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+  fetchEachRegion,
+} from '@jbrowse/plugin-linear-genome-view'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
 import type {
-  MyRenderingBackend,
-  MyRenderState,
-  MyUploadData,
-} from './components/myRenderingBackendTypes.ts'
+  ScoreRenderState,
+  ScoreRenderingBackend,
+} from './components/scoreTypes.ts'
+import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
+import type { Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
   return types
-    .model('LinearMyDisplay', {
-      type: types.literal('LinearMyDisplay'),
-      configuration: ConfigurationReference(configSchema),
-    })
-    .compose(MultiRegionDisplayMixin())
+    .compose(
+      'LinearScoreDisplay',
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
+      types.model({
+        type: types.literal('LinearScoreDisplay'),
+        configuration: ConfigurationReference(configSchema),
+      }),
+    )
     .volatile(() => ({
-      // fetched data keyed by displayedRegionIndex — one entry per region
-      rpcDataMap: observable.map<number, MyUploadData>(),
+      // fetched data keyed by displayedRegionIndex — the render lifecycle
+      // uploads/draws one region at a time from this map
+      rpcDataMap: observable.map<number, ScoreRegionData>(),
     }))
     .views(self => ({
-      // rpcProps() controls when a full re-fetch fires. User-controlled
-      // settings only — never scroll/zoom or fetch results.
-      rpcProps() {
-        return {
-          adapterConfig: readConfObject(self.configuration, 'adapter'),
-        }
+      get view() {
+        return getContainingView(self) as LinearGenomeViewModel
       },
-
-      // renderState is recomputed each frame without fetching.
-      get renderState(): MyRenderState {
-        const view = getContainingView(self) as LinearGenomeViewModel
+      // fetch inputs watched by SettingsInvalidate — any change refetches. Put
+      // settings that change what the worker computes here; never scroll/zoom
+      // (those change every frame) or the fetch results themselves.
+      rpcProps() {
+        return { scoreColumn: getConf(self, 'scoreColumn') }
+      },
+      // recomputed cheaply every frame without fetching; carries the canvas
+      // dimensions (required) plus whatever the draw path reads
+      get renderState(): ScoreRenderState {
         return {
-          bpPerPx: view.bpPerPx,
-          canvasWidth: view.width,
+          canvasWidth: this.view.trackWidthPx,
           canvasHeight: self.height,
-          colorBy: readConfObject(self.configuration, 'colorBy'),
+          color: getConf(self, 'color'),
         }
       },
     }))
     .actions(self => ({
-      setRpcData(idx: number, data: MyUploadData) {
+      setRpcData(idx: number, data: ScoreRegionData) {
         self.rpcDataMap.set(idx, data)
       },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
       },
-      // fetchNeeded is identical to the Canvas2D path — see the data fetching
-      // pipeline guide. It calls fetchEachRegion and writes into rpcDataMap.
-      startRenderingBackend(backend: MyRenderingBackend) {
-        // one autorun per region key: a new region uploads O(1); a settings
-        // change re-encodes all regions. `data => data` is the identity encoder
-        // — use it when the RPC result is already the render payload.
+    }))
+    .actions(self => ({
+      // called by the fetch autorun for the regions that need loading;
+      // fetchEachRegion handles cancellation, stop tokens and staleness
+      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+        const { adapterConfig } = self
+        if (!adapterConfig) {
+          return undefined
+        }
+        const sessionId = getRpcSessionId(self)
+        const { rpcManager } = getSession(self)
+        return fetchEachRegion(self, needed, {
+          // rpcManager.call injects sessionId itself, so it is not in the args
+          call: (region, ctx, displayedRegionIndex) =>
+            rpcManager.call(sessionId, 'GetScoreData', {
+              adapterConfig,
+              region,
+              ...self.rpcProps(),
+              stopToken: ctx.stopToken,
+              statusCallback:
+                self.makeRegionStatusCallback(displayedRegionIndex),
+            }),
+          onResult: (idx, result) => {
+            self.setRpcData(idx, result)
+          },
+        })
+      },
+      // called once by DisplayChrome when the backend is created. Streams each
+      // region into the backend and draws every frame from renderState.
+      startRenderingBackend(backend: ScoreRenderingBackend) {
         installPerRegionLifecycle(
           self,
           self.rpcDataMap,
@@ -435,6 +503,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
 }
+
+export type LinearScoreDisplayStateModel = ReturnType<typeof modelFactory>
+export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
 ```
 
 `installPerRegionLifecycle` wraps the lower-level
@@ -467,25 +538,30 @@ WebGL/WebGPU context-loss recovery). It is the **only** place
 ([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-api)).
 Its render-prop child makes it agnostic to how many canvases a display draws.
 
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
+
 ```tsx
-// components/MyComponent.tsx
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import { MyRendererFactory } from './MyRendererFactory.ts'
+import { ScoreRenderer } from './ScoreRendererFactory.ts'
 
-import type { LinearMyDisplayModel } from '../model.ts'
+import type { LinearScoreDisplayModel } from '../model.ts'
 
-const MyComponent = observer(function MyComponent({
+// DisplayChrome supplies the display's chrome (loading scrim, error bar,
+// region-too-large banner) and WebGL/WebGPU context-loss recovery, and is the
+// only place useRenderingBackend is called. Its render-prop hands back the
+// canvasRef to attach to the <canvas>.
+const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
   model,
 }: {
-  model: LinearMyDisplayModel
+  model: LinearScoreDisplayModel
 }) {
   return (
     <DisplayChrome
       model={model}
-      factory={MyRendererFactory}
-      testid="my-display"
+      factory={ScoreRenderer}
+      testid="score-display"
       style={{ width: '100%', height: model.height }}
     >
       {({ canvasRef }) => (
@@ -498,7 +574,7 @@ const MyComponent = observer(function MyComponent({
   )
 })
 
-export default MyComponent
+export default ScoreDisplayComponent
 ```
 
 `DisplayChrome` creates the HAL via `useRenderingBackend`, calls
