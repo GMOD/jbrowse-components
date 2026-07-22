@@ -173,10 +173,13 @@ export function findBrokenCrossLinks({
     const text = fs.readFileSync(file, 'utf8')
     for (const m of text.matchAll(linkRe)) {
       const [match, page, , anchor] = m
-      const url = match!.replace(/^(\]\(|href=")/, '')
-      if (!pageSlugs.has(page!)) {
+      if (!page) {
+        continue
+      }
+      const url = match.replace(/^(\]\(|href=")/, '')
+      if (!pageSlugs.has(page)) {
         broken.push({ file, url, reason: `no page "${page}"` })
-      } else if (anchor && !sectionsByPage.get(page!)!.has(anchor)) {
+      } else if (anchor && !sectionsByPage.get(page)?.has(anchor)) {
         broken.push({
           file,
           url,
