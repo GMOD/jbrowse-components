@@ -23,7 +23,13 @@ const docsHref = 'https://jbrowse.org/jb2/docs/embedded_components/'
 
 // the three sibling examples-sites, cross-linked so a reader who lands on the
 // wrong component can hop. the current one is matched off BASE_URL rather than
-// threaded in as a prop, so adding a site here lights it up everywhere
+// threaded in as a prop, so adding a site here lights it up everywhere.
+//
+// The hrefs are absolute (https://jbrowse.org/...) rather than root-relative on
+// purpose: CI link-checks each site alone, staging only that one under
+// link-check/storybook/<prefix>, so a root-relative /storybook/cgv is a genuine
+// dead link in that crawl root and fails the build. Absolute URLs are treated
+// as external and skipped, and they're where these sites actually live.
 const siblings = [
   { label: 'LGV', base: '/storybook/lgv/', title: 'Linear Genome View' },
   { label: 'CGV', base: '/storybook/cgv/', title: 'Circular Genome View' },
@@ -31,6 +37,7 @@ const siblings = [
 ]
 const withSlash = (s: string) => (s.endsWith('/') ? s : `${s}/`)
 const isSelf = (b: string) => withSlash(base) === b
+const siteHref = (b: string) => `https://jbrowse.org${b}`
 
 // highlight the current example in the sidebar by matching the URL, so pages
 // don't need to thread their slug through
@@ -456,7 +463,7 @@ const groups = [...new Set(examples.map(e => e.group))]
                   {s.label}
                 </span>
               ) : (
-                <a class="sibling" href={s.base} title={s.title}>
+                <a class="sibling" href={siteHref(s.base)} title={s.title}>
                   {s.label}
                 </a>
               ),
