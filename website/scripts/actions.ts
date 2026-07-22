@@ -236,6 +236,10 @@ export async function runAction(page: Page, action: ScreenshotAction) {
         `waitForSelector: ${action.hidden ? 'still visible' : 'never found'} "${action.selector}"`,
       )
     })
+    // the chain covers every member of the union, so this last comparison is
+    // provably true — kept explicit so adding an action type surfaces here
+    // rather than silently falling into the waitForText branch
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   } else if (action.type === 'waitForText') {
     if (!action.text) {
       throw new Error('waitForText action needs text')

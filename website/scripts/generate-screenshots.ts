@@ -406,6 +406,10 @@ function freezeAnimations(page: Page) {
         '*,*::before,*::after{transition:none !important;animation:none !important;}'
       document.head.append(style)
     }
+    // lib.dom types document.head as non-null, but this runs via
+    // evaluateOnNewDocument — before the parser has built <head> — so the
+    // runtime check is real
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (document.head) {
       install()
     } else {
