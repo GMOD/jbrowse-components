@@ -21,6 +21,12 @@ function upper(code: number) {
 // record; insertions anchor on the preceding reference base. N (no-call)
 // positions are not variants. This is a consensus-vs-reference diff with DP/AF,
 // not genotype-likelihood variant calling.
+//
+// AF differs by kind on purpose. SNVs and deletions report the samtools
+// weighted call-fraction (callScore/tscore) — the same ratio that had to clear
+// callFract for the call, so it comes straight from the shared pass and is
+// always >= callFract. A multi-base insertion has no single column score, so
+// its AF is the supporting-read fraction (reads inserting here / depth).
 export function computeConsensusVariants(
   reference: string,
   tally: ConsensusTally,
