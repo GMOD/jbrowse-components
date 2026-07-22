@@ -67,6 +67,13 @@ export default {
       ...baseConfig,
     },
     {
+      // Release tooling: the blog-post render/parse contract
+      displayName: 'scripts',
+      testMatch: ['<rootDir>/scripts/**/*.test.ts'],
+      testEnvironment: 'node',
+      ...baseConfig,
+    },
+    {
       // jbrowse-img uses Node environment with native fetch (no jest-fetch-mock)
       displayName: 'jbrowse-img',
       testMatch: ['<rootDir>/products/jbrowse-img/**/*.test.ts'],

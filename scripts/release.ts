@@ -8,6 +8,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { releasePostFilename, renderReleasePost } from './releaseBlog.ts'
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const REPO = 'GMOD/jbrowse-components'
 const WORKSPACES = ['packages', 'products', 'plugins']
@@ -156,17 +158,15 @@ const p = (n: number) => String(n).padStart(2, '0')
 const date = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
 const datetime = `${date} ${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`
 
-const vars: Record<string, string> = {
-  RELEASE_TAG: releaseTag,
-  DATE: datetime,
-  NOTES: notes,
-  CHANGELOG: changelog,
-}
 fs.writeFileSync(
-  `website/blog/${date}-${releaseTag}-release.md`,
-  fs
-    .readFileSync('scripts/blog_template.txt', 'utf8')
-    .replaceAll(/\$\{(\w+)\}/g, (whole, name) => vars[name] ?? whole),
+  path.join('website/blog', releasePostFilename(releaseTag, date)),
+  renderReleasePost({
+    template: fs.readFileSync('scripts/blog_template.txt', 'utf8'),
+    tag: releaseTag,
+    date: datetime,
+    notes,
+    changelog,
+  }),
 )
 
 // Bump every workspace package, and the version.ts files that mirror them

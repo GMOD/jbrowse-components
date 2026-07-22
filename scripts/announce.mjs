@@ -14,15 +14,20 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import {
-  BLOG_DIR,
   REPO,
   findReleasePost,
   parseReleaseFilename,
   parseReleasePost,
   splitReleaseBody,
-} from './releaseBlog.mjs'
+} from './releaseBlog.ts'
+
+const BLOG_DIR = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../website/blog',
+)
 
 const MASTODON_INSTANCE =
   process.env.MASTODON_INSTANCE ?? 'https://genomic.social'
@@ -33,7 +38,7 @@ const tagIdx = args.indexOf('--tag')
 const tagArg = tagIdx === -1 ? undefined : args[tagIdx + 1]
 
 // --tag selects the post, so notes and URLs describe the same release.
-const post = findReleasePost(tagArg)
+const post = findReleasePost(tagArg, BLOG_DIR)
 const { body, title } = parseReleasePost(
   readFileSync(path.join(BLOG_DIR, post), 'utf8'),
   post,

@@ -4,19 +4,24 @@
 // `--tag v4.3.1` selects one. release.yml pipes this into `--notes-file`.
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import {
-  BLOG_DIR,
   findReleasePost,
   parseReleasePost,
   splitReleaseBody,
-} from './releaseBlog.mjs'
+} from './releaseBlog.ts'
+
+const BLOG_DIR = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../website/blog',
+)
 
 const args = process.argv.slice(2)
 const tagIdx = args.indexOf('--tag')
 const tag = tagIdx === -1 ? undefined : args[tagIdx + 1]
 
-const post = findReleasePost(tag)
+const post = findReleasePost(tag, BLOG_DIR)
 const { body } = parseReleasePost(
   readFileSync(path.join(BLOG_DIR, post), 'utf8'),
   post,
