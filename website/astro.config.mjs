@@ -65,11 +65,7 @@ export default defineConfig({
   // No React integration: every component here is .astro and there are no
   // client: directives, so adding it only emits an unreferenced ~190KB React
   // runtime chunk. Re-add it (and the react deps) if an island comes back.
-  integrations: [
-    icon(),
-    fixAbsoluteLinks(),
-    emitRawMarkdownIntegration(),
-  ],
+  integrations: [icon(), fixAbsoluteLinks(), emitRawMarkdownIntegration()],
   // Self-hosted Roboto (downloaded + optimized at build, served from our own
   // origin) — no render-blocking request to fonts.googleapis.com. Exposed as
   // var(--font-roboto); emit the <Font> tags with <Font cssVariable> in the head.
