@@ -27,6 +27,11 @@ pnpm test
 
 # Calculate new version
 PREVIOUS_VERSION=$(node --print "require('./plugins/alignments/package.json').version")
+# The arithmetic below splits on '.' and coerces with Number, so a prerelease
+# version silently produces garbage ('5.0.0-beta.1' major -> 6.0.0, patch ->
+# 5.0.NaN). Fail loudly instead; cutting from a prerelease needs an explicit
+# target version, which this script does not yet support.
+[[ "$PREVIOUS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Previous version '$PREVIOUS_VERSION' is not a plain X.Y.Z, cannot compute the next version from it" && exit 1; }
 VERSION=$(node --print "const [maj,min,pat] = '$PREVIOUS_VERSION'.split('.').map(Number); '$SEMVER_LEVEL'==='major' ? (maj+1)+'.0.0' : '$SEMVER_LEVEL'==='minor' ? maj+'.'+(min+1)+'.0' : maj+'.'+min+'.'+(pat+1)")
 RELEASE_TAG=v$VERSION
 

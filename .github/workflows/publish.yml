@@ -23,4 +23,12 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           registry-url: 'https://registry.npmjs.org'
-      - run: pnpm publish -r --access public --no-git-checks --provenance
+      # npm never infers a dist-tag from prerelease semver, it publishes as
+      # 'latest' unless told otherwise, which would serve a beta to every
+      # `npm install` and to the unpkg @latest URLs in the docs. 'latest' is
+      # npm's own default, so stable tags behave exactly as before.
+      - run:
+          pnpm publish -r --access public --no-git-checks --provenance --tag
+          "$NPM_TAG"
+        env:
+          NPM_TAG: ${{ contains(github.ref_name, '-') && 'next' || 'latest' }}

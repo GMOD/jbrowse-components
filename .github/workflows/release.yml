@@ -41,14 +41,20 @@ jobs:
       - name: Zip jbrowse-web build
         working-directory: products/jbrowse-web/build
         run: zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
+      # A prerelease tag must carry GitHub's prerelease flag, not just a '-' in
+      # its name: the desktop auto-updater, `jbrowse create`/`upgrade`, and the
+      # announce workflow all gate on that flag, so setting it by hand on the
+      # draft is three silent failure modes waiting on one checkbox.
       - name: Create draft release with jbrowse-web artifact
         run: |
           gh release create "${RELEASE_VERSION}" \
             ./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip \
-            --draft \
+            --draft ${PRERELEASE_FLAG} \
             --title "Release ${RELEASE_VERSION}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRERELEASE_FLAG:
+            ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}
   buildwindows:
     needs: createrelease
     name: Build Windows desktop app

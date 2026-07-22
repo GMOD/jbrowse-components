@@ -324,10 +324,14 @@ jobs:
       # fixed, unversioned prefix, so each deploys to the prefix root. No
       # --delete: the canonical site overlays the prefix without touching any
       # historical per-ref Storybook subdirs (e.g. /storybook/lgv/v3.0.0/).
+      # Prerelease tags (v5.0.0-beta.1 etc, carrying a '-') are excluded: the
+      # prefix is unversioned and public, so a beta tag would replace the live
+      # demos the embedded-component docs link to. Same guard as release.yml's
+      # code/jb2/latest deploy.
       - name: Build and deploy examples-sites
         if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
+          github.ref == 'refs/heads/main' || (startsWith(github.ref,
+          'refs/tags/') && !contains(github.ref_name, '-'))
         run: |
           # site filter -> product dir -> public S3 prefix
           for entry in \
