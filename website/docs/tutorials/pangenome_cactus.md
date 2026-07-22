@@ -234,7 +234,7 @@ bedGraphToBigWig ecoli_cactus_depth.bedgraph chrom.sizes ecoli_cactus_depth.bw
 Load the bigWig as a
 [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on K12.
 
-<Figure caption="odgi depth across all 4.64 Mb of K12 from the Minigraph-Cactus graph. The curve sits near 4 where all four strains traverse the graph (core sequence) and drops toward 1 over the accessory stretches private to fewer strains." src="/img/pangenome_cactus/depth.png" />
+<Figure caption="odgi depth across all 4.64 Mb of K12 from the Minigraph-Cactus graph. The curve sits near 4 where all four strains traverse the graph (core sequence) and drops toward 1 over the accessory stretches private to fewer strains. At this zoom each pixel is a bigWig summary bin covering roughly 4 kb, so the shades of blue are one bin's range rather than separate signals: the palest reaches the bin's maximum depth, the mid tone its mean, the darkest its minimum. A pale column standing over a dark floor is an accessory stretch narrower than a bin." src="/img/pangenome_cactus/depth.png" />
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
 splits that aggregate per strain. Slice each non-K12 strain's rows into its own

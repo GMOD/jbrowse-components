@@ -63,8 +63,13 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
+              // NOT the matrix display: the matrix packs every variant into an
+              // equal-width column, which with only three strains spends the
+              // whole lane on three fat bands and throws away where the variants
+              // actually are. This display keeps them on genomic coordinates, so
+              // they line up with the gene lane above and the MAF below.
               trackId: 'ecoli_cactus_variants',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
+              type: 'LinearMultiSampleVariantDisplay',
               height: 160,
             },
             { trackId: 'ecoli_cactus_maf', type: 'LinearMafDisplay' },
@@ -140,7 +145,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyText: 'pangenome depth',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 360,
+    // 360 clipped the bottom of the 200px wiggle
+    viewportHeight: 420,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -165,7 +171,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_cactus_pav',
               type: 'MultiLinearWiggleDisplay',
-              height: 240,
+              // 3 strains: 180 gives a 60px row each, enough for the accessory
+              // dips to read without the stack dominating the frame
+              height: 180,
             },
           ],
         },
@@ -174,7 +182,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyText: 'per-strain presence',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 400,
+    // 400 cut the stack off mid-strain; this fits the whole 180px stack with no
+    // trailing whitespace
+    viewportHeight: 420,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

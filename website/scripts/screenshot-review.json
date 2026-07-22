@@ -94,8 +94,8 @@
     "name": "sv_synteny/dotplot_import",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:19:18.716Z",
-    "hash": "c4a2f38ede79b24f0f0018750403c8469108a1af"
+    "reviewedAt": "2026-07-22T20:49:33.076Z",
+    "hash": "fd24e7e707670a379c9ce826b8e350fe4f0cc606"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -187,43 +187,36 @@
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T04:55:47.207Z",
-    "hash": "50e155ec1fb251fdcc79cc23484fdcf515ccc880"
+    "reviewedAt": "2026-07-22T20:49:30.268Z",
+    "hash": "91be69aac60e09e2388596b8c2bd22195c4709f1"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:16:56.806Z",
-    "hash": "c492a2bc7a39b107930515caa7635d227e453021"
+    "reviewedAt": "2026-07-22T20:46:54.176Z",
+    "hash": "b43557d080266d20a112a75469cbdc4c40045254"
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T05:58:04.290Z",
-    "hash": "88577375062fa6c5fda71af67fe97f83a76c25d4"
+    "reviewedAt": "2026-07-22T20:47:04.291Z",
+    "hash": "632e3b8c85bf82b15ff702354ad935f890cff050"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
     "status": "good",
-    "note": "DEFERRED (data-blocked): this is the intentional raw-coverage sanity-check figure in the walkthrough. Real normalized depth (not indexcov) needs mosdepth per-sample coverage normalized to median, which requires labserver compute; only indexcov (normal) + mismatched raw bigwigs are hosted. Reviewer said skip for now.",
-    "reviewedAt": "2026-07-15T02:38:59.082Z",
-    "hash": "c6163a72ea1e95f35b5713b1ac7d3293f901081c"
-  },
-  "sv_cgiab/dotplot_result": {
-    "name": "sv_cgiab/dotplot_result",
-    "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-10T15:43:50.939Z",
-    "hash": "d16cfead23f1d5c36b9702032f06e39650a0e38b"
+    "reviewedAt": "2026-07-22T20:47:02.318Z",
+    "hash": "8f5f366135b3c4b6378ace702fd8ea26939ba345"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T23:07:40.187Z",
-    "hash": "c06560edf6063d378114ffd03aed809e584f0aea"
+    "reviewedAt": "2026-07-22T20:49:25.396Z",
+    "hash": "abddb85c22ea3371c40dbabc9733b31993fd0552"
   },
   "linear_synteny": {
     "name": "linear_synteny",
@@ -623,9 +616,9 @@
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "good",
-    "note": "KEEP: the clean no-menu phased matrix used by multivariant_track.md, analyze_trio.md, and the gallery — distinct from the menu-overlay trio-matrix-phased",
-    "reviewedAt": "2026-07-13T18:35:55.607Z",
-    "hash": "b9188bd65ce1aaffebfbad93c4c30a89fc685a50"
+    "note": "",
+    "reviewedAt": "2026-07-22T20:50:56.507Z",
+    "hash": "b1c48142fc0f451ee5b19f72e50bfe3547a9e25f"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -861,9 +854,9 @@
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "good",
-    "note": "the sashimi arcs here are pretty chaotic. we may want to find another gene that looks cleaner or filter out low frequency sashimi arcs",
-    "reviewedAt": "2026-07-19T21:11:27.258Z",
-    "hash": "bf068b2c22e8d2a3200808eedd873cdde563a82f"
+    "note": "",
+    "reviewedAt": "2026-07-22T20:43:47.510Z",
+    "hash": "85df73b59b75e33fe76f28ca27d1808d1cf4931b"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -889,15 +882,15 @@
     "name": "sv_cgiab/deletion_sv_inspector_search",
     "status": "good",
     "note": "Measured the actual SV_85 <DEL> feature glyph bounding box and moved the red box + arrow + caption onto it (was floating above the feature in blank space).",
-    "reviewedAt": "2026-07-08T02:55:28.417Z",
-    "hash": "45b29a52018092638733a75cad27e841fc95f990"
+    "reviewedAt": "2026-07-22T20:47:06.786Z",
+    "hash": "89f28b18f6aa56b6d64319efd6c1f21219b7fa71"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-16T20:45:02.605Z",
-    "hash": "cecc0e515b7eafbdbd87706bbeddb430837f0301"
+    "reviewedAt": "2026-07-22T20:49:28.410Z",
+    "hash": "d3a9bfbab6015999252d8a20e642524e61100252"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -1100,9 +1093,9 @@
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:17:28.385Z",
-    "hash": "9d4d8a7d3cf64a800d21c9defb0774e39e5e71bc"
+    "note": "viewportHeight 400->450; the assembly-selector card is no longer clipped",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "fdd9270e57512dac3153659f08fd35e496cae006"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
@@ -1170,9 +1163,9 @@
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
-    "note": "FIXED both asks: added a highlight band over CDKN2A (chr9:21,967,752-21,975,132, the p16INK4a transcript the gene track draws) — same device as the sibling driver_kras_gain figure — and raised the alignments track 320 -> 520 with viewportHeight 960 -> 1160. The track is heightMode:fit, so the extra height buys taller, legible reads rather than more rows. Regenerated + verified.",
-    "reviewedAt": "2026-07-15T03:15:18.353Z",
-    "hash": "b3d6f040edd966f18666bfb3689eb3af5c73ad81"
+    "note": "super-compact reads (featureHeight 1, fixed), longestCoding gene track, depth switched scatter->xyplot at resolution 10; linkedReads dropped because its connectors merged into a solid block across the deletion at 1px rows",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "2c26253a4fdcfeda5a64ba73db5c66153e061d0e"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1191,9 +1184,9 @@
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T23:23:33.886Z",
-    "hash": "cfba2fc35bedcd5b58b43f940fb684b43ed0405d"
+    "note": "featureHighlights end coord was 7bp past the RefSeq gene span, so the +-1bp matcher never hit; fixed to 25250929 and the KRAS box now draws. Hand-tuned arrow annotation removed as redundant",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "6713ffc86412fbf3f14eeeecce285e2c0ebd3c40"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1205,9 +1198,9 @@
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T05:58:16.442Z",
-    "hash": "bbd8b28788b9e3ca1ef9f69a35ccec72c3a5caec"
+    "note": "unclear kind of what is being shown here. if it helps make annotations or highlights that show what is happening",
+    "reviewedAt": "2026-07-22T20:49:21.567Z",
+    "hash": "fd028345da3554c75004fe8a553536a2cb3fd811"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
@@ -1268,8 +1261,8 @@
     "name": "gallery/hg002_dipcall",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:10:46.964Z",
-    "hash": "944f23a65cc213e6a6660ac54cb52d627ea5bf03"
+    "reviewedAt": "2026-07-22T20:43:37.275Z",
+    "hash": "abdac8599462394fe82753dda22fff1564f6847b"
   },
   "gallery/hg19_vs_hg38": {
     "name": "gallery/hg19_vs_hg38",
@@ -1588,8 +1581,8 @@
     "name": "sv_cgiab/cnv_chr17_loh",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:19:46.806Z",
-    "hash": "0b5d40f286881a8d7d0be9202977ed5291733f4d"
+    "reviewedAt": "2026-07-22T20:46:46.782Z",
+    "hash": "0c035537bb1f143241dbd41fd79966cfb43abb24"
   },
   "feature_height_default": {
     "name": "feature_height_default",
@@ -1714,11 +1707,95 @@
     "reviewedAt": "2026-07-21T18:11:49.163Z",
     "hash": "5e7aa630c68fa235c83fe60730be91b0687caadb"
   },
-  "sv_ont_breakpoint": {
-    "name": "sv_ont_breakpoint",
+  "pangenome_cactus/depth": {
+    "name": "pangenome_cactus/depth",
+    "status": "good",
+    "note": "caption now explains the three blue tones as one bigWig summary bin (max/mean/min); viewportHeight 360->420",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "4d945d8063bf1b961dc982426034b5f832346b0b"
+  },
+  "pangenome_cactus/graph": {
+    "name": "pangenome_cactus/graph",
     "status": "bad",
+    "note": "BLOCKED on data, not layout. Correspondence boxes need the graph-node-order -> K12 mapping; odgi viz x is node order and there is no analytic conversion. Concrete recipe once unblocked: pick N landmark nodes, run `odgi position` against the K12 path to get their K12 coords, then draw matching boxes on the raster and on a LinearGenomeView at those coords. The blocker is that mc/ecoli.full.og is not in this checkout (only the pggb ecoli .og is, under ~/pggb_ecoli_build) and it is not hosted under jbrowse.org/demos/ecoli_pangenome. odgi itself IS installed (~/.local/bin/odgi), so rebuilding per scripts/build_ecoli_pangenome_cactus.sh would unblock it. Original ask: \"to super ideal would be to combine this figure with a jbrowse figure using boxes to show correspondance\".",
+    "reviewedAt": "2026-07-22T20:45:01.375Z",
+    "hash": "d4acb4edc1b681fb33111cccb37401655695d501"
+  },
+  "pangenome_cactus/maf": {
+    "name": "pangenome_cactus/maf",
+    "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-21T18:11:51.452Z",
-    "hash": "b0357624edd1994c900bf3080b96a0aec38d17e5"
+    "reviewedAt": "2026-07-22T20:45:04.100Z",
+    "hash": "f3bb5a5f12acaf03a2e6b20c221daff76d39695b"
+  },
+  "pangenome_cactus/pav": {
+    "name": "pangenome_cactus/pav",
+    "status": "good",
+    "note": "track height 240->180 (60px/strain) and viewportHeight 400->420; all three strains visible, no clipping",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "404c33da6688d3e230d42c772c0afa9371fb6aad"
+  },
+  "pangenome_cactus/synteny": {
+    "name": "pangenome_cactus/synteny",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-22T20:45:53.236Z",
+    "hash": "3d41137be78b6e7791767af996692ef09d410a69"
+  },
+  "pangenome_cactus/variant_matrix": {
+    "name": "pangenome_cactus/variant_matrix",
+    "status": "good",
+    "note": "switched LinearMultiSampleVariantMatrixDisplay -> LinearMultiSampleVariantDisplay so variants sit on genomic coordinates",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "93a76bf711dd1afa77c2df7c4bea502216a124cc"
+  },
+  "sv_cgiab/cdkn2a_tumor_normal_coverage": {
+    "name": "sv_cgiab/cdkn2a_tumor_normal_coverage",
+    "status": "good",
+    "note": "crosshatches off, longestCoding gene track, viewportHeight 780->900 so the CNV-call lane is visible",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "496dde302ad04341bb30fbab5e20057a97cb100d"
+  },
+  "sv_cgiab/cnv_depth_baf": {
+    "name": "sv_cgiab/cnv_depth_baf",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-22T20:46:50.632Z",
+    "hash": "92a67dee1cd39af44b939a1a30f7e6420333b7cd"
+  },
+  "tcga/cohort_cnv_erbb2": {
+    "name": "tcga/cohort_cnv_erbb2",
+    "status": "good",
+    "note": "added MANE gene lane (pinned to 2 rows) + a highlight band over ERBB2",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "c77930573944d8d5548b5cb79f0d65678c35eaed"
+  },
+  "tcga/cohort_cnv_genome": {
+    "name": "tcga/cohort_cnv_genome",
+    "status": "good",
+    "note": "four recurrent stripes labeled (MYC/CDKN2A/CCND1/ERBB2); x positions derived from chromosome lengths, not hand-tuned. BRCA1 skipped (not a recurrent CNA, and 2px from ERBB2); PTEN skipped (contrast too low)",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "5e3144e18b20100c6f7f2d43343b4896fcf7af09"
+  },
+  "variants/potato_missingness": {
+    "name": "variants/potato_missingness",
+    "status": "good",
+    "note": "viewport 1500x560 -> 1100x510, matrix height 420->300, annotations cut to a bare label at fontSize 22",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "b70f14a1e687077aabd35fdb2a436a6bc04efcf0"
+  },
+  "sv_cgiab/dotplot_hap1": {
+    "name": "sv_cgiab/dotplot_hap1",
+    "status": "good",
+    "note": "replaces sv_cgiab/dotplot_result: per-axis displayedRegionNames glob restricts the y axis to one haplotype, so each plot is a single clean diagonal instead of both haplotypes interleaved",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "cb1aee3e2b87b68b18c4179d552ea9885b86e6e4"
+  },
+  "sv_cgiab/dotplot_hap2": {
+    "name": "sv_cgiab/dotplot_hap2",
+    "status": "good",
+    "note": "replaces sv_cgiab/dotplot_result: per-axis displayedRegionNames glob restricts the y axis to one haplotype, so each plot is a single clean diagonal instead of both haplotypes interleaved",
+    "reviewedAt": "2026-07-22T21:29:41.719Z",
+    "hash": "ba6f77306510685f9b7be243917a7c81063f1ebb"
   }
 }

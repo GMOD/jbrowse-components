@@ -29,7 +29,7 @@ function potatoMissingnessMatrix(maxMissingnessFilter: number) {
           {
             trackId: 'tetraploid_vcf',
             type: 'LinearMultiSampleVariantMatrixDisplay',
-            height: 420,
+            height: 300,
             maxMissingnessFilter,
           },
         ],
@@ -242,16 +242,23 @@ export const variantsSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="variant-matrix-display-done"]',
     readyTimeout: 120000,
     settleMs: 15000,
-    // equal heights for the two parts give a clean top/bottom stack in compose
-    viewportHeight: 560,
+    // equal width/height for the two parts give a clean top/bottom stack in
+    // compose. Narrower and shorter than the 1500x560 default so the stacked
+    // figure isn't twice the page width — the matrix reads as a texture, not as
+    // per-column detail, so it loses nothing.
+    viewportWidth: 1100,
+    viewportHeight: 510,
+    // label only, no explanation: what the ceiling DOES is caption prose, not
+    // paint over the matrix. Big enough to read at the figure's on-page size,
+    // and left of the centered session title so it covers no app chrome.
     annotations: [
       {
         type: 'text',
-        x: 300,
-        y: 60,
-        maxWidth: 520,
-        fontSize: 15,
-        text: 'Max missingness 1.0 (default): every variant kept, including high no-call columns',
+        x: 180,
+        y: 56,
+        maxWidth: 460,
+        fontSize: 22,
+        text: 'Max missingness 1.0 (default)',
       },
     ],
   },
@@ -266,15 +273,16 @@ export const variantsSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="variant-matrix-display-done"]',
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 560,
+    viewportWidth: 1100,
+    viewportHeight: 510,
     annotations: [
       {
         type: 'text',
-        x: 300,
-        y: 60,
-        maxWidth: 520,
-        fontSize: 15,
-        text: 'Max missingness 0.1: variants with more than 10% no-call genotypes are dropped',
+        x: 180,
+        y: 56,
+        maxWidth: 460,
+        fontSize: 22,
+        text: 'Max missingness 0.1',
       },
     ],
   },

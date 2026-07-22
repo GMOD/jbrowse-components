@@ -1091,16 +1091,23 @@ export const svSpecs: ScreenshotSpec[] = [
           trackLabels: 'offset',
           tracks: [
             {
-              // genes compact so the RefSeq isoforms collapse to a thin band
-              // rather than dominating the figure
+              // one transcript per gene rather than the full RefSeq isoform
+              // stack, so CDKN2A reads as a single glyph under the highlight
               trackId: 'hg38_ncbiRefSeq_ucsc',
               type: 'LinearBasicDisplay',
-              displayMode: 'compact',
+              geneGlyphMode: 'longestCoding',
             },
             {
+              // xyplot, not scatter: HiFiCNV is binned at 1kb, so across a 60kb
+              // window scatter drew a handful of isolated dots that read as
+              // noise. Filled bars at resolution:10 (bigwig bins ~10x finer than
+              // screen px) make the copy-number floor through the deletion an
+              // actual shape.
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              defaultRendering: 'xyplot',
+              summaryScoreMode: 'avg',
+              resolution: 10,
               height: 120,
             },
             {
@@ -1116,13 +1123,23 @@ export const svSpecs: ScreenshotSpec[] = [
               // "is-part-of-a-chain" isn't a groupable dimension; skipped.)
               trackId: 'hg008_t_reads_cdkn2a',
               type: 'LinearAlignmentsDisplay',
-              linkedReads: 'normal',
-              // fit-to-display-height packs the ~116x pileup into the fixed
-              // height without the fixed featureHeight/spacing clipping rows
-              // that don't fit — so a taller track buys taller, more legible
-              // reads rather than more rows (reviewer: increase the height)
-              heightMode: 'fit',
-              height: 520,
+              // Super-compact (featureHeight 1, the COMPACTNESS_PRESETS floor):
+              // this figure is read as a coverage SHAPE — a clean drop-out
+              // between two walls of reads — so 1px rows show the whole ~116x
+              // pileup at once. `fixed` rather than `fit`, since fit derives its
+              // own height and would ignore featureHeight. 160 is just the
+              // packed stack; the old 520 was sized for fit-mode rows and left
+              // two thirds of the track empty.
+              //
+              // linkedReads is deliberately OFF here. Chaining each read to its
+              // supplementary segments draws a connector across the deletion,
+              // and at 1px rows those connectors merge into a solid grey block
+              // — the exact opposite of the drop-out the figure is about. The
+              // reads' own deletion-spanning gaps still show as the few thin
+              // lines crossing the empty stretch.
+              heightMode: 'fixed',
+              featureHeight: 1,
+              height: 160,
             },
             'hg008_cnv_calls',
           ],
@@ -1132,7 +1149,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr9',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 1160,
+    viewportHeight: 800,
     settleMs: 30000,
   },
 
@@ -1159,8 +1176,11 @@ export const svSpecs: ScreenshotSpec[] = [
           loc: 'chr9:21,930,000-21,990,000',
           tracks: [
             {
+              // one transcript per gene: the full RefSeq isoform stack crowded
+              // the lane and none of it is what this figure is about
               trackId: 'hg38_ncbiRefSeq_ucsc',
               type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
               height: 90,
             },
             {
@@ -1169,7 +1189,9 @@ export const svSpecs: ScreenshotSpec[] = [
               minScore: 0,
               maxScore: 80,
               height: 160,
-              displayCrossHatches: true,
+              // no cross hatches: the read is one filled profile against the
+              // other, and the gridlines only add texture across both
+              displayCrossHatches: false,
             },
             {
               trackId:
@@ -1178,7 +1200,7 @@ export const svSpecs: ScreenshotSpec[] = [
               minScore: 0,
               maxScore: 80,
               height: 160,
-              displayCrossHatches: true,
+              displayCrossHatches: false,
             },
             'hg008_cnv_calls',
           ],
@@ -1188,7 +1210,8 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'CDKN2A',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 780,
+    // 780 clipped the CNV-call lane that names the copy number
+    viewportHeight: 900,
     settleMs: 20000,
   },
 
@@ -1221,13 +1244,17 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 150,
               // feature-specific highlight: box the KRAS gene glyph itself rather
               // than a fixed region band, so the eye lands on the oncogene within
-              // the ~4.5Mb gained arm even though it's tiny at this scale. The
-              // name rescues the box if the RefSeq gene span drifts by a base.
+              // the ~4.5Mb gained arm even though it's tiny at this scale.
+              // resolveFeatureHighlights matches on span within ±1bp and IGNORES
+              // `name`, so these must be the track's own coords: ncbiRefSeq.gff
+              // records KRAS as chr12:25,205,246-25,250,929 (1-based) =
+              // 25205245..25250929 interbase. The old end (25250936) was 7bp past
+              // that, so nothing ever boxed.
               featureHighlights: [
                 {
                   refName: 'chr12',
                   start: 25205245,
-                  end: 25250936,
+                  end: 25250929,
                   name: 'KRAS',
                 },
               ],
@@ -1270,19 +1297,11 @@ export const svSpecs: ScreenshotSpec[] = [
     // track to all fit (the gene track pushes the CNV calls down)
     viewportHeight: 880,
     settleMs: 20000,
-    // red arrow into the KRAS gene box (reviewer): KRAS is at ~chr12:25.2Mb, i.e.
-    // (25.205-23.0)/4.5 ≈ 0.49 across the 1500px view, so x≈745. The shaft must be
-    // well longer than the arrowhead (ARROW_LEN 8 × strokeWidth) or the line
-    // collapses and the head loses its orientation — so it runs a long diagonal
-    // from the ruler gutter (upper right) down into the highlighted gene glyph.
-    annotations: [
-      {
-        type: 'arrow',
-        from: { x: 880, y: 150 },
-        to: { x: 748, y: 198 },
-        strokeWidth: 4,
-      },
-    ],
+    // No arrow annotation. It existed only because featureHighlights was pinned
+    // to the wrong end coordinate and so drew nothing (see the highlight above),
+    // and a hand-tuned pixel arrow is the thing that goes stale silently. Now
+    // that the box renders, the box IS the callout — and it tracks the gene's
+    // real coordinates instead of a guessed x.
   },
 
   // chr17: the copy-neutral-LOH teaching example — why BAF is read alongside the

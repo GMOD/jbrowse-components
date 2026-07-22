@@ -446,7 +446,7 @@ HiFiCNV's depth is binned, so for the exact breakpoints open the PacBio HiFi
 read pileup: both depth and the pileup drop to zero right at the deletion's
 edges, matching the benchmark call.
 
-<Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (compact), the HiFiCNV depth track, the PacBio HiFi read pileup, and the benchmark CNV calls. Depth and the pileup both drop to 0 at the deletion's edges. The pileup has 'View as pairs / link supplementary alignments' on, so each read and its split segments chain onto one row; the salmon and purple reads are split long-read alignments spanning the breakpoints (colored by strand)." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (longest coding transcript), the HiFiCNV depth track, the PacBio HiFi read pileup at super-compact read height, and the benchmark CNV calls. Depth and the pileup both drop to 0 at the deletion's edges; the few thin lines crossing the gap are single reads carrying the deletion as one long gap in their alignment." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 Nothing above proves the deletion is _somatic_. A homozygous drop-out looks the
 same whether it was acquired by the tumor or inherited, and the answer is in the
@@ -522,7 +522,15 @@ point for drilling into a region of interest. Drag over a region and open a
 linear synteny view (below), where a specific rearrangement becomes legible at
 base level.
 
-<Figure caption="The resulting dotplot: HG008-T v3.2 scaffolds (y) aligned to GRCh38 chromosomes (x), a whole-genome overview of the assembly-to-reference alignment." src="/img/sv_cgiab/dotplot_result.png" />
+HG008-T v3.2 is haplotype-resolved, so its scaffold names end in `_hap1` or
+`_hap2` and a single plot stacks both haplotypes on one axis — every GRCh38
+chromosome gets two counterparts and the diagonal doubles. Restrict the y axis to
+one haplotype at a time and each plot reads as a plain assembly-vs-reference
+diagonal.
+
+<Figure caption="Haplotype 1 of HG008-T v3.2 (y) against GRCh38 chromosomes (x). Each scaffold is one diagonal segment; scaffolds named for two chromosomes (chr3_chr13_hap1) break into two, which is the translocation." src="/img/sv_cgiab/dotplot_hap1.png" />
+
+<Figure caption="The same plot for haplotype 2. chr13_hap2 carries a single clean diagonal against chr13 — the untranslocated counterpart to hap1's fused scaffold." src="/img/sv_cgiab/dotplot_hap2.png" />
 
 Use **Open linear synteny view** from the drag selection, then enter
 `chr3 chr13` in the GRCh38 search box to focus on those chromosomes. Raising the

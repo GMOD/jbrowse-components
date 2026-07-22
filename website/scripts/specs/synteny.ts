@@ -486,9 +486,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  {
-    mode: 'url',
-    name: 'sv_cgiab/dotplot_result',
+  // One dotplot per haplotype. HG008T v3.2 is haplotype-resolved, so a single
+  // plot puts both haplotypes' scaffolds on one axis interleaved — every GRCh38
+  // chromosome then has TWO counterparts and the "diagonal" is doubled, which is
+  // what made the combined figure hard to read. Each spec restricts the y axis to
+  // one haplotype via the per-axis `displayedRegionNames` glob, so each plot is a
+  // plain assembly-vs-reference diagonal.
+  ...(['hap1', 'hap2'] as const).map(hap => ({
+    mode: 'url' as const,
+    name: `sv_cgiab/dotplot_${hap}`,
     // The old hap1/hap2 synteny tracks shipped a plain PAFAdapter pointed at a
     // .pif.gz — but PAFAdapter doesn't strip the PIF q/t refName prefixes, so
     // every feature's refName ("qchr3_chr13_hap1") failed to match the assembly
@@ -506,7 +512,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // contigs to form a clean diagonal against a readable reference axis.
           // (Reordering the reference axis instead scrambles the familiar
           // chromosome order and breaks the single diagonal into a staircase.)
-          views: [{ assembly: 'GRCh38_GIABv3' }, { assembly: 'HG008T_v3.2' }],
+          views: [
+            { assembly: 'GRCh38_GIABv3' },
+            // the scaffold names all end in _hap1/_hap2, so one glob picks a
+            // haplotype without hand-listing its 16-19 scaffolds
+            { assembly: 'HG008T_v3.2', displayedRegionNames: [`*_${hap}`] },
+          ],
           tracks: ['HG008T_v3.2_pif'],
           autoDiagonalize: true,
         },
@@ -522,7 +533,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // matches that non-rendered <title> element, which fails the visible: true
     // wait — plus substrings like the chr1_..._random contig collide.)
     settleMs: 60000,
-  },
+  })),
 
   // The dotplot import form with HG008T v3.2 on one axis and GRCh38 on the other
   // (tutorial caption). An empty DotplotView (views:[{},{}]) shows the form; both
@@ -542,8 +553,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     viewportWidth: 1500,
     // tall enough to include the optional synteny-track row below the assembly
-    // selectors and the full wrapped helper text
-    viewportHeight: 400,
+    // selectors and the full wrapped helper text — 400 clipped the card's bottom
+    // edge mid-sentence
+    viewportHeight: 450,
     actions: [
       // Manual inherits Quick start's track, so the axes already read
       // HG008T v3.2 / GRCh38_GIABv3 with the synteny track selected — exactly
