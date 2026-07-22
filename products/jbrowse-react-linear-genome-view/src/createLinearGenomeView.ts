@@ -83,7 +83,7 @@ export interface LinearGenomeViewController {
   /** swap the genome; rebuilds the engine (any of the three assembly shapes) */
   setAssembly(assembly: AssemblyInput): void
   /** load/clear a serialized session; rebuilds the engine */
-  setSession(defaultSession: SessionSnapshot): void
+  setSession(defaultSession?: SessionSnapshot): void
   setTracks(tracks: TrackInput[]): void
   addTrack(track: TrackInput): void
   removeTrack(trackId: string): void
