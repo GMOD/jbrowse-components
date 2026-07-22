@@ -40,7 +40,6 @@ const TCGA_BRCA_CNV_TRACK = {
   displays: [
     {
       type: 'LinearMultiRowFeatureDisplay',
-      displayId: 'tcga_brca_cnv-LinearMultiRowFeatureDisplay',
       partitionField: 'sample',
       // 0 = auto-fit: the display height divided across the rows, floored at
       // 1px. At 1104 rows every tumor is a single pixel line, which is the point
@@ -94,12 +93,17 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: CLUSTERED,
-    readyTimeout: 180000,
+    // by far the heaviest spec here: the whole-genome view pulls essentially the
+    // entire 5.7MB BED before it can build the 1104-row matrix and cluster it.
+    // 180s captured it twice and then timed out on a third run, so give it room.
+    // The zoomed ERBB2 spec below fetches one 1.5Mb window and is nowhere near
+    // this bound.
+    readyTimeout: 420000,
     viewportWidth: 1900,
     viewportHeight: 900,
     settleMs: 20000,
     // 1104 rows floored to 1px: sub-pixel row-boundary jitter between runs, so
-    // the gate sits above the default 0.001
+    // the gate sits above the default
     diffThreshold: 0.02,
   },
 
