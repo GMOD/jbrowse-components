@@ -10,10 +10,7 @@ import { getSequencePlaintext } from './util.ts'
 
 import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
 import type { SeqState } from '../util.tsx'
-import type {
-  SequenceDisplayMode,
-  SequenceHoverPosition,
-} from './model.ts'
+import type { SequenceDisplayMode, SequenceHoverPosition } from './model.ts'
 
 // the panel publishes hovered bases to whoever opened it (a feature-detail
 // widget, a track's sequence dialog); tests stand in a plain recorder
