@@ -31,6 +31,14 @@ _See the **Config slots** section below for all available configuration fields._
 supplies features inline in the config instead of reading a file, useful for
 small feature sets added via a URL or session spec
 
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

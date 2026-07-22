@@ -354,8 +354,19 @@ Text-search adapters power the location search box. See
 
 ## Inline data
 
-To embed small datasets directly in `config.json` without a file, use the
-[FromConfig adapters](/docs/config_guides/from_config).
+To embed a small dataset directly in `config.json` without a file, use a
+FromConfig adapter. See [FromConfig adapters](/docs/config_guides/from_config).
+
+<!-- FILE_TYPES inline START -->
+
+<!-- prettier-ignore -->
+| Format | Adapter | Track type | Notes |
+| --- | --- | --- | --- |
+| Inline features | [FromConfigAdapter](/docs/config/fromconfigadapter) | [FeatureTrack](/docs/config/featuretrack) | Features written straight into config.json |
+| Inline regions | [FromConfigRegionsAdapter](/docs/config/fromconfigregionsadapter) | assembly `sequence` | refNames and sizes only, no sequence |
+| Inline sequence | [FromConfigSequenceAdapter](/docs/config/fromconfigsequenceadapter) | assembly `sequence` | Each feature's `seq` holds the bases for its region |
+
+<!-- FILE_TYPES inline END -->
 
 ## Full adapter reference
 

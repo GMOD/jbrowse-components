@@ -68,10 +68,12 @@ already showing:
 Note how the session's track entry refers back to the top-level track by
 `trackId` through its `configuration` field, rather than repeating the adapter.
 
-Any track opened in the default session must also be defined in the top-level
-`tracks` array (or by the assembly), so the session can resolve it by `trackId`.
-A session that references a track missing from the config will fail to open that
-track.
+That indirection is also the thing most likely to break. Any track the session
+opens must exist in the top-level `tracks` array (or come from the assembly), or
+the session silently fails to open it. If a pipeline regenerates `config.json`
+with different `trackId`s each build, the `defaultSession` breaks along with
+every previously shared link, which is why
+[trackIds must stay stable](/docs/config_guides/deploying#keep-trackids-stable-for-reproducible-links).
 
 To configure sessions via URL, see [URL parameters](/docs/urlparams).
 

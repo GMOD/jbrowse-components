@@ -137,7 +137,7 @@ more than one way, and the `displays` array is where you pick which:
 | Track type | Display types |
 | --- | --- |
 | [AlignmentsTrack](/docs/config/alignmentstrack) | [LinearAlignmentsDisplay](/docs/config/linearalignmentsdisplay) |
-| [FeatureTrack](/docs/config/featuretrack) | [LinearArcDisplay](/docs/config/lineararcdisplay)<br/>[LinearBasicDisplay](/docs/config/linearbasicdisplay)<br/>[LinearMultiRowFeatureDisplay](/docs/config/linearmultirowfeaturedisplay) |
+| [FeatureTrack](/docs/config/featuretrack) | [LinearArcDisplay](/docs/config/lineararcdisplay)<br/>[LinearBasicDisplay](/docs/config/linearbasicdisplay)<br/>[LinearMultiRowFeatureDisplay](/docs/config/linearmultirowfeaturedisplay)<br/>[LinearScoreDisplay](/docs/config/linearscoredisplay) |
 | [GCContentTrack](/docs/config/gccontenttrack) | LinearGCContentTrackDisplay |
 | [GWASTrack](/docs/config/gwastrack) | [LinearManhattanDisplay](/docs/config/linearmanhattandisplay) |
 | [HicTrack](/docs/config/hictrack) | [LinearHicDisplay](/docs/config/linearhicdisplay) |

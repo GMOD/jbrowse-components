@@ -123,8 +123,10 @@ containing your logo on your server, and specify the path in your configuration:
 }
 ```
 
-The built-in logo is 150×48px. A custom logo is shown at its natural size, so
-size your SVG similarly to fit the header.
+The logo is auto-fitted to the toolbar: full bar height, automatic width to
+preserve the aspect ratio, capped at 150px wide. You do not need to size your
+SVG to particular pixel dimensions, but a wide, short logo (roughly 3:1) fills
+the space best; a tall one will be capped by the width limit and end up small.
 
 ## Sizing
 

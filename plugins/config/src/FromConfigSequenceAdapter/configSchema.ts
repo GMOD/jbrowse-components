@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config FromConfigSequenceAdapter
+ * #trackType ReferenceSequenceTrack
+ * #fileFormat inline | Inline sequence | Each feature's `seq` holds the bases for its region
  * supplies reference sequence inline in the config; each feature's `seq` holds
  * the bases for its region
  *

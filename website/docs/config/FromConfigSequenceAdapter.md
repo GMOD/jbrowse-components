@@ -31,6 +31,12 @@ _See the **Config slots** section below for all available configuration fields._
 supplies reference sequence inline in the config; each feature's `seq` holds the
 bases for its region
 
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

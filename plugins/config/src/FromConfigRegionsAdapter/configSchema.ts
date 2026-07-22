@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config FromConfigRegionsAdapter
+ * #trackType ReferenceSequenceTrack
+ * #fileFormat inline | Inline regions | refNames and sizes only, no sequence
  * used for specifying refNames+sizes of an assembly
  *
  * #example

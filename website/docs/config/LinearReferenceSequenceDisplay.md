@@ -39,6 +39,8 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
+- **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
+- **Adapter:** [FromConfigSequenceAdapter](../fromconfigsequenceadapter)
 - **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
 - **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
 - **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)

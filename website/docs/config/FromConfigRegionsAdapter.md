@@ -32,6 +32,12 @@ _See the **Config slots** section below for all available configuration fields._
 
 used for specifying refNames+sizes of an assembly
 
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

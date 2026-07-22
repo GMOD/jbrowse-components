@@ -178,13 +178,21 @@ The equivalent with concatenation:
 "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
 ```
 
-## Making sophisticated color callbacks
+## When a callback outgrows one line
 
-When a color callback has too much logic to express inline, write a small plugin
-that adds a function to the jexl language (e.g. `colorFeature`) and call it from
-your callback as `"color": "jexl:colorFeature(feature)"`. See
-[customizing feature colors with callbacks and plugins](/docs/config_guides/customizing_feature_colors)
-for the full walkthrough.
+Jexl has no way to define a variable or a branchy helper, so past a certain
+point an expression stops being readable. The escape hatch is to add your own
+function to the jexl language from a small plugin and call it like any built-in:
+
+```json
+"color": "jexl:colorFeature(feature)"
+```
+
+The plugin is a single file with no build step. See
+[customizing feature colors](/docs/config_guides/customizing_feature_colors) for
+the color version and
+[customizing feature details](/docs/config_guides/customizing_feature_details)
+for reshaping detail panels the same way.
 
 ## See also
 
