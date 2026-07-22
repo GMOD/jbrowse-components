@@ -323,6 +323,16 @@ export const gallerySections: readonly GallerySection[] = [
           'The linear genome view flipped to read right-to-left (3′→5′), useful for anti-sense genes.',
       },
       {
+        label: 'Collapsed introns (PTEN)',
+        spec: 'gene_track_collapse_introns',
+        guide: 'user_guides/gene_track',
+        // No `session` override: the spec's own session is the pre-collapse
+        // view, which is exactly where a reader needs to land to right-click
+        // PTEN and run the collapse the figure walks through.
+        description:
+          "PTEN's introns collapsed so the nine exons sit side by side, with the NA12878 direct-RNA sashimi arcs then spanning adjacent exons. Right-click the gene in the live view to run it yourself.",
+      },
+      {
         label: 'SARS-CoV-2 polyprotein (ORF1ab)',
         spec: 'gallery/sarscov2_polyprotein',
         guide: 'user_guides/gene_track',
