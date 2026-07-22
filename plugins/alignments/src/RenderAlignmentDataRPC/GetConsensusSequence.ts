@@ -98,7 +98,11 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       (f): f is typeof f & ConsensusFeature => 'forEachMismatch' in f,
     )
 
-    const tally = buildConsensusTally(features, region)
+    // Features are already flag-filtered at fetch time by filterBy; reuse the
+    // same flagExclude here so the tally can't re-drop reads the user chose to
+    // keep (e.g. secondary alignments). Falls back to the samtools-parity
+    // default when called without a filterBy.
+    const tally = buildConsensusTally(features, region, filterBy?.flagExclude)
     const consensusOpts = { minDepth, callFract, includeInsertions }
     const consensus = computeConsensus(reference, tally, consensusOpts)
     const variants = computeConsensusVariants(reference, tally, consensusOpts)

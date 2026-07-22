@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { variantsToVcf } from '@jbrowse/alignments-core'
+import { SAM_FLAG_SECONDARY, variantsToVcf } from '@jbrowse/alignments-core'
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   CopyToClipboardButton,
@@ -30,6 +30,8 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { defaultFilterFlags } from '../shared/util.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
@@ -63,16 +65,19 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   const [includeInsertions, setIncludeInsertions] = useState(true)
   const [excludeSecondary, setExcludeSecondary] = useState(true)
 
-  // The track's active filterBy flows through, but its default (1540) keeps
-  // secondary alignments, unlike samtools' 0x704. OR SECONDARY (0x100) back in
-  // so the consensus matches samtools by default, while leaving the user a way
-  // to opt out.
-  const filterBy = excludeSecondary
-    ? {
-        ...(display.filterBy ?? { flagInclude: 0, flagExclude: 1540 }),
-        flagExclude: (display.filterBy?.flagExclude ?? 1540) | 0x100,
-      }
-    : display.filterBy
+  // The track's active filterBy flows through, but its default keeps secondary
+  // alignments, unlike samtools. Toggle the SECONDARY bit on the fetch's
+  // flagExclude so the consensus matches samtools by default while letting the
+  // user opt back in — clearing the bit (not just omitting filterBy) so
+  // unchecking actually includes secondary even when the track already excluded
+  // them.
+  const base = display.filterBy ?? defaultFilterFlags
+  const filterBy = {
+    ...base,
+    flagExclude: excludeSecondary
+      ? base.flagExclude | SAM_FLAG_SECONDARY
+      : base.flagExclude & ~SAM_FLAG_SECONDARY,
+  }
 
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_CONSENSUS_BP
