@@ -4,12 +4,12 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-adopted-ff69b4.svg?style=for-the-badge)](CODE_OF_CONDUCT.md)
 
 JBrowse 2 is a pluggable, open-source genome browser. It runs as a web app, a
-desktop app (Mac, Windows, Linux), and as embeddable React components, and
-supports linear, circular, dotplot, synteny, and spreadsheet views, with track
-types for alignments (BAM/CRAM), variants and structural variants,
-quantitative/coverage, and more.
+desktop app (Mac, Windows, Linux), and as embeddable React components. It offers
+linear, circular, dotplot, synteny, and spreadsheet views, with track types for
+alignments (BAM/CRAM), variants and structural variants, quantitative/coverage,
+and more.
 
-The web app is "static-site compatible" — it is pure client-side JS, CSS, and
+The web app is "static-site compatible": it is pure client-side JS, CSS, and
 HTML, so it can be hosted anywhere with no server. The stack is React,
 TypeScript, and @jbrowse/mobx-state-tree.
 
@@ -22,17 +22,17 @@ TypeScript, and @jbrowse/mobx-state-tree.
 
 ## Documentation
 
-- [Documentation home](https://jbrowse.org/jb2/docs/) — user guide, config
+- [Documentation home](https://jbrowse.org/jb2/docs/) has the user guide, config
   guide, developer guide, and CLI reference
-- [Tutorials](https://jbrowse.org/jb2/docs/tutorials/) — step-by-step guides
+- [Tutorials](https://jbrowse.org/jb2/docs/tutorials/) are step-by-step guides
   grouped by topic (synteny, structural variants, methylation, RNA-seq, and
   more)
 - [FAQ](https://jbrowse.org/jb2/docs/faq/)
 
 ## Examples
 
-- [Live demos](https://jbrowse.org/jb2/demos/) — hosted, interactive instances
-- [Gallery](https://jbrowse.org/jb2/gallery/) — screenshots of the views and
+- [Live demos](https://jbrowse.org/jb2/demos/) are hosted, interactive instances
+- [Gallery](https://jbrowse.org/jb2/gallery/) has screenshots of the views and
   track types
 - [Feature list](https://jbrowse.org/jb2/features/)
 
@@ -56,6 +56,6 @@ TypeScript, and @jbrowse/mobx-state-tree.
 
 ## Contributing
 
-See [CONTRIBUTING.md](/CONTRIBUTING.md) to get set up.
-`agent-docs/ARCHITECTURE.md` describes the rendering pipeline and core
-architecture.
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get set up, and
+[agent-docs/ARCHITECTURE.md](agent-docs/ARCHITECTURE.md) for the rendering
+pipeline and core architecture.
