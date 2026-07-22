@@ -29,6 +29,14 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 
 _See the **Config slots** section below for all available configuration fields._
 
+:::caution Gotcha
+
+TBI cannot index a chromosome longer than 512 Mb, which some plant genomes
+exceed. Index those with CSI instead and set both `index.location` and
+`index.indexType: 'CSI'`; the `uri` shorthand assumes a sibling `.tbi`.
+
+:::
+
 used to load bgzip-compressed, tabix-indexed VCF files
 
 ## Related links

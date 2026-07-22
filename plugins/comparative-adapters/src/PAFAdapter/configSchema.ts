@@ -4,6 +4,11 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config PAFAdapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | PAF | Loaded entirely into memory; convert to PIF for large alignments
+ * #gotcha `assemblyNames` is `[query, target]`, which is the **reverse** of
+ * the order minimap2 and nucmer take their inputs (`minimap2 target.fa
+ * query.fa`). Getting it backwards silently draws every alignment against
+ * the wrong assembly rather than erroring. Set the named `queryAssembly` and
+ * `targetAssembly` fields instead and the ordering can't be misread.
  *
  * #example
  * A PAF has no index, but it needs the query and target assembly names (query

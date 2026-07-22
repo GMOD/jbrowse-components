@@ -750,7 +750,11 @@ export interface Example {
 // Multiple #example blocks are supported; an optional label follows the tag
 // (#example minimal, #example full). An optional #trackType tag (on adapter
 // #config blocks) names the track type the example should be wrapped in.
-// Returns { name, category, trackType, docs, examples }.
+// An optional #gotcha tag captures a footgun that a reader configuring this
+// type has to know but would not infer from the slot list (e.g. that
+// MultiWiggleAdapter's `bigWigs` array only accepts absolute URLs); its text
+// runs to the next tag, so it may wrap across lines.
+// Returns { name, category, trackType, docs, gotchas, examples }.
 // Examples are authored LAST so they stay out of the prose `docs` and any
 // legacy `extends`/`composed of` block that stripComposedBlock removes.
 export function parseTaggedComment(
@@ -765,9 +769,26 @@ export function parseTaggedComment(
   let trackType: string | undefined
   const docs: string[] = []
   const examples: Example[] = []
+  const gotchas: string[] = []
   let current: { label: string; lines: string[] } | undefined
+  let currentGotcha: string[] | undefined
+  // A #gotcha runs to the next tag or the next blank line, whichever comes
+  // first, so it can wrap across lines without a terminator and without
+  // swallowing the description prose that follows it. Its own line breaks are
+  // collapsed, since they are comment wrapping rather than markdown structure —
+  // prettier rewraps the rendered callout to the doc's width.
+  const endGotcha = () => {
+    if (currentGotcha) {
+      const text = currentGotcha.join(' ').replaceAll(/\s+/g, ' ').trim()
+      if (text) {
+        gotchas.push(text)
+      }
+      currentGotcha = undefined
+    }
+  }
   for (const line of lines) {
     if (containsTag(line, 'example')) {
+      endGotcha()
       if (current) {
         examples.push({
           label: current.label,
@@ -776,24 +797,38 @@ export function parseTaggedComment(
       }
       current = { label: line.replace(/.*#example\s*/, '').trim(), lines: [] }
     } else if (containsTag(line, type)) {
+      endGotcha()
       const fromTag = line.replace(tag, '').trim()
       if (fromTag) {
         name = fromTag
       }
     } else if (containsTag(line, 'category')) {
+      endGotcha()
       category = line.replace(/.*#category\s*/, '').trim() || undefined
     } else if (containsTag(line, 'trackType')) {
+      endGotcha()
       trackType = line.replace(/.*#trackType\s*/, '').trim() || undefined
     } else if (containsTag(line, 'fileFormat')) {
       // Consumed by generateFileTypeDocs (the format -> adapter tables in the
       // file types guide). Dropped here so it doesn't leak into the config
       // page's prose.
+      endGotcha()
+    } else if (containsTag(line, 'gotcha')) {
+      endGotcha()
+      currentGotcha = [line.replace(/.*#gotcha\s*/, '')]
+    } else if (currentGotcha) {
+      if (line.trim()) {
+        currentGotcha.push(line)
+      } else {
+        endGotcha()
+      }
     } else if (current) {
       current.lines.push(line)
     } else {
       docs.push(line)
     }
   }
+  endGotcha()
   if (current) {
     examples.push({
       label: current.label,
@@ -805,6 +840,7 @@ export function parseTaggedComment(
     category,
     trackType,
     docs: docs.join('\n'),
+    gotchas,
     examples,
   }
 }
@@ -813,6 +849,10 @@ export interface ParsedNode {
   name: string
   docs: string
   examples: Example[]
+  // `#gotcha <text>` blocks — footguns rendered as a caution callout on the
+  // generated page, so a warning lives at the definition site rather than in a
+  // hand-written guide that silently goes stale
+  gotchas: string[]
   category?: string
   // `#trackType <TrackType>` on an adapter's #config — the track type its
   // example should be wrapped in (see wrapAdapterExample in generateConfigDocs)
@@ -826,15 +866,13 @@ export interface ParsedNode {
 // category, plus the comment-stripped source and type signature. Shared so the
 // two near-identical buildItem/buildMember helpers don't drift.
 export function parseNode(obj: ExtractedNode): ParsedNode {
-  const { name, docs, examples, category, trackType } = parseTaggedComment(
-    obj.comment,
-    obj.type,
-    obj.name,
-  )
+  const { name, docs, examples, gotchas, category, trackType } =
+    parseTaggedComment(obj.comment, obj.type, obj.name)
   return {
     name,
     docs,
     examples,
+    gotchas,
     category,
     trackType,
     code: removeComments(obj.node),

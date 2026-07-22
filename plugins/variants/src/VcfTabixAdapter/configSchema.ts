@@ -23,6 +23,11 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config VcfTabixAdapter
  * #trackType VariantTrack
  * #fileFormat variants | VCF (tabix)
+ * #gotcha TBI cannot index a chromosome longer than 512 Mb, which some plant
+ * genomes exceed. Index those with CSI instead and set both
+ * `index.location` and `index.indexType: 'CSI'`; the `uri` shorthand assumes
+ * a sibling `.tbi`.
+ *
  * used to load bgzip-compressed, tabix-indexed VCF files
  *
  * #example

@@ -45,15 +45,23 @@ jbrowse add-track alignment.paf \
   --out /var/www/html/jbrowse2
 ```
 
-The first assembly name is the **query** and the second is the **target**. This
-is the **reverse** of the minimap2 argument order. minimap2 takes
-`target.fa query.fa`, but `--assemblyNames` takes `query,target`. The query is
-drawn on the horizontal axis of the dotplot (top row in linear synteny). The
-target is on the vertical axis (bottom row).
+The first assembly name is the **query**, drawn on the horizontal axis of the
+dotplot (top row in linear synteny); the second is the **target**, on the
+vertical axis (bottom row).
 
-To avoid the ordering confusion entirely, you can set the named `queryAssembly`
-and `targetAssembly` fields on the adapter instead of the positional
-`assemblyNames` array (see [Adapter reference](#adapter-reference) below).
+<!-- GOTCHA PAFAdapter START -->
+
+:::caution Gotcha
+
+`assemblyNames` is `[query, target]`, which is the **reverse** of the order
+minimap2 and nucmer take their inputs (`minimap2 target.fa query.fa`). Getting
+it backwards silently draws every alignment against the wrong assembly rather
+than erroring. Set the named `queryAssembly` and `targetAssembly` fields instead
+and the ordering can't be misread.
+
+:::
+
+<!-- GOTCHA PAFAdapter END -->
 
 This produces a config entry like:
 

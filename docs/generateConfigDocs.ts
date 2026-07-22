@@ -39,6 +39,8 @@ interface ConfigHeader {
   name: string
   docs: string
   examples: Example[]
+  // `#gotcha` blocks, rendered as caution callouts under the example
+  gotchas: string[]
   id: string
   // "file:pos" identity of the declaration this #config sits on. A deriving
   // config's `baseConfiguration:` slot resolves (alias-followed) to this same
@@ -92,6 +94,7 @@ export function accumulateConfig(
       name: item.name,
       docs: item.docs,
       examples: item.examples,
+      gotchas: item.gotchas,
       id: slugify(item.name, { lower: true }),
       declId: obj.selfDeclId,
       category: item.category,
@@ -474,6 +477,12 @@ function renderConfig(
   const relatedSection = relatedLines.length
     ? section('## Related links', relatedLines.join('\n'))
     : ''
+  // #gotcha text renders as a caution callout directly under the example, where
+  // someone copying that example will actually read it. Footguns documented at
+  // the definition site can't drift out of a hand-written guide.
+  const gotchaSection = header.gotchas
+    .map(g => section(':::caution Gotcha', g, ':::'))
+    .join('\n\n')
 
   // Lead with the pasteable example and a short overview, then point the reader
   // at where this config connects (Related links) before the slot reference —
@@ -486,6 +495,7 @@ function renderConfig(
     sourcePath: filename,
     body: section(
       exSection,
+      gotchaSection,
       docsSection,
       relatedSection,
       slotsSection,

@@ -27,8 +27,18 @@ Example MultiQuantitativeTrack config:
 }
 ```
 
-The `bigWigs` array only works with absolute URLs. For relative URLs or
-per-subtrack options like color and grouping, use `subadapters` instead.
+<!-- GOTCHA MultiWiggleAdapter START -->
+
+:::caution Gotcha
+
+The `bigWigs` shorthand only accepts **absolute** URLs; a relative path there
+will not resolve against the config's location. Use the `subadapters` form for
+relative URLs, which is also what you need for per-subtrack `color`, `group`,
+and `source`.
+
+:::
+
+<!-- GOTCHA MultiWiggleAdapter END -->
 
 ### The source field
 

@@ -12,6 +12,13 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BedAdapter
  * #trackType FeatureTrack
  * #fileFormat feature | BED (plain) | Loaded entirely into memory; for small files
+ * #gotcha Named BED columns past `name`/`score`/`strand` (`itemRgb`,
+ * `thickStart`, ...) are only guaranteed for BED12 or a track with an
+ * `autoSql`/`columnNames`. For a BED7-BED11 file JBrowse cannot know what the
+ * extra columns mean, so it exposes them generically as `field6`, `field7`,
+ * ... and a jexl callback reading `feature.itemRgb` gets `undefined`. Set
+ * `columnNames` to refer to them by name.
+ *
  * used to load plain-text BED files. Loads the whole file into memory, so
  * prefer the BedTabixAdapter for large files.
  *

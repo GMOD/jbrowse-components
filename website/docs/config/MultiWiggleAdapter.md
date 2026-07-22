@@ -65,6 +65,15 @@ along as source metadata — `group` drives the sidebar clustering tree and
 
 _See the **Config slots** section below for all available configuration fields._
 
+:::caution Gotcha
+
+The `bigWigs` shorthand only accepts **absolute** URLs; a relative path there
+will not resolve against the config's location. Use the `subadapters` form for
+relative URLs, which is also what you need for per-subtrack `color`, `group`,
+and `source`.
+
+:::
+
 combines multiple BigWig files into a single multi-row quantitative track
 
 ## Related links

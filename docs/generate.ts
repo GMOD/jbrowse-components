@@ -11,6 +11,7 @@ import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import {
   writeDisplayTypeDocs,
   writeFileTypeDocs,
+  writeGotchaDocs,
 } from './generateFileTypeDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
@@ -85,6 +86,13 @@ async function main() {
   writeExtensionPointDocs()
   writeFileTypeDocs(files)
   writeDisplayTypeDocs(displayTypesByTrack, configNames)
+  writeGotchaDocs(
+    new Map(
+      Object.values(configs)
+        .filter(c => c.header?.gotchas.length)
+        .map(c => [c.header!.name, c.header!.gotchas]),
+    ),
+  )
 
   // writeFormatted's programmatic prettier.format() call on embedded markdown
   // code fences isn't always a fixed point of the prettier CLI (e.g. arrow
@@ -97,6 +105,11 @@ async function main() {
       'website/docs/config',
       'website/docs/models',
       'website/docs/api',
+      // the marker blocks written into the hand-written guides above
+      // (FILE_TYPES, DISPLAY_TYPES, GOTCHA) land here unformatted; the tables
+      // are prettier-ignored but the gotcha callouts are prose and must be
+      // rewrapped, or every regen would fight `pnpm format`
+      'website/docs/config_guides',
     ],
     { stdio: 'inherit' },
   )

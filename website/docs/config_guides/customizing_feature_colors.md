@@ -72,14 +72,19 @@ plain properties, e.g. `feature.start`, `feature.refName`,
 See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 a full walkthrough.
 
-Named BED columns such as `itemRgb` or `thickStart` (e.g.
-`jexl:feature.itemRgb`) are only guaranteed for BED12, bigBed, or any track
-configured with an `autoSql` or `columnNames`. For plaintext BED files with
-fewer columns (BED7–BED11), JBrowse can't safely assume what each extra column
-means, so columns past `name`/`score`/`strand` are exposed generically as
-`field6`, `field7`, `field8`, …, so `feature.itemRgb` returns `undefined` there.
-To reference columns by stable name, add `columnNames` (or a full `autoSql`) to
-the adapter config.
+<!-- GOTCHA BedAdapter START -->
+
+:::caution Gotcha
+
+Named BED columns past `name`/`score`/`strand` (`itemRgb`, `thickStart`, ...)
+are only guaranteed for BED12 or a track with an `autoSql`/`columnNames`. For a
+BED7-BED11 file JBrowse cannot know what the extra columns mean, so it exposes
+them generically as `field6`, `field7`, ... and a jexl callback reading
+`feature.itemRgb` gets `undefined`. Set `columnNames` to refer to them by name.
+
+:::
+
+<!-- GOTCHA BedAdapter END -->
 
 For color this rarely matters: a BED that carries its own colors needs no
 callback, since an unset

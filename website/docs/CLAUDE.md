@@ -7,15 +7,18 @@ the source instead.
 
 ## Auto-generated — do not hand-edit
 
-| Path(s)                                                  | Regenerate with              | Source of truth                                                                                  |
-| -------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| `config/*.md` (config schema API)                        | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`docs/generateConfigDocs.ts`)                    |
-| `models/*.md` (state model API)                          | `pnpm autogen` (repo root)   | MST model definitions in source (`docs/generateStateModelDocs.ts`)                               |
-| `api/*.md` (plugin-export API)                           | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`docs/generateApiDocs.ts`)                                  |
-| color swatch tables between `<!-- COLOR_TABLE … -->`     | `pnpm autogen` (repo root)   | `#color`-tagged color constants in `packages/core/src/ui/theme.ts` (`docs/generateColorDocs.ts`) |
-| `user_guide.md`, `config_guide.md`, `developer_guide.md` | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                              |
-| `jbrowse-img.md` (@jbrowse/img static-export tool)       | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                         |
-| `cli.md` (@jbrowse/cli command reference)                | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                         |
+| Path(s)                                                    | Regenerate with              | Source of truth                                                                                  |
+| ---------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| `config/*.md` (config schema API)                          | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`docs/generateConfigDocs.ts`)                    |
+| `models/*.md` (state model API)                            | `pnpm autogen` (repo root)   | MST model definitions in source (`docs/generateStateModelDocs.ts`)                               |
+| `api/*.md` (plugin-export API)                             | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`docs/generateApiDocs.ts`)                                  |
+| color swatch tables between `<!-- COLOR_TABLE … -->`       | `pnpm autogen` (repo root)   | `#color`-tagged color constants in `packages/core/src/ui/theme.ts` (`docs/generateColorDocs.ts`) |
+| file-type tables between `<!-- FILE_TYPES … -->`           | `pnpm autogen` (repo root)   | `#fileFormat`-tagged adapter configSchemas (`docs/generateFileTypeDocs.ts`)                      |
+| the track/display table between `<!-- DISPLAY_TYPES … -->` | `pnpm autogen` (repo root)   | `new DisplayType({name, trackType})` registrations (`docs/generateFileTypeDocs.ts`)              |
+| gotcha callouts between `<!-- GOTCHA … -->`                | `pnpm autogen` (repo root)   | `#gotcha`-tagged `#config` blocks in source (`docs/generateFileTypeDocs.ts`)                     |
+| `user_guide.md`, `config_guide.md`, `developer_guide.md`   | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                              |
+| `jbrowse-img.md` (@jbrowse/img static-export tool)         | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                         |
+| `cli.md` (@jbrowse/cli command reference)                  | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                         |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`
@@ -31,6 +34,26 @@ the source instead.
   documented in prose never drift from the code. To add a row, tag the color in
   source; to add a table, drop the marker pair. Don't edit between the markers
   (`docs/generateColorDocs.ts` does the rendering).
+
+- **File-type and display-type tables**: `config_guides/file_types.md` and
+  `config_guides/tracks.md` render their tables from source. An adapter joins
+  the file-types table by adding `#fileFormat <group> | <format> | <note>` to
+  the JSDoc that already carries its `#config`/`#trackType` (the adapter name
+  and track type come from those, so nothing is restated); a group with no
+  matching marker in any doc is an error, so a new adapter can't tag itself into
+  nowhere. The track/display table needs no tagging at all — it comes from the
+  `new DisplayType({name, trackType})` registrations. Both were hand-maintained
+  and had drifted: BedpeAdapter was filed under FeatureTrack, and the display
+  table listed 5 of 12 track types.
+
+- **`#gotcha`**: a footgun someone configuring a type has to know but wouldn't
+  infer from the slot list (PAF's query/target ordering, `bigWigs` needing
+  absolute URLs). Tag it on the `#config` block and it renders as a
+  `:::caution Gotcha` callout on that type's config page; a guide can surface
+  the same text with a `<!-- GOTCHA <ConfigName> START -->` marker pair rather
+  than restating it. The text runs to the next tag or the next blank comment
+  line, so leave a blank `*` line before the description that follows it. Prefer
+  this over writing the warning into a guide, where it goes stale silently.
 
 - **Guide indexes** (`user_guide.md` / `config_guide.md` / `developer_guide.md`)
   are built from each guide's `title`, `description`, and `guide_category`
@@ -81,6 +104,16 @@ point at them, not re-copy their contents (which silently goes stale).
   `[title](url) — description` bullet per page under that dir, from frontmatter
   — the same source the sidebar and landing pages use. `introduction.md` uses
   `<!-- doclist:tutorials -->`. A typo'd dir fails the build.
+- **Prefer an `include:` marker over a hand-copied code fence.** A fence
+  preceded by `<!-- include: <repo/path/to/file.ts> -->` (optionally
+  `#<region>`, marked in the source with `// #region <name>` / `// #endregion`)
+  is regenerated from that file by `pnpm sync-doc-snippets`, and `--check` fails
+  CI on drift. Point it at compiled, tested source
+  (`example-plugins/score-example/`, a real plugin) so the guide can't teach
+  code that no longer compiles. Fences without the marker are untouched, so
+  migrate one at a time. This is the only check that sees _inside_ a fence:
+  `check-doc-imports.ts` validates import specifiers but nothing about the code
+  around them, which is how a guide came to reference an undefined type.
 - **Cross-page anchor links:** write `/docs/page#anchor` (no slash before `#`);
   `rehypeTrailingSlash` adds the trailing slash to the path. CI validates
   fragment targets via `untitaker/hyperlink --check-anchors`.

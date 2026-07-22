@@ -100,16 +100,23 @@ This appends a connection to the target `config.json`. See
 
 ## How connections are stored in a session
 
-A connection config is just a pointer. It does not embed the hub's tracks. The
-hub's track list is fetched when the connection is loaded (in the app, when its
-category is expanded), and those track configs are held in memory only. They are
-**not** written into the saved session.
+<!-- GOTCHA BaseConnection START -->
 
-The exception is a track you actually open: its config is stored in the session
-(under `connectionTrackConfigs`), keyed by `trackId`, so it reopens instantly on
-reload without re-fetching the whole hub. This keeps saved and shared sessions
-small even when the connection points at a very large hub. Editing an open
-connection track saves the change there as well.
+:::caution Gotcha
+
+A connection config is only a pointer: the hub's track list is fetched when the
+connection loads and held in memory, and is **not** written into a saved or
+shared session. Only a track you actually open is stored (under
+`connectionTrackConfigs`, keyed by `trackId`), which is what keeps a shared
+session small even against a very large hub.
+
+:::
+
+<!-- GOTCHA BaseConnection END -->
+
+The hub's track list is fetched when the connection loads, in the app when its
+category is expanded. An opened track reopens instantly on reload without
+re-fetching the whole hub, and editing it saves the change to the session too.
 
 ## See also
 

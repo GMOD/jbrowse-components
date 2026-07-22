@@ -212,6 +212,52 @@ export function writeDisplayTypeDocs(
   )
 }
 
+// A hand-written guide pulls in a type's `#gotcha` text with a marker pair:
+//
+//   <!-- GOTCHA PAFAdapter START -->
+//   <!-- GOTCHA PAFAdapter END -->
+//
+// so the warning is authored once, at the definition site, and appears both on
+// the generated config page and in the guide. Restating it by hand is how the
+// query/target warning ended up phrased three different ways.
+export function writeGotchaDocs(
+  gotchasByConfig: Map<string, string[]>,
+  { check = false } = {},
+) {
+  const markerRe = /<!-- GOTCHA (\S+) START -->/g
+  const stale: string[] = []
+  for (const file of listDocs('website/docs')) {
+    const original = fs.readFileSync(file, 'utf8')
+    let updated = original
+    for (const [, name] of original.matchAll(markerRe)) {
+      const gotchas = gotchasByConfig.get(name)
+      if (!gotchas?.length) {
+        throw new Error(
+          `${file}: GOTCHA "${name}" has no #gotcha-tagged text on its #config`,
+        )
+      }
+      const start = `<!-- GOTCHA ${name} START -->`
+      const end = `<!-- GOTCHA ${name} END -->`
+      const body = gotchas
+        .map(g => `:::caution Gotcha\n\n${g}\n\n:::`)
+        .join('\n\n')
+      const re = new RegExp(`${start}[\\s\\S]*?${end}`)
+      updated = updated.replace(re, () => `${start}\n\n${body}\n\n${end}`)
+    }
+    if (check) {
+      if (
+        normalizeMarkerWhitespace(updated) !==
+        normalizeMarkerWhitespace(original)
+      ) {
+        stale.push(file)
+      }
+    } else if (updated !== original) {
+      fs.writeFileSync(file, updated)
+    }
+  }
+  return stale
+}
+
 // Run as a script: `node docs/generateFileTypeDocs.ts [--check]`. The guard
 // keeps this inert when imported by generate.ts, so the tables aren't generated
 // twice in one `pnpm gendocs`. The display-type table needs the whole-repo
