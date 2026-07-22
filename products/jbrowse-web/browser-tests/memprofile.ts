@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 // Memory / leak profiler for jbrowse-web.
 //
-//   node --experimental-strip-types memprofile.ts snapshot [loc] [tracks] [renderer]
+//   node memprofile.ts snapshot [loc] [tracks] [renderer]
 //     One-shot heap breakdown (per-target self_size by constructor + retainers).
 //
-//   node --experimental-strip-types memprofile.ts leak [scenario]
+//   node memprofile.ts leak [scenario]
 //     Lifecycle churn + forced GC each round; reports the post-GC heap FLOOR and
 //     DOM node/listener counts per round. A rising floor or unbounded node
 //     growth across rounds = a real leak (transient garbage is collected away).

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // Randomized long-running leak/resource stress test for jbrowse-web.
 //
-//   node --experimental-strip-types memstress.ts [rounds]
+//   node memstress.ts [rounds]
 //
 // Drives volvox with random scrolling/zooming and random open/close of BAM,
 // CRAM and BigWig tracks via the exposed window.JBrowseSession model (far more

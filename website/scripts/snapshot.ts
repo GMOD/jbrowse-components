@@ -14,8 +14,8 @@
  * gate; `pngquant` is optional (image optimization is skipped without it).
  *
  * Usage:
- *   node --experimental-strip-types snapshot.ts --url https://example.com --out shot.png
- *   node --experimental-strip-types snapshot.ts --url http://localhost:3000 \
+ *   node snapshot.ts --url https://example.com --out shot.png
+ *   node snapshot.ts --url http://localhost:3000 \
  *     --out home.png --wait-selector "#app" --width 1500 --height 800 --scale 2
  */
 import fs from 'node:fs'
@@ -195,7 +195,7 @@ export async function snapshotAll(
 
 const CLI_HELP = `snapshot — capture a web page to a content-stable PNG
 
-Usage: node --experimental-strip-types snapshot.ts --url <url> --out <file.png> [options]
+Usage: node snapshot.ts --url <url> --out <file.png> [options]
 
 Options:
   --url <url>            Page to capture (required)

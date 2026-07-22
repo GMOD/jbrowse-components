@@ -7,7 +7,7 @@
 // so a reviewer can see at a glance which manual figures still have no way
 // for a reader to reach a live, interactive view.
 //
-// Run with: node --experimental-strip-types scripts/audit-figures.ts
+// Run with: node scripts/audit-figures.ts
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 

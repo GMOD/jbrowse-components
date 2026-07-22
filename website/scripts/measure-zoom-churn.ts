@@ -1,7 +1,7 @@
 // Throwaway: attribute DOM mutations during an alignments zoom to their nearest
 // identifiable subtree, to find what actually re-renders per frame. Zero source
 // changes, runs the built bundle. Headed = real GPU (no swiftshader stall).
-//   node --experimental-strip-types scripts/measure-zoom-churn.ts [--headed]
+//   node scripts/measure-zoom-churn.ts [--headed]
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 

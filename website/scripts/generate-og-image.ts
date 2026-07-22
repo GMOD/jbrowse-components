@@ -1,5 +1,5 @@
 // Renders the social-card image used in <meta property="og:image">.
-// Run: node --experimental-strip-types scripts/generate-og-image.ts
+// Run: node scripts/generate-og-image.ts
 //
 // The "JBrowse 2" wordmark is baked in as vector outlines (wordmark-path.ts)
 // rather than live text: the librsvg renderer behind sharp ignores embedded
