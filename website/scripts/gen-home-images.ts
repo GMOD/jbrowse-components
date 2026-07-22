@@ -61,7 +61,12 @@ const THUMBS: Record<string, ImageSpec> = {
   // visual, and it doesn't repeat the blue matrix of the copy-number card.
   sv: {
     src: 'breakpoint_split_view.png',
-    band: [0.3, 0.88],
+    // Both panels of the split view, from the top panel's ruler down to the
+    // bottom one's border: the arcs only tell their story if the two loci they
+    // connect are both in frame. Stops at 0.775 — the source has page
+    // background below the view, and letting the band run to 1 spent a quarter
+    // of the card on it.
+    band: [0.12, 0.775],
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
@@ -82,7 +87,12 @@ const THUMBS: Record<string, ImageSpec> = {
   },
   hic: {
     src: 'hic_track.png',
-    band: [0.26, 1],
+    // Tall enough that the band is wider than the card aspect, so nothing is
+    // cropped left/right and the whole contact triangle fits — at [0.26, 1] it
+    // was cropped to 85% of the width and the triangle's lower half fell off
+    // the bottom. The source has no whitespace-free framing that also keeps
+    // full width, so the strip below the view border is the deliberate cost.
+    band: [0.1, 1],
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
   },
