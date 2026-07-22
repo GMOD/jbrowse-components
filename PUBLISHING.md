@@ -16,6 +16,11 @@ Two manual steps: write the draft, then publish the release.
    It doesn't re-run lint/tests locally; the push build already covers those and
    more. `--skip-ci-check` overrides the green-CI requirement.
 
+   The commit you're releasing has to be pushed and have a **finished** run.
+   `push.yml` uses `cancel-in-progress`, so pushing again cancels the previous
+   run's jobs, and a cancelled job is not a green one. On a busy day, push and
+   then leave `main` alone until the run completes.
+
 3. **CI runs off the `v*` tag**, unattended: `publish.yml` → npm (`next` for
    prereleases, else `latest`), and `release.yml` → draft GitHub release with
    the notes already filled in, plus the web artifact and desktop binaries.
@@ -29,24 +34,45 @@ to eyeball locally.
 
 ## Prereleases
 
+`--version` sets the target explicitly instead of computing it. Any version
+carrying a `-` is treated as a prerelease.
+
 ```bash
-pnpm release --version 4.4.0-beta.1
+pnpm release --version 5.0.0-beta.1   # cut a beta
+pnpm release --version 5.0.0-beta.2   # iterate
+pnpm release --version 5.0.0          # promote to stable
 ```
 
-`--version` sets the target explicitly instead of computing it, and any version
-carrying a `-` is treated as a prerelease: no blog post, no `CHANGELOG.md`
-entry, and `website/src/config.ts` is left alone, since that drives the download
-page's asset links. CI follows the same split — npm gets the `next` dist-tag,
-the GitHub release carries the prerelease flag, and the `latest/` deploy,
-website deploy, and announcements all skip it. The draft release body will be
-empty, with a warning in the run log saying so.
+Every step after the first needs `--version`: the patch/minor/major arithmetic
+requires a plain `X.Y.Z` base and refuses to compute from a prerelease. The
+final stable step is a normal release, so it needs its blog draft
+(`website/release_announcement_drafts/v5.0.0.md`) like any other.
 
-Useful for rehearsing a release, but not free: `publish.yml` really does publish
-every package to npm under `next`, and npm only allows unpublishing for 72
-hours. Pick a version number you're willing to leave there.
+**What a prerelease does.** Bumps every package version and `version.ts`,
+commits, tags, pushes. Then CI publishes to npm under the `next` dist-tag,
+creates a draft GitHub release flagged as a prerelease with the web artifact and
+desktop binaries, and uploads a preview build to
+`https://jbrowse.org/code/jb2/v5.0.0-beta.1/` (a new tag-named prefix that
+overwrites nothing). Consumers opt in explicitly:
 
-`--version` is also the way out if the previous version is itself a prerelease —
-the patch/minor/major arithmetic requires a plain `X.Y.Z` base and will refuse.
+```bash
+npm install @jbrowse/react-linear-genome-view@next
+```
+
+**What it deliberately does not do.** No blog post, no `CHANGELOG.md` entry, and
+`website/src/config.ts` is left alone — it drives the download page's asset
+links, so pointing it at a beta would advertise downloads the site shouldn't
+offer yet. Those all belong to the stable release that follows. On the CI side
+the `latest/` deploy, the `storybook/*` deploy, the jbrowse.org website deploy,
+and the announcements are all gated off. Publishing the draft is safe: both
+`announce.yml` and `update-docs.yml` check the prerelease flag.
+
+The draft release body will be empty, with a `::warning::` in the run log saying
+why — there is no blog post for `releasenotes.ts` to read.
+
+**It is not free.** `publish.yml` really does publish every package to npm under
+`next`, and npm only allows unpublishing for 72 hours. Pick a version number
+you're willing to leave there.
 
 ## Announcing releases
 
