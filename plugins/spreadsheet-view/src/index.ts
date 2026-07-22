@@ -34,3 +34,9 @@ export {
   type SpreadsheetViewModel,
   type SpreadsheetViewStateModel,
 } from './SpreadsheetView/index.ts'
+export type { SpreadsheetViewInit } from './SpreadsheetView/SpreadsheetViewModel.ts'
+export type {
+  GridRow,
+  RowSet,
+  SpreadsheetSnapshot,
+} from './SpreadsheetView/SpreadsheetModel.tsx'

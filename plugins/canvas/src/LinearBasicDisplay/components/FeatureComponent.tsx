@@ -146,7 +146,7 @@ export interface LinearBasicDisplayModel {
   canvasDrawn: boolean
 }
 
-export interface Props {
+export interface LinearBasicDisplayComponentProps {
   model: LinearBasicDisplayModel
 }
 
@@ -326,7 +326,9 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
 // Thin outer owns the DisplayChrome; FeatureBody owns the scroll container,
 // hit-testing, and the canvas itself; FloatingLabelsLayer and HighlightLayer
 // (separate observers) own the label / peptide and hover / selection layers.
-const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
+const FeatureComponent = observer(function FeatureComponent({
+  model,
+}: LinearBasicDisplayComponentProps) {
   const { classes } = useStyles()
   return (
     <DisplayChrome
@@ -346,7 +348,7 @@ const FeatureBody = observer(function FeatureBody({
   model,
   canvasRef,
   canvas,
-}: Props & {
+}: LinearBasicDisplayComponentProps & {
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
 }) {

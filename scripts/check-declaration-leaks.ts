@@ -9,24 +9,12 @@
 // serializing the file path. The fix is always to re-export the type from that
 // package's entry `index.ts`.
 //
-// Run after `pnpm build:esm`. `KNOWN` is a shrinking baseline, not a config
-// knob — entries come off it, never on.
+// Run after `pnpm build:esm`.
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const root = join(import.meta.dirname, '..')
 const workspaceDirs = ['packages', 'plugins', 'products', 'example-plugins']
-
-// Packages whose non-entry types are still leaked, with the count of distinct
-// leaked symbols. Drive these to zero by re-exporting the types from each
-// package's entry; delete the entry once it's gone.
-const KNOWN = new Map([
-  ['@jbrowse/plugin-alignments', 20],
-  ['@jbrowse/plugin-canvas', 12],
-  ['@jbrowse/plugin-spreadsheet-view', 2],
-  ['@jbrowse/plugin-wiggle', 2],
-])
-
 const leak = /@jbrowse\/[a-z0-9-]+\/src\/[^"']+/g
 
 function* declarationFiles(dir: string): Generator<string> {
@@ -40,8 +28,8 @@ function* declarationFiles(dir: string): Generator<string> {
   }
 }
 
-// leaked package name -> specifiers -> files naming them
-const found = new Map<string, Map<string, Set<string>>>()
+// leaked specifier -> declaration files naming it
+const found = new Map<string, Set<string>>()
 for (const workspaceDir of workspaceDirs) {
   for (const entry of readdirSync(join(root, workspaceDir))) {
     const esm = join(root, workspaceDir, entry, 'esm')
@@ -51,50 +39,24 @@ for (const workspaceDir of workspaceDirs) {
       continue // not built, or not a package that emits esm
     }
     for (const file of declarationFiles(esm)) {
-      for (const specifier of readFileSync(file, 'utf8').matchAll(leak)) {
-        const [, pkg] = /^(@jbrowse\/[a-z0-9-]+)\//.exec(specifier[0])!
-        const bySpecifier = found.get(pkg!) ?? new Map<string, Set<string>>()
-        const files = bySpecifier.get(specifier[0]) ?? new Set<string>()
+      for (const [specifier] of readFileSync(file, 'utf8').matchAll(leak)) {
+        const files = found.get(specifier) ?? new Set<string>()
         files.add(relative(root, file))
-        bySpecifier.set(specifier[0], files)
-        found.set(pkg!, bySpecifier)
+        found.set(specifier, files)
       }
     }
   }
 }
 
-const problems: string[] = []
-for (const [pkg, bySpecifier] of [...found].sort()) {
-  const budget = KNOWN.get(pkg) ?? 0
-  if (bySpecifier.size > budget) {
-    problems.push(
-      `${pkg}: ${bySpecifier.size} leaked source specifier(s), budget ${budget}\n` +
-        [...bySpecifier]
-          .sort()
-          .map(
-            ([s, files]) =>
-              `    ${s}\n      named by ${[...files].sort().join(', ')}`,
-          )
-          .join('\n'),
-    )
-  }
-}
-
-// A budget nobody spends is a budget that should be deleted.
-for (const [pkg, budget] of KNOWN) {
-  const actual = found.get(pkg)?.size ?? 0
-  if (actual < budget) {
-    problems.push(
-      `${pkg}: leaks are down to ${actual} (budget ${budget}) — lower or remove its entry in KNOWN in ${relative(root, import.meta.filename)}`,
-    )
-  }
-}
-
-if (problems.length > 0) {
+if (found.size > 0) {
+  const detail = [...found]
+    .sort()
+    .map(([s, files]) => `  ${s}\n    named by ${[...files].sort().join(', ')}`)
+    .join('\n')
   console.error(
-    `Emitted .d.ts files name workspace source paths that published tarballs don't ship.\nRe-export the type from the owning package's entry index.ts.\n\n${problems.join('\n\n')}\n`,
+    `Emitted .d.ts files name workspace source paths that published tarballs don't ship.\nRe-export the type from the owning package's entry index.ts.\n\n${detail}\n`,
   )
   process.exit(1)
 }
 
-console.log('No new source-path leaks in emitted .d.ts')
+console.log('No source-path leaks in emitted .d.ts')

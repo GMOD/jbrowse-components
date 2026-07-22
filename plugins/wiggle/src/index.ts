@@ -64,6 +64,7 @@ export type {
   WiggleFamilySvgLegendInfo,
 } from './shared/WiggleFamilySvg.tsx'
 export { useWiggleMouseHandlers } from './shared/useWiggleMouseHandlers.ts'
+export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
 
 export type {
   SourceRenderData,
