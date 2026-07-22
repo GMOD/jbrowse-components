@@ -17,11 +17,12 @@ Two manual steps: write the draft, then publish the release.
    more. `--skip-ci-check` overrides the green-CI requirement.
 
 3. **CI runs off the `v*` tag**, unattended: `publish.yml` → npm (`next` for
-   prereleases, else `latest`), `release.yml` → draft GitHub release with notes
-   already filled in, plus the web artifact and desktop binaries,
-   `update-docs.yml` → website.
+   prereleases, else `latest`), and `release.yml` → draft GitHub release with
+   the notes already filled in, plus the web artifact and desktop binaries.
 4. **Publish the draft** once the desktop binaries have landed in it. That click
-   fires the announcements below, so it's the go/no-go gate.
+   is the go/no-go gate: it fires both the announcements below and the website
+   deploy, so the blog post goes live exactly when the release assets it links
+   to become public.
 
 `pnpm releasenotes [--tag v4.3.1]` prints the same body `release.yml` generates,
 to eyeball locally.

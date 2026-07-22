@@ -3,12 +3,15 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
+# One destination bucket, so deploys serialize rather than racing two rclone
+# syncs. Not cancel-in-progress: killing a sync mid-flight leaves the bucket
+# half-written.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -20,16 +23,21 @@ jobs:
   build:
     name: Build and upload website to production
     runs-on: ubuntu-latest
-    # Release tags always deploy: the release commit's message is the bare tag,
-    # which never matched the 'update docs' gate, so the release blog post sat
-    # undeployed while announce.yml was already linking to it.
-    if:
-      contains(github.event.head_commit.message, 'update docs') ||
-      startsWith(github.ref, 'refs/tags/v')
+    # Publishing a release deploys too — the release commit's bare-tag message
+    # never matched the 'update docs' gate. Keyed on publish, not the tag: the
+    # download page links at release assets, which stay private while it's a
+    # draft. event_name is checked first because github.event.release is null on
+    # a push, and GitHub coerces null and false alike to 0.
+    if: >-
+      (github.event_name == 'push' && contains(github.event.head_commit.message,
+      'update docs')) || (github.event_name == 'release' &&
+      github.event.release.prerelease == false)
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+          # Deploy the tagged tree, not whatever main has moved on to.
+          ref: ${{ github.event.release.tag_name || github.ref }}
       - uses: ./.github/actions/setup
         with:
           working-directory: website
