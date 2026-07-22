@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-// Minimal data-fetching hook. JBrowse only ever used the {data, error,
-// isLoading, mutate} subset of SWR with all background revalidation disabled
+// Minimal data-fetching hook, replacing SWR. JBrowse only ever used the
+// {data, error, isLoading, mutate} subset with background revalidation off
 // (every data source is stable for the lifetime of the dialog/widget that
-// opens it), so we fetch once per key and skip SWR entirely — that keeps SWR
-// out of the eagerly-loaded bundle. This intentionally matches the long-lived
-// jest mock (packages/__mocks__/swr.ts) that the test suite already ran
-// against, so production now behaves like the tested path.
+// opens it), so we fetch once per key — which also keeps SWR out of the
+// eagerly-loaded bundle.
 
 export type FetchKey = string | readonly unknown[] | null | undefined | false
 

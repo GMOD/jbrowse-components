@@ -6,7 +6,6 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { SWRConfig } from 'swr'
 
 import PluginStoreWidget from './PluginStoreWidget.tsx'
 
@@ -215,15 +214,11 @@ test('offers an update when the store name differs from the plugin class name', 
   // @ts-expect-error
   getRoot(session).setReloadPluginManagerCallback(() => {})
 
-  // isolated SWR cache so the store fetch hits this test's mock rather than the
-  // list cached by an earlier test under the shared constant key
   const { findByTestId } = render(
-    <SWRConfig value={{ provider: () => new Map() }}>
-      <ThemeProvider theme={createJBrowseTheme()}>
-        <DialogQueue session={session} />
-        <PluginStoreWidget model={model} />
-      </ThemeProvider>
-    </SWRConfig>,
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
   )
   // the update button keys off the runtime class name; it only renders when the
   // store entry was matched despite the store-name/class-name divergence

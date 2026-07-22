@@ -4,7 +4,6 @@ const baseConfig = {
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
     '^@jbrowse/text-indexing-core$':
       '<rootDir>/packages/text-indexing-core/src/index.ts',
-    '^swr$': '<rootDir>/packages/__mocks__/swr.ts',
   },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',

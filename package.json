@@ -126,7 +126,6 @@
     "slugify": "^1.6.9",
     "source-map-loader": "^5.0.0",
     "style-loader": "^4.0.0",
-    "swr": "^2.4.2",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",
