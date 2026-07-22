@@ -147,10 +147,18 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // homozygous calls differ from the reference on both haplotypes, and a few
     // het calls appear on one row only, showing where the two assemblies differ.
     // Short per-track height keeps the single-row tracks compact (coverage off).
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:18000000-18020000","type":"LinearGenomeView","trackLabels":"offset","tracks":["hg002_dipcall_dip_vcf_t2t",{"trackId":"hg002_dipcall_hap1_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}},{"trackId":"hg002_dipcall_hap2_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}}]}]}',
-    readyTimeout: 120000,
+    // sessionName pins the title bar; without it the capture bakes in a live
+    // timestamp and the figure differs on every render.
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:18000000-18020000","type":"LinearGenomeView","trackLabels":"offset","tracks":["hg002_dipcall_dip_vcf_t2t",{"trackId":"hg002_dipcall_hap1_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}},{"trackId":"hg002_dipcall_hap2_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}}]}]}&sessionName=Screenshot',
+    // generous because the fetch is huge, not because the server is slow
+    // (ftp-trace.ncbi.nlm.nih.gov serves ~10MB/s): each haplotype BAM is 1GB of
+    // whole-chromosome records, so drawing a 20kb window pulls and decodes a
+    // chromosome-length record per track — the adapters raise fetchSizeLimit to
+    // 300MB to permit it. Only paid on an explicit --filter run.
+    readyTimeout: 600000,
     settleMs: 15000,
     viewportHeight: 500,
+    heavyNetwork: true,
   },
   {
     mode: 'url',

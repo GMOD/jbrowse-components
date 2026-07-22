@@ -195,12 +195,27 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
       },
     )
   }
-  await waitForLoadingComplete(page, {
-    waitForDownloads: true,
-    timeout: readyTimeout,
-  })
-  await waitForQuiescent(page, { timeout: readyTimeout })
-  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+  // One pass isn't enough: `-display-done` flips on canvasDrawn, which a display
+  // can reach with a fetch still in flight (dipcall's alignments draw an empty
+  // canvas, then keep downloading), and a fetch that starts after the overlay
+  // check clears it retroactively. So re-run the sequence while an overlay is
+  // still up rather than trusting the first pass; bounded so a genuinely stuck
+  // view still fails through assertRenderSettled instead of hanging here.
+  for (let pass = 0; pass < 3; pass++) {
+    await waitForLoadingComplete(page, {
+      waitForDownloads: true,
+      timeout: readyTimeout,
+    })
+    await waitForQuiescent(page, { timeout: readyTimeout })
+    await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+    const stillLoading = await page.evaluate(
+      () =>
+        document.querySelectorAll('[data-testid="loading-overlay"]').length > 0,
+    )
+    if (!stillLoading) {
+      break
+    }
+  }
 }
 
 // Guard against capturing a view that rendered no content. The ViewContainer
@@ -880,6 +895,12 @@ async function main() {
     if (spec.mode !== 'compose' && spec.curated) {
       console.log(
         `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
+      )
+      return
+    }
+    if (spec.mode !== 'compose' && spec.heavyNetwork && !filterTokens.length) {
+      console.log(
+        `${progress()} ⊘ ${spec.name} (heavy remote data; name it in --filter to re-render)`,
       )
       return
     }

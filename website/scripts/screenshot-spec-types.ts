@@ -94,6 +94,12 @@ export interface CommonSpecFields {
   // committed PNG is a hand-curated / real-human-data screenshot the spec body
   // can't reproduce; the generator skips it so a regen never clobbers it
   curated?: boolean
+  // spec reproduces fine but pulls so much remote data that a routine regen is
+  // more likely to time out than to produce a new image (dipcall's assembly
+  // BAMs, whose single records span whole chromosomes, off ftp-trace.ncbi.nlm
+  // .nih.gov). Skipped in an unfiltered run; still rendered when named in
+  // --filter, so it stays regenerable on purpose rather than by luck.
+  heavyNetwork?: boolean
   // capture-viewport height in CSS px for this spec (default 800); raise it for
   // tall multi-row pileups so the track isn't clipped by the default viewport
   viewportHeight?: number
@@ -168,6 +174,7 @@ export interface CliSpec {
   name: string // 'jbrowse-img/<basename>'; basename matches the .png in products/jbrowse-img/img/
   args: string[] // jb2export args; the generator appends `--out <tmpfile>`
   curated?: boolean
+  heavyNetwork?: boolean
   diffThreshold?: number
 }
 
