@@ -489,11 +489,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/dotplot_result',
-    // The cgiab config ships this synteny track with a plain PAFAdapter pointed
-    // at a .pif.gz — but PAFAdapter doesn't strip the PIF q/t refName prefixes,
-    // so every feature's refName ("qhaplotype1-…") fails to match the assembly
-    // refName ("haplotype1-…") and the dotplot renders empty. Override the track
-    // with the correct PairwiseIndexedPAFAdapter (tabix .pif.gz) so the dots paint.
+    // The old hap1/hap2 synteny tracks shipped a plain PAFAdapter pointed at a
+    // .pif.gz — but PAFAdapter doesn't strip the PIF q/t refName prefixes, so
+    // every feature's refName ("qchr3_chr13_hap1") failed to match the assembly
+    // refName ("chr3_chr13_hap1") and the dotplot rendered empty. The config now
+    // ships HG008T_v3.2_pif as a PairwiseIndexedPAFAdapter; this session track
+    // keeps the same adapter so the figure and the hosted config agree.
     url: cgiabUrl({
       sessionTracks: [CGIAB_ASM_PIF_TRACK],
       views: [
@@ -559,9 +560,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // Same fix as sv_cgiab/dotplot_result: the config's plain PAFAdapter can't
     // strip the PIF q/t refName prefixes, so ribbons never map. Override with
     // PairwiseIndexedPAFAdapter.
-    // TODO(v3.2): the assembly-side loc below uses the OLD verkko hap1 scaffold
-    // names. After building HG008T_v3.2.pif.gz, replace them with the v3.2
-    // scaffolds that align to chr3/chr13 (read from the .fai / the PAF).
+    // The v3.2 scaffolds are named for the GRCh38 chromosomes they carry, and
+    // chr3_chr13_hap1 is a single contig carrying both (100.7Mb aligned to chr3
+    // + 98.2Mb to chr13 in HG008T_v3.2.paf) — the translocation itself, as one
+    // assembled sequence. Pairing it with chr13_hap2 (the untranslocated hap2
+    // chr13) puts the derivative and its normal counterpart side by side.
     url: cgiabUrl({
       sessionTracks: [CGIAB_ASM_PIF_TRACK],
       views: [
@@ -580,8 +583,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // drop short noisy alignments and lighten the ribbons so the dense
           // "dark areas" (many overlapping anchors stacking opacity into solid
           // fans) read as clean syntenic blocks
-          minAlignmentLength: 50000,
-          alpha: 0.2,
+          // v3.2 is far more contiguous than the verkko haplotypes this figure
+          // used to show, so the old 50kb floor let through enough short
+          // alignments to stack into solid fans that hid the junction. 500kb
+          // leaves the arm-level blocks that make the chr3/chr13 fusion legible.
+          minAlignmentLength: 500000,
+          alpha: 0.35,
           tracks: ['HG008T_v3.2_pif'],
           views: [
             {
@@ -589,7 +596,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               assembly: 'GRCh38_GIABv3',
             },
             {
-              loc: 'haplotype1-0000016:1-212902875 haplotype1-0000011:1-99479325',
+              loc: 'chr3_chr13_hap1:1-212897834 chr13_hap2:1-99565785',
               assembly: 'HG008T_v3.2',
             },
           ],

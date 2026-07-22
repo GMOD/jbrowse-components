@@ -23,44 +23,22 @@
       }
     },
     {
-      "name": "HG008T.hap1",
+      "name": "HG008T_v3.2",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "HG008T.hap1-ReferenceSequenceTrack",
+        "trackId": "HG008T_v3.2-ReferenceSequenceTrack",
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "HG008T.hap1.fa.gz",
+            "uri": "HG008T_v3.2.fasta.gz",
             "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "HG008T.hap1.fa.gz.fai",
+            "uri": "HG008T_v3.2.fasta.gz.fai",
             "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "HG008T.hap1.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "name": "HG008T.hap2",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "HG008T.hap2-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "HG008T.hap2.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "HG008T.hap2.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "HG008T.hap2.fa.gz.gzi",
+            "uri": "HG008T_v3.2.fasta.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -75,38 +53,46 @@
   "tracks": [
     {
       "type": "VariantTrack",
-      "trackId": "GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf",
-      "name": "GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf",
+      "trackId": "GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf",
+      "name": "GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf",
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz.tbi",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
       },
-      "category": ["Variant calls"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Variant calls"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "FeatureTrack",
-      "trackId": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls",
-      "name": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls",
+      "trackId": "GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls",
+      "name": "GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls",
       "adapter": {
         "type": "BedAdapter",
         "bedLocation": {
-          "uri": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls.bed",
+          "uri": "GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed",
           "locationType": "UriLocation"
         }
       },
-      "category": ["Variant calls"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Variant calls"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "QuantitativeTrack",
@@ -119,50 +105,39 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["Coverage"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Coverage"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "SyntenyTrack",
-      "trackId": "HG008T.hap1",
-      "name": "HG008T.hap1",
+      "trackId": "HG008T_v3.2_pif",
+      "name": "HG008T v3.2",
+      "assemblyNames": [
+        "HG008T_v3.2",
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "HG008T.hap1.pif.gz",
+        "type": "PairwiseIndexedPAFAdapter",
+        "assemblyNames": [
+          "HG008T_v3.2",
+          "GRCh38_GIABv3"
+        ],
+        "pifGzLocation": {
+          "uri": "HG008T_v3.2.pif.gz",
           "locationType": "UriLocation"
         },
         "index": {
+          "indexType": "TBI",
           "location": {
-            "uri": "HG008T.hap1.pif.gz.tbi",
+            "uri": "HG008T_v3.2.pif.gz.tbi",
             "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        },
-        "assemblyNames": ["HG008T.hap1", "GRCh38_GIABv3"]
-      },
-      "assemblyNames": ["HG008T.hap1", "GRCh38_GIABv3"]
-    },
-    {
-      "type": "SyntenyTrack",
-      "trackId": "HG008T.hap2",
-      "name": "HG008T.hap2",
-      "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "HG008T.hap2.pif.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "HG008T.hap2.pif.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        },
-        "assemblyNames": ["HG008T.hap2", "GRCh38_GIABv3"]
-      },
-      "assemblyNames": ["HG008T.hap2", "GRCh38_GIABv3"]
+          }
+        }
+      }
     },
     {
       "type": "AlignmentsTrack",
@@ -182,8 +157,12 @@
           "indexType": "BAI"
         }
       },
-      "category": ["Reads"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Reads"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -203,15 +182,23 @@
           "indexType": "BAI"
         }
       },
-      "category": ["Reads"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Reads"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "QuantitativeTrack",
       "trackId": "HG008_log2ratio",
       "name": "HG008 log2(tumor/normal) coverage ratio",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -236,8 +223,12 @@
       "type": "QuantitativeTrack",
       "trackId": "HG008_log2ratio_calibrated",
       "name": "HG008 log2 ratio (BAF-calibrated to diploid)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -262,12 +253,16 @@
       "type": "QuantitativeTrack",
       "trackId": "HG008-T_baf",
       "name": "HG008-T B-allele frequency (BAF)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "HG008-T_baf.bw",
+          "uri": "HG008-T_baf.bcftools.bw",
           "locationType": "UriLocation"
         }
       },
@@ -285,36 +280,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "trackId": "HG008-T_baf_folded",
-      "name": "HG008-T folded BAF (0=balanced, 0.5=LOH)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "HG008-T_baf_folded.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearWiggleDisplay",
-          "displayId": "HG008-T_baf_folded-LinearWiggleDisplay",
-          "defaultRendering": "scatter",
-          "summaryScoreMode": "avg",
-          "scatterPointSize": 1,
-          "minScore": 0,
-          "maxScore": 0.5,
-          "height": 120
-        }
-      ]
-    },
-    {
-      "type": "QuantitativeTrack",
       "trackId": "HG008-T_coverage_perbase",
       "name": "HG008-T fine-scale coverage (per-base, CDKN2A locus)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -336,8 +309,12 @@
       "type": "FeatureTrack",
       "trackId": "HG008-T_wakhan_cnv",
       "name": "HG008-T Wakhan haplotype-specific CNV segments",
-      "category": ["Variant calls"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "Variant calls"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BedAdapter",
         "bedLocation": {
@@ -359,8 +336,12 @@
       "type": "FeatureTrack",
       "trackId": "hg38_ncbiRefSeq_ucsc",
       "name": "NCBI RefSeq genes (hg38)",
-      "category": ["Genes"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "Genes"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -380,12 +361,16 @@
       "type": "FeatureTrack",
       "trackId": "hg008_cnv_calls",
       "name": "HG008-T somatic CNV calls (copy number)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BedAdapter",
         "bedLocation": {
-          "uri": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls.bed",
+          "uri": "GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed",
           "locationType": "UriLocation"
         }
       },
@@ -396,6 +381,61 @@
           "labels": {
             "name": "jexl:'CN '+get(feature,'total_copy_number')+' ('+get(feature,'hap1_copy_number')+'|'+get(feature,'hap2_copy_number')+')'"
           }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg008_subclonal_cnv",
+      "name": "HG008-T subclonal CNV (per-clone CNVkit)",
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "HG008T-clones.cnv.multirow.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "HG008T-clones.cnv.multirow.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "hg008_subclonal_cnv-LinearMultiRowFeatureDisplay",
+          "partitionField": "clone",
+          "color": "jexl:get(feature,'cn')<1?'#2166ac':get(feature,'cn')<2?'#92c5de':get(feature,'cn')<3?'#e0e0e0':get(feature,'cn')<4?'#f4a582':'#b2182b'",
+          "legend": [
+            {
+              "label": "CN 0 (homozygous loss)",
+              "color": "#2166ac"
+            },
+            {
+              "label": "CN 1 (loss)",
+              "color": "#92c5de"
+            },
+            {
+              "label": "CN 2 (diploid)",
+              "color": "#e0e0e0"
+            },
+            {
+              "label": "CN 3 (gain)",
+              "color": "#f4a582"
+            },
+            {
+              "label": "CN 4+ (amplification)",
+              "color": "#b2182b"
+            }
+          ]
         }
       ]
     }

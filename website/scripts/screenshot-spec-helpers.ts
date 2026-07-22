@@ -149,10 +149,17 @@ export const HG38_GENCODE_PROMOTER_TRACK = {
   },
 }
 
-// HG008-T (CGIAB) HiFiCNV copy-number session tracks reused across the sv_cgiab
-// CNV figures: the depth track and the minor-allele-frequency (MAF) track, both
-// hosted BigWigs on jbrowse.org/demos/cgiab (HiFiCNV output uploaded there — see
-// the tutorial's "Add copy-number tracks" section / build_sv_visualization_cgiab.sh).
+// HG008-T (CGIAB) copy-number session tracks reused across the sv_cgiab CNV
+// figures: HiFiCNV's depth track, and B-allele frequency. Both hosted BigWigs on
+// jbrowse.org/demos/cgiab (see the tutorial's "Add copy-number tracks" section /
+// build_sv_visualization_cgiab.sh).
+//
+// BAF here is deliberately NOT HiFiCNV's own maf.bw. That track is folded to
+// min(AF, 1-AF), so an LOH arm collapses onto one band near 0 and the reader
+// loses the mirrored 0/1 split that makes a BAF plot instantly legible to
+// anyone who reads cancer genomes. Unfolded BAF over germline het sites
+// (bcftools mpileup on the tumor, baf_bcftools.sh) shows both bands: an LOH arm
+// splits to 0 AND 1, a balanced arm sits as one band at 0.5.
 export const HG008_DEPTH_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'hg008_depth',
@@ -166,15 +173,15 @@ export const HG008_DEPTH_TRACK = {
     },
   },
 }
-export const HG008_MAF_TRACK = {
+export const HG008_BAF_TRACK = {
   type: 'QuantitativeTrack',
-  trackId: 'hg008_maf',
-  name: 'HG008-T HiFiCNV minor-allele frequency',
+  trackId: 'hg008_baf',
+  name: 'HG008-T B-allele frequency (BAF)',
   assemblyNames: ['GRCh38_GIABv3'],
   adapter: {
     type: 'BigWigAdapter',
     bigWigLocation: {
-      uri: 'https://jbrowse.org/demos/cgiab/HG008-T.hificnv.maf.bw',
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bcftools.bw',
       locationType: 'UriLocation',
     },
   },

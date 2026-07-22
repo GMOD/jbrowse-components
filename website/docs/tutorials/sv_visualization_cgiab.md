@@ -175,21 +175,33 @@ matches your reads; each writes files that load straight into JBrowse.
 
 The reads here are PacBio HiFi, so we call copy number with
 [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV), PacBio's somatic CNV
-caller. Given the tumor alignment, the reference, and a germline small-variant
-VCF (its heterozygous SNPs drive the allele-frequency track), it writes a depth
-bigWig, a minor-allele-frequency (MAF) bigWig, an integer copy-number bedGraph,
-and a CNV VCF:
+caller. Given the tumor alignment, the reference, and a small-variant VCF whose
+allele depths drive the allele-frequency track, it writes a depth bigWig, a
+minor-allele-frequency (MAF) bigWig, an integer copy-number bedGraph, and a CNV
+VCF.
+
+That VCF has to hold the **tumor's** calls, not the matched normal's. HiFiCNV
+builds the MAF track by reading the `AD` field out of the `--maf` VCF and never
+looks at `--bam` for it, so handing it a germline VCF from the normal produces a
+track sitting near 0.5 everywhere, including across arms that have lost a copy.
+Use the tumor's calls and a germline het inside a loss-of-heterozygosity arm is
+homozygous in the tumor, so its minor allele fraction collapses toward 0 and the
+loss becomes visible. On chr3p, which the benchmark calls a single-copy loss,
+that is the difference between 1742 heterozygous sites and 13.
 
 ```bash
-# C-GIAB's PacBio germline workflow publishes a small-variant VCF for HG008-N
-curl -O https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
+# Clair3 tumor calls published alongside C-GIAB's Wakhan CNA run
+curl -O https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz
+tabix -p vcf merge_output_tumor.vcf.gz
 
 hificnv \
   --bam HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.cram \
   --ref GRCh38_GIABv3.fa \
-  --maf HG008-N-P.GRCh38.deepvariant.phased.vcf.gz \
+  --maf merge_output_tumor.vcf.gz \
   --threads 8 --output-prefix hificnv
 # -> hificnv.<sample>.depth.bw, .maf.bw, .copynum.bedgraph, .vcf.gz
+# the depth track is named for the --bam sample, the maf track for the --maf
+# VCF's sample column, so the two file names differ
 
 tabix -p vcf hificnv.*.vcf.gz
 for f in hificnv.*.depth.bw hificnv.*.maf.bw hificnv.*.vcf.gz; do
@@ -197,15 +209,25 @@ for f in hificnv.*.depth.bw hificnv.*.maf.bw hificnv.*.vcf.gz; do
 done
 ```
 
-Plot the depth and MAF bigWigs with the **scatter** rendering. The MAF track
-sits near 0.5 where both alleles are balanced and falls toward 0 under
-loss-of-heterozygosity; it is one value per het SNP, so at chromosome zoom
-scatter's per-bin min/max points keep that spread visible where a line would
-average it to a flat band. The `copynum` bedGraph carries HiFiCNV's segmented
-integer copy number and the CNV VCF its discrete calls. Read them against the
-benchmark CNV BED, which holds the absolute copy number for each interval.
+Plot the depth bigWig with the **scatter** rendering. The `copynum` bedGraph
+carries HiFiCNV's segmented integer copy number and the CNV VCF its discrete
+calls. Read them against the benchmark CNV BED, which holds the absolute copy
+number for each interval.
 
-<Figure caption="Chromosome 3, the two-panel copy-number view over the benchmark CNV calls: the HiFiCNV depth track above the minor-allele-frequency track. The p-arm is a single-copy loss with loss-of-heterozygosity (depth drop, MAF falling off 0.5 toward 0); the q-arm is balanced (flat depth, MAF near 0.5)." src="/img/sv_cgiab/cnv_depth_maf.png" />
+For the allelic panel we use **B-allele frequency** rather than HiFiCNV's own
+`maf.bw`. HiFiCNV folds its track to `min(AF, 1-AF)`, so a region that has lost
+one parental copy collapses onto a single band near 0. Unfolded BAF keeps the
+two bands apart, and that mirrored split is the shape most cancer-genomics
+readers recognize on sight: a balanced region is one band at 0.5, and a
+loss-of-heterozygosity region splits into two bands at 0 and 1. Build it by
+piling up the tumor reads at germline heterozygous sites and taking the alt
+fraction (`scripts/build_sv_visualization_cgiab.sh` does this with `bcftools
+mpileup`, keeping sites with at least 10x). Plot it with **scatter** over a
+fixed 0 to 1 range: the value is one point per het site and the spread is the
+entire signal, so a line rendering would average the two LOH bands back to 0.5
+and erase the event.
+
+<Figure caption="Chromosome 3, the two-panel copy-number view over the benchmark CNV calls: the HiFiCNV depth track above B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity (depth halves, BAF splits into two bands at 0 and 1); the q-arm is balanced (flat depth, one BAF band at 0.5)." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
 ### Illumina short reads: DRAGEN or CNVkit
 

@@ -7,7 +7,8 @@
 # It downloads the C-GIAB build of GRCh38, the V0.5 HG008-T benchmark SV (VCF)
 # and CNV (BED) calls, converts the tumor/normal PacBio HiFi BAMs to CRAM,
 # computes whole-genome coverage (megadepth), calls somatic copy number with
-# HiFiCNV (depth/MAF/copy-number/VCF tracks), loads C-GIAB's published Wakhan
+# HiFiCNV (depth/copy-number/VCF tracks), builds an unfolded B-allele-frequency
+# bigWig over germline het sites, loads C-GIAB's published Wakhan
 # haplotype-specific segments, and aligns the T2T tumor assembly (v3.2) to GRCh38
 # with minimap2 for the synteny/dotplot views. All of these are added to a
 # JBrowse config.
@@ -17,7 +18,8 @@
 # the tutorial documents step by step. It downloads >200 GB and the alignment and
 # copy-number steps take hours.
 #
-# Requires: samtools + tabix (htslib >=1.20), minimap2, megadepth and HiFiCNV
+# Requires: samtools + tabix + bcftools (htslib >=1.20), minimap2, bedGraphToBigWig
+#           (UCSC), megadepth and HiFiCNV
 #           (both fetched below if absent), wget/curl, and node (JBrowse CLI, via
 #           npx unless `jbrowse` is on PATH).
 # Disk:     ~1.5 TB free (the CRAMs are copied into the JBrowse dir; if
@@ -42,14 +44,20 @@
 #     Corollary: to force a step, delete its output.
 #   - THREADS=N controls samtools/minimap2/HiFiCNV parallelism (default 8).
 #
-# Publishing after a build: the hosted demo only needs 5 small files, so you do
-# not need rclone/AWS credentials on the remote box. Copy these back and run
-# website/scripts/upload-cgiab-demo.sh locally:
-#   hificnv.<sample>.depth.bw -> HG008-T.hificnv.depth.bw
-#   hificnv.<sample>.maf.bw   -> HG008-T.hificnv.maf.bw
+# Publishing after a build: the hosted demo needs only the files below (~1.4GB,
+# nearly all of it the assembly), so you do not need rclone/AWS credentials on
+# the remote box. Copy these back and run website/scripts/upload-cgiab-demo.sh:
+#   hificnv.<bam-sample>.depth.bw -> HG008-T.hificnv.depth.bw
+#     (HiFiCNV names each output for the sample it came from, so its maf.bw
+#     carries the --maf VCF's sample column, not the --bam one. The figures use
+#     the unfolded BAF bigWig below instead of that folded maf.bw.)
+#   HG008-T_baf.bcftools.bw
 #   HG008T_<ver>.pif.gz(.tbi)  (from `jbrowse make-pif HG008T_<ver>.paf`)
-#   jbrowse2/config.json
-# Then regenerate the tutorial figures: cd website && pnpm gen-screenshots --filter sv_cgiab
+#   HG008T_<ver>.fasta.gz(.fai,.gzi)  (NIST ships it BGZF; just samtools faidx)
+#   GRCh38_HG008-T-<BENCH_VER>_somatic-CNV_PASS.draftbenchmark.calls.bed
+#   config.json  (website/scripts/cgiab-demo-config.json, not jbrowse2/config.json
+#     -- the latter points at local --load copy paths that do not exist on S3)
+# Then regenerate the tutorial figures: cd website && pnpm screenshots --filter sv_cgiab
 #
 set -euo pipefail
 
@@ -68,10 +76,10 @@ BENCH_DIR=NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318
 PB_RUN=PacBio_Revio_20240125                                     # HiFi tumor/normal run
 NORMAL_DEPTH=35x
 TUMOR_DEPTH=116x
-GERMLINE_RUN=pacbio-wgs-wdl_germline_20240206                    # normal small-variant calls
 WAKHAN_RUN=NIH_HiFi_Wakhan-CNA_20240308                          # published CNA segments
 ASM_VER=v3.2                                                     # T2T tumor assembly
 REF_BUILD=GRCh38_GIABv3                                          # C-GIAB reference build
+HIFICNV_VER=1.0.1                                                # HiFiCNV release
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
@@ -142,19 +150,29 @@ if command -v hificnv >/dev/null 2>&1; then
   HIFICNV=hificnv
 else
   if [ ! -x ./hificnv ]; then
-    curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/latest/download/hificnv-linux_x86_64.tar.gz \
+    # pinned like every other version here; `latest/download` also silently
+    # changed asset name (curl exits 0 on the 404 page, so tar is what fails)
+    curl -fL "https://github.com/PacificBiosciences/HiFiCNV/releases/download/v$HIFICNV_VER/hificnv-v$HIFICNV_VER-x86_64-unknown-linux-gnu.tar.gz" \
       | tar xz --strip-components=1 --wildcards '*/hificnv'
     chmod +x hificnv
   fi
   HIFICNV=./hificnv
 fi
 
-# germline small-variant calls for the normal drive the MAF track
-GERMLINE_VCF=HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
-[ -f "$GERMLINE_VCF" ] || curl -L -O "$FTP/data_somatic/HG008/Liss_lab/analysis/$PB_RUN/$GERMLINE_RUN/$GERMLINE_VCF"
+# TUMOR small-variant calls drive the MAF track. HiFiCNV builds that track by
+# reading AD straight out of the --maf VCF; it never consults --bam for it. So
+# the normal's germline calls (what this used to pass) produce a MAF track with
+# no somatic signal at all -- flat ~0.5 across chr3p, which the V0.5 benchmark
+# calls CN=1 0|1, i.e. complete LOH. With the tumor's calls the same arm reads
+# ~0 (a germline het inside an LOH arm is homozygous in the tumor: 1742 het ->
+# 13 het over chr3:30-32Mb), which is the contrast the depth/MAF figure is for.
+# Clair3 tumor calls from the Wakhan run pinned above; no .tbi is published.
+MAF_VCF=merge_output_tumor.vcf.gz
+[ -f "$MAF_VCF" ] || curl -fL -O "$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_RUN/vcf_inputs/$MAF_VCF"
+[ -f "$MAF_VCF.tbi" ] || tabix -p vcf "$MAF_VCF"
 
 if ! ls hificnv.*.depth.bw >/dev/null 2>&1; then
-  "$HIFICNV" --bam "$TUMOR" --ref "$REF" --maf "$GERMLINE_VCF" \
+  "$HIFICNV" --bam "$TUMOR" --ref "$REF" --maf "$MAF_VCF" \
     --threads "$THREADS" --output-prefix hificnv
 fi
 for f in hificnv.*.depth.bw hificnv.*.maf.bw; do
@@ -164,6 +182,33 @@ for v in hificnv.*.vcf.gz; do
   [ -f "$v.tbi" ] || tabix -p vcf "$v"
   jb add-track "$v" --category "CNV" --load copy --force --out "$APP"
 done
+
+# ── B-allele frequency: unfolded, over germline het sites ────────────────────
+# The allelic panel of the depth/BAF figure. NOT HiFiCNV's own maf.bw: that one
+# is folded to min(AF, 1-AF), so an arm that lost a parental copy collapses onto
+# a single band near 0 and the reader loses the mirrored 0/1 split that makes a
+# BAF plot legible at a glance. Unfolded BAF keeps both bands, so a balanced arm
+# reads as one band at 0.5 and an LOH arm as two at 0 and 1.
+#
+# Definition: pile the TUMOR reads up at sites the NORMAL calls heterozygous,
+# and take alt/(ref+alt) unfolded. The germline het list is what makes a site
+# informative; computing it from the tumor's own calls instead would drop the
+# LOH sites (homozygous in the tumor) and erase the very signal being drawn.
+BAF_BW=HG008-T_baf.bcftools.bw
+if [ ! -f "$BAF_BW" ]; then
+  GERMLINE_VCF=HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
+  [ -f "$GERMLINE_VCF" ] || curl -fL -O "$FTP/data_somatic/HG008/Liss_lab/analysis/$PB_RUN/pacbio-wgs-wdl_germline_20240206/$GERMLINE_VCF"
+  [ -f hets.vcf.gz ] || { bcftools view -g het -Oz -o hets.vcf.gz "$GERMLINE_VCF"; tabix -f -p vcf hets.vcf.gz; }
+  [ -f "$REF.chrom.sizes" ] || cut -f1,2 "$REF.fai" > "$REF.chrom.sizes"
+  # -q 1 drops multi-mapped reads; -Q 0 keeps HiFi base qualities as-is. The
+  # >=10x floor keeps a thin-coverage site from painting a spurious 0 or 1.
+  bcftools mpileup -f "$REF" -T hets.vcf.gz -a AD -q 1 -Q 0 "$TUMOR" 2>/dev/null \
+    | bcftools query -f '%CHROM\t%POS\t[%AD]\n' \
+    | awk -F'[\t,]' '{d=$3+$4; if(d>=10) printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,$4/d}' \
+    | LC_COLLATE=C sort -k1,1 -k2,2n > baf.bedgraph
+  bedGraphToBigWig baf.bedgraph "$REF.chrom.sizes" "$BAF_BW"
+fi
+jb add-track "$BAF_BW" --category "CNV" --load copy --force --out "$APP"
 
 # ── CNV: published Wakhan haplotype-specific copy-number/LOH segments ─────────
 WAKHAN=$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_RUN/bed_output

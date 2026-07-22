@@ -2,7 +2,7 @@ import {
   DEMO_CONFIG,
   HG00151_ONT_1000G_ADAPTER,
   HG002_NANOPORE_HP_TRACK,
-  HG008_MAF_TRACK,
+  HG008_BAF_TRACK,
   HG008_DEPTH_TRACK,
   VOLVOX,
   cgiabUrl,
@@ -549,6 +549,12 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'SvInspectorView',
           assembly: 'GRCh38_GIABv3',
           uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz',
+          // SV_20 sorts to row 27 of the V0.5 benchmark's 210 PASS calls, past
+          // the DataGrid's virtualization buffer at the 550px default height,
+          // so the row never enters the DOM and the hover below can't find it.
+          // Setting the view height (headerHeight is 52, rows are ~25px) keeps
+          // the row mounted declaratively rather than driving a scroll.
+          height: 1000,
         },
       ],
     }),
@@ -958,19 +964,19 @@ export const svSpecs: ScreenshotSpec[] = [
   },
 
   // The two-panel somatic-CNV view over chromosome 3: the HiFiCNV depth track
-  // (copy number) above the minor-allele-frequency (MAF) track (allelic state),
-  // with the benchmark CNV calls below. chr3 is a clean teaching example — the
-  // p-arm is a single-copy loss WITH loss-of-heterozygosity (depth drop AND MAF
-  // falling off 0.5 toward 0), while the q-arm is balanced (depth flat, MAF near
-  // 0.5).
-  // NB(v3.2/HiFiCNV): the depth/MAF score ranges below are best-effort — retune
-  // minScore/maxScore against the real HiFiCNV bigWigs on the first regen (depth
-  // is raw coverage, MAF is folded to ~0..0.5).
+  // (copy number) above B-allele frequency (allelic state), with the benchmark
+  // CNV calls below. chr3 is a clean teaching example — the p-arm is a
+  // single-copy loss WITH loss-of-heterozygosity, the q-arm is balanced.
+  // Verified against the V0.5 benchmark, which calls chr3p CN=1 0|1 and chr3q
+  // CN=2 1|1: over chr3:30-32Mb the BAF splits to 757 points near 0 and 663
+  // near 1 with nothing between, while chr3:150-152Mb sits as one band at 0.5
+  // (906 + 886 points in the two central bins). Depth steps 55x -> 110x across
+  // the centromere, the 2x that CN=1 vs CN=2 predicts.
   {
     mode: 'url',
-    name: 'sv_cgiab/cnv_depth_maf',
+    name: 'sv_cgiab/cnv_depth_baf',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_MAF_TRACK],
+      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -991,15 +997,19 @@ export const svSpecs: ScreenshotSpec[] = [
               displayCrossHatches: true,
             },
             {
-              trackId: 'hg008_maf',
+              trackId: 'hg008_baf',
               type: 'LinearWiggleDisplay',
-              // MAF scatter: the p-arm LOH pulls the minor-allele fraction off
-              // 0.5 toward 0, while the balanced q-arm stays near 0.5.
+              // BAF scatter over the full 0..1: the p-arm LOH splits into the
+              // mirrored pair of bands at 0 and 1, the balanced q-arm stays as
+              // one band at 0.5. Scatter (not line) because the value is one
+              // point per germline het site, and the whole signal IS the
+              // spread — a line would average the two LOH bands into a
+              // meaningless 0.5 and erase the event.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
               resolution: 10,
               minScore: 0,
-              maxScore: 0.5,
+              maxScore: 1,
               height: 140,
             },
             'hg008_cnv_calls',
@@ -1141,7 +1151,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_kras_gain',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_MAF_TRACK],
+      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1181,7 +1191,7 @@ export const svSpecs: ScreenshotSpec[] = [
               resolution: 10,
             },
             {
-              trackId: 'hg008_maf',
+              trackId: 'hg008_baf',
               type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter with default whisker summary preserving the
               // per-bin spread; resolution:10 makes it fine-grained so the 2+1
@@ -1190,7 +1200,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scatterPointSize: 2,
               resolution: 10,
               minScore: 0,
-              maxScore: 0.5,
+              maxScore: 1,
               height: 140,
             },
             'hg008_cnv_calls',
@@ -1235,7 +1245,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/cnv_chr17_loh',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_MAF_TRACK],
+      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1256,7 +1266,7 @@ export const svSpecs: ScreenshotSpec[] = [
               resolution: 10,
             },
             {
-              trackId: 'hg008_maf',
+              trackId: 'hg008_baf',
               type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter: BOTH arms split off the 0.5 het line — the
               // p-arm (loss+LOH) and the q-arm (copy-neutral LOH) — which is the
@@ -1266,7 +1276,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scatterPointSize: 1,
               resolution: 10,
               minScore: 0,
-              maxScore: 0.5,
+              maxScore: 1,
               height: 140,
             },
             'hg008_cnv_calls',
@@ -1290,7 +1300,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_smad4_loh',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_MAF_TRACK],
+      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1313,7 +1323,7 @@ export const svSpecs: ScreenshotSpec[] = [
               resolution: 10,
             },
             {
-              trackId: 'hg008_maf',
+              trackId: 'hg008_baf',
               type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter: the 18q LOH splits het SNPs into upper
               // and lower bands off the 0.5 het line. resolution:10 keeps bins
@@ -1322,7 +1332,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scatterPointSize: 1,
               resolution: 10,
               minScore: 0,
-              maxScore: 0.5,
+              maxScore: 1,
               height: 140,
             },
             'hg008_cnv_calls',
