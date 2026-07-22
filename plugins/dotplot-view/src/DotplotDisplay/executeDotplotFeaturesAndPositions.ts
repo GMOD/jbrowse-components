@@ -29,6 +29,16 @@ export interface DotplotFeaturesAndPositionsResult {
   parsedCigars: number[][]
   totalFeatureCount: number
   skippedFeatureCount: number
+  // Distinct refNames a skipped feature named that the corresponding axis does
+  // not index. The worker only knows what each axis DISPLAYS, so it cannot tell
+  // "this name isn't in the assembly" (a real misconfiguration) from "this name
+  // is in the assembly but the axis was restricted to a subset of it" — a
+  // deliberate, supported state (per-axis `displayedRegionNames`). It reports
+  // the names instead and lets the main thread, which has the assemblyManager,
+  // make that call. Distinct, so this is bounded by scaffold count, not feature
+  // count.
+  skippedHRefNames: string[]
+  skippedVRefNames: string[]
 }
 
 interface FeatureMate {
@@ -117,6 +127,8 @@ export async function executeDotplotFeaturesAndPositions({
 
   let n = 0
   let skippedFeatureCount = 0
+  const skippedHRefNames = new Set<string>()
+  const skippedVRefNames = new Set<string>()
   for (const f of features) {
     // A comparative feature without a mate has no vertical-axis location to
     // plot, so skip it — mirrors extractAlignmentData's contract, and avoids
@@ -130,8 +142,16 @@ export async function executeDotplotFeaturesAndPositions({
     const refName = f.get('refName')
     const mateRefName = mate.refName
 
-    if (!hIndex.entries.has(refName) || !vIndex.entries.has(mateRefName)) {
+    const hMissing = !hIndex.entries.has(refName)
+    const vMissing = !vIndex.entries.has(mateRefName)
+    if (hMissing || vMissing) {
       skippedFeatureCount++
+      if (hMissing) {
+        skippedHRefNames.add(refName)
+      }
+      if (vMissing) {
+        skippedVRefNames.add(mateRefName)
+      }
       continue
     }
 
@@ -188,6 +208,8 @@ export async function executeDotplotFeaturesAndPositions({
     parsedCigars,
     totalFeatureCount: count,
     skippedFeatureCount,
+    skippedHRefNames: [...skippedHRefNames],
+    skippedVRefNames: [...skippedVRefNames],
   }
 
   return rpcResult(result, [

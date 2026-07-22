@@ -32,6 +32,42 @@ function makeViewSnap(view: Dotplot1DViewModel): BpIndexViewSnap {
   }
 }
 
+// True when any refName a skipped feature named is absent from that axis's
+// assembly ENTIRELY — the only case the "could not be mapped" warning is about.
+// A name that IS in the assembly but not currently displayed means the axis was
+// restricted on purpose, not misconfigured. The skipped names arrive in the
+// adapter's namespace (the worker only ever sees renamed regions), so the
+// assembly's own regions are put through the same rename before comparing —
+// otherwise every aliased name would read as unknown and the warning would fire
+// on exactly the configs that alias correctly.
+async function hasUnknownRefNames({
+  assemblyManager,
+  rename,
+  axes,
+}: {
+  assemblyManager: ReturnType<typeof getSession>['assemblyManager']
+  rename: (regions: Region[]) => Promise<Region[]>
+  axes: { assemblyName?: string; skipped: string[] }[]
+}) {
+  for (const { assemblyName, skipped } of axes) {
+    if (skipped.length) {
+      const regions = assemblyName
+        ? assemblyManager.get(assemblyName)?.regions
+        : undefined
+      // no assembly to check against => can't clear the names, so treat them as
+      // unknown and keep the old (louder) behavior
+      if (!regions) {
+        return true
+      }
+      const known = new Set((await rename(regions)).map(r => r.refName))
+      if (skipped.some(n => !known.has(n))) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 // The stop-token rotation + staleness guard come from
 // `createStopTokenRotation` (shared with linear-comparative-view's synteny
 // fetch); only the dotplot-specific guards, RPC args, and result handling live
@@ -103,8 +139,34 @@ export function doAfterAttach(
             return
           }
           self.setRpcData(result, fetchKey)
+          // Skipped features are only worth warning about when the refName is
+          // genuinely absent from the assembly. An axis restricted to a subset
+          // of its assembly (per-axis `displayedRegionNames` — e.g. one
+          // haplotype of a haplotype-resolved assembly) skips every alignment
+          // to the regions it isn't showing, which is exactly what was asked
+          // for; warning there fires on every such plot and tells the user to
+          // go fix a name mismatch that doesn't exist. Resolving the names
+          // needs the assemblyManager, so it happens here rather than in the
+          // worker — and only when something was skipped, so the extra rename
+          // stays off the normal fetch path.
+          const mismatched =
+            result.skippedFeatureCount > 0 &&
+            (await hasUnknownRefNames({
+              assemblyManager,
+              rename,
+              axes: [
+                {
+                  assemblyName: hViewSnap.displayedRegions[0]?.assemblyName,
+                  skipped: result.skippedHRefNames,
+                },
+                {
+                  assemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
+                  skipped: result.skippedVRefNames,
+                },
+              ],
+            }))
           self.setWarnings(
-            result.skippedFeatureCount > 0
+            mismatched
               ? [
                   {
                     message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
