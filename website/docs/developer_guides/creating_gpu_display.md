@@ -615,7 +615,6 @@ section of the architecture spec is the full quick-scan list.
 
 ## See also
 
-- [Renderer architecture](/docs/developer_guides/renderer_architecture)
 - [Data fetching pipeline](/docs/developer_guides/data_fetching)
 - [RPC and worker system](/docs/developer_guides/rpc_workers)
 - [Creating custom display types](/docs/developer_guides/creating_display)

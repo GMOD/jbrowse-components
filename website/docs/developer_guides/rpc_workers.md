@@ -210,7 +210,6 @@ shape is still read and hoisted to the flat `workerCount` slot on load.)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Creating custom adapters](/docs/developer_guides/creating_adapter)
 - [RefName aliasing](/docs/developer_guides/refname_aliasing)
-- [Renderer architecture](/docs/developer_guides/renderer_architecture)
 
 [sca]:
   https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm

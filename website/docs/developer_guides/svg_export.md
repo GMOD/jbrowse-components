@@ -151,5 +151,4 @@ From simplest to most complex:
 ## See also
 
 - [Creating custom display types](/docs/developer_guides/creating_display)
-- [Renderer architecture](/docs/developer_guides/renderer_architecture)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)

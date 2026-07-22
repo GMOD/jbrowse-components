@@ -75,7 +75,6 @@ own via pull request.
 - [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app
 - [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) - What JBrowse provides as shared libraries (re-exports) versus what your plugin bundles itself from npm, and how to import each
 - [MST patterns](/docs/developer_guides/mst_patterns) - Common MobX-State-Tree patterns used across JBrowse plugins
-- [Renderer architecture](/docs/developer_guides/renderer_architecture) - GPU main-thread rendering of worker-fetched feature data
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - How to register and call RPC methods that run in web workers
 
 ### Creating pluggable elements

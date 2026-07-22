@@ -130,4 +130,3 @@ Colors shared with worker code must be exported as plain `const` strings from
 
 - [Config guide: coloring/theming](/docs/config_guides/theme)
 - [Writing a plugin](/docs/developer_guides/simple_plugin)
-- [Renderer architecture](/docs/developer_guides/renderer_architecture)

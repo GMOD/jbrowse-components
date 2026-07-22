@@ -168,7 +168,7 @@ get adapterConfig() {
 ```
 
 Use `readConfObject` when you hold the **config model itself** (e.g., an entry
-from `session.tracks`, or a config passed directly to a renderer):
+from `session.tracks`, or a sub-config you resolved yourself):
 
 ```ts
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -186,7 +186,7 @@ Both accept a path array for nested access:
 
 ```ts
 getConf(self, ['adapter', 'sequenceAdapter'])
-readConfObject(config, ['renderer', 'color'])
+readConfObject(config, ['index', 'indexType'])
 ```
 
 ## ConfigurationReference

@@ -4,7 +4,7 @@ description: Scaffold a plugin from an official template
 guide_category: Getting started
 ---
 
-Plugins add new pluggable elements (views, tracks, adapters, renderers, widgets,
+Plugins add new pluggable elements (views, tracks, displays, adapters, widgets,
 etc.) and can modify application behavior by watching state. See the
 [pluggable elements](/docs/developer_guides/pluggable_elements) page for the
 full list of element types you can register.

@@ -113,12 +113,20 @@ which has two display methods
 
 ## Rendering
 
-Drawing is owned by the **display**. There is no separate renderer pluggable
-element. High-volume track types (alignments, wiggle, features, variants) draw
-on the main thread with GPU/Canvas2D from worker-fetched data; a few low-volume
-displays (the arc and circular-chord displays) draw with plain main-thread SVG.
-See [renderer architecture](/docs/developer_guides/renderer_architecture/) and
-[creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display).
+Drawing is owned by the **display**; it is not a pluggable element of its own.
+The split is:
+
+- The worker fetches feature data via RPC and returns compact typed arrays
+  (absolute genomic uint32 coordinates). No drawing happens in the worker.
+- The main thread draws that data with WebGPU, falling back to WebGL2, then
+  Canvas2D. This covers the high-volume track types: alignments, wiggle,
+  features, and variants. A few low-volume displays (the arc displays) paint
+  plain main-thread SVG instead.
+
+See
+[display foundations](/docs/developer_guides/creating_display#display-foundations)
+for the mixins this is built from, and
+[GPU displays](/docs/developer_guides/creating_gpu_display) to build one.
 
 How views, tracks, and displays relate:
 

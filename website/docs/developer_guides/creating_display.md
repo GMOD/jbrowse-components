@@ -8,8 +8,7 @@ guide_category: Creating pluggable elements
 
 A **track** owns the high-level identity (an ID, a name, a default set of
 displays), while **display types** do the work of showing that track inside a
-particular view. The display owns the drawing: there is no separate renderer
-pluggable element to register.
+particular view. The display owns the drawing.
 
 ```
 Track  ─owns→  Display(s)  ─draw→  canvas
@@ -57,12 +56,32 @@ the full set of slots. Useful in-tree references:
   / `LinearBasicDisplay`
 
 The display owns view-specific state, menu items, overlays, and the drawing
-itself. The [rendering backend](/docs/developer_guides/renderer_architecture) it
-instantiates is a plain class, not a registered pluggable element. Which
-foundation mixin a display composes (`MultiRegionDisplayMixin` for per-region
-data, `GlobalDataDisplayMixin` for a single whole-view dataset like a heatmap)
-is spelled out in the
-[architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks).
+itself. The rendering backend it instantiates is a plain class it constructs
+directly, not something registered with the plugin manager.
+
+## Display foundations
+
+Linear-genome-view displays are built from a small set of **foundation mixins**
+composed on `BaseDisplay`, all sharing `baseLinearDisplayConfigSchema` as their
+config base. Which foundation you compose is the primary axis of code sharing;
+_how_ you render (GPU or Canvas2D) is a separate axis layered on top. Two fetch
+foundations cover every in-tree display:
+
+| Foundation                                  | Brings                                                                                                                                                             | Used by                                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `MultiRegionDisplayMixin()`                 | per-region fetch + render: the five fetch autoruns, `rpcProps()` refetch wiring, byte gating                                                                       | wiggle, Manhattan, alignments, multi-sample variants, reference sequence, and the canvas displays |
+| `GlobalDataDisplayMixin()`                  | one non-regional dataset with no per-region partitioning, plus the GPU render lifecycle; **no** fetch autoruns (install your own with `installGlobalFetchAutorun`) | Hi-C (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`)                                  |
+| `GlobalFetchMixin()` bare + main-thread SVG | the same fetch foundation without the render lifecycle, so a non-GPU display doesn't drag it in                                                                    | `LinearArcDisplay`, `LinearPairedArcDisplay` (via arc's `ArcFetchModel`)                          |
+
+Both walkthroughs — [Canvas2D](/docs/developer_guides/plotting_features) and
+[GPU](/docs/developer_guides/creating_gpu_display) — use
+`MultiRegionDisplayMixin`, the common case. New track types should compose one
+of these rather than emitting SVG per feature.
+
+The
+[architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
+is the canonical version of this table and goes further into why the fetch and
+render foundations are split.
 
 ## Pairing displays with tracks and views
 
@@ -90,7 +109,6 @@ In-tree references:
 
 ## See also
 
-- [Renderer architecture](/docs/developer_guides/renderer_architecture)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Data fetching pipeline](/docs/developer_guides/data_fetching)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)

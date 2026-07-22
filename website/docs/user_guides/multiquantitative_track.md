@@ -5,15 +5,16 @@ guide_category: Track types
 ---
 
 A multi-quantitative track combines several quantitative signals (typically
-BigWig files) into one track with a shared Y axis. The track menu's
-renderer-type submenu offers two families of rendering mode:
+BigWig files) into one track with a shared Y axis. The track menu's **Plot
+type** submenu groups the modes by layout:
 
-- Multi-row modes (`Multi-row XY plot`, `Multi-row density`, `Multi-row line`,
-  `Multi-row scatter`) draw one plot per subtrack, stacked
-- Overlapping modes (`Overlapping XY plot`, `Overlapping lines`,
-  `Overlapping scatter`) draw all subtracks together
+- **Multi-row** (`XY plot`, `Density`, `Line (step)`, `Line (interpolated)`,
+  `Scatter`) draws one plot per subtrack, stacked
+- **Overlapping** (`XY plot`, `Line (step)`, `Line (interpolated)`, `Scatter`)
+  draws all subtracks together. Density is deliberately absent here, since
+  overlapping filled densities are unreadable
 
-<Figure caption="The track menu lists the available renderer types." src="/img/multiwig/multi_renderer_types.png" />
+<Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
 
 In the multi-row modes the subtracks keep their configured colors. In the
 overlapping modes the subtracks are auto-assigned colors from the palette. You
