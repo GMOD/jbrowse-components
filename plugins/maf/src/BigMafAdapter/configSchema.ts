@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config BigMafAdapter
+ * #trackType MafTrack
+ * #fileFormat maf | BigMaf
  * used to configure BigMaf adapter
  */
 

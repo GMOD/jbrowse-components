@@ -145,13 +145,19 @@ jobs:
         run:
           node --experimental-strip-types docs/generateExtensionPointDocs.ts
           --check
+      - name: Check file type tables are up to date
+        run:
+          node --experimental-strip-types docs/generateFileTypeDocs.ts --check
       - name: Check config/model/api docs are up to date
+        # config_guides is included because gendocs also rewrites the marker
+        # blocks embedded in the hand-written guides (DISPLAY_TYPES, which needs
+        # the whole-repo DisplayType scan generate.ts does, and FILE_TYPES).
         run: |
           pnpm gendocs
-          if ! git diff --quiet website/docs/config website/docs/models website/docs/api; then
+          if ! git diff --quiet website/docs/config website/docs/models website/docs/api website/docs/config_guides; then
             echo "Error: generated docs are out of date!"
             echo "Run 'pnpm autogen' and commit the changes."
-            git diff --stat website/docs/config website/docs/models website/docs/api
+            git diff --stat website/docs/config website/docs/models website/docs/api website/docs/config_guides
             exit 1
           fi
       - name: Check generated shaders are up to date
@@ -443,6 +449,44 @@ jobs:
             echo "Testing $dir"
             (cd $dir && yarn install && yarn e2e)
           done
+
+  # The external-plugin-author guard. component_tests/plugin-vite installs
+  # example-plugins/score-example and its @jbrowse/* closure from packed
+  # tarballs, so it is the only consumer that resolves through each package's
+  # publishConfig `exports` map and built `esm/` output rather than through
+  # workspace-linked TypeScript source. A renamed subpath, a path missing from a
+  # package's `files`, or a broken esm build reddens here on every push —
+  # before publish, which is the whole point: an out-of-tree canary consuming
+  # released versions can only report the break after it has shipped.
+  # No permissions: installs from a lockfile-less manifest, same as the other
+  # component_tests jobs.
+  plugin_component_test:
+    name: Test third-party plugin build
+    needs: build_and_pack_artifacts
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+      - name: Download packed artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: packed-artifacts
+          path: component_tests/
+      - name: Install from packed tarballs
+        run: pnpm install --no-frozen-lockfile
+        working-directory: component_tests/plugin-vite
+      - name: Typecheck and build as a third-party plugin consumer
+        run: pnpm build
+        working-directory: component_tests/plugin-vite
+      - name: Smoke-test the rendered display
+        run: pnpm e2e
+        working-directory: component_tests/plugin-vite
 
   # Test CLI on Node 18 to ensure compatibility with older Node versions.
   # This job has no permissions since it installs npm packages without a lockfile.

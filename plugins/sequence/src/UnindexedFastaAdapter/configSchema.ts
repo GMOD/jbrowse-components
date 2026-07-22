@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config UnindexedFastaAdapter
  * #trackType ReferenceSequenceTrack
+ * #fileFormat sequence | Plain FASTA (.fa, no index) | Read entirely into memory; prefer an indexed form for large genomes
  * loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
  * sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
  *

@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config PAFAdapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | PAF | Loaded entirely into memory; convert to PIF for large alignments
  *
  * #example
  * A PAF has no index, but it needs the query and target assembly names (query

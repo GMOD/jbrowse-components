@@ -6,6 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config PairwiseIndexedPAFAdapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | Indexed PAF (PIF) | Built by `jbrowse make-pif`; fetches only the visible region
  * a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
  * auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
  *

@@ -10,6 +10,11 @@ Auto-generated config schema for the current JBrowse release — see the
 
 used to configure BgzipTaffy adapter
 
+## Related links
+
+- **Track:** [MafTrack](../maftrack)
+- **Display:** [LinearMafDisplay](../linearmafdisplay)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

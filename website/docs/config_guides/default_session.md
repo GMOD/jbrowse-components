@@ -5,15 +5,29 @@ guide_category: Other features
 ---
 
 A "default session" in `config.json` sets the initial state loaded for all
-users. Sessions can be complex to write by hand, so use **File → Export
-session** to export the current state, then copy the `"session"` object into
-`"defaultSession"` in your `config.json`.
+users. Sessions are tedious to write by hand, so set the view up in the app, use
+**File → Export session**, and copy the exported `"session"` object in as
+`"defaultSession"`.
 
-Example exported session (abbreviated):
+A complete `config.json` that opens on a region of `ctgA` with the genes track
+already showing:
 
 ```json
 {
-  "session": {
+  "assemblies": [{ "name": "volvox", "uri": "volvox.2bit" }],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "volvox_genes",
+      "name": "Genes",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "volvox.sort.gff3.gz"
+      }
+    }
+  ],
+  "defaultSession": {
     "id": "eXr4hv4VX",
     "name": "Session",
     "views": [
@@ -30,6 +44,20 @@ Example exported session (abbreviated):
             "reversed": false,
             "assemblyName": "volvox"
           }
+        ],
+        "tracks": [
+          {
+            "id": "volvox_genes-track",
+            "type": "FeatureTrack",
+            "configuration": "volvox_genes",
+            "displays": [
+              {
+                "id": "volvox_genes-display",
+                "type": "LinearBasicDisplay",
+                "configuration": "volvox_genes-LinearBasicDisplay"
+              }
+            ]
+          }
         ]
       }
     ]
@@ -37,33 +65,8 @@ Example exported session (abbreviated):
 }
 ```
 
-In `config.json`:
-
-```json
-{
-  "assemblies": [
-    {
-      "name": "volvox",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "volvox_refseq",
-        "adapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "volvox.2bit"
-          }
-        }
-      }
-    }
-  ],
-  "defaultSession": {
-    "id": "eXr4hv4VX",
-    "name": "Session",
-    "views": [ ... same as the exported session above ... ]
-  },
-  "tracks": [ ... ]
-}
-```
+Note how the session's track entry refers back to the top-level track by
+`trackId` through its `configuration` field, rather than repeating the adapter.
 
 Any track opened in the default session must also be defined in the top-level
 `tracks` array (or by the assembly), so the session can resolve it by `trackId`.

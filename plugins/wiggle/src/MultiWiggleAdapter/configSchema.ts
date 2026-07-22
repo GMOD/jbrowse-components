@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config MultiWiggleAdapter
  * #trackType MultiQuantitativeTrack
+ * #fileFormat quantitative | Multiple BigWigs
  * combines multiple BigWig files into a single multi-row quantitative track
  *
  * #example

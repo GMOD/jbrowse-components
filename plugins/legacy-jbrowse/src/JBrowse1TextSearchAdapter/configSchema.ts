@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowse1TextSearchAdapter
+ * #trackType TextSearchAdapter
+ * #fileFormat textsearch | JBrowse 1 names index | From JBrowse 1 `generate-names.pl`
  * note: metadata about tracks and assemblies covered by text search adapter
  */
 export default ConfigurationSchema(

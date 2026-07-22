@@ -42,6 +42,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 - **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [BlastTabularAdapter](../blasttabularadapter)
 - **Adapter:** [ChainAdapter](../chainadapter)
 - **Adapter:** [DeltaAdapter](../deltaadapter)
 - **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)

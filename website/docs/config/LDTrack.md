@@ -35,6 +35,8 @@ PLINK --r2 output)
 
 ## Related links
 
+- **Adapter:** [PlinkLDAdapter](../plinkldadapter)
+- **Adapter:** [PlinkLDTabixAdapter](../plinkldtabixadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Inherited config slots

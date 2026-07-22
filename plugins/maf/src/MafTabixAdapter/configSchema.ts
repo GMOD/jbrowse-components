@@ -5,6 +5,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config MafTabixAdapter
+ * #trackType MafTrack
+ * #fileFormat maf | MAF (tabix)
  */
 
 const configSchema = ConfigurationSchema(

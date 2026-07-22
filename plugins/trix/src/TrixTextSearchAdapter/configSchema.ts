@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config TrixTextSearchAdapter
+ * #trackType TextSearchAdapter
+ * #fileFormat textsearch | Trix index (.ix/.ixx) | Built by `jbrowse text-index`
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

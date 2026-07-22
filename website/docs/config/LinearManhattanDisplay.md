@@ -60,6 +60,7 @@ configuration for the Manhattan plot display used by GWAS tracks
 
 ## Related links
 
+- **Adapter:** [GWASAdapter](../gwasadapter)
 - **State model:** [runtime API](../../models/linearmanhattandisplay)
 - **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)
 

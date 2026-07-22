@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config MashMapAdapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | MashMap
  * used to load MashMap `.out` alignment files (query and target assembly
  * required)
  *

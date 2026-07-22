@@ -11,6 +11,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config VcfAdapter
  * #trackType VariantTrack
+ * #fileFormat variants | VCF (plain) | Loaded entirely into memory; for small files
  * used to load plain-text (non-bgzipped) VCF files. Loads the whole file into
  * memory, so prefer the VcfTabixAdapter for large files.
  *

@@ -19,15 +19,12 @@ Example `AlignmentsTrack` config:
 }
 ```
 
-## BamAdapter configuration options
+## Adapter options
 
-The `uri` shorthand assumes the index sits next to the data file at `<uri>.bai`.
-Spell out the location slots only when the index is named differently or is a
-CSI index:
-
-- `bamLocation` - file location of the BAM
-- `index.location` - file location of the index
-- `index.indexType` - `BAI` (default) or `CSI`
+The `uri` shorthand above resolves the index for you (`<uri>.bai` for a BAM,
+`<uri>.crai` for a CRAM), so most tracks need nothing else. The
+[`uri` shorthand section](/docs/config_guides/file_types#the-uri-shorthand)
+covers when to spell out the location slots instead, such as a CSI-indexed BAM:
 
 ```json
 {
@@ -40,23 +37,11 @@ CSI index:
 }
 ```
 
-See the [BamAdapter config docs](/docs/config/bamadapter) for all options.
+CRAM decodes against the reference sequence, but you do not configure that. Both
+adapters take their `sequenceAdapter` from the enclosing assembly automatically.
 
-## CramAdapter configuration options
-
-The `uri` shorthand assumes the index sits next to the data file at
-`<uri>.crai`. The sequence adapter is supplied automatically from the enclosing
-assembly, so you do not need to set `sequenceAdapter` manually. Spell out the
-location slots only when the index is named differently:
-
-- `cramLocation` - file location of the CRAM
-- `craiLocation` - file location of the CRAI
-
-```json
-{ "type": "CramAdapter", "uri": "https://yourhost/file.cram" }
-```
-
-See the [CramAdapter config docs](/docs/config/cramadapter) for all options.
+See the [BamAdapter](/docs/config/bamadapter) and
+[CramAdapter](/docs/config/cramadapter) config docs for all options.
 
 ## Display options
 
@@ -65,7 +50,8 @@ coverage `autoscale`/`minScore`/`maxScore`) are slots on the
 `LinearAlignmentsDisplay`, not on the track. Reads are a solid gray until you
 pick a coloring scheme via the
 [`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) slot. To change
-a default, set it with the track's `displayDefaults` shorthand:
+a default, set it with the track's
+[`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays):
 
 ```json
 {
@@ -77,11 +63,6 @@ a default, set it with the track's `displayDefaults` shorthand:
   "displayDefaults": { "colorBy": { "type": "pairOrientation" }, "height": 250 }
 }
 ```
-
-The `displayDefaults` object is shorthand. JBrowse applies each setting for you,
-so you don't have to know the display's name (`LinearAlignmentsDisplay`) or
-write the array. Use the array form when you need per-display control (see the
-[track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
 See the
 [LinearAlignmentsDisplay config docs](/docs/config/linearalignmentsdisplay) for

@@ -14,6 +14,8 @@ the box
 
 ## Related links
 
+- **Track:** [GWASTrack](../gwastrack)
+- **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Base config:** [BedTabixAdapter](../bedtabixadapter)
 
 ## Config slots

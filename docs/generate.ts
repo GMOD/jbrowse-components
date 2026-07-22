@@ -8,6 +8,10 @@ import {
 import { writeColorDocs } from './generateColorDocs.ts'
 import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
+import {
+  writeDisplayTypeDocs,
+  writeFileTypeDocs,
+} from './generateFileTypeDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { extractWithComment, getAllFiles } from './util.ts'
@@ -26,8 +30,9 @@ async function main() {
   const models: Record<string, StateModel> = {}
   const api: Record<string, ApiGroup> = {}
   const displayLinks: DisplayTrackLink[] = []
+  const files = await getAllFiles()
   extractWithComment(
-    await getAllFiles(),
+    files,
     obj => {
       accumulateConfig(configs, obj)
       accumulateModel(models, obj)
@@ -78,6 +83,8 @@ async function main() {
   writeColorDocs()
   writeJexlDocs()
   writeExtensionPointDocs()
+  writeFileTypeDocs(files)
+  writeDisplayTypeDocs(displayTypesByTrack, configNames)
 
   // writeFormatted's programmatic prettier.format() call on embedded markdown
   // code fences isn't always a fixed point of the prettier CLI (e.g. arrow

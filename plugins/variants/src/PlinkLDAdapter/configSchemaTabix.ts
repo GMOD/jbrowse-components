@@ -3,6 +3,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config PlinkLDTabixAdapter
+ * #trackType LDTrack
+ * #fileFormat gwas | PLINK LD (tabix-indexed .ld.gz) | For chromosome-scale or genome-wide LD
  *
  * Adapter for reading pre-computed LD data from PLINK --r2 output (tabix-indexed).
  *

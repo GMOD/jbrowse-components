@@ -37,6 +37,10 @@ Preprocessor to allow minimal config:
 }
 ```
 
+## Related links
+
+- **Track:** [LDTrack](../ldtrack)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

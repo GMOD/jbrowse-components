@@ -6,6 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config Gff3Adapter
  * #category adapter
  * #trackType FeatureTrack
+ * #fileFormat feature | GFF3 (plain) | Loaded entirely into memory; for small files
  * used to load plain-text GFF3 files. Loads the whole file into memory, so
  * prefer the Gff3TabixAdapter for large files.
  *

@@ -36,6 +36,8 @@ export function scoreAdapterFields({
 
 /**
  * #config GWASAdapter
+ * #trackType GWASTrack
+ * #fileFormat gwas | GWAS results (bgzipped, tabix-indexed BED-like)
  * #category adapter
  * adapter for GWAS results files; a BedTabixAdapter with `scoreColumn`
  * defaulted to `neg_log_pvalue` so files load with a sensible Manhattan

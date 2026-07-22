@@ -9,6 +9,15 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * #config LinearMafDisplay
+ * #category display
+ * the display for a `MafTrack`: one row per aligned species, with a
+ * conservation summary above them. The conservation band, per-row identity,
+ * color-by-source-chromosome, and inversion overlays are all derived from the
+ * alignment itself and toggled from the track menu, so the slots here are
+ * show/hide defaults and band sizes.
+ */
 export default function configSchemaF(pluginManager: PluginManager) {
   const LinearGenomePlugin = pluginManager.getPlugin(
     'LinearGenomeViewPlugin',

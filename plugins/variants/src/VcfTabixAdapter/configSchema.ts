@@ -22,6 +22,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config VcfTabixAdapter
  * #trackType VariantTrack
+ * #fileFormat variants | VCF (tabix)
  * used to load bgzip-compressed, tabix-indexed VCF files
  *
  * #example

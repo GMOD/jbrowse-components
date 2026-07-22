@@ -6,6 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config AllVsAllIndexedPAFAdapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | All-vs-all indexed PAF (PIF) | The tabix-indexed form of all-vs-all PAF
  * The tabix-indexed (PIF) form of the `AllVsAllPAFAdapter`. Run
  * `jbrowse make-pif all_vs_all.paf` on an all-vs-all PAF whose sequence names
  * are PanSN-prefixed (`sample#haplotype#contig`) and point this adapter at the

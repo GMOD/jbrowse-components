@@ -6,6 +6,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config GCContentAdapter
+ * #trackType QuantitativeTrack
+ * #fileFormat quantitative | GC content | Computed from the assembly sequence, no data file
  * #category adapter
  */
 

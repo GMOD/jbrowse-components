@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config PlinkLDAdapter
+ * #trackType LDTrack
+ * #fileFormat gwas | PLINK LD (plain .ld) | PLINK `--r2` output; for regional analyses
  *
  * Adapter for reading pre-computed LD data from PLINK --r2 output.
  * Loads the entire file into memory - suitable for small to medium files.

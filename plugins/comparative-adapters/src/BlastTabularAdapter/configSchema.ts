@@ -4,6 +4,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BlastTabularAdapter
+ * #trackType SyntenyTrack
+ * #fileFormat synteny | BLAST tabular
  */
 
 const BlastTabularAdapter = ConfigurationSchema(

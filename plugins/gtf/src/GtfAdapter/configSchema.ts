@@ -6,6 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config GtfAdapter
  * #category adapter
  * #trackType FeatureTrack
+ * #fileFormat feature | GTF (plain) | Loaded entirely into memory; for small files
  * used to load plain-text GTF files (optionally gzipped). Loads the whole file
  * into memory, so prefer the GtfTabixAdapter for large files.
  *

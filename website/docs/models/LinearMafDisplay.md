@@ -258,6 +258,11 @@ species in track order; `rowHeight` sets the per-sample band height in px (or
 | [setTreeCanvasRef](#action-settreecanvasref)                           | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setMouseoverCanvasRef](#action-setmouseovercanvasref)                 | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
+### LinearMafDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearmafdisplay).
+
 <details>
 <summary>LinearMafDisplay - Properties</summary>
 

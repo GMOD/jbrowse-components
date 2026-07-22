@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config MCScanAnchorsAdapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | MCScan anchors | Gene-level synteny; also needs one BED per assembly
  * used to load MCScan (jcvi) `.anchors` files with their two BED files
  *
  * #example

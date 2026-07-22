@@ -35,6 +35,7 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 
 - **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [BlastTabularAdapter](../blasttabularadapter)
 - **Adapter:** [ChainAdapter](../chainadapter)
 - **Adapter:** [DeltaAdapter](../deltaadapter)
 - **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)

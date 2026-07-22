@@ -58,16 +58,16 @@ Put `myplugin.js` in the same directory as your config file and reference it:
 }
 ```
 
-The `color` is set with the `displayDefaults` shorthand and works as a plain CSS
-color (`"displayDefaults": { "color": "green" }`) or, as here, a `jexl:`
-expression evaluated per feature. See
-[configuring displays](/docs/config_guides/tracks/#configuring-displays) for the
-shorthand and the per-display array form.
+The `color` is set with the
+[`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays)
+and works as a plain CSS color (`"displayDefaults": { "color": "green" }`) or,
+as here, a `jexl:` expression evaluated per feature.
 
 The feature is a `SimpleFeature`. In jexl color callbacks, read attributes as
 plain properties, e.g. `feature.start`, `feature.refName`,
 `feature.other_attribute`. In JavaScript plugin code (as above), the
-`SimpleFeature` API is `feature.get('start')`.
+`SimpleFeature` API is `feature.get('start')`. See
+[property access vs `get()`](/docs/config_guides/jexl#property-access-vs-get).
 
 See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 a full walkthrough.

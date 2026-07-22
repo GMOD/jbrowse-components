@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config BgzipTaffyAdapter
+ * #trackType MafTrack
+ * #fileFormat maf | TAF (bgzipped Taffy)
  * used to configure BgzipTaffy adapter
  */
 

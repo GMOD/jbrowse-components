@@ -784,6 +784,10 @@ export function parseTaggedComment(
       category = line.replace(/.*#category\s*/, '').trim() || undefined
     } else if (containsTag(line, 'trackType')) {
       trackType = line.replace(/.*#trackType\s*/, '').trim() || undefined
+    } else if (containsTag(line, 'fileFormat')) {
+      // Consumed by generateFileTypeDocs (the format -> adapter tables in the
+      // file types guide). Dropped here so it doesn't leak into the config
+      // page's prose.
     } else if (current) {
       current.lines.push(line)
     } else {

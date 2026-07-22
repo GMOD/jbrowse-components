@@ -7,6 +7,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config GtfTabixAdapter
  * #category adapter
  * #trackType FeatureTrack
+ * #fileFormat feature | GTF (tabix)
  * used to load bgzip-compressed, tabix-indexed GTF files
  *
  * #example

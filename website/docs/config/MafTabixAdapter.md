@@ -22,6 +22,11 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 }
 ```
 
+## Related links
+
+- **Track:** [MafTrack](../maftrack)
+- **Display:** [LinearMafDisplay](../linearmafdisplay)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

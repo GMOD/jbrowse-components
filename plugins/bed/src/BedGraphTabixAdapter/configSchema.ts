@@ -6,6 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config BedGraphTabixAdapter
  * #trackType QuantitativeTrack
+ * #fileFormat quantitative | BedGraph (tabix)
  * used to load bgzip-compressed, tabix-indexed bedGraph signal files
  *
  * #example

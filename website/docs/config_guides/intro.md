@@ -16,6 +16,9 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
     /* array of tracks being loaded, each references the assembly or assemblies
     it belongs to */
   ],
+  "connections": [/* optional array of track hub connections */],
+  "plugins": [/* optional array of plugins to load */],
+  "internetAccounts": [/* optional array of authentication providers */],
   "aggregateTextSearchAdapters": [/* optional array of text search adapters */],
   "defaultSession": {/* optional default session */}
 }
@@ -23,10 +26,17 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 
 The most important things to configure are your
 [assemblies](/docs/config_guides/assemblies) and your
-[tracks](/docs/config_guides/tracks). The optional top-level fields are
-`aggregateTextSearchAdapters` (see
-[text searching](/docs/config_guides/text_searching)) and `defaultSession` (see
-[default session](/docs/config_guides/default_session)).
+[tracks](/docs/config_guides/tracks). The rest of the top-level fields are
+optional:
+
+| Field                         | Guide                                                     |
+| ----------------------------- | --------------------------------------------------------- |
+| `connections`                 | [Connections](/docs/config_guides/connections)            |
+| `plugins`                     | [Plugins](/docs/config_guides/plugins)                    |
+| `internetAccounts`            | [Authentication](/docs/config_guides/authentication)      |
+| `aggregateTextSearchAdapters` | [Text searching](/docs/config_guides/text_searching)      |
+| `defaultSession`              | [Default session](/docs/config_guides/default_session)    |
+| `configuration`               | [JBrowseConfiguration](/docs/config/jbrowseconfiguration) |
 
 Looking for the complete list of options for a specific track or adapter type?
 The auto-generated [config reference](/docs/config_guide) has one page per type,

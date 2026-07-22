@@ -9,6 +9,13 @@ Auto-generated config schema for the current JBrowse release — see the
 `comparative-adapters` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts).
 
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

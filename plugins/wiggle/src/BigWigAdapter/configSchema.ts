@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config BigWigAdapter
  * #trackType QuantitativeTrack
+ * #fileFormat quantitative | BigWig
  * used to load BigWig quantitative signal files
  *
  * #example

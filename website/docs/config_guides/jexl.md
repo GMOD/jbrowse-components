@@ -30,12 +30,29 @@ jexl: feature.id // the feature's id attribute, e.g. a GFF3 ID=
 jexl: feature.parent // parent feature, e.g. the gene of an mRNA (undefined if none)
 ```
 
+### Property access vs `get()` {#property-access-vs-get}
+
 `feature.start` (property access) and `get(feature,'start')` (function form) are
 equivalent, and existing configs need no changes. The `get()` form works on
 every JBrowse release, while property access was added more recently. If your
 config must run on older versions, prefer `get()`. Otherwise use whichever reads
 more clearly, since property access is usually shorter. The examples in this
 guide use property access.
+
+There is one place the choice is not free. What `feature` actually is depends on
+which callback you are in:
+
+| Callback                                                                 | `feature` is                    | Property form | `get()` form |
+| ------------------------------------------------------------------------ | ------------------------------- | ------------- | ------------ |
+| Color, label, tooltip, filter (`color`, `name`, `mouseover`, `filterBy`) | a `SimpleFeature`               | yes           | yes          |
+| [`formatDetails`](/docs/config_guides/customizing_feature_details)       | a plain object from the session | yes           | **no**       |
+
+`formatDetails` runs against the serialized feature the detail panel holds, not
+a `SimpleFeature`, so `feature.get('start')` fails there. Property form works
+everywhere, which is the other reason to prefer it.
+
+In JavaScript plugin code the rule is different again: a `SimpleFeature` handed
+to your own function is the real object, so use `feature.get('start')`.
 
 ## Common patterns
 

@@ -21,12 +21,13 @@ File locations in adapter configs use a `{ "uri": "..." }` object. The
 omitted. It is only needed when the type cannot be inferred (e.g. local file
 paths on desktop).
 
-Example `config.json` containing a track config for a BigBed file:
+A complete `config.json` with one assembly and one BigBed track, showing where a
+track config sits:
 
 ```json
 {
   "assemblies": [
-    ...the hg19 assembly...
+    { "name": "hg19", "uri": "https://jbrowse.org/genomes/hg19/hg19.fa.gz" }
   ],
   "tracks": [
     {
@@ -37,25 +38,19 @@ Example `config.json` containing a track config for a BigBed file:
       "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
-        "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
-        }
+        "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
       }
     }
   ]
 }
 ```
 
-Most adapters also accept a reduced `uri` shorthand that auto-resolves the
-companion index. See [Supported file types](/docs/config_guides/file_types) for
-the per-format adapters and the `uri` shorthand:
-
-```json
-{
-  "type": "BigBedAdapter",
-  "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
-}
-```
+That is a complete, working config. Two shorthands keep it short: the assembly
+is written as just `{ name, uri }` (see
+[assemblies](/docs/config_guides/assemblies)), and the adapter uses the
+[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), whose
+longhand equivalent here is `"bigBedLocation": { "uri": "..." }`. The track's
+`assemblyNames` is what ties it to the `hg19` assembly above.
 
 ## Configuring displays
 
@@ -133,15 +128,28 @@ optional and defaults to `{trackId}-{displayType}`.
 }
 ```
 
-Common display types, for the array form:
+Every display type, by the track type it attaches to. Most tracks can be drawn
+more than one way, and the `displays` array is where you pick which:
 
-| Track type             | Display type             |
-| ---------------------- | ------------------------ |
-| FeatureTrack           | LinearBasicDisplay       |
-| AlignmentsTrack        | LinearAlignmentsDisplay  |
-| VariantTrack           | LinearVariantDisplay     |
-| MultiQuantitativeTrack | MultiLinearWiggleDisplay |
-| QuantitativeTrack      | LinearWiggleDisplay      |
+<!-- DISPLAY_TYPES START -->
+
+<!-- prettier-ignore -->
+| Track type | Display types |
+| --- | --- |
+| [AlignmentsTrack](/docs/config/alignmentstrack) | [LinearAlignmentsDisplay](/docs/config/linearalignmentsdisplay) |
+| [FeatureTrack](/docs/config/featuretrack) | [LinearArcDisplay](/docs/config/lineararcdisplay)<br/>[LinearBasicDisplay](/docs/config/linearbasicdisplay)<br/>[LinearMultiRowFeatureDisplay](/docs/config/linearmultirowfeaturedisplay) |
+| [GCContentTrack](/docs/config/gccontenttrack) | LinearGCContentTrackDisplay |
+| [GWASTrack](/docs/config/gwastrack) | [LinearManhattanDisplay](/docs/config/linearmanhattandisplay) |
+| [HicTrack](/docs/config/hictrack) | [LinearHicDisplay](/docs/config/linearhicdisplay) |
+| [LDTrack](/docs/config/ldtrack) | LDTrackDisplay |
+| [MafTrack](/docs/config/maftrack) | [LinearMafDisplay](/docs/config/linearmafdisplay) |
+| [MultiQuantitativeTrack](/docs/config/multiquantitativetrack) | [MultiLinearWiggleDisplay](/docs/config/multilinearwiggledisplay) |
+| [QuantitativeTrack](/docs/config/quantitativetrack) | [LinearWiggleDisplay](/docs/config/linearwiggledisplay) |
+| [ReferenceSequenceTrack](/docs/config/referencesequencetrack) | LinearGCContentDisplay<br/>[LinearReferenceSequenceDisplay](/docs/config/linearreferencesequencedisplay) |
+| [SyntenyTrack](/docs/config/syntenytrack) | [DotplotDisplay](/docs/config/dotplotdisplay)<br/>[LGVSyntenyDisplay](/docs/config/lgvsyntenydisplay)<br/>[LinearSyntenyDisplay](/docs/config/linearsyntenydisplay) |
+| [VariantTrack](/docs/config/varianttrack) | [ChordVariantDisplay](/docs/config/chordvariantdisplay)<br/>LDDisplay<br/>[LinearMultiSampleVariantDisplay](/docs/config/linearmultisamplevariantdisplay)<br/>[LinearMultiSampleVariantMatrixDisplay](/docs/config/linearmultisamplevariantmatrixdisplay)<br/>[LinearPairedArcDisplay](/docs/config/linearpairedarcdisplay)<br/>[LinearVariantDisplay](/docs/config/linearvariantdisplay) |
+
+<!-- DISPLAY_TYPES END -->
 
 See the [config guides](/docs/config_guide) for per-track display options.
 

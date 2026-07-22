@@ -11,6 +11,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config BedAdapter
  * #trackType FeatureTrack
+ * #fileFormat feature | BED (plain) | Loaded entirely into memory; for small files
  * used to load plain-text BED files. Loads the whole file into memory, so
  * prefer the BedTabixAdapter for large files.
  *

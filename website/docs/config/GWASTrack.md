@@ -40,6 +40,7 @@ used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
 
 - **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
   ([state model](../../models/linearmanhattandisplay))
+- **Adapter:** [GWASAdapter](../gwasadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Inherited config slots

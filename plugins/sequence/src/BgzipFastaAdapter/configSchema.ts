@@ -5,6 +5,7 @@ import { deriveFastaLocations } from '../chromSizesUtils.ts'
 /**
  * #config BgzipFastaAdapter
  * #trackType ReferenceSequenceTrack
+ * #fileFormat sequence | Bgzipped FASTA (.fa.gz + .fai + .gzi)
  *
  * #example
  * The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:

@@ -117,38 +117,54 @@ Put `myplugin.js` in the same directory as your config file, then use the custom
 See [our no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 more info on setting up a simple plugin for doing these customizations.
 
-## Example: Renaming multiple GFF3 attributes with a single function
+## More jexl function examples
 
-The `formatName` example above returns a single value for one field. You can
-also return an entire object from your jexl function to rename, add, or remove
-multiple fields at once. This is useful if your GFF3 file has attributes like
-`gc_content` or `avg_read_depth` and you want them to display with proper
-spacing and capitalization in the feature detail panel.
+The remaining examples are all bodies for `pluginManager.jexl.addFunction(...)`
+in the same plugin file above. Only the function changes.
+
+**Rename many attributes at once.** A jexl function can return a whole object
+rather than one field, which scales better than inline jexl when a GFF3 has
+several attributes to relabel. New keys with spaces or custom capitalization are
+added as-is:
 
 ```js
-// myplugin.js
-export default class MyPlugin {
-  name = 'MyPlugin'
-  version = '1.0.0'
-  install() {}
-  configure(pluginManager) {
-    pluginManager.jexl.addFunction('formatFeature', feature => {
-      const ret = {}
-      if (feature.gc_content !== undefined) {
-        ret.gc_content = undefined
-        ret['GC Content'] = feature.gc_content
-      }
-      if (feature.avg_read_depth !== undefined) {
-        ret.avg_read_depth = undefined
-        ret['Average Read Depth'] = feature.avg_read_depth
-      }
-      return ret
-    })
+pluginManager.jexl.addFunction('formatFeature', feature => {
+  const ret = {}
+  if (feature.gc_content !== undefined) {
+    ret.gc_content = undefined
+    ret['GC Content'] = feature.gc_content
   }
-}
+  if (feature.avg_read_depth !== undefined) {
+    ret.avg_read_depth = undefined
+    ret['Average Read Depth'] = feature.avg_read_depth
+  }
+  return ret
+})
 ```
 
-Then in your config.json, the `formatDetails` callback is:
+Call it with `"feature": "jexl:formatFeature(feature)"`.
+
+**Link out to dbxrefs.** Turn each `dbxref` into a link, falling back to plain
+text for prefixes you don't handle:
+
+```js
+pluginManager.jexl.addFunction('linkout', feature => {
+  if (!feature.dbxref) {
+    return ''
+  }
+  const dbxrefs = Array.isArray(feature.dbxref)
+    ? feature.dbxref
+    : [feature.dbxref]
+  return dbxrefs.map(dbxref => {
+    const [prefix, ref] = dbxref.split(':')
+    return prefix === 'Genbank' || prefix === 'GeneID'
+      ? `<a href="https://www.ncbi.nlm.nih.gov/gene/?term=${ref}">${dbxref}</a>`
+      : dbxref
+  })
+})
+```
+
+Call it on both levels so subfeatures get the links too:
 
 ```json
 {
@@ -162,74 +178,12 @@ Then in your config.json, the `formatDetails` callback is:
     {
       "type": "FeatureTrack",
       "trackId": "genes",
-      "assemblyNames": ["hg19"],
       "name": "Genes",
-      "formatDetails": {
-        "feature": "jexl:formatFeature(feature)"
-      }
-    }
-  ]
-}
-```
-
-As before, the returned object is shallow-merged onto the feature, and setting a
-key to `undefined` hides it. Unlike the inline jexl syntax, this scales cleanly
-when you have many attributes to rename, and new keys with spaces or custom
-capitalization are added as-is.
-
-## Example: A generalized solution to dbxrefs
-
-To link out to websites referenced in `dbxref`, use a jexl function like this:
-
-```js
-// myplugin.js
-export default class MyPlugin {
-  name = 'MyPlugin'
-  version = '1.0.0'
-  install() {}
-  configure(pluginManager) {
-    pluginManager.jexl.addFunction('linkout', feature => {
-      // no dbxref found, so return empty string
-      if (!feature.dbxref) {
-        return ''
-      }
-      const dbxrefs = Array.isArray(feature.dbxref)
-        ? feature.dbxref
-        : [feature.dbxref]
-      return dbxrefs.map(dbxref => {
-        // customized link for Genbank dbxref
-        if (dbxref.startsWith('Genbank:')) {
-          const ref = dbxref.replace('Genbank:', '')
-          return `<a href="https://www.ncbi.nlm.nih.gov/gene/?term=${ref}">${dbxref}</a>`
-        }
-        // customized link for GeneID dbxref
-        else if (dbxref.startsWith('GeneID:')) {
-          const ref = dbxref.replace('GeneID:', '')
-          return `<a href="https://www.ncbi.nlm.nih.gov/gene/?term=${ref}">${dbxref}</a>`
-        }
-        // no link, just plaintext returned
-        return dbxref
-      })
-    })
-  }
-}
-```
-
-And then in your config.json:
-
-```json
-{
-  "plugins": [
-    {
-      "name": "MyPlugin",
-      "esmLoc": { "uri": "myplugin.js" }
-    }
-  ],
-  "tracks": [
-    {
-      "trackId": "mytrack",
-      "name":"My track",
-      "adapter": {...},
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "volvox.sort.gff3.gz"
+      },
       "formatDetails": {
         "feature": "jexl:{dbxref:linkout(feature)}",
         "subfeatures": "jexl:{dbxref:linkout(feature)}"
@@ -239,13 +193,12 @@ And then in your config.json:
 }
 ```
 
-The feature in `formatDetails` callbacks is a plain JS object (not a
-`SimpleFeature`), so attributes are only available as plain properties like
-`feature.start`. The `feature.get('start')` method form does **not** work here.
-This is because the feature detail panel reads from the serialized session. In
-color callbacks the feature is a `SimpleFeature`, where property form
-(`feature.start`) and method form (`feature.get('start')`) both work. Property
-form is preferred.
+The feature in `formatDetails` callbacks is a plain JS object, not a
+`SimpleFeature`, because the detail panel reads from the serialized session. Use
+property access (`feature.start`); `feature.get('start')` does **not** work
+here. See
+[property access vs `get()`](/docs/config_guides/jexl#property-access-vs-get)
+for how this differs across callback types.
 
 ## Going beyond field formatting
 

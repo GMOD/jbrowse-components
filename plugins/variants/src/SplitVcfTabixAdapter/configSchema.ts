@@ -6,6 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config SplitVcfTabixAdapter
  * #trackType VariantTrack
+ * #fileFormat variants | Split VCF (one file per refName)
  * reads a set of per-chromosome VCF files, keyed by refName, instead of a
  * single combined VCF (useful for large call sets split by chromosome)
  *

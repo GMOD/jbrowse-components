@@ -47,6 +47,7 @@ identifies it (not one of the config slots below).
 
 - **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [BlastTabularAdapter](../blasttabularadapter)
 - **Adapter:** [ChainAdapter](../chainadapter)
 - **Adapter:** [DeltaAdapter](../deltaadapter)
 - **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)

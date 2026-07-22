@@ -23,6 +23,30 @@ JBrowse picks the adapter from the file extension (`.2bit` → `TwoBitAdapter`,
 shorthand. Keep the `uri` _key_ (not a bare string) so relative uris resolve
 against the config's location.
 
+```json
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "uri": "hg38.fa.gz",
+      "refNameAliases": { "uri": "hg38.aliases.txt" },
+      "cytobands": { "uri": "hg38.cytoBand.txt" }
+    }
+  ]
+}
+```
+
+To keep the shorthand adapter inference but name the adapter or set slots on it,
+write only `sequence.adapter`. `sequence.type` and `sequence.trackId` are always
+boilerplate and can stay omitted:
+
+```json
+{
+  "name": "hg38",
+  "sequence": { "adapter": { "uri": "hg38.fa.gz" } }
+}
+```
+
 The full form spells out everything the shorthand fills in. Here is a complete
 config.json file containing only the hg19 assembly:
 
@@ -176,159 +200,40 @@ generates it for you (and copies the files into place). See the
 [web quick start](/docs/quickstart_web/) for the full walkthrough, or the
 [CLI guide](/docs/cli/#jbrowse-add-assembly) for the `add-assembly` options.
 
-## BgzipFastaAdapter
+## Sequence adapters
 
-A bgzip FASTA is generated with:
+Every sequence adapter takes the
+[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), which
+resolves the index files sitting beside the data file. Spell out the longhand
+slots only when they are named differently; each adapter's config page lists
+them.
 
-```bash
-bgzip -i sequence.fa
-samtools faidx sequence.fa.gz
-
-## above commands generate the following three files
-sequence.fa.gz
-sequence.fa.gz.gzi
-sequence.fa.gz.fai
-```
-
-With the `uri` shorthand (as in the assembly above) the adapter assumes the two
-index files sit next to the data file with the standard suffixes appended (here
-`hg19.fa.gz.fai` and `hg19.fa.gz.gzi`). The other sequence adapters below accept
-the same shorthand.
-
-```json
-{
-  "type": "BgzipFastaAdapter",
-  "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
-}
-```
-
-Spell out the `fastaLocation`, `faiLocation`, and `gziLocation` slots only when
-the index files are named differently (see the
-[BgzipFastaAdapter config docs](/docs/config/bgzipfastaadapter) for all
-options):
-
-```json
-{
-  "type": "BgzipFastaAdapter",
-  "fastaLocation": { "uri": "https://example.com/genome.fa.gz" },
-  "faiLocation": { "uri": "https://example.com/genome.index.fai" },
-  "gziLocation": { "uri": "https://example.com/genome.index.gzi" }
-}
-```
-
-## IndexedFastaAdapter
-
-An indexed FASTA uses an uncompressed `.fa` plus a `.fai` index.
+| Adapter                                                     | Files                                  | Prepare with            |
+| ----------------------------------------------------------- | -------------------------------------- | ----------------------- |
+| [BgzipFastaAdapter](/docs/config/bgzipfastaadapter)         | `.fa.gz` + `.fa.gz.fai` + `.fa.gz.gzi` | `bgzip -i` then `faidx` |
+| [IndexedFastaAdapter](/docs/config/indexedfastaadapter)     | `.fa` + `.fa.fai`                      | `samtools faidx`        |
+| [UnindexedFastaAdapter](/docs/config/unindexedfastaadapter) | `.fa`                                  | nothing                 |
+| [TwoBitAdapter](/docs/config/twobitadapter)                 | `.2bit`, optionally `.chrom.sizes`     | UCSC `faToTwoBit`       |
+| [ChromSizesAdapter](/docs/config/chromsizesadapter)         | `.chrom.sizes`                         | nothing                 |
 
 ```bash
-samtools faidx sequence.fa
-
-## above command generates the .fai index file
-sequence.fa
-sequence.fa.fai
+bgzip -i sequence.fa           # -> sequence.fa.gz + sequence.fa.gz.gzi
+samtools faidx sequence.fa.gz  # -> sequence.fa.gz.fai
 ```
 
-Load it with the `uri` shorthand (the index is assumed at `<uri>.fai`):
+A few things worth knowing when choosing:
 
-```json
-{
-  "type": "IndexedFastaAdapter",
-  "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa"
-}
-```
-
-Spell out the `fastaLocation` and `faiLocation` slots only when the `.fai` is
-named differently (see the
-[IndexedFastaAdapter config docs](/docs/config/indexedfastaadapter) for all
-options):
-
-```json
-{
-  "type": "IndexedFastaAdapter",
-  "fastaLocation": { "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa" },
-  "faiLocation": { "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai" }
-}
-```
-
-## UnindexedFastaAdapter
-
-A plain (non-bgzipped) FASTA with no separate index. The adapter reads the whole
-sequence into memory, so prefer `IndexedFastaAdapter` or `BgzipFastaAdapter` for
-large genomes. This is mainly convenient for small genomes where you don't want
-to run `samtools faidx`.
-
-```json
-{
-  "type": "UnindexedFastaAdapter",
-  "uri": "https://example.com/genome.fa"
-}
-```
-
-The full form uses `fastaLocation` (see the
-[UnindexedFastaAdapter config docs](/docs/config/unindexedfastaadapter) for all
-options).
-
-### FASTA metadata
-
-Attach free-form metadata via `metadataLocation` on an IndexedFastaAdapter or
-BgzipFastaAdapter. One documented option is the
-[FFRGS (Fair Formatted Reference Genome Standard) specification](https://github.com/FFRGS/FFRGS-Specification).
-The raw plaintext is displayed as-is, so the format is not strict from JBrowse's
-perspective.
-
-```json
-{
-  "type": "IndexedFastaAdapter",
-  "uri": "https://example.com/genome.fa",
-  "metadataLocation": {
-    "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml"
-  }
-}
-```
-
-## TwoBitAdapter
-
-The UCSC twoBit format has a longer startup time than other adapters due to
-upfront parsing.
-
-```json
-{
-  "type": "TwoBitAdapter",
-  "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit"
-}
-```
-
-Optionally add a `.chrom.sizes` file, which speeds up loading a 2bit that has
-many chromosomes:
-
-```json
-{
-  "type": "TwoBitAdapter",
-  "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit",
-  "chromSizes": "https://jbrowse.org/genomes/hg19/fasta/hg19.chrom.sizes"
-}
-```
-
-The longhand form uses the `twoBitLocation` and `chromSizesLocation` slots. See
-the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options.
-
-## ChromSizesAdapter
-
-When you only have chromosome names and lengths but no actual sequence (for
-example to set up a karyotype or to anchor synteny/whole-genome views without
-loading a FASTA), use a `.chrom.sizes` file (tab-separated `name<TAB>length`).
-
-```json
-{
-  "type": "ChromSizesAdapter",
-  "uri": "https://jbrowse.org/genomes/hg19/hg19.chrom.sizes"
-}
-```
-
-The longhand form uses a `chromSizesLocation` slot. See the
-[ChromSizesAdapter config docs](/docs/config/chromsizesadapter) for all options.
-
-The reference sequence track displays no base-level sequence with this adapter.
+- `UnindexedFastaAdapter` reads the whole sequence into memory. It is for small
+  genomes where you don't want to run `samtools faidx`.
+- `TwoBitAdapter` parses upfront, so it has a longer startup time. Adding a
+  `chromSizes` file speeds up a 2bit with many chromosomes.
+- `ChromSizesAdapter` has names and lengths but no sequence, so the reference
+  sequence track shows no bases. Use it to anchor a karyotype or a synteny or
+  whole-genome view without loading a FASTA.
+- `metadataLocation` on an indexed or bgzipped FASTA attaches free-form
+  metadata, displayed as-is. The
+  [FFRGS specification](https://github.com/FFRGS/FFRGS-Specification) is one
+  documented option, but JBrowse does not enforce a format.
 
 ## Configuring cytoband ideograms
 

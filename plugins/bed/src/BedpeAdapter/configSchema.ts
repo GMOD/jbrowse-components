@@ -18,6 +18,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config BedpeAdapter
  * #trackType VariantTrack
+ * #fileFormat variants | BEDPE | Paired/breakend records, e.g. SV calls or Hi-C loops
  * intended for SVs in a single assembly
  *
  * #example

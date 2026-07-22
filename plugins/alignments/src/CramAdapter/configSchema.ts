@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config CramAdapter
  * #trackType AlignmentsTrack
+ * #fileFormat alignments | CRAM
  * used to configure CRAM adapter
  *
  * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse

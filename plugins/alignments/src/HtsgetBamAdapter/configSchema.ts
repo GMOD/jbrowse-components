@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config HtsgetBamAdapter
  * #trackType AlignmentsTrack
+ * #fileFormat alignments | Htsget BAM | Less exercised than plain BAM/CRAM; prefer an indexed file where possible
  * Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
  *
  * #example

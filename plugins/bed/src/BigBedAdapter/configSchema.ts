@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config BigBedAdapter
  * #trackType FeatureTrack
+ * #fileFormat feature | BigBed
  *
  * #example
  * ```js

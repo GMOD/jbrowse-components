@@ -4,6 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config HicAdapter
  * #category adapter
  * #trackType HicTrack
+ * #fileFormat hic | .hic contact matrix
  * used to load Hi-C contact matrix data from a `.hic` file
  *
  * #example

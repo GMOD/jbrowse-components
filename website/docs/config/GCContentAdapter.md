@@ -9,6 +9,11 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentAdapter/configSchema.ts).
 
+## Related links
+
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the

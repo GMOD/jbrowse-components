@@ -59,6 +59,7 @@ array form — see
 
 - **Adapter:** [BedGraphAdapter](../bedgraphadapter)
 - **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
+- **Adapter:** [GCContentAdapter](../gccontentadapter)
 - **Adapter:** [BigWigAdapter](../bigwigadapter)
 - **State model:** [runtime API](../../models/linearwiggledisplay)
 

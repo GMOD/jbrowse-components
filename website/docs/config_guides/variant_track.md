@@ -22,14 +22,10 @@ Example config:
 
 ## VcfTabixAdapter configuration options
 
-The `uri` shorthand above is the common case: the adapter assumes the tabix
-index sits next to the data file at `<uri>.tbi`. Spell out the location slots
-only when the index is named differently or is a CSI index:
-
-- `vcfGzLocation` - file location of the bgzip'd VCF
-- `index.location` - file location of the index
-- `index.indexType` - `TBI` (default) or `CSI`. Use CSI for chromosomes longer
-  than 512 Mb (e.g. some plant genomes), which TBI cannot index
+The `uri` shorthand above is the common case: the adapter resolves the tabix
+index at `<uri>.tbi`. Spell out `vcfGzLocation` and `index.location` only when
+the index is named differently or is a CSI index (see
+[the `uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand)):
 
 ```json
 {
@@ -67,11 +63,10 @@ field via `feature.INFO.SVTYPE` and maps it to a color:
 }
 ```
 
-The `displayDefaults` object is shorthand. JBrowse applies the `color` to the
-variant display for you, so you don't have to know the display's name
-(`LinearVariantDisplay`) or write the array. For per-display control use the
-array form (see the
-[track config guide](/docs/config_guides/tracks/#configuring-displays)).
+The
+[`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays)
+applies the `color` to the variant display for you, so you don't have to name
+`LinearVariantDisplay` or write the array.
 
 The `|| 'gray'` fallback colors any SVTYPE not in the map (or variants without
 an SVTYPE field) gray. INFO fields are parsed as arrays, so index the first
@@ -82,7 +77,7 @@ more jexl color examples.
 
 If your config must run on older JBrowse releases, use the equivalent
 `get(feature,'INFO').SVTYPE[0]` function form instead of property access. See
-the [jexl guide's note on the two forms](/docs/config_guides/jexl).
+[property access vs `get()`](/docs/config_guides/jexl#property-access-vs-get).
 
 ## MultiVariant display configuration
 
@@ -144,17 +139,14 @@ block, so to preset both the linear and matrix displays, set the slot on each:
 }
 ```
 
+These are initial defaults. Users can change them at runtime from the track menu
+or the "Edit colors/arrangement" dialog, and their choice is stored in the
+session for that session only.
+
 ### Auto-coloring samples by metadata
 
-If you have sample metadata (e.g., population, cohort, phenotype) stored in a
-TSV file, you can configure the display to automatically color samples by a
-specific attribute when the track loads.
-
-#### Provide sample metadata via samplesTsvLocation
-
-Configure your adapter with a `samplesTsvLocation` that points to a TSV file
-with sample metadata. The first column must be `name` (the sample names matching
-the VCF), and subsequent columns are arbitrary metadata attributes:
+Point the adapter's `samplesTsvLocation` at a TSV whose first column is `name`
+(matching the VCF sample names), with any further columns as metadata:
 
 ```tsv
 name	population	region	phenotype
@@ -164,10 +156,8 @@ SAMPLE003	EUR	Western	control
 SAMPLE004	EAS	Pacific	case
 ```
 
-#### Configure colorBy on the display
-
-Then set the `colorBy` option on the display to the attribute you want to color
-by:
+Then set `colorBy` on the display to one of those column names. Each distinct
+value gets its own color from the palette:
 
 ```json
 {
@@ -192,107 +182,20 @@ by:
 }
 ```
 
-With this configuration, samples are colored by their `population` value when
-the track loads. Each unique value (EUR, AFR, EAS, etc.) gets a distinct color
-from the palette. `colorBy` combines with the default-settings slots above. List
-them together in the same display block.
-
-### Notes
-
-- The `showReferenceAlleles` option can be set on both
-  `LinearMultiSampleVariantDisplay` and `LinearMultiSampleVariantMatrixDisplay`.
-- The configuration values are just the initial defaults. Users can change these
-  settings at runtime via the track menu or the "Edit colors/arrangement"
-  dialog, and their preference is stored in the session, overriding the
-  configuration default for that session.
-- The `colorBy` attribute must exist in the sample metadata TSV file. If the
-  attribute is not found, a warning is logged to the console and no automatic
-  coloring is applied.
+If the named attribute isn't in the TSV, JBrowse logs a console warning and
+skips the coloring.
 
 ## Linkage disequilibrium (LD) display
 
-JBrowse can render a triangular LD heatmap of pairwise r² (or D') between
-variants. There are two ways to supply the data:
+JBrowse renders a triangular heatmap of pairwise r² (or D') between variants,
+from either of two sources.
 
-- **Computed from a VCF**: add the `LDDisplay` to a regular `VariantTrack`. LD
-  is computed on the fly from the genotypes in the visible region, so no extra
-  files are needed. Filtering (minor allele frequency, HWE, call rate, jexl) and
-  signed-LD values are available because the raw genotypes are present.
-- **Pre-computed with PLINK**: use a standalone `LDTrack` pointing at PLINK
-  `--r2` output via `PlinkLDAdapter` (plain `.ld`) or `PlinkLDTabixAdapter`
-  (bgzipped + tabix-indexed `.ld.gz`). This is the right choice for large
-  cohorts where computing LD in the browser would be too slow, or when you want
-  to publish a fixed LD matrix.
+<Figure src="/img/ld/lct_lactase.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), computed live from phased 1000 Genomes genotypes. Red means a pair of SNPs is almost always inherited together; the solid block over the highlighted gene is one long haplotype, with LD decaying into the lighter flanks."/>
 
-Each cell of the triangle is the r² correlation between a pair of SNPs across
-the samples: **red = almost always inherited together, white = independent**.
-Physically close SNPs are usually correlated (red near the diagonal) and that
-correlation decays with distance — except where a whole segment is inherited as
-one unit, which shows up as a solid red block.
-
-<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus (LCT/MCM6), computed live from phased 1000 Genomes genotypes (exact r², common SNPs). The red block over the highlighted gene is the long haplotype left by recent positive selection for lactase persistence — its SNPs travel as a unit — and you can see LD decay into the lighter flanks on either side."/>
-
-The same picture explains why an **inversion** produces a block. Because the
-inverted and standard arrangements cannot recombine in a heterozygote, the whole
-inverted segment is inherited together, so its SNPs stay in strong LD across the
-entire inverted region.
-
-### Generating the PLINK file
-
-The `.ld` file is PLINK's `--r2` report (columns
-`CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2`, plus `DP`/`MAF_A`/`MAF_B` with the
-`dprime`/`with-freqs` flags). `PlinkLDAdapter` reads the plain file directly;
-for a chromosome-scale or genome-wide file, bgzip and tabix it so it works with
-`PlinkLDTabixAdapter`. The
-[GWAS track guide → Preparing the LD file](/docs/config_guides/gwas_track#preparing-the-ld-file)
-gives the exact `plink`, `bgzip`, and `tabix` commands. The same `.ld` file is
-used both for coloring GWAS points by LD and for the standalone LD track here.
-
-### Pre-computed LD track (plain `.ld`)
-
-```json
-{
-  "type": "LDTrack",
-  "trackId": "ld_plink",
-  "name": "Linkage disequilibrium",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "PlinkLDAdapter",
-    "uri": "https://yourhost/study.ld"
-  }
-}
-```
-
-The `uri` expands to the `ldLocation` slot. See the
-[PlinkLDAdapter config docs](/docs/config/plinkldadapter) for the longhand form.
-
-### Pre-computed LD track (tabix-indexed `.ld.gz`)
-
-For chromosome-scale or genome-wide files, use the tabix adapter so only pairs
-in the visible region are fetched:
-
-```json
-{
-  "type": "LDTrack",
-  "trackId": "ld_plink_tabix",
-  "name": "Linkage disequilibrium",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "PlinkLDTabixAdapter",
-    "uri": "https://yourhost/study.ld.gz"
-  }
-}
-```
-
-The `uri` shorthand assumes a sibling `<uri>.tbi` index. Spell out `ldLocation`
-and `index.location` (see the
-[PlinkLDTabixAdapter config docs](/docs/config/plinkldtabixadapter)) if the
-index is named differently.
-
-### Computed-from-VCF LD display
-
-Attach an `LDDisplay` to a normal `VcfTabixAdapter` variant track. No LD file is
-needed. LD is computed from genotypes in the visible region:
+**Computed from a VCF.** Add an `LDDisplay` to a normal `VariantTrack`. No extra
+files are needed, and because the raw genotypes are present, the filtering
+(minor allele frequency, HWE, call rate, jexl) and signed-LD options are
+available:
 
 ```json
 {
@@ -304,21 +207,36 @@ needed. LD is computed from genotypes in the visible region:
     "type": "VcfTabixAdapter",
     "uri": "https://yourhost/variants.vcf.gz"
   },
-  "displays": [
-    {
-      "type": "LDDisplay"
-    }
-  ]
+  "displays": [{ "type": "LDDisplay" }]
 }
 ```
 
-Both displays expose the same track-menu controls (LD metric, recombination
-overlay, legend, fit-to-height), but the filtering and signed-LD options only
-appear for the VCF-computed display, since pre-computed PLINK data carries only
-the final r²/D' values. See the autogenerated [LDTrack](/docs/config/ldtrack),
-[PlinkLDAdapter](/docs/config/plinkldadapter), and
-[PlinkLDTabixAdapter](/docs/config/plinkldtabixadapter) docs for the full slot
-reference.
+**Pre-computed with PLINK.** Use a standalone `LDTrack` when the cohort is too
+large to compute in the browser, or when you want to publish a fixed matrix. Its
+adapter is `PlinkLDAdapter` for a plain `.ld` or `PlinkLDTabixAdapter` for a
+bgzipped, tabix-indexed `.ld.gz` (which fetches only the visible region):
+
+```json
+{
+  "type": "LDTrack",
+  "trackId": "ld_plink",
+  "name": "Linkage disequilibrium",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "PlinkLDTabixAdapter",
+    "uri": "https://yourhost/study.ld.gz"
+  }
+}
+```
+
+The `.ld` file is PLINK's `--r2` report. The
+[GWAS track guide](/docs/config_guides/gwas_track#preparing-the-ld-file) has the
+`plink`/`bgzip`/`tabix` commands; the same file also drives LD coloring on a
+GWAS track.
+
+Both displays share the same track-menu controls (LD metric, recombination
+overlay, legend, fit-to-height). Only the VCF-computed one offers filtering and
+signed LD, since PLINK data carries only the final r²/D' values.
 
 ## See also
 

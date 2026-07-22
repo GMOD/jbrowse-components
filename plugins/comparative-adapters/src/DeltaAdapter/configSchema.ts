@@ -4,6 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config DeltaAdapter
  * #category adapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | Delta (MUMmer / nucmer)
  * used to load MUMmer `.delta` alignment files (query and target assembly
  * required)
  *

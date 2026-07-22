@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config AllVsAllPAFAdapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | All-vs-all PAF | PanSN-prefixed; one file backs every pair in a multi-way view
  * Loads a single "all-vs-all" PAF (e.g. `minimap2 all.fa all.fa`, or the PGGB
  * mapping step) where every sequence name is PanSN-prefixed with its assembly
  * (`sample#haplotype#contig`). Because such a file contains every pairwise

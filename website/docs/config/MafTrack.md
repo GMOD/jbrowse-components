@@ -1,61 +1,54 @@
 ---
-id: quantitativetrack
-title: QuantitativeTrack
-sidebar_label: Track -> QuantitativeTrack
+id: maftrack
+title: MafTrack
+sidebar_label: Track -> MafTrack
 ---
 
 Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `wiggle`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/QuantitativeTrack/configSchema.ts).
+[config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTrack/configSchema.ts).
 
 ## Example usage
 
-```js
-{
-  type: 'QuantitativeTrack',
-  trackId: 'coverage',
-  name: 'Coverage',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://example.com/coverage.bw',
-  },
-}
-```
-
-The same track with appearance settings in place. Rather than writing out the
-full `displays` array, you can list them in a `displayDefaults` object — JBrowse
-works out which display they belong to and applies them for you (here, the
-`LinearWiggleDisplay`), so you don't have to know display names:
+A tabix-indexed MAF, with the aligned species supplied by a Newick tree that
+also orders and labels the rows as a dendrogram (pass a `samples` array instead
+to list them explicitly, in track order):
 
 ```js
 {
-  type: 'QuantitativeTrack',
-  trackId: 'coverage',
-  name: 'Coverage',
-  assemblyNames: ['hg38'],
+  type: 'MafTrack',
+  trackId: 'ce11.26way',
+  name: 'UCSC 26-way multiple alignment',
+  assemblyNames: ['ce11'],
   adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://example.com/coverage.bw',
+    type: 'MafTabixAdapter',
+    uri: 'https://jbrowse.org/demos/ce/ce11.26way.bed.gz',
+    nhLocation: {
+      uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/ce11/multiz26way/ce11.26way.nh',
+    },
   },
-  displayDefaults: { scaleType: 'log', color: 'darkgreen', useBicolor: false },
 }
 ```
 
 _See the **Config slots** section below for all available configuration fields._
 
-a numerical signal track (coverage, conservation, etc.), typically backed by a
-BigWig file and drawn as an XY plot or density
+## Overview
+
+used for multiple alignment (MAF/TAF) tracks, rendered as one row per aligned
+species with a conservation summary above them
+
+### MafTrack - Identifier
+
+Every MafTrack has a unique `trackId`, a required top-level field that
+identifies it (not one of the config slots below).
 
 ## Related links
 
-- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
-  ([state model](../../models/linearwiggledisplay))
-- **Adapter:** [BedGraphAdapter](../bedgraphadapter)
-- **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
-- **Adapter:** [GCContentAdapter](../gccontentadapter)
-- **Adapter:** [BigWigAdapter](../bigwigadapter)
+- **Display:** [LinearMafDisplay](../linearmafdisplay)
+  ([state model](../../models/linearmafdisplay))
+- **Adapter:** [BgzipTaffyAdapter](../bgziptaffyadapter)
+- **Adapter:** [BigMafAdapter](../bigmafadapter)
+- **Adapter:** [MafTabixAdapter](../maftabixadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Inherited config slots

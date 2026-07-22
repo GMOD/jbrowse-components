@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config MCScanBlocksAdapter
  * #trackType SyntenyTrack
+ * #fileFormat synteny | MCScan blocks | Multi-genome, reference-anchored; also needs one BED per assembly
  * Loads a multi-genome MCScan (jcvi) `.blocks` file: a reference-anchored,
  * tab-delimited table where column 0 is a reference gene and each further
  * column is that gene's ortholog in another genome (`.` = no ortholog),

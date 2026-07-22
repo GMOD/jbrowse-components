@@ -94,125 +94,39 @@ for more CLI options.
 
 ## Adapter reference
 
-All adapters accept `assemblyNames` as a two-element `["query", "target"]` array
-(query first, which is the reverse of the order minimap2/nucmer take their
-inputs, so double-check it). The alignment-file adapters (`PAFAdapter`,
-`DeltaAdapter`, `ChainAdapter`) also accept the named
-`queryAssembly`/`targetAssembly` fields. The MCScan adapters take only
-`assemblyNames`. All file locations accept gzip-compressed input. The PAF,
-delta, chain, and anchors adapters read the whole file into memory. For very
-large alignments use `PairwiseIndexedPAFAdapter` instead, which reads a
-tabix-indexed PIF region by region.
+The per-adapter slots are on each adapter's config page (see
+[Choosing an adapter](#choosing-an-adapter) above). Four rules apply across all
+of them:
 
-### PAFAdapter
+- `assemblyNames` is always `["query", "target"]`, query first. The
+  alignment-file adapters (`PAFAdapter`, `DeltaAdapter`, `ChainAdapter`) also
+  accept the named `queryAssembly`/`targetAssembly` fields, which cannot be read
+  in the wrong order. The MCScan adapters take only `assemblyNames`.
+- All file locations accept gzip-compressed input, and all adapters accept the
+  [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand).
+- Every adapter except `PairwiseIndexedPAFAdapter` reads the whole file into
+  memory. For large alignments, convert to PIF and use that one instead.
+- The MCScan adapters additionally need one BED file per assembly (`bed1` and
+  `bed2`), which are intermediate outputs of the
+  [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
 
-Used for `.paf` files from minimap2, wfmash, and similar aligners.
-
-```json
-{
-  "type": "PAFAdapter",
-  "pafLocation": { "uri": "alignment.paf.gz" },
-  "assemblyNames": ["query", "target"]
-}
-```
-
-A short form using `uri` directly is also accepted. See the
-[PAFAdapter config docs](/docs/config/pafadapter) for all options.
-
-### PairwiseIndexedPAFAdapter
-
-Used for large alignments: convert a PAF to a tabix-indexed PIF with
-`jbrowse make-pif alignment.paf` (writes `alignment.pif.gz` + `.tbi`), so only
-the visible region is read instead of loading the whole file into memory.
+A gene-level MCScan track, showing the BED files and the two-assembly pairing:
 
 ```json
 {
-  "type": "PairwiseIndexedPAFAdapter",
-  "uri": "alignment.pif.gz",
-  "queryAssembly": "query",
-  "targetAssembly": "target"
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach",
+  "name": "Grape vs peach",
+  "assemblyNames": ["grape", "peach"],
+  "adapter": {
+    "type": "MCScanAnchorsAdapter",
+    "uri": "grape.peach.anchors.gz",
+    "bed1": "grape.bed.gz",
+    "bed2": "peach.bed.gz",
+    "assemblyNames": ["grape", "peach"]
+  }
 }
 ```
-
-The `uri` shorthand auto-resolves the `.tbi` index (pass `"csi": true` for a
-`.csi` index). See the
-[PairwiseIndexedPAFAdapter config docs](/docs/config/pairwiseindexedpafadapter)
-for all options.
-
-### DeltaAdapter
-
-Used for `.delta` files from MUMmer/nucmer.
-
-```bash
-nucmer target.fa query.fa -p alignment
-# produces alignment.delta
-```
-
-```json
-{
-  "type": "DeltaAdapter",
-  "deltaLocation": { "uri": "alignment.delta.gz" },
-  "assemblyNames": ["query", "target"]
-}
-```
-
-See the [DeltaAdapter config docs](/docs/config/deltaadapter) for all options.
-
-### ChainAdapter
-
-Used for `.chain` files in the UCSC chain format, produced by tools like lastz
-or liftOver pipelines.
-
-```json
-{
-  "type": "ChainAdapter",
-  "chainLocation": { "uri": "alignment.chain.gz" },
-  "assemblyNames": ["query", "target"]
-}
-```
-
-See the [ChainAdapter config docs](/docs/config/chainadapter) for all options.
-
-### MCScanAnchorsAdapter
-
-Used for gene-level synteny from the
-[MCScan pipeline](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
-Requires the `.anchors` file and one BED file per assembly (these BED files are
-intermediate outputs of the MCScan workflow).
-
-```json
-{
-  "type": "MCScanAnchorsAdapter",
-  "mcscanAnchorsLocation": { "uri": "grape.peach.anchors.gz" },
-  "bed1Location": { "uri": "grape.bed.gz" },
-  "bed2Location": { "uri": "peach.bed.gz" },
-  "assemblyNames": ["grape", "peach"]
-}
-```
-
-A short form using `uri`, `bed1`, and `bed2` is also accepted. See the
-[MCScanAnchorsAdapter config docs](/docs/config/mcscananchorsadapter) for all
-options.
-
-### MCScanSimpleAnchorsAdapter
-
-Used for `.anchors.simple` files from MCScan (5-column format: start/end gene
-from each assembly plus score). Requires the same BED files as
-`MCScanAnchorsAdapter`.
-
-```json
-{
-  "type": "MCScanSimpleAnchorsAdapter",
-  "mcscanSimpleAnchorsLocation": { "uri": "grape.peach.anchors.simple.gz" },
-  "bed1Location": { "uri": "grape.bed.gz" },
-  "bed2Location": { "uri": "peach.bed.gz" },
-  "assemblyNames": ["grape", "peach"]
-}
-```
-
-See the
-[MCScanSimpleAnchorsAdapter config docs](/docs/config/mcscansimpleanchorsadapter)
-for all options.
 
 ## See also
 

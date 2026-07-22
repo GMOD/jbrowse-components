@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config BedGraphAdapter
  * #trackType QuantitativeTrack
+ * #fileFormat quantitative | BedGraph (plain) | Loaded entirely into memory; for small files
  * used to load plain-text bedGraph signal files. Loads the whole file into
  * memory, so prefer the BedGraphTabixAdapter for large files.
  *
