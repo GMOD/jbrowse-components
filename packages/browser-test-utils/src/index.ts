@@ -2,6 +2,7 @@ export { createTestServer } from './server.ts'
 export { smokeExamplesSite } from './examplesSmoke.ts'
 export {
   buildDocIndex,
+  findBrokenCrossLinks,
   findBrokenDocLinks,
   suggestDocLinks,
 } from './docLinks.ts'
@@ -26,5 +27,10 @@ export {
 
 export type { TestServerOptions } from './server.ts'
 export type { SmokeOptions } from './examplesSmoke.ts'
-export type { BrokenLink, DocPage, DocSuggestion } from './docLinks.ts'
+export type {
+  BrokenCrossLink,
+  BrokenLink,
+  DocPage,
+  DocSuggestion,
+} from './docLinks.ts'
 export type { Verdict } from './reviewVerdicts.ts'

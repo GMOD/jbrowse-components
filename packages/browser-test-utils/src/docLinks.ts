@@ -138,6 +138,56 @@ export function findBrokenDocLinks({
   return broken
 }
 
+export interface BrokenCrossLink {
+  file: string
+  url: string
+  reason: string
+}
+
+// Scan content files for the site-internal cross-links the example docs use to
+// point at each other (`../<page-slug>/#<section-slug>`) and return the ones
+// that no longer resolve. These break silently whenever a page is renamed or a
+// section is moved between pages, which the outbound jbrowse.org check can't
+// see. `pages` is the site's own examples.ts page list.
+export function findBrokenCrossLinks({
+  contentDirs,
+  pages,
+}: {
+  contentDirs: string[]
+  pages: { slug: string; sections: { slug: string }[] }[]
+}): BrokenCrossLink[] {
+  const pageSlugs = new Set(pages.map(p => p.slug))
+  // a section anchor is only valid on the page that actually holds it
+  const sectionsByPage = new Map(
+    pages.map(p => [p.slug, new Set(p.sections.map(s => s.slug))]),
+  )
+  const broken: BrokenCrossLink[] = []
+  // anchored on markdown `](…)` / html `href="…"` so it can't fire on the
+  // `../examples/Foo.tsx` import specifiers in .astro page files
+  const linkRe =
+    /(?:\]\(|href=")\.\.\/([A-Za-z0-9-]+)\/(#([A-Za-z0-9-]+))?(?=[)"])/g
+  const files = contentDirs.flatMap(d =>
+    listFilesRecursive(d, ['.md', '.astro']),
+  )
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8')
+    for (const m of text.matchAll(linkRe)) {
+      const [match, page, , anchor] = m
+      const url = match!.replace(/^(\]\(|href=")/, '')
+      if (!pageSlugs.has(page!)) {
+        broken.push({ file, url, reason: `no page "${page}"` })
+      } else if (anchor && !sectionsByPage.get(page!)!.has(anchor)) {
+        broken.push({
+          file,
+          url,
+          reason: `page "${page}" has no section "${anchor}"`,
+        })
+      }
+    }
+  }
+  return broken
+}
+
 export interface DocSuggestion {
   file: string
   // the config `type` value found, e.g. 'BigWigAdapter'

@@ -1,11 +1,15 @@
 #!/bin/bash
+# Build every demo. Run before deploy so a broken build fails here rather than
+# after half the demos are already live.
 set -e
-JB2TMP=${JB2TMP:-~/jb2tmp}
-cd $JB2TMP
-for i in jbrowse*; do
-  cd $i
+cd "$(dirname "$0")"
+source ./demos.sh
+
+build_one() {
+  echo "BUILD $1"
   yarn
   yarn build
-  cd -
-done
-cd -
+  echo "DONE BUILD $1"
+}
+
+for_each_demo build_one

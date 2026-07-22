@@ -8,6 +8,6 @@ can still toggle the tracks you provided on and off. They just can't introduce
 new ones.
 
 `disableAddTracks` is one of several props the embedded `<LinearGenomeView>`
-accepts; the
+accepts. The
 [Embedding JBrowse tutorial](https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/)
 shows the component in a full example.

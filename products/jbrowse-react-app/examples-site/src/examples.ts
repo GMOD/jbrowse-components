@@ -189,8 +189,6 @@ export const pages: ExamplePage[] = [
     description:
       'A richer hg38 session: genes, repeats, exome alignments, variants, and conservation.',
     group: 'Real-world demos',
-    // section break: how-to examples above, real-data demo below
-    dividerBefore: true,
     sections: [
       {
         slug: 'human-demo',

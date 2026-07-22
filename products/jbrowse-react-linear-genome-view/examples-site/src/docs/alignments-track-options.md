@@ -67,6 +67,6 @@ For the complete, always-current list, see the generated
 and [state model](https://jbrowse.org/jb2/docs/models/linearalignmentsdisplay/)
 reference pages.
 
-The reads here carry 5mC methylation calls; the
+The reads here carry 5mC methylation calls. The
 [DNA methylation tutorial](https://jbrowse.org/jb2/docs/tutorials/methylation/)
 covers per-read, aggregate, and allele-specific methylation from long reads.

@@ -15,8 +15,8 @@ way to layer a heavy track (e.g. a CRAM alignments track) on top of an existing
 `showTrack` (and its counterpart `hideTrack`) are documented in the
 [LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).
 
-For a track that isn't in the `tracks` config at all — a file the user just
-picked, a hit from your own search service, a URL pasted into a form — register
+For a track that isn't in the `tracks` config at all (a file the user just
+picked, a hit from your own search service, a URL pasted into a form), register
 its config on the session first, then show it:
 
 ```js

@@ -26,10 +26,10 @@ Every observable property and getter is listed in the
 Anything marked `#getter` or `#property` is reactive and safe to read.
 
 `createViewState` also takes an `onChange(patch, reversePatch)` callback that
-fires a raw MST JSON patch on every state change — handy for a change log or
-undo/redo, since you get the reverse patch too. For keeping UI in sync, though,
-prefer the `observer` approach above: it re-renders only the components that
-read the fields that changed, whereas `onChange` hands you every patch to route
-yourself. For persisting state,
+fires a raw MST JSON patch on every state change. Because you get the reverse
+patch too, it is what you'd build a change log or undo/redo on. For keeping UI
+in sync, though, prefer the `observer` approach above: it re-renders only the
+components that read the fields that changed, whereas `onChange` hands you every
+patch to route yourself. For persisting state,
 [`onSnapshot`](../session-setup/#with-session-persistence) gives whole snapshots
 rather than patches.

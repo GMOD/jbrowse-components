@@ -4,11 +4,21 @@ can color and re-label features from their own attributes with no extra UI or
 plugin code. `color` reads a CSS color, `labels.name` reads the displayed text:
 
 ```js
-displayDefaults: {
-  // color by strand
-  color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
-  // label with the feature's name and type
-  labels: { name: "jexl:get(feature,'name')+' ['+get(feature,'type')+']'" },
+{
+  type: 'FeatureTrack',
+  trackId: 'volvox_genes_jexl',
+  name: 'Volvox genes (jexl color + label)',
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/volvox.sort.gff3.gz',
+  },
+  displayDefaults: {
+    // color by strand
+    color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+    // label with the feature's name and type
+    labels: { name: "jexl:get(feature,'name')+' ['+get(feature,'type')+']'" },
+  },
 }
 ```
 

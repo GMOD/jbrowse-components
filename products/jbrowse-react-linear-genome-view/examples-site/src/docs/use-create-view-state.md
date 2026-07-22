@@ -19,10 +19,10 @@ function MyComponent() {
 ```
 
 The `location` option is the hook-form equivalent of the declarative `init.loc`
-from the examples above — same idea, just passed to `createViewState` instead of
-the `<LinearGenomeView init={…}>` prop. It accepts either a locstring
+from the examples above, just passed to `createViewState` instead of the
+`<LinearGenomeView init={…}>` prop. It accepts either a locstring
 (`'ctgA:1,000..5,000'`, 1-based) or a `{ refName, start, end }` object
-(0-based); the object form is handy when you already have structured coordinates
+(0-based). The object form is handy when you already have structured coordinates
 and don't want to format and reparse a string.
 
 If you instead call `createViewState` yourself, wrap it in `useState(() => …)`

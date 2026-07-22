@@ -24,13 +24,24 @@ const pmCommands = {
   <h1>JBrowse Linear Genome View</h1>
   <p class="lead">
     <code>@jbrowse/react-linear-genome-view2</code> is a React component that embeds
-    a full linear genome browser — tracks, search, zoom/pan, and track selection —
-    in your app. This page covers the basics; browse the pattern-by-pattern
-    examples in the sidebar for specific features (custom themes, session
-    persistence, plugins, and more).
+    a full linear genome browser (tracks, search, zoom/pan, and track selection) in
+    your app. This page covers the basics. Browse the pattern-by-pattern examples
+    in the sidebar for specific features: custom themes, session persistence, plugins,
+    and more.
   </p>
 
   <div class="doc">
+    <h2>Live demo</h2>
+    <p>
+      Human genes on hg38, opened at the <em>SHH</em> locus. Everything below is the
+      source that produced it.
+    </p>
+    <div class="demo"><Example client:only="react" /></div>
+    <details class="source" open>
+      <summary>View source</summary>
+      <Code code={code} lang="tsx" />
+    </details>
+
     <h2>Install</h2>
     <div class="pm-tabs">
       <input type="radio" name="pm" id="pm-yarn" class="pm-radio" checked />
@@ -54,70 +65,91 @@ const pmCommands = {
       </div>
     </div>
     <p>
-      <code>--legacy-peer-deps</code> silences npm's peer-dep warnings; yarn and
-      pnpm don't need it.
+      <code>--legacy-peer-deps</code> silences npm's peer-dep warnings. yarn and pnpm
+      don't need it.
     </p>
 
     <h2>Usage</h2>
     <p>
       The declarative <code>LinearGenomeView</code> component takes an{' '}
       <code>assembly</code> and <code>tracks</code> as props (see the{' '}
-      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a> for
-      the full assembly/track config shape), plus an <code>init</code> for the
-      starting location and which tracks to show — no separate view-state setup
-      needed. Adapters accept a plain <code>uri</code> shorthand too: JBrowse
-      derives the index file (e.g.{' '}
-      <a href="https://jbrowse.org/jb2/docs/config/bamadapter/"><code>.bam.bai</code></a>,{' '}
-      <a href="https://jbrowse.org/jb2/docs/config/gff3tabixadapter/"><code>.gff3.gz.tbi</code></a>)
-      from it automatically.
+      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a> for the
+      full assembly/track config shape), plus an <code>init</code> for the starting
+      location and which tracks to show. No separate view-state setup is needed. Adapters
+      accept a plain <code>uri</code> shorthand too: JBrowse derives the index file
+      (e.g.{' '}
+      <a href="https://jbrowse.org/jb2/docs/config/bamadapter/"
+        ><code>.bam.bai</code></a
+      >,{' '}
+      <a href="https://jbrowse.org/jb2/docs/config/gff3tabixadapter/"
+        ><code>.gff3.gz.tbi</code></a
+      >) from it automatically.
     </p>
     <p>
       The component uses{' '}
-      <a href="https://fonts.google.com/specimen/Roboto">Roboto</a> when
-      available; add{' '}
-      <a href="https://www.npmjs.com/package/@fontsource/roboto"><code>@fontsource/roboto</code></a>{' '}
+      <a href="https://fonts.google.com/specimen/Roboto">Roboto</a> when available.
+      Add{' '}
+      <a href="https://www.npmjs.com/package/@fontsource/roboto"
+        ><code>@fontsource/roboto</code></a
+      >{' '}
       to pull it in.
     </p>
     <p>
       For a step-by-step walkthrough, see the{' '}
-      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/">Embedding JBrowse tutorial</a>.
-      To compare the embedded packages or start from a Vite/Next.js template, see
-      the{' '}
-      <a href="https://jbrowse.org/jb2/docs/embedded_components/">embedded components page</a>.
+      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/"
+        >Embedding JBrowse tutorial</a
+      >. To compare the embedded packages or start from a Vite/Next.js template,
+      see the{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
+        >embedded components page</a
+      >.
     </p>
 
-    <h2>Framework integration (SSR)</h2>
+    <h2>Bundlers and frameworks</h2>
     <p>
-      The view uses browser-only APIs (canvas, WebGL, <code>window</code>), so it
-      must render on the client. In a purely client-rendered app (Vite, Create
-      React App) it just works. In a server-rendered framework (Next.js, Remix,
-      Gatsby) render it client-side only:
+      The view renders on the client only. It needs a real DOM, so we do not
+      support server-rendering it or hydrating it from server-rendered markup.
+      In a client-rendered app (Vite, rsbuild, plain script tags) it just works.
+      In a server-rendered framework you mount it client-side only, which is
+      what our Next.js demo does: it wraps the view in a{' '}
+      <code>'use client'</code> component loaded through{' '}
+      <a href="https://nextjs.org/docs/app/api-reference/functions/dynamic"
+        ><code>next/dynamic</code></a
+      >{' '}
+      with <code>{'{ ssr: false }'}</code>. The same trick (render{' '}
+      <code>null</code> until <code>useEffect</code> has run) works in any other SSR
+      framework.
     </p>
-    <ul>
-      <li>
-        <b>Next.js</b>: load it with{' '}
-        <a href="https://nextjs.org/docs/app/api-reference/functions/dynamic"><code>next/dynamic</code></a>{' '}
-        and <code>{'{ ssr: false }'}</code>, or put your view in a{' '}
-        <code>'use client'</code> component that only renders after mount.
-      </li>
-      <li>
-        <b>Other SSR frameworks</b>: gate rendering on a mounted flag (render{' '}
-        <code>null</code> on the server, the view once{' '}
-        <code>useEffect</code> has run), or use the framework's client-only
-        wrapper.
-      </li>
-    </ul>
     <p>
-      This site does the same thing — every demo above is an Astro island marked{' '}
-      <code>client:only="react"</code>.
+      We maintain a working starter repo per bundler, deployed and rebuilt each
+      release:{' '}
+      <a
+        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo"
+        >Vite</a
+      >,{' '}
+      <a
+        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo"
+        >rsbuild</a
+      >,{' '}
+      <a
+        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo"
+        >Next.js</a
+      >, and{' '}
+      <a
+        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo"
+        >vanilla JS</a
+      >. The{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
+        >embedded components page</a
+      >{' '}
+      lists all of them with live deployments. Start from one of those rather than
+      wiring a bundler up from scratch.
+    </p>
+    <p>
+      This site itself mounts every demo the same way: each one is an Astro
+      island marked <code>client:only="react"</code>.
     </p>
   </div>
-
-  <h2>Live demo</h2>
-  <div class="demo"><Example client:only="react" /></div>
-
-  <h2>Source</h2>
-  <Code code={code} lang="tsx" />
 
   <h2>Browse the examples</h2>
   <p class="intro">

@@ -5,8 +5,11 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 
 // Page-level chrome for an example page. The live demos are supplied as slotted
 // <ExampleSection> children so their React islands hydrate in the page file.
-// When a page stacks several sections, a "jump to" nav surfaces them up front —
-// otherwise the extra demos are only discoverable by scrolling.
+// When a page stacks several sections, an "On this page" card surfaces them up
+// front — otherwise the extra demos are only discoverable by scrolling, and
+// cross-links from other docs point straight at their #anchors. This card is
+// also the only place `sections[].description` is rendered, so those strings
+// have a reader rather than being authoring-only notes.
 interface Props {
   page: ExamplePage
 }
@@ -25,16 +28,55 @@ const multiSection = page.sections.length > 1
   <p class="lead">{page.description}</p>
   {
     multiSection && (
-      <p>
-        On this page:{' '}
-        {page.sections.map((s, i) => (
-          <>
-            {i > 0 && ' · '}
-            <a href={`#${s.slug}`}>{s.title}</a>
-          </>
-        ))}
-      </p>
+      <nav class="toc" aria-label="On this page">
+        <div class="toc-title">On this page</div>
+        <ol>
+          {page.sections.map(s => (
+            <li>
+              <a href={`#${s.slug}`}>{s.title}</a>
+              {s.description && <span class="toc-desc">{s.description}</span>}
+            </li>
+          ))}
+        </ol>
+      </nav>
     )
   }
   <slot />
 </Shell>
+
+<style>
+  .toc {
+    margin: 20px 0 28px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .toc-title {
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .toc ol {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .toc li + li {
+    margin-top: 4px;
+  }
+  .toc li::marker {
+    color: var(--muted);
+    font-size: 0.85em;
+  }
+  .toc a {
+    font-weight: 600;
+  }
+  .toc-desc {
+    display: block;
+    color: var(--muted);
+    font-size: 0.88em;
+    max-width: 75ch;
+  }
+</style>

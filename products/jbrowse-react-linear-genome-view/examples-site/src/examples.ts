@@ -134,9 +134,9 @@ export const pages: ExamplePage[] = [
       },
       {
         slug: 'shadow-dom',
-        title: 'Render inside a Shadow DOM',
+        title: 'Package as a custom element',
         description:
-          'Isolate the view inside a shadow root with its own emotion cache and MUI portal containers.',
+          'Register the view as a <jbrowse-linear-view> web component, shadow-isolated from the host page.',
       },
     ],
   },
@@ -230,8 +230,6 @@ export const pages: ExamplePage[] = [
       {
         slug: 'track-sizing',
         title: 'Track sizing: grow & fit',
-        description:
-          'Choose what a feature track does when it has more rows than fit: grow the track to show them all, or squeeze the rows into a fixed height.',
       },
     ],
   },
@@ -376,7 +374,6 @@ export const pages: ExamplePage[] = [
       {
         slug: 'human-exome-example',
         title: 'Human exome example',
-        description: 'A human exome sequencing dataset on hg38.',
       },
     ],
   },
@@ -392,8 +389,6 @@ export const pages: ExamplePage[] = [
       {
         slug: 'nextstrain-pathogens',
         title: 'Nextstrain pathogens',
-        description:
-          'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A. Pick a pathogen from the dropdown.',
       },
     ],
   },
@@ -407,8 +402,6 @@ export const pages: ExamplePage[] = [
       {
         slug: 'nextstrain-msa',
         title: 'Nextstrain MSA + tree',
-        description:
-          'The Nextstrain tree + reconstructed reference-coordinate MSA, embedded with react-msaview.',
       },
     ],
   },
@@ -422,8 +415,6 @@ export const pages: ExamplePage[] = [
       {
         slug: 'locus-zoom-ld',
         title: 'LocusZoom-style LD',
-        description:
-          'GWAS summary stats colored by LD r² to the lead SNP, LocusZoom-style.',
       },
     ],
   },
@@ -437,8 +428,6 @@ export const pages: ExamplePage[] = [
       {
         slug: 'pan-ukb-gwas',
         title: 'Pan-UKB GWAS',
-        description:
-          'Browse Pan-UK Biobank GWAS summary statistics across phenotypes.',
       },
     ],
   },

@@ -12,12 +12,22 @@ is the easiest way to configure all of this up front. JBrowse routes each key to
 the wiggle display:
 
 ```js
-displayDefaults: {
-  defaultRendering: 'xyplot', // 'xyplot' | 'density' | 'line'
-  height: 150,
-  color: '#a05195',
-  minScore: 0,                // pin the score axis instead of autoscaling
-  maxScore: 1000,
+{
+  type: 'QuantitativeTrack',
+  trackId: 'volvox_microarray',
+  name: 'Microarray (BigWig)',
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://example.com/volvox_microarray.bw',
+  },
+  displayDefaults: {
+    defaultRendering: 'xyplot', // 'xyplot' | 'density' | 'line'
+    height: 150,
+    color: '#a05195',
+    minScore: 0,                // pin the score axis instead of autoscaling
+    maxScore: 1000,
+  },
 }
 ```
 

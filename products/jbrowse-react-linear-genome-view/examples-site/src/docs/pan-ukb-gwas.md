@@ -21,14 +21,11 @@ of variants in a genome-wide view.
 
 Featured phenotypes (height, BMI, LDL, type 2 diabetes, coronary disease,
 asthma, …) open zoomed to a known lead locus. Any other phenotype opens on
-chromosome 1, and you can navigate or search to any gene. GWAS rendering comes
-from the GWAS plugin, a core plugin of `@jbrowse/react-linear-genome-view2`, so
-no runtime plugin loading is needed. For LD-colored Manhattan plots, see
-[LocusZoom-style LD](../locus-zoom-ld/).
+chromosome 1, and you can navigate or search to any gene. For LD-colored
+Manhattan plots, see [LocusZoom-style LD](../locus-zoom-ld/).
 
-See the
-[GWAS track guide](https://jbrowse.org/jb2/docs/config_guides/gwas_track/) and
-the [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack/) /
-[GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter/) /
-[LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay/)
-config reference for the underlying track setup.
+Reference: the
+[GWAS track guide](https://jbrowse.org/jb2/docs/config_guides/gwas_track/),
+[GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack/),
+[GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter/), and
+[LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay/).

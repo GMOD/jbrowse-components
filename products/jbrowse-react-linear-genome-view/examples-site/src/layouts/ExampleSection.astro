@@ -9,13 +9,13 @@ import type { MarkdownInstance } from 'astro'
 // page stacks several sections), the hand-written doc from src/docs/<slug>.md,
 // the live demo (slotted in), and its source. The source is the real, runnable
 // file for the demo above, so it's open by default rather than hidden behind a
-// collapsed toggle. Section-level descriptions from examples.ts are authoring
-// notes only, not rendered here, so the doc carries the prose.
+// collapsed toggle. Section-level descriptions from examples.ts are rendered by
+// ExampleLayout's "On this page" card, not here, so the doc carries the prose.
 interface Props {
   slug: string
   title?: string
   // pages pass whole section objects via {...section}, so `description` still
-  // arrives here. It is intentionally not rendered (the doc carries the prose).
+  // arrives here. ExampleLayout renders it in the page TOC instead.
   description?: string
   code: string
 }

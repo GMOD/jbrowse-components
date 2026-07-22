@@ -34,7 +34,10 @@ const config = {
           type: 'TrixTextSearchAdapter',
           textSearchAdapterId: 'gff3tabix_genes-index',
           uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
-          assemblyNames: ['GRCh38'],
+          // must match the assembly's `name` exactly. TextSearchManager filters
+          // adapters with a literal .includes(assemblyName), so 'GRCh38' here
+          // silently disabled gene-name search on an assembly named 'hg38'
+          assemblyNames: ['hg38'],
         },
       },
     },
