@@ -6,6 +6,13 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/sv-core/tsconfig.build.esm.json" },
+    { "path": "../circular-view/tsconfig.build.esm.json" },
+    { "path": "../spreadsheet-view/tsconfig.build.esm.json" }
+  ]
 }

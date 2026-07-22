@@ -7,6 +7,11 @@
     "rootDir": "src",
     "paths": {},
     "noEmit": false,
-    "types": ["jest", "node"]
-  }
+    "types": ["jest", "node"],
+    "composite": true
+  },
+  "references": [
+    { "path": "../core/tsconfig.build.esm.json" },
+    { "path": "../text-indexing-core/tsconfig.build.esm.json" }
+  ]
 }

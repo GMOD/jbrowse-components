@@ -9,7 +9,6 @@ import DotplotGrid from './DotplotGrid.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
-import type { ComponentType, ReactNode } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   grid: {
@@ -22,21 +21,6 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
   },
 }))
-
-declare module '@jbrowse/core/PluginManager' {
-  interface ExtensionPointRegistry {
-    'DotplotView-OverlaySVGComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: DotplotViewModel }
-    }
-    'DotplotView-OverlayHTMLComponent': {
-      args: ComponentType<{ model: DotplotViewModel }>
-      result: ComponentType<{ model: DotplotViewModel }>
-      props: { model: DotplotViewModel }
-    }
-  }
-}
 
 function NoHTMLOverlay(_props: { model: DotplotViewModel }) {
   return null

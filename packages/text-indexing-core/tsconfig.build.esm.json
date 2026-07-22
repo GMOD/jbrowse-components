@@ -7,6 +7,7 @@
     "rootDir": "src",
     "paths": {},
     "noEmit": false,
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "composite": true
   }
 }

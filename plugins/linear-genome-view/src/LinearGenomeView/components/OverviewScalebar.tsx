@@ -17,19 +17,8 @@ import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
 import { elidedBlockStyles, getCytobands } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { ReactNode } from 'react'
-
-declare module '@jbrowse/core/PluginManager' {
-  interface ExtensionPointRegistry {
-    'LinearGenomeView-OverviewScalebarComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel; overview: ViewLayout }
-    }
-  }
-}
 
 const useStyles = makeStyles()(theme => ({
   scalebar: {

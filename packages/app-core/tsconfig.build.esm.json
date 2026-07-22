@@ -5,6 +5,11 @@
   "compilerOptions": {
     "outDir": "esm",
     "rootDir": "src",
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../core/tsconfig.build.esm.json" },
+    { "path": "../product-core/tsconfig.build.esm.json" }
+  ]
 }

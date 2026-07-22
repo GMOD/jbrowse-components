@@ -4,7 +4,35 @@ import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
 import { stateModelFactory } from './model.ts'
 
+import type { LinearGenomeViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
+import type { ReactNode } from 'react'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearGenomeView-TracksContainerComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel }
+    }
+    'LinearGenomeView-ScalebarHighlightComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel }
+    }
+    'LinearGenomeView-HighlightSVGComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel; height: number }
+    }
+    'LinearGenomeView-OverviewScalebarComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel; overview: ViewLayout }
+    }
+  }
+}
 
 export default function LinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {

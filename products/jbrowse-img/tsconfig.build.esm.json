@@ -3,6 +3,16 @@
   "compilerOptions": {
     "outDir": "esm",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/product-core/tsconfig.build.esm.json" },
+    { "path": "../../plugins/circular-view/tsconfig.build.esm.json" },
+    { "path": "../../plugins/dotplot-view/tsconfig.build.esm.json" },
+    { "path": "../../plugins/linear-comparative-view/tsconfig.build.esm.json" },
+    { "path": "../../plugins/linear-genome-view/tsconfig.build.esm.json" },
+    { "path": "../jbrowse-react-app/tsconfig.build.esm.json" }
+  ]
 }
