@@ -56,8 +56,10 @@ jobs:
       # draft to collect binaries, just an empty body.
       - name: Generate release notes
         run: |
-          node scripts/releasenotes.ts --tag "${RELEASE_VERSION}" > /tmp/notes.md ||
+          if ! node scripts/releasenotes.ts --tag "${RELEASE_VERSION}" > /tmp/notes.md; then
             echo "_Release notes pending._" > /tmp/notes.md
+            echo "::warning::No blog post for ${RELEASE_VERSION}; release body left empty. Expected for a prerelease."
+          fi
       # The flag, not just the '-', is what the desktop auto-updater,
       # `jbrowse create`/`upgrade`, and announce.yml gate on.
       #

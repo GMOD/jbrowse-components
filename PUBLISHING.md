@@ -27,6 +27,27 @@ Two manual steps: write the draft, then publish the release.
 `pnpm releasenotes [--tag v4.3.1]` prints the same body `release.yml` generates,
 to eyeball locally.
 
+## Prereleases
+
+```bash
+pnpm release --version 4.4.0-beta.1
+```
+
+`--version` sets the target explicitly instead of computing it, and any version
+carrying a `-` is treated as a prerelease: no blog post, no `CHANGELOG.md`
+entry, and `website/src/config.ts` is left alone, since that drives the download
+page's asset links. CI follows the same split — npm gets the `next` dist-tag,
+the GitHub release carries the prerelease flag, and the `latest/` deploy,
+website deploy, and announcements all skip it. The draft release body will be
+empty, with a warning in the run log saying so.
+
+Useful for rehearsing a release, but not free: `publish.yml` really does publish
+every package to npm under `next`, and npm only allows unpublishing for 72
+hours. Pick a version number you're willing to leave there.
+
+`--version` is also the way out if the previous version is itself a prerelease —
+the patch/minor/major arithmetic requires a plain `X.Y.Z` base and will refuse.
+
 ## Announcing releases
 
 Publishing a release fires the **Announce release** workflow, which posts to
