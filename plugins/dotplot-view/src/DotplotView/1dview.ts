@@ -33,22 +33,24 @@ const Dotplot1DView = Base1DView.extend(self => {
         return 1 / 50
       },
 
-      // When content is smaller than the view (zoomed out), both bounds
-      // collapse to this centered offset; otherwise min/max open up a small
-      // padded scroll range.
-      get centeredOffset() {
-        return (self.displayedRegionsTotalPx - self.width) / 2
-      },
-
       /**
        * #getter
+       * One rule at every zoom level: scroll until only `leftPadding` px of
+       * content remain visible on the right, or `rightPadding` px on the left.
+       *
+       * Deliberately NOT special-cased for content narrower than the view.
+       * Pinning both bounds to the centered offset there gives zoomTo — which
+       * clamps its anchor-preserving offset into [minOffset, maxOffset] — a
+       * degenerate range, so the cursor anchor is silently discarded and the
+       * plot snaps back to centered. That was the max-zoom-out "edge jump": the
+       * first zoom step displaced the locus under the cursor by the
+       * centered-vs-anchored gap, which grows with distance from center (~41px
+       * near the edge, ~0 at the center). `center()` still centers explicitly,
+       * so the initial view is unchanged.
        */
       get maxOffset() {
-        const contentPx = self.displayedRegionsTotalPx
         const leftPadding = 10
-        return contentPx <= self.width
-          ? this.centeredOffset
-          : contentPx - leftPadding
+        return self.displayedRegionsTotalPx - leftPadding
       },
 
       /**
@@ -56,9 +58,7 @@ const Dotplot1DView = Base1DView.extend(self => {
        */
       get minOffset() {
         const rightPadding = 30
-        return self.displayedRegionsTotalPx <= self.width
-          ? this.centeredOffset
-          : -self.width + rightPadding
+        return -self.width + rightPadding
       },
     },
     actions: {

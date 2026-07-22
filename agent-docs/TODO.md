@@ -10,14 +10,6 @@ description: Action items to build or fix, the current backlog. Read when pickin
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and similar displays).
 - Quick/copy consensus, a separate quantitative splice-junction track, and sample/library (SM/LB) grouping.
 
-## Dotplot edge-zoom jump
-
-Zoomed all the way out, then scrolling to zoom in near the edge of the plot
-makes the plot "jump" so the cursor is no longer over the same region. At every
-other zoom level the area under the cursor stays put; only reproduces from the
-max-zoomed-out level, and is more noticeable near the plot edge.
-
-
 ## more accurate cgiab
 
 look at wakhan, pycnv
