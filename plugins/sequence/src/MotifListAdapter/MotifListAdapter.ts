@@ -9,11 +9,10 @@ import {
 } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { getSequenceSubAdapter } from '../getSequenceSubAdapter.ts'
+
 import type { MotifListAdapterConfig } from './configSchema.ts'
-import type {
-  BaseOptions,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, ParsedMotif, Region } from '@jbrowse/core/util'
 
 // Describes the double-strand break implied by a palindromic site's cut offset:
@@ -26,11 +25,7 @@ function describeEnds(overhang: number) {
 
 export default class MotifListAdapter extends BaseFeatureDataAdapter<MotifListAdapterConfig> {
   public async configure() {
-    const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
-    if (!adapter) {
-      throw new Error('Error getting subadapter')
-    }
-    return adapter.dataAdapter as BaseSequenceAdapter
+    return getSequenceSubAdapter(this, this.getConf('sequenceAdapter'))
   }
 
   public async getRefNames() {

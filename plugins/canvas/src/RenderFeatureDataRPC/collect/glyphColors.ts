@@ -36,11 +36,14 @@ export const MATURE_PROTEIN_COLORS = MATURE_PROTEIN_COLOR_HEX.map(c =>
   colorToUint32(c),
 )
 
-// CRISPR guide glyph: the PAM is overpainted red and the predicted cut site is
-// a dark tick, both drawn over the (config-colored) protospacer box, so they
-// read regardless of page theme since the box itself is their background.
+// CRISPR guide glyph: the PAM is overpainted red, drawn over the
+// (config-colored) protospacer box, so it reads regardless of page theme since
+// the box itself is its background.
 export const CRISPR_PAM_COLOR = colorToUint32('#d32f2f')
-export const CRISPR_CUT_COLOR = colorToUint32('#111111')
+
+// Cut-site tick for both cut-marking glyphs (CRISPR guide, restriction motif) —
+// dark, and always drawn over the feature's own box for the same reason.
+export const CUT_SITE_COLOR = colorToUint32('#111111')
 
 // Per-subpart fills for intact transposons, keyed by SO type, ported verbatim
 // from the legacy CanvasFeatureRenderer repeatRegion glyph. Stable colors (not

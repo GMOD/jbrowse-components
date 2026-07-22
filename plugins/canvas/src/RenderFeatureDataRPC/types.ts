@@ -46,3 +46,4 @@ export type GlyphType =
   | 'MatureProteinRegion'
   | 'RepeatRegion'
   | 'CrisprGuide'
+  | 'Motif'

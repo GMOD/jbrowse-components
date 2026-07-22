@@ -61,6 +61,7 @@ export async function executeRenderFeatureData({
     pluginManager,
     sessionId,
     adapterConfig,
+    sequenceAdapter,
   })
 
   // Stage 1 (cheap): index-only byte estimate, before any feature download. An

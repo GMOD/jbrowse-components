@@ -3,7 +3,7 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { findGlyph } from '../glyphs/findGlyph.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
-import { CRISPR_CUT_COLOR, CRISPR_PAM_COLOR } from './glyphColors.ts'
+import { CRISPR_PAM_COLOR, CUT_SITE_COLOR } from './glyphColors.ts'
 import { processFeatureRecord } from './glyphEmitters.ts'
 import { createCollector } from './renderContext.ts'
 
@@ -73,7 +73,7 @@ test('emits protospacer box, red PAM overpaint, and dark cut tick', () => {
   expect(pam).toMatchObject({ start: 100, end: 103, color: CRISPR_PAM_COLOR })
 
   // cut site: a zero-width dark rect (rect shader widens it to MIN_RECT_WIDTH_PX)
-  expect(cut).toMatchObject({ start: 97, end: 97, color: CRISPR_CUT_COLOR })
+  expect(cut).toMatchObject({ start: 97, end: 97, color: CUT_SITE_COLOR })
 })
 
 test('registers the PAM as a hoverable subfeature and draws a strand arrow', () => {

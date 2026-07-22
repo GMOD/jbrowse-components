@@ -6,6 +6,7 @@ import {
   hasMatureProteinChildren,
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
+import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
@@ -43,6 +44,13 @@ export function findGlyph(
   // specific semantic type rather than a structural shape.
   if (type === 'guide_rna') {
     return layoutCrisprGuide
+  }
+  // Sequence motifs (MotifListAdapter emits type 'motif', optionally carrying
+  // cutSite/cutSiteBottom) get a site box with the cut positions marked, so a
+  // restriction site reads as a cut rather than an anonymous box. Type-based
+  // for the same reason as 'guide_rna' above.
+  if (type === 'motif') {
+    return layoutMotif
   }
   if (isCDS(feature)) {
     return hasMatureProteinChildren(feature)

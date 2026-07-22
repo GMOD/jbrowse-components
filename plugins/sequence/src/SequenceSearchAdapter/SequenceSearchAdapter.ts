@@ -2,20 +2,15 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, doesIntersect2, revcom } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { getSequenceSubAdapter } from '../getSequenceSubAdapter.ts'
+
 import type { SequenceSearchAdapterConfig } from './configSchema.ts'
-import type {
-  BaseOptions,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class SequenceSearchAdapter extends BaseFeatureDataAdapter<SequenceSearchAdapterConfig> {
   public async configure() {
-    const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
-    if (!adapter) {
-      throw new Error('Error getting subadapter')
-    }
-    return adapter.dataAdapter as BaseSequenceAdapter
+    return getSequenceSubAdapter(this, this.getConf('sequenceAdapter'))
   }
 
   public async getRefNames() {

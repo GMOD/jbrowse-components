@@ -1,4 +1,3 @@
-import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 export interface SequenceSearchModel {
@@ -14,9 +13,10 @@ export interface SequenceSearchModeProps {
   handleClose: () => void
 }
 
-// Creates a FeatureTrack wrapping the assembly's sequence adapter and shows it.
-// `adapter` carries the type + params; the reference sequence subadapter is
-// injected here so each mode's panel doesn't repeat the session plumbing.
+// Creates a FeatureTrack that scans the assembly's reference sequence and shows
+// it. `adapter` carries the type + params only: the scan adapters resolve the
+// sequence from the track's assembly at fetch time (getSequenceSubAdapter), so
+// no sequence adapter is baked into the track config here.
 export function addReferenceScanTrack(
   model: SequenceSearchModel,
   args: { trackId: string; name: string; adapter: Record<string, unknown> },
@@ -24,15 +24,12 @@ export function addReferenceScanTrack(
   const session = getSession(model)
   const assemblyName = model.assemblyNames[0]!
   if (isSessionWithAddTracks(session)) {
-    const sequenceAdapter = getSequenceAdapterConfig(
-      session.assemblyManager.get(assemblyName),
-    )
     session.addTrackConf({
       trackId: args.trackId,
       name: args.name,
       assemblyNames: [assemblyName],
       type: 'FeatureTrack',
-      adapter: { ...args.adapter, sequenceAdapter },
+      adapter: args.adapter,
     })
     model.showTrack(args.trackId)
   } else {

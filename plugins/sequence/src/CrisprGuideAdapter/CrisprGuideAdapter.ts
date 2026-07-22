@@ -8,22 +8,16 @@ import {
 } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { getSequenceSubAdapter } from '../getSequenceSubAdapter.ts'
 import { guideQuality, placeGuide } from './guideUtils.ts'
 
 import type { CrisprGuideAdapterConfig } from './configSchema.ts'
-import type {
-  BaseOptions,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class CrisprGuideAdapter extends BaseFeatureDataAdapter<CrisprGuideAdapterConfig> {
   public async configure() {
-    const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
-    if (!adapter) {
-      throw new Error('Error getting subadapter')
-    }
-    return adapter.dataAdapter as BaseSequenceAdapter
+    return getSequenceSubAdapter(this, this.getConf('sequenceAdapter'))
   }
 
   public async getRefNames() {

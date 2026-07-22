@@ -18,8 +18,8 @@ import {
   pushBoxRect,
 } from './emitPrimitives.ts'
 import {
-  CRISPR_CUT_COLOR,
   CRISPR_PAM_COLOR,
+  CUT_SITE_COLOR,
   MATURE_PROTEIN_COLORS,
   MATURE_PROTEIN_COLOR_HEX,
   REPEAT_BODY_HEIGHT_FRACTION,
@@ -456,11 +456,59 @@ function processCrisprGuideLayout(
       end: cutSite,
       y: baseTopPx,
       height,
-      color: CRISPR_CUT_COLOR,
+      color: CUT_SITE_COLOR,
       strand,
       flatbushIdx,
       densityFade: false,
     })
+  }
+
+  emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
+}
+
+// Sequence motif (MotifListAdapter): the feature box is the recognition site in
+// the config color, with the cut positions drawn as dark ticks over it. A
+// palindromic site carries both strands' cuts (`cutSite` + `cutSiteBottom`), and
+// they are drawn as half-height ticks — top cut on the upper half, bottom cut on
+// the lower half — so the stagger between them reads as the overhang the enzyme
+// leaves. A site with a single known cut, or a non-palindromic one where only
+// the top-strand cut is pinned, gets one full-height tick instead: half-height
+// there would imply a second cut that the motif notation never specified.
+// Zero-width cut rects are widened to MIN_RECT_WIDTH_PX by the rect shader.
+function processMotifLayout(
+  layout: FeatureLayout,
+  baseTopPx: number,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { feature, height } = layout
+  const strand = feature.get('strand') ?? 0
+
+  pushBoxRect(feature, baseTopPx, height, flatbushIdx, ctx, collector.rects)
+
+  const rawTop: unknown = feature.get('cutSite')
+  const rawBottom: unknown = feature.get('cutSiteBottom')
+  const topCut = typeof rawTop === 'number' ? rawTop : undefined
+  const bottomCut = typeof rawBottom === 'number' ? rawBottom : undefined
+  const pushCut = (at: number, y: number, cutHeight: number) => {
+    collector.rects.push({
+      start: at,
+      end: at,
+      y,
+      height: cutHeight,
+      color: CUT_SITE_COLOR,
+      strand,
+      flatbushIdx,
+      densityFade: false,
+    })
+  }
+  const half = height / 2
+  if (topCut !== undefined && bottomCut !== undefined) {
+    pushCut(topCut, baseTopPx, half)
+    pushCut(bottomCut, baseTopPx + half, half)
+  } else if (topCut !== undefined) {
+    pushCut(topCut, baseTopPx, height)
   }
 
   emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
@@ -584,6 +632,10 @@ function emitGlyph(
         ctx,
         collector,
       )
+      break
+    }
+    case 'Motif': {
+      processMotifLayout(layout, baseTopPx, flatbushIdx, ctx, collector)
       break
     }
     case 'CrisprGuide': {
