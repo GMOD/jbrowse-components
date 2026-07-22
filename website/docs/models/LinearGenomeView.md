@@ -122,8 +122,9 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [minOffset](#getter-minoffset)                                           | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [displayedRegionsTotalPx](#getter-displayedregionstotalpx)               | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackMap](#getter-trackmap)                                             | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [canShowCytobands](#getter-canshowcytobands)                             | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [effectiveShowCytobands](#getter-effectiveshowcytobands)                 | Getters    | LinearGenomeView                      | the `showCytobands` setting gated by whether cytobands can be shown at all (single region + data present) — i.e. actually on screen                                                                                                                                                                                                                                                                                                                     |
+| [showsWholeChromosome](#getter-showswholechromosome)                     | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [canShowCytobands](#getter-canshowcytobands)                             | Getters    | LinearGenomeView                      | an ideogram only reads correctly against an entire chromosome: on a sub-region it is a meaningless slice of bands, and the centromere shows up as a lone half-triangle                                                                                                                                                                                                                                                                                  |
+| [effectiveShowCytobands](#getter-effectiveshowcytobands)                 | Getters    | LinearGenomeView                      | the `showCytobands` setting gated by whether cytobands can be shown at all (whole chromosome + data present) — i.e. actually on screen                                                                                                                                                                                                                                                                                                                  |
 | [anyCytobandsExist](#getter-anycytobandsexist)                           | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [cytobandOffset](#getter-cytobandoffset)                                 | Getters    | LinearGenomeView                      | the cytoband is displayed to the right of the chromosome name, and that offset is calculated manually with this method                                                                                                                                                                                                                                                                                                                                  |
 | [isTrackSelectorOpen](#getter-istrackselectoropen)                       | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -717,10 +718,20 @@ Whether to show the import form
 type showImportForm = boolean
 ```
 
+#### getter: canShowCytobands
+
+an ideogram only reads correctly against an entire chromosome: on a sub-region
+it is a meaningless slice of bands, and the centromere shows up as a lone
+half-triangle
+
+```ts
+type canShowCytobands = boolean
+```
+
 #### getter: effectiveShowCytobands
 
 the `showCytobands` setting gated by whether cytobands can be shown at all
-(single region + data present) — i.e. actually on screen
+(whole chromosome + data present) — i.e. actually on screen
 
 ```ts
 type effectiveShowCytobands = boolean
@@ -1056,10 +1067,10 @@ type displayedRegionsTotalPx = number
 type trackMap = Map<any, any>
 ```
 
-#### getter: canShowCytobands
+#### getter: showsWholeChromosome
 
 ```ts
-type canShowCytobands = boolean
+type showsWholeChromosome = boolean
 ```
 
 #### getter: anyCytobandsExist
