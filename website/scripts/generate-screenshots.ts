@@ -238,6 +238,12 @@ async function assertViewsRendered(page: Page, name: string) {
 // visibility:hidden / opacity:0 / zero-size) so the opacity-hidden idle overlay
 // doesn't false-positive. Opt out per spec with `allowUnsettled` when the state
 // IS the subject.
+//
+// Deliberately keyed off test-ids and TooLargeMessage's own literal rather than
+// waitForQuiescent's /^(loading|rendering|…)/ pattern: that pattern is safe for a
+// *wait* (a false match only costs a swallowed timeout) but not for an assertion
+// — the open track menu's "Rendering mode" item matches it, which failed the
+// trio-matrix specs while catching nothing real across the suite.
 async function assertRenderSettled(page: Page, spec: BrowserScreenshotSpec) {
   const problems = await page.evaluate(() => {
     const isVisible = (el: Element) => {
@@ -274,25 +280,29 @@ async function assertRenderSettled(page: Page, spec: BrowserScreenshotSpec) {
       '[data-testid="reload_button"]',
     )) {
       if (isVisible(el)) {
-        const bar = el.closest('div')
+        // the retry button sits in the Alert's action slot, whose own div holds
+        // only buttons — climb to the Alert itself or the message is empty
+        const bar = el.closest('[role="alert"]') ?? el.closest('div') ?? el
         found.push({
           kind: 'error-banner',
-          text: ((bar ?? el) as HTMLElement).innerText.slice(0, 300),
+          text: (bar as HTMLElement).innerText.slice(0, 300),
         })
       }
     }
-    // region-too-large message + any other visible loading/rendering status text
-    // whose own text nodes (not descendants) match the status pattern
-    const re =
-      /^(loading|rendering|computing|aligning)\b|force load \(may be slow\)/i
+    // region-too-large message (TooLargeMessage's BlockMsg carries no test-id, so
+    // key off its own literal); own text nodes only, so the wrapping Alert and
+    // every ancestor up to body don't each report the same message
     for (const el of document.querySelectorAll('body *')) {
       const own = Array.from(el.childNodes)
         .filter(n => n.nodeType === Node.TEXT_NODE)
         .map(n => n.textContent ?? '')
         .join('')
         .trim()
-      if (own && re.test(own) && isVisible(el)) {
-        found.push({ kind: 'status-text', text: own.slice(0, 200) })
+      if (
+        own.toLowerCase().includes('force load (may be slow)') &&
+        isVisible(el)
+      ) {
+        found.push({ kind: 'region-too-large', text: own.slice(0, 200) })
       }
     }
     // dedupe by kind+text

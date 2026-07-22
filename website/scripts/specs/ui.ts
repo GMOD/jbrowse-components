@@ -1574,19 +1574,12 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'assembly_manager',
-    url: `${sessionSpec('test_data/empty.json', {
-      views: [{ type: 'LinearGenomeView' }],
-    })}&adminKey=admin1234`,
+    url: `${sessionSpec('test_data/empty.json', { views: [] })}&adminKey=admin1234`,
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
-    // subject is the assembly-manager dialog opened over a view with no
-    // assembly assigned, so the empty view legitimately fails to launch
-    expectedConsole: ['No assembly provided when launching linear genome view'],
-    // empty view behind the dialog never settles (no assembly), which is the point
-    allowUnsettled: true,
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
@@ -1603,19 +1596,12 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'hg38_assembly_table',
-    url: `${sessionSpec('test_data/hg38_only.json', {
-      views: [{ type: 'LinearGenomeView' }],
-    })}&adminKey=admin1234`,
+    url: `${sessionSpec('test_data/hg38_only.json', { views: [] })}&adminKey=admin1234`,
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
-    // subject is the manager table; the hg38 assembly exists in config but
-    // isn't assigned to the view, so the empty view fails to launch
-    expectedConsole: ['No assembly provided when launching linear genome view'],
-    // empty view behind the dialog never settles (no assembly), which is the point
-    allowUnsettled: true,
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
@@ -1635,19 +1621,12 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'default_session_form',
-    url: `${sessionSpec('test_data/empty.json', {
-      views: [{ type: 'LinearGenomeView' }],
-    })}&adminKey=admin1234`,
+    url: `${sessionSpec('test_data/empty.json', { views: [] })}&adminKey=admin1234`,
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 480,
     settleMs: 2000,
     hideTooltip: true,
-    // subject is the set-default-session dialog opened over a view with no
-    // assembly assigned, so the empty view legitimately fails to launch
-    expectedConsole: ['No assembly provided when launching linear genome view'],
-    // empty view behind the dialog never settles (no assembly), which is the point
-    allowUnsettled: true,
     stages: [
       {
         actions: [
