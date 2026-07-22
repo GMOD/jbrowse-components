@@ -101,7 +101,17 @@ const externalPort = optNum(values.port)
 const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
 // Math.max(1, …) so `--concurrency 0` can't spin up zero workers and silently
 // skip every render spec while still exiting 0.
-const CONCURRENCY = Math.max(1, optNum(values.concurrency) ?? (headed ? 1 : 4))
+//
+// --check defaults to serial because parallelism is itself a source of drift:
+// alignments_sort_by_base and multiwig/addtrack both report 0.000% alone and
+// 17.4% / 0.7% when four browsers share the machine, so a parallel --check
+// reports specs as flaky that are perfectly deterministic. A flakiness detector
+// that induces flakiness is worse than none. Pass --concurrency explicitly to
+// trade that back for wall-clock.
+const CONCURRENCY = Math.max(
+  1,
+  optNum(values.concurrency) ?? (headed || check ? 1 : 4),
+)
 
 const HELP = `Render website screenshots from scripts/screenshot-specs.ts.
 
@@ -118,7 +128,8 @@ Options:
                           past the threshold; commits nothing
       --firefox           Render with the Firefox backend instead of Chrome
       --headed            Run a visible browser (defaults --concurrency to 1)
-      --concurrency <n>   Browsers to run at once (default: 4, or 1 if headed)
+      --concurrency <n>   Browsers to run at once (default: 4; 1 if --headed or
+                          --check, where parallelism reads as spec flakiness)
       --diff-threshold <f>  Pixel-diff fraction below which a re-render keeps
                           the committed PNG (default: ${DEFAULT_DIFF_THRESHOLD})
       --port <n>          Proxy to an app server already running on this port
