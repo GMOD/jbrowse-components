@@ -1,25 +1,26 @@
 import { useState } from 'react'
 
-import { getSession } from '../../util/index.ts'
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
+import type {
+  AbstractSessionModel,
+  SimpleFeatureSerialized,
+} from '../../util/index.ts'
 
 // shared between the inline panel and the "open in dialog" view: fetches the
 // feature sequence and exposes a force-load trigger for over-limit regions
 export function useSequenceFetch({
-  model,
+  session,
+  assemblyName,
   feature,
   upDownBp,
 }: {
-  model: BaseFeatureWidgetModel
+  session: AbstractSessionModel
+  assemblyName: string | undefined
   feature: SimpleFeatureSerialized
   upDownBp: number
 }) {
   const [forceLoad, setForceLoad] = useState(false)
-  const session = getSession(model)
-  const assemblyName = model.view?.assemblyNames?.[0]
   const { sequence, error } = useFeatureSequence({
     assemblyName,
     session,
@@ -38,7 +39,6 @@ export function useSequenceFetch({
   return {
     sequence,
     error,
-    assemblyName,
     assemblyGeneticCodeId: assembly?.getGeneticCodeId(feature.refName),
     onForceLoad: () => {
       setForceLoad(true)

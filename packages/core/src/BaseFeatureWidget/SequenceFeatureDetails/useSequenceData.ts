@@ -1,5 +1,6 @@
 import { revcom, revlist } from '../../util/seqUtils.ts'
 import { filterSuccessiveElementsWithSameStartAndEndCoord } from '../util.tsx'
+import { displayStrand } from './util.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat, SeqState } from '../util.tsx'
@@ -70,9 +71,11 @@ function handleReverseStrand(
 export function getSequenceData({
   feature,
   sequence,
+  revcomp,
 }: {
   feature: SimpleFeatureSerialized
   sequence: SeqState
+  revcomp: boolean
 }) {
   const children = prepareSubfeatures(feature)
   const { cds, exons } = processFeatureData(children, feature)
@@ -80,7 +83,7 @@ export function getSequenceData({
     sequence: adjusted,
     cds: adjustedCds,
     exons: adjustedExons,
-  } = feature.strand === -1
+  } = displayStrand(feature, revcomp) === -1
     ? handleReverseStrand(sequence, cds, exons)
     : { sequence, cds, exons }
 

@@ -749,3 +749,116 @@ test('single exon cDNA display relative coords', () => {
   const element = getByTestId('sequence_panel')
   expect(getSequencePlaintext(element)).toMatchSnapshot()
 })
+
+test('reverse complement flips a plus-strand genomic readout', () => {
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      revcomp
+      sequence={{ seq: 'AAAACCCG' }}
+      feature={{
+        start: 0,
+        end: 8,
+        refName: 'chr1',
+        strand: 1,
+        type: 'region',
+        uniqueId: 'plus',
+        name: 'plus',
+      }}
+    />,
+  )
+
+  const text = getSequencePlaintext(getByTestId('sequence_panel'))
+  expect(text).toContain('CGGGTTTT')
+  // the FASTA header records it, so a downloaded sequence says which strand it
+  // came off
+  expect(text.split('\n')[0]).toContain('revcomp')
+})
+
+test('reverse complement of a minus-strand feature is the plus strand', () => {
+  // a minus-strand feature is already shown reverse-complemented, so the toggle
+  // flips it back rather than reverse-complementing a second time
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      revcomp
+      sequence={{ seq: 'AAAACCCG' }}
+      feature={{
+        start: 0,
+        end: 8,
+        refName: 'chr1',
+        strand: -1,
+        type: 'region',
+        uniqueId: 'minus',
+        name: 'minus',
+      }}
+    />,
+  )
+
+  expect(getSequencePlaintext(getByTestId('sequence_panel'))).toContain(
+    'AAAACCCG',
+  )
+})
+
+test('reverse complement counts genomic coordinates down', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      revcomp
+      sequence={{ seq: 'ACGT'.repeat(75) }}
+      feature={{
+        start: 0,
+        end: 300,
+        refName: 'chr1',
+        strand: 1,
+        type: 'region',
+        uniqueId: 'plus',
+        name: 'plus',
+      }}
+    />,
+  )
+
+  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
+    .split('\n')
+    .slice(1)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => +s.split(/\s+/, 1)[0]!)
+
+  expect(rowStarts).toEqual([300, 200, 100])
+})
+
+test('reverse complement is ignored by spliced sequence types', () => {
+  // the toggle is only offered for the genomic types; a stale one must not flip
+  // a cDNA readout
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="cdna"
+      revcomp
+      sequence={{ seq: 'AAAACCCG' }}
+      feature={{
+        start: 0,
+        end: 8,
+        refName: 'chr1',
+        strand: 1,
+        type: 'mRNA',
+        uniqueId: 'tx',
+        name: 'tx',
+        subfeatures: [{ refName: 'chr1', start: 0, end: 8, type: 'exon' }],
+      }}
+    />,
+  )
+
+  const text = getSequencePlaintext(getByTestId('sequence_panel'))
+  expect(text).toContain('AAAACCCG')
+  expect(text.split('\n')[0]).not.toContain('revcomp')
+})

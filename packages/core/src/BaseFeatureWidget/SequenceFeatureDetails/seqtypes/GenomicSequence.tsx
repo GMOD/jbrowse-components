@@ -16,6 +16,7 @@ const GenomicSequence = observer(function GenomicSequence({
   feature,
   downstream,
   useGenomicCoords,
+  revcomp,
   onHoverBase,
   model,
 }: {
@@ -24,14 +25,18 @@ const GenomicSequence = observer(function GenomicSequence({
   upstream?: string
   downstream?: string
   useGenomicCoords: boolean
+  // the sequence itself is already flipped upstream of here; the flag only
+  // tells the coordinate labels which direction they now run
+  revcomp: boolean
   onHoverBase?: (base0: number) => void
   model: SequenceFeatureDetailsModel
 }) {
-  const { mult, coordStart } = computeCoordProps(
+  const { mult, coordStart } = computeCoordProps({
     feature,
     useGenomicCoords,
     upstream,
-  )
+    revcomp,
+  })
   return (
     <>
       {renderSequenceSegments({

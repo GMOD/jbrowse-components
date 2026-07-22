@@ -70,7 +70,9 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
         <Suspense fallback={<LoadingEllipses />}>
           <SequenceFeatureDetails
             key={feature.uniqueId}
-            model={model}
+            model={model.sequenceFeatureDetails}
+            session={getSession(model)}
+            assemblyName={model.view?.assemblyNames?.[0]}
             feature={feature}
           />
         </Suspense>

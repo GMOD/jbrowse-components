@@ -18,6 +18,7 @@ export default function SequenceBody({
   seqPanelRef,
   model,
   mode,
+  revcomp,
   assemblyGeneticCodeId,
   assemblyName,
   onForceLoad,
@@ -28,6 +29,7 @@ export default function SequenceBody({
   seqPanelRef: RefObject<HTMLDivElement | null>
   model: SequenceFeatureDetailsModel
   mode: SequenceDisplayMode
+  revcomp: boolean
   assemblyGeneticCodeId?: number
   assemblyName?: string
   onForceLoad: () => void
@@ -56,6 +58,7 @@ export default function SequenceBody({
           sequence={sequence}
           model={model}
           mode={mode}
+          revcomp={revcomp}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
           assemblyName={assemblyName}
         />

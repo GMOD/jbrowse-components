@@ -41,6 +41,7 @@ const SequencePanel = observer(function SequencePanel({
   model,
   feature,
   mode,
+  revcomp = false,
   assemblyGeneticCodeId,
   assemblyName,
   ref,
@@ -65,12 +66,18 @@ const SequencePanel = observer(function SequencePanel({
       }}
     >
       <Container>
-        <SequenceName model={model} mode={mode} feature={feature} />
+        <SequenceName
+          model={model}
+          mode={mode}
+          revcomp={revcomp}
+          feature={feature}
+        />
         <SequenceContents
           model={model}
           mode={mode}
           feature={feature}
           sequence={sequence}
+          revcomp={revcomp}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
           onHoverBase={base0 => {
             model.setHoverPosition({

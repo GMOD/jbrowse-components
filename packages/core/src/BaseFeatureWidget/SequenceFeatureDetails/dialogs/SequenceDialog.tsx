@@ -28,6 +28,8 @@ const SequenceDialog = observer(function SequenceDialog({
   feature,
   mode,
   setMode,
+  revcomp,
+  setRevcomp,
   sequence,
   error,
   assemblyGeneticCodeId,
@@ -39,6 +41,8 @@ const SequenceDialog = observer(function SequenceDialog({
   sequenceFeatureDetails: SequenceFeatureDetailsModel
   mode: SequenceDisplayMode
   setMode: (mode: SequenceDisplayMode) => void
+  revcomp: boolean
+  setRevcomp: (arg: boolean) => void
   sequence: SeqState | ErrorState | undefined
   error: unknown
   assemblyGeneticCodeId?: number
@@ -69,6 +73,8 @@ const SequenceDialog = observer(function SequenceDialog({
             ref={seqPanelRef}
             model={sequenceFeatureDetails}
             mode={mode}
+            revcomp={revcomp}
+            setRevcomp={setRevcomp}
           />
         </div>
         <SequenceBody
@@ -78,6 +84,7 @@ const SequenceDialog = observer(function SequenceDialog({
           seqPanelRef={seqPanelRef}
           model={sequenceFeatureDetails}
           mode={mode}
+          revcomp={revcomp}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
           assemblyName={assemblyName}
           onForceLoad={onForceLoad}

@@ -11,6 +11,7 @@ export interface SequencePanelProps {
   feature: SimpleFeatureSerialized
   model: SequenceFeatureDetailsModel
   mode: SequenceDisplayMode
+  revcomp?: boolean
   assemblyGeneticCodeId?: number
   // lets the LGV crosshair resolve the feature's refName through the assembly's
   // aliases; without it a non-canonical refName (e.g. '1' vs 'chr1') never

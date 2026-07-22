@@ -28,6 +28,7 @@ const CDNASequence = observer(function CDNASequence({
   includeIntrons,
   collapseIntron,
   useGenomicCoords,
+  revcomp,
   onHoverBase,
   model,
 }: {
@@ -44,6 +45,9 @@ const CDNASequence = observer(function CDNASequence({
   // when introns are shown uncollapsed, so the caller resolves this from the
   // mode rather than reading the setting directly.
   useGenomicCoords: boolean
+  // the sequence itself is already flipped upstream of here; the flag only
+  // tells the coordinate labels which direction they now run
+  revcomp: boolean
   onHoverBase?: (base0: number) => void
   model: SequenceFeatureDetailsModel
 }) {
@@ -54,11 +58,12 @@ const CDNASequence = observer(function CDNASequence({
   const caseCoding = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
   const caseNoncoding = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
 
-  const { mult, coordStart } = computeCoordProps(
+  const { mult, coordStart } = computeCoordProps({
     feature,
     useGenomicCoords,
     upstream,
-  )
+    revcomp,
+  })
 
   // the transcript is its exons; the CDS only decides how each stretch is
   // colored and cased. Deriving that split here, rather than stitching a

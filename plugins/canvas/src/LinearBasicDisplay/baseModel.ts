@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { SequenceFeatureDetailsF } from '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/model'
 import {
   ConfigurationReference,
   getConf,
@@ -23,7 +24,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GROW_MAX_HEIGHT,
-  GetSequenceDialog,
   HeightModeMixin,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
@@ -217,6 +217,9 @@ const ColorByAttributeDialog = lazy(
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
+const FeatureSequenceDialog = lazy(
+  () => import('./components/FeatureSequenceDialog.tsx'),
+)
 
 const STRAND_COLOR_JEXL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
@@ -372,6 +375,18 @@ export default function baseStateModelFactory(
           featureHighlights: types.stripDefault(
             types.array(FeatureHighlightModel),
             [],
+          ),
+          /**
+           * #property
+           * Settings (intron/updownstream bp, coordinates, case) for the
+           * feature sequence panel opened from the feature right-click menu.
+           * Same model the feature-detail widget uses, so the two readouts
+           * share behavior; its state is all volatile + localStorage-backed, so
+           * this contributes nothing to the snapshot.
+           */
+          sequenceFeatureDetails: types.stripDefault(
+            SequenceFeatureDetailsF(),
+            {},
           ),
         }),
       )
@@ -2557,6 +2572,10 @@ export default function baseStateModelFactory(
                 }
               },
             },
+            // The feature-aware sequence panel (CDS, cDNA, protein, collapsed
+            // introns), not the region-based rubberband "Get sequence" dialog:
+            // right-clicking a gene and getting only its raw genomic span, with
+            // no protein option, is the confusing half of that overlap.
             {
               label: 'Get sequence',
               icon: BiotechIcon,
@@ -2564,17 +2583,15 @@ export default function baseStateModelFactory(
                 const region = self.loadedRegions.get(displayedRegionIndex)
                 if (region) {
                   getSession(self).queueDialog(handleClose => [
-                    GetSequenceDialog,
+                    FeatureSequenceDialog,
                     {
                       model: self,
-                      regions: [
-                        {
-                          assemblyName: region.assemblyName,
-                          refName: region.refName,
-                          start: startBp,
-                          end: endBp,
-                        },
-                      ],
+                      parentFeatureId: subfeature
+                        ? subfeature.parentFeatureId
+                        : featureId,
+                      featureId: subfeature ? subfeature.featureId : featureId,
+                      displayedRegionIndex,
+                      assemblyName: region.assemblyName,
                       handleClose,
                     },
                   ])

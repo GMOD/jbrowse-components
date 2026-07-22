@@ -77,16 +77,34 @@ export function coordLabelWidth({
 }
 
 /**
+ * The strand the panel reads. A minus-strand feature is already rendered
+ * reverse-complemented, so the revcomp toggle flips whichever strand the
+ * feature would otherwise be read on rather than forcing the minus strand.
+ */
+export function displayStrand(
+  feature: SimpleFeatureSerialized,
+  revcomp: boolean,
+) {
+  return (feature.strand === -1) !== revcomp ? -1 : 1
+}
+
+/**
  * Computes the coordinate multiplier and genomic coordinate start for a sequence
  * display. Both GenomicSequence and CDNASequence use this to initialize their
  * coordinate-tracking state.
  */
-export function computeCoordProps(
-  feature: SimpleFeatureSerialized,
-  useGenomicCoords: boolean,
-  upstream: string | undefined,
-) {
-  const strand = feature.strand === -1 ? -1 : 1
+export function computeCoordProps({
+  feature,
+  useGenomicCoords,
+  upstream,
+  revcomp,
+}: {
+  feature: SimpleFeatureSerialized
+  useGenomicCoords: boolean
+  upstream: string | undefined
+  revcomp: boolean
+}) {
+  const strand = displayStrand(feature, revcomp)
   const mult = useGenomicCoords ? strand : 1
   const coordStart = useGenomicCoords
     ? strand > 0

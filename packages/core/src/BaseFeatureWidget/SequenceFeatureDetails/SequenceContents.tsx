@@ -7,6 +7,7 @@ import {
 } from '../../util/geneticCodes.ts'
 import {
   modeHasUpDownstream,
+  modeSupportsRevcomp,
   resolveShowCoordinates,
 } from './featureTypeUtil.ts'
 import CDNASequence from './seqtypes/CDNASequence.tsx'
@@ -68,6 +69,7 @@ function RenderedSequenceComponent({
   model,
   assemblyGeneticCodeId,
   sequenceData,
+  revcomp,
   onHoverBase,
 }: {
   mode: SequenceDisplayMode
@@ -75,6 +77,7 @@ function RenderedSequenceComponent({
   model: SequenceFeatureDetailsModel
   assemblyGeneticCodeId?: number
   sequenceData: SequenceData
+  revcomp: boolean
   onHoverBase?: (base0: number) => void
 }) {
   const { seq, upstream, downstream, cds, exons } = sequenceData
@@ -93,6 +96,7 @@ function RenderedSequenceComponent({
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}
           useGenomicCoords={useGenomicCoords}
+          revcomp={revcomp}
           onHoverBase={onHoverBase}
         />
       )
@@ -134,6 +138,7 @@ function RenderedSequenceComponent({
           includeIntrons={mode.startsWith('gene')}
           collapseIntron={mode.includes('collapsed_intron')}
           useGenomicCoords={useGenomicCoords}
+          revcomp={revcomp}
           onHoverBase={onHoverBase}
         />
       )
@@ -149,6 +154,7 @@ const SequenceContents = observer(function SequenceContents({
   sequence,
   model,
   assemblyGeneticCodeId,
+  revcomp,
   onHoverBase,
 }: {
   mode: SequenceDisplayMode
@@ -156,11 +162,14 @@ const SequenceContents = observer(function SequenceContents({
   sequence: SeqState
   model: SequenceFeatureDetailsModel
   assemblyGeneticCodeId?: number
+  revcomp: boolean
   onHoverBase?: (base0: number) => void
 }) {
+  const rc = revcomp && modeSupportsRevcomp(mode)
   const sequenceData = getSequenceData({
     feature,
     sequence,
+    revcomp: rc,
   })
   return (
     <RenderedSequenceComponent
@@ -169,6 +178,7 @@ const SequenceContents = observer(function SequenceContents({
       model={model}
       assemblyGeneticCodeId={assemblyGeneticCodeId}
       sequenceData={sequenceData}
+      revcomp={rc}
       onHoverBase={onHoverBase}
     />
   )

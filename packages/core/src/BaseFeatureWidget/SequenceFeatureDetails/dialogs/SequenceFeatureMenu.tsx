@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
 import { saveAs } from '../../../util/index.ts'
 import {
+  modeSupportsRevcomp,
   resolveShowCoordinates,
   showGenomicCoordsOption,
 } from '../featureTypeUtil.ts'
@@ -26,12 +27,16 @@ interface Props {
   model: SequenceFeatureDetailsModel
   ref: RefObject<HTMLDivElement | null>
   mode: SequenceDisplayMode
+  revcomp: boolean
+  setRevcomp: (arg: boolean) => void
   extraItems?: MenuItem[]
 }
 const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
   model,
   ref,
   mode,
+  revcomp,
+  setRevcomp,
   extraItems = [],
 }: Props) {
   const [showSettings, setShowSettings] = useState(false)
@@ -99,6 +104,19 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
           },
 
           ...extraItems,
+
+          ...(modeSupportsRevcomp(mode)
+            ? [
+                {
+                  label: 'Reverse complement',
+                  type: 'checkbox' as const,
+                  checked: revcomp,
+                  onClick: () => {
+                    setRevcomp(!revcomp)
+                  },
+                },
+              ]
+            : []),
 
           {
             label: 'Show coordinates?',

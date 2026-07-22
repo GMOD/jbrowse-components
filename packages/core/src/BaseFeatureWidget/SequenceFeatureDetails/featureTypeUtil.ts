@@ -86,6 +86,22 @@ export function modeHasUpDownstream(mode: SequenceDisplayMode) {
   return mode.includes('updownstream')
 }
 
+// reverse complement reads the opposite strand of the genome, so it is offered
+// for the genomic sequence types only: the antisense of a spliced cDNA, of an
+// annotated CDS, or of a translated peptide is not a sequence anyone asked for.
+// Shared by the menu (which offers it) and the panel (which applies it) so a
+// toggle left on in a genomic mode can't silently flip a cDNA readout.
+export function modeSupportsRevcomp(mode: SequenceDisplayMode) {
+  return [
+    'gene',
+    'gene_collapsed_intron',
+    'gene_updownstream',
+    'gene_updownstream_collapsed_intron',
+    'genomic',
+    'genomic_sequence_updownstream',
+  ].includes(mode)
+}
+
 // genomic coordinates only make sense for continuous genome-based sequence
 // types (not collapsed-intron or spliced views)
 export function showGenomicCoordsOption(mode: SequenceDisplayMode) {

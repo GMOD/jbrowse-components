@@ -118,6 +118,9 @@ export function createTestEnvironment(opts?: {
       >({}),
     })
     .volatile(() => ({
+      // what queueDialog was called with, resolved to [Component, props] so
+      // tests can assert on the props a menu item passes its dialog
+      queuedDialogs: [] as [unknown, Record<string, unknown>][],
       rpcManager: {
         call: mockRpcCall,
       },
@@ -176,7 +179,11 @@ export function createTestEnvironment(opts?: {
       },
       notify() {},
       notifyError() {},
-      queueDialog() {},
+      queueDialog(
+        cb: (handleClose: () => void) => [unknown, Record<string, unknown>],
+      ) {
+        self.queuedDialogs.push(cb(() => {}))
+      },
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
         const forType = { ...self.displayTypeDefaults[displayType] }
         if (value === undefined) {
