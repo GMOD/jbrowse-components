@@ -380,7 +380,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: '[data-testid="hierarchical_track_selector"]',
           },
-          { type: 'delay', ms: 500 },
           // open the category's "..." track menu (stable testid on the category
           // CascadingMenuButton)
           {
@@ -388,7 +387,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             selector: '[data-testid="htsCategoryMenu-Integration test"]',
           },
           { type: 'waitForText', text: 'Add to selection' },
-          { type: 'delay', ms: 400 },
         ],
         // box the menu item and put the caption over the empty LGV area to its
         // left; no arrow (arrows covered up the menu-item text)
@@ -410,7 +408,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // the shopping cart appears once the selection is non-empty
           { type: 'click', selector: '[data-testid="hts-shopping-cart"]' },
           { type: 'waitForText', text: 'Create multi-wiggle track' },
-          { type: 'delay', ms: 400 },
         ],
         annotations: [
           { type: 'box', anchor: { text: 'Create multi-wiggle track' } },
@@ -443,10 +440,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Enter track data' },
-      { type: 'delay', ms: 500 },
     ],
     // two-stage: top frame opens the workflow-selector dropdown with a callout
     // (on a dark pill so it reads over the form) and an arrow to it; bottom frame
@@ -568,10 +563,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Clustering' },
           { type: 'hover', text: 'Clustering' },
           { type: 'waitForText', text: 'Cluster rows by score...' },
-          { type: 'delay', ms: 300 },
           { type: 'click', text: 'Cluster rows by score...' },
           { type: 'waitForText', text: 'Run clustering' },
-          { type: 'delay', ms: 500 },
         ],
       },
       {

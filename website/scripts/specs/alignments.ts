@@ -42,13 +42,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
     ],
   },
 
@@ -672,7 +670,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             type: 'waitForText',
             text: 'Renders the reads as stacked sections',
           },
-          { type: 'delay', ms: 500 },
           {
             type: 'type',
             selector: '[data-testid="group-tag-name-input"]',

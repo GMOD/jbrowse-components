@@ -1,6 +1,7 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { revealHighlightsOnGrowth } from '../../util/highlights.ts'
+import { getSession } from '../../util/index.ts'
 
 import type { HighlightType } from '../../util/highlights.ts'
 
@@ -60,6 +61,10 @@ export default function HighlightsMixin() {
         const idx = self.highlight.indexOf(old)
         if (idx !== -1) {
           self.highlight[idx] = { ...old, ...updates }
+          // reachable from the highlight grid, which lists entries even with
+          // the bands off, so recoloring there would otherwise do nothing
+          // visible. Not a growth, so revealHighlightsOnGrowth can't see it
+          getSession(self).revealHighlights()
         }
       },
       /**

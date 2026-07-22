@@ -530,7 +530,6 @@ export const svSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'SV inspector' },
-      { type: 'delay', ms: 500 },
     ],
     // box the "Add" menu button (the path's first click) plus the "SV inspector"
     // item it opens (circle Add too)

@@ -28,6 +28,17 @@ function isLooseTrack(track: TrackInput): track is string | LooseTrackInput {
   return typeof track === 'string' || (!('adapter' in track) && 'uri' in track)
 }
 
+// Stamp the view's single assembly onto a full-config track that omits
+// assemblyNames. The embedded view has exactly one assembly, so it's
+// unambiguous — and doing it here frees every host (R htmlwidgets, anywidget,
+// vanilla JS) from computing the name itself. Loose tracks get the same name
+// through guessTrackConf's `assemblyName` argument below.
+export function withAssemblyName(track: TrackConf, assemblyName?: string) {
+  return assemblyName !== undefined && !('assemblyNames' in track)
+    ? { ...track, assemblyNames: [assemblyName] }
+    : track
+}
+
 // Expand any loose entries (bare URL, or { uri, index? }) into full track
 // configs using core's guessTrackConf; full configs pass through unchanged. The
 // view model carries the pluginManager whose format plugins drive the guess.
@@ -204,9 +215,9 @@ export function createLinearGenomeView(
       assembly: resolved.assembly,
       // only full configs seed the config catalog; loose specs need the
       // pluginManager the build creates, so they are resolved just below
-      tracks: tracks.filter(
-        (track): track is TrackConf => !isLooseTrack(track),
-      ),
+      tracks: tracks
+        .filter((track): track is TrackConf => !isLooseTrack(track))
+        .map(track => withAssemblyName(track, assemblyName)),
       aggregateTextSearchAdapters: mergeSearchAdapters(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,

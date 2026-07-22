@@ -690,7 +690,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Add' },
           { type: 'waitForText', text: 'Dotplot view' },
-          { type: 'delay', ms: 500 },
         ],
         // box the Add menu button as well as the Dotplot view item
         annotations: [

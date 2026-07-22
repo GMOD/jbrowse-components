@@ -29,18 +29,23 @@ async function waitHiddenByNodePolling(
   const deadline = Date.now() + timeout
   let gone = false
   while (!gone && Date.now() < deadline) {
-    gone = await page.evaluate((sel: string) => {
-      const el = document.querySelector(sel)
-      const s = el ? getComputedStyle(el) : undefined
-      const r = el?.getBoundingClientRect()
-      return (
-        !el ||
-        s?.display === 'none' ||
-        s?.visibility === 'hidden' ||
-        Number(s?.opacity) === 0 ||
-        (r?.width === 0 && r.height === 0)
-      )
-    }, selector)
+    // every match must be gone/hidden, not just the first: a view renders one
+    // loading-overlay per pending block, so querySelector alone reports "gone"
+    // as soon as the earliest-finishing block clears
+    gone = await page.evaluate(
+      (sel: string) =>
+        Array.from(document.querySelectorAll(sel)).every(el => {
+          const s = getComputedStyle(el)
+          const r = el.getBoundingClientRect()
+          return (
+            s.display === 'none' ||
+            s.visibility === 'hidden' ||
+            Number(s.opacity) === 0 ||
+            (r.width === 0 && r.height === 0)
+          )
+        }),
+      selector,
+    )
     if (!gone) {
       await delay(200)
     }
@@ -78,14 +83,17 @@ export function waitForVisible(
 function resolveTarget(page: Page, action: ScreenshotAction) {
   const selector =
     action.selector ?? (action.text ? textSelector(action.text) : undefined)
-  return selector
-    ? waitForVisible(page, selector).catch(() => {
-        const target = action.selector
-          ? `selector "${action.selector}"`
-          : `text "${action.text}"`
-        throw new Error(`${action.type} target not found: ${target}`)
-      })
-    : null
+  if (!selector) {
+    throw new Error(`${action.type} action needs a selector, text, or from`)
+  }
+  return waitForVisible(page, selector, { timeout: action.timeout }).catch(
+    () => {
+      const target = action.selector
+        ? `selector "${action.selector}"`
+        : `text "${action.text}"`
+      throw new Error(`${action.type} target not found: ${target}`)
+    },
+  )
 }
 
 // Click a resolved element. A real mouse click at the element's center is
@@ -100,6 +108,11 @@ async function clickElement(
   button: 'left' | 'right' = 'left',
 ) {
   if (el) {
+    // el.click() scrolls the element into view itself, but the coverage probe
+    // below runs first and reads viewport coordinates — without scrolling here,
+    // an off-screen target makes elementFromPoint return null, which reads as
+    // "covered" and silently downgrades every such click to a synthetic event.
+    await el.scrollIntoView()
     const covered = await el.evaluate(node => {
       const r = node.getBoundingClientRect()
       const top = document.elementFromPoint(
@@ -171,7 +184,10 @@ export async function runAction(page: Page, action: ScreenshotAction) {
       await el?.click()
     }
     await page.keyboard.type(action.value ?? '')
-  } else if (action.type === 'drag' && action.from && action.to) {
+  } else if (action.type === 'drag') {
+    if (!action.from || !action.to) {
+      throw new Error('drag action needs both from and to')
+    }
     await page.mouse.move(action.from.x, action.from.y)
     await page.mouse.down()
     await page.mouse.move(action.to.x, action.to.y, { steps: 20 })
@@ -201,9 +217,15 @@ export async function runAction(page: Page, action: ScreenshotAction) {
         ancestor.scrollLeft = targetCenter - ancestor.clientWidth / 2
       }
     })
-  } else if (action.type === 'press' && action.key) {
+  } else if (action.type === 'press') {
+    if (!action.key) {
+      throw new Error('press action needs a key')
+    }
     await page.keyboard.press(action.key)
-  } else if (action.type === 'waitForSelector' && action.selector) {
+  } else if (action.type === 'waitForSelector') {
+    if (!action.selector) {
+      throw new Error('waitForSelector action needs a selector')
+    }
     // rethrow puppeteer's parsed-selector blob ([[[{name,value}]]]) as the
     // readable selector so a timeout names what was missing
     await waitForVisible(page, action.selector, {
@@ -214,7 +236,10 @@ export async function runAction(page: Page, action: ScreenshotAction) {
         `waitForSelector: ${action.hidden ? 'still visible' : 'never found'} "${action.selector}"`,
       )
     })
-  } else if (action.type === 'waitForText' && action.text) {
+  } else if (action.type === 'waitForText') {
+    if (!action.text) {
+      throw new Error('waitForText action needs text')
+    }
     await waitForVisible(page, textSelector(action.text), {
       hidden: action.hidden,
       timeout: action.timeout,
@@ -223,5 +248,10 @@ export async function runAction(page: Page, action: ScreenshotAction) {
         `waitForText: ${action.hidden ? 'text still visible' : 'never found visible text'} "${action.text}"`,
       )
     })
+  } else {
+    // a spec that mistypes an action type (or drops a required field) used to
+    // fall through every branch and no-op, producing a wrong-but-plausible
+    // figure with no error
+    throw new Error(`unknown action type: ${JSON.stringify(action)}`)
   }
 }

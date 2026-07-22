@@ -24,7 +24,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear genome view' },
-      { type: 'delay', ms: 500 },
     ],
   },
 
@@ -48,10 +47,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Citations' },
       { type: 'waitForText', text: 'Cite this JBrowse session' },
-      { type: 'delay', ms: 400 },
       { type: 'click', text: 'Cite this JBrowse session' },
       { type: 'waitForText', text: 'Diesh, Colin' },
-      { type: 'delay', ms: 600 },
     ],
   },
 
@@ -308,7 +305,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       // 5Mb gene track never fully clears "Loading" headless, so don't gate on it
       { type: 'rightclick', from: { x: 1130, y: 450 } },
       { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'delay', ms: 500 },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
       // move the pointer off the matrix so the mouseover crosshair doesn't bake
@@ -360,7 +356,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'rightclick', from: { x: 1130, y: 450 } },
       { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'delay', ms: 500 },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
       { type: 'hover', from: { x: 6, y: 6 } },
@@ -777,15 +772,12 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
-      { type: 'delay', ms: 300 },
       // open the add-track drawer
       { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Enter track data' },
-      { type: 'delay', ms: 1000 },
       // reopen the File menu so the menu path and the open form show together
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
-      { type: 'delay', ms: 400 },
     ],
     annotations: [
       { type: 'box', anchor: { text: 'Open track...' } },
@@ -841,7 +833,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: '[data-testid="hierarchical_track_selector"]',
           },
-          { type: 'delay', ms: 500 },
           // open the add-track FAB menu (show the menu the FAB
           // launches, not just a ring around the button)
           {
@@ -849,7 +840,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             selector: '[data-testid="hierarchical-add-track-fab"]',
           },
           { type: 'waitForText', text: 'Add track' },
-          { type: 'delay', ms: 600 },
         ],
         annotations: [
           // a snug ring on the FAB (no arrow — the previous arrow cut
@@ -885,13 +875,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       // open the track selector so the track-list entry menu icon is visible
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'structural variant' },
       { type: 'delay', ms: 800 },
@@ -918,7 +906,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           { type: 'waitForText', text: 'About track' },
-          { type: 'delay', ms: 500 },
         ],
         annotations: [{ type: 'box', anchor: { selector: 'ul[role="menu"]' } }],
       },
@@ -1019,13 +1006,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       // open the track selector to get a widget in the drawer
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
     ],
     stages: [
       {
@@ -1033,7 +1018,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           // click the MoreVert to open the position menu
           { type: 'click', selector: '[data-testid="drawer-position-button"]' },
           { type: 'waitForText', text: 'left' },
-          { type: 'delay', ms: 500 },
         ],
         annotations: [
           {
@@ -1113,7 +1097,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
       { type: 'waitForText', text: 'Bookmark region' },
-      { type: 'delay', ms: 500 },
     ],
     stages: [
       {
@@ -1146,7 +1129,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       // create a bookmark via rubberband
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
       { type: 'waitForText', text: 'Bookmark region' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Bookmark region' },
       { type: 'delay', ms: 500 },
       // open the bookmark widget
@@ -1204,7 +1186,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
       // open the hamburger menu, then open the Collapse... submenu so its
       // options are visible alongside the main menu
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
@@ -1249,7 +1230,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
       // filter the (virtualized) list so the target row is rendered, then open
       // it through the UI (by name) so it lands in "recently used"
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
@@ -1272,7 +1252,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         selector: '[data-testid="recently-used-tracks-button"]',
       },
       { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
-      { type: 'delay', ms: 500 },
     ],
     annotations: [
       // ring just the recently-used trigger icon; the popover box was removed
@@ -1301,13 +1280,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       // open track selector
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'volvox-sorted' },
       { type: 'delay', ms: 800 },
@@ -1317,7 +1294,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         selector: '[data-testid="htsTrackEntryMenu-Tracks,volvox_bam"]',
       },
       { type: 'waitForText', text: 'Add to favorites' },
-      { type: 'delay', ms: 300 },
     ],
     stages: [
       {
@@ -1339,7 +1315,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 500 },
           { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
           { type: 'waitForText', text: 'volvox-sorted.bam' },
-          { type: 'delay', ms: 500 },
         ],
         annotations: [
           {
@@ -1373,7 +1348,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Plugin store' },
-      { type: 'delay', ms: 400 },
       // open the widget (this closes the Tools menu)
       { type: 'click', text: 'Plugin store' },
       { type: 'waitForText', text: 'Installed plugins' },
@@ -1381,7 +1355,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       // reopen the Tools menu so the menu path and the open widget show together
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Plugin store' },
-      { type: 'delay', ms: 600 },
     ],
     // ring the "Tools" top-level menu, box the "Plugin store" menu item, and box
     // the opened Plugin store widget itself (anchored to its "Installed plugins"
@@ -1430,7 +1403,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Assembly manager' },
       { type: 'waitForText', text: 'Add new assembly' },
       { type: 'delay', ms: 1500 },
@@ -1480,7 +1452,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse...', 'Collapse top-level categories'], 300),
       { type: 'click', text: 'Collapse top-level categories' },
@@ -1506,7 +1477,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse...', 'Collapse subcategories'], 300),
       { type: 'click', text: 'Collapse subcategories' },
@@ -1583,10 +1553,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Assembly manager' },
       { type: 'waitForText', text: 'Add new assembly' },
-      { type: 'delay', ms: 500 },
     ],
   },
 
@@ -1605,10 +1573,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
-      { type: 'delay', ms: 300 },
       { type: 'click', text: 'Assembly manager' },
       { type: 'waitForText', text: 'Add new assembly' },
-      { type: 'delay', ms: 500 },
     ],
   },
 
@@ -1632,7 +1598,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Admin' },
           { type: 'waitForText', text: 'Set default session' },
-          { type: 'delay', ms: 300 },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Admin' } }],
       },
@@ -1640,7 +1605,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Set default session' },
           { type: 'waitForText', text: 'Clear default session' },
-          { type: 'delay', ms: 500 },
         ],
       },
     ],

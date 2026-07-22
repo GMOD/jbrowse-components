@@ -68,10 +68,17 @@ through a `readySelector` (which uses puppeteer `waitForSelector({visible:true})
 the GPU displays paint into a `position:absolute` canvas, so the DisplayChrome
 wrapper collapses to **height 0** and never passes the visibility check (it
 `EXISTS` but is not `VISIBLE`). The generator's own `waitForDisplaysDone` gets
-away with it because it queries `-done` by **existence** (`querySelectorAll`), not
-visibility — but it's an early (`canvasDrawn`) signal and swallows timeouts, so
-it isn't a reliable capture gate on its own. Pick a data-derived, actually-drawn
-element (legend, a rendered label) for `readySelector`.
+away with it because it queries the wrappers by **existence**
+(`querySelectorAll`), not visibility — but it's an early (`canvasDrawn`) signal
+and swallows timeouts, so it isn't a reliable capture gate on its own. Pick a
+data-derived, actually-drawn element (legend, a rendered label) for
+`readySelector`.
+
+Note that `settleMs` is purely the **timeout** on that wait, never a floor: a
+page whose displays are all painted (or that has no canvas display at all —
+a menu, widget, or import-form figure) proceeds immediately. It used to burn the
+full duration whenever no wrapper matched, which made it read like a fixed
+sleep and invited tuning it as one.
 
 ## Debugging tips that saved time here
 
