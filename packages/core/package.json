@@ -28,7 +28,6 @@
     "./BaseFeatureWidget/BaseFeatureDetail/Formatter": "./src/BaseFeatureWidget/BaseFeatureDetail/Formatter.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
     "./BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog": "./src/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog.tsx",
-    "./BaseFeatureWidget/SequenceFeatureDetails/model": "./src/BaseFeatureWidget/SequenceFeatureDetails/model.ts",
     "./Plugin": "./src/Plugin.ts",
     "./PluginLoader": "./src/PluginLoader.ts",
     "./PluginManager": "./src/PluginManager.ts",
@@ -242,10 +241,6 @@
       "./BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog": {
         "types": "./esm/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog.d.ts",
         "import": "./esm/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog.js"
-      },
-      "./BaseFeatureWidget/SequenceFeatureDetails/model": {
-        "types": "./esm/BaseFeatureWidget/SequenceFeatureDetails/model.d.ts",
-        "import": "./esm/BaseFeatureWidget/SequenceFeatureDetails/model.js"
       },
       "./Plugin": {
         "types": "./esm/Plugin.d.ts",
@@ -801,9 +796,6 @@
         ],
         "BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog": [
           "esm/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog.d.ts"
-        ],
-        "BaseFeatureWidget/SequenceFeatureDetails/model": [
-          "esm/BaseFeatureWidget/SequenceFeatureDetails/model.d.ts"
         ],
         "Plugin": [
           "esm/Plugin.d.ts"

@@ -193,8 +193,8 @@ heterozygous sites and 13.
 The choice affects that track and nothing else: the depth bigWig comes from the
 BAM, and re-running with the normal's VCF instead of the tumor's leaves the
 `copynum` bedGraph byte-identical, so the segmentation and the CNV VCF are not
-MAF-informed. This tutorial plots BAF instead of `maf.bw` (below), so the `--maf`
-argument here only decides whether that one unused output is meaningful.
+MAF-informed. This tutorial plots BAF instead of `maf.bw` (below), so the
+`--maf` argument here only decides whether that one unused output is meaningful.
 
 ```bash
 # Clair3 tumor calls published alongside C-GIAB's Wakhan CNA run
@@ -228,11 +228,11 @@ two bands apart, and that mirrored split is the shape most cancer-genomics
 readers recognize on sight: a balanced region is one band at 0.5, and a
 loss-of-heterozygosity region splits into two bands at 0 and 1. Build it by
 piling up the tumor reads at germline heterozygous sites and taking the alt
-fraction (`scripts/build_sv_visualization_cgiab.sh` does this with `bcftools
-mpileup`, keeping sites with at least 10x). Plot it with **scatter** over a
-fixed 0 to 1 range: the value is one point per het site and the spread is the
-entire signal, so a line rendering would average the two LOH bands back to 0.5
-and erase the event.
+fraction (`scripts/build_sv_visualization_cgiab.sh` does this with
+`bcftools mpileup`, keeping sites with at least 10x). Plot it with **scatter**
+over a fixed 0 to 1 range: the value is one point per het site and the spread is
+the entire signal, so a line rendering would average the two LOH bands back to
+0.5 and erase the event.
 
 <Figure caption="Chromosome 3, the two-panel copy-number view over the benchmark CNV calls: the HiFiCNV depth track above B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity (depth halves, BAF splits into two bands at 0 and 1); the q-arm is balanced (flat depth, one BAF band at 0.5)." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
@@ -448,7 +448,7 @@ edges, matching the benchmark call.
 
 <Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (compact), the HiFiCNV depth track, the PacBio HiFi read pileup, and the benchmark CNV calls. Depth and the pileup both drop to 0 at the deletion's edges. The pileup has 'View as pairs / link supplementary alignments' on, so each read and its split segments chain onto one row; the salmon and purple reads are split long-read alignments spanning the breakpoints (colored by strand)." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
-Nothing above proves the deletion is *somatic*. A homozygous drop-out looks the
+Nothing above proves the deletion is _somatic_. A homozygous drop-out looks the
 same whether it was acquired by the tumor or inherited, and the answer is in the
 matched normal: load the tumor and normal coverage tracks together over the same
 locus. Pin both to the same score range, since the whole point is one track's

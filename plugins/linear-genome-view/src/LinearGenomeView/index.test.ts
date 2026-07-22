@@ -2302,7 +2302,9 @@ describe('showsWholeChromosome', () => {
   }
 
   test('true for a region spanning the entire refseq', () => {
-    expect(makeView([volvoxDisplayedRegions[0]]).showsWholeChromosome).toBe(true)
+    expect(makeView([volvoxDisplayedRegions[0]]).showsWholeChromosome).toBe(
+      true,
+    )
   })
 
   test('false for a sub-region, so cytobands stay off', () => {

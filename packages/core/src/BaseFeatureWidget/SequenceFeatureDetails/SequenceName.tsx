@@ -2,10 +2,7 @@ import { observer } from 'mobx-react'
 
 import { toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.tsx'
-import {
-  modeHasUpDownstream,
-  modeSupportsRevcomp,
-} from './featureTypeUtil.ts'
+import { modeHasUpDownstream, modeSupportsRevcomp } from './featureTypeUtil.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type {
