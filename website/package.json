@@ -2,7 +2,7 @@
   "name": "@jbrowse/website-astro",
   "type": "module",
   "scripts": {
-    "dev": "rimraf .astro && astro dev",
+    "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
     "index": "astro build && pagefind --site dist --output-path static/pagefind",
     "preview": "astro preview",
@@ -49,7 +49,6 @@
     "@types/mdast": "^4.0.4",
     "pagefind": "^1.5.2",
     "prettier-plugin-astro": "^0.14.1",
-    "rimraf": "^6.1.3",
     "typescript": "^6.0.3"
   }
 }
