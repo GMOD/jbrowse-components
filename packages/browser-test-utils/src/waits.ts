@@ -135,3 +135,30 @@ export async function waitForDisplaysDone(page: Page, timeoutMs: number) {
     )
     .catch(() => {})
 }
+
+// Wait until no display is in its `loading` phase.
+//
+// This is the signal the other waits here only approximate. `waitForDisplaysDone`
+// keys on canvasDrawn (FIRST paint — flips on an empty canvas with the fetch
+// still running), `waitForLoadingComplete` on an overlay that a debounced fetch
+// may not have raised yet, and `waitForQuiescent` on status *text*. DisplayChrome
+// publishes `data-display-phase` from the model's own mutually-exclusive
+// DisplayPhase, whose `loading` term covers the entire fetch, so "nothing is
+// loading" is a direct read rather than an inference.
+//
+// Terminal phases (`tooLarge`, `renderError`) replace the display subtree and
+// publish no attribute, so they resolve immediately here — correct, since they
+// are finished, not pending. They're caught as *content* by the caller's own
+// settled check, not by this wait.
+//
+// Best-effort like its neighbours: a display that never leaves `loading` should
+// fail loudly through that settled check, with the frame to look at, rather than
+// as an opaque timeout here.
+export async function waitForDisplayPhases(page: Page, timeoutMs: number) {
+  await page
+    .waitForFunction(
+      () => document.querySelector('[data-display-phase="loading"]') === null,
+      { timeout: timeoutMs },
+    )
+    .catch(() => {})
+}

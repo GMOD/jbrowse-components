@@ -9,6 +9,7 @@ export {
 export { encodeSessionSpec, sessionSpecQuery } from './session.ts'
 export {
   delay,
+  waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,

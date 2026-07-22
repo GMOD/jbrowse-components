@@ -160,6 +160,26 @@ test('ready phase shows the canvas with no banners; canvasDrawn toggles the -don
   expect(queryByTestId('chrome')).toBeNull()
 })
 
+// The distinction the screenshot generator depends on: `-done` is first paint,
+// `data-display-phase` is doneness. A display that has painted an empty canvas
+// while its fetch is still running reports BOTH `-done` and `loading`, so a
+// capture gated on the testid alone lands on a half-loaded frame.
+test('data-display-phase reports loading even once canvasDrawn has flipped', async () => {
+  const model = TestChromeModel.create({})
+  model.setLoadingCondition(true)
+  model.setCanvasDrawn(true)
+  const { findByTestId } = renderChrome(model, 'chrome')
+
+  const el = await findByTestId('chrome-done')
+  expect(el.getAttribute('data-display-phase')).toBe('loading')
+
+  act(() => {
+    model.setLoadingCondition(false)
+  })
+
+  expect(el.getAttribute('data-display-phase')).toBe('ready')
+})
+
 test('terminal banner survives loading-condition churn (lazy-thunk guard)', async () => {
   const model = TestChromeModel.create({})
   model.setRegionTooLarge(true, 'Requested too much data')

@@ -11,6 +11,7 @@ import {
   createTestServer,
   findChromeExecutable,
   isBrowserConsoleNoise,
+  waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
@@ -102,12 +103,12 @@ const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
 // Math.max(1, …) so `--concurrency 0` can't spin up zero workers and silently
 // skip every render spec while still exiting 0.
 //
-// --check defaults to serial because parallelism is itself a source of drift:
-// alignments_sort_by_base and multiwig/addtrack both report 0.000% alone and
-// 17.4% / 0.7% when four browsers share the machine, so a parallel --check
-// reports specs as flaky that are perfectly deterministic. A flakiness detector
-// that induces flakiness is worse than none. Pass --concurrency explicitly to
-// trade that back for wall-clock.
+// --check defaults to serial so a drift report has one fewer confound: with four
+// browsers sharing CPU and network, "this spec is flaky" and "the machine was
+// busy" are indistinguishable. It is explicitly NOT a fix for flakiness —
+// alignments_sort_by_base still drifts 17% in roughly half of serial runs, and
+// multiwig/addtrack has gone both 0.000% and 0.7% serially. Both are real,
+// unexplained, and predate this default. Pass --concurrency for wall-clock.
 const CONCURRENCY = Math.max(
   1,
   optNum(values.concurrency) ?? (headed || check ? 1 : 4),
@@ -215,12 +216,15 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
   }
   await waitForQuiescent(page, { timeout: readyTimeout })
   await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
-  // One pass isn't enough when a fetch outlives the first paint: `-display-done`
-  // flips on canvasDrawn, which LinearAlignmentsDisplay reaches with the fetch
-  // still in flight, so hg002_dipcall's two captures drifted 18% apart (one
-  // caught the partial pileup) even with the overlay wait ahead of this. Re-run
-  // the sequence while an overlay is still up — bounded, so a view that never
-  // finishes still fails through assertRenderSettled instead of hanging here.
+  // The one non-proxy wait: no display is in its `loading` phase. The waits
+  // above key off first paint, an overlay a debounced fetch may not have raised
+  // yet, and status text — all of which can read "ready" mid-fetch, which is how
+  // a "Loading" frame gets captured at all.
+  await waitForDisplayPhases(page, readyTimeout)
+  // Belt and braces for the displays that publish no phase (non-LGV views, and
+  // anything not routed through DisplayChrome): re-run while an overlay is still
+  // up. Bounded, so a view that never finishes fails through assertRenderSettled
+  // with a frame to look at instead of hanging here.
   for (let pass = 0; pass < 2; pass++) {
     const stillLoading = await page.evaluate(
       () =>
@@ -234,6 +238,7 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
       timeout: readyTimeout,
     })
     await waitForQuiescent(page, { timeout: readyTimeout })
+    await waitForDisplayPhases(page, readyTimeout)
     await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
   }
 }
@@ -623,6 +628,12 @@ async function renderSpecToTemp(
   await captureUrl(page, spec, port)
 
   await runActions(page, spec.name, spec.actions)
+  // same as in captureStages: actions can kick off a re-render, so wait it out
+  // before asserting/capturing rather than racing it
+  await waitForDisplayPhases(
+    page,
+    spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS,
+  )
   await assertViewsRendered(page, spec.name)
   if (!spec.allowUnsettled) {
     await assertRenderSettled(page, spec)
@@ -661,6 +672,15 @@ async function captureStages(
     // target in this stage's actions
     await clearAnnotations(page)
     await runActions(page, spec.name, stage.actions)
+    // A stage's actions can start work of their own — alignments_sort_by_base's
+    // second stage clicks "Sort by base at position", an async re-sort — and the
+    // shot used to race it, landing on the pre-sort order often enough to drift
+    // 17% between runs. Wait for the phases the actions disturbed; a no-op when
+    // the stage only opened a menu.
+    await waitForDisplayPhases(
+      page,
+      spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS,
+    )
     await shoot(page, spec, stage.annotations, stageFiles[i]!)
     // re-check after each stage capture: assertViewsRendered only runs once
     // before the loop, so a stage that captures a blank view body (a rare

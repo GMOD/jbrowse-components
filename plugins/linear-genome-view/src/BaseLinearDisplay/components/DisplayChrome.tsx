@@ -132,6 +132,13 @@ function DisplayChromeInner<B extends { dispose(): void }>({
           ? undefined
           : `${testid}${model.canvasDrawn ? '-done' : ''}`
       }
+      // The `-done` suffix above is `canvasDrawn`, i.e. FIRST PAINT — it flips
+      // on an empty canvas while the fetch is still in flight, so it can't
+      // answer "is this display finished". `phase` can: it is the model's own
+      // mutually-exclusive state, and `loading` covers the whole fetch, not
+      // just the paint. Published so a screenshot/e2e run can wait on the real
+      // signal instead of inferring it from paint flags and overlay text.
+      data-display-phase={phase}
     >
       {children({ canvasRef, canvas })}
       <DisplayErrorBar model={model} />
