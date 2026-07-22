@@ -167,6 +167,7 @@ export default class GridBookmarkPlugin extends Plugin {
                         )
                         if (selectedRegions.length) {
                           self.addToHighlights(selectedRegions[0]!)
+                          self.revealHighlightChips()
                         }
                       },
                     },

@@ -2,6 +2,10 @@ import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import type { HighlightType } from '../../util/highlights.ts'
 
+// after turning chips off, suppress the auto-reveal that a fresh interactive
+// highlight would otherwise trigger, so a deliberate "chips off" sticks
+const CHIP_REVEAL_SUPPRESS_MS = 60 * 60 * 1000
+
 /**
  * #stateModel HighlightsMixin
  * #category view
@@ -32,6 +36,13 @@ export default function HighlightsMixin() {
        */
       showHighlightChips: types.stripDefault(types.boolean, false),
     })
+    .volatile(() => ({
+      /**
+       * #volatile
+       * timestamp of the last manual "chips off"; gates revealHighlightChips
+       */
+      highlightChipsDismissedAt: undefined as number | undefined,
+    }))
     .actions(self => ({
       /**
        * #action
@@ -64,7 +75,24 @@ export default function HighlightsMixin() {
        * #action
        */
       setShowHighlightChips(arg: boolean) {
+        if (!arg) {
+          self.highlightChipsDismissedAt = Date.now()
+        }
         self.showHighlightChips = arg
+      },
+      /**
+       * #action
+       * turn chips on after an interactive highlight so the new band is
+       * immediately manageable, unless the user turned chips off in the last hour
+       */
+      revealHighlightChips() {
+        const dismissedAt = self.highlightChipsDismissedAt
+        const recentlyDismissed =
+          dismissedAt !== undefined &&
+          Date.now() - dismissedAt < CHIP_REVEAL_SUPPRESS_MS
+        if (!recentlyDismissed) {
+          self.showHighlightChips = true
+        }
       },
     }))
 }

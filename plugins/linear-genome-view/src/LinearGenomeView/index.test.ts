@@ -1835,6 +1835,27 @@ describe('highlights', () => {
     expect(model.highlight.length).toBe(0)
   })
 
+  test('revealHighlightChips turns chips on, honoring a recent dismissal', () => {
+    const model = setupHighlightModel()
+    expect(model.showHighlightChips).toBe(false)
+
+    model.revealHighlightChips()
+    expect(model.showHighlightChips).toBe(true)
+
+    // a manual "chips off" suppresses the auto-reveal for the next hour
+    model.setShowHighlightChips(false)
+    model.revealHighlightChips()
+    expect(model.showHighlightChips).toBe(false)
+
+    // once the suppression window lapses, a fresh highlight reveals again
+    const future = Date.now() + 60 * 60 * 1000 + 1
+    jest.useFakeTimers()
+    jest.setSystemTime(future)
+    model.revealHighlightChips()
+    jest.useRealTimers()
+    expect(model.showHighlightChips).toBe(true)
+  })
+
   test('setHighlight replaces the array', () => {
     const model = setupHighlightModel()
     model.setHighlight([
