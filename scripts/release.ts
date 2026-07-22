@@ -56,13 +56,24 @@ function assertReleasableTree() {
 // locally: faster, and it covers far more than this script ever did.
 function assertCiGreen(head: string) {
   console.log(`Checking CI status for ${head.slice(0, 9)}...`)
-  const checks = capture('gh', [
-    'api',
-    `repos/${REPO}/commits/${head}/check-runs`,
-    '--paginate',
-    '--jq',
-    '.check_runs[] | "\\(.status)\\t\\(.conclusion // "")\\t\\(.name)"',
-  ])
+  // gh exits non-zero when the SHA is unknown to GitHub, which is the common
+  // case of "you haven't pushed yet" — report that rather than letting the raw
+  // "Command failed: gh api …" surface.
+  let raw: string
+  try {
+    raw = capture('gh', [
+      'api',
+      `repos/${REPO}/commits/${head}/check-runs`,
+      '--paginate',
+      '--jq',
+      '.check_runs[] | "\\(.status)\\t\\(.conclusion // "")\\t\\(.name)"',
+    ])
+  } catch {
+    throw new Error(
+      `Could not read CI status for ${head.slice(0, 9)} — is it pushed to origin? Push it and let CI run, or pass --skip-ci-check.`,
+    )
+  }
+  const checks = raw
     .split('\n')
     .filter(Boolean)
     .map(line => {
@@ -72,7 +83,7 @@ function assertCiGreen(head: string) {
 
   if (checks.length === 0) {
     throw new Error(
-      `No CI checks found for ${head}. Push the commit and let CI run, or pass --skip-ci-check.`,
+      `No CI checks found for ${head.slice(0, 9)}. Wait for CI to start, or pass --skip-ci-check.`,
     )
   }
   const list = (cs: typeof checks, mark: string) =>
