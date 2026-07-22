@@ -174,8 +174,12 @@ const CALL_CHARS = 'ACGT*'
 // samtools --mode simple, quality-independent. scores = weighted [A,C,G,T,*];
 // totDepth is the read count (for the min-depth gate). The call fraction is
 // checked against the weighted total (tscore), exactly as samtools does, so
-// ambiguity codes dilute the winner the same way. Returns the winning base, '*'
-// for a called gap, or 'N' when too shallow / no base clears the fraction.
+// ambiguity codes dilute the winner the same way. When the plurality winner
+// falls below the fraction (or depth is too low), samtools is asymmetric and we
+// mirror it: a sub-threshold gap is still emitted as a called deletion ('*'),
+// but a sub-threshold base is 'N'. So this returns the winning base when it
+// clears the fraction, '*' whenever the deletion is the plurality, and 'N'
+// otherwise (verified against `samtools consensus -a -m simple`).
 // Writes the winning and total weighted scores into out[0]/out[1] (a caller-
 // owned scratch reused across the loop, so no per-position allocation). One
 // implementation shared by every column — main and insertion sub-columns — so a

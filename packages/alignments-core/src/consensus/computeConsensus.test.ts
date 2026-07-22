@@ -105,6 +105,26 @@ describe('computeConsensus', () => {
     expect(run('ACGT', reads)).toBe('AGT')
   })
 
+  test('sub-threshold deletion is still called/omitted (samtools parity)', () => {
+    // 3 del : 2 ref at pos 1 -> gap has plurality but only 60% < 0.75. samtools
+    // consensus -a -m simple emits the deletion (gapless "AGTA"), unlike a
+    // sub-threshold base which is N.
+    const reads = [
+      ...times(3, { start: 0, end: 5, dels: [{ pos: 1, len: 1 }] }),
+      ...times(2, { start: 0, end: 5 }),
+    ]
+    expect(run('ACGTA', reads)).toBe('AGTA')
+  })
+
+  test('sub-threshold mismatch is N (samtools parity)', () => {
+    // 3 G : 2 ref C at pos 1 -> 60% < 0.75, so N (contrast with the deletion).
+    const reads = [
+      ...times(3, { start: 0, end: 5, mismatches: [{ pos: 1, base: 'G' }] }),
+      ...times(2, { start: 0, end: 5 }),
+    ]
+    expect(run('ACGTA', reads)).toBe('ANGTA')
+  })
+
   test('gapChar keeps the deletion in the alignment frame', () => {
     const reads = times(4, {
       start: 0,
