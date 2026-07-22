@@ -23,16 +23,12 @@ export interface PositionedTick {
   alongPx: number
 }
 
-export function locstr(
-  px: number,
-  view: Dotplot1DViewModel,
-  includeAsm = true,
-) {
+export function locstr(px: number, view: Dotplot1DViewModel) {
   const { assemblyName, refName, start, offset, oob } = view.pxToBp(px)
   const coord = Math.floor(start + offset)
   return oob
     ? 'out of bounds'
-    : `${includeAsm ? `{${assemblyName}}` : ''}${refName}:${toLocale(coord)}`
+    : `{${assemblyName}}${refName}:${toLocale(coord)}`
 }
 
 // One source of truth for the axis label/tick font, imported by both the
@@ -153,30 +149,21 @@ export function tickLabel(tick: Tick, bpPerPx: number) {
   return getTickDisplayStr(tick.base + 1, bpPerPx)
 }
 
-export function makeTicks(
-  regions: ContentBlock[],
-  bpPerPx: number,
-  emitMajor = true,
-  emitMinor = true,
-) {
+export function makeTicks(regions: ContentBlock[], bpPerPx: number) {
   const ticks: Tick[] = []
   const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   for (const { start, end, refName } of regions) {
     let index = 0
-
-    const minBase = start
-    const maxBase = end
-
     for (
-      let base = Math.floor(minBase / iterPitch) * iterPitch;
-      base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
+      let base = Math.floor(start / iterPitch) * iterPitch;
+      base < Math.ceil(end / iterPitch) * iterPitch + 1;
       base += iterPitch
     ) {
-      if (emitMinor && base % gridPitch.majorPitch) {
+      if (base % gridPitch.majorPitch) {
         ticks.push({ type: 'minor', base: base - 1, index, refName })
         index += 1
-      } else if (emitMajor && Math.abs(base - start) > gridPitch.minorPitch) {
+      } else if (Math.abs(base - start) > gridPitch.minorPitch) {
         ticks.push({ type: 'major', base: base - 1, index, refName })
         index += 1
       }

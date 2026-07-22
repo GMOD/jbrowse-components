@@ -4,29 +4,26 @@ import { observer } from 'mobx-react'
 import { locstr } from './util.ts'
 
 import type { DotplotViewModel } from '../model.ts'
+import type { PointerSample } from './useDotplotInteraction.ts'
 
 const DotplotCoordTooltip = observer(function DotplotCoordTooltip({
   model,
-  coord,
-  clientCoord,
+  point,
   placement,
 }: {
   model: DotplotViewModel
-  coord: [number, number]
-  clientCoord: [number, number] | undefined
+  point: PointerSample
   placement: 'left' | 'right'
 }) {
   const { hview, vview, viewHeight } = model
   return (
     <BaseTooltip
       placement={placement}
-      clientPoint={
-        clientCoord ? { x: clientCoord[0], y: clientCoord[1] } : undefined
-      }
+      clientPoint={{ x: point.clientX, y: point.clientY }}
     >
-      {`x - ${locstr(coord[0], hview)}`}
+      {`x - ${locstr(point.x, hview)}`}
       <br />
-      {`y - ${locstr(viewHeight - coord[1], vview)}`}
+      {`y - ${locstr(viewHeight - point.y, vview)}`}
     </BaseTooltip>
   )
 })

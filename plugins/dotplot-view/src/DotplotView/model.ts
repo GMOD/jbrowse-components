@@ -788,12 +788,12 @@ export default function stateModelFactory(pm: PluginManager) {
           const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
           const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
           return Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3
-            ? [
-                self.hview.pxToBp(xmin),
-                self.hview.pxToBp(xmax),
-                self.vview.pxToBp(self.viewHeight - ymin),
-                self.vview.pxToBp(self.viewHeight - ymax),
-              ]
+            ? {
+                x1: self.hview.pxToBp(xmin),
+                x2: self.hview.pxToBp(xmax),
+                y1: self.vview.pxToBp(self.viewHeight - ymin),
+                y2: self.vview.pxToBp(self.viewHeight - ymax),
+              }
             : undefined
         },
 
@@ -804,9 +804,8 @@ export default function stateModelFactory(pm: PluginManager) {
         zoomInToMouseCoords(mousedown: Coord, mouseup: Coord) {
           const result = this.getCoords(mousedown, mouseup)
           if (result) {
-            const [x1, x2, y1, y2] = result
-            self.hview.moveTo(x1, x2)
-            self.vview.moveTo(y2, y1)
+            self.hview.moveTo(result.x1, result.x2)
+            self.vview.moveTo(result.y2, result.y1)
           }
         },
         /**
@@ -818,9 +817,8 @@ export default function stateModelFactory(pm: PluginManager) {
         addHighlightFromMouseCoords(mousedown: Coord, mouseup: Coord) {
           const result = this.getCoords(mousedown, mouseup)
           if (result) {
-            const [x1, x2, y1, y2] = result
-            self.addToHighlights(dragToHighlight(x1!, x2!))
-            self.addToHighlights(dragToHighlight(y2!, y1!))
+            self.addToHighlights(dragToHighlight(result.x1, result.x2))
+            self.addToHighlights(dragToHighlight(result.y2, result.y1))
           }
         },
         /**
@@ -869,7 +867,7 @@ export default function stateModelFactory(pm: PluginManager) {
         onDotplotView(mousedown: Coord, mouseup: Coord) {
           const result = this.getCoords(mousedown, mouseup)
           if (result) {
-            const [x1, x2, y1, y2] = result
+            const { x1, x2, y1, y2 } = result
             const session = getSession(self)
 
             const d1 = Dotplot1DView.create({

@@ -14,32 +14,21 @@ const DotplotTooltips = observer(function DotplotTooltips({
   model: DotplotViewModel
   interaction: DotplotInteraction
 }) {
-  const {
-    mouseOvered,
-    validSelect,
-    mouserect,
-    mouserectClient,
-    xdistance,
-    mousedown,
-    mouseDownClient,
-    selection,
-  } = interaction
+  const { hovering, validSelect, anchor, pointer, dx, selecting } = interaction
   return (
     <Suspense fallback={null}>
-      {mouseOvered && validSelect && mouserect ? (
+      {hovering && validSelect && pointer ? (
         <DotplotCoordTooltip
           model={model}
-          coord={mouserect}
-          clientCoord={mouserectClient}
-          placement={xdistance < 0 ? 'left' : 'right'}
+          point={pointer}
+          placement={dx < 0 ? 'left' : 'right'}
         />
       ) : null}
-      {selection && mousedown ? (
+      {selecting && anchor ? (
         <DotplotCoordTooltip
           model={model}
-          coord={mousedown}
-          clientCoord={mouseDownClient}
-          placement={xdistance < 0 ? 'right' : 'left'}
+          point={anchor}
+          placement={dx < 0 ? 'right' : 'left'}
         />
       ) : null}
     </Suspense>

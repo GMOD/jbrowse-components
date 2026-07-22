@@ -4,6 +4,8 @@ import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 import type { DotplotViewModel } from '../model.ts'
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
 
+type Coord = [number, number]
+
 export default function SelectionContextMenu({
   model,
   interaction,
@@ -11,68 +13,51 @@ export default function SelectionContextMenu({
   model: DotplotViewModel
   interaction: DotplotInteraction
 }) {
-  const {
-    mouseup,
-    mouseUpClient,
-    mousedown,
-    setMouseUpClient,
-    setMouseDownClient,
-    setMouseOvered,
-  } = interaction
-  const close = () => {
-    setMouseUpClient(undefined)
-    setMouseDownClient(undefined)
-  }
+  const { committed, anchor, pointer, clear, setHovering } = interaction
   // unhover prevents the tooltip from sticking after the menu closes; the
-  // selection itself is cleared by close() via onMenuItemClick/onClose.
-  const unhover = () => {
-    setMouseOvered(false)
+  // selection itself is cleared by clear() via onMenuItemClick/onClose.
+  const act = (fn: (down: Coord, up: Coord) => void) => () => {
+    if (anchor && pointer) {
+      fn([anchor.x, anchor.y], [pointer.x, pointer.y])
+    }
+    setHovering(false)
   }
   return (
     <Menu
-      open={Boolean(mouseup)}
+      open={committed}
       onMenuItemClick={callback => {
         callback()
-        close()
+        clear()
       }}
       onClose={() => {
-        close()
+        clear()
       }}
       anchorReference="anchorPosition"
       anchorPosition={
-        mouseUpClient
-          ? { top: mouseUpClient[1] + 50, left: mouseUpClient[0] + 50 }
+        pointer
+          ? { top: pointer.clientY + 50, left: pointer.clientX + 50 }
           : undefined
       }
       style={{ zIndex: 11000 }}
       menuItems={[
         {
           label: 'Zoom in',
-          onClick: () => {
-            if (mousedown && mouseup) {
-              model.zoomInToMouseCoords(mousedown, mouseup)
-            }
-            unhover()
-          },
+          onClick: act((down, up) => {
+            model.zoomInToMouseCoords(down, up)
+          }),
         },
         {
           label: 'Open linear synteny view',
-          onClick: () => {
-            if (mousedown && mouseup) {
-              model.onDotplotView(mousedown, mouseup)
-            }
-            unhover()
-          },
+          onClick: act((down, up) => {
+            model.onDotplotView(down, up)
+          }),
         },
         {
           label: 'Highlight region',
           icon: HighlightAltIcon,
-          onClick: () => {
-            if (mousedown && mouseup) {
-              model.addHighlightFromMouseCoords(mousedown, mouseup)
-            }
-            unhover()
-          },
+          onClick: act((down, up) => {
+            model.addHighlightFromMouseCoords(down, up)
+          }),
         },
       ]}
     />

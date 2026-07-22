@@ -49,17 +49,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
   model: DotplotViewModel
   interaction: DotplotInteraction
 }) {
-  const {
-    ctrlKeyDown,
-    validSelect,
-    mousedown,
-    mouserect,
-    xdistance,
-    ydistance,
-    setMouseDownClient,
-    setMouseCurrClient,
-    setCtrlKeyWasUsed,
-  } = interaction
+  const { validSelect, anchor, pointer, dx, dy } = interaction
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const svgOverlays = pluginManager.evaluateExtensionPoint(
@@ -69,33 +59,20 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
     { model },
   )
   return (
-    <div
-      style={{
-        cursor: ctrlKeyDown ? 'pointer' : model.cursorMode,
-        position: 'relative',
-      }}
-      onMouseDown={event => {
-        if (event.button === 0) {
-          const { clientX, clientY } = event
-          setMouseDownClient([clientX, clientY])
-          setMouseCurrClient([clientX, clientY])
-          setCtrlKeyWasUsed(ctrlKeyDown)
-        }
-      }}
-    >
+    <>
       <svg
         width={model.viewWidth}
         height={model.viewHeight}
         className={classes.grid}
       >
         <DotplotGrid model={model}>
-          {validSelect && mousedown && mouserect ? (
+          {validSelect && anchor && pointer ? (
             <rect
               fill="rgba(255,0,0,0.3)"
-              x={Math.min(mouserect[0], mousedown[0])}
-              y={Math.min(mouserect[1], mousedown[1])}
-              width={Math.abs(xdistance)}
-              height={Math.abs(ydistance)}
+              x={Math.min(anchor.x, pointer.x)}
+              y={Math.min(anchor.y, pointer.y)}
+              width={Math.abs(dx)}
+              height={Math.abs(dy)}
             />
           ) : null}
           {svgOverlays}
@@ -111,7 +88,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
           />
         </Suspense>
       </div>
-    </div>
+    </>
   )
 })
 

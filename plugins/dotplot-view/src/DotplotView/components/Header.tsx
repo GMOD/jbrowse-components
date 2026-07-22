@@ -7,6 +7,7 @@ import DotplotControls from './DotplotControls.tsx'
 import DotplotWarnings from './DotplotWarnings.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
 
 const useStyles = makeStyles()({
   bp: {
@@ -25,13 +26,14 @@ const useStyles = makeStyles()({
 
 const DotplotHeader = observer(function DotplotHeader({
   model,
-  selection,
+  interaction,
 }: {
   model: DotplotViewModel
-  selection?: { width: number; height: number }
+  interaction: DotplotInteraction
 }) {
   const { classes } = useStyles()
   const { hview, vview } = model
+  const { selecting, dx, dy } = interaction
   return (
     <div className={classes.headerBar}>
       <DotplotControls model={model} />
@@ -40,14 +42,14 @@ const DotplotHeader = observer(function DotplotHeader({
         <br />
         y: {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
       </Typography>
-      {selection ? (
+      {selecting ? (
         <Typography
           className={classes.bp}
           variant="body2"
           color="text.secondary"
         >
-          {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`} <br />
-          {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}
+          {`width:${getBpDisplayStr(hview.bpPerPx * Math.abs(dx))}`} <br />
+          {`height:${getBpDisplayStr(vview.bpPerPx * Math.abs(dy))}`}
         </Typography>
       ) : null}
       <div className={classes.spacer} />

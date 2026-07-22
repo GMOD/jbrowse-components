@@ -1,52 +1,76 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { Coord } from '../types.ts'
+import type React from 'react'
 
-interface Rect {
-  left: number
-  top: number
-  width: number
-  height: number
+// A pointer sample in both frames the UI needs: component-relative (bp math,
+// drag rect) and viewport-relative (tooltip/menu anchoring). ctrlKey rides
+// along so the modifier state is read off the pointer stream rather than a
+// separate pair of global keyboard listeners.
+export interface PointerSample {
+  x: number
+  y: number
+  clientX: number
+  clientY: number
+  ctrlKey: boolean
 }
 
-const blankRect: Rect = { left: 0, top: 0, width: 0, height: 0 }
-
-function offsetCoord(coord: Coord, rect: Rect): Coord {
-  return coord && [coord[0] - rect.left, coord[1] - rect.top]
+function sample(event: React.PointerEvent<HTMLElement>): PointerSample {
+  const { left, top } = event.currentTarget.getBoundingClientRect()
+  const { clientX, clientY } = event
+  return {
+    x: clientX - left,
+    y: clientY - top,
+    clientX,
+    clientY,
+    ctrlKey: event.ctrlKey || event.metaKey,
+  }
 }
+
+// Displacement from the drag anchor. Under the aspect-ratio lock it is squared
+// off in pixel space, so the box-zoom the drag produces can't fight the lock.
+function dragVector(from: PointerSample, to: PointerSample, square: boolean) {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const side = Math.min(Math.abs(dx), Math.abs(dy))
+  return square
+    ? { dx: Math.sign(dx) * side, dy: Math.sign(dy) * side }
+    : { dx, dy }
+}
+
+// Below this the drag is a click, not a selection.
+const DRAG_THRESHOLD_PX = 3
 
 export interface DotplotInteraction {
-  // component-relative coordinates
-  mousedown: Coord
-  mousecurr: Coord
-  mouseup: Coord
-  mouserect: Coord
-  // viewport-relative coordinates (for tooltip placement)
-  mouseDownClient: Coord
-  mouseUpClient: Coord
-  mouserectClient: Coord
-  // drag-rect size in component pixels
-  xdistance: number
-  ydistance: number
-  // gating
-  mouseOvered: boolean
-  ctrlKeyDown: boolean
-  validPan: boolean
+  // spread onto the element that owns the plot area
+  containerProps: {
+    ref: (el: HTMLDivElement | null) => void
+    style: React.CSSProperties
+    onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void
+    onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => void
+    onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => void
+    onPointerEnter: () => void
+    onPointerLeave: () => void
+  }
+  // drag anchor, undefined outside a drag
+  anchor: PointerSample | undefined
+  // live pointer; during a drag it is the opposite corner (squared off under
+  // the aspect lock, pinned once the drag is committed)
+  pointer: PointerSample | undefined
+  // signed drag extent in component px; sign drives tooltip placement
+  dx: number
+  dy: number
+  hovering: boolean
+  // drag would select rather than pan, under the current cursor mode + modifier
   validSelect: boolean
-  // setters that children call back into
-  setMouseDownClient: (coord: Coord) => void
-  setMouseCurrClient: (coord: Coord) => void
-  setMouseUpClient: (coord: Coord) => void
-  setMouseOvered: (b: boolean) => void
-  setCtrlKeyWasUsed: (b: boolean) => void
-  // ref for the interaction container
-  refCallback: (el: HTMLDivElement | null) => void
-  // active drag selection in component pixels, if any
-  selection: { width: number; height: number } | undefined
+  // the drag is a selection worth acting on, not a click
+  selecting: boolean
+  // pointer released on a selection — the context menu is open
+  committed: boolean
+  setHovering: (arg: boolean) => void
+  clear: () => void
 }
 
 export function useDotplotInteraction(
@@ -54,177 +78,147 @@ export function useDotplotInteraction(
 ): DotplotInteraction {
   const { hview, vview, cursorMode, lockAspectRatio } = model
 
-  // eslint-disable-next-line @eslint-react/use-state -- refCallback is a callback ref (ref={refCallback}), not a setState setter
-  const [refEl, refCallback] = useState<HTMLDivElement | null>(null)
-  const [mouseCurrClient, setMouseCurrClient] = useState<Coord>()
-  const [mouseDownClient, setMouseDownClient] = useState<Coord>()
-  const [mouseUpClient, setMouseUpClient] = useState<Coord>()
-  const [mouseOvered, setMouseOvered] = useState(false)
-  const [ctrlKeyWasUsed, setCtrlKeyWasUsed] = useState(false)
-  const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
+  // eslint-disable-next-line @eslint-react/use-state -- callback ref (ref={el}), not a setState setter
+  const [refEl, setRefEl] = useState<HTMLDivElement | null>(null)
+  const [down, setDown] = useState<PointerSample>()
+  const [curr, setCurr] = useState<PointerSample>()
+  const [up, setUp] = useState<PointerSample>()
+  const [hovering, setHovering] = useState(false)
 
-  const rect = refEl?.getBoundingClientRect() ?? blankRect
-  const mousedown = offsetCoord(mouseDownClient, rect)
-  const mousecurr = offsetCoord(mouseCurrClient, rect)
-  const mouseupRaw = offsetCoord(mouseUpClient, rect)
-  const mouserectRaw = mouseupRaw ?? mousecurr
-  const rawX = mousedown && mouserectRaw ? mouserectRaw[0] - mousedown[0] : 0
-  const rawY = mousedown && mouserectRaw ? mouserectRaw[1] - mousedown[1] : 0
-  // When the aspect-ratio lock is engaged, constrain the drag rect to a
-  // square in pixel space so the resulting box-zoom can't fight the lock.
-  const side = Math.min(Math.abs(rawX), Math.abs(rawY))
-  const xdistance = lockAspectRatio ? Math.sign(rawX) * side : rawX
-  const ydistance = lockAspectRatio ? Math.sign(rawY) * side : rawY
-  const mouseup =
-    lockAspectRatio && mousedown && mouseupRaw
-      ? ([mousedown[0] + xdistance, mousedown[1] + ydistance] as Coord)
-      : mouseupRaw
-  const mouserect =
-    lockAspectRatio && mousedown && mouserectRaw
-      ? ([mousedown[0] + xdistance, mousedown[1] + ydistance] as Coord)
-      : mouserectRaw
-  const mouserectClient = mouseUpClient ?? mouseCurrClient
+  // ctrl inverts the cursor mode: it turns pan into select and select into pan.
+  // Once a drag starts the modifier is whatever it was at pointerdown, so
+  // releasing ctrl mid-drag can't switch a selection into a pan.
+  const ctrlLive = curr?.ctrlKey ?? false
+  const ctrlActive = down ? down.ctrlKey : ctrlLive
+  const validSelect = ctrlActive
+    ? cursorMode === 'move'
+    : cursorMode === 'crosshair'
 
-  const validPan =
-    (cursorMode === 'move' && !ctrlKeyWasUsed) ||
-    (cursorMode === 'crosshair' && ctrlKeyWasUsed)
-  const validSelect =
-    (cursorMode === 'move' && ctrlKeyWasUsed) ||
-    (cursorMode === 'crosshair' && !ctrlKeyWasUsed)
-  const hasDrag = !!mouseDownClient && !mouseUpClient
+  const target = up ?? curr
+  const { dx, dy } =
+    down && target
+      ? dragVector(down, target, lockAspectRatio)
+      : { dx: 0, dy: 0 }
+  const pointer =
+    down && target
+      ? {
+          ...target,
+          x: down.x + dx,
+          y: down.y + dy,
+          clientX: down.clientX + dx,
+          clientY: down.clientY + dy,
+        }
+      : curr
+  const selecting =
+    validSelect &&
+    !!down &&
+    Math.abs(dx) > DRAG_THRESHOLD_PX &&
+    Math.abs(dy) > DRAG_THRESHOLD_PX
 
-  // wheel: accumulate per-frame, then zoom in a single transaction
-  const distanceXRef = useRef(0)
-  const distanceYRef = useRef(0)
-  const scheduledRef = useRef(false)
-  const onWheel = useEventCallback(function onWheel(event: WheelEvent) {
-    event.preventDefault()
-    distanceXRef.current += event.deltaX
-    distanceYRef.current -= event.deltaY
-    if (!scheduledRef.current) {
-      scheduledRef.current = true
-      // Anchor on the wheel event's own position rather than the tracked
-      // mousecurr, so zoom doesn't depend on a mousemove having landed first.
-      const anchor = offsetCoord([event.clientX, event.clientY], rect)
-      window.requestAnimationFrame(() => {
-        transaction(() => {
-          if (
-            Math.abs(distanceYRef.current) >
-              Math.abs(distanceXRef.current) * 2 &&
-            anchor
-          ) {
-            const val = distanceYRef.current < 0 ? 1.07 : 0.935
-            hview.zoomTo(hview.bpPerPx * val, anchor[0])
-            vview.zoomTo(vview.bpPerPx * val, rect.height - anchor[1])
-          }
-        })
-        scheduledRef.current = false
-        distanceXRef.current = 0
-        distanceYRef.current = 0
-      })
-    }
-  })
+  const clear = () => {
+    setDown(undefined)
+    setUp(undefined)
+  }
+
+  // The one effect: React attaches wheel passively, so preventDefault needs a
+  // hand-registered non-passive listener. The per-frame accumulator lives in
+  // this closure — many wheel events land between paints and must collapse into
+  // one zoom/pan step, and nothing outside the listener reads them.
   useEffect(() => {
     if (!refEl) {
       return
     }
-    refEl.addEventListener('wheel', onWheel)
-    return () => {
-      refEl.removeEventListener('wheel', onWheel)
-    }
-  }, [refEl, onWheel])
-
-  // mousemove: pan while dragging without mouseup pinned
-  const onMove = useEventCallback(function onMove(event: MouseEvent) {
-    setMouseCurrClient([event.clientX, event.clientY])
-    if (mouseCurrClient && mouseDownClient && validPan && !mouseUpClient) {
-      hview.scroll(-event.clientX + mouseCurrClient[0])
-      vview.scroll(event.clientY - mouseCurrClient[1])
-    }
-  })
-  // mousecurr is only fresh while this listener is attached, so attach it
-  // exactly when something reads mousecurr: hovering (crosshair tooltip,
-  // drag-select rect) or mid-drag (pan, which keeps firing off-element).
-  // Otherwise skip it to avoid re-rendering on every window mouse move.
-  // Wheel-zoom anchors on the event itself (see onWheel), not mousecurr.
-  useEffect(() => {
-    if (!mouseOvered && !hasDrag) {
-      return
-    }
-    window.addEventListener('mousemove', onMove)
-    return () => {
-      window.removeEventListener('mousemove', onMove)
-    }
-  }, [mouseOvered, hasDrag, onMove])
-
-  // ctrl/meta-key tracking (mode-switch modifier)
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.metaKey || event.ctrlKey) {
-        setCtrlKeyDown(true)
+    const el = refEl
+    let dx = 0
+    let dy = 0
+    let scheduled = false
+    function onWheel(event: WheelEvent) {
+      // Every gesture below is handled (zoom or pan), so this never swallows a
+      // scroll the view then ignores.
+      event.preventDefault()
+      dx += event.deltaX
+      dy -= event.deltaY
+      if (!scheduled) {
+        scheduled = true
+        // Anchor on the wheel event's own position, so zoom doesn't depend on
+        // a pointermove having landed first.
+        const { left, top, height } = el.getBoundingClientRect()
+        const ax = event.clientX - left
+        const ay = event.clientY - top
+        window.requestAnimationFrame(() => {
+          transaction(() => {
+            if (Math.abs(dy) > Math.abs(dx) * 2) {
+              const val = dy < 0 ? 1.07 : 0.935
+              hview.zoomTo(hview.bpPerPx * val, ax)
+              vview.zoomTo(vview.bpPerPx * val, height - ay)
+            } else {
+              // dy is already sign-flipped, matching vview's bottom-up axis: a
+              // downward wheel moves the viewport toward the bottom of the
+              // plot, the opposite of a downward drag.
+              hview.scroll(dx)
+              vview.scroll(dy)
+            }
+          })
+          scheduled = false
+          dx = 0
+          dy = 0
+        })
       }
     }
-    function onKeyUp(event: KeyboardEvent) {
-      if (!event.metaKey && !event.ctrlKey) {
-        setCtrlKeyDown(false)
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
+    el.addEventListener('wheel', onWheel, { passive: false })
     return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
+      el.removeEventListener('wheel', onWheel)
     }
-  }, [])
-
-  // mouseup: commit selection if drag exceeded threshold, else cancel.
-  const onUp = useEventCallback(function onUp(event: MouseEvent) {
-    if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
-      setMouseUpClient([event.clientX, event.clientY])
-    } else {
-      setMouseDownClient(undefined)
-    }
-  })
-  useEffect(() => {
-    if (!hasDrag) {
-      return
-    }
-    window.addEventListener('mouseup', onUp, true)
-    return () => {
-      window.removeEventListener('mouseup', onUp, true)
-    }
-  }, [hasDrag, onUp])
-
-  const dragOpen =
-    !!mousedown &&
-    !!mouserect &&
-    validSelect &&
-    Math.abs(xdistance) > 3 &&
-    Math.abs(ydistance) > 3
-  const selection = dragOpen
-    ? { width: Math.abs(xdistance), height: Math.abs(ydistance) }
-    : undefined
+  }, [refEl, hview, vview])
 
   return {
-    mousedown,
-    mousecurr,
-    mouseup,
-    mouserect,
-    mouseDownClient,
-    mouseUpClient,
-    mouserectClient,
-    xdistance,
-    ydistance,
-    mouseOvered,
-    ctrlKeyDown,
-    validPan,
+    containerProps: {
+      ref: setRefEl,
+      style: { cursor: ctrlLive ? 'pointer' : cursorMode },
+      onPointerDown: event => {
+        if (event.button === 0) {
+          // Pointer capture keeps move/up on this element once the drag leaves
+          // its bounds, so no window-level listeners are needed.
+          event.currentTarget.setPointerCapture(event.pointerId)
+          const s = sample(event)
+          setDown(s)
+          setCurr(s)
+          setUp(undefined)
+        }
+      },
+      onPointerMove: event => {
+        const s = sample(event)
+        setCurr(s)
+        const panning = !!down && !up && !validSelect
+        if (panning && curr) {
+          hview.scroll(curr.clientX - s.clientX)
+          vview.scroll(s.clientY - curr.clientY)
+        }
+      },
+      onPointerUp: event => {
+        // Commit a real selection (opens the context menu); a click cancels.
+        if (selecting) {
+          setUp(sample(event))
+        } else {
+          clear()
+        }
+      },
+      onPointerEnter: () => {
+        setHovering(true)
+      },
+      onPointerLeave: () => {
+        setHovering(false)
+      },
+    },
+    anchor: down,
+    pointer,
+    dx,
+    dy,
+    hovering,
     validSelect,
-    setMouseDownClient,
-    setMouseCurrClient,
-    setMouseUpClient,
-    setMouseOvered,
-    setCtrlKeyWasUsed,
-    refCallback,
-    selection,
+    selecting,
+    committed: !!up,
+    setHovering,
+    clear,
   }
 }

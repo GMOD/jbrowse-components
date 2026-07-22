@@ -21,10 +21,6 @@ import { useDotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
-  spacer: {
-    gridColumn: '1/2',
-    gridRow: '2/2',
-  },
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
@@ -88,16 +84,8 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   const colorBy = coerceColorBy(display?.colorBy)
   return (
     <div>
-      <Header model={model} selection={interaction.selection} />
-      <div
-        className={classes.root}
-        onMouseLeave={() => {
-          interaction.setMouseOvered(false)
-        }}
-        onMouseEnter={() => {
-          interaction.setMouseOvered(true)
-        }}
-      >
+      <Header model={model} interaction={interaction} />
+      <div className={classes.root}>
         {model.showColorLegend ? (
           <ColorByLegend
             colorBy={colorBy}
@@ -111,10 +99,9 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
-          <div ref={interaction.refCallback} className={classes.content}>
+          <div className={classes.content} {...interaction.containerProps}>
             <DotplotTooltips model={model} interaction={interaction} />
             <MouseInteractionLayer model={model} interaction={interaction} />
-            <div className={classes.spacer} />
           </div>
           <div className={classes.overlay}>
             <DotplotCanvas model={model} />
