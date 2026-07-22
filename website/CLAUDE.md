@@ -60,8 +60,11 @@ track id and display type when omitted, so don't hand-write it.
 **Content-stable writes.** Rendering is deterministic (an unchanged spec
 re-renders byte-for-byte), so the generator only overwrites a committed PNG when
 the new capture differs by more than `--diff-threshold` of its pixels (default
-0.001, compared via ImageMagick `compare`, mirroring
-`jbrowse-web/browser-tests/pngDiff.ts`). A regen therefore touches only the
+0.005, mirroring `jbrowse-web/browser-tests/pngDiff.ts`). The fraction comes from
+thresholding the ImageMagick difference image and taking its mean, **not** from
+`compare -metric AE`: on ImageMagick 7 Q16-HDRI that metric is no longer a
+differing-pixel count (it over-reports by ~4 orders of magnitude), which silently
+turned the gate into "always rewrite". A regen therefore touches only the
 images that actually changed — it logs `≈ kept` vs `✓ updated` per spec. Pass
 `--force` to rewrite every PNG regardless. A code change still needs a
 `pnpm build` in `products/jbrowse-web` first (the generator renders the built

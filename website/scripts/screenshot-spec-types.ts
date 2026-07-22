@@ -21,8 +21,9 @@ export interface ScreenshotAction {
   key?: KeyInput
   // for 'waitForText'/'waitForSelector': wait for the element to be hidden
   hidden?: boolean
-  // for 'waitForText'/'waitForSelector': override the default 30s wait
-  // (FIND_TIMEOUT). Use for actions gated on real heavy compute (e.g. RPC
+  // override the default 30s wait for this action's target (FIND_TIMEOUT), for
+  // waits and for the click/hover/type/scroll target lookup alike.
+  // Use for actions gated on real heavy compute (e.g. RPC
   // clustering over thousands of samples) that can legitimately run long,
   // especially on a slower CI runner.
   timeout?: number

@@ -100,34 +100,38 @@ export async function waitForQuiescent(
     .catch(() => {})
 }
 
-// Wait until every BaseLinearDisplay wrapper has flipped to its `-done` test-id
-// (canvasDrawn fired), or until the timeout elapses (proceed anyway — some views
-// show import forms or other non-canvas content with no done test-ids). For
-// non-LGV views (synteny, dotplot) the `_done` underscore variant is used; any
-// done signal suffices there.
+// A display wrapper mounts carrying its base test-id and flips that id in place
+// to `<base>-done` when canvasDrawn fires (DisplayChrome owns the suffix), so
+// "every display has painted" is exactly "no wrapper is still wearing its base
+// id". Bases come in three shapes: `display-<displayId>` (BaseLinearDisplay,
+// alignments, maf), `<name>-display` (wiggle, variant, hic, ld, manhattan,
+// arc, pileup, …), and synteny's `synteny_canvas`.
+const PENDING_DISPLAYS = [
+  '[data-testid^="display-"]:not([data-testid$="-done"])',
+  '[data-testid$="-display"]',
+  '[data-testid="synteny_canvas"]',
+].join(',')
+
+// Wait until no display wrapper is still pending its first paint, or until the
+// timeout elapses (proceed anyway — a display stuck in its too-large/error state
+// renders no wrapper at all and never reports done).
+//
+// Keying on the *absence* of pending wrappers rather than counting done-vs-total
+// matters twice over. A page with no canvas displays — an import form, a menu or
+// widget figure — resolves immediately instead of burning the full timeout as a
+// hidden fixed sleep. And a page whose displays finish at different times waits
+// for the last one; the previous "any element ends in -done" fallback returned as
+// soon as the *first* of several tracks painted.
+//
+// Absence is only meaningful once the views have mounted (a track's display
+// wrapper mounts with its TrackRenderingContainer), so call this after the
+// readySelector / loading-overlay gates, not straight off a navigation.
 export async function waitForDisplaysDone(page: Page, timeoutMs: number) {
   await page
     .waitForFunction(
-      () => {
-        // Display wrappers use `<name>-display`, flipping in place to
-        // `<name>-display-done` when canvasDrawn fires, so the full set is
-        // both states and "done" is the `-done` subset.
-        const all = document.querySelectorAll(
-          '[data-testid$="-display"],[data-testid$="-display-done"]',
-        )
-        if (all.length > 0) {
-          const done = document.querySelectorAll(
-            '[data-testid$="-display-done"]',
-          )
-          return done.length === all.length
-        }
-        return (
-          document.querySelector(
-            '[data-testid$="-done"],[data-testid$="_done"]',
-          ) !== null
-        )
-      },
+      (selector: string) => document.querySelector(selector) === null,
       { timeout: timeoutMs },
+      PENDING_DISPLAYS,
     )
     .catch(() => {})
 }

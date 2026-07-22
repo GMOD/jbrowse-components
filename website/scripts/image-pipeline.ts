@@ -6,32 +6,58 @@ import fs from 'node:fs'
 // whole static/img dir on every commit. So a freshly captured PNG only replaces
 // the committed one when it differs by more than `diffThreshold` of its pixels —
 // the same diffFraction gate jbrowse-web/browser-tests/pngDiff.ts uses, here via
-// ImageMagick `compare` (already a dependency alongside convert/pngquant)
-// instead of pixelmatch.
+// ImageMagick (already a dependency alongside pngquant) instead of pixelmatch.
+
+// ImageMagick 7's own name for its CLI; 6 only ships the individual tools, and
+// 7 prints a deprecation warning for every `convert` invocation.
+export const IM =
+  spawnSync('magick', ['-version']).status === 0 ? 'magick' : 'convert'
+
+// Percentage of the difference image a channel must exceed to count as changed —
+// the fuzz tolerance that lets sub-pixel glyph jitter through.
+const DIFF_FUZZ = '5%'
 
 // Fraction in [0,1] of pixels that differ (fuzz-tolerant), or null when the two
 // images are different sizes / the comparison couldn't run (treated as changed).
+//
+// This deliberately does NOT use `compare -metric AE`. On ImageMagick 7 Q16-HDRI
+// that metric is no longer a differing-pixel count — an 11x11 edit on a 2000x1100
+// capture reports 3.5e6 against 2.2e6 total pixels — so the fraction came out
+// hundreds of times too large and every spec read as changed, quietly defeating
+// the whole content-stable gate. Thresholding the difference image and taking its
+// mean is a plain fraction-of-pixels in every ImageMagick build.
 export function pngDiffFraction(a: string, b: string): number | null {
-  // `compare` writes the metric to stderr and exits 0 (within fuzz), 1
-  // (differ), or 2 (error, e.g. dimension mismatch).
-  const cmp = spawnSync(
-    'compare',
-    ['-metric', 'AE', '-fuzz', '5%', a, b, 'null:'],
+  const [sizeA, sizeB] = [a, b].map(f =>
+    (
+      spawnSync('identify', ['-format', '%w %h', f], { encoding: 'utf8' })
+        .stdout || ''
+    ).trim(),
+  )
+  // -composite silently works over the first image's geometry when the two
+  // differ, so a resize has to be ruled out here rather than by the comparison.
+  if (!sizeA || sizeA !== sizeB) {
+    return null
+  }
+  const out = spawnSync(
+    IM,
+    [
+      a,
+      b,
+      '-compose',
+      'difference',
+      '-composite',
+      '-colorspace',
+      'Gray',
+      '-threshold',
+      DIFF_FUZZ,
+      '-format',
+      '%[fx:mean]',
+      'info:',
+    ],
     { encoding: 'utf8' },
   )
-  if (cmp.error || cmp.status === 2) {
-    return null
-  }
-  const ae = Number.parseFloat((cmp.stderr || '').trim().split(/\s+/)[0] ?? '')
-  if (!Number.isFinite(ae)) {
-    return null
-  }
-  const id = spawnSync('identify', ['-format', '%w %h', a], {
-    encoding: 'utf8',
-  })
-  const [w, h] = (id.stdout || '').trim().split(/\s+/).map(Number)
-  const total = (w ?? 0) * (h ?? 0)
-  return total > 0 ? ae / total : null
+  const frac = Number.parseFloat((out.stdout || '').trim())
+  return Number.isFinite(frac) ? frac : null
 }
 
 // copyFileSync (not rename) because tmp and static/img may be on different

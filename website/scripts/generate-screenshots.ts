@@ -24,6 +24,7 @@ import {
   hideLingeringTooltip,
 } from './annotations.ts'
 import {
+  IM,
   commitScreenshot,
   optimizePng,
   pngDiffFraction,
@@ -187,18 +188,20 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
     spec.readyText ? textSelector(spec.readyText) : undefined,
     spec.readySelector,
   ].filter((s): s is string => s !== undefined)
-  for (const selector of readySelectors) {
-    await waitForVisible(page, selector, { timeout: readyTimeout }).catch(
-      async (e: unknown) => {
-        await debugDump(page, spec.name)
-        throw e
-      },
-    )
+  try {
+    for (const selector of readySelectors) {
+      await waitForVisible(page, selector, { timeout: readyTimeout })
+    }
+    // the loading-overlay wait is the one that hard-fails on a view that never
+    // finishes; quiescent/displays-done are best-effort by design
+    await waitForLoadingComplete(page, {
+      waitForDownloads: true,
+      timeout: readyTimeout,
+    })
+  } catch (e) {
+    await debugDump(page, spec.name)
+    throw e
   }
-  await waitForLoadingComplete(page, {
-    waitForDownloads: true,
-    timeout: readyTimeout,
-  })
   await waitForQuiescent(page, { timeout: readyTimeout })
   await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
@@ -355,6 +358,29 @@ async function captureUrl(page: Page, spec: SessionUrlSpec, port: number) {
   await waitForReady(page, spec)
 }
 
+// Kill CSS transitions and animations for the whole capture session, installed
+// before any app script runs so it covers the action chain too, not just the
+// final frame. Menus, ripples and MUI Grow/Fade fly-outs then jump straight to
+// their settled geometry: they can't be caught mid-transition (the dominant
+// source of run-to-run diffs on menu specs) and a click that follows a
+// `waitForText` can't land on a popper that is still sliding into place — which
+// is what the fixed `delay`s after those waits were really paying for.
+function freezeAnimations(page: Page) {
+  return page.evaluateOnNewDocument(() => {
+    const install = () => {
+      const style = document.createElement('style')
+      style.textContent =
+        '*,*::before,*::after{transition:none !important;animation:none !important;}'
+      document.head.append(style)
+    }
+    if (document.head) {
+      install()
+    } else {
+      document.addEventListener('DOMContentLoaded', install)
+    }
+  })
+}
+
 // Apply the shared pre-shot steps (hide stray tooltip, draw/clear callouts,
 // flush pending WebGL frames) then screenshot straight to `file`.
 async function shoot(
@@ -363,19 +389,6 @@ async function shoot(
   annotations: Annotation[] | undefined,
   file: string,
 ) {
-  // Freeze CSS transitions/animations so menus, ripples, and MUI Grow/Fade
-  // fly-outs snap to their settled state instead of being caught mid-transition
-  // — the dominant source of large run-to-run diffs on menu-capture specs.
-  await page.evaluate(() => {
-    const id = '__screenshot_freeze_anim'
-    if (!document.getElementById(id)) {
-      const style = document.createElement('style')
-      style.id = id
-      style.textContent =
-        '*,*::before,*::after{transition:none !important;animation:none !important;}'
-      document.head.append(style)
-    }
-  })
   if (spec.hideTooltip) {
     await hideLingeringTooltip(page)
   }
@@ -524,6 +537,9 @@ async function captureEmbeddedToTemp(
     optimizePng(renderPath)
     return renderPath
   } finally {
+    // the page holds keep-alive sockets open; close() alone would leave the
+    // handle (and the ephemeral port) alive until the browser exits
+    server.closeAllConnections()
     server.close()
   }
 }
@@ -604,7 +620,7 @@ async function captureStages(
     // silently — the staged frames ARE the published image.
     await assertViewsRendered(page, spec.name)
   }
-  execFileSync('convert', [...stageFiles, '-append', renderPath])
+  execFileSync(IM, [...stageFiles, '-append', renderPath])
   for (const f of stageFiles) {
     fs.rmSync(f, { force: true })
   }
@@ -700,7 +716,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
     throw new Error(`missing part image(s): ${missing.join(', ')}`)
   }
   const renderPath = tempPath('jb-compose', spec.name)
-  execFileSync('convert', [...partPaths, '-append', renderPath])
+  execFileSync(IM, [...partPaths, '-append', renderPath])
   optimizePng(renderPath)
   const outputPath = path.join(outDir, `${spec.name}.png`)
   return commit(renderPath, outputPath, spec)
@@ -808,6 +824,7 @@ async function main() {
   let passed = 0
   let failed = 0
   let kept = 0
+  let skipped = 0
   let started = 0
   const total = renderSpecs.length + composeSpecs.length
   const failures: { name: string; error: string }[] = []
@@ -830,6 +847,7 @@ async function main() {
     const browser = await launch(buildLaunchOptions(firefox || !!spec.firefox))
     try {
       const page = await browser.newPage()
+      await freezeAnimations(page)
       if (spec.viewportHeight || spec.viewportWidth) {
         await page.setViewport({
           width: spec.viewportWidth ?? vpWidth,
@@ -837,15 +855,21 @@ async function main() {
           deviceScaleFactor,
         })
       }
-      page.on('console', msg => {
-        const t = msg.type()
-        const text = msg.text()
+      const report = (kind: string, text: string) => {
         const expected = spec.expectedConsole?.some(s => text.includes(s))
         if (!isBrowserConsoleNoise(text) && !expected) {
           console.error(
-            `    [${spec.name}] browser[${t}]: ${text.substring(0, 300)}`,
+            `    [${spec.name}] browser[${kind}]: ${text.substring(0, 300)}`,
           )
         }
+      }
+      page.on('console', msg => {
+        report(msg.type(), msg.text())
+      })
+      // an uncaught exception in the app never reaches the console listener, so
+      // a render that dies mid-mount used to produce a silently blank figure
+      page.on('pageerror', (err: unknown) => {
+        report('pageerror', err instanceof Error ? err.message : String(err))
       })
       return await body(page)
     } finally {
@@ -881,6 +905,7 @@ async function main() {
       console.log(
         `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
       )
+      skipped++
       return
     }
     console.log(`${progress()} → ${spec.name}`)
@@ -942,7 +967,7 @@ async function main() {
   console.log(
     `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
       check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
-    }`,
+    }${skipped > 0 ? `, ${skipped} curated (skipped)` : ''}`,
   )
   if (changed.length > 0) {
     printReport(

@@ -106,7 +106,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
             selector: '[aria-label="make Compact the default for all tracks"]',
           },
           { type: 'waitForText', text: 'Apply to 1 open track' },
-          { type: 'delay', ms: 400 },
           ...dismissMenus(),
           // make the OTHER open track compact through its own Read-height menu
           // (not the snackbar action, which would dismiss the snackbar the
@@ -365,7 +364,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'rightclick', text: 'PTEN' },
           { type: 'waitForText', text: 'Collapse introns' },
-          { type: 'delay', ms: 600 },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Collapse introns' } }],
       },
@@ -378,7 +376,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Collapse introns' },
           { type: 'waitForText', text: 'Replace current view' },
-          { type: 'delay', ms: 600 },
           { type: 'click', selector: 'button::-p-text(Replace current view)' },
           { type: 'waitForText', text: 'Replace current view', hidden: true },
           // let the reshaped view refetch, then wait for the (tiny, sliced) RNA

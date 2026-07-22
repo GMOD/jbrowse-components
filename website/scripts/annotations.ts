@@ -95,22 +95,34 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       // defaults to strokeWidth) so it ends at the arrowhead's base
       const ARROW_LEN = 8
       const defs = document.createElementNS(NS, 'defs')
-      const marker = document.createElementNS(NS, 'marker')
-      marker.setAttribute('id', 'arrowhead')
-      marker.setAttribute('markerWidth', '10')
-      marker.setAttribute('markerHeight', '10')
-      // anchor the marker at its BASE (refX=0) so the line stops at the base and
-      // the triangle extends forward to the target, covering the line end — this
-      // avoids the butt-capped line poking past the sharp tip as a "nub"
-      marker.setAttribute('refX', '0')
-      marker.setAttribute('refY', '3')
-      marker.setAttribute('orient', 'auto')
-      const arrowPath = document.createElementNS(NS, 'path')
-      arrowPath.setAttribute('d', `M0,0 L${ARROW_LEN},3 L0,6 Z`)
-      arrowPath.setAttribute('fill', '#e3242b')
-      marker.append(arrowPath)
-      defs.append(marker)
       svg.append(defs)
+      // One marker per distinct arrow color. A single shared marker recolored
+      // per arrow would paint every head in whichever color was drawn last.
+      const markerIds = new Map<string, string>()
+      function arrowMarker(color: string) {
+        const existing = markerIds.get(color)
+        if (existing) {
+          return existing
+        }
+        const id = `arrowhead-${markerIds.size}`
+        const marker = document.createElementNS(NS, 'marker')
+        marker.setAttribute('id', id)
+        marker.setAttribute('markerWidth', '10')
+        marker.setAttribute('markerHeight', '10')
+        // anchor the marker at its BASE (refX=0) so the line stops at the base
+        // and the triangle extends forward to the target, covering the line end
+        // — this avoids the butt-capped line poking past the sharp tip as a "nub"
+        marker.setAttribute('refX', '0')
+        marker.setAttribute('refY', '3')
+        marker.setAttribute('orient', 'auto')
+        const arrowPath = document.createElementNS(NS, 'path')
+        arrowPath.setAttribute('d', `M0,0 L${ARROW_LEN},3 L0,6 Z`)
+        arrowPath.setAttribute('fill', color)
+        marker.append(arrowPath)
+        defs.append(marker)
+        markerIds.set(color, id)
+        return id
+      }
       // append the overlay now (before drawing) so text getBBox() resolves for
       // the optional background pill below
       document.body.append(svg)
@@ -141,9 +153,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           // the arrowhead marker uses markerUnits=strokeWidth, so a thinner
           // line also shrinks the head proportionally
           line.setAttribute('stroke-width', String(strokeWidth))
-          line.setAttribute('marker-end', 'url(#arrowhead)')
-          // recolor the shared arrowhead to match the last arrow's stroke
-          arrowPath.setAttribute('fill', color)
+          line.setAttribute('marker-end', `url(#${arrowMarker(color)})`)
           svg.append(line)
         } else if (a.type === 'box') {
           const rect = document.createElementNS(NS, 'rect')

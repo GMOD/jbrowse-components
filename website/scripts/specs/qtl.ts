@@ -154,7 +154,6 @@ export const qtlSpecs: ScreenshotSpec[] = [
       // menu appears at the column the sort would key on
       { type: 'rightclick', from: { x: 776, y: 430 } },
       { type: 'waitForText', text: 'Sort rows by color here' },
-      { type: 'delay', ms: 600 },
     ],
     annotations: [
       {

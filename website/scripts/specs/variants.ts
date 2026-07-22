@@ -217,10 +217,8 @@ export const variantsSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           { type: 'waitForText', text: 'Cluster by genotype' },
-          { type: 'delay', ms: 300 },
           { type: 'click', text: 'Cluster by genotype' },
           { type: 'waitForText', text: 'Run clustering' },
-          { type: 'delay', ms: 500 },
         ],
       },
       {
