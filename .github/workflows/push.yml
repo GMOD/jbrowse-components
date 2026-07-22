@@ -262,6 +262,8 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Pack artifacts for component tests
         run: node scripts/pack.ts
+      - name: Check emitted .d.ts don't name workspace source paths
+        run: pnpm check-declaration-leaks
       - name: Test build
         run: BUILT_TESTS=1 pnpm built-test-ci
       - name: Upload packed artifacts for component tests

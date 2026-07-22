@@ -37,4 +37,10 @@ export {
   type CircularViewStateModel,
   type ExportSvgOptions,
 } from './CircularView/model.ts'
+export {
+  Slice,
+  type SliceRegion,
+  type SliceElidedRegion,
+  type SliceNonElidedRegion,
+} from './CircularView/slices.ts'
 export { renderToSvg } from './CircularView/svgcomponents/SVGCircularView.tsx'
