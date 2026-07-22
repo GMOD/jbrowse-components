@@ -180,14 +180,21 @@ allele depths drive the allele-frequency track, it writes a depth bigWig, a
 minor-allele-frequency (MAF) bigWig, an integer copy-number bedGraph, and a CNV
 VCF.
 
-That VCF has to hold the **tumor's** calls, not the matched normal's. HiFiCNV
-builds the MAF track by reading the `AD` field out of the `--maf` VCF and never
-looks at `--bam` for it, so handing it a germline VCF from the normal produces a
-track sitting near 0.5 everywhere, including across arms that have lost a copy.
-Use the tumor's calls and a germline het inside a loss-of-heterozygosity arm is
-homozygous in the tumor, so its minor allele fraction collapses toward 0 and the
-loss becomes visible. On chr3p, which the benchmark calls a single-copy loss,
-that is the difference between 1742 heterozygous sites and 13.
+If you do use that MAF track, the VCF has to hold the **tumor's** calls, not the
+matched normal's. HiFiCNV builds the track by reading the `AD` field out of the
+`--maf` VCF and never looks at `--bam` for it, so a germline VCF from the normal
+produces a track sitting near 0.5 everywhere, including across arms that have
+lost a copy. With the tumor's calls a germline het inside a
+loss-of-heterozygosity arm is homozygous in the tumor, so its minor allele
+fraction collapses toward 0 and the loss becomes visible. On chr3p, which the
+benchmark calls a single-copy loss, that is the difference between 1742
+heterozygous sites and 13.
+
+The choice affects that track and nothing else: the depth bigWig comes from the
+BAM, and re-running with the normal's VCF instead of the tumor's leaves the
+`copynum` bedGraph byte-identical, so the segmentation and the CNV VCF are not
+MAF-informed. This tutorial plots BAF instead of `maf.bw` (below), so the `--maf`
+argument here only decides whether that one unused output is meaningful.
 
 ```bash
 # Clair3 tumor calls published alongside C-GIAB's Wakhan CNA run

@@ -159,13 +159,19 @@ else
   HIFICNV=./hificnv
 fi
 
-# TUMOR small-variant calls drive the MAF track. HiFiCNV builds that track by
-# reading AD straight out of the --maf VCF; it never consults --bam for it. So
+# TUMOR small-variant calls drive HiFiCNV's MAF track. HiFiCNV builds that track
+# by reading AD straight out of the --maf VCF; it never consults --bam for it. So
 # the normal's germline calls (what this used to pass) produce a MAF track with
 # no somatic signal at all -- flat ~0.5 across chr3p, which the V0.5 benchmark
 # calls CN=1 0|1, i.e. complete LOH. With the tumor's calls the same arm reads
 # ~0 (a germline het inside an LOH arm is homozygous in the tumor: 1742 het ->
-# 13 het over chr3:30-32Mb), which is the contrast the depth/MAF figure is for.
+# 13 het over chr3:30-32Mb).
+#
+# Scope: this governs maf.bw ONLY. Re-running with the normal's VCF leaves
+# copynum.bedgraph byte-identical, so the segmentation and the CNV VCF are not
+# MAF-informed, and depth comes from the BAM. The figures plot the unfolded BAF
+# track built below rather than maf.bw, so nothing downstream of here depends on
+# this choice -- it is pinned so the emitted maf.bw is at least not misleading.
 # Clair3 tumor calls from the Wakhan run pinned above; no .tbi is published.
 MAF_VCF=merge_output_tumor.vcf.gz
 [ -f "$MAF_VCF" ] || curl -fL -O "$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_RUN/vcf_inputs/$MAF_VCF"
