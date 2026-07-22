@@ -18,7 +18,17 @@ import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
 // Lives here rather than in a *.test.ts because jest doesn't cover website/,
 // and screenshot-specs.ts pulls puppeteer in through its barrel.
 
-const BASELINE = Number(process.env.SPEC_RECIPE_BASELINE ?? '0')
+// A RATCHET, not a target. The default is the count as it actually stands, so
+// `--check` passes today and fails the moment a spec adds a field with no
+// click-path — which is the only thing it can usefully detect. It used to
+// default to 0 against a real count of 52, so it failed on every run and taught
+// everyone to ignore it, which is worse than not having the check. Lower this
+// as fields.ts grows (the unmapped list below is the worklist); never raise it
+// without saying why.
+const SPEC_RECIPE_BASELINE = 52
+const BASELINE = Number(
+  process.env.SPEC_RECIPE_BASELINE ?? String(SPEC_RECIPE_BASELINE),
+)
 const check = process.argv.includes('--check')
 
 const unmappedCounts = new Map<string, number>()

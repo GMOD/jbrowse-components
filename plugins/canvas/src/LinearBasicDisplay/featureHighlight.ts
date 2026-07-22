@@ -124,7 +124,14 @@ export interface ResolvedHighlights {
 // Reaching here means BOTH the span/featureId pass and the name fallback missed,
 // so either the coordinates are wrong and no `name` was supplied, or the name
 // doesn't match any rendered feature on that refName.
+// Module-level so the warning stays once-per-highlight across the many times the
+// getter recomputes. Exported purely so tests can reset it — without that, cases
+// silently depend on each other through it.
 const warned = new Set<string>()
+
+export function resetUnresolvedHighlightWarnings() {
+  warned.clear()
+}
 
 export function warnUnresolvedHighlights(
   highlights: readonly FeatureHighlight[],

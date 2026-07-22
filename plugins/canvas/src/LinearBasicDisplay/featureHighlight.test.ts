@@ -1,6 +1,7 @@
 import {
   featureMatchesHighlight,
   featureNameMatchesHighlight,
+  resetUnresolvedHighlightWarnings,
   resolveFeatureHighlights,
   warnUnresolvedHighlights,
 } from './featureHighlight.ts'
@@ -55,6 +56,7 @@ describe('warnUnresolvedHighlights', () => {
   let warn: jest.SpyInstance
 
   beforeEach(() => {
+    resetUnresolvedHighlightWarnings()
     warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
   afterEach(() => {
