@@ -3,6 +3,7 @@ import {
   isSessionModelWithWidgets,
   localStorageSetItem,
   parseLocString,
+  selectNamedRegions,
 } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
@@ -12,7 +13,7 @@ import { normalizeTrackInit } from './normalizeTrackInit.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { HighlightType, InitState } from './types.ts'
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // Derived from InitState so the two can't drift: the Record requires exactly
 // one entry per InitState key, so adding/removing a field without updating
@@ -77,8 +78,9 @@ async function openTracklist(
 }
 
 // Restrict a whole-genome view to a named subset of the assembly's regions, in
-// the requested order. Selects from the assembly's own (canonical) regions so
-// coordinates/lengths are correct; names resolve through the assembly aliases.
+// the requested order. Entries may be globs (`*_hap1`) — see selectNamedRegions,
+// shared with the dotplot's per-axis `displayedRegionNames` so both views read
+// the same name list the same way.
 function showNamedRegions(
   self: LinearGenomeViewModel,
   session: AbstractSessionModel,
@@ -88,10 +90,9 @@ function showNamedRegions(
   const assembly = session.assemblyManager.get(assemblyName)
   const all = assembly?.regions
   if (all) {
-    const byRefName = new Map(all.map(r => [r.refName, r]))
-    const regions = names
-      .map(n => byRefName.get(assembly.getCanonicalRefName(n) ?? n))
-      .filter((r): r is Region => r !== undefined)
+    const regions = selectNamedRegions(all, names, n =>
+      assembly.getCanonicalRefName(n),
+    )
     if (regions.length) {
       self.setDisplayedRegions(regions)
       self.showAllRegions()

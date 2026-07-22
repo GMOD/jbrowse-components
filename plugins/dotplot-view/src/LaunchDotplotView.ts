@@ -8,7 +8,12 @@ export interface LaunchDotplotViewArgs extends SyntenyViewSharedInit {
   session: AbstractSessionModel
   // optional: the extension point receives untrusted runtime spec data, so a
   // malformed spec can omit it — the handler guards and reports a clear error
-  views?: { assembly: string; loc?: string }[]
+  views?: {
+    assembly: string
+    loc?: string
+    // per-axis region subset, globs allowed — see DotplotViewInit
+    displayedRegionNames?: string[]
+  }[]
   tracks?: string[]
   // loc-strings or URL-encoded HighlightType JSON, forwarded to the view's
   // declarative init (see DotplotView init autorun)

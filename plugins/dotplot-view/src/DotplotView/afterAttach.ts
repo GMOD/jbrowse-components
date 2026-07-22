@@ -2,6 +2,7 @@ import {
   getSession,
   localStorageSetItem,
   parseLocString,
+  selectNamedRegions,
 } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
@@ -193,6 +194,38 @@ async function runAutoDiagonalize(self: DotplotViewModel) {
   })
 }
 
+// Restrict each axis to its requested subset of the assembly's regions. Assumes
+// the view is already initialized (caller waits), so this REPLACES the regions
+// initializeDisplayedRegions already populated rather than racing it. Runs
+// before autoDiagonalize so the reorder only ever sees the restricted set.
+function applyInitDisplayedRegions(
+  self: DotplotViewModel,
+  init: DotplotViewInit,
+) {
+  const { assemblyManager } = getSession(self)
+  const axes = [self.hview, self.vview]
+  let changed = false
+  for (const [i, v] of init.views.entries()) {
+    const axis = axes[i]
+    const names = v.displayedRegionNames
+    const all = assemblyManager.get(self.assemblyNames[i]!)
+    if (axis && names?.length && all?.regions) {
+      const regions = selectNamedRegions(all.regions, names, n =>
+        all.getCanonicalRefName(n),
+      )
+      // a list that matches nothing leaves the axis alone rather than blanking
+      // it — an empty axis renders as a broken plot with no clue why
+      if (regions.length) {
+        axis.setDisplayedRegions(regions)
+        changed = true
+      }
+    }
+  }
+  if (changed) {
+    self.showAllRegions()
+  }
+}
+
 // region-based linking: navigate each axis to its requested loc. Assumes the
 // view is already initialized (caller waits) so displayed regions exist.
 function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
@@ -239,6 +272,15 @@ function setupInitAutorun(self: DotplotViewModel) {
             self.setAssemblyNames(target!, query!)
             applyInitTracks(self, init)
             applyInitDisplaySettings(self, init)
+            // must land before autoDiagonalize: the reorder is computed over
+            // whatever the axes currently display, so restricting afterwards
+            // would diagonalize the full assembly and then throw most of it away
+            if (init.views.some(v => v.displayedRegionNames?.length)) {
+              await waitFor(() => self.initialized, 30_000)
+              if (isAlive(self)) {
+                applyInitDisplayedRegions(self, init)
+              }
+            }
             if (init.autoDiagonalize) {
               await runAutoDiagonalize(self)
             }
