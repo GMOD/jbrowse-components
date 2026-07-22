@@ -37,22 +37,18 @@ function morphDelta(
 // comparable key. Two layouts with equal signatures differ only in row
 // *assignment* — a same-scale zoom re-pack — so their rows can morph one into the
 // other; a changed signature rescaled the rows (a display-mode / label / fit-level
-// change, or a fit squeeze) or re-centered the whole stack, so the new layout must
-// snap in. Reads the *rendered* label/description flags, not the raw config: in
-// fit mode a zoom step can cross a fitStage level boundary that drops descriptions
-// or names — rescaling rows — without either raw config flag changing, so keying
-// on the raw flags would morph across rescaled rows. Includes the fit centering
-// `offsetY`: it shifts continuously while the track is drag-resized (unlike the
-// debounced zoom), so a uniform-translate change — which would otherwise pass the
-// same-scale test and start a fresh 300 ms morph every frame — snaps instead.
+// change, or a fit squeeze), so the new layout must snap in. Reads the *rendered*
+// label/description flags, not the raw config: in fit mode a zoom step can cross a
+// fitStage level boundary that drops descriptions or names — rescaling rows —
+// without either raw config flag changing, so keying on the raw flags would morph
+// across rescaled rows.
 export function rowGeometrySignature(g: {
   displayMode: string
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   fitScale: number
-  offsetY: number
 }) {
-  return `${g.displayMode}|${g.renderedShowLabels}|${g.renderedShowDescriptions}|${g.fitScale}|${g.offsetY}`
+  return `${g.displayMode}|${g.renderedShowLabels}|${g.renderedShowDescriptions}|${g.fitScale}`
 }
 
 // Snapshot each on-screen feature's row top by id. Used both as the start of a

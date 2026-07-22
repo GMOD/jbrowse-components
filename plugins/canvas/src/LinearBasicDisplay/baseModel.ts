@@ -1143,37 +1143,17 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Vertical offset (px) that centers a fit stack shorter than the track
-         * within it, so "fit" uses the whole allotted area instead of leaving all
-         * the slack as a bottom void with the features hugging the top. Non-zero
-         * only in fit mode when the scaled content is shorter than the track — the
-         * sparse case where grow is capped at the normal feature height
-         * (`fitMaxScale`), so the surplus would otherwise strand as whitespace.
-         * Reads the scaled candidate height off `fitStage` (not `settledMaxY`,
-         * defined later) and the config-slot `fitTargetHeight` (not the reactive
-         * `height`, which would cycle in grow mode), so it can't feed back on
-         * itself. 0 whenever the content fills or overflows the track (exact fit,
-         * grow, or a squeeze that still scrolls), leaving those top-anchored.
-         */
-        get fitContentOffsetY() {
-          const { scale, contentHeight } = self.fitStage
-          const slack = self.fitTargetHeight - contentHeight * scale
-          return self.fitHeightToDisplay && slack > 0 ? slack / 2 : 0
-        },
-        /**
-         * #getter
          * What every consumer (hit test, GPU upload, React render) reads: the
-         * resolved fit layout, cloned and scaled only when grown or squeezed, and
-         * shifted down by `fitContentOffsetY` to center a short stack in the track.
-         * Returned by reference off the untransformed path (scale 1, no offset) so
-         * the incremental-layout upload diff and Y-morph idle check stay intact.
+         * resolved fit layout, cloned and scaled only when grown or squeezed. A fit
+         * stack shorter than the track stays top-anchored at y=0 (the surplus is
+         * bottom whitespace), so a relayout — an isoform collapse, a filter — packs
+         * back up against the top instead of jumping to a re-centered offset.
+         * Returned by reference off the untransformed path (scale 1) so the
+         * incremental-layout upload diff and Y-morph idle check stay intact.
          */
         get laidOutDataMap(): Map<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
-          const offsetY = this.fitContentOffsetY
-          return scale === 1 && offsetY === 0
-            ? layout
-            : scaleLaidOutData(layout, scale, offsetY)
+          return scale === 1 ? layout : scaleLaidOutData(layout, scale)
         },
         /**
          * #getter
@@ -2353,7 +2333,6 @@ export default function baseStateModelFactory(
                   renderedShowLabels: self.renderedShowLabels,
                   renderedShowDescriptions: self.renderedShowDescriptions,
                   fitScale: self.fitScale,
-                  offsetY: self.fitContentOffsetY,
                 })
                 const scaleUnchanged = geometry === prevGeometry
                 const from = prevLayout

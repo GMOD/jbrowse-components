@@ -134,12 +134,6 @@ function scaleFloat32(arr: Float32Array, multiplier: number) {
   }
 }
 
-function offsetFloat32(arr: Float32Array, offset: number) {
-  for (let i = 0; i < arr.length; i++) {
-    arr[i]! += offset
-  }
-}
-
 // Scales all height/y fields in a cloned FeatureDataResult by the compact
 // multiplier. Worker geometry is always in normal-mode units (multiplier=1);
 // this makes compact/superCompact a pure main-thread operation.
@@ -396,28 +390,23 @@ export function createIncrementalLayout() {
   }
 }
 
-// Fit-to-display-height: uniformly scale an already-laid-out region so the
-// whole stack fits the track height without scrolling, then shift it down by
-// `offsetY`. Unlike applyHeightScale (a pre-pack body shrink that feeds the
-// packer), this runs AFTER packing on the offset geometry, so it also scales the
-// packed `topPx`/`bottomPx` and the row-offset Ys — every Y and height by the
-// same factor, so content height × scale lands exactly on the track height. Row
-// assignment is untouched (it's fixed by X-overlap), so it's a pure vertical
-// shrink. `offsetY` (>= 0) then translates every Y *position* — not the heights —
-// so a fit stack shorter than the track is vertically centered in it rather than
-// hugging the top (see `fitContentOffsetY`); 0 leaves it top-anchored.
+// Fit-to-display-height: uniformly scale an already-laid-out region so the whole
+// stack fits the track height without scrolling. Unlike applyHeightScale (a
+// pre-pack body shrink that feeds the packer), this runs AFTER packing, so it
+// also scales the packed `topPx`/`bottomPx` and the row-offset Ys — every Y and
+// height by the same factor, so content height × scale lands exactly on the track
+// height. Row assignment is untouched (it's fixed by X-overlap), so it's a pure
+// vertical shrink that keeps the stack top-anchored at y=0.
 export function scaleLaidOutData(
   map: ReadonlyMap<number, FeatureDataResult>,
   scale: number,
-  offsetY = 0,
 ): Map<number, FeatureDataResult> {
   const out = new Map<number, FeatureDataResult>()
   for (const [n, data] of map) {
     if (data.flatbushItems.length === 0) {
-      // Nothing to scale or shift — share the raw object (as computeLaidOutData
-      // does for empty regions) rather than allocating clone arrays that stay
-      // untouched, keeping the reference stable so idle empty regions don't
-      // re-upload.
+      // Nothing to scale — share the raw object (as computeLaidOutData does for
+      // empty regions) rather than allocating clone arrays that stay untouched,
+      // keeping the reference stable so idle empty regions don't re-upload.
       out.set(n, data)
     } else {
       const cloned = cloneMutableFields(data)
@@ -427,27 +416,8 @@ export function scaleLaidOutData(
       // pre-pack stage applyHeightScale was written for).
       applyHeightScale(cloned, scale)
       for (const item of cloned.flatbushItems) {
-        item.topPx = item.topPx * scale + offsetY
-        item.bottomPx = item.bottomPx * scale + offsetY
-      }
-      if (offsetY !== 0) {
-        // Shift every Y *position* (not height) so the whole scaled stack slides
-        // down uniformly. Mirrors the field set applyHeightScale scales.
-        offsetFloat32(cloned.rectYs, offsetY)
-        offsetFloat32(cloned.lineYs, offsetY)
-        offsetFloat32(cloned.arrowYs, offsetY)
-        for (const info of cloned.subfeatureInfos) {
-          info.topPx += offsetY
-          info.bottomPx += offsetY
-        }
-        for (const labelData of Object.values(cloned.floatingLabelsData)) {
-          labelData.topY += offsetY
-        }
-        if (cloned.aminoAcidOverlay) {
-          for (const aa of cloned.aminoAcidOverlay) {
-            aa.topPx += offsetY
-          }
-        }
+        item.topPx *= scale
+        item.bottomPx *= scale
       }
       out.set(n, cloned)
     }
