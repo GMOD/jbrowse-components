@@ -6,6 +6,11 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../cigar-utils/tsconfig.build.esm.json" },
+    { "path": "../core/tsconfig.build.esm.json" }
+  ]
 }

@@ -6,6 +6,8 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [{ "path": "../core/tsconfig.build.esm.json" }]
 }

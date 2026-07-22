@@ -26,7 +26,7 @@
     "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns example-plugins/score-example",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {

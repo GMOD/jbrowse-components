@@ -7,6 +7,11 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/text-indexing/tsconfig.build.esm.json" }
+  ]
 }

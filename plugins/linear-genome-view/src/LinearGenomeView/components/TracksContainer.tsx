@@ -18,27 +18,6 @@ import { useSideScroll } from './useSideScroll.ts'
 import { getHighlightColor, highlightKey } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ReactNode } from 'react'
-
-declare module '@jbrowse/core/PluginManager' {
-  interface ExtensionPointRegistry {
-    'LinearGenomeView-TracksContainerComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel }
-    }
-    'LinearGenomeView-ScalebarHighlightComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel }
-    }
-    'LinearGenomeView-HighlightSVGComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel; height: number }
-    }
-  }
-}
 
 const CenterLine = lazy(() => import('./CenterLine.tsx'))
 const Highlight = lazy(() => import('./Highlight.tsx'))

@@ -33,7 +33,7 @@
   "scripts": {
     "build": "pnpm run /^build:/",
     "build:css": "node ../../scripts/flattenCss.ts src/styles.css dist/styles.css",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",

@@ -6,6 +6,17 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/alignments-core/tsconfig.build.esm.json" },
+    { "path": "../../packages/cigar-utils/tsconfig.build.esm.json" },
+    { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/modifications-utils/tsconfig.build.esm.json" },
+    { "path": "../../packages/render-core/tsconfig.build.esm.json" },
+    { "path": "../../packages/sv-core/tsconfig.build.esm.json" },
+    { "path": "../../packages/wiggle-core/tsconfig.build.esm.json" },
+    { "path": "../linear-genome-view/tsconfig.build.esm.json" }
+  ]
 }

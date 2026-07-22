@@ -12,6 +12,8 @@
   "scripts": {
     "postinstall": "node products/jbrowse-web/scripts/genBuildInfo.ts",
     "build": "pnpm -r build",
+    "build:esm": "node node_modules/typescript7/bin/tsc --build tsconfig.build.json",
+    "gen-tsconfig-refs": "node --experimental-strip-types scripts/generate-tsconfig-references.ts",
     "changelog": "scripts/generate-changelog.sh",
     "lint": "oxlint --type-aware --deny-warnings",
     "lint:fast": "oxlint --deny-warnings",

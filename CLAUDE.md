@@ -65,3 +65,8 @@ stale a MobX read (memoizes on stable identity); avoid it, or add
 - Two TypeScript versions on purpose: `typescript` stays on 6.x (lint needs it),
   `pnpm typecheck` uses the aliased `typescript7`. Don't unify them —
   `agent-docs/guides/TOOLCHAIN.md`.
+- `tsconfig.build.esm.json` `references` arrays are generated — run
+  `pnpm gen-tsconfig-refs`, don't hand-edit. A cross-package `declare module`
+  (`ExtensionPointRegistry`, `RpcRegistry`) only applies if its file is
+  reachable from the package entry, so put it in a feature `index.ts`/`model.ts`
+  the entry re-exports — `agent-docs/guides/TOOLCHAIN.md`.

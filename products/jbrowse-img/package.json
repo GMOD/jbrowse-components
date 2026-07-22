@@ -31,7 +31,7 @@
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "prepack": "pnpm build",
     "preversion": "pnpm build",
     "test:integration": "npx tsx --tsconfig ../../tsconfig.json --import ./src/integrationRegister.mjs --test src/**/*.test.mjs"

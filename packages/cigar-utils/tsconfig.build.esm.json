@@ -6,6 +6,7 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
+    "noEmit": false,
+    "composite": true
   }
 }

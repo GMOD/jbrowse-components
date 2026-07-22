@@ -6,6 +6,13 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/wiggle-core/tsconfig.build.esm.json" },
+    { "path": "../linear-genome-view/tsconfig.build.esm.json" },
+    { "path": "../wiggle/tsconfig.build.esm.json" }
+  ]
 }

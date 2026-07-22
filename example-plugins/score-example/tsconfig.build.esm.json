@@ -6,6 +6,12 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "noEmit": false
-  }
+    "noEmit": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/render-core/tsconfig.build.esm.json" },
+    { "path": "../../plugins/linear-genome-view/tsconfig.build.esm.json" }
+  ]
 }

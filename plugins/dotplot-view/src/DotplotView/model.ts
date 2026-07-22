@@ -48,6 +48,7 @@ import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
 
 // lazies
@@ -1142,3 +1143,18 @@ export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>
 
 export { Dotplot1DView, type Dotplot1DViewModel } from './1dview.ts'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'DotplotView-OverlaySVGComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: DotplotViewModel }
+    }
+    'DotplotView-OverlayHTMLComponent': {
+      args: ComponentType<{ model: DotplotViewModel }>
+      result: ComponentType<{ model: DotplotViewModel }>
+      props: { model: DotplotViewModel }
+    }
+  }
+}

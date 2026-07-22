@@ -85,6 +85,8 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Typecheck codebase
         run: pnpm typecheck
+      - name: Check tsconfig project references are in sync with package.json
+        run: pnpm gen-tsconfig-refs --check
 
   lint:
     name: Lint
