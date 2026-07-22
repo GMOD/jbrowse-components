@@ -1415,12 +1415,17 @@ export function parsePipeTags(
 // Recursively list every .md doc under a directory. Shared by the marker-block
 // generators (color/jexl/extension-point) that rewrite tagged regions embedded
 // in the hand-written guides.
+// CLAUDE.md files are agent instructions, not published pages, and they
+// *describe* the marker syntax the generators look for (`<!-- GOTCHA
+// <ConfigName> START -->`). Scanning them makes a generator parse its own
+// documentation as real input, which is how `pnpm gendocs` came to die on the
+// placeholder name `<ConfigName>`.
 export function listDocs(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
     const full = path.join(dir, e.name)
     return e.isDirectory()
       ? listDocs(full)
-      : e.name.endsWith('.md')
+      : e.name.endsWith('.md') && e.name !== 'CLAUDE.md'
         ? [full]
         : []
   })

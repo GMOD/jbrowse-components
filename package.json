@@ -22,7 +22,7 @@
     "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
-    "gendocs": "rm -rf website/docs/config website/docs/models website/docs/api && node docs/generate.ts",
+    "gendocs": "rm -rf website/docs/config website/docs/models website/docs/api && node docs/generate.ts && prettier --write --log-level warn website/docs/config website/docs/models website/docs/api website/docs/developer_guides website/docs/config_guides",
     "gen-img-doc": "node --experimental-strip-types website/scripts/generate-img-doc.ts",
     "gen-cli-doc": "node --experimental-strip-types website/scripts/generate-cli-doc.ts",
     "autogen": "pnpm gendocs && pnpm gen-img-doc && pnpm gen-cli-doc",
