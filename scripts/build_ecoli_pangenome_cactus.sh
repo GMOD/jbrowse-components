@@ -157,7 +157,13 @@ done
 # node order, colored by orientation. NOT a JBrowse track — the tutorial
 # contrasts this graph-native axis against the reference-anchored projections.
 # Copy ecoli_cactus_graph.png to website/static/img/pangenome_cactus/graph.png.
-in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x 1500 -a 40 -y 200
+#
+# -y is the LINK band, not the path rows. This bacterial graph is near-colinear
+# and has almost no long-range links, so the old -y 200 spent 54% of the figure
+# (measured: rows end at y=165 of 365) on an empty band. 20 keeps the band
+# present — it is real graph structure when there is any — without letting
+# emptiness dominate a figure whose point is the four strain rows.
+in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x 1500 -a 40 -y 20
 
 # ── Projection 5: map a new isolate's short reads through the graph ────────────
 # Unlike every projection above (which re-plots the graph's own four genomes),
