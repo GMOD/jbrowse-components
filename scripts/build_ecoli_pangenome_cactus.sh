@@ -23,6 +23,7 @@
 # Requires: docker (the cactus image, which also carries odgi, halSynteny,
 #           hal2maf, taffy, and vg), the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), bgzip/tabix (htslib), unzip, wget,
+#           ImageMagick (`convert`/`identify`, for the correspondence boxes),
 #           and node (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_cactus.sh [outdir]
 #
@@ -156,14 +157,73 @@ done
 # link band so the four strain rows dominate: one row per strain, x-axis = graph
 # node order, colored by orientation. NOT a JBrowse track — the tutorial
 # contrasts this graph-native axis against the reference-anchored projections.
-# Copy ecoli_cactus_graph.png to website/static/img/pangenome_cactus/graph.png.
+# ecoli_cactus_graph_boxes.png (below) is what ships as
+# website/static/img/pangenome_cactus/graph.png.
 #
 # -y is the LINK band, not the path rows. This bacterial graph is near-colinear
 # and has almost no long-range links, so the old -y 200 spent 54% of the figure
 # (measured: rows end at y=165 of 365) on an empty band. 20 keeps the band
 # present — it is real graph structure when there is any — without letting
 # emptiness dominate a figure whose point is the four strain rows.
-in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x 1500 -a 40 -y 20
+VIZ_X=1500   # odgi viz data width in px; the label gutter is added to the left
+in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x "$VIZ_X" -a 40 -y 20
+
+# ── Correspondence boxes: the same three loci on the graph axis and on K12 ────
+# The raster's x axis is graph node order (pangenome bases), the JBrowse figures'
+# is K12 bases, so nothing lines up between them by position alone. Box three
+# loci in both, in the same three colors, and the correspondence becomes readable
+# WITHOUT pretending the axes match — each box is visibly wider on the graph axis,
+# because there the other strains' accessory sequence is counted too.
+#
+# The mapping is exact, not eyeballed: node ids in a cactus graph run 1..N in node
+# order, so a node's pangenome offset is the cumulative length of every lower id,
+# and walking K12's own P line gives K12 offset -> node -> pangenome offset. (That
+# walk is monotonic here, which is what makes the graph axis interpretable at all;
+# the awk below asserts it rather than assuming it.) Emits the K12 windows to
+# graph_landmarks.tsv so website/scripts/specs/pangenome_cactus.ts can highlight
+# the identical coordinates.
+in_cactus odgi view -i /data/mc/ecoli.full.og -g > full.gfa
+awk -v OFS='\t' -v vizx="$VIZ_X" '
+  $1 == "S" { len[$2 + 0] = length($3); if ($2 + 0 > maxid) maxid = $2 + 0; next }
+  $1 == "P" && $2 == "K12#0#chr" { k12 = $3; next }
+  END {
+    for (i = 1; i <= maxid; i++) { cum[i] = total; total += len[i] }
+    n = split(k12, steps, ",")
+    prev = -1
+    for (i = 1; i <= n; i++) {
+      id = steps[i] + 0
+      kpos[i] = klen; pan[i] = cum[id]; klen += len[id]
+      if (cum[id] < prev) { print "node order not monotonic along K12" > "/dev/stderr"; exit 1 }
+      prev = cum[id]
+    }
+    print "#k12_start", "k12_end", "pan_start", "pan_end", "viz_x1", "viz_x2"
+    split("1000000 2040000 3100000", starts, " ")
+    for (w = 1; w <= 3; w++) {
+      s = starts[w]; e = s + 100000
+      ps = -1; pe = -1
+      for (i = 1; i <= n; i++) {
+        if (ps < 0 && kpos[i] + len[steps[i] + 0] > s) ps = pan[i] + (s - kpos[i])
+        if (pe < 0 && kpos[i] + len[steps[i] + 0] > e) { pe = pan[i] + (e - kpos[i]); break }
+      }
+      print s, e, ps, pe, int(ps / total * vizx + 0.5), int(pe / total * vizx + 0.5)
+    }
+  }
+' full.gfa > graph_landmarks.tsv
+cat graph_landmarks.tsv
+
+# Draw the boxes. The gutter is the rendered width minus the data width, so it
+# follows odgi's own label layout instead of being hardcoded.
+GUT=$(( $(identify -format '%w' ecoli_cactus_graph.png) - VIZ_X ))
+H=$(identify -format '%h' ecoli_cactus_graph.png)
+set -- '#1f77b4' '#ff7f0e' '#2ca02c'
+ARGS=()
+while read -r ks ke ps pe x1 x2; do
+  case "$ks" in \#*) continue;; esac
+  ARGS+=(-stroke "$1" -strokewidth 5 -fill none
+         -draw "rectangle $((GUT + x1)),1 $((GUT + x2)),$((H - 2))")
+  shift
+done < graph_landmarks.tsv
+convert ecoli_cactus_graph.png "${ARGS[@]}" ecoli_cactus_graph_boxes.png
 
 # ── Projection 5: map a new isolate's short reads through the graph ────────────
 # Unlike every projection above (which re-plots the graph's own four genomes),

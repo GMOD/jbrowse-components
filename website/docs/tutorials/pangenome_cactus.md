@@ -264,7 +264,20 @@ genome coordinate. The
 explains that trade-off in full; it applies identically here, because both
 builders produce the same kind of graph and the same odgi renders it.
 
-<Figure caption="The four-strain Minigraph-Cactus graph drawn by odgi viz (--viz): one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The four JBrowse projections re-plot this same presence/absence on K12's coordinates." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The four-strain Minigraph-Cactus graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The three boxes mark loci carried over to the JBrowse figure below." src="/img/pangenome_cactus/graph.png" />
+
+The two axes are easiest to tell apart by putting the same loci on both. The
+three boxes above and the three bands below are the same three 100 kb stretches
+of K12, in the same three colors:
+
+<Figure caption="The same three loci on K12's coordinates, over the pangenome depth track. Each band is 100 kb — 2.15% of the K12 axis — but the matching box above spans 4.4-6.2% of the graph axis, because the graph counts the other strains' accessory sequence through the same locus as well." src="/img/pangenome_cactus/graph_correspondence.png" />
+
+Every box is wider than its band, by 2 to 3 times. That difference is the whole
+distinction: the graph axis counts pangenome bases, so a locus where the other
+strains carry sequence K12 lacks takes up more of it, while the JBrowse axis
+counts K12 bases and holds every locus to its reference width. The boxed loci
+are the three where that gap is largest, which is why each one also sits over a
+dip in the depth track.
 
 ## Reproduce it end to end
 

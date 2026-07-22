@@ -181,15 +181,30 @@ edge). Shared by all tree figures, but the 1px shift is sub-`--diff-threshold`
 for most, so only `--force`-regen'd figures change; other tree figures'
 committed PNGs (+ their verdicts) stay valid until a future full regen.
 
-## Still `bad` after 2026-07-22
+## pangenome_cactus/graph — resolved by rebuilding the graph
 
-- **pangenome_cactus/graph** — blocked on DATA, not layout. See the json note for
-  the full recipe: correspondence boxes need a graph-node-order → K12 mapping
-  (`odgi position` against the K12 path on N landmark nodes). `odgi` is installed
-  (`~/.local/bin/odgi`), but `mc/ecoli.full.og` is neither in this checkout (only
-  the **pggb** ecoli `.og`, under `~/pggb_ecoli_build`) nor hosted under
-  `jbrowse.org/demos/ecoli_pangenome`. Rebuilding via
-  `scripts/build_ecoli_pangenome_cactus.sh` unblocks it.
+The Cactus graph was NOT in the checkout, so it was rebuilt with
+`scripts/build_ecoli_pangenome_cactus.sh`. **Useful numbers if you need it
+again:** `cactus-pangenome` on these four E. coli genomes takes **11 minutes**
+(not hours), and every downstream projection — 6× halSynteny, hal2maf, taffy,
+odgi depth, odgi pav, odgi viz — finishes in about **15 seconds** after it. The
+run reproduced the committed raster near byte-identically, so the pinning
+(fixed RefSeq accessions + pinned cactus image) genuinely holds.
+
+**Hosting the graph on jbrowse.org was considered and rejected.** It would save
+11 minutes and remove no dependency: the cactus docker image is required anyway
+for odgi/halSynteny/hal2maf whether or not the graph is prebuilt. Sizes, if that
+tradeoff is ever revisited: `ecoli.full.og` 91M, `ecoli.full.hal` 8.2M,
+`ecoli.vcf.gz` 5.3M, `ecoli.gfa.gz` 8.6M, giraffe indexes ~91M. Note
+`ecoli.gfa.gz` is the **clipped** graph (7,237,722 bp / 525,131 nodes) while
+`ecoli.full.og` is the full one (7,859,088 bp / 525,812 nodes) — using the GFA's
+node lengths against the `.og`'s raster silently misplaces everything.
+
+**Gotcha that cost time:** do not edit the build script while it is running.
+Bash reads a script incrementally by byte offset, so inserting lines mid-run
+shifts everything after and can garble what it parses next. An `-y` edit made
+mid-run simply did not take effect, and the run had to be killed before it
+executed something malformed.
 
 ## Still `bad` — deferred as design/blocked (user chose to defer)
 

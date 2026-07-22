@@ -155,6 +155,74 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The JBrowse half of the odgi-viz correspondence pair. Same three loci the
+  // banded raster (pangenome_cactus/graph.png) boxes, in the same three colors,
+  // so a reader can carry a box from one figure to the other.
+  //
+  // The K12 coordinates are pinned to the pinned graph (fixed RefSeq accessions
+  // + pinned cactus image, see build_ecoli_pangenome_cactus.sh), and were picked
+  // by walking the graph's own K12 path: each 100kb K12 window was scored by how
+  // much PANGENOME sequence it spans (the graph's node order is monotonic along
+  // K12, verified), and these are the three highest-scoring well-separated
+  // windows. Each is 2.15% of the K12 axis but 4.4-6.2% of the graph's, which is
+  // the entire point of the pair — same locus, visibly different width, because
+  // one axis counts K12 bases and the other counts pangenome bases.
+  {
+    mode: 'url',
+    name: 'pangenome_cactus/graph_correspondence',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1-4,641,652',
+          highlight: [
+            // explicit alpha: getHighlightColor uses a user-supplied color
+            // AS-IS, so a bare hex paints an opaque bar over the depth track it
+            // is meant to point at
+            {
+              refName: 'chr',
+              start: 1000000,
+              end: 1100000,
+              color: 'rgba(31,119,180,0.40)',
+            },
+            {
+              refName: 'chr',
+              start: 2040000,
+              end: 2140000,
+              color: 'rgba(255,127,14,0.40)',
+            },
+            {
+              refName: 'chr',
+              start: 3100000,
+              end: 3200000,
+              color: 'rgba(44,160,44,0.40)',
+            },
+          ],
+          tracks: [
+            {
+              trackId: 'ecoli_cactus_depth',
+              type: 'LinearWiggleDisplay',
+              height: 160,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'pangenome depth',
+    readyTimeout: 90000,
+    // 1040 CSS px captures at 2080, the odgi raster's exact width, so the two
+    // figures stack cleanly in the docs at the same scale
+    viewportWidth: 1040,
+    viewportHeight: 380,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 990, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+
   // Projection 4b: per-strain presence (odgi pav) as a MultiQuantitativeTrack,
   // whole-chromosome so each strain's accessory dips read beside the aggregate
   // depth curve.

@@ -1716,10 +1716,10 @@
   },
   "pangenome_cactus/graph": {
     "name": "pangenome_cactus/graph",
-    "status": "bad",
-    "note": "BLOCKED on data, not layout. Correspondence boxes need the graph-node-order -> K12 mapping; odgi viz x is node order and there is no analytic conversion. Concrete recipe once unblocked: pick N landmark nodes, run `odgi position` against the K12 path to get their K12 coords, then draw matching boxes on the raster and on a LinearGenomeView at those coords. The blocker is that mc/ecoli.full.og is not in this checkout (only the pggb ecoli .og is, under ~/pggb_ecoli_build) and it is not hosted under jbrowse.org/demos/ecoli_pangenome. odgi itself IS installed (~/.local/bin/odgi), so rebuilding per scripts/build_ecoli_pangenome_cactus.sh would unblock it. Original ask: \"to super ideal would be to combine this figure with a jbrowse figure using boxes to show correspondance\".",
-    "reviewedAt": "2026-07-22T20:45:01.375Z",
-    "hash": "d4acb4edc1b681fb33111cccb37401655695d501"
+    "status": "good",
+    "note": "Rebuilt the Cactus graph and paired the raster with a JBrowse figure, as asked. Three loci boxed in both, same colors; positions derived exactly from the graph (node ids run 1..N in node order, so pangenome offset = cumulative length of lower ids, and K12s own P-line walk maps K12 -> node -> pangenome; the walk is monotonic, asserted in the build script). Each box is 2-3x wider than its band because the graph axis counts accessory sequence too, which is the lesson. Also fixed the raster wasting 54% of its height on an empty link band (odgi viz -y 200 -> 20).",
+    "reviewedAt": "2026-07-22T22:06:27.365Z",
+    "hash": "e187a86e43c78a4510d57bb41ef52e57eeef310e"
   },
   "pangenome_cactus/maf": {
     "name": "pangenome_cactus/maf",
@@ -1797,5 +1797,12 @@
     "note": "replaces sv_cgiab/dotplot_result: per-axis displayedRegionNames glob restricts the y axis to one haplotype, so each plot is a single clean diagonal instead of both haplotypes interleaved",
     "reviewedAt": "2026-07-22T21:29:41.719Z",
     "hash": "ba6f77306510685f9b7be243917a7c81063f1ebb"
+  },
+  "pangenome_cactus/graph_correspondence": {
+    "name": "pangenome_cactus/graph_correspondence",
+    "status": "good",
+    "note": "JBrowse half of the odgi-viz correspondence pair; same three loci as the raster, translucent so the depth track reads through.",
+    "reviewedAt": "2026-07-22T22:06:27.365Z",
+    "hash": "a37543d9c033e6a8c43f66f6a9d42a9b59632c1c"
   }
 }
