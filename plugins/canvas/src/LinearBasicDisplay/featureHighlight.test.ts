@@ -176,4 +176,19 @@ describe('name fallback', () => {
       }),
     ).toBe(false)
   })
+
+  it('never name-falls-back for a right-click (featureId) highlight', () => {
+    // a stale featureId must resolve to nothing rather than boxing every
+    // same-named sibling — the regression 5153e76cee fixed
+    const dup = {
+      refName: 'chr12',
+      flatbushItems: [
+        { startBp: 1, endBp: 2, featureId: 'a', name: 'DUP' },
+        { startBp: 90, endBp: 99, featureId: 'b', name: 'DUP' },
+      ],
+      subfeatureInfos: [],
+    }
+    const h = [{ refName: 'chr12', name: 'DUP', featureId: 'gone' }]
+    expect([...resolveFeatureHighlights([dup], h).box]).toEqual([])
+  })
 })

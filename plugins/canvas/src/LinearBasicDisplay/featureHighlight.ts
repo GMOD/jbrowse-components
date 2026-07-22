@@ -243,7 +243,15 @@ export function resolveFeatureHighlights(
     // Pass 2: only if pass 1 boxed NOTHING anywhere, try the name. Scoped this
     // way (whole-sweep, not per-region) so a highlight whose span matches in one
     // region can't also name-match something unrelated in another.
-    if (boxed.size === 0 && h.name !== undefined) {
+    //
+    // Never for a featureId highlight. That id comes from a right-click on one
+    // specific rendered feature, and falling back to its name would box every
+    // same-named sibling — the exact symptom "highlight only the right-clicked
+    // feature, not same-named overlaps" fixed by storing the id in the first
+    // place. If the id goes stale the honest result is no box, not the wrong
+    // ones. The fallback is for highlights that never had an id to begin with:
+    // hand-authored specs and text-search results.
+    if (boxed.size === 0 && h.name !== undefined && h.featureId === undefined) {
       ;({ boxed, pin: pins } = sweep(regionList, (item, _featureId, refName) =>
         featureNameMatchesHighlight(item, refName, h),
       ))
