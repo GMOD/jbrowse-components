@@ -1,8 +1,8 @@
 import Plugin from '@jbrowse/core/Plugin'
+import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { getSession, isAbstractMenuManager } from '@jbrowse/core/util'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
-import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
@@ -157,8 +157,8 @@ export default class GridBookmarkPlugin extends Plugin {
                   return [
                     ...superRubberBandMenuItems(),
                     {
-                      label: 'Highlight region (temporary)',
-                      icon: HighlightAltIcon,
+                      label: 'Highlight region',
+                      icon: Highlighter,
                       onClick: () => {
                         const { leftOffset, rightOffset } = self
                         const selectedRegions = self.getSelectedRegions(
