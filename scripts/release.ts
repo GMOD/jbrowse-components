@@ -195,9 +195,8 @@ for (const versionFile of versionFiles) {
 }
 console.log(`  regenerated ${versionFiles.length} version.ts files`)
 
-// Commit, tag, push — CI publishes from the tag
-// The website deploy rides the tag (update-docs.yml triggers on 'v*'), not
-// this commit message.
+// Commit, tag, push — CI publishes from the tag. The website deploy is not
+// tied to this commit message: update-docs.yml runs on release publish.
 run('pnpm', ['format'])
 run('git', ['add', '.'])
 run('git', ['commit', '--message', releaseTag])
