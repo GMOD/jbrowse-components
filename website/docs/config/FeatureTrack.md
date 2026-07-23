@@ -173,30 +173,14 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 adds extra fields to the feature details
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-```js
-{
-  type: 'frozen',
-  description: 'adds extra fields to the feature details',
-  defaultValue: {},
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: formatDetails.subfeatures
 
 adds extra fields to the subfeatures of a feature
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-```js
-{
-  type: 'frozen',
-  description: 'adds extra fields to the subfeatures of a feature',
-  defaultValue: {},
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: formatDetails.depth
 
@@ -217,15 +201,7 @@ Maximum depth to render subfeatures
 formats configuration object in about dialog
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-```js
-{
-  type: 'frozen',
-  description: 'formats configuration object in about dialog',
-  defaultValue: {},
-  contextVariable: ['config'],
-}
-```
+· **Callback args:** `config`
 
 #### slot: formatAbout.hideUris
 

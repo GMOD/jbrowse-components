@@ -98,18 +98,8 @@ r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter.
 Manhattan point diameter in px (adjustable from the track menu). Larger default
 than wiggle's since Manhattan points are the primary glyph.
 
-**Type:** `maybeNumber` · **Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeNumber',
-  defaultValue: undefined,
-  promotedBase: DEFAULT_POINT_DIAMETER_PX,
-  description:
-    'Diameter in px of Manhattan points. Unset (the default) follows the session-wide default for this display type',
-  promotable: true,
-}
-```
+**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:**
+`DEFAULT_POINT_DIAMETER_PX` · _promotable_
 
 </details>
 
@@ -128,17 +118,8 @@ shown once, at its most specific definition.
 
 Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'xyplot'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
-  defaultValue: 'xyplot',
-  description: 'Default rendering type',
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`xyplot`, `density`, `line`, `linecenter`, `scatter`) · **Default:** `'xyplot'`
 
 **Example:**
 

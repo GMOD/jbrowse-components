@@ -121,17 +121,7 @@ Per-block fill: a CSS color, or a `jexl:` expression for per-feature coloring
 `itemRgb` is used if it has one, and otherwise each row gets a distinct color
 from a categorical palette.
 
-**Type:** `maybeColor` · **Default:** `undefined`
-
-```js
-{
-  type: 'maybeColor',
-  defaultValue: undefined,
-  description:
-    "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette",
-  contextVariable: ['feature'],
-}
-```
+**Type:** `maybeColor` · **Default:** `undefined` · **Callback args:** `feature`
 
 #### slot: sampleColorMap
 

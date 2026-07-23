@@ -114,15 +114,7 @@ anything to add about this track
 formats configuration in about dialog
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-```js
-{
-  type: 'frozen',
-  description: 'formats configuration in about dialog',
-  defaultValue: {},
-  contextVariable: ['config'],
-}
-```
+· **Callback args:** `config`
 
 #### slot: formatAbout.hideUris
 

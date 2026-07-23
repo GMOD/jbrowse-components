@@ -50,14 +50,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 #### slot: rewriteRefNames
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-```js
-{
-  type: 'string',
-  defaultValue: '',
-  contextVariable: ['refName'],
-}
-```
+· **Callback args:** `refName`
 
 #### slot: fastaLocation
 

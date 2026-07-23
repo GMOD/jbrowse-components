@@ -165,7 +165,6 @@ Conservation band resolution: `base` (per-bp percent identity) or `codon`
     CONSERVATION_MODE_VALUES,
   ),
   defaultValue: DEFAULTS.conservationMode,
-  description: 'conservation band resolution: base or codon',
 }
 ```
 
@@ -183,7 +182,6 @@ the base coloring at every zoom.
   type: 'stringEnum',
   model: types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
   defaultValue: DEFAULTS.rowIdentityMode,
-  description: 'per-row identity rendering: none, heatmap, or xyplot',
 }
 ```
 

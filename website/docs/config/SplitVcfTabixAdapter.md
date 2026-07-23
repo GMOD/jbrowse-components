@@ -88,8 +88,6 @@ object like `{chr1:{uri:'url to index'}}`
   type: 'fileLocation',
   defaultValue: {
     uri: '/path/to/samples.tsv',
-    description:
-      'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',
     locationType: 'UriLocation',
   },
 }

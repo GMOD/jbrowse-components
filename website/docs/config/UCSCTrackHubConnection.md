@@ -53,7 +53,6 @@ location of the hub file (usually called hub.txt)
     uri: 'https://mysite.com/path/to/hub.txt',
     locationType: 'UriLocation',
   },
-  description: 'location of the hub file (usually called hub.txt)',
 }
 ```
 

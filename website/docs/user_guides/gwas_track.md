@@ -92,13 +92,6 @@ for the tabix index.
 Click **Submit**. In LD mode JBrowse auto-picks the highest-scoring loaded SNP
 as the index; right-click any point or use the track menu to change it.
 
-## Significance lines
-
-Reference lines mark the conventional GWAS cutoffs (genome-wide 5 × 10⁻⁸,
-suggestive 1 × 10⁻⁵). Toggle via **Show significance lines** in the track menu.
-Thresholds are configurable. See the
-[config guide](/docs/config_guides/gwas_track).
-
 ## See also
 
 - [Quantitative track](/docs/user_guides/quantitative_track)

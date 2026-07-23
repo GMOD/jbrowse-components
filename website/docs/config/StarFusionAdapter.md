@@ -59,7 +59,6 @@ STAR-Fusion TSV output file (plain text or gzipped)
 ```js
 {
   type: 'fileLocation',
-  description: 'STAR-Fusion TSV output file (plain text or gzipped)',
   defaultValue: {
     uri: '/path/to/star-fusion.fusion_predictions.tsv',
     locationType: 'UriLocation',

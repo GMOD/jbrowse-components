@@ -1,5 +1,6 @@
 import { sync as spawnSync } from 'cross-spawn'
 
+import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   accumulateApi,
   writeApiDocs,
@@ -33,6 +34,9 @@ async function main() {
   const api: Record<string, ApiGroup> = {}
   const displayLinks: DisplayTrackLink[] = []
   const files = await getAllFiles()
+  // enum tables first: the config generator resolves `[...NAME]` spreads in
+  // stringEnum models against this while rendering slots
+  buildEnumConstantIndex(files)
   extractWithComment(
     files,
     obj => {

@@ -66,65 +66,27 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 callback that should be run when a chord in the track is clicked
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-```js
-{
-  type: 'boolean',
-  description:
-    'callback that should be run when a chord in the track is clicked',
-  defaultValue: false,
-  contextVariable: ['feature', 'track', 'pluginManager'],
-}
-```
+`false` · **Callback args:** `feature`, `track`, `pluginManager`
 
 #### slot: strokeColor
 
 the line color of each arc
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'rgba(255,133,0,0.32)'`
-
-```js
-{
-  type: 'color',
-  description: 'the line color of each arc',
-  defaultValue: 'rgba(255,133,0,0.32)',
-  contextVariable: ['feature'],
-}
-```
+`'rgba(255,133,0,0.32)'` · **Callback args:** `feature`
 
 #### slot: strokeColorSelected
 
 the line color of an arc that has been selected
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'black'`
-
-```js
-{
-  type: 'color',
-  description: 'the line color of an arc that has been selected',
-  defaultValue: 'black',
-  contextVariable: ['feature'],
-}
-```
+`'black'` · **Callback args:** `feature`
 
 #### slot: strokeColorHover
 
 the line color of an arc that is being hovered over with the mouse
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#555'`
-
-```js
-{
-  type: 'color',
-  description:
-    'the line color of an arc that is being hovered over with the mouse',
-  defaultValue: '#555',
-  contextVariable: ['feature'],
-}
-```
+`'#555'` · **Callback args:** `feature`
 
 </details>

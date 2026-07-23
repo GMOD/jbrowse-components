@@ -78,15 +78,15 @@ subtrack's line/fill.
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                         | Type                                   | Description                                                                                        |
-| -------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| [height](#slot-height)                       | `number`                               | Default height of the track                                                                        |
-| [summaryScoreMode](#slot-summaryscoremode)   | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering |
-| [defaultRendering](#slot-defaultrendering)   | `stringEnum`                           | Default rendering type.                                                                            |
-| [showTree](#slot-showtree)                   | `boolean`                              | Show the subtrack clustering tree in the sidebar                                                   |
-| [showBranchLength](#slot-showbranchlength)   | `boolean`                              | Draw the clustering tree with branch lengths                                                       |
-| [showRowSeparators](#slot-showrowseparators) | `boolean`                              | Draw separator lines between subtrack rows                                                         |
-| [showLegend](#slot-showlegend)               | `boolean`                              | Draw the source color key in overlay mode                                                          |
+| Slot                                         | Type                                                                                                                                                 | Description                                                                                        |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)                       | `number`                                                                                                                                             | Default height of the track                                                                        |
+| [summaryScoreMode](#slot-summaryscoremode)   | `stringEnum` (max, min, avg, whiskers)                                                                                                               | choose whether to use max/min/average or whiskers which combines all three into the same rendering |
+| [defaultRendering](#slot-defaultrendering)   | `stringEnum` (multirowxy, multirowdensity, multirowline, multirowlinecenter, multirowscatter, multixyplot, multiline, multilinecenter, multiscatter) | Default rendering type.                                                                            |
+| [showTree](#slot-showtree)                   | `boolean`                                                                                                                                            | Show the subtrack clustering tree in the sidebar                                                   |
+| [showBranchLength](#slot-showbranchlength)   | `boolean`                                                                                                                                            | Draw the clustering tree with branch lengths                                                       |
+| [showRowSeparators](#slot-showrowseparators) | `boolean`                                                                                                                                            | Draw separator lines between subtrack rows                                                         |
+| [showLegend](#slot-showlegend)               | `boolean`                                                                                                                                            | Draw the source color key in overlay mode                                                          |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -121,17 +121,10 @@ Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`,
 overlapping modes (`multixyplot`, `multiline`, `multiscatter`) draw all
 subtracks together in one shared plot.
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'multirowxy'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
-  defaultValue: 'multirowxy',
-  description: 'Default rendering type',
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`multirowxy`, `multirowdensity`, `multirowline`, `multirowlinecenter`,
+`multirowscatter`, `multixyplot`, `multiline`, `multilinecenter`,
+`multiscatter`) · **Default:** `'multirowxy'`
 
 **Example:**
 

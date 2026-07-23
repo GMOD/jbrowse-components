@@ -1,6 +1,8 @@
 ---
 title: Opening track hubs by URL
-description: Hand someone a link that loads one or more UCSC track hubs with the &hubURL= parameter
+description:
+  Hand someone a link that loads one or more UCSC track hubs with the &hubURL=
+  parameter
 guide_category: General usage
 ---
 
@@ -10,7 +12,9 @@ straight from a link, with no config file to set up first. It is the one-click
 way to share a hub: whoever opens the link lands in JBrowse with the hub's
 assemblies and tracks already available.
 
-The [UCSC GenArk hub import](/demos/#instances) on the demos page is exactly this
+The [UCSC GenArk hub import](/demos/#instances) on the demos page is exactly
+this
+
 - a single URL that opens a hub.
 
 ## Basic usage
@@ -65,8 +69,8 @@ with) will not appear.
 
 ## See also
 
-- [Connections](/docs/user_guides/connections) - adding the same hubs through the
-  UI, the CLI, or a config
+- [Connections](/docs/user_guides/connections) - adding the same hubs through
+  the UI, the CLI, or a config
 - [URL parameter API](/docs/urlparams#huburl) - the full list of launch
   parameters, including `&hubURL=`
 - [Live demo: UCSC GenArk hub import](/demos/#instances)

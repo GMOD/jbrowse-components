@@ -31,30 +31,14 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 adds extra fields to the feature details
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-```js
-{
-  type: 'frozen',
-  description: 'adds extra fields to the feature details',
-  defaultValue: {},
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: configuration.formatDetails.subfeatures
 
 adds extra fields to the subfeatures of a feature
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-```js
-{
-  type: 'frozen',
-  description: 'adds extra fields to the subfeatures of a feature',
-  defaultValue: {},
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: configuration.formatDetails.depth
 

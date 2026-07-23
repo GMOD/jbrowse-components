@@ -67,13 +67,13 @@ array form — see
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                       | Type                                   | Description                                                                                                                      |
-| ------------------------------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| [defaultRendering](#slot-defaultrendering) | `stringEnum`                           | Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.                                                 |
-| [height](#slot-height)                     | `number`                               | Default height of the track                                                                                                      |
-| [useBicolor](#slot-usebicolor)             | `boolean`                              | When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. |
-| [color](#slot-color)                       | `color`                                | Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply.          |
-| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering                               |
+| Slot                                       | Type                                                      | Description                                                                                                                      |
+| ------------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| [defaultRendering](#slot-defaultrendering) | `stringEnum` (xyplot, density, line, linecenter, scatter) | Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.                                                 |
+| [height](#slot-height)                     | `number`                                                  | Default height of the track                                                                                                      |
+| [useBicolor](#slot-usebicolor)             | `boolean`                                                 | When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. |
+| [color](#slot-color)                       | `color`                                                   | Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply.          |
+| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers)                    | choose whether to use max/min/average or whiskers which combines all three into the same rendering                               |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -91,17 +91,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'xyplot'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
-  defaultValue: 'xyplot',
-  description: 'Default rendering type',
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`xyplot`, `density`, `line`, `linecenter`, `scatter`) · **Default:** `'xyplot'`
 
 **Example:**
 

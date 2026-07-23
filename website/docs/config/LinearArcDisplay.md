@@ -76,81 +76,36 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 the color of the arcs
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'darkblue'`
-
-```js
-{
-  type: 'color',
-  description: 'the color of the arcs',
-  defaultValue: 'darkblue',
-  contextVariable: ['feature'],
-}
-```
+`'darkblue'` · **Callback args:** `feature`
 
 #### slot: thickness
 
 the thickness of the arcs
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`'jexl:logThickness(feature,'score')'`
-
-```js
-{
-  type: 'number',
-  description: 'the thickness of the arcs',
-  defaultValue: `jexl:logThickness(feature,'score')`,
-  contextVariable: ['feature'],
-}
-```
+`'jexl:logThickness(feature,'score')'` · **Callback args:** `feature`
 
 #### slot: label
 
 the label to appear at the apex of the arcs
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'score')'`
-
-```js
-{
-  type: 'string',
-  description: 'the label to appear at the apex of the arcs',
-  defaultValue: `jexl:get(feature,'score')`,
-  contextVariable: ['feature'],
-}
-```
+`'jexl:get(feature,'score')'` · **Callback args:** `feature`
 
 #### slot: arcHeight
 
 the height of the arcs
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`'jexl:log10(get(feature,'end')-get(feature,'start'))*50'`
-
-```js
-{
-  type: 'number',
-  description: 'the height of the arcs',
-  defaultValue: `jexl:log10(get(feature,'end')-get(feature,'start'))*50`,
-  contextVariable: ['feature'],
-}
-```
+`'jexl:log10(get(feature,'end')-get(feature,'start'))*50'` · **Callback args:**
+`feature`
 
 #### slot: caption
 
 the caption to appear when hovering over any point on the arcs
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'name')'`
-
-```js
-{
-  type: 'string',
-  description:
-    'the caption to appear when hovering over any point on the arcs',
-  defaultValue: `jexl:get(feature,'name')`,
-  contextVariable: ['feature'],
-}
-```
+`'jexl:get(feature,'name')'` · **Callback args:** `feature`
 
 #### slot: displayMode
 
@@ -210,18 +165,7 @@ text to display when the cursor hovers over a feature
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-
-```js
-{
-  type: 'string',
-  description: 'text to display when the cursor hovers over a feature',
-
-
-
-  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: jexlFilters
 

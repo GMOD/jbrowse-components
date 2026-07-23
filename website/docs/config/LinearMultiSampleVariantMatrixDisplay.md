@@ -266,18 +266,7 @@ text to display when the cursor hovers over a feature
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-
-```js
-{
-  type: 'string',
-  description: 'text to display when the cursor hovers over a feature',
-
-
-
-  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: jexlFilters
 

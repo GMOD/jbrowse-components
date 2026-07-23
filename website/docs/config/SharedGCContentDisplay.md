@@ -131,17 +131,8 @@ shown once, at its most specific definition.
 
 Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'xyplot'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
-  defaultValue: 'xyplot',
-  description: 'Default rendering type',
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`xyplot`, `density`, `line`, `linecenter`, `scatter`) · **Default:** `'xyplot'`
 
 **Example:**
 

@@ -3,6 +3,7 @@ import fs from 'fs'
 import slugify from 'slugify'
 import * as ts from 'typescript'
 
+import { enumConstantValues } from './enumConstants.ts'
 import { writeFormatted } from './format.ts'
 import {
   assertSingleHeader,
@@ -522,6 +523,10 @@ interface SlotMeta {
   enumValues?: string[]
   advanced?: boolean
   promotable?: boolean
+  // `promotedBase`: what a promotable slot resolves to when nothing overrides it
+  promotedBase?: string
+  // `contextVariable`: the names a jexl callback on this slot receives
+  contextVariable?: string[]
   // true when the slot carries something the label line can't summarize (a
   // non-inline default, a non-enumeration `model`, an unrecognized key), so the
   // full source code block is kept below rather than dropped as redundant.
@@ -582,6 +587,25 @@ function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
     node.kind === ts.SyntaxKind.TrueKeyword
   ) {
     meta[key] = true
+  } else if (key === 'promotedBase') {
+    const inline = renderInlineDefault(node)
+    if (inline === undefined) {
+      meta.keepCode = true
+    } else {
+      meta.promotedBase = inline
+    }
+  } else if (key === 'contextVariable') {
+    const names = ts.isArrayLiteralExpression(node)
+      ? node.elements.filter(ts.isStringLiteralLike).map(e => e.text)
+      : undefined
+    if (
+      names?.length ===
+      (ts.isArrayLiteralExpression(node) ? node.elements.length : -1)
+    ) {
+      meta.contextVariable = names
+    } else {
+      meta.keepCode = true
+    }
   } else {
     // an unrecognized key (contextVariable, a non-true flag, ...) can't be
     // summarized on the label line, so keep the source visible
@@ -590,15 +614,22 @@ function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
 }
 
 // The values of a `types.enumeration('Name', ['a', 'b'])` model, so a stringEnum
-// slot's choices show on the label line instead of only in the code block.
+// slot's choices show on the label line instead of only in the code block. A
+// spread of a named constant (`[...HEIGHT_MODE_VALUES]`) resolves through the
+// enum-constant index — schemas share those tables with the track menus, and a
+// reader still needs the members.
 function enumerationValues(node: ts.Expression): string[] | undefined {
   const arr = ts.isCallExpression(node)
     ? node.arguments.find(ts.isArrayLiteralExpression)
     : undefined
-  const values = arr?.elements.filter(ts.isStringLiteralLike).map(e => e.text)
-  return values?.length === arr?.elements.length && values?.length
-    ? values
-    : undefined
+  const values = arr?.elements.flatMap(el =>
+    ts.isStringLiteralLike(el)
+      ? [el.text]
+      : ts.isSpreadElement(el) && ts.isIdentifier(el.expression)
+        ? (enumConstantValues(el.expression.text) ?? [])
+        : [],
+  )
+  return values?.length ? values : undefined
 }
 
 // A default rendered compactly enough to sit on the label line: scalars,
@@ -664,6 +695,12 @@ function slotMetaLine(meta: SlotMeta): string {
   return [
     meta.type && `**Type:** ${typeLink(meta.type)}${enums}`,
     meta.defaultValue !== undefined && `**Default:** \`${meta.defaultValue}\``,
+    // a promotable slot's default is a sentinel; the value it actually resolves
+    // to is the one a reader is after
+    meta.promotedBase !== undefined &&
+      `**Resolves to:** \`${meta.promotedBase}\``,
+    meta.contextVariable?.length &&
+      `**Callback args:** ${meta.contextVariable.map(v => `\`${v}\``).join(', ')}`,
     flags && `_${flags}_`,
   ]
     .filter(Boolean)
@@ -677,13 +714,46 @@ function slotMetaFor(item: Item) {
   return { value, meta: parseSlotMeta(value) }
 }
 
+// A retained source block exists to show the one thing the label line couldn't
+// summarize, so strip what's already rendered above it: the `description`
+// (printed verbatim as the slot's prose) and the blank lines JSDoc stripping
+// leaves behind. Without this a kept block is mostly a second copy of the prose,
+// which is what makes these pages read like source rather than reference.
+// Spliced by source range rather than by regex so a description wrapped across
+// lines (prettier does this routinely) is removed whole.
+function trimSlotCode(value: string) {
+  const sf = ts.createSourceFile(
+    'slot.ts',
+    `const __x = ${value}`,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const offset = 'const __x = '.length
+  const init = sf.statements.find(ts.isVariableStatement)?.declarationList
+    .declarations[0]?.initializer
+  const description =
+    init && ts.isObjectLiteralExpression(init)
+      ? init.properties.find(
+          p =>
+            ts.isPropertyAssignment(p) &&
+            ts.isIdentifier(p.name) &&
+            p.name.text === 'description',
+        )
+      : undefined
+  const stripped = description
+    ? value.slice(0, description.getStart(sf) - offset) +
+      value.slice(description.getEnd() - offset).replace(/^,/, '')
+    : value
+  return stripped.replace(/\n\s*\n+/g, '\n')
+}
+
 function slotBlock(item: Item) {
   const { value, meta } = slotMetaFor(item)
   return section(
     `#### slot: ${item.name}`,
     item.docs || meta.description,
     slotMetaLine(meta),
-    meta.keepCode && codeBlock(value),
+    meta.keepCode && codeBlock(trimSlotCode(value)),
     exampleSection(item.examples, '**Example:**'),
   )
 }

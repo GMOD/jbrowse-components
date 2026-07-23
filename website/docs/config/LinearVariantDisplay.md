@@ -88,43 +88,17 @@ the current height. Orthogonal to the per-feature size set by `displayMode`.
 Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit)
 settings.
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'inherit'` · _promotable_
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
-  description:
-    'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
-
-
-
-
-
-  defaultValue: 'inherit',
-  promotedBase: 'fixed',
-  promotable: true,
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `fixed`, `grow`, `fit`) · **Default:** `'inherit'` · **Resolves to:**
+`'fixed'` · _promotable_
 
 #### slot: showLabels
 
 Show feature labels: "auto" hides labels at high feature density, "on" always
 shows, "off" always hides
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'auto'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
-  defaultValue: 'auto',
-  description:
-    'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`auto`, `on`, `off`) · **Default:** `'auto'`
 
 #### slot: maxLabelFeatureDensity
 
@@ -147,34 +121,14 @@ the main fill color of each feature (a CSS color, or a jexl expression for
 per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has
 one, else goldenrod
 
-**Type:** `maybeColor` · **Default:** `undefined`
-
-```js
-{
-  type: 'maybeColor',
-  defaultValue: undefined,
-  description:
-    "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod",
-  contextVariable: ['feature'],
-}
-```
+**Type:** `maybeColor` · **Default:** `undefined` · **Callback args:** `feature`
 
 #### slot: connectorColor
 
 color of the connecting/intron lines between feature segments (defaults to the
 theme text color)
 
-**Type:** `maybeColor` · **Default:** `undefined`
-
-```js
-{
-  type: 'maybeColor',
-  description:
-    'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
-  defaultValue: undefined,
-  contextVariable: ['feature'],
-}
-```
+**Type:** `maybeColor` · **Default:** `undefined` · **Callback args:** `feature`
 
 #### slot: utrColor
 
@@ -182,17 +136,7 @@ fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED
 itemRgb paints them too (matching UCSC's whole-item coloring), else a
 contrasting blue
 
-**Type:** `maybeColor` · **Default:** `undefined`
-
-```js
-{
-  type: 'maybeColor',
-  defaultValue: undefined,
-  description:
-    "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue",
-  contextVariable: ['feature'],
-}
-```
+**Type:** `maybeColor` · **Default:** `undefined` · **Callback args:** `feature`
 
 #### slot: outlineColor
 
@@ -205,15 +149,7 @@ outline color for features (empty string = no outline)
 height in pixels of the main body of each feature
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `10`
-
-```js
-{
-  type: 'number',
-  description: 'height in pixels of the main body of each feature',
-  defaultValue: 10,
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: displayMode
 
@@ -225,49 +161,15 @@ every feature onto a single row with all labels hidden
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
 `inherit`, `normal`, `compact`, `superCompact`, `collapsed`) · **Default:**
-`'inherit'` · _promotable_
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('displayMode', [
-    'inherit',
-    'normal',
-    'compact',
-    'superCompact',
-    'collapsed',
-  ]),
-  description:
-    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden',
-
-
-
-
-
-
-  defaultValue: 'inherit',
-  promotedBase: 'normal',
-  promotable: true,
-}
-```
+`'inherit'` · **Resolves to:** `'normal'` · _promotable_
 
 #### slot: geneGlyphMode
 
 Gene glyph display mode: "auto" switches based on zoom level, "all" shows all
 transcripts, "longestCoding" shows only the longest coding transcript
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'auto'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('geneGlyphMode', [...GENE_GLYPH_MODES]),
-  description:
-    'Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript',
-  defaultValue: 'auto',
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`auto`, `all`, `longestCoding`) · **Default:** `'auto'`
 
 #### slot: subfeatureLabels
 
@@ -276,30 +178,8 @@ default for this display type, falling back to `none`; `none`/`below`/`overlay`
 customize the track explicitly
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `none`, `below`, `overlay`) · **Default:** `'inherit'` · _promotable_
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('subfeatureLabels', [
-    'inherit',
-    'none',
-    'below',
-    'overlay',
-  ]),
-  description:
-    'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` customize the track explicitly',
-
-
-
-
-
-
-  defaultValue: 'inherit',
-  promotedBase: 'none',
-  promotable: true,
-}
-```
+`inherit`, `none`, `below`, `overlay`) · **Default:** `'inherit'` · **Resolves
+to:** `'none'` · _promotable_
 
 #### slot: displayDirectionalChevrons
 
@@ -309,24 +189,7 @@ back to on; an explicit true/false customizes the track (including customizing
 on over an off session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeBoolean',
-  description:
-    'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (including customizing on over an off session default)',
-
-
-
-
-
-
-  defaultValue: undefined,
-  promotedBase: true,
-  promotable: true,
-}
-```
+**Default:** `undefined` · **Resolves to:** `true` · _promotable_
 
 #### slot: transcriptTypes
 
@@ -379,15 +242,12 @@ UTR subfeatures
 ConfigurationSchema('CanvasFeatureLabels', {
   name: {
     type: 'string',
-    description: 'the primary name of the feature to show',
     defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
     contextVariable: ['feature'],
   },
 
   description: {
     type: 'string',
-    description: 'the text description to show',
-
     defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
     contextVariable: ['feature'],
   },
@@ -399,16 +259,7 @@ ConfigurationSchema('CanvasFeatureLabels', {
 the primary name of the feature to show
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'name') || get(feature,'id')'`
-
-```js
-{
-  type: 'string',
-  description: 'the primary name of the feature to show',
-  defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
-  contextVariable: ['feature'],
-}
-```
+`'jexl:get(feature,'name') || get(feature,'id')'` · **Callback args:** `feature`
 
 #### slot: labels.description
 
@@ -416,20 +267,7 @@ the text description to show
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')'`
-
-```js
-{
-  type: 'string',
-  description: 'the text description to show',
-
-
-
-
-
-  defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 </details>
 
@@ -477,18 +315,7 @@ text to display when the cursor hovers over a feature
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-
-```js
-{
-  type: 'string',
-  description: 'text to display when the cursor hovers over a feature',
-
-
-
-  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: jexlFilters
 

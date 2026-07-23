@@ -65,35 +65,16 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 the color of the arcs
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'jexl:defaultPairedArcColor(feature,alt)'`
-
-```js
-{
-  type: 'color',
-  description: 'the color of the arcs',
-  defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
-  contextVariable: ['feature', 'alt'],
-}
-```
+`'jexl:defaultPairedArcColor(feature,alt)'` · **Callback args:** `feature`,
+`alt`
 
 #### slot: lineWidth
 
 the stroke width of the arcs, in pixels. Unset (the default) follows the
 session-wide default for this display type
 
-**Type:** `maybeNumber` · **Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeNumber',
-  description:
-    'the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type',
-
-  defaultValue: undefined,
-  promotedBase: defaultArcLineWidth,
-  promotable: true,
-}
-```
+**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:**
+`defaultArcLineWidth` · _promotable_
 
 </details>
 
@@ -147,18 +128,7 @@ text to display when the cursor hovers over a feature
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-
-```js
-{
-  type: 'string',
-  description: 'text to display when the cursor hovers over a feature',
-
-
-
-  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
-  contextVariable: ['feature'],
-}
-```
+· **Callback args:** `feature`
 
 #### slot: jexlFilters
 

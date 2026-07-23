@@ -130,24 +130,8 @@ session-wide default for this display type, falling back to 7; an explicit
 number customizes the track (including customizing 7 back over a compact session
 default)
 
-**Type:** `maybeNumber` · **Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeNumber',
-  description:
-    'Height of each feature (read) in pixels. Unset (the default) follows the session-wide default for this display type, falling back to 7; an explicit number customizes the track (including customizing 7 back over a compact session default)',
-
-
-
-
-
-
-  defaultValue: undefined,
-  promotedBase: 7,
-  promotable: true,
-}
-```
+**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:** `7` ·
+_promotable_
 
 #### slot: heightMode
 
@@ -159,24 +143,9 @@ scrolls; `grow` expands the track to show every read at the configured height;
 `fit` squeezes reads so every uncollapsed group fills the display without
 scrolling. Orthogonal to the per-read size set by `featureHeight`
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
-**Default:** `'inherit'` · _promotable_
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
-  description:
-    'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
-
-
-
-
-  defaultValue: 'inherit',
-  promotedBase: 'fixed',
-  promotable: true,
-}
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `fixed`, `grow`, `fit`) · **Default:** `'inherit'` · **Resolves to:**
+`'fixed'` · _promotable_
 
 #### slot: readConnectionsLineWidth
 
@@ -189,22 +158,7 @@ Line width for read-connection arcs/lines in pixels
 Draw the supporting-read count on each sashimi arc
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeBoolean',
-  description: 'Draw the supporting-read count on each sashimi arc',
-
-
-
-
-
-  defaultValue: undefined,
-  promotedBase: false,
-  promotable: true,
-}
-```
+**Default:** `undefined` · **Resolves to:** `false` · _promotable_
 
 #### slot: maxHeight
 
@@ -277,23 +231,7 @@ true/false customizes the track (either direction, including customizing off
 over an on session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeBoolean',
-  description:
-    'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
-
-
-
-
-
-  defaultValue: undefined,
-  promotedBase: false,
-  promotable: true,
-}
-```
+**Default:** `undefined` · **Resolves to:** `false` · _promotable_
 
 #### slot: showLowFreqMismatches
 
@@ -331,27 +269,8 @@ force it on or off regardless of mode.
 Linked-read (barcode-chain) layout mode
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `normal`) · **Default:** `'inherit'` · _promotable_
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('LinkedReadsMode', [
-    'inherit',
-    'off',
-    'normal',
-  ]),
-
-
-
-
-
-  defaultValue: 'inherit',
-  promotedBase: 'off',
-  promotable: true,
-  description: 'Linked-read (barcode-chain) layout mode',
-}
-```
+`inherit`, `off`, `normal`) · **Default:** `'inherit'` · **Resolves to:**
+`'off'` · _promotable_
 
 #### slot: showBezierConnections
 
@@ -450,27 +369,8 @@ How to color read-connection arcs
 Read-connection rendering mode (mate pairs + split reads)
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `arc`, `cloud`) · **Default:** `'inherit'` · _promotable_
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('ReadConnectionsMode', [
-    'inherit',
-    'off',
-    'arc',
-    'cloud',
-  ]),
-
-
-
-  defaultValue: 'inherit',
-  promotedBase: 'off',
-  promotable: true,
-  description:
-    'Read-connection rendering mode (mate pairs + split reads)',
-}
-```
+`inherit`, `off`, `arc`, `cloud`) · **Default:** `'inherit'` · **Resolves to:**
+`'off'` · _promotable_
 
 #### slot: readConnectionsDown
 
@@ -480,24 +380,7 @@ true/false customizes the track (either direction, including drawing above the
 coverage band over an on session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeBoolean',
-  description:
-    'Draw read connections below the coverage band. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (either direction, including drawing above the coverage band over an on session default)',
-
-
-
-
-
-
-  defaultValue: undefined,
-  promotedBase: true,
-  promotable: true,
-}
-```
+**Default:** `undefined` · **Resolves to:** `true` · _promotable_
 
 #### slot: showSashimiArcs
 
@@ -511,26 +394,8 @@ Draw sashimi (splice-junction) arcs
 Sashimi junction-arc placement
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `up`, `down`, `auto`) · **Default:** `'inherit'` · _promotable_
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('SashimiArcsMode', [
-    'inherit',
-    'up',
-    'down',
-    'auto',
-  ]),
-
-
-
-  defaultValue: 'inherit',
-  promotedBase: 'up',
-  promotable: true,
-  description: 'Sashimi junction-arc placement',
-}
-```
+`inherit`, `up`, `down`, `auto`) · **Default:** `'inherit'` · **Resolves to:**
+`'up'` · _promotable_
 
 #### slot: minSashimiScore
 
@@ -558,23 +423,7 @@ customizes the track (either direction, including customizing off over an on
 session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · _promotable_
-
-```js
-{
-  type: 'maybeBoolean',
-  description:
-    'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
-
-
-
-
-
-  defaultValue: undefined,
-  promotedBase: false,
-  promotable: true,
-}
-```
+**Default:** `undefined` · **Resolves to:** `false` · _promotable_
 
 </details>
 

@@ -28,15 +28,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 formats configuration object in about dialog
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-```js
-{
-  type: 'frozen',
-  description: 'formats configuration object in about dialog',
-  defaultValue: {},
-  contextVariable: ['config'],
-}
-```
+· **Callback args:** `config`
 
 #### slot: configuration.formatAbout.hideUris
 

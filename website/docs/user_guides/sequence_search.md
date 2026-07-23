@@ -1,6 +1,7 @@
 ---
 title: Sequence search
-description: Search the reference sequence for a pattern, CRISPR guide, or named motif list
+description:
+  Search the reference sequence for a pattern, CRISPR guide, or named motif list
 guide_category: Other features
 ---
 

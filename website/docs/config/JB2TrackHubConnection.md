@@ -53,8 +53,6 @@ location of the jb2 config file (usually called config.json)
     uri: 'https://mysite.com/path/to/config.json',
     locationType: 'UriLocation',
   },
-  description:
-    'location of the jb2 config file (usually called config.json)',
 }
 ```
 
