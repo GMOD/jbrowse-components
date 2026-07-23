@@ -19,11 +19,9 @@ page"** panel (top right) to jump to a recipe.
 
 ## TL;DR: a complete config on one screen {#tldr-a-complete-config-on-one-screen}
 
-Here's a full, working `config.json`: one assembly, four tracks, an opening
-view, and a custom theme. It's written with all the shorthand JBrowse allows,
-and it quietly puts about a dozen of the recipes below to work. Read it for the
-shape of a config; every section after it zooms in on one piece. It's long on
-purpose, so skim past it once you have the gist.
+A full, working `config.json`: one assembly, four tracks, an opening view, and a
+theme, written with all the shorthand JBrowse allows. Read it for the shape of a
+config, then skim on: every section after it zooms in on one piece.
 
 ```json
 {
@@ -96,9 +94,9 @@ purpose, so skim past it once you have the gist.
 ```
 
 Nearly everything there is a plain CSS color, a `jexl:` one-liner, or a bare
-`uri`. No index paths, no display IDs, no renderer names, and the next section
-explains why. You can go smaller still. One assembly plus one track, with no
-`defaultSession` and no theme, is already a complete config.
+`uri`: no index paths, no display IDs, no renderer names, and the next section
+explains why. You can go smaller still, since one assembly plus one track, with
+no `defaultSession` and no theme, is already a complete config.
 
 ---
 
@@ -238,7 +236,7 @@ as plain properties (`feature.type`, `feature.strand`, `feature.INFO.SVTYPE`):
 See [using jexl callbacks](/docs/config_guides/jexl) for the full function
 catalog.
 
-### One important thing: these settings aren't config-only
+### The same settings work in config, session, URL, and embeds
 
 Everything on this page is either a `displayDefaults` object or a view
 definition, and neither one is tied to `config.json`. JBrowse treats config and
@@ -254,21 +252,15 @@ session as the same vocabulary, so the identical object works in four places:
 - in the **running app**, where the track menu writes those same slots back out
   when you change a color or a height by hand
 
-So a color callback or a `heightMode` you work out here is never throwaway. Copy
-it into a share link, a notebook widget, or a colleague's config and it behaves
-exactly the same. The recipes below are written as `config.json` because that's
-the easiest form to read, but read "config" as "config, session, URL, or embed"
-the whole way down. The
-[same view definition works everywhere](#the-same-view-definition-works-everywhere)
-section at the end shows the same idea for a whole view.
+So a color callback or a `heightMode` you work out here is never throwaway. The
+recipes below are written as `config.json` because that's the easiest form to
+read, but read "config" as "config, session, URL, or embed" throughout.
 
-The alignment also runs the other way, which is often the easier route: tune a
-track by clicking in the running app until it looks right, then read the JSON
-back out. A track's **About** dialog has a **Copy config** button that gives you
-that track's config with your session tweaks already folded in, and **File ▸
-Export session** does the same for the whole view. Both paste straight into
-`config.json` because they speak the same field names, so "poke at it in the UI,
-then paste the result" is a real workflow, not a dead end.
+That last bullet is often the fastest route: tune a track by clicking in the
+running app until it looks right, then read the JSON back out. A track's
+**About** dialog has a **Copy config** button that gives you that track's config
+with your session tweaks folded in, and **File ▸ Export session** does the same
+for the whole view. Both paste straight into `config.json`.
 
 ---
 
@@ -317,6 +309,13 @@ Four `add-track` flags carry every appearance recipe on this page:
 | Any other display setting: labels, tooltips, `jexlFilters`, `colorBy`, `groupBy`, `scaleType`, `defaultRendering` | `--displayDefaults '<json>'` |
 | A non-default display (arc, matrix), or a top-level field like `metadata`/`formatDetails`                         | `--config '<json>'`          |
 | Track-selector folders                                                                                            | `--category "RNA-seq,Brain"` |
+
+To change a setting on a track you already added, re-run the same command with
+the new flag plus `--force`, which overwrites the existing entry.
+
+`jbrowse admin-server` is the other route: it serves your instance with the
+config-editing UI on, so settings you change in the browser are written back to
+`config.json` on disk. Run it locally only, never on a public port.
 
 A few settings aren't per-track. Alias chromosome names when you add the
 assembly:
@@ -415,6 +414,21 @@ See [assemblies](/docs/config_guides/assemblies) for the file-based form.
 `displayDefaults`, either a plain CSS color or a `jexl:` expression JBrowse runs
 per feature, returning that feature's color.
 
+Three routes write that same slot, so pick whichever fits how you work:
+
+```bash
+# CLI: set it when you add the track
+jbrowse add-track genes.gff3.gz --load copy --color '#6a3d9a'
+
+# ...or recolor a track already in the config by re-running with --force
+jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"blue":"red"' --force
+```
+
+In the running app, a feature track's **Color by...** submenu has **Solid
+color...** (a picker) plus **Strand** and per-attribute choices, and a wiggle
+track has **Edit color...**; **About ▸ Copy config** then gives you the JSON. Or
+edit `displayDefaults` by hand, which is what the rest of this section shows.
+
 ### What you can color by
 
 A `jexl:` color expression sees the feature as `feature`, with any attribute
@@ -509,7 +523,7 @@ every repeat by its class:
 `get(feature, 'repClass')` reads a BED column the same way `feature.type` reads
 a GFF type, and `|| 'gray'` catches the classes not in the table.
 
-<Figure caption="The lookup-table recipe on a track with real categorical variety: UCSC RepeatMasker over a 17q21 window, each element colored by its repeat class with the table above — SINE red, LINE blue, LTR green, DNA purple, simple repeats orange, low complexity brown, anything else gray." src="/img/cookbook_color_by_type.png"/>
+<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray." src="/img/cookbook_color_by_type.png"/>
 
 ### Debugging a color callback
 
@@ -704,8 +718,8 @@ deferred-evaluation convention).
 ```
 
 The same `jexlFilters` works on variant and alignments tracks. To hide reads by
-their SAM flags instead, reach for the alignments `filterBy` slot (see
-[alignments tracks](/docs/config_guides/alignments_track)).
+their SAM flags instead, see
+[filter reads by SAM flag or tag](#filter-reads-by-sam-flag-or-tag).
 
 ### Inline data (no files)
 
@@ -781,6 +795,32 @@ their `HP` tag:
 
 `groupBy` also takes `{ "type": "strand" }` to split the pileup by strand.
 
+### Filter reads by SAM flag or tag
+
+`filterBy` drops reads before they're drawn. `flagExclude` hides reads with any
+of those bits set, `flagInclude` keeps only reads with all of them. The default
+excludes 1540 (unmapped, vendor-failed, duplicate); adding 256 and 2048 also
+hides secondary and supplementary alignments:
+
+```json
+"displayDefaults": { "filterBy": { "flagExclude": 3844, "flagInclude": 0 } }
+```
+
+`flagInclude: 2` is "proper pairs only". `tagFilters` restricts by tag value
+instead, and every filter listed has to pass:
+
+```json
+"displayDefaults": {
+  "filterBy": { "flagExclude": 1540, "flagInclude": 0, "tagFilters": [{ "tag": "HP", "value": "1" }] }
+}
+```
+
+[Broad's flag explainer](https://broadinstitute.github.io/picard/explain-flags.html)
+adds up a number for you. To filter on a feature property rather than a flag,
+use [`jexlFilters`](#showing-only-some-features-filtering); see
+[alignments tracks](/docs/config_guides/alignments_track) for the other
+read-filtering options.
+
 ### Limit how much data is fetched
 
 ```json
@@ -803,6 +843,38 @@ their `HP` tag:
   "displayDefaults": { "color": "#C8B414" }
 }
 ```
+
+A bare `color` is shorthand for single-color mode. Left alone a wiggle is
+**bicolor**: scores above the pivot draw in `posColor` and grow upward, below it
+in `negColor` and grow downward. Name those two to keep that and recolor both
+halves:
+
+```json
+"displayDefaults": { "posColor": "#C8B414", "negColor": "#4a7ebb" }
+```
+
+`bicolorPivot` moves where they split. Write `color` or `posColor`/`negColor`,
+never both: with a pos/neg pair present `color` goes unused, and density
+rendering always draws from `posColor`.
+
+All three are plain CSS colors. A wiggle colors per signal, not per feature, so
+the [color expressions above](#more-ways-to-set-color) don't apply; for one
+color per signal see the
+[multi-signal recipe](#multiple-signals-on-one-track-each-its-own-color).
+
+### Draw it as a density, line, or scatter plot
+
+```json
+"displayDefaults": { "defaultRendering": "density" }
+```
+
+[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
+also takes `xyplot` (bars, the default), `line` and `linecenter` (step and
+interpolated lines), and `scatter` (one point per value, good for BAF or CN
+points). `density` draws a heatmap stripe rather than a plot, which suits a
+short track. The
+[multi-signal recipe](#multiple-signals-on-one-track-each-its-own-color) has the
+`multi*` equivalents.
 
 ### Log scale and a fixed score range
 
@@ -851,8 +923,10 @@ See the [`LinearWiggleDisplay` config](/docs/config/linearwiggledisplay) for
 
 `multiline` overlays every signal as a line in one plot. The
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
-slot also accepts `multirowxy` (one stacked row per signal), `multirowdensity`,
-and `multixyplot` (all signals overlaid in one plot).
+slot takes a `multirow*` name to stack one row per signal (`multirowxy`,
+`multirowdensity`, `multirowline`, `multirowlinecenter`, `multirowscatter`) or a
+`multi*` name to overlay them all in one plot (`multixyplot`, `multiline`,
+`multilinecenter`, `multiscatter`).
 
 From the CLI, `add-track --multiwig` builds this track. Pass the per-row
 `name`/`color` subadapters above as a `.json` sources file, or a bare
@@ -1078,12 +1152,11 @@ const track = {
 }
 ```
 
-Push `track` onto your config's `tracks` array (or loop the whole thing to build
-a hundred of them) and write the result out. None of this is JBrowse-specific
-tooling: read the samplesheet with whatever your pipeline already uses, a
-Nextflow channel, a pandas frame, `jq`, and emit JSON at the end. For a quick
-one-off from the shell instead, `jbrowse add-track --multiwig` takes the same
-rows as a `.json` sources file, see the
+Push `track` onto your config's `tracks` array and write the result out. None of
+this is JBrowse-specific tooling: read the samplesheet with whatever your
+pipeline already uses (a Nextflow channel, a pandas frame, `jq`) and emit JSON
+at the end. For a one-off from the shell instead, `jbrowse add-track --multiwig`
+takes the same rows as a `.json` sources file, see the
 [multi-signal recipe](#multiple-signals-on-one-track-each-its-own-color).
 
 ---
@@ -1163,18 +1236,13 @@ the shareable encoded links the "Share" button produces, see the
 
 ### The same view definition works everywhere
 
-Once you've described a view (an assembly, a location, some tracks, maybe a few
-display settings), you can reuse it in three places without rewriting it:
-
-- in the config, as `defaultSession.views[].init`, so it loads for everyone
-- in a URL, as a session spec, so you can hand it to one person
-- in an embedded component, passed to `createViewState`, so it renders inside
-  your own web page
-
-They all accept the same shape, so a view you work out in one place drops into
-the others. [Automating JBrowse](/docs/automating) covers this shared launch
-model, and [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) shows
-the embedded version.
+The view definition inside a session spec is the same shape
+[a `defaultSession` takes](#opening-to-a-specific-view-on-load) and the same one
+an embedded component passes to `createViewState`, so a view you work out in one
+place drops into the others unchanged. [Automating JBrowse](/docs/automating)
+covers this shared launch model, and
+[Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) shows the embedded
+version.
 
 ---
 
@@ -1188,6 +1256,10 @@ the embedded version.
   adapter
 - [URL query parameter API](/docs/urlparams) - supplying assemblies, tracks, and
   views from a URL
+- [Display settings](/docs/tutorials/display_settings) - the same settings
+  walked through in config, URL, and embedded form
+- [Building a config with the CLI](/docs/tutorials/cli_desktop) - the CLI
+  commands above as one worked example
 - [Automating JBrowse](/docs/automating) - the shared `init` launch model across
   config, URL, and embedded components
 - [Static image export (`@jbrowse/img`)](/docs/jbrowse-img) - render these
