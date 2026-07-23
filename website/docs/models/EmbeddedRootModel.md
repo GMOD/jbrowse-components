@@ -43,131 +43,45 @@ come from the same product-core mixin the web/desktop root models use, so config
 <details>
 <summary>EmbeddedRootModel - Properties</summary>
 
-#### property: config
-
-```ts
-// type signature
-type config = IModelType<{ configuration: ConfigurationSchemaType<{ readonly rpc: ConfigurationSchemaType<{ readonly defaultDriver: { readonly type: "string"; readonly description: "the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend"; readonly defaultValue: ""; readonly advanced: true...
-// code
-config: createConfigModel(pluginManager, assemblyConfigSchema)
-```
-
-#### property: session
-
-```ts
-// type signature
-type session = SESSION
-// code
-session: sessionModelType
-```
-
-#### property: assemblyManager
-
-```ts
-// type signature
-type assemblyManager = IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, ...
-// code
-assemblyManager: types.optional(
-          assemblyManagerFactory(assemblyConfigSchema, pluginManager),
-          {},
-        )
-```
+| Member                                                     | Type                                                                                                                                                                                                                            |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <span id="property-config">config</span>                   | `IModelType<…>; assembly: IAnyType; tracks: IArrayType<…>; internetAccounts: IArrayType<…>; connections: IArrayType<…>; aggregateTextSearchAdapters: IArrayType<…>; plugins: IType<…>; }, {…}, _NotCustomized, _NotCustomized>` |
+| <span id="property-session">session</span>                 | `SESSION`                                                                                                                                                                                                                       |
+| <span id="property-assemblymanager">assemblyManager</span> | `IOptionalIType<IModelType<…>, [undefined]>`                                                                                                                                                                                    |
 
 </details>
 
 <details>
 <summary>EmbeddedRootModel - Volatiles</summary>
 
-#### volatile: error
-
-```ts
-// type signature
-type error = unknown
-// code
-error: undefined as unknown
-```
-
-#### volatile: adminMode
-
-```ts
-// type signature
-type adminMode = false
-// code
-adminMode: false
-```
-
-#### volatile: version
-
-```ts
-// type signature
-type version = string
-// code
-version
-```
-
-#### volatile: rpcManager
-
-```ts
-// type signature
-type rpcManager = RpcManager
-// code
-rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-  makeWorkerInstance,
-
-  defaultDriverName: makeWorkerInstance
-    ? 'WebWorkerRpcDriver'
-    : 'MainThreadRpcDriver',
-})
-```
-
-#### volatile: textSearchManager
-
-```ts
-// type signature
-type textSearchManager = TextSearchManager
-// code
-textSearchManager: new TextSearchManager(pluginManager)
-```
+| Member                                                         | Type                |
+| -------------------------------------------------------------- | ------------------- |
+| <span id="volatile-error">error</span>                         | `unknown`           |
+| <span id="volatile-adminmode">adminMode</span>                 | `false`             |
+| <span id="volatile-version">version</span>                     | `string`            |
+| <span id="volatile-rpcmanager">rpcManager</span>               | `RpcManager`        |
+| <span id="volatile-textsearchmanager">textSearchManager</span> | `TextSearchManager` |
 
 </details>
 
 <details>
 <summary>EmbeddedRootModel - Getters</summary>
 
-#### getter: jbrowse
-
-```ts
-type jbrowse = ModelPropertiesDeclarationToProperties<{ config: IModelType<{ configuration: ConfigurationSchemaType<{ readonly rpc: ConfigurationSchemaType<{ readonly defaultDriver: { readonly type: "string"; readonly description: "the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend"; r...
-```
-
-#### getter: pluginManager
-
-```ts
-type pluginManager = PluginManager
-```
+| Member                                               | Type                                                                                                                                             |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <span id="getter-jbrowse">jbrowse</span>             | `ModelPropertiesDeclarationToProperties<…>; session: SESSION; assemblyManager: IOptionalIType<IModelType<…>, [undefined]>; }>["config"]["Type"]` |
+| <span id="getter-pluginmanager">pluginManager</span> | `PluginManager`                                                                                                                                  |
 
 </details>
 
 <details>
 <summary>EmbeddedRootModel - Actions</summary>
 
-#### action: setSession
-
-```ts
-type setSession = (sessionSnapshot: SnapshotIn<SESSION>) => void
-```
-
-#### action: renameCurrentSession
-
-```ts
-type renameCurrentSession = (sessionName: string) => void
-```
-
-#### action: setError
-
-```ts
-type setError = (error: unknown) => void
-```
+| Member                                                             | Type                                             |
+| ------------------------------------------------------------------ | ------------------------------------------------ |
+| <span id="action-setsession">setSession</span>                     | `(sessionSnapshot: SnapshotIn<SESSION>) => void` |
+| <span id="action-renamecurrentsession">renameCurrentSession</span> | `(sessionName: string) => void`                  |
+| <span id="action-seterror">setError</span>                         | `(error: unknown) => void`                       |
 
 </details>
 
@@ -184,39 +98,16 @@ its most-specific definition.
 
 **Properties**
 
-#### property: internetAccounts
-
-```ts
-// type signature
-type internetAccounts = IArrayType<IAnyType>
-// code
-internetAccounts: types.array(
-  pluginManager.pluggableMstType('internet account', 'stateModel'),
-)
-```
+| Member                                                       | Type                   |
+| ------------------------------------------------------------ | ---------------------- |
+| <span id="property-internetaccounts">internetAccounts</span> | `IArrayType<IAnyType>` |
 
 **Actions**
 
-#### action: initializeInternetAccount
-
-```ts
-type initializeInternetAccount = (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
-```
-
-#### action: createEphemeralInternetAccount
-
-```ts
-type createEphemeralInternetAccount = (
-  internetAccountId: string,
-  initialSnapshot: Record<string, unknown>,
-  url: string,
-) => any
-```
-
-#### action: findAppropriateInternetAccount
-
-```ts
-type findAppropriateInternetAccount = (location: UriLocation) => any
-```
+| Member                                                                                 | Type                                                                                                         |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| <span id="action-initializeinternetaccount">initializeInternetAccount</span>           | `(internetAccountConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, initialSnapshot?: any) => any` |
+| <span id="action-createephemeralinternetaccount">createEphemeralInternetAccount</span> | `(internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any`                  |
+| <span id="action-findappropriateinternetaccount">findAppropriateInternetAccount</span> | `(location: UriLocation) => any`                                                                             |
 
 </details>

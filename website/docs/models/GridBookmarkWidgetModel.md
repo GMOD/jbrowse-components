@@ -47,7 +47,7 @@ shared URL are merged in via preProcessSnapshot
 
 ```ts
 // type signature
-type bookmarks = IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
+type bookmarks = IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
 // code
 bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         localStorageGetJSON(localStorageKeyF(), []),
@@ -59,41 +59,12 @@ bookmarks: types.optional(types.array(LabeledRegionModel), () =>
 <details>
 <summary>GridBookmarkWidgetModel - Properties (other undocumented members)</summary>
 
-#### property: label
-
-```ts
-// type signature
-type label = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-label: types.optional(types.string, '')
-```
-
-#### property: highlight
-
-```ts
-// type signature
-type highlight = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-highlight: types.optional(types.string, DEFAULT_HIGHLIGHT)
-```
-
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'GridBookmarkWidget'>
-// code
-type: types.literal('GridBookmarkWidget')
-```
+| Member                                         | Type                                               |
+| ---------------------------------------------- | -------------------------------------------------- |
+| <span id="property-label">label</span>         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| <span id="property-highlight">highlight</span> | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| <span id="property-id">id</span>               | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| <span id="property-type">type</span>           | `ISimpleType<"GridBookmarkWidget">`                |
 
 </details>
 
@@ -116,14 +87,9 @@ gridView: 'bookmarks'
 <details>
 <summary>GridBookmarkWidgetModel - Volatiles (other undocumented members)</summary>
 
-#### volatile: selectedBookmarks
-
-```ts
-// type signature
-type selectedBookmarks = IExtendedLabeledRegionModel[]
-// code
-selectedBookmarks: [] as IExtendedLabeledRegionModel[]
-```
+| Member                                                         | Type                            |
+| -------------------------------------------------------------- | ------------------------------- |
+| <span id="volatile-selectedbookmarks">selectedBookmarks</span> | `IExtendedLabeledRegionModel[]` |
 
 </details>
 
@@ -144,7 +110,7 @@ type assembliesInViews = Set<string>
 bookmarks belonging to an assembly currently open in a view
 
 ```ts
-type visibleBookmarks = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>)[]
+type visibleBookmarks = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>)[]
 ```
 
 </details>
@@ -152,82 +118,19 @@ type visibleBookmarks = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ 
 <details>
 <summary>GridBookmarkWidgetModel - Actions</summary>
 
-#### action: setLabel
-
-```ts
-type setLabel = (label: string) => void
-```
-
-#### action: setHighlight
-
-```ts
-type setHighlight = (color: string) => void
-```
-
-#### action: setGridView
-
-```ts
-type setGridView = (arg: 'bookmarks' | 'highlights' | 'both') => void
-```
-
-#### action: importBookmarks
-
-```ts
-type importBookmarks = (regions: Region[]) => void
-```
-
-#### action: addBookmark
-
-```ts
-type addBookmark = (region: Region) => void
-```
-
-#### action: updateBookmarkLabel
-
-```ts
-type updateBookmarkLabel = (
-  bookmark: IExtendedLabeledRegionModel,
-  label: string,
-) => void
-```
-
-#### action: updateBookmarkHighlight
-
-```ts
-type updateBookmarkHighlight = (
-  bookmark: IExtendedLabeledRegionModel,
-  color: string,
-) => void
-```
-
-#### action: updateBulkBookmarkHighlights
-
-```ts
-type updateBulkBookmarkHighlights = (color: string) => void
-```
-
-#### action: setSelectedBookmarks
-
-```ts
-type setSelectedBookmarks = (bookmarks: IExtendedLabeledRegionModel[]) => void
-```
-
-#### action: setBookmarkedRegions
-
-```ts
-type setBookmarkedRegions = (regions: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>>>[]) => void
-```
-
-#### action: clearSelectedBookmarks
-
-```ts
-type clearSelectedBookmarks = () => void
-```
-
-#### action: removeBookmarkObject
-
-```ts
-type removeBookmarkObject = (arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void
-```
+| Member                                                                             | Type                                                                                                                             |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| <span id="action-setlabel">setLabel</span>                                         | `(label: string) => void`                                                                                                        |
+| <span id="action-sethighlight">setHighlight</span>                                 | `(color: string) => void`                                                                                                        |
+| <span id="action-setgridview">setGridView</span>                                   | `(arg: "bookmarks" \| "highlights" \| "both") => void`                                                                           |
+| <span id="action-importbookmarks">importBookmarks</span>                           | `(regions: Region[]) => void`                                                                                                    |
+| <span id="action-addbookmark">addBookmark</span>                                   | `(region: Region) => void`                                                                                                       |
+| <span id="action-updatebookmarklabel">updateBookmarkLabel</span>                   | `(bookmark: IExtendedLabeledRegionModel, label: string) => void`                                                                 |
+| <span id="action-updatebookmarkhighlight">updateBookmarkHighlight</span>           | `(bookmark: IExtendedLabeledRegionModel, color: string) => void`                                                                 |
+| <span id="action-updatebulkbookmarkhighlights">updateBulkBookmarkHighlights</span> | `(color: string) => void`                                                                                                        |
+| <span id="action-setselectedbookmarks">setSelectedBookmarks</span>                 | `(bookmarks: IExtendedLabeledRegionModel[]) => void`                                                                             |
+| <span id="action-setbookmarkedregions">setBookmarkedRegions</span>                 | `(regions: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<…>, { ...; }>>>[]) => void`                         |
+| <span id="action-clearselectedbookmarks">clearSelectedBookmarks</span>             | `() => void`                                                                                                                     |
+| <span id="action-removebookmarkobject">removeBookmarkObject</span>                 | `(arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void` |
 
 </details>

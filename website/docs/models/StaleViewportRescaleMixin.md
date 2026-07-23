@@ -60,10 +60,8 @@ lastDrawnBpPerPx: undefined as number | undefined
 <details>
 <summary>StaleViewportRescaleMixin - Actions</summary>
 
-#### action: setLastDrawnViewport
-
-```ts
-type setLastDrawnViewport = (offsetPx: number, bpPerPx: number) => void
-```
+| Member                                                             | Type                                          |
+| ------------------------------------------------------------------ | --------------------------------------------- |
+| <span id="action-setlastdrawnviewport">setLastDrawnViewport</span> | `(offsetPx: number, bpPerPx: number) => void` |
 
 </details>

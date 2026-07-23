@@ -15,7 +15,7 @@ Computes a score domain from the visible feature arrays for the `local` /
 
 ```js
 // type signature
-(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], numQuantile?: number) => [...] | undefined
+(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: {…}[], numQuantile?: number) => [...] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -53,7 +53,7 @@ Per-feature scalar score array for a summary mode: the min/max summary array for
 
 ```js
 // type signature
-(data: { featureScores: Float32Array<ArrayBufferLike>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<...>; }, summaryScoreMode: string) => Float32Array<...>
+(data: { featureScores: Float32Array<…>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<...>; }, summaryScoreMode: string) => Float32Array<...>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)

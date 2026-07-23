@@ -13,20 +13,20 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Members
 
-| Member                                   | Kind       | Defined by                                    | Description                                                                                                                                                                                                                                                                                   |
-| ---------------------------------------- | ---------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [configuration](#property-configuration) | Properties | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                                                                               |
-| [type](#property-type)                   | Properties | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                                                                               |
-| [connect](#action-connect)               | Actions    | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                                                                               |
-| [tracks](#property-tracks)               | Properties | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                                                                               |
-| [silent](#property-silent)               | Properties | [BaseConnectionModel](../baseconnectionmodel) | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
-| [loading](#volatile-loading)             | Volatiles  | [BaseConnectionModel](../baseconnectionmodel) | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks.                                                    |
-| [connectionId](#getter-connectionid)     | Getters    | [BaseConnectionModel](../baseconnectionmodel) | the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)                                                                                                                                                   |
-| [name](#getter-name)                     | Getters    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                                                                               |
-| [setLoading](#action-setloading)         | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                                                                               |
-| [addTrackConf](#action-addtrackconf)     | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                                                                               |
-| [addTrackConfs](#action-addtrackconfs)   | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                                                                               |
-| [setTrackConfs](#action-settrackconfs)   | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                                                                               |
+| Member                                   | Kind       | Defined by                                    | Description                                                                                                                                                                                                                             |
+| ---------------------------------------- | ---------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [configuration](#property-configuration) | Properties | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                         |
+| [type](#property-type)                   | Properties | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                         |
+| [connect](#action-connect)               | Actions    | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                         |
+| [tracks](#property-tracks)               | Properties | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
+| [silent](#property-silent)               | Properties | [BaseConnectionModel](../baseconnectionmodel) | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. |
+| [loading](#volatile-loading)             | Volatiles  | [BaseConnectionModel](../baseconnectionmodel) | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector.                                                                                                                         |
+| [connectionId](#getter-connectionid)     | Getters    | [BaseConnectionModel](../baseconnectionmodel) | the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)                                                                                             |
+| [name](#getter-name)                     | Getters    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
+| [setLoading](#action-setloading)         | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
+| [addTrackConf](#action-addtrackconf)     | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
+| [addTrackConfs](#action-addtrackconfs)   | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
+| [setTrackConfs](#action-settrackconfs)   | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
 
 ### UCSCTrackHubConnection - Configuration
 
@@ -36,34 +36,19 @@ The configuration slots for this model are documented on its
 <details>
 <summary>UCSCTrackHubConnection - Properties</summary>
 
-#### property: configuration
-
-```ts
-// type signature
-type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly hubTxtLocation: { readonly type: "fileLocation"; readonly defaultValue: { readonly uri: "https://mysite.com/path/to/hub.txt"; readonly locationType: "UriLocation"; }; readonly description: "location of the hub file (usually called hub.txt)"; }; readonly asse...
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'UCSCTrackHubConnection'>
-// code
-type: types.literal('UCSCTrackHubConnection')
-```
+| Member                                                 | Type                                                  |
+| ------------------------------------------------------ | ----------------------------------------------------- |
+| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
+| <span id="property-type">type</span>                   | `ISimpleType<"UCSCTrackHubConnection">`               |
 
 </details>
 
 <details>
 <summary>UCSCTrackHubConnection - Actions</summary>
 
-#### action: connect
-
-```ts
-type connect = () => Promise<void>
-```
+| Member                                   | Type                  |
+| ---------------------------------------- | --------------------- |
+| <span id="action-connect">connect</span> | `() => Promise<void>` |
 
 </details>
 
@@ -80,15 +65,6 @@ its most-specific definition.
 
 **Properties**
 
-#### property: tracks
-
-```ts
-// type signature
-type tracks = IArrayType<IAnyModelType>
-// code
-tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
-```
-
 #### property: silent
 
 set when the connection is being re-established on session load (its open tracks
@@ -102,6 +78,10 @@ type silent = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 silent: types.optional(types.boolean, false)
 ```
+
+| Member                                   | Type                        |
+| ---------------------------------------- | --------------------------- |
+| <span id="property-tracks">tracks</span> | `IArrayType<IAnyModelType>` |
 
 **Volatiles**
 
@@ -129,36 +109,17 @@ source of truth; connection names are not guaranteed unique)
 type connectionId = string
 ```
 
-#### getter: name
-
-```ts
-type name = string
-```
+| Member                             | Type     |
+| ---------------------------------- | -------- |
+| <span id="getter-name">name</span> | `string` |
 
 **Actions**
 
-#### action: setLoading
-
-```ts
-type setLoading = (loading: boolean) => void
-```
-
-#### action: addTrackConf
-
-```ts
-type addTrackConf = (trackConf: TrackConf) => any
-```
-
-#### action: addTrackConfs
-
-```ts
-type addTrackConfs = (trackConfs: TrackConf[]) => void
-```
-
-#### action: setTrackConfs
-
-```ts
-type setTrackConfs = (trackConfs: TrackConf[]) => void
-```
+| Member                                               | Type                                |
+| ---------------------------------------------------- | ----------------------------------- |
+| <span id="action-setloading">setLoading</span>       | `(loading: boolean) => void`        |
+| <span id="action-addtrackconf">addTrackConf</span>   | `(trackConf: TrackConf) => any`     |
+| <span id="action-addtrackconfs">addTrackConfs</span> | `(trackConfs: TrackConf[]) => void` |
+| <span id="action-settrackconfs">setTrackConfs</span> | `(trackConfs: TrackConf[]) => void` |
 
 </details>

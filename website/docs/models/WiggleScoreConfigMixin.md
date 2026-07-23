@@ -57,144 +57,44 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 <details>
 <summary>WiggleScoreConfigMixin - Properties</summary>
 
-#### property: resolution
-
-```ts
-// type signature
-type resolution = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-resolution: types.stripDefault(types.number, 1)
-```
-
-#### property: displayCrossHatches
-
-```ts
-// type signature
-type displayCrossHatches = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-displayCrossHatches: types.stripDefault(types.boolean, false)
-```
+| Member                                                             | Type                                                |
+| ------------------------------------------------------------------ | --------------------------------------------------- |
+| <span id="property-resolution">resolution</span>                   | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| <span id="property-displaycrosshatches">displayCrossHatches</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 
 </details>
 
 <details>
 <summary>WiggleScoreConfigMixin - Volatiles</summary>
 
-#### volatile: loadedBpPerPx
-
-```ts
-// type signature
-type loadedBpPerPx = number | undefined
-// code
-loadedBpPerPx: undefined as number | undefined
-```
+| Member                                                 | Type                  |
+| ------------------------------------------------------ | --------------------- |
+| <span id="volatile-loadedbpperpx">loadedBpPerPx</span> | `number \| undefined` |
 
 </details>
 
 <details>
 <summary>WiggleScoreConfigMixin - Getters</summary>
 
-#### getter: scalebarOverlapLeft
-
-```ts
-type scalebarOverlapLeft = number
-```
-
-#### getter: posColor
-
-```ts
-type posColor = string
-```
-
-#### getter: negColor
-
-```ts
-type negColor = string
-```
-
-#### getter: bicolorPivot
-
-```ts
-type bicolorPivot = number
-```
-
-#### getter: scaleType
-
-```ts
-type scaleType = string
-```
-
-#### getter: autoscaleType
-
-```ts
-type autoscaleType = string
-```
-
-#### getter: numStdDev
-
-```ts
-type numStdDev = number
-```
-
-#### getter: numQuantile
-
-```ts
-type numQuantile = number
-```
-
-#### getter: scatterPointSize
-
-```ts
-type scatterPointSize = number
-```
-
-#### getter: lineWidth
-
-```ts
-type lineWidth = number
-```
-
-#### getter: summaryScoreMode
-
-```ts
-type summaryScoreMode = string
-```
-
-#### getter: renderingType
-
-```ts
-type renderingType = string
-```
-
-#### getter: minScore
-
-```ts
-type minScore = number
-```
-
-#### getter: maxScore
-
-```ts
-type maxScore = number
-```
-
-#### getter: minScoreBound
-
-```ts
-type minScoreBound = number | undefined
-```
-
-#### getter: maxScoreBound
-
-```ts
-type maxScoreBound = number | undefined
-```
-
-#### getter: hasResolution
-
-```ts
-type hasResolution = boolean
-```
+| Member                                                           | Type                  |
+| ---------------------------------------------------------------- | --------------------- |
+| <span id="getter-scalebaroverlapleft">scalebarOverlapLeft</span> | `number`              |
+| <span id="getter-poscolor">posColor</span>                       | `string`              |
+| <span id="getter-negcolor">negColor</span>                       | `string`              |
+| <span id="getter-bicolorpivot">bicolorPivot</span>               | `number`              |
+| <span id="getter-scaletype">scaleType</span>                     | `string`              |
+| <span id="getter-autoscaletype">autoscaleType</span>             | `string`              |
+| <span id="getter-numstddev">numStdDev</span>                     | `number`              |
+| <span id="getter-numquantile">numQuantile</span>                 | `number`              |
+| <span id="getter-scatterpointsize">scatterPointSize</span>       | `number`              |
+| <span id="getter-linewidth">lineWidth</span>                     | `number`              |
+| <span id="getter-summaryscoremode">summaryScoreMode</span>       | `string`              |
+| <span id="getter-renderingtype">renderingType</span>             | `string`              |
+| <span id="getter-minscore">minScore</span>                       | `number`              |
+| <span id="getter-maxscore">maxScore</span>                       | `number`              |
+| <span id="getter-minscorebound">minScoreBound</span>             | `number \| undefined` |
+| <span id="getter-maxscorebound">maxScoreBound</span>             | `number \| undefined` |
+| <span id="getter-hasresolution">hasResolution</span>             | `boolean`             |
 
 </details>
 
@@ -214,76 +114,19 @@ type isCacheValid = (_displayedRegionIndex: number) => boolean
 <details>
 <summary>WiggleScoreConfigMixin - Actions (other undocumented members)</summary>
 
-#### action: toggleCrossHatches
-
-```ts
-type toggleCrossHatches = () => void
-```
-
-#### action: setResolution
-
-```ts
-type setResolution = (res: number) => void
-```
-
-#### action: setLoadedBpPerPx
-
-```ts
-type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
-```
-
-#### action: setScaleType
-
-```ts
-type setScaleType = (scaleType: string) => void
-```
-
-#### action: setBicolorPivot
-
-```ts
-type setBicolorPivot = (val?: number | undefined) => void
-```
-
-#### action: setMinScore
-
-```ts
-type setMinScore = (val?: number | undefined) => void
-```
-
-#### action: setMaxScore
-
-```ts
-type setMaxScore = (val?: number | undefined) => void
-```
-
-#### action: setRenderingType
-
-```ts
-type setRenderingType = (type: string) => void
-```
-
-#### action: setSummaryScoreMode
-
-```ts
-type setSummaryScoreMode = (val: string) => void
-```
-
-#### action: setScatterPointSize
-
-```ts
-type setScatterPointSize = (val?: number | undefined) => void
-```
-
-#### action: setLineWidth
-
-```ts
-type setLineWidth = (val?: number | undefined) => void
-```
-
-#### action: setAutoscale
-
-```ts
-type setAutoscale = (val?: string | undefined) => void
-```
+| Member                                                           | Type                                     |
+| ---------------------------------------------------------------- | ---------------------------------------- |
+| <span id="action-togglecrosshatches">toggleCrossHatches</span>   | `() => void`                             |
+| <span id="action-setresolution">setResolution</span>             | `(res: number) => void`                  |
+| <span id="action-setloadedbpperpx">setLoadedBpPerPx</span>       | `(bpPerPx: number \| undefined) => void` |
+| <span id="action-setscaletype">setScaleType</span>               | `(scaleType: string) => void`            |
+| <span id="action-setbicolorpivot">setBicolorPivot</span>         | `(val?: number \| undefined) => void`    |
+| <span id="action-setminscore">setMinScore</span>                 | `(val?: number \| undefined) => void`    |
+| <span id="action-setmaxscore">setMaxScore</span>                 | `(val?: number \| undefined) => void`    |
+| <span id="action-setrenderingtype">setRenderingType</span>       | `(type: string) => void`                 |
+| <span id="action-setsummaryscoremode">setSummaryScoreMode</span> | `(val: string) => void`                  |
+| <span id="action-setscatterpointsize">setScatterPointSize</span> | `(val?: number \| undefined) => void`    |
+| <span id="action-setlinewidth">setLineWidth</span>               | `(val?: number \| undefined) => void`    |
+| <span id="action-setautoscale">setAutoscale</span>               | `(val?: string \| undefined) => void`    |
 
 </details>

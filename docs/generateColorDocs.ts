@@ -1,14 +1,11 @@
-import fs from 'fs'
-
 import * as ts from 'typescript'
 
 import {
   jsDocText,
-  listDocs,
   markdownTable,
-  normalizeMarkerWhitespace,
   parsePipeTags,
   parseSourceFileSyntactic,
+  rewriteGroupedMarkerBlocks,
   runMarkerScript,
 } from './util.ts'
 
@@ -110,13 +107,6 @@ function renderTable(rows: Row[]) {
   )
 }
 
-function start(group: string) {
-  return `<!-- COLOR_TABLE ${group} START -->`
-}
-function end(group: string) {
-  return `<!-- COLOR_TABLE ${group} END -->`
-}
-
 // In `check` mode, report which docs have a stale table instead of rewriting —
 // used by CI to fail when a color changed but the docs were not regenerated.
 export function writeColorDocs({ check = false } = {}) {
@@ -124,12 +114,9 @@ export function writeColorDocs({ check = false } = {}) {
   for (const file of COLOR_SOURCES) {
     collectColors(file, groups)
   }
-  const markerRe = /<!-- COLOR_TABLE (\S+) START -->/g
-  const stale: string[] = []
-  for (const file of listDocs('website/docs')) {
-    const original = fs.readFileSync(file, 'utf8')
-    let updated = original
-    for (const [, group] of original.matchAll(markerRe)) {
+  return rewriteGroupedMarkerBlocks(
+    'COLOR_TABLE',
+    (group, file) => {
       const rows = groups[group]
       if (!rows) {
         throw new Error(
@@ -141,22 +128,10 @@ export function writeColorDocs({ check = false } = {}) {
       // regen fought over the block (regen's own check is whitespace-insensitive
       // via `normalizeMarkerWhitespace`, so the drift slipped past CI and only
       // surfaced as diff churn). Ignoring it keeps one canonical form.
-      const block = `${start(group)}\n\n<!-- prettier-ignore -->\n${renderTable(rows)}\n\n${end(group)}`
-      const re = new RegExp(`${start(group)}[\\s\\S]*?${end(group)}`)
-      updated = updated.replace(re, () => block)
-    }
-    if (check) {
-      if (
-        normalizeMarkerWhitespace(updated) !==
-        normalizeMarkerWhitespace(original)
-      ) {
-        stale.push(file)
-      }
-    } else if (updated !== original) {
-      fs.writeFileSync(file, updated)
-    }
-  }
-  return stale
+      return `<!-- prettier-ignore -->\n${renderTable(rows)}`
+    },
+    { check },
+  ).stale
 }
 
 // Run as a script: `node docs/generateColorDocs.ts [--check]`. The guard keeps

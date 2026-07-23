@@ -32,57 +32,30 @@ must satisfy AppRootModel.
 <details>
 <summary>AppSessionMixin - Getters</summary>
 
-#### getter: root
-
-```ts
-type root = AppRootModel
-```
-
-#### getter: version
-
-```ts
-type version = string
-```
-
-#### getter: gitCommit
-
-```ts
-type gitCommit = string | undefined
-```
-
-#### getter: history
-
-```ts
-type history =
-  { canUndo: boolean; canRedo: boolean; undo(): void; redo(): void } | undefined
-```
-
-#### getter: assemblyManager
-
-```ts
-type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _No...
-```
+| Member                                                   | Type                                                                               |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| <span id="getter-root">root</span>                       | `AppRootModel`                                                                     |
+| <span id="getter-version">version</span>                 | `string`                                                                           |
+| <span id="getter-gitcommit">gitCommit</span>             | `string \| undefined`                                                              |
+| <span id="getter-history">history</span>                 | `{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } \| undefined` |
+| <span id="getter-assemblymanager">assemblyManager</span> | `ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & IStateTreeNode<…>`            |
 
 </details>
 
 <details>
 <summary>AppSessionMixin - Methods</summary>
 
-#### method: menus
-
-```ts
-type menus = () => Menu[]
-```
+| Member                               | Type           |
+| ------------------------------------ | -------------- |
+| <span id="method-menus">menus</span> | `() => Menu[]` |
 
 </details>
 
 <details>
 <summary>AppSessionMixin - Actions</summary>
 
-#### action: renameCurrentSession
-
-```ts
-type renameCurrentSession = (sessionName: string) => void
-```
+| Member                                                             | Type                            |
+| ------------------------------------------------------------------ | ------------------------------- |
+| <span id="action-renamecurrentsession">renameCurrentSession</span> | `(sessionName: string) => void` |
 
 </details>

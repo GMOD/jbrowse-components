@@ -28,62 +28,29 @@ configuration and debounce-saves edits back to the session.
 <details>
 <summary>ConfigurationEditorWidget - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'ConfigurationEditorWidget'>
-// code
-type: types.literal('ConfigurationEditorWidget')
-```
+| Member                               | Type                                               |
+| ------------------------------------ | -------------------------------------------------- |
+| <span id="property-id">id</span>     | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| <span id="property-type">type</span> | `ISimpleType<"ConfigurationEditorWidget">`         |
 
 </details>
 
 <details>
 <summary>ConfigurationEditorWidget - Volatiles</summary>
 
-#### volatile: target
-
-```ts
-// type signature
-type target = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | undefined
-// code
-target: undefined as AnyConfigurationModel | undefined
-```
-
-#### volatile: expandedDisplayId
-
-```ts
-// type signature
-type expandedDisplayId = string | undefined
-// code
-expandedDisplayId: undefined as string | undefined
-```
+| Member                                                         | Type                                                                                                                                                                          |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <span id="volatile-target">target</span>                       | `(ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<…>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| undefined` |
+| <span id="volatile-expandeddisplayid">expandedDisplayId</span> | `string \| undefined`                                                                                                                                                         |
 
 </details>
 
 <details>
 <summary>ConfigurationEditorWidget - Actions</summary>
 
-#### action: setTarget
-
-```ts
-type setTarget = (newTarget: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | undefined) => void
-```
-
-#### action: setExpandedDisplayId
-
-```ts
-type setExpandedDisplayId = (displayId: string | undefined) => void
-```
+| Member                                                             | Type                                                                                      |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| <span id="action-settarget">setTarget</span>                       | `(newTarget: (ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) \| undefined) => void` |
+| <span id="action-setexpandeddisplayid">setExpandedDisplayId</span> | `(displayId: string \| undefined) => void`                                                |
 
 </details>

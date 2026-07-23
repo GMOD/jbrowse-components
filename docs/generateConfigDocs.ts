@@ -13,6 +13,7 @@ import {
   docPage,
   exampleSection,
   filterUnseenByName,
+  firstSentence,
   lookupByIdOrName,
   mapByKey,
   markdownTable,
@@ -764,16 +765,6 @@ function slotBlock(item: Item) {
 // kept as separators.
 function slotAnchor(name: string) {
   return `slot-${name.toLowerCase().replace(/\./g, '')}`
-}
-
-// The slots table is for scanning, so its Description cell is kept to the first
-// sentence — the full multi-sentence text (e.g. heightMode's paragraph) lives in
-// the slot block each row links into, and a wall of prose in a table cell forces
-// horizontal scroll and defeats the scan. `e.g.`/`i.e.` are not sentence ends.
-function firstSentence(text: string) {
-  const trimmed = text.trim()
-  const match = /^.*?[.!?](?<!\b[ei]\.[a-z]\.)(?=\s|$)/s.exec(trimmed)
-  return match ? match[0] : trimmed
 }
 
 // One row of the slots table: name (linked to its full entry below), type,

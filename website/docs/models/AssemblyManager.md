@@ -13,21 +13,21 @@ JBrowse core.
 
 ## Members
 
-| Member                                                       | Kind       | Defined by      | Description                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------------------------------------------ | ---------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblies](#property-assemblies)                           | Properties | AssemblyManager | this is automatically managed by an autorun which looks in the parent session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies                                                                                                                                                                                                          |
-| [assemblyNameMap](#getter-assemblynamemap)                   | Getters    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                                               |
-| [assemblyNamesList](#getter-assemblynameslist)               | Getters    | AssemblyManager | read via readConfObject, matching how the afterAttach autorun names the assemblies it creates: get() treats a name found here as "a config exists, its model is just not built yet", so the two must agree                                                                                                                                                    |
-| [assemblyList](#getter-assemblylist)                         | Getters    | AssemblyManager | combined jbrowse.assemblies, session.sessionAssemblies, and session.temporaryAssemblies                                                                                                                                                                                                                                                                       |
-| [rpcManager](#getter-rpcmanager)                             | Getters    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                                               |
-| [getCanonicalAssemblyName](#method-getcanonicalassemblyname) | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                                               |
-| [getDisplayName](#method-getdisplayname)                     | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                                               |
-| [get](#method-get)                                           | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                                               |
-| [waitForAssembly](#method-waitforassembly)                   | Methods    | AssemblyManager | use this method instead of assemblyManager.get(assemblyName) to get an assembly with regions loaded                                                                                                                                                                                                                                                           |
-| [getRefNameMapForAdapter](#method-getrefnamemapforadapter)   | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                                               |
-| [isValidRefName](#method-isvalidrefname)                     | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                                               |
-| [removeAssembly](#action-removeassembly)                     | Actions    | AssemblyManager | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly                                                                                                                                                                                           |
-| [addAssembly](#action-addassembly)                           | Actions    | AssemblyManager | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly this can take an active instance of an assembly, in which case it is referred to, or it can take an identifier e.g. assembly name, which is used as a reference. snapshots cannot be used |
+| Member                                                       | Kind       | Defined by      | Description                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------ | ---------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [assemblies](#property-assemblies)                           | Properties | AssemblyManager | this is automatically managed by an autorun which looks in the parent session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies                                                                                                                                                                                 |
+| [assemblyNameMap](#getter-assemblynamemap)                   | Getters    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                      |
+| [assemblyNamesList](#getter-assemblynameslist)               | Getters    | AssemblyManager | read via readConfObject, matching how the afterAttach autorun names the assemblies it creates: get() treats a name found here as "a config exists, its model is just not built yet", so the two must agree                                                                                                                           |
+| [assemblyList](#getter-assemblylist)                         | Getters    | AssemblyManager | combined jbrowse.assemblies, session.sessionAssemblies, and session.temporaryAssemblies                                                                                                                                                                                                                                              |
+| [rpcManager](#getter-rpcmanager)                             | Getters    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                      |
+| [getCanonicalAssemblyName](#method-getcanonicalassemblyname) | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                      |
+| [getDisplayName](#method-getdisplayname)                     | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                      |
+| [get](#method-get)                                           | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                      |
+| [waitForAssembly](#method-waitforassembly)                   | Methods    | AssemblyManager | use this method instead of assemblyManager.get(assemblyName) to get an assembly with regions loaded                                                                                                                                                                                                                                  |
+| [getRefNameMapForAdapter](#method-getrefnamemapforadapter)   | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                      |
+| [isValidRefName](#method-isvalidrefname)                     | Methods    | AssemblyManager |                                                                                                                                                                                                                                                                                                                                      |
+| [removeAssembly](#action-removeassembly)                     | Actions    | AssemblyManager | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly                                                                                                                                                                  |
+| [addAssembly](#action-addassembly)                           | Actions    | AssemblyManager | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly this can take an active instance of an assembly, in which case it is referred to, or it can take an identifier e.g. assembly name, which is used as a reference. |
 
 <details>
 <summary>AssemblyManager - Properties</summary>
@@ -39,7 +39,7 @@ session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
 ```ts
 // type signature
-type assemblies = IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<string, Promise<...>>; ... 5 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+type assemblies = IArrayType<IModelType<…>>
 // code
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
@@ -65,7 +65,7 @@ combined jbrowse.assemblies, session.sessionAssemblies, and
 session.temporaryAssemblies
 
 ```ts
-type assemblyList = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+type assemblyList = (ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 </details>
@@ -73,17 +73,10 @@ type assemblyList = (ModelInstanceTypeProps<Record<string, any>> & { setSubschem
 <details>
 <summary>AssemblyManager - Getters (other undocumented members)</summary>
 
-#### getter: assemblyNameMap
-
-```ts
-type assemblyNameMap = Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> | undefined; ... 6 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 12 more ... & IStateTreeNode<...>>
-```
-
-#### getter: rpcManager
-
-```ts
-type rpcManager = RpcManager
-```
+| Member                                                   | Type         |
+| -------------------------------------------------------- | ------------ |
+| <span id="getter-assemblynamemap">assemblyNameMap</span> | `Record<…>`  |
+| <span id="getter-rpcmanager">rpcManager</span>           | `RpcManager` |
 
 </details>
 
@@ -104,39 +97,13 @@ type waitForAssembly = (assemblyName: string) => Promise<(ModelInstanceTypeProps
 <details>
 <summary>AssemblyManager - Methods (other undocumented members)</summary>
 
-#### method: getCanonicalAssemblyName
-
-```ts
-type getCanonicalAssemblyName = (asmName: string) => string
-```
-
-#### method: getDisplayName
-
-```ts
-type getDisplayName = (asmName: string) => string
-```
-
-#### method: get
-
-```ts
-type get = (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 7 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
-```
-
-#### method: getRefNameMapForAdapter
-
-```ts
-type getRefNameMapForAdapter = (
-  adapterConf: AdapterConf,
-  assemblyName: string | undefined,
-  opts: AssemblyBaseOpts,
-) => Promise<RefNameAliases>
-```
-
-#### method: isValidRefName
-
-```ts
-type isValidRefName = (refName: string, assemblyName: string) => boolean
-```
+| Member                                                                     | Type                                                                                                               |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| <span id="method-getcanonicalassemblyname">getCanonicalAssemblyName</span> | `(asmName: string) => string`                                                                                      |
+| <span id="method-getdisplayname">getDisplayName</span>                     | `(asmName: string) => string`                                                                                      |
+| <span id="method-get">get</span>                                           | `(asmName: string) => (ModelInstanceTypeProps<…> & {…} & ... 12 more ... & IStateTreeNode<…>) \| undefined`        |
+| <span id="method-getrefnamemapforadapter">getRefNameMapForAdapter</span>   | `(adapterConf: AdapterConf, assemblyName: string \| undefined, opts: AssemblyBaseOpts) => Promise<RefNameAliases>` |
+| <span id="method-isvalidrefname">isValidRefName</span>                     | `(refName: string, assemblyName: string) => boolean`                                                               |
 
 </details>
 
@@ -150,7 +117,7 @@ session.sessionAssemblies, or session.temporaryAssemblies instead of using this
 directly
 
 ```ts
-type removeAssembly = (asm: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 12 more ... & IStateTreeNode<...>) => void
+type removeAssembly = (asm: ModelInstanceTypeProps<…> & {…} & ... 12 more ... & IStateTreeNode<…>) => void
 ```
 
 #### action: addAssembly

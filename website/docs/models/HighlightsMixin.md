@@ -65,37 +65,12 @@ showHighlightChips: types.stripDefault(types.boolean, false)
 <details>
 <summary>HighlightsMixin - Actions</summary>
 
-#### action: addToHighlights
-
-```ts
-type addToHighlights = (highlight: HighlightType) => void
-```
-
-#### action: setHighlight
-
-```ts
-type setHighlight = (highlight?: HighlightType[] | undefined) => void
-```
-
-#### action: removeHighlight
-
-```ts
-type removeHighlight = (highlight: HighlightType) => void
-```
-
-#### action: updateHighlight
-
-```ts
-type updateHighlight = (
-  old: HighlightType,
-  updates: Partial<HighlightType>,
-) => void
-```
-
-#### action: setShowHighlightChips
-
-```ts
-type setShowHighlightChips = (arg: boolean) => void
-```
+| Member                                                               | Type                                                            |
+| -------------------------------------------------------------------- | --------------------------------------------------------------- |
+| <span id="action-addtohighlights">addToHighlights</span>             | `(highlight: HighlightType) => void`                            |
+| <span id="action-sethighlight">setHighlight</span>                   | `(highlight?: HighlightType[] \| undefined) => void`            |
+| <span id="action-removehighlight">removeHighlight</span>             | `(highlight: HighlightType) => void`                            |
+| <span id="action-updatehighlight">updateHighlight</span>             | `(old: HighlightType, updates: Partial<HighlightType>) => void` |
+| <span id="action-setshowhighlightchips">setShowHighlightChips</span> | `(arg: boolean) => void`                                        |
 
 </details>

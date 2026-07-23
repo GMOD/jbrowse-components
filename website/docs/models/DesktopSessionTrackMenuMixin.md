@@ -26,7 +26,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
 
 ```ts
-type getTrackActions = (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+type getTrackActions = (trackConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 </details>
@@ -49,7 +49,7 @@ its most-specific definition.
 flattened menu items for use in hierarchical track selector
 
 ```ts
-type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
@@ -57,7 +57,7 @@ type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>
 track menu with About + "Track actions" submenu for the in-view label
 
 ```ts
-type getTrackActionMenuItems = ({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView | undefined; }) => MenuItem[]
+type getTrackActionMenuItems = ({…}: { config: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>; view?: TrackActionView | undefined; }) => MenuItem[]
 ```
 
 </details>

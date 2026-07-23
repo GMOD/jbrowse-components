@@ -15,7 +15,7 @@ segments — without paying to split and rejoin the tag around the filter.
 
 ```js
 // type signature
-(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => { refName: string; start: number; end: number; seqLength: number; ... 4 more ...; mate: { ...; }; }[]
+(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => {…}[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)

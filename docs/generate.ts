@@ -1,6 +1,5 @@
-import { sync as spawnSync } from 'cross-spawn'
-
 import { buildEnumConstantIndex } from './enumConstants.ts'
+import { formatDocs } from './format.ts'
 import {
   accumulateApi,
   writeApiDocs,
@@ -17,7 +16,7 @@ import {
 } from './generateFileTypeDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
-import { extractWithComment, getAllFiles } from './util.ts'
+import { extractWithComment, getAllFiles, listDocs } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
 import type { Config } from './generateConfigDocs.ts'
@@ -100,24 +99,44 @@ async function main() {
     ),
   )
 
-  // writeFormatted's programmatic prettier.format() call on embedded markdown
-  // code fences isn't always a fixed point of the prettier CLI (e.g. arrow
-  // function param lists can break differently). Run the CLI once over the
-  // whole output so it matches what `pnpm prettier --check` expects.
-  spawnSync(
-    'prettier',
-    [
-      '--write',
-      'website/docs/config',
-      'website/docs/models',
-      'website/docs/api',
-      // the marker blocks written into the hand-written guides above
-      // (FILE_TYPES, DISPLAY_TYPES, GOTCHA) land here unformatted; the tables
-      // are prettier-ignored but the gotcha callouts are prose and must be
-      // rewrapped, or every regen would fight `pnpm format`
-      'website/docs/config_guides',
-    ],
-    { stdio: 'inherit' },
+  await formatOutput()
+}
+
+// Directories `pnpm gendocs` is responsible for leaving format-clean: the
+// generated pages, plus the hand-written guides whose marker blocks were
+// rewritten above (FILE_TYPES, DISPLAY_TYPES, GOTCHA, COLOR_TABLE,
+// EXTENSION_POINTS_INDEX). The tables are prettier-ignored, but the gotcha
+// callouts are prose and must be rewrapped or every regen would fight
+// `pnpm format`.
+const FORMAT_DIRS = [
+  'website/docs/config',
+  'website/docs/models',
+  'website/docs/api',
+  'website/docs/config_guides',
+  'website/docs/developer_guides',
+]
+
+// Formatting a page is not a fixed point in one pass: writeFormatted runs
+// prettier over the assembled markdown, but reflowing an embedded code fence
+// can change what the next pass does to it (an arrow-function parameter list
+// that fit on one line no longer does once the fence is re-indented), so a
+// single pass could still leave output `prettier --check` rejects. Re-run until
+// nothing changes. The cap keeps a genuinely unstable file from spinning
+// forever — it surfaces as a `pnpm format` failure instead.
+//
+// This used to shell out to the `prettier` binary, which resolves only when the
+// PATH an npm script sets is in play: running `node docs/generate.ts` directly
+// spawned ENOENT and silently formatted nothing, since a failed spawn reports
+// no status. Going through the API removes that whole failure mode.
+async function formatOutput() {
+  for (let pass = 0; pass < 3; pass++) {
+    const changed = await formatDocs(FORMAT_DIRS.flatMap(dir => listDocs(dir)))
+    if (!changed) {
+      return
+    }
+  }
+  console.warn(
+    'generated docs did not reach a stable prettier formatting after 3 passes',
   )
 }
 

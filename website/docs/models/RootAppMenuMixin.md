@@ -27,14 +27,9 @@ JBrowse core.
 <details>
 <summary>RootAppMenuMixin - Volatiles</summary>
 
-#### volatile: mutableMenuActions
-
-```ts
-// type signature
-type mutableMenuActions = MenuAction[]
-// code
-mutableMenuActions: [] as MenuAction[]
-```
+| Member                                                           | Type           |
+| ---------------------------------------------------------------- | -------------- |
+| <span id="volatile-mutablemenuactions">mutableMenuActions</span> | `MenuAction[]` |
 
 </details>
 
@@ -102,10 +97,8 @@ type insertInSubMenu = (
 <details>
 <summary>RootAppMenuMixin - Actions (other undocumented members)</summary>
 
-#### action: setMenus
-
-```ts
-type setMenus = (newMenus: Menu[]) => void
-```
+| Member                                     | Type                         |
+| ------------------------------------------ | ---------------------------- |
+| <span id="action-setmenus">setMenus</span> | `(newMenus: Menu[]) => void` |
 
 </details>

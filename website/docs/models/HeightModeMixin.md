@@ -28,12 +28,12 @@ computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
 
 ## Members
 
-| Member                                           | Kind    | Defined by      | Description                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------ | ------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [heightMode](#getter-heightmode)                 | Getters | HeightModeMixin | The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel slot: getConf walks the customized-track -> session-default -> `fixed` cascade and never returns the `inherit` sentinel.                                                                                |
-| [fitTargetHeight](#getter-fittargetheight)       | Getters | HeightModeMixin | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. Read there instead of the reactive `height` getter to break the grow-mode cycle (`height`->grownHeight->layout->height). Equals `height` in fixed/fit. |
-| [autoHeight](#getter-autoheight)                 | Getters | HeightModeMixin | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                  |
-| [fitHeightToDisplay](#getter-fitheighttodisplay) | Getters | HeightModeMixin | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                   |
+| Member                                           | Kind    | Defined by      | Description                                                                                                                     |
+| ------------------------------------------------ | ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [heightMode](#getter-heightmode)                 | Getters | HeightModeMixin | The resolved track-height strategy (`fixed`/`grow`/`fit`).                                                                      |
+| [fitTargetHeight](#getter-fittargetheight)       | Getters | HeightModeMixin | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. |
+| [autoHeight](#getter-autoheight)                 | Getters | HeightModeMixin | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                           |
+| [fitHeightToDisplay](#getter-fitheighttodisplay) | Getters | HeightModeMixin | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                            |
 
 <details>
 <summary>HeightModeMixin - Getters</summary>

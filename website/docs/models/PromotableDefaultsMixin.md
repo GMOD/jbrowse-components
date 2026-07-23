@@ -25,44 +25,23 @@ display and the two delegations stay cast-free.
 
 ## Members
 
-| Member                                                         | Kind       | Defined by              | Description                                                                                                                                                                                                        |
-| -------------------------------------------------------------- | ---------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [type](#property-type)                                         | Properties | PromotableDefaultsMixin |                                                                                                                                                                                                                    |
-| [configuration](#property-configuration)                       | Properties | PromotableDefaultsMixin |                                                                                                                                                                                                                    |
-| [ignorePromotedDefaults](#property-ignorepromoteddefaults)     | Properties | PromotableDefaultsMixin |                                                                                                                                                                                                                    |
-| [displayTypeDefaultChanges](#method-displaytypedefaultchanges) | Methods    | PromotableDefaultsMixin | Effective config differences a track following the default inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.       |
-| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | PromotableDefaultsMixin |                                                                                                                                                                                                                    |
-| [clearDisplayTypeDefaults](#action-cleardisplaytypedefaults)   | Actions    | PromotableDefaultsMixin | Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
+| Member                                                         | Kind       | Defined by              | Description                                                                                                                                                |
+| -------------------------------------------------------------- | ---------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                         | Properties | PromotableDefaultsMixin |                                                                                                                                                            |
+| [configuration](#property-configuration)                       | Properties | PromotableDefaultsMixin |                                                                                                                                                            |
+| [ignorePromotedDefaults](#property-ignorepromoteddefaults)     | Properties | PromotableDefaultsMixin |                                                                                                                                                            |
+| [displayTypeDefaultChanges](#method-displaytypedefaultchanges) | Methods    | PromotableDefaultsMixin | Effective config differences a track following the default inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). |
+| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | PromotableDefaultsMixin |                                                                                                                                                            |
+| [clearDisplayTypeDefaults](#action-cleardisplaytypedefaults)   | Actions    | PromotableDefaultsMixin | Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this display (and its siblings of the same type) revert to their config values. |
 
 <details>
 <summary>PromotableDefaultsMixin - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<string>
-// code
-type: types.string
-```
-
-#### property: configuration
-
-```ts
-// type signature
-type configuration = IConfigurationReference<AnyConfigurationSchemaType>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: ignorePromotedDefaults
-
-```ts
-// type signature
-type ignorePromotedDefaults = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-ignorePromotedDefaults: types.stripDefault(types.boolean, false)
-```
+| Member                                                                   | Type                                                  |
+| ------------------------------------------------------------------------ | ----------------------------------------------------- |
+| <span id="property-type">type</span>                                     | `ISimpleType<string>`                                 |
+| <span id="property-configuration">configuration</span>                   | `IConfigurationReference<AnyConfigurationSchemaType>` |
+| <span id="property-ignorepromoteddefaults">ignorePromotedDefaults</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>`   |
 
 </details>
 
@@ -99,10 +78,8 @@ type clearDisplayTypeDefaults = () => void
 <details>
 <summary>PromotableDefaultsMixin - Actions (other undocumented members)</summary>
 
-#### action: setIgnorePromotedDefaults
-
-```ts
-type setIgnorePromotedDefaults = (flag: boolean) => void
-```
+| Member                                                                       | Type                      |
+| ---------------------------------------------------------------------------- | ------------------------- |
+| <span id="action-setignorepromoteddefaults">setIgnorePromotedDefaults</span> | `(flag: boolean) => void` |
 
 </details>

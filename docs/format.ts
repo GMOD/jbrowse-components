@@ -18,3 +18,19 @@ export async function writeFormatted(path: string, content: string) {
   })
   fs.writeFileSync(path, formatted)
 }
+
+// Re-format files already on disk, returning whether any of them changed. Lets
+// the generator drive formatting to a fixed point (see formatOutput).
+export async function formatDocs(paths: string[]) {
+  let changed = false
+  for (const path of paths) {
+    const original = fs.readFileSync(path, 'utf8')
+    const config = await resolveConfig(path)
+    const formatted = await format(original, { ...config, filepath: path })
+    if (formatted !== original) {
+      fs.writeFileSync(path, formatted)
+      changed = true
+    }
+  }
+  return changed
+}

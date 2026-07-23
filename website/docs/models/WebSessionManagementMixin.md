@@ -29,39 +29,20 @@ database).
 <details>
 <summary>WebSessionManagementMixin - Getters</summary>
 
-#### getter: savedSessionMetadata
-
-```ts
-type savedSessionMetadata = SessionMetadata[] | undefined
-```
+| Member                                                             | Type                             |
+| ------------------------------------------------------------------ | -------------------------------- |
+| <span id="getter-savedsessionmetadata">savedSessionMetadata</span> | `SessionMetadata[] \| undefined` |
 
 </details>
 
 <details>
 <summary>WebSessionManagementMixin - Actions</summary>
 
-#### action: deleteSavedSession
-
-```ts
-type deleteSavedSession = (id: string) => Promise<void>
-```
-
-#### action: setSavedSessionFavorite
-
-```ts
-type setSavedSessionFavorite = (id: string, favorite: boolean) => Promise<void>
-```
-
-#### action: renameSavedSession
-
-```ts
-type renameSavedSession = (id: string, name: string) => Promise<void>
-```
-
-#### action: activateSession
-
-```ts
-type activateSession = (id: string) => Promise<void>
-```
+| Member                                                                   | Type                                               |
+| ------------------------------------------------------------------------ | -------------------------------------------------- |
+| <span id="action-deletesavedsession">deleteSavedSession</span>           | `(id: string) => Promise<void>`                    |
+| <span id="action-setsavedsessionfavorite">setSavedSessionFavorite</span> | `(id: string, favorite: boolean) => Promise<void>` |
+| <span id="action-renamesavedsession">renameSavedSession</span>           | `(id: string, name: string) => Promise<void>`      |
+| <span id="action-activatesession">activateSession</span>                 | `(id: string) => Promise<void>`                    |
 
 </details>

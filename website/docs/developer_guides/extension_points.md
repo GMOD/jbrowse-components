@@ -119,43 +119,44 @@ that follow are hand-written.
 
 <!-- EXTENSION_POINTS_INDEX START -->
 
-| Extension point                               | Type  | Description                                                     |
-| --------------------------------------------- | ----- | --------------------------------------------------------------- |
-| `Core-addTrackComponent`                      | sync  | Inject a custom React component into a track's rendering area   |
-| `Core-customizeAbout`                         | sync  | Transform the config shown in a track's About dialog            |
-| `Core-extendPluggableElement`                 | sync  | Mutate any pluggable element after it is created                |
-| `Core-extendSession`                          | sync  | Extend the session model with extra state or actions            |
-| `Core-extendWorker`                           | sync  | Register extra RPC methods on the web worker                    |
-| `Core-extraAboutPanel`                        | sync  | Add extra panels to a track's About dialog                      |
-| `Core-extraFeaturePanel`                      | sync  | Add extra panels to the feature details widget                  |
-| `Core-extraTrackMenuItems`                    | sync  | Add items to a single track's menu                              |
-| `Core-guessAdapterForLocation`                | sync  | Guess an adapter config from a file location                    |
-| `Core-guessTrackTypeForLocation`              | sync  | Guess a track type from a file location                         |
-| `Core-handleUnrecognizedAssembly`             | sync  | Supply an assembly config when a referenced assembly is unknown |
-| `Core-preferencesDialogPanels`                | sync  | Add panels to the preferences dialog                            |
-| `Core-preProcessTrackConfig`                  | sync  | Rewrite a track config snapshot before it is instantiated       |
-| `Core-replaceAbout`                           | sync  | Replace or wrap a track's About dialog body                     |
-| `Core-replaceWidget`                          | sync  | Replace or wrap the component that renders a widget             |
-| `DotplotView-ImportFormSyntenyOptions`        | sync  | Add options to the dotplot view import form                     |
-| `DotplotView-OverlayHTMLComponent`            | sync  | Add an HTML overlay component to the dotplot view               |
-| `DotplotView-OverlaySVGComponent`             | sync  | Add an SVG overlay component to the dotplot view                |
-| `DotplotView-SyntenyFileFormats`              | sync  | Add synteny file formats to the dotplot import form             |
-| `LaunchView-BreakpointSplitView`              | async | Programmatically launch a breakpoint split view                 |
-| `LaunchView-CircularView`                     | async | Programmatically launch a circular view                         |
-| `LaunchView-DotplotView`                      | async | Programmatically launch a dotplot view                          |
-| `LaunchView-LinearGenomeView`                 | async | Programmatically launch a linear genome view                    |
-| `LaunchView-LinearSyntenyView`                | async | Programmatically launch a linear synteny view                   |
-| `LaunchView-SpreadsheetView`                  | async | Programmatically launch a spreadsheet view                      |
-| `LaunchView-SvInspectorView`                  | async | Programmatically launch the SV inspector view                   |
-| `LinearGenomeView-HighlightSVGComponent`      | sync  | Add an SVG highlight overlay in the LGV SVG export              |
-| `LinearGenomeView-OverviewScalebarComponent`  | sync  | Add a component to the overview scalebar                        |
-| `LinearGenomeView-ScalebarHighlightComponent` | sync  | Add a highlight component to the scalebar                       |
-| `LinearGenomeView-searchResultSelected`       | async | Invoked when a search result is selected                        |
-| `LinearGenomeView-TracksContainerComponent`   | sync  | Add a component into the LGV tracks container                   |
-| `LinearSyntenyView-ImportFormSyntenyOptions`  | sync  | Add options to the linear synteny view import form              |
-| `LinearSyntenyView-SyntenyFileFormats`        | sync  | Add synteny file formats to the linear synteny import form      |
-| `TrackSelector-folderDialog`                  | sync  | Replace the dialog shown when a folder category is clicked      |
-| `TrackSelector-multiTrackMenuItems`           | sync  | Add items to the multi-track (shopping cart) menu               |
+<!-- prettier-ignore -->
+| Extension point | Type | Description |
+| --- | --- | --- |
+| `Core-addTrackComponent` | sync | Inject a custom React component into a track's rendering area |
+| `Core-customizeAbout` | sync | Transform the config shown in a track's About dialog |
+| `Core-extendPluggableElement` | sync | Mutate any pluggable element after it is created |
+| `Core-extendSession` | sync | Extend the session model with extra state or actions |
+| `Core-extendWorker` | sync | Register extra RPC methods on the web worker |
+| `Core-extraAboutPanel` | sync | Add extra panels to a track's About dialog |
+| `Core-extraFeaturePanel` | sync | Add extra panels to the feature details widget |
+| `Core-extraTrackMenuItems` | sync | Add items to a single track's menu |
+| `Core-guessAdapterForLocation` | sync | Guess an adapter config from a file location |
+| `Core-guessTrackTypeForLocation` | sync | Guess a track type from a file location |
+| `Core-handleUnrecognizedAssembly` | sync | Supply an assembly config when a referenced assembly is unknown |
+| `Core-preferencesDialogPanels` | sync | Add panels to the preferences dialog |
+| `Core-preProcessTrackConfig` | sync | Rewrite a track config snapshot before it is instantiated |
+| `Core-replaceAbout` | sync | Replace or wrap a track's About dialog body |
+| `Core-replaceWidget` | sync | Replace or wrap the component that renders a widget |
+| `DotplotView-ImportFormSyntenyOptions` | sync | Add options to the dotplot view import form |
+| `DotplotView-OverlayHTMLComponent` | sync | Add an HTML overlay component to the dotplot view |
+| `DotplotView-OverlaySVGComponent` | sync | Add an SVG overlay component to the dotplot view |
+| `DotplotView-SyntenyFileFormats` | sync | Add synteny file formats to the dotplot import form |
+| `LaunchView-BreakpointSplitView` | async | Programmatically launch a breakpoint split view |
+| `LaunchView-CircularView` | async | Programmatically launch a circular view |
+| `LaunchView-DotplotView` | async | Programmatically launch a dotplot view |
+| `LaunchView-LinearGenomeView` | async | Programmatically launch a linear genome view |
+| `LaunchView-LinearSyntenyView` | async | Programmatically launch a linear synteny view |
+| `LaunchView-SpreadsheetView` | async | Programmatically launch a spreadsheet view |
+| `LaunchView-SvInspectorView` | async | Programmatically launch the SV inspector view |
+| `LinearGenomeView-HighlightSVGComponent` | sync | Add an SVG highlight overlay in the LGV SVG export |
+| `LinearGenomeView-OverviewScalebarComponent` | sync | Add a component to the overview scalebar |
+| `LinearGenomeView-ScalebarHighlightComponent` | sync | Add a highlight component to the scalebar |
+| `LinearGenomeView-searchResultSelected` | async | Invoked when a search result is selected |
+| `LinearGenomeView-TracksContainerComponent` | sync | Add a component into the LGV tracks container |
+| `LinearSyntenyView-ImportFormSyntenyOptions` | sync | Add options to the linear synteny view import form |
+| `LinearSyntenyView-SyntenyFileFormats` | sync | Add synteny file formats to the linear synteny import form |
+| `TrackSelector-folderDialog` | sync | Replace the dialog shown when a folder category is clicked |
+| `TrackSelector-multiTrackMenuItems` | sync | Add items to the multi-track (shopping cart) menu |
 
 <!-- EXTENSION_POINTS_INDEX END -->
 

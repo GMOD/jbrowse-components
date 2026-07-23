@@ -31,47 +31,28 @@ unset.
 <details>
 <summary>TrackHeightMixin - Volatiles</summary>
 
-#### volatile: scrollTop
-
-```ts
-// type signature
-type scrollTop = number
-// code
-scrollTop: 0
-```
+| Member                                         | Type     |
+| ---------------------------------------------- | -------- |
+| <span id="volatile-scrolltop">scrollTop</span> | `number` |
 
 </details>
 
 <details>
 <summary>TrackHeightMixin - Getters</summary>
 
-#### getter: height
-
-```ts
-type height = number
-```
+| Member                                 | Type     |
+| -------------------------------------- | -------- |
+| <span id="getter-height">height</span> | `number` |
 
 </details>
 
 <details>
 <summary>TrackHeightMixin - Actions</summary>
 
-#### action: setScrollTop
-
-```ts
-type setScrollTop = (scrollTop: number) => void
-```
-
-#### action: setHeight
-
-```ts
-type setHeight = (displayHeight: number) => number
-```
-
-#### action: resizeHeight
-
-```ts
-type resizeHeight = (distance: number) => number
-```
+| Member                                             | Type                                |
+| -------------------------------------------------- | ----------------------------------- |
+| <span id="action-setscrolltop">setScrollTop</span> | `(scrollTop: number) => void`       |
+| <span id="action-setheight">setHeight</span>       | `(displayHeight: number) => number` |
+| <span id="action-resizeheight">resizeHeight</span> | `(distance: number) => number`      |
 
 </details>

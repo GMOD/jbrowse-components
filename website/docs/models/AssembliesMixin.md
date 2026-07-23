@@ -16,45 +16,26 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 
 ## Members
 
-| Member                                                     | Kind       | Defined by      | Description                                                                                                                                      |
-| ---------------------------------------------------------- | ---------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [sessionAssemblies](#property-sessionassemblies)           | Properties | AssembliesMixin |                                                                                                                                                  |
-| [temporaryAssemblies](#property-temporaryassemblies)       | Properties | AssembliesMixin |                                                                                                                                                  |
-| [assemblies](#getter-assemblies)                           | Getters    | AssembliesMixin | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
-| [assemblyNames](#getter-assemblynames)                     | Getters    | AssembliesMixin | names of the assemblies returned by the `assemblies` getter                                                                                      |
-| [addSessionAssembly](#action-addsessionassembly)           | Actions    | AssembliesMixin |                                                                                                                                                  |
-| [addAssembly](#action-addassembly)                         | Actions    | AssembliesMixin |                                                                                                                                                  |
-| [removeAssembly](#action-removeassembly)                   | Actions    | AssembliesMixin |                                                                                                                                                  |
-| [removeSessionAssembly](#action-removesessionassembly)     | Actions    | AssembliesMixin |                                                                                                                                                  |
-| [addTemporaryAssembly](#action-addtemporaryassembly)       | Actions    | AssembliesMixin | used for read vs ref type assemblies.                                                                                                            |
-| [removeTemporaryAssembly](#action-removetemporaryassembly) | Actions    | AssembliesMixin |                                                                                                                                                  |
+| Member                                                     | Kind       | Defined by      | Description                                                 |
+| ---------------------------------------------------------- | ---------- | --------------- | ----------------------------------------------------------- |
+| [sessionAssemblies](#property-sessionassemblies)           | Properties | AssembliesMixin |                                                             |
+| [temporaryAssemblies](#property-temporaryassemblies)       | Properties | AssembliesMixin |                                                             |
+| [assemblies](#getter-assemblies)                           | Getters    | AssembliesMixin | sessionAssemblies plus jbrowse config assemblies.           |
+| [assemblyNames](#getter-assemblynames)                     | Getters    | AssembliesMixin | names of the assemblies returned by the `assemblies` getter |
+| [addSessionAssembly](#action-addsessionassembly)           | Actions    | AssembliesMixin |                                                             |
+| [addAssembly](#action-addassembly)                         | Actions    | AssembliesMixin |                                                             |
+| [removeAssembly](#action-removeassembly)                   | Actions    | AssembliesMixin |                                                             |
+| [removeSessionAssembly](#action-removesessionassembly)     | Actions    | AssembliesMixin |                                                             |
+| [addTemporaryAssembly](#action-addtemporaryassembly)       | Actions    | AssembliesMixin | used for read vs ref type assemblies.                       |
+| [removeTemporaryAssembly](#action-removetemporaryassembly) | Actions    | AssembliesMixin |                                                             |
 
 <details>
 <summary>AssembliesMixin - Properties</summary>
 
-#### property: sessionAssemblies
-
-```ts
-// type signature
-type sessionAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ readonly aliases: { readonly type: "stringArray"; readonly defaultValue: readonly []; readonly description: "Other possible names for the assembly"; }; readonly sequence: AnyConfigurationSchemaType; ... 5 more ...; readonly displayName: { ...; }; }, ConfigurationSc...
-// code
-sessionAssemblies: types.stripDefault(
-        types.array(assemblyConfigSchemasType),
-        [],
-      )
-```
-
-#### property: temporaryAssemblies
-
-```ts
-// type signature
-type temporaryAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ readonly aliases: { readonly type: "stringArray"; readonly defaultValue: readonly []; readonly description: "Other possible names for the assembly"; }; readonly sequence: AnyConfigurationSchemaType; ... 5 more ...; readonly displayName: { ...; }; }, ConfigurationSc...
-// code
-temporaryAssemblies: types.stripDefault(
-        types.array(assemblyConfigSchemasType),
-        [],
-      )
-```
+| Member                                                             | Type                                                                  |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| <span id="property-sessionassemblies">sessionAssemblies</span>     | `IOptionalIType<IArrayType<ConfigurationSchemaType<…>>, [undefined]>` |
+| <span id="property-temporaryassemblies">temporaryAssemblies</span> | `IOptionalIType<IArrayType<ConfigurationSchemaType<…>>, [undefined]>` |
 
 </details>
 
@@ -67,7 +48,7 @@ sessionAssemblies plus jbrowse config assemblies. Does not include
 temporaryAssemblies; this is the list shown in the AssemblySelector dropdown.
 
 ```ts
-type assemblies = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+type assemblies = (ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: assemblyNames
@@ -88,7 +69,7 @@ type assemblyNames = string[]
 used for read vs ref type assemblies.
 
 ```ts
-type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>
 ```
 
 </details>
@@ -96,34 +77,12 @@ type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<R
 <details>
 <summary>AssembliesMixin - Actions (other undocumented members)</summary>
 
-#### action: addSessionAssembly
-
-```ts
-type addSessionAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
-```
-
-#### action: addAssembly
-
-```ts
-type addAssembly = (conf: AnyConfiguration) => void
-```
-
-#### action: removeAssembly
-
-```ts
-type removeAssembly = (name: string) => void
-```
-
-#### action: removeSessionAssembly
-
-```ts
-type removeSessionAssembly = (assemblyName: string) => void
-```
-
-#### action: removeTemporaryAssembly
-
-```ts
-type removeTemporaryAssembly = (name: string) => void
-```
+| Member                                                                   | Type                                                                              |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| <span id="action-addsessionassembly">addSessionAssembly</span>           | `(conf: AnyConfiguration) => ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>` |
+| <span id="action-addassembly">addAssembly</span>                         | `(conf: AnyConfiguration) => void`                                                |
+| <span id="action-removeassembly">removeAssembly</span>                   | `(name: string) => void`                                                          |
+| <span id="action-removesessionassembly">removeSessionAssembly</span>     | `(assemblyName: string) => void`                                                  |
+| <span id="action-removetemporaryassembly">removeTemporaryAssembly</span> | `(name: string) => void`                                                          |
 
 </details>

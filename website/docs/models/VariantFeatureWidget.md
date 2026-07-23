@@ -41,23 +41,10 @@ variant-specific fields such as genotypes and INFO.
 <details>
 <summary>VariantFeatureWidget - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'VariantFeatureWidget'>
-// code
-type: types.literal('VariantFeatureWidget')
-```
-
-#### property: descriptions
-
-```ts
-// type signature
-type descriptions = IType<any, any, any>
-// code
-descriptions: types.frozen()
-```
+| Member                                               | Type                                  |
+| ---------------------------------------------------- | ------------------------------------- |
+| <span id="property-type">type</span>                 | `ISimpleType<"VariantFeatureWidget">` |
+| <span id="property-descriptions">descriptions</span> | `IType<any, any, any>`                |
 
 </details>
 
@@ -74,108 +61,19 @@ its most-specific definition.
 
 **Properties**
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: featureData
-
-```ts
-// type signature
-type featureData = IOptionalIType<
-  IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>,
-  [undefined]
->
-// code
-featureData: types.optional(types.frozen<MaybeSerializedFeat>(), undefined)
-```
-
-#### property: unformattedFeatureData
-
-```ts
-// type signature
-type unformattedFeatureData = IOptionalIType<
-  IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>,
-  [undefined]
->
-// code
-unformattedFeatureData: types.optional(
-  types.frozen<MaybeSerializedFeat>(),
-  undefined,
-)
-```
-
-#### property: view
-
-```ts
-// type signature
-type view = IMaybe<IReferenceType<IAnyType>>
-// code
-view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
-```
-
-#### property: track
-
-```ts
-// type signature
-type track = IMaybe<IReferenceType<IAnyType>>
-// code
-track: types.safeReference(
-  pluginManager.pluggableMstType('track', 'stateModel'),
-)
-```
-
-#### property: trackId
-
-```ts
-// type signature
-type trackId = IMaybe<ISimpleType<string>>
-// code
-trackId: types.maybe(types.string)
-```
-
-#### property: trackType
-
-```ts
-// type signature
-type trackType = IMaybe<ISimpleType<string>>
-// code
-trackType: types.maybe(types.string)
-```
-
-#### property: maxDepth
-
-```ts
-// type signature
-type maxDepth = IMaybe<ISimpleType<number>>
-// code
-maxDepth: types.maybe(types.number)
-```
-
-#### property: sequenceFeatureDetails
-
-```ts
-// type signature
-type sequenceFeatureDetails = IOptionalIType<IModelType<{}, { showCoordinatesSetting: ShowCoordinatesMode; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; } & { setUpDownBp(f: number): void; setIntronBp(f: number): void; setUpperCaseCDS(f: boolean): void; setShowCoordinates(f: ShowCoordinatesMode): void; } & ...
-// code
-sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
-```
+| Member                                                                   | Type                                                                                                |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| <span id="property-id">id</span>                                         | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                  |
+| <span id="property-featuredata">featureData</span>                       | `IOptionalIType<IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>, [undefined]>` |
+| <span id="property-unformattedfeaturedata">unformattedFeatureData</span> | `IOptionalIType<IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>, [undefined]>` |
+| <span id="property-view">view</span>                                     | `IMaybe<IReferenceType<IAnyType>>`                                                                  |
+| <span id="property-track">track</span>                                   | `IMaybe<IReferenceType<IAnyType>>`                                                                  |
+| <span id="property-trackid">trackId</span>                               | `IMaybe<ISimpleType<string>>`                                                                       |
+| <span id="property-tracktype">trackType</span>                           | `IMaybe<ISimpleType<string>>`                                                                       |
+| <span id="property-maxdepth">maxDepth</span>                             | `IMaybe<ISimpleType<number>>`                                                                       |
+| <span id="property-sequencefeaturedetails">sequenceFeatureDetails</span> | `IOptionalIType<IModelType<…>, [undefined]>`                                                        |
 
 **Volatiles**
-
-#### volatile: error
-
-```ts
-// type signature
-type error = undefined
-// code
-error: undefined
-```
 
 #### volatile: sequenceHoverPosition
 
@@ -189,46 +87,19 @@ type sequenceHoverPosition = undefined
 sequenceHoverPosition: undefined
 ```
 
+| Member                                 | Type        |
+| -------------------------------------- | ----------- |
+| <span id="volatile-error">error</span> | `undefined` |
+
 **Actions**
 
-#### action: setSequenceHoverPosition
-
-```ts
-type setSequenceHoverPosition = (pos: SequenceHoverPosition | undefined) => void
-```
-
-#### action: setFeatureData
-
-```ts
-type setFeatureData = (featureData: SimpleFeatureSerialized) => void
-```
-
-#### action: clearFeatureData
-
-```ts
-type clearFeatureData = () => void
-```
-
-#### action: setFormattedData
-
-```ts
-type setFormattedData = (feat: SimpleFeatureSerialized) => void
-```
-
-#### action: setExtra
-
-```ts
-type setExtra = (
-  type?: string | undefined,
-  trackId?: string | undefined,
-  maxDepth?: number | undefined,
-) => void
-```
-
-#### action: setError
-
-```ts
-type setError = (e: unknown) => void
-```
+| Member                                                                     | Type                                                                                                  |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| <span id="action-setsequencehoverposition">setSequenceHoverPosition</span> | `(pos: SequenceHoverPosition \| undefined) => void`                                                   |
+| <span id="action-setfeaturedata">setFeatureData</span>                     | `(featureData: SimpleFeatureSerialized) => void`                                                      |
+| <span id="action-clearfeaturedata">clearFeatureData</span>                 | `() => void`                                                                                          |
+| <span id="action-setformatteddata">setFormattedData</span>                 | `(feat: SimpleFeatureSerialized) => void`                                                             |
+| <span id="action-setextra">setExtra</span>                                 | `(type?: string \| undefined, trackId?: string \| undefined, maxDepth?: number \| undefined) => void` |
+| <span id="action-seterror">setError</span>                                 | `(e: unknown) => void`                                                                                |
 
 </details>

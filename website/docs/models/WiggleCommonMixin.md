@@ -18,71 +18,58 @@ instead.
 
 ## Members
 
-| Member                                                       | Kind       | Defined by                                          | Description                                                                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------ | ---------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles  | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
-| [featureUnderMouse](#volatile-featureundermouse)             | Volatiles  | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
-| [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters    | WiggleCommonMixin                                   | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. |
-| [visibleScoreRange](#getter-visiblescorerange)               | Getters    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
-| [dataRange](#getter-datarange)                               | Getters    | WiggleCommonMixin                                   | The true, unclipped `[min, max]` of the visible data. The displayed `domain` may clip this (localpercentile/localsd/fixed bounds), so the score legend compares the two to flag clipped signal.                                                                                                                    |
-| [domain](#getter-domain)                                     | Getters    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
-| [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
-| [setFeatureUnderMouse](#action-setfeatureundermouse)         | Actions    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
-| [selectFeature](#action-selectfeature)                       | Actions    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
-| [resolution](#property-resolution)                           | Properties | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [displayCrossHatches](#property-displaycrosshatches)         | Properties | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [loadedBpPerPx](#volatile-loadedbpperpx)                     | Volatiles  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [scalebarOverlapLeft](#getter-scalebaroverlapleft)           | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [posColor](#getter-poscolor)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [negColor](#getter-negcolor)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [bicolorPivot](#getter-bicolorpivot)                         | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [scaleType](#getter-scaletype)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [autoscaleType](#getter-autoscaletype)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [numStdDev](#getter-numstddev)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [numQuantile](#getter-numquantile)                           | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [scatterPointSize](#getter-scatterpointsize)                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [lineWidth](#getter-linewidth)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [summaryScoreMode](#getter-summaryscoremode)                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [renderingType](#getter-renderingtype)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [minScore](#getter-minscore)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [maxScore](#getter-maxscore)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [minScoreBound](#getter-minscorebound)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [maxScoreBound](#getter-maxscorebound)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [hasResolution](#getter-hasresolution)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [toggleCrossHatches](#action-togglecrosshatches)             | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setResolution](#action-setresolution)                       | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setLoadedBpPerPx](#action-setloadedbpperpx)                 | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setScaleType](#action-setscaletype)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setBicolorPivot](#action-setbicolorpivot)                   | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setMinScore](#action-setminscore)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setMaxScore](#action-setmaxscore)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setRenderingType](#action-setrenderingtype)                 | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setSummaryScoreMode](#action-setsummaryscoremode)           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setScatterPointSize](#action-setscatterpointsize)           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setLineWidth](#action-setlinewidth)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [setAutoscale](#action-setautoscale)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
-| [isCacheValid](#action-iscachevalid)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) | Strict zoom equality: see adr-008.                                                                                                                                                                                                                                                                                 |
+| Member                                                       | Kind       | Defined by                                          | Description                                                                                          |
+| ------------------------------------------------------------ | ---------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles  | WiggleCommonMixin                                   |                                                                                                      |
+| [featureUnderMouse](#volatile-featureundermouse)             | Volatiles  | WiggleCommonMixin                                   |                                                                                                      |
+| [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters    | WiggleCommonMixin                                   | Source names to include when computing the autoscale domain; `undefined` means every fetched source. |
+| [visibleScoreRange](#getter-visiblescorerange)               | Getters    | WiggleCommonMixin                                   |                                                                                                      |
+| [dataRange](#getter-datarange)                               | Getters    | WiggleCommonMixin                                   | The true, unclipped `[min, max]` of the visible data.                                                |
+| [domain](#getter-domain)                                     | Getters    | WiggleCommonMixin                                   |                                                                                                      |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    | WiggleCommonMixin                                   |                                                                                                      |
+| [setFeatureUnderMouse](#action-setfeatureundermouse)         | Actions    | WiggleCommonMixin                                   |                                                                                                      |
+| [selectFeature](#action-selectfeature)                       | Actions    | WiggleCommonMixin                                   |                                                                                                      |
+| [resolution](#property-resolution)                           | Properties | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [displayCrossHatches](#property-displaycrosshatches)         | Properties | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [loadedBpPerPx](#volatile-loadedbpperpx)                     | Volatiles  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [scalebarOverlapLeft](#getter-scalebaroverlapleft)           | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [posColor](#getter-poscolor)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [negColor](#getter-negcolor)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [bicolorPivot](#getter-bicolorpivot)                         | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [scaleType](#getter-scaletype)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [autoscaleType](#getter-autoscaletype)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [numStdDev](#getter-numstddev)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [numQuantile](#getter-numquantile)                           | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [scatterPointSize](#getter-scatterpointsize)                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [lineWidth](#getter-linewidth)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [summaryScoreMode](#getter-summaryscoremode)                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [renderingType](#getter-renderingtype)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [minScore](#getter-minscore)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [maxScore](#getter-maxscore)                                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [minScoreBound](#getter-minscorebound)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [maxScoreBound](#getter-maxscorebound)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [hasResolution](#getter-hasresolution)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [toggleCrossHatches](#action-togglecrosshatches)             | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setResolution](#action-setresolution)                       | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setLoadedBpPerPx](#action-setloadedbpperpx)                 | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setScaleType](#action-setscaletype)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setBicolorPivot](#action-setbicolorpivot)                   | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setMinScore](#action-setminscore)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setMaxScore](#action-setmaxscore)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setRenderingType](#action-setrenderingtype)                 | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setSummaryScoreMode](#action-setsummaryscoremode)           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setScatterPointSize](#action-setscatterpointsize)           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setLineWidth](#action-setlinewidth)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [setAutoscale](#action-setautoscale)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                      |
+| [isCacheValid](#action-iscachevalid)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) | Strict zoom equality: see adr-008.                                                                   |
 
 <details>
 <summary>WiggleCommonMixin - Volatiles</summary>
 
-#### volatile: rpcDataMap
-
-```ts
-// type signature
-type rpcDataMap = ObservableMap<number, WiggleDataResult>
-// code
-rpcDataMap: observable.map<number, WiggleDataResult>()
-```
-
-#### volatile: featureUnderMouse
-
-```ts
-// type signature
-type featureUnderMouse = WiggleFeatureUnderMouse | undefined
-// code
-featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
-```
+| Member                                                         | Type                                      |
+| -------------------------------------------------------------- | ----------------------------------------- |
+| <span id="volatile-rpcdatamap">rpcDataMap</span>               | `ObservableMap<number, WiggleDataResult>` |
+| <span id="volatile-featureundermouse">featureUnderMouse</span> | `WiggleFeatureUnderMouse \| undefined`    |
 
 </details>
 
@@ -115,40 +102,21 @@ type dataRange = [number, number] | undefined
 <details>
 <summary>WiggleCommonMixin - Getters (other undocumented members)</summary>
 
-#### getter: visibleScoreRange
-
-```ts
-type visibleScoreRange = [number, number] | undefined
-```
-
-#### getter: domain
-
-```ts
-type domain = [number, number] | undefined
-```
+| Member                                                       | Type                            |
+| ------------------------------------------------------------ | ------------------------------- |
+| <span id="getter-visiblescorerange">visibleScoreRange</span> | `[number, number] \| undefined` |
+| <span id="getter-domain">domain</span>                       | `[number, number] \| undefined` |
 
 </details>
 
 <details>
 <summary>WiggleCommonMixin - Actions</summary>
 
-#### action: clearDisplaySpecificData
-
-```ts
-type clearDisplaySpecificData = () => void
-```
-
-#### action: setFeatureUnderMouse
-
-```ts
-type setFeatureUnderMouse = (feat?: WiggleFeatureUnderMouse | undefined) => void
-```
-
-#### action: selectFeature
-
-```ts
-type selectFeature = (feat: WiggleFeatureUnderMouse) => void
-```
+| Member                                                                     | Type                                                    |
+| -------------------------------------------------------------------------- | ------------------------------------------------------- |
+| <span id="action-cleardisplayspecificdata">clearDisplaySpecificData</span> | `() => void`                                            |
+| <span id="action-setfeatureundermouse">setFeatureUnderMouse</span>         | `(feat?: WiggleFeatureUnderMouse \| undefined) => void` |
+| <span id="action-selectfeature">selectFeature</span>                       | `(feat: WiggleFeatureUnderMouse) => void`               |
 
 </details>
 
@@ -165,212 +133,40 @@ its most-specific definition.
 
 **Properties**
 
-#### property: resolution
-
-```ts
-// type signature
-type resolution = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-resolution: types.stripDefault(types.number, 1)
-```
-
-#### property: displayCrossHatches
-
-```ts
-// type signature
-type displayCrossHatches = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-displayCrossHatches: types.stripDefault(types.boolean, false)
-```
+| Member                                                             | Type                                                |
+| ------------------------------------------------------------------ | --------------------------------------------------- |
+| <span id="property-resolution">resolution</span>                   | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| <span id="property-displaycrosshatches">displayCrossHatches</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 
 **Volatiles**
 
-#### volatile: loadedBpPerPx
-
-```ts
-// type signature
-type loadedBpPerPx = number | undefined
-// code
-loadedBpPerPx: undefined as number | undefined
-```
+| Member                                                 | Type                  |
+| ------------------------------------------------------ | --------------------- |
+| <span id="volatile-loadedbpperpx">loadedBpPerPx</span> | `number \| undefined` |
 
 **Getters**
 
-#### getter: scalebarOverlapLeft
-
-```ts
-type scalebarOverlapLeft = number
-```
-
-#### getter: posColor
-
-```ts
-type posColor = string
-```
-
-#### getter: negColor
-
-```ts
-type negColor = string
-```
-
-#### getter: bicolorPivot
-
-```ts
-type bicolorPivot = number
-```
-
-#### getter: scaleType
-
-```ts
-type scaleType = string
-```
-
-#### getter: autoscaleType
-
-```ts
-type autoscaleType = string
-```
-
-#### getter: numStdDev
-
-```ts
-type numStdDev = number
-```
-
-#### getter: numQuantile
-
-```ts
-type numQuantile = number
-```
-
-#### getter: scatterPointSize
-
-```ts
-type scatterPointSize = number
-```
-
-#### getter: lineWidth
-
-```ts
-type lineWidth = number
-```
-
-#### getter: summaryScoreMode
-
-```ts
-type summaryScoreMode = string
-```
-
-#### getter: renderingType
-
-```ts
-type renderingType = string
-```
-
-#### getter: minScore
-
-```ts
-type minScore = number
-```
-
-#### getter: maxScore
-
-```ts
-type maxScore = number
-```
-
-#### getter: minScoreBound
-
-```ts
-type minScoreBound = number | undefined
-```
-
-#### getter: maxScoreBound
-
-```ts
-type maxScoreBound = number | undefined
-```
-
-#### getter: hasResolution
-
-```ts
-type hasResolution = boolean
-```
+| Member                                                           | Type                  |
+| ---------------------------------------------------------------- | --------------------- |
+| <span id="getter-scalebaroverlapleft">scalebarOverlapLeft</span> | `number`              |
+| <span id="getter-poscolor">posColor</span>                       | `string`              |
+| <span id="getter-negcolor">negColor</span>                       | `string`              |
+| <span id="getter-bicolorpivot">bicolorPivot</span>               | `number`              |
+| <span id="getter-scaletype">scaleType</span>                     | `string`              |
+| <span id="getter-autoscaletype">autoscaleType</span>             | `string`              |
+| <span id="getter-numstddev">numStdDev</span>                     | `number`              |
+| <span id="getter-numquantile">numQuantile</span>                 | `number`              |
+| <span id="getter-scatterpointsize">scatterPointSize</span>       | `number`              |
+| <span id="getter-linewidth">lineWidth</span>                     | `number`              |
+| <span id="getter-summaryscoremode">summaryScoreMode</span>       | `string`              |
+| <span id="getter-renderingtype">renderingType</span>             | `string`              |
+| <span id="getter-minscore">minScore</span>                       | `number`              |
+| <span id="getter-maxscore">maxScore</span>                       | `number`              |
+| <span id="getter-minscorebound">minScoreBound</span>             | `number \| undefined` |
+| <span id="getter-maxscorebound">maxScoreBound</span>             | `number \| undefined` |
+| <span id="getter-hasresolution">hasResolution</span>             | `boolean`             |
 
 **Actions**
-
-#### action: toggleCrossHatches
-
-```ts
-type toggleCrossHatches = () => void
-```
-
-#### action: setResolution
-
-```ts
-type setResolution = (res: number) => void
-```
-
-#### action: setLoadedBpPerPx
-
-```ts
-type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
-```
-
-#### action: setScaleType
-
-```ts
-type setScaleType = (scaleType: string) => void
-```
-
-#### action: setBicolorPivot
-
-```ts
-type setBicolorPivot = (val?: number | undefined) => void
-```
-
-#### action: setMinScore
-
-```ts
-type setMinScore = (val?: number | undefined) => void
-```
-
-#### action: setMaxScore
-
-```ts
-type setMaxScore = (val?: number | undefined) => void
-```
-
-#### action: setRenderingType
-
-```ts
-type setRenderingType = (type: string) => void
-```
-
-#### action: setSummaryScoreMode
-
-```ts
-type setSummaryScoreMode = (val: string) => void
-```
-
-#### action: setScatterPointSize
-
-```ts
-type setScatterPointSize = (val?: number | undefined) => void
-```
-
-#### action: setLineWidth
-
-```ts
-type setLineWidth = (val?: number | undefined) => void
-```
-
-#### action: setAutoscale
-
-```ts
-type setAutoscale = (val?: string | undefined) => void
-```
 
 #### action: isCacheValid
 
@@ -379,5 +175,20 @@ Strict zoom equality: see adr-008.
 ```ts
 type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
+
+| Member                                                           | Type                                     |
+| ---------------------------------------------------------------- | ---------------------------------------- |
+| <span id="action-togglecrosshatches">toggleCrossHatches</span>   | `() => void`                             |
+| <span id="action-setresolution">setResolution</span>             | `(res: number) => void`                  |
+| <span id="action-setloadedbpperpx">setLoadedBpPerPx</span>       | `(bpPerPx: number \| undefined) => void` |
+| <span id="action-setscaletype">setScaleType</span>               | `(scaleType: string) => void`            |
+| <span id="action-setbicolorpivot">setBicolorPivot</span>         | `(val?: number \| undefined) => void`    |
+| <span id="action-setminscore">setMinScore</span>                 | `(val?: number \| undefined) => void`    |
+| <span id="action-setmaxscore">setMaxScore</span>                 | `(val?: number \| undefined) => void`    |
+| <span id="action-setrenderingtype">setRenderingType</span>       | `(type: string) => void`                 |
+| <span id="action-setsummaryscoremode">setSummaryScoreMode</span> | `(val: string) => void`                  |
+| <span id="action-setscatterpointsize">setScatterPointSize</span> | `(val?: number \| undefined) => void`    |
+| <span id="action-setlinewidth">setLineWidth</span>               | `(val?: number \| undefined) => void`    |
+| <span id="action-setautoscale">setAutoscale</span>               | `(val?: string \| undefined) => void`    |
 
 </details>

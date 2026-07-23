@@ -11,6 +11,7 @@ import {
   docPage,
   exampleSection,
   filterUnseenByName,
+  firstSentence,
   lookupByIdOrName,
   mapByKey,
   markdownTable,
@@ -284,11 +285,7 @@ function inheritedSection(inherited: InheritedGroup[]) {
       // a markdown link inside <summary> renders literally, so the link to the
       // ancestor's own page leads the body instead
       `[${model.header.name} →](../${model.header.id})`,
-      ...MEMBER_KINDS.flatMap(k =>
-        members[k.key].length
-          ? [`**${k.label}**`, ...members[k.key].map(m => memberEntry(k, m))]
-          : [],
-      ),
+      ...MEMBER_KINDS.flatMap(k => inheritedKindBlocks(k, members[k.key])),
     ),
   )
   return blocks.length
@@ -300,13 +297,23 @@ function inheritedSection(inherited: InheritedGroup[]) {
     : ''
 }
 
+// The in-page anchor of a member's entry: the github-slugger id of its
+// `#### <tag>: <name>` heading. Plumbing members render as table rows rather
+// than headings, so plumbingTable emits this id explicitly — either way the
+// members index can link to every member on the page.
+function memberAnchor(def: MemberKind, name: string) {
+  return `${def.tag}-${name.toLowerCase()}`
+}
+
 // One row of the members table: name (linked to its full entry below), kind,
 // the model that defines it, and a one-line description — empty for "plumbing"
 // members that carry no JSDoc, which itself is useful signal (nothing to read
 // there). `definedBy` is this model's own name for own members and a link to
-// the ancestor's page for inherited ones.
+// the ancestor's page for inherited ones. The description is trimmed to its
+// first sentence, as on the config pages' slot table: the full text is in the
+// entry the row links into, and a paragraph in a cell defeats the scan.
 function memberRow(def: MemberKind, m: Member, definedBy: string) {
-  return `| [${m.name}](#${def.tag}-${m.name.toLowerCase()}) | ${def.label} | ${definedBy} | ${tableCell(m.docs)} |`
+  return `| [${m.name}](#${memberAnchor(def, m.name)}) | ${def.label} | ${definedBy} | ${tableCell(m.docs && firstSentence(m.docs))} |`
 }
 
 // A real table of every member available on this model — its own first, then
@@ -407,34 +414,58 @@ function memberEntry(def: MemberKind, m: Member) {
   )
 }
 
-// Both documented members and undocumented "plumbing" ones (bare setters,
-// internal accessors) render in full, one folded-closed block per kind — the
-// memberIndexSection index above is the primary way in, so nothing needs to
-// start expanded. Their `#### <tag>: <name>` headings are the anchor targets
-// that index and other pages' "Inherited members" links point at; fragment
-// navigation auto-expands the block on landing.
+// Undocumented plumbing carries nothing but a name and a type, so a full entry
+// spends five lines of heading and code fence on one fact — and on a display
+// model those members outnumber the documented ones two to one. One row each
+// instead: the whole API surface is still on the page (a reader never has to
+// leave it), but it reads as a list rather than as source. The explicit
+// `<span id>` reproduces the anchor the heading would have had, so the members
+// index and other pages' inherited links still land on the right row.
+function plumbingTable(def: MemberKind, members: Member[]) {
+  return markdownTable(
+    ['Member', 'Type'],
+    members.map(
+      m =>
+        `| <span id="${memberAnchor(def, m.name)}">${m.name}</span> | ${m.signature ? `\`${tableCell(m.signature)}\`` : ''} |`,
+    ),
+  )
+}
+
+// Every member of one kind, folded closed — the memberIndexSection index above
+// is the primary way in, so nothing needs to start expanded. Documented members
+// render in full; the rest compact into plumbingTable.
 function memberSection(modelName: string, def: MemberKind, members: Member[]) {
-  if (!members.length) {
-    return ''
-  }
   const documented = members.filter(isDocumented)
   const plumbing = members.filter(m => !isDocumented(m))
   return section(
-    documented.length
-      ? collapsibleClosed(
-          `${modelName} - ${def.label}`,
-          ...documented.map(m => memberEntry(def, m)),
-        )
-      : '',
-    plumbing.length
-      ? collapsibleClosed(
-          documented.length
-            ? `${modelName} - ${def.label} (other undocumented members)`
-            : `${modelName} - ${def.label}`,
-          ...plumbing.map(m => memberEntry(def, m)),
-        )
-      : '',
+    documented.length &&
+      collapsibleClosed(
+        `${modelName} - ${def.label}`,
+        ...documented.map(m => memberEntry(def, m)),
+      ),
+    plumbing.length &&
+      collapsibleClosed(
+        documented.length
+          ? `${modelName} - ${def.label} (other undocumented members)`
+          : `${modelName} - ${def.label}`,
+        plumbingTable(def, plumbing),
+      ),
   )
+}
+
+// One kind's members inside an ancestor's block: same documented/plumbing split
+// as memberSection, under a bold kind label rather than its own fold (the
+// ancestor block is already one fold).
+function inheritedKindBlocks(def: MemberKind, members: Member[]) {
+  const documented = members.filter(isDocumented)
+  const plumbing = members.filter(m => !isDocumented(m))
+  return members.length
+    ? [
+        `**${def.label}**`,
+        ...documented.map(m => memberEntry(def, m)),
+        ...(plumbing.length ? [plumbingTable(def, plumbing)] : []),
+      ]
+    : []
 }
 
 export async function writeModelDocs(

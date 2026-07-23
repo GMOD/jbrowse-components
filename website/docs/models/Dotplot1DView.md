@@ -16,14 +16,14 @@ used here
 
 ## Members
 
-| Member                                 | Kind    | Defined by    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| -------------------------------------- | ------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [dynamicBlocks](#getter-dynamicblocks) | Getters | Dotplot1DView | this uses padding=false and elision=false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| [maxBpPerPx](#getter-maxbpperpx)       | Getters | Dotplot1DView |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [minBpPerPx](#getter-minbpperpx)       | Getters | Dotplot1DView |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [maxOffset](#getter-maxoffset)         | Getters | Dotplot1DView | One rule at every zoom level: scroll until only `leftPadding` px of content remain visible on the right, or `rightPadding` px on the left. Deliberately NOT special-cased for content narrower than the view. Pinning both bounds to the centered offset there gives zoomTo — which clamps its anchor-preserving offset into [minOffset, maxOffset] — a degenerate range, so the cursor anchor is silently discarded and the plot snaps back to centered. That was the max-zoom-out "edge jump": the first zoom step displaced the locus under the cursor by the centered-vs-anchored gap, which grows with distance from center (~41px near the edge, ~0 at the center). `center()` still centers explicitly, so the initial view is unchanged. |
-| [minOffset](#getter-minoffset)         | Getters | Dotplot1DView |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [center](#action-center)               | Actions | Dotplot1DView |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Member                                 | Kind    | Defined by    | Description                                                                                                                                |
+| -------------------------------------- | ------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [dynamicBlocks](#getter-dynamicblocks) | Getters | Dotplot1DView | this uses padding=false and elision=false                                                                                                  |
+| [maxBpPerPx](#getter-maxbpperpx)       | Getters | Dotplot1DView |                                                                                                                                            |
+| [minBpPerPx](#getter-minbpperpx)       | Getters | Dotplot1DView |                                                                                                                                            |
+| [maxOffset](#getter-maxoffset)         | Getters | Dotplot1DView | One rule at every zoom level: scroll until only `leftPadding` px of content remain visible on the right, or `rightPadding` px on the left. |
+| [minOffset](#getter-minoffset)         | Getters | Dotplot1DView |                                                                                                                                            |
+| [center](#action-center)               | Actions | Dotplot1DView |                                                                                                                                            |
 
 <details>
 <summary>Dotplot1DView - Getters</summary>
@@ -59,33 +59,19 @@ type maxOffset = number
 <details>
 <summary>Dotplot1DView - Getters (other undocumented members)</summary>
 
-#### getter: maxBpPerPx
-
-```ts
-type maxBpPerPx = number
-```
-
-#### getter: minBpPerPx
-
-```ts
-type minBpPerPx = number
-```
-
-#### getter: minOffset
-
-```ts
-type minOffset = number
-```
+| Member                                         | Type     |
+| ---------------------------------------------- | -------- |
+| <span id="getter-maxbpperpx">maxBpPerPx</span> | `number` |
+| <span id="getter-minbpperpx">minBpPerPx</span> | `number` |
+| <span id="getter-minoffset">minOffset</span>   | `number` |
 
 </details>
 
 <details>
 <summary>Dotplot1DView - Actions</summary>
 
-#### action: center
-
-```ts
-type center = () => void
-```
+| Member                                 | Type         |
+| -------------------------------------- | ------------ |
+| <span id="action-center">center</span> | `() => void` |
 
 </details>

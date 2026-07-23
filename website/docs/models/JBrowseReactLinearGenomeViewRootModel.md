@@ -23,22 +23,9 @@ LGV-only `disableAddTracks`/`drawerViewHeight` props.
 <details>
 <summary>JBrowseReactLinearGenomeViewRootModel - Properties</summary>
 
-#### property: disableAddTracks
-
-```ts
-// type signature
-type disableAddTracks = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-disableAddTracks: types.stripDefault(types.boolean, false)
-```
-
-#### property: drawerViewHeight
-
-```ts
-// type signature
-type drawerViewHeight = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-drawerViewHeight: types.stripDefault(types.string, '100vh')
-```
+| Member                                                       | Type                                                |
+| ------------------------------------------------------------ | --------------------------------------------------- |
+| <span id="property-disableaddtracks">disableAddTracks</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| <span id="property-drawerviewheight">drawerViewHeight</span> | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
 
 </details>

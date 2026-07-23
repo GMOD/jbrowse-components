@@ -30,23 +30,10 @@ ExternalTokenInternetAccount.
 <details>
 <summary>TokenEntryInternetAccount - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<Type>
-// code
-type: types.literal(typeName)
-```
-
-#### property: configuration
-
-```ts
-// type signature
-type configuration = IConfigurationReference<AnyConfigurationSchemaType>
-// code
-configuration: ConfigurationReference(configSchema)
-```
+| Member                                                 | Type                                                  |
+| ------------------------------------------------------ | ----------------------------------------------------- |
+| <span id="property-type">type</span>                   | `ISimpleType<Type>`                                   |
+| <span id="property-configuration">configuration</span> | `IConfigurationReference<AnyConfigurationSchemaType>` |
 
 </details>
 

@@ -13,19 +13,19 @@ JBrowse core.
 
 ## Members
 
-| Member                                   | Kind       | Defined by          | Description                                                                                                                                                                                                                                                                                   |
-| ---------------------------------------- | ---------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [tracks](#property-tracks)               | Properties | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
-| [configuration](#property-configuration) | Properties | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
-| [silent](#property-silent)               | Properties | BaseConnectionModel | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
-| [loading](#volatile-loading)             | Volatiles  | BaseConnectionModel | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks.                                                    |
-| [connectionId](#getter-connectionid)     | Getters    | BaseConnectionModel | the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)                                                                                                                                                   |
-| [name](#getter-name)                     | Getters    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
-| [connect](#action-connect)               | Actions    | BaseConnectionModel | no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to fetch and populate their `tracks`. Returns a promise so `afterAttach` can clear the loading flag once the fetch settles.                                                                                        |
-| [setLoading](#action-setloading)         | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
-| [addTrackConf](#action-addtrackconf)     | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
-| [addTrackConfs](#action-addtrackconfs)   | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
-| [setTrackConfs](#action-settrackconfs)   | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
+| Member                                   | Kind       | Defined by          | Description                                                                                                                                                                                                                             |
+| ---------------------------------------- | ---------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [tracks](#property-tracks)               | Properties | BaseConnectionModel |                                                                                                                                                                                                                                         |
+| [configuration](#property-configuration) | Properties | BaseConnectionModel |                                                                                                                                                                                                                                         |
+| [silent](#property-silent)               | Properties | BaseConnectionModel | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. |
+| [loading](#volatile-loading)             | Volatiles  | BaseConnectionModel | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector.                                                                                                                         |
+| [connectionId](#getter-connectionid)     | Getters    | BaseConnectionModel | the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)                                                                                             |
+| [name](#getter-name)                     | Getters    | BaseConnectionModel |                                                                                                                                                                                                                                         |
+| [connect](#action-connect)               | Actions    | BaseConnectionModel | no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to fetch and populate their `tracks`.                                                                                                                        |
+| [setLoading](#action-setloading)         | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                         |
+| [addTrackConf](#action-addtrackconf)     | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                         |
+| [addTrackConfs](#action-addtrackconfs)   | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                         |
+| [setTrackConfs](#action-settrackconfs)   | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                         |
 
 <details>
 <summary>BaseConnectionModel - Properties</summary>
@@ -49,23 +49,10 @@ silent: types.optional(types.boolean, false)
 <details>
 <summary>BaseConnectionModel - Properties (other undocumented members)</summary>
 
-#### property: tracks
-
-```ts
-// type signature
-type tracks = IArrayType<IAnyModelType>
-// code
-tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
-```
-
-#### property: configuration
-
-```ts
-// type signature
-type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly name: { readonly type: "string"; readonly defaultValue: "nameOfConnection"; readonly description: "a unique name for this connection"; }; readonly assemblyNames: { readonly type: "stringArray"; readonly defaultValue: readonly []; readonly description: "optio...
-// code
-configuration: ConfigurationReference(configSchema)
-```
+| Member                                                 | Type                                                  |
+| ------------------------------------------------------ | ----------------------------------------------------- |
+| <span id="property-tracks">tracks</span>               | `IArrayType<IAnyModelType>`                           |
+| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
 
 </details>
 
@@ -104,11 +91,9 @@ type connectionId = string
 <details>
 <summary>BaseConnectionModel - Getters (other undocumented members)</summary>
 
-#### getter: name
-
-```ts
-type name = string
-```
+| Member                             | Type     |
+| ---------------------------------- | -------- |
+| <span id="getter-name">name</span> | `string` |
 
 </details>
 
@@ -130,28 +115,11 @@ type connect = () => Promise<void>
 <details>
 <summary>BaseConnectionModel - Actions (other undocumented members)</summary>
 
-#### action: setLoading
-
-```ts
-type setLoading = (loading: boolean) => void
-```
-
-#### action: addTrackConf
-
-```ts
-type addTrackConf = (trackConf: TrackConf) => any
-```
-
-#### action: addTrackConfs
-
-```ts
-type addTrackConfs = (trackConfs: TrackConf[]) => void
-```
-
-#### action: setTrackConfs
-
-```ts
-type setTrackConfs = (trackConfs: TrackConf[]) => void
-```
+| Member                                               | Type                                |
+| ---------------------------------------------------- | ----------------------------------- |
+| <span id="action-setloading">setLoading</span>       | `(loading: boolean) => void`        |
+| <span id="action-addtrackconf">addTrackConf</span>   | `(trackConf: TrackConf) => any`     |
+| <span id="action-addtrackconfs">addTrackConfs</span> | `(trackConfs: TrackConf[]) => void` |
+| <span id="action-settrackconfs">setTrackConfs</span> | `(trackConfs: TrackConf[]) => void` |
 
 </details>

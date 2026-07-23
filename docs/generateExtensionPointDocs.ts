@@ -1,7 +1,11 @@
 import fs from 'fs'
-import path from 'path'
 
-import { markdownTable, rewriteMarkerBlock, runMarkerScript } from './util.ts'
+import {
+  listSources,
+  markdownTable,
+  rewriteMarkerBlock,
+  runMarkerScript,
+} from './util.ts'
 
 // Render a completeness index of every extension point into the hand-written
 // extension_points guide, sourced from the actual registration/fire sites so the
@@ -22,23 +26,11 @@ import { markdownTable, rewriteMarkerBlock, runMarkerScript } from './util.ts'
 
 // Source trees scanned for `#extensionPoint` tags.
 const SOURCE_DIRS = ['packages', 'plugins', 'products']
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
 
 interface ExtensionPoint {
   id: string
   kind: string
   description: string
-}
-
-// Recursively list .ts/.tsx source files, skipping build output and tests.
-function listSources(dir: string): string[] {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) {
-      return SKIP_DIRS.has(e.name) ? [] : listSources(full)
-    }
-    return /\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [full] : []
-  })
 }
 
 // `#extensionPoint <id> | <sync|async> | <description>` occurrences in one file.
@@ -87,9 +79,13 @@ function renderTable(points: ExtensionPoint[]) {
 // used by CI to fail when an extension point was added but the docs were not
 // regenerated.
 export function writeExtensionPointDocs({ check = false } = {}) {
+  // `prettier-ignore` pins the compact table `markdownTable` emits, for the same
+  // reason as the color/file-type tables — see generateColorDocs. Without it
+  // prettier padded the block every `pnpm format` while this generator emitted
+  // it compact, and the whitespace-insensitive --check never caught the churn.
   return rewriteMarkerBlock(
     'EXTENSION_POINTS_INDEX',
-    renderTable(collectExtensionPoints()),
+    `<!-- prettier-ignore -->\n${renderTable(collectExtensionPoints())}`,
     { check },
   )
 }

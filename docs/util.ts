@@ -435,12 +435,122 @@ function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {
   const decl = symbol?.valueDeclaration
   return {
     name: symbol?.getName() ?? '',
-    signature:
-      symbol && decl
-        ? checker.typeToString(checker.getTypeOfSymbolAtLocation(symbol, decl))
-        : '',
+    signature: symbol && decl ? typeSignature(checker, symbol, decl) : '',
     declId: symbolDeclId(checker, symbol),
   }
+}
+
+// A member's rendered type. `typeToString` truncates past ~340 characters by
+// cutting mid-token — leaving unbalanced brackets and half a word, which is
+// worse than no type at all (a display's `configuration` printed 340 characters
+// of expanded config schema ending in "including c..."). When that happens,
+// re-render untruncated and shorten structurally instead, so the type still
+// reads as a type.
+function typeSignature(
+  checker: ts.TypeChecker,
+  symbol: ts.Symbol,
+  decl: ts.Declaration,
+) {
+  const type = checker.getTypeOfSymbolAtLocation(symbol, decl)
+  const printed = checker.typeToString(type)
+  return elideSignature(
+    printed.endsWith('...')
+      ? checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)
+      : printed,
+  )
+}
+
+// Longer than this and a signature stops being read and starts being skipped.
+const MAX_SIGNATURE = 180
+
+// The innermost `<...>` / `{...}` group in a type string, or undefined. Already
+// elided groups (`<…>`, `{…}`) are atomic: skipped when scanning, so the next
+// pass finds the group that encloses them. The `>` of a `=>` is not a bracket.
+function innermostGroup(sig: string, open: string, close: string) {
+  const elided = `${open}…${close}`
+  for (let i = 0; i < sig.length; i++) {
+    if (sig.startsWith(elided, i)) {
+      i += 2
+    } else if (sig[i] === open) {
+      for (let j = i + 1; j < sig.length; j++) {
+        if (sig.startsWith(elided, j)) {
+          j += 2
+        } else if (sig[j] === open) {
+          break
+        } else if (sig[j] === close && !(close === '>' && sig[j - 1] === '=')) {
+          return { start: i + 1, end: j }
+        }
+      }
+    }
+  }
+  return undefined
+}
+
+// Split a type on its top-level `|`, ignoring the ones nested inside brackets —
+// so a union of four object types splits into four, but a function type whose
+// parameter happens to be `boolean | undefined` stays whole.
+function topLevelUnion(sig: string) {
+  const parts: string[] = []
+  let depth = 0
+  let start = 0
+  for (let i = 0; i < sig.length; i++) {
+    const c = sig[i]!
+    if ('<{(['.includes(c)) {
+      depth++
+    } else if ('>})]'.includes(c)) {
+      if (!(c === '>' && sig[i - 1] === '=')) {
+        depth--
+      }
+    } else if (c === '|' && depth === 0) {
+      parts.push(sig.slice(start, i).trim())
+      start = i + 1
+    }
+  }
+  parts.push(sig.slice(start).trim())
+  return parts
+}
+
+// Shorten an over-long type structurally, never by cutting characters: the point
+// is that what is printed still reads as a type. Generic arguments collapse from
+// the inside out first — `FC<{ model: ModelInstanceTypeProps<Record<string,
+// any>> }>` loses the `Record` before the object — then inline object types, then
+// a top-level union drops its trailing alternatives. Each stage stops as soon as
+// the type fits, so it gives up the least specific detail it can.
+//
+// A type that resists all three is left alone. An honest long signature beats a
+// mangled short one: truncating this one at a fixed width once ate a function's
+// entire return type, leaving it ending mid-parameter.
+export function elideSignature(sig: string, max = MAX_SIGNATURE) {
+  let out = sig.replace(/\s+/g, ' ')
+  for (const [open, close] of [
+    ['<', '>'],
+    ['{', '}'],
+  ]) {
+    while (out.length > max) {
+      const group = innermostGroup(out, open!, close!)
+      if (!group) {
+        break
+      }
+      out = `${out.slice(0, group.start)}…${out.slice(group.end)}`
+    }
+  }
+  if (out.length > max) {
+    const parts = topLevelUnion(out)
+    const kept = parts.filter(
+      (_, i) => i === 0 || parts.slice(0, i + 1).join(' | ').length + 4 <= max,
+    )
+    out = kept.length < parts.length ? `${kept.join(' | ')} | …` : out
+  }
+  return out
+}
+
+// The first sentence of a description, for table cells: the full multi-sentence
+// text lives in the entry the row links into, and a paragraph in a cell forces
+// horizontal scroll and defeats the scan. `e.g.`/`i.e.` are not sentence ends.
+export function firstSentence(text: string) {
+  const trimmed = text.trim()
+  const match = /^.*?[.!?](?<!\b[ei]\.[a-z]\.)(?=\s|$)/s.exec(trimmed)
+  return match ? match[0] : trimmed
 }
 
 // Follow import aliases to the original symbol so two references to the same
@@ -1442,6 +1552,25 @@ export function parsePipeTags(
   return out
 }
 
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
+
+// Recursively list every non-test .ts/.tsx source under a directory, skipping
+// build output. Used by the regex-scanning generators (extension points,
+// display foundations) that read tags straight from source text rather than
+// through the TypeScript program.
+export function listSources(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
+    const full = path.join(dir, e.name)
+    return e.isDirectory()
+      ? SKIP_DIRS.has(e.name)
+        ? []
+        : listSources(full)
+      : /\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)
+        ? [full]
+        : []
+  })
+}
+
 // Recursively list every .md doc under a directory. Shared by the marker-block
 // generators (color/jexl/extension-point) that rewrite tagged regions embedded
 // in the hand-written guides.
@@ -1503,6 +1632,48 @@ export function rewriteMarkerBlock(
     }
   }
   return stale
+}
+
+// The grouped sibling of rewriteMarkerBlock, for markers that name which group
+// they render (`<!-- COLOR_TABLE alignments-indicators START -->`) so one
+// generator can feed many blocks across many docs. `render` returns a group's
+// block body, and throws when the group is unknown — the message belongs to the
+// caller, since an unrecognized group is always an authoring typo.
+//
+// Returns the docs whose block content changed (used by --check to flag stale
+// blocks without rewriting) and the groups some doc actually rendered, so a
+// caller can catch a tagged group that no page pulls in.
+export function rewriteGroupedMarkerBlocks(
+  marker: string,
+  render: (group: string, file: string) => string,
+  { check = false } = {},
+) {
+  const markerRe = new RegExp(`<!-- ${marker} (\\S+) START -->`, 'g')
+  const stale: string[] = []
+  const seen = new Set<string>()
+  for (const file of listDocs('website/docs')) {
+    const original = fs.readFileSync(file, 'utf8')
+    let updated = original
+    for (const [, group] of original.matchAll(markerRe)) {
+      seen.add(group!)
+      const startMarker = `<!-- ${marker} ${group} START -->`
+      const endMarker = `<!-- ${marker} ${group} END -->`
+      const re = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`)
+      const full = `${startMarker}\n\n${render(group!, file)}\n\n${endMarker}`
+      updated = updated.replace(re, () => full)
+    }
+    if (check) {
+      if (
+        normalizeMarkerWhitespace(updated) !==
+        normalizeMarkerWhitespace(original)
+      ) {
+        stale.push(file)
+      }
+    } else if (updated !== original) {
+      fs.writeFileSync(file, updated)
+    }
+  }
+  return { stale, seen }
 }
 
 // CLI entry shared by the marker-block generators (color/jexl/extension-point).

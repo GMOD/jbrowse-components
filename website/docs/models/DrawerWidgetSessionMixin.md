@@ -13,87 +13,38 @@ JBrowse core.
 
 ## Members
 
-| Member                                               | Kind       | Defined by               | Description                                                                                                                                                                                      |
-| ---------------------------------------------------- | ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [drawerPosition](#property-drawerposition)           | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [drawerWidth](#property-drawerwidth)                 | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [widgets](#property-widgets)                         | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [activeWidgets](#property-activewidgets)             | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [minimized](#property-minimized)                     | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [poppedOut](#volatile-poppedout)                     | Volatiles  | DrawerWidgetSessionMixin | true while the visible widget is shown in a modal dialog instead of the drawer. Volatile because a restored session that opened straight into a modal, with no drawer behind it, is disorienting |
-| [visibleWidget](#getter-visiblewidget)               | Getters    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [setDrawerPosition](#action-setdrawerposition)       | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [updateDrawerWidth](#action-updatedrawerwidth)       | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [resizeDrawer](#action-resizedrawer)                 | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [addWidget](#action-addwidget)                       | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [showWidget](#action-showwidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [hideWidget](#action-hidewidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [minimizeWidgetDrawer](#action-minimizewidgetdrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [showWidgetDrawer](#action-showwidgetdrawer)         | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [popoutWidget](#action-popoutwidget)                 | Actions    | DrawerWidgetSessionMixin | show the visible widget in a modal dialog, freeing the drawer column                                                                                                                             |
-| [returnWidgetToDrawer](#action-returnwidgettodrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [hideAllWidgets](#action-hideallwidgets)             | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
-| [editConfiguration](#action-editconfiguration)       | Actions    | DrawerWidgetSessionMixin | opens a configuration editor to configure the given thing, and sets the current task to be configuring it                                                                                        |
+| Member                                               | Kind       | Defined by               | Description                                                                                               |
+| ---------------------------------------------------- | ---------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| [drawerPosition](#property-drawerposition)           | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [drawerWidth](#property-drawerwidth)                 | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [widgets](#property-widgets)                         | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [activeWidgets](#property-activewidgets)             | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [minimized](#property-minimized)                     | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [poppedOut](#volatile-poppedout)                     | Volatiles  | DrawerWidgetSessionMixin | true while the visible widget is shown in a modal dialog instead of the drawer.                           |
+| [visibleWidget](#getter-visiblewidget)               | Getters    | DrawerWidgetSessionMixin |                                                                                                           |
+| [setDrawerPosition](#action-setdrawerposition)       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [updateDrawerWidth](#action-updatedrawerwidth)       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [resizeDrawer](#action-resizedrawer)                 | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [addWidget](#action-addwidget)                       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [showWidget](#action-showwidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [hideWidget](#action-hidewidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [minimizeWidgetDrawer](#action-minimizewidgetdrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [showWidgetDrawer](#action-showwidgetdrawer)         | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [popoutWidget](#action-popoutwidget)                 | Actions    | DrawerWidgetSessionMixin | show the visible widget in a modal dialog, freeing the drawer column                                      |
+| [returnWidgetToDrawer](#action-returnwidgettodrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [hideAllWidgets](#action-hideallwidgets)             | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [editConfiguration](#action-editconfiguration)       | Actions    | DrawerWidgetSessionMixin | opens a configuration editor to configure the given thing, and sets the current task to be configuring it |
 
 <details>
 <summary>DrawerWidgetSessionMixin - Properties</summary>
 
-#### property: drawerPosition
-
-```ts
-// type signature
-type drawerPosition = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-drawerPosition: types.optional(
-  types.string,
-  () => localStorageGetItem('drawerPosition') ?? 'right',
-)
-```
-
-#### property: drawerWidth
-
-```ts
-// type signature
-type drawerWidth = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-drawerWidth: types.stripDefault(
-  types.refinement(types.integer, width => width >= minDrawerWidth),
-  384,
-)
-```
-
-#### property: widgets
-
-```ts
-// type signature
-type widgets = IOptionalIType<IMapType<IAnyType>, [undefined]>
-// code
-widgets: types.stripDefault(types.map(widgetStateModelType), {})
-```
-
-#### property: activeWidgets
-
-```ts
-// type signature
-type activeWidgets = IOptionalIType<
-  IMapType<IMaybe<IReferenceType<IAnyType>>>,
-  [undefined]
->
-// code
-activeWidgets: types.stripDefault(
-  types.map(types.safeReference(widgetStateModelType)),
-  {},
-)
-```
-
-#### property: minimized
-
-```ts
-// type signature
-type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-minimized: types.stripDefault(types.boolean, false)
-```
+| Member                                                   | Type                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| <span id="property-drawerposition">drawerPosition</span> | `IOptionalIType<ISimpleType<string>, [undefined]>`                        |
+| <span id="property-drawerwidth">drawerWidth</span>       | `IOptionalIType<ISimpleType<number>, [undefined]>`                        |
+| <span id="property-widgets">widgets</span>               | `IOptionalIType<IMapType<IAnyType>, [undefined]>`                         |
+| <span id="property-activewidgets">activeWidgets</span>   | `IOptionalIType<IMapType<IMaybe<IReferenceType<IAnyType>>>, [undefined]>` |
+| <span id="property-minimized">minimized</span>           | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                       |
 
 </details>
 
@@ -118,11 +69,9 @@ poppedOut: false
 <details>
 <summary>DrawerWidgetSessionMixin - Getters</summary>
 
-#### getter: visibleWidget
-
-```ts
-type visibleWidget = any
-```
+| Member                                               | Type  |
+| ---------------------------------------------------- | ----- |
+| <span id="getter-visiblewidget">visibleWidget</span> | `any` |
 
 </details>
 
@@ -143,7 +92,7 @@ opens a configuration editor to configure the given thing, and sets the current
 task to be configuring it
 
 ```ts
-type editConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
+type editConfiguration = (configuration: (ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) | { ...; }, opts?: { ...; } | undefined) => void
 ```
 
 </details>
@@ -151,69 +100,17 @@ type editConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, 
 <details>
 <summary>DrawerWidgetSessionMixin - Actions (other undocumented members)</summary>
 
-#### action: setDrawerPosition
-
-```ts
-type setDrawerPosition = (arg: string) => void
-```
-
-#### action: updateDrawerWidth
-
-```ts
-type updateDrawerWidth = (drawerWidth: number) => number
-```
-
-#### action: resizeDrawer
-
-```ts
-type resizeDrawer = (distance: number) => number
-```
-
-#### action: addWidget
-
-```ts
-type addWidget = (
-  typeName: string,
-  id: string,
-  initialState?: any,
-  conf?: unknown,
-) => any
-```
-
-#### action: showWidget
-
-```ts
-type showWidget = (widget: any) => void
-```
-
-#### action: hideWidget
-
-```ts
-type hideWidget = (widget: any) => void
-```
-
-#### action: minimizeWidgetDrawer
-
-```ts
-type minimizeWidgetDrawer = () => void
-```
-
-#### action: showWidgetDrawer
-
-```ts
-type showWidgetDrawer = () => void
-```
-
-#### action: returnWidgetToDrawer
-
-```ts
-type returnWidgetToDrawer = () => void
-```
-
-#### action: hideAllWidgets
-
-```ts
-type hideAllWidgets = () => void
-```
+| Member                                                             | Type                                                                        |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| <span id="action-setdrawerposition">setDrawerPosition</span>       | `(arg: string) => void`                                                     |
+| <span id="action-updatedrawerwidth">updateDrawerWidth</span>       | `(drawerWidth: number) => number`                                           |
+| <span id="action-resizedrawer">resizeDrawer</span>                 | `(distance: number) => number`                                              |
+| <span id="action-addwidget">addWidget</span>                       | `(typeName: string, id: string, initialState?: any, conf?: unknown) => any` |
+| <span id="action-showwidget">showWidget</span>                     | `(widget: any) => void`                                                     |
+| <span id="action-hidewidget">hideWidget</span>                     | `(widget: any) => void`                                                     |
+| <span id="action-minimizewidgetdrawer">minimizeWidgetDrawer</span> | `() => void`                                                                |
+| <span id="action-showwidgetdrawer">showWidgetDrawer</span>         | `() => void`                                                                |
+| <span id="action-returnwidgettodrawer">returnWidgetToDrawer</span> | `() => void`                                                                |
+| <span id="action-hideallwidgets">hideAllWidgets</span>             | `() => void`                                                                |
 
 </details>

@@ -15,22 +15,22 @@ factory function for the Base-level root model shared by all products
 
 ## Members
 
-| Member                                               | Kind       | Defined by    | Description                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------------------------------------------------- | ---------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [jbrowse](#property-jbrowse)                         | Properties | BaseRootModel | `jbrowse` is a mapping of the config.json into the in-memory state tree                                                                                                                                                                                                                                                                                                                         |
-| [session](#property-session)                         | Properties | BaseRootModel | `session` encompasses the currently active state of the app, including views open, tracks open in those views, etc.                                                                                                                                                                                                                                                                             |
-| [sessionPath](#property-sessionpath)                 | Properties | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [assemblyManager](#property-assemblymanager)         | Properties | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [rpcManager](#volatile-rpcmanager)                   | Volatiles  | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [adminMode](#volatile-adminmode)                     | Volatiles  | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [error](#volatile-error)                             | Volatiles  | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [textSearchManager](#volatile-textsearchmanager)     | Volatiles  | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [pluginManager](#volatile-pluginmanager)             | Volatiles  | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [setError](#action-seterror)                         | Actions    | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [setSession](#action-setsession)                     | Actions    | BaseRootModel | Sets the active session. Remaps any legacy display type names (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), then walks the resulting MST tree to drop open tracks whose config can't hydrate so shared sessions still load when referencing tracks that no longer exist. Dropped tracks are surfaced to the user via a snackbar. If filtering throws, the previous session is restored. |
-| [setDefaultSession](#action-setdefaultsession)       | Actions    | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [setSessionPath](#action-setsessionpath)             | Actions    | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [renameCurrentSession](#action-renamecurrentsession) | Actions    | BaseRootModel |                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Member                                               | Kind       | Defined by    | Description                                                                                                         |
+| ---------------------------------------------------- | ---------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [jbrowse](#property-jbrowse)                         | Properties | BaseRootModel | `jbrowse` is a mapping of the config.json into the in-memory state tree                                             |
+| [session](#property-session)                         | Properties | BaseRootModel | `session` encompasses the currently active state of the app, including views open, tracks open in those views, etc. |
+| [sessionPath](#property-sessionpath)                 | Properties | BaseRootModel |                                                                                                                     |
+| [assemblyManager](#property-assemblymanager)         | Properties | BaseRootModel |                                                                                                                     |
+| [rpcManager](#volatile-rpcmanager)                   | Volatiles  | BaseRootModel |                                                                                                                     |
+| [adminMode](#volatile-adminmode)                     | Volatiles  | BaseRootModel |                                                                                                                     |
+| [error](#volatile-error)                             | Volatiles  | BaseRootModel |                                                                                                                     |
+| [textSearchManager](#volatile-textsearchmanager)     | Volatiles  | BaseRootModel |                                                                                                                     |
+| [pluginManager](#volatile-pluginmanager)             | Volatiles  | BaseRootModel |                                                                                                                     |
+| [setError](#action-seterror)                         | Actions    | BaseRootModel |                                                                                                                     |
+| [setSession](#action-setsession)                     | Actions    | BaseRootModel | Sets the active session.                                                                                            |
+| [setDefaultSession](#action-setdefaultsession)       | Actions    | BaseRootModel |                                                                                                                     |
+| [setSessionPath](#action-setsessionpath)             | Actions    | BaseRootModel |                                                                                                                     |
+| [renameCurrentSession](#action-renamecurrentsession) | Actions    | BaseRootModel |                                                                                                                     |
 
 <details>
 <summary>BaseRootModel - Properties</summary>
@@ -63,76 +63,23 @@ session: types.maybe(sessionModelType)
 <details>
 <summary>BaseRootModel - Properties (other undocumented members)</summary>
 
-#### property: sessionPath
-
-```ts
-// type signature
-type sessionPath = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-sessionPath: types.stripDefault(types.string, '')
-```
-
-#### property: assemblyManager
-
-```ts
-// type signature
-type assemblyManager = IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, ...
-// code
-assemblyManager: types.optional(
-        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
-        {},
-      )
-```
+| Member                                                     | Type                                               |
+| ---------------------------------------------------------- | -------------------------------------------------- |
+| <span id="property-sessionpath">sessionPath</span>         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| <span id="property-assemblymanager">assemblyManager</span> | `IOptionalIType<IModelType<…>, [undefined]>`       |
 
 </details>
 
 <details>
 <summary>BaseRootModel - Volatiles</summary>
 
-#### volatile: rpcManager
-
-```ts
-// type signature
-type rpcManager = RpcManager
-// code
-rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc)
-```
-
-#### volatile: adminMode
-
-```ts
-// type signature
-type adminMode = false
-// code
-adminMode: false
-```
-
-#### volatile: error
-
-```ts
-// type signature
-type error = unknown
-// code
-error: undefined as unknown
-```
-
-#### volatile: textSearchManager
-
-```ts
-// type signature
-type textSearchManager = TextSearchManager
-// code
-textSearchManager: new TextSearchManager(pluginManager)
-```
-
-#### volatile: pluginManager
-
-```ts
-// type signature
-type pluginManager = PluginManager
-// code
-pluginManager
-```
+| Member                                                         | Type                |
+| -------------------------------------------------------------- | ------------------- |
+| <span id="volatile-rpcmanager">rpcManager</span>               | `RpcManager`        |
+| <span id="volatile-adminmode">adminMode</span>                 | `false`             |
+| <span id="volatile-error">error</span>                         | `unknown`           |
+| <span id="volatile-textsearchmanager">textSearchManager</span> | `TextSearchManager` |
+| <span id="volatile-pluginmanager">pluginManager</span>         | `PluginManager`     |
 
 </details>
 
@@ -157,28 +104,11 @@ type setSession = (sessionSnapshot?: any) => void
 <details>
 <summary>BaseRootModel - Actions (other undocumented members)</summary>
 
-#### action: setError
-
-```ts
-type setError = (error: unknown) => void
-```
-
-#### action: setDefaultSession
-
-```ts
-type setDefaultSession = () => void
-```
-
-#### action: setSessionPath
-
-```ts
-type setSessionPath = (path: string) => void
-```
-
-#### action: renameCurrentSession
-
-```ts
-type renameCurrentSession = (newName: string) => void
-```
+| Member                                                             | Type                        |
+| ------------------------------------------------------------------ | --------------------------- |
+| <span id="action-seterror">setError</span>                         | `(error: unknown) => void`  |
+| <span id="action-setdefaultsession">setDefaultSession</span>       | `() => void`                |
+| <span id="action-setsessionpath">setSessionPath</span>             | `(path: string) => void`    |
+| <span id="action-renamecurrentsession">renameCurrentSession</span> | `(newName: string) => void` |
 
 </details>

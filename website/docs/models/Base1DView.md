@@ -52,67 +52,22 @@ dotplot use this
 <details>
 <summary>Base1DView - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: displayedRegions
-
-```ts
-// type signature
-type displayedRegions = IOptionalIType<
-  IType<Region[], Region[], Region[]>,
-  [undefined]
->
-// code
-displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
-```
-
-#### property: bpPerPx
-
-```ts
-// type signature
-type bpPerPx = number
-// code
-bpPerPx: 0
-```
-
-#### property: offsetPx
-
-```ts
-// type signature
-type offsetPx = number
-// code
-offsetPx: 0
-```
-
-#### property: minimumBlockWidth
-
-```ts
-// type signature
-type minimumBlockWidth = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-minimumBlockWidth: types.stripDefault(types.number, 0)
-```
+| Member                                                         | Type                                                               |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| <span id="property-id">id</span>                               | `IOptionalIType<ISimpleType<string>, [undefined]>`                 |
+| <span id="property-displayedregions">displayedRegions</span>   | `IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>` |
+| <span id="property-bpperpx">bpPerPx</span>                     | `number`                                                           |
+| <span id="property-offsetpx">offsetPx</span>                   | `number`                                                           |
+| <span id="property-minimumblockwidth">minimumBlockWidth</span> | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
 
 </details>
 
 <details>
 <summary>Base1DView - Volatiles</summary>
 
-#### volatile: volatileWidth
-
-```ts
-// type signature
-type volatileWidth = number
-// code
-volatileWidth: 0
-```
+| Member                                                 | Type     |
+| ------------------------------------------------------ | -------- |
+| <span id="volatile-volatilewidth">volatileWidth</span> | `number` |
 
 </details>
 
@@ -140,80 +95,27 @@ type maxBpPerPx = number
 <details>
 <summary>Base1DView - Getters (other undocumented members)</summary>
 
-#### getter: width
-
-```ts
-type width = number
-```
-
-#### getter: assemblyNames
-
-```ts
-type assemblyNames = string[]
-```
-
-#### getter: displayedRegionsTotalPx
-
-```ts
-type displayedRegionsTotalPx = number
-```
-
-#### getter: maxOffset
-
-```ts
-type maxOffset = number
-```
-
-#### getter: minOffset
-
-```ts
-type minOffset = number
-```
-
-#### getter: totalBp
-
-```ts
-type totalBp = number
-```
-
-#### getter: dynamicBlocks
-
-```ts
-type dynamicBlocks = BlockSet
-```
-
-#### getter: staticBlocks
-
-```ts
-type staticBlocks = BlockSet
-```
-
-#### getter: currBp
-
-```ts
-type currBp = number
-```
+| Member                                                                   | Type       |
+| ------------------------------------------------------------------------ | ---------- |
+| <span id="getter-width">width</span>                                     | `number`   |
+| <span id="getter-assemblynames">assemblyNames</span>                     | `string[]` |
+| <span id="getter-displayedregionstotalpx">displayedRegionsTotalPx</span> | `number`   |
+| <span id="getter-maxoffset">maxOffset</span>                             | `number`   |
+| <span id="getter-minoffset">minOffset</span>                             | `number`   |
+| <span id="getter-totalbp">totalBp</span>                                 | `number`   |
+| <span id="getter-dynamicblocks">dynamicBlocks</span>                     | `BlockSet` |
+| <span id="getter-staticblocks">staticBlocks</span>                       | `BlockSet` |
+| <span id="getter-currbp">currBp</span>                                   | `number`   |
 
 </details>
 
 <details>
 <summary>Base1DView - Methods</summary>
 
-#### method: pxToBp
-
-```ts
-type pxToBp = (px: number) => PxToBpResult
-```
-
-#### method: bpToPx
-
-```ts
-type bpToPx = (args: {
-  refName: string
-  coord: number
-  displayedRegionIndex?: number | undefined
-}) => number | undefined
-```
+| Member                                 | Type                                                                                                             |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| <span id="method-pxtobp">pxToBp</span> | `(px: number) => PxToBpResult`                                                                                   |
+| <span id="method-bptopx">bpToPx</span> | `(args: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => number \| undefined` |
 
 </details>
 
@@ -251,56 +153,15 @@ type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 <details>
 <summary>Base1DView - Actions (other undocumented members)</summary>
 
-#### action: setDisplayedRegions
-
-```ts
-type setDisplayedRegions = (regions: Region[]) => void
-```
-
-#### action: setBpPerPx
-
-```ts
-type setBpPerPx = (val: number) => void
-```
-
-#### action: setVolatileWidth
-
-```ts
-type setVolatileWidth = (width: number) => void
-```
-
-#### action: zoomOut
-
-```ts
-type zoomOut = () => void
-```
-
-#### action: zoomIn
-
-```ts
-type zoomIn = () => void
-```
-
-#### action: zoomTo
-
-```ts
-type zoomTo = (bpPerPx: number, offset?: any) => number
-```
-
-#### action: scrollTo
-
-```ts
-type scrollTo = (offsetPx: number) => number
-```
-
-#### action: centerAt
-
-```ts
-type centerAt = (
-  coord: number,
-  refName: string | undefined,
-  displayedRegionIndex: number,
-) => void
-```
+| Member                                                           | Type                                                                                  |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| <span id="action-setdisplayedregions">setDisplayedRegions</span> | `(regions: Region[]) => void`                                                         |
+| <span id="action-setbpperpx">setBpPerPx</span>                   | `(val: number) => void`                                                               |
+| <span id="action-setvolatilewidth">setVolatileWidth</span>       | `(width: number) => void`                                                             |
+| <span id="action-zoomout">zoomOut</span>                         | `() => void`                                                                          |
+| <span id="action-zoomin">zoomIn</span>                           | `() => void`                                                                          |
+| <span id="action-zoomto">zoomTo</span>                           | `(bpPerPx: number, offset?: any) => number`                                           |
+| <span id="action-scrollto">scrollTo</span>                       | `(offsetPx: number) => number`                                                        |
+| <span id="action-centerat">centerAt</span>                       | `(coord: number, refName: string \| undefined, displayedRegionIndex: number) => void` |
 
 </details>

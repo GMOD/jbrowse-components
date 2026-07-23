@@ -32,7 +32,7 @@ products, minus the Settings/Copy/Delete actions.
 flattened menu items for use in hierarchical track selector
 
 ```ts
-type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 </details>
@@ -40,10 +40,8 @@ type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>
 <details>
 <summary>TrackMenuSessionMixin - Methods (other undocumented members)</summary>
 
-#### method: getTrackActionMenuItems
-
-```ts
-type getTrackActionMenuItems = ({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView | undefined; }) => MenuItem[]
-```
+| Member                                                                   | Type                                                                                                                         |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| <span id="method-gettrackactionmenuitems">getTrackActionMenuItems</span> | `({…}: { config: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>; view?: TrackActionView \| undefined; }) => MenuItem[]` |
 
 </details>

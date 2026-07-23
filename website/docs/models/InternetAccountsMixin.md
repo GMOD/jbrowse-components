@@ -23,42 +23,19 @@ JBrowse core.
 <details>
 <summary>InternetAccountsMixin - Properties</summary>
 
-#### property: internetAccounts
-
-```ts
-// type signature
-type internetAccounts = IArrayType<IAnyType>
-// code
-internetAccounts: types.array(
-  pluginManager.pluggableMstType('internet account', 'stateModel'),
-)
-```
+| Member                                                       | Type                   |
+| ------------------------------------------------------------ | ---------------------- |
+| <span id="property-internetaccounts">internetAccounts</span> | `IArrayType<IAnyType>` |
 
 </details>
 
 <details>
 <summary>InternetAccountsMixin - Actions</summary>
 
-#### action: initializeInternetAccount
-
-```ts
-type initializeInternetAccount = (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
-```
-
-#### action: createEphemeralInternetAccount
-
-```ts
-type createEphemeralInternetAccount = (
-  internetAccountId: string,
-  initialSnapshot: Record<string, unknown>,
-  url: string,
-) => any
-```
-
-#### action: findAppropriateInternetAccount
-
-```ts
-type findAppropriateInternetAccount = (location: UriLocation) => any
-```
+| Member                                                                                 | Type                                                                                                         |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| <span id="action-initializeinternetaccount">initializeInternetAccount</span>           | `(internetAccountConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, initialSnapshot?: any) => any` |
+| <span id="action-createephemeralinternetaccount">createEphemeralInternetAccount</span> | `(internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any`                  |
+| <span id="action-findappropriateinternetaccount">findAppropriateInternetAccount</span> | `(location: UriLocation) => any`                                                                             |
 
 </details>

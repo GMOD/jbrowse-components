@@ -34,103 +34,43 @@ and exposes canUndo/canRedo with undo/redo actions.
 <details>
 <summary>TimeTraveller - Properties</summary>
 
-#### property: undoIdx
-
-```ts
-// type signature
-type undoIdx = number
-// code
-undoIdx: -1
-```
-
-#### property: targetPath
-
-```ts
-// type signature
-type targetPath = string
-// code
-targetPath: ''
-```
+| Member                                           | Type     |
+| ------------------------------------------------ | -------- |
+| <span id="property-undoidx">undoIdx</span>       | `number` |
+| <span id="property-targetpath">targetPath</span> | `string` |
 
 </details>
 
 <details>
 <summary>TimeTraveller - Volatiles</summary>
 
-#### volatile: history
-
-```ts
-// type signature
-type history = unknown[]
-// code
-history: [] as unknown[]
-```
-
-#### volatile: notTrackingUndo
-
-```ts
-// type signature
-type notTrackingUndo = false
-// code
-notTrackingUndo: false
-```
+| Member                                                     | Type        |
+| ---------------------------------------------------------- | ----------- |
+| <span id="volatile-history">history</span>                 | `unknown[]` |
+| <span id="volatile-nottrackingundo">notTrackingUndo</span> | `false`     |
 
 </details>
 
 <details>
 <summary>TimeTraveller - Getters</summary>
 
-#### getter: canUndo
-
-```ts
-type canUndo = boolean
-```
-
-#### getter: canRedo
-
-```ts
-type canRedo = boolean
-```
+| Member                                   | Type      |
+| ---------------------------------------- | --------- |
+| <span id="getter-canundo">canUndo</span> | `boolean` |
+| <span id="getter-canredo">canRedo</span> | `boolean` |
 
 </details>
 
 <details>
 <summary>TimeTraveller - Actions</summary>
 
-#### action: stopTrackingUndo
-
-```ts
-type stopTrackingUndo = () => void
-```
-
-#### action: resumeTrackingUndo
-
-```ts
-type resumeTrackingUndo = () => void
-```
-
-#### action: addUndoState
-
-```ts
-type addUndoState = (snapshot: unknown) => void
-```
-
-#### action: initialize
-
-```ts
-type initialize = () => void
-```
-
-#### action: undo
-
-```ts
-type undo = () => void
-```
-
-#### action: redo
-
-```ts
-type redo = () => void
-```
+| Member                                                         | Type                          |
+| -------------------------------------------------------------- | ----------------------------- |
+| <span id="action-stoptrackingundo">stopTrackingUndo</span>     | `() => void`                  |
+| <span id="action-resumetrackingundo">resumeTrackingUndo</span> | `() => void`                  |
+| <span id="action-addundostate">addUndoState</span>             | `(snapshot: unknown) => void` |
+| <span id="action-initialize">initialize</span>                 | `() => void`                  |
+| <span id="action-undo">undo</span>                             | `() => void`                  |
+| <span id="action-redo">redo</span>                             | `() => void`                  |
 
 </details>

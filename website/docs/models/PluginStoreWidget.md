@@ -27,51 +27,20 @@ installable plugin list and the view it was opened from.
 <details>
 <summary>PluginStoreWidget - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'PluginStoreWidget'>
-// code
-type: types.literal('PluginStoreWidget')
-```
-
-#### property: filterText
-
-```ts
-// type signature
-type filterText = string
-// code
-filterText: ''
-```
-
-#### property: view
-
-```ts
-// type signature
-type view = IMaybe<IReferenceType<IAnyType>>
-// code
-view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
-```
+| Member                                           | Type                                               |
+| ------------------------------------------------ | -------------------------------------------------- |
+| <span id="property-id">id</span>                 | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| <span id="property-type">type</span>             | `ISimpleType<"PluginStoreWidget">`                 |
+| <span id="property-filtertext">filterText</span> | `string`                                           |
+| <span id="property-view">view</span>             | `IMaybe<IReferenceType<IAnyType>>`                 |
 
 </details>
 
 <details>
 <summary>PluginStoreWidget - Actions</summary>
 
-#### action: setFilterText
-
-```ts
-type setFilterText = (newText: string) => void
-```
+| Member                                               | Type                        |
+| ---------------------------------------------------- | --------------------------- |
+| <span id="action-setfiltertext">setFilterText</span> | `(newText: string) => void` |
 
 </details>

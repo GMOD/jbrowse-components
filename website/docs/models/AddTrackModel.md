@@ -44,32 +44,11 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 <details>
 <summary>AddTrackModel - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'AddTrackWidget'>
-// code
-type: types.literal('AddTrackWidget')
-```
-
-#### property: view
-
-```ts
-// type signature
-type view = IMaybe<IReferenceType<IAnyType>>
-// code
-view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
-```
+| Member                               | Type                                               |
+| ------------------------------------ | -------------------------------------------------- |
+| <span id="property-id">id</span>     | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| <span id="property-type">type</span> | `ISimpleType<"AddTrackWidget">`                    |
+| <span id="property-view">view</span> | `IMaybe<IReferenceType<IAnyType>>`                 |
 
 </details>
 
@@ -90,140 +69,44 @@ type adapterHintNotConfigurable = boolean
 <details>
 <summary>AddTrackModel - Getters (other undocumented members)</summary>
 
-#### getter: trackAdapter
-
-```ts
-type trackAdapter = AdapterConfig | undefined
-```
-
-#### getter: trackName
-
-```ts
-type trackName = string
-```
-
-#### getter: uris
-
-```ts
-type uris = (string | undefined)[]
-```
-
-#### getter: isFtp
-
-```ts
-type isFtp = boolean
-```
-
-#### getter: isRelativeUrl
-
-```ts
-type isRelativeUrl = boolean
-```
-
-#### getter: wrongProtocol
-
-```ts
-type wrongProtocol = boolean
-```
-
-#### getter: assembly
-
-```ts
-type assembly = any
-```
-
-#### getter: trackAdapterType
-
-```ts
-type trackAdapterType = string | undefined
-```
-
-#### getter: trackType
-
-```ts
-type trackType = string
-```
-
-#### getter: warningMessage
-
-```ts
-type warningMessage = "" | "Warning: JBrowse cannot access files using the ftp protocol" | "Warning: one or more of your files do not provide the protocol e.g.\n          https://, please provide an absolute URL unless you are sure a\n          relative URL is intended." | "Warning: You entered a http:// resources but we cannot access HT...
-```
+| Member                                                     | Type                                                                       |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+| <span id="getter-trackadapter">trackAdapter</span>         | `AdapterConfig \| undefined`                                               |
+| <span id="getter-trackname">trackName</span>               | `string`                                                                   |
+| <span id="getter-uris">uris</span>                         | `(string \| undefined)[]`                                                  |
+| <span id="getter-isftp">isFtp</span>                       | `boolean`                                                                  |
+| <span id="getter-isrelativeurl">isRelativeUrl</span>       | `boolean`                                                                  |
+| <span id="getter-wrongprotocol">wrongProtocol</span>       | `boolean`                                                                  |
+| <span id="getter-assembly">assembly</span>                 | `any`                                                                      |
+| <span id="getter-trackadaptertype">trackAdapterType</span> | `string \| undefined`                                                      |
+| <span id="getter-tracktype">trackType</span>               | `string`                                                                   |
+| <span id="getter-warningmessage">warningMessage</span>     | `"" \| "Warning: JBrowse cannot access files using the ftp protocol" \| …` |
 
 </details>
 
 <details>
 <summary>AddTrackModel - Methods</summary>
 
-#### method: getTrackConfig
-
-```ts
-type getTrackConfig = (timestamp: number) => { [x: string]: ...; } | undefined
-```
+| Member                                                 | Type                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------- |
+| <span id="method-gettrackconfig">getTrackConfig</span> | `(timestamp: number) => { [x: string]: ...; } \| undefined` |
 
 </details>
 
 <details>
 <summary>AddTrackModel - Actions</summary>
 
-#### action: setMixinData
-
-```ts
-type setMixinData = (arg: Record<string, unknown>) => void
-```
-
-#### action: setAdapterHint
-
-```ts
-type setAdapterHint = (obj: string) => void
-```
-
-#### action: setTextIndexingConf
-
-```ts
-type setTextIndexingConf = (conf: IndexingAttr) => void
-```
-
-#### action: setTextIndexTrack
-
-```ts
-type setTextIndexTrack = (flag: boolean) => void
-```
-
-#### action: setTrackData
-
-```ts
-type setTrackData = (obj: FileLocation) => void
-```
-
-#### action: setIndexTrackData
-
-```ts
-type setIndexTrackData = (obj: FileLocation) => void
-```
-
-#### action: setAssembly
-
-```ts
-type setAssembly = (str: string) => void
-```
-
-#### action: setTrackName
-
-```ts
-type setTrackName = (str: string) => void
-```
-
-#### action: setTrackType
-
-```ts
-type setTrackType = (str: string) => void
-```
-
-#### action: clearData
-
-```ts
-type clearData = () => void
-```
+| Member                                                           | Type                                     |
+| ---------------------------------------------------------------- | ---------------------------------------- |
+| <span id="action-setmixindata">setMixinData</span>               | `(arg: Record<string, unknown>) => void` |
+| <span id="action-setadapterhint">setAdapterHint</span>           | `(obj: string) => void`                  |
+| <span id="action-settextindexingconf">setTextIndexingConf</span> | `(conf: IndexingAttr) => void`           |
+| <span id="action-settextindextrack">setTextIndexTrack</span>     | `(flag: boolean) => void`                |
+| <span id="action-settrackdata">setTrackData</span>               | `(obj: FileLocation) => void`            |
+| <span id="action-setindextrackdata">setIndexTrackData</span>     | `(obj: FileLocation) => void`            |
+| <span id="action-setassembly">setAssembly</span>                 | `(str: string) => void`                  |
+| <span id="action-settrackname">setTrackName</span>               | `(str: string) => void`                  |
+| <span id="action-settracktype">setTrackType</span>               | `(str: string) => void`                  |
+| <span id="action-cleardata">clearData</span>                     | `() => void`                             |
 
 </details>

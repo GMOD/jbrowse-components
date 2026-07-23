@@ -3,8 +3,10 @@ import {
   collapsible,
   collapsibleClosed,
   collectTransitive,
+  elideSignature,
   exampleSection,
   filterUnseenByName,
+  firstSentence,
   overviewSection,
   parseTaggedComment,
   removeComments,
@@ -262,5 +264,70 @@ describe('repoRelative', () => {
     expect(repoRelative(`${process.cwd()}/plugins/foo/src/x.ts`)).toBe(
       'plugins/foo/src/x.ts',
     )
+  })
+})
+
+describe('firstSentence', () => {
+  test('stops at the first sentence end', () => {
+    expect(firstSentence('Height in pixels. Unset follows the default.')).toBe(
+      'Height in pixels.',
+    )
+  })
+  test('does not break on e.g. / i.e.', () => {
+    expect(firstSentence('Slot types, e.g. frozen, are opaque. More.')).toBe(
+      'Slot types, e.g. frozen, are opaque.',
+    )
+  })
+  test('returns the whole text when there is no sentence end', () => {
+    expect(firstSentence('  no punctuation here  ')).toBe('no punctuation here')
+  })
+})
+
+describe('elideSignature', () => {
+  test('leaves a short signature alone', () => {
+    expect(elideSignature('(x: number) => boolean')).toBe(
+      '(x: number) => boolean',
+    )
+  })
+
+  test('collapses generic arguments from the inside out', () => {
+    const sig = `IConfigurationReference<ConfigurationSchemaType<{ readonly featureHeight: { readonly type: "maybeNumber"; readonly description: "${'x'.repeat(200)}" } }>>`
+    expect(elideSignature(sig)).toBe(
+      'IConfigurationReference<ConfigurationSchemaType<…>>',
+    )
+  })
+
+  test('collapses only as far as it has to, keeping the outer shape', () => {
+    const sig = `(config: ModelInstanceTypeProps<Record<string, ${'a'.repeat(200)}>>) => void`
+    expect(elideSignature(sig)).toBe(
+      '(config: ModelInstanceTypeProps<Record<…>>) => void',
+    )
+  })
+
+  test('does not mistake the > of => for a closing bracket', () => {
+    const sig = `Array<(cb: ${'b'.repeat(200)}) => void>`
+    expect(elideSignature(sig)).toBe('Array<…>')
+  })
+
+  test('drops trailing alternatives of a long union with no generics', () => {
+    const sig = ['Alpha', 'Beta', 'Gamma', 'Delta']
+      .map(n => n.repeat(20))
+      .join(' | ')
+    const out = elideSignature(sig)
+    expect(out.endsWith(' | …')).toBe(true)
+    expect(out.startsWith('Alpha'.repeat(20))).toBe(true)
+  })
+
+  test('collapses an inline object type once generics are exhausted', () => {
+    const sig = `(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => { refName: string; start: number; ${'x'.repeat(100)}: number }[]`
+    // the union inside a parameter is not a top-level union, so the return type
+    // survives — truncating by width used to eat it
+    expect(elideSignature(sig)).toBe(
+      '(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => {…}[]',
+    )
+  })
+
+  test('leaves a type it cannot shorten structurally alone', () => {
+    expect(elideSignature('z'.repeat(300))).toBe('z'.repeat(300))
   })
 })

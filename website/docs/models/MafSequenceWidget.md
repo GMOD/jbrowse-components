@@ -30,103 +30,31 @@ connected view's regions, with per-row hover highlight state.
 <details>
 <summary>MafSequenceWidget - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = ISimpleType<string>
-// code
-id: types.identifier
-```
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'MafSequenceWidget'>
-// code
-type: types.literal('MafSequenceWidget')
-```
-
-#### property: adapterConfig
-
-```ts
-// type signature
-type adapterConfig = IType<(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | null | undefined, (ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>) | undefined, (ModelInstanceType...
-// code
-adapterConfig: types.frozen<AnyConfigurationModel | undefined>(undefined)
-```
-
-#### property: samples
-
-```ts
-// type signature
-type samples = IType<
-  Sample[] | null | undefined,
-  Sample[] | undefined,
-  Sample[] | undefined
->
-// code
-samples: types.frozen<Sample[] | undefined>(undefined)
-```
-
-#### property: regions
-
-```ts
-// type signature
-type regions = IType<
-  | { refName: string; start: number; end: number; assemblyName: string }[]
-  | null
-  | undefined,
-  | { refName: string; start: number; end: number; assemblyName: string }[]
-  | undefined,
-  | { refName: string; start: number; end: number; assemblyName: string }[]
-  | undefined
->
-// code
-regions: types.frozen<
-  | {
-      refName: string
-      start: number
-      end: number
-      assemblyName: string
-    }[]
-  | undefined
->(undefined)
-```
-
-#### property: connectedViewId
-
-```ts
-// type signature
-type connectedViewId = IMaybe<ISimpleType<string>>
-// code
-connectedViewId: types.maybe(types.string)
-```
+| Member                                                     | Type                                                                                 |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| <span id="property-id">id</span>                           | `ISimpleType<string>`                                                                |
+| <span id="property-type">type</span>                       | `ISimpleType<"MafSequenceWidget">`                                                   |
+| <span id="property-adapterconfig">adapterConfig</span>     | `IType<…>`                                                                           |
+| <span id="property-samples">samples</span>                 | `IType<Sample[] \| null \| undefined, Sample[] \| undefined, Sample[] \| undefined>` |
+| <span id="property-regions">regions</span>                 | `IType<…>`                                                                           |
+| <span id="property-connectedviewid">connectedViewId</span> | `IMaybe<ISimpleType<string>>`                                                        |
 
 </details>
 
 <details>
 <summary>MafSequenceWidget - Volatiles</summary>
 
-#### volatile: hoverHighlight
-
-```ts
-// type signature
-type hoverHighlight = HoverHighlight | undefined
-// code
-hoverHighlight: undefined as HoverHighlight | undefined
-```
+| Member                                                   | Type                          |
+| -------------------------------------------------------- | ----------------------------- |
+| <span id="volatile-hoverhighlight">hoverHighlight</span> | `HoverHighlight \| undefined` |
 
 </details>
 
 <details>
 <summary>MafSequenceWidget - Actions</summary>
 
-#### action: setHoverHighlight
-
-```ts
-type setHoverHighlight = (highlight: HoverHighlight | undefined) => void
-```
+| Member                                                       | Type                                               |
+| ------------------------------------------------------------ | -------------------------------------------------- |
+| <span id="action-sethoverhighlight">setHoverHighlight</span> | `(highlight: HoverHighlight \| undefined) => void` |
 
 </details>

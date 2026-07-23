@@ -13,50 +13,33 @@ JBrowse core.
 
 ## Members
 
-| Member                                                 | Kind      | Defined by               | Description                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------ | --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [sessionThemeName](#volatile-sessionthemename)         | Volatiles | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
-| [themeName](#getter-themename)                         | Getters   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
-| [themeOptions](#getter-themeoptions)                   | Getters   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
-| [theme](#getter-theme)                                 | Getters   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
-| [allThemes](#method-allthemes)                         | Methods   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
-| [getActiveThemeOptions](#method-getactivethemeoptions) | Methods   | ThemeManagerSessionMixin | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme), this is the plain options object every view's SVG export threads into each display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside React context. |
-| [setThemeName](#action-setthemename)                   | Actions   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
+| Member                                                 | Kind      | Defined by               | Description                                                                                         |
+| ------------------------------------------------------ | --------- | ------------------------ | --------------------------------------------------------------------------------------------------- |
+| [sessionThemeName](#volatile-sessionthemename)         | Volatiles | ThemeManagerSessionMixin |                                                                                                     |
+| [themeName](#getter-themename)                         | Getters   | ThemeManagerSessionMixin |                                                                                                     |
+| [themeOptions](#getter-themeoptions)                   | Getters   | ThemeManagerSessionMixin |                                                                                                     |
+| [theme](#getter-theme)                                 | Getters   | ThemeManagerSessionMixin |                                                                                                     |
+| [allThemes](#method-allthemes)                         | Methods   | ThemeManagerSessionMixin |                                                                                                     |
+| [getActiveThemeOptions](#method-getactivethemeoptions) | Methods   | ThemeManagerSessionMixin | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). |
+| [setThemeName](#action-setthemename)                   | Actions   | ThemeManagerSessionMixin |                                                                                                     |
 
 <details>
 <summary>ThemeManagerSessionMixin - Volatiles</summary>
 
-#### volatile: sessionThemeName
-
-```ts
-// type signature
-type sessionThemeName = string
-// code
-sessionThemeName: localStorageGetItem('themeName') ?? 'default'
-```
+| Member                                                       | Type     |
+| ------------------------------------------------------------ | -------- |
+| <span id="volatile-sessionthemename">sessionThemeName</span> | `string` |
 
 </details>
 
 <details>
 <summary>ThemeManagerSessionMixin - Getters</summary>
 
-#### getter: themeName
-
-```ts
-type themeName = string
-```
-
-#### getter: themeOptions
-
-```ts
-type themeOptions = SerializableThemeArgs
-```
-
-#### getter: theme
-
-```ts
-type theme = Theme
-```
+| Member                                             | Type                    |
+| -------------------------------------------------- | ----------------------- |
+| <span id="getter-themename">themeName</span>       | `string`                |
+| <span id="getter-themeoptions">themeOptions</span> | `SerializableThemeArgs` |
+| <span id="getter-theme">theme</span>               | `Theme`                 |
 
 </details>
 
@@ -82,21 +65,17 @@ type getActiveThemeOptions = (
 <details>
 <summary>ThemeManagerSessionMixin - Methods (other undocumented members)</summary>
 
-#### method: allThemes
-
-```ts
-type allThemes = () => ThemeMap
-```
+| Member                                       | Type             |
+| -------------------------------------------- | ---------------- |
+| <span id="method-allthemes">allThemes</span> | `() => ThemeMap` |
 
 </details>
 
 <details>
 <summary>ThemeManagerSessionMixin - Actions</summary>
 
-#### action: setThemeName
-
-```ts
-type setThemeName = (name: string) => void
-```
+| Member                                             | Type                     |
+| -------------------------------------------------- | ------------------------ |
+| <span id="action-setthemename">setThemeName</span> | `(name: string) => void` |
 
 </details>

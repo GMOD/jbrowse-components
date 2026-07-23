@@ -3,11 +3,10 @@ import fs from 'fs'
 import {
   getAllFiles,
   jsDocText,
-  listDocs,
   markdownTable,
-  normalizeMarkerWhitespace,
   parsePipeTags,
   parseSourceFileSyntactic,
+  rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
   tableCell,
 } from './util.ts'
@@ -119,49 +118,26 @@ function renderTable(rows: Row[]) {
   )
 }
 
-function start(group: string) {
-  return `<!-- FILE_TYPES ${group} START -->`
-}
-function end(group: string) {
-  return `<!-- FILE_TYPES ${group} END -->`
-}
-
 // In `check` mode, report which docs have a stale table instead of rewriting —
 // used by CI to fail when an adapter changed but the docs were not regenerated.
 export function writeFileTypeDocs(files: string[], { check = false } = {}) {
   const groups: Record<string, Row[]> = {}
   collectFormats(files, groups)
-  const markerRe = /<!-- FILE_TYPES (\S+) START -->/g
-  const seen = new Set<string>()
-  const stale: string[] = []
-  for (const file of listDocs('website/docs')) {
-    const original = fs.readFileSync(file, 'utf8')
-    let updated = original
-    for (const [, group] of original.matchAll(markerRe)) {
+  const { stale, seen } = rewriteGroupedMarkerBlocks(
+    'FILE_TYPES',
+    (group, file) => {
       const rows = groups[group]
       if (!rows) {
         throw new Error(
           `${file}: FILE_TYPES group "${group}" has no #fileFormat-tagged adapters`,
         )
       }
-      seen.add(group)
       // `prettier-ignore` pins the compact table `markdownTable` emits, for the
       // same reason as the color tables — see generateColorDocs.
-      const block = `${start(group)}\n\n<!-- prettier-ignore -->\n${renderTable(rows)}\n\n${end(group)}`
-      const re = new RegExp(`${start(group)}[\\s\\S]*?${end(group)}`)
-      updated = updated.replace(re, () => block)
-    }
-    if (check) {
-      if (
-        normalizeMarkerWhitespace(updated) !==
-        normalizeMarkerWhitespace(original)
-      ) {
-        stale.push(file)
-      }
-    } else if (updated !== original) {
-      fs.writeFileSync(file, updated)
-    }
-  }
+      return `<!-- prettier-ignore -->\n${renderTable(rows)}`
+    },
+    { check },
+  )
   // A tagged adapter whose group no page renders is a silent no-op — the whole
   // point of the tag is that a new adapter shows up without anyone editing the
   // guide, so an unrendered group means the tag has a typo.
@@ -224,38 +200,19 @@ export function writeGotchaDocs(
   gotchasByConfig: Map<string, string[]>,
   { check = false } = {},
 ) {
-  const markerRe = /<!-- GOTCHA (\S+) START -->/g
-  const stale: string[] = []
-  for (const file of listDocs('website/docs')) {
-    const original = fs.readFileSync(file, 'utf8')
-    let updated = original
-    for (const [, name] of original.matchAll(markerRe)) {
+  return rewriteGroupedMarkerBlocks(
+    'GOTCHA',
+    (name, file) => {
       const gotchas = gotchasByConfig.get(name)
       if (!gotchas?.length) {
         throw new Error(
           `${file}: GOTCHA "${name}" has no #gotcha-tagged text on its #config`,
         )
       }
-      const start = `<!-- GOTCHA ${name} START -->`
-      const end = `<!-- GOTCHA ${name} END -->`
-      const body = gotchas
-        .map(g => `:::caution Gotcha\n\n${g}\n\n:::`)
-        .join('\n\n')
-      const re = new RegExp(`${start}[\\s\\S]*?${end}`)
-      updated = updated.replace(re, () => `${start}\n\n${body}\n\n${end}`)
-    }
-    if (check) {
-      if (
-        normalizeMarkerWhitespace(updated) !==
-        normalizeMarkerWhitespace(original)
-      ) {
-        stale.push(file)
-      }
-    } else if (updated !== original) {
-      fs.writeFileSync(file, updated)
-    }
-  }
-  return stale
+      return gotchas.map(g => `:::caution Gotcha\n\n${g}\n\n:::`).join('\n\n')
+    },
+    { check },
+  ).stale
 }
 
 // Run as a script: `node docs/generateFileTypeDocs.ts [--check]`. The guard

@@ -30,32 +30,32 @@ file (VCF/BED/CSV/etc) straight into the grid, skipping the import form;
 
 ## Members
 
-| Member                                                         | Kind       | Defined by                        | Description                                                                                                                                                                                                                                                                                                                                                                                          |
-| -------------------------------------------------------------- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                         | Properties | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [offsetPx](#property-offsetpx)                                 | Properties | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [height](#property-height)                                     | Properties | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [hideVerticalResizeHandle](#property-hideverticalresizehandle) | Properties | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [hideFilterControls](#property-hidefiltercontrols)             | Properties | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [importWizard](#property-importwizard)                         | Properties | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [spreadsheet](#property-spreadsheet)                           | Properties | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [init](#property-init)                                         | Properties | SpreadsheetView                   | used for initializing the view from a session snapshot                                                                                                                                                                                                                                                                                                                                               |
-| [width](#volatile-width)                                       | Volatiles  | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [assembly](#getter-assembly)                                   | Getters    | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [menuItems](#method-menuitems)                                 | Methods    | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [setWidth](#action-setwidth)                                   | Actions    | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [setHeight](#action-setheight)                                 | Actions    | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [resizeHeight](#action-resizeheight)                           | Actions    | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [resizeWidth](#action-resizewidth)                             | Actions    | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [displaySpreadsheet](#action-displayspreadsheet)               | Actions    | SpreadsheetView                   | load a new spreadsheet and set our mode to display it. When the incoming data has the same columns as what's shown (i.e. a session-cached URI being re-fetched on reload), carry over the user's column-visibility and SV-type filter — a fresh parse only supplies columns/rowSet, so a plain replace would reset them. The column match keeps this from leaking view state across different files. |
-| [setInit](#action-setinit)                                     | Actions    | SpreadsheetView                   |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [loadSpreadsheet](#action-loadspreadsheet)                     | Actions    | SpreadsheetView                   | the single load funnel: fetch+parse via the import wizard, then display the result. Every entry point (declarative init, cached reload, the import form's Open button) routes through here so the view stays the sole owner of displaySpreadsheet                                                                                                                                                    |
-| [applyInit](#action-applyinit)                                 | Actions    | SpreadsheetView                   | apply a declarative init (from addView / sv-inspector): point the import wizard at the file and load it                                                                                                                                                                                                                                                                                              |
-| [id](#property-id)                                             | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [displayName](#property-displayname)                           | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                                                                                                                                                                                                                                |
-| [minimized](#property-minimized)                               | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [setDisplayName](#action-setdisplayname)                       | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [setMinimized](#action-setminimized)                           | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Member                                                         | Kind       | Defined by                        | Description                                                                                             |
+| -------------------------------------------------------------- | ---------- | --------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                         | Properties | SpreadsheetView                   |                                                                                                         |
+| [offsetPx](#property-offsetpx)                                 | Properties | SpreadsheetView                   |                                                                                                         |
+| [height](#property-height)                                     | Properties | SpreadsheetView                   |                                                                                                         |
+| [hideVerticalResizeHandle](#property-hideverticalresizehandle) | Properties | SpreadsheetView                   |                                                                                                         |
+| [hideFilterControls](#property-hidefiltercontrols)             | Properties | SpreadsheetView                   |                                                                                                         |
+| [importWizard](#property-importwizard)                         | Properties | SpreadsheetView                   |                                                                                                         |
+| [spreadsheet](#property-spreadsheet)                           | Properties | SpreadsheetView                   |                                                                                                         |
+| [init](#property-init)                                         | Properties | SpreadsheetView                   | used for initializing the view from a session snapshot                                                  |
+| [width](#volatile-width)                                       | Volatiles  | SpreadsheetView                   |                                                                                                         |
+| [assembly](#getter-assembly)                                   | Getters    | SpreadsheetView                   |                                                                                                         |
+| [menuItems](#method-menuitems)                                 | Methods    | SpreadsheetView                   |                                                                                                         |
+| [setWidth](#action-setwidth)                                   | Actions    | SpreadsheetView                   |                                                                                                         |
+| [setHeight](#action-setheight)                                 | Actions    | SpreadsheetView                   |                                                                                                         |
+| [resizeHeight](#action-resizeheight)                           | Actions    | SpreadsheetView                   |                                                                                                         |
+| [resizeWidth](#action-resizewidth)                             | Actions    | SpreadsheetView                   |                                                                                                         |
+| [displaySpreadsheet](#action-displayspreadsheet)               | Actions    | SpreadsheetView                   | load a new spreadsheet and set our mode to display it.                                                  |
+| [setInit](#action-setinit)                                     | Actions    | SpreadsheetView                   |                                                                                                         |
+| [loadSpreadsheet](#action-loadspreadsheet)                     | Actions    | SpreadsheetView                   | the single load funnel: fetch+parse via the import wizard, then display the result.                     |
+| [applyInit](#action-applyinit)                                 | Actions    | SpreadsheetView                   | apply a declarative init (from addView / sv-inspector): point the import wizard at the file and load it |
+| [id](#property-id)                                             | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                         |
+| [displayName](#property-displayname)                           | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified   |
+| [minimized](#property-minimized)                               | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                         |
+| [setDisplayName](#action-setdisplayname)                       | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                         |
+| [setMinimized](#action-setminimized)                           | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                         |
 
 <details>
 <summary>SpreadsheetView - Properties</summary>
@@ -80,113 +80,42 @@ init: types.frozen<SpreadsheetViewInit | undefined>()
 <details>
 <summary>SpreadsheetView - Properties (other undocumented members)</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'SpreadsheetView'>
-// code
-type: types.literal('SpreadsheetView')
-```
-
-#### property: offsetPx
-
-```ts
-// type signature
-type offsetPx = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-offsetPx: types.stripDefault(types.number, 0)
-```
-
-#### property: height
-
-```ts
-// type signature
-type height = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-height: types.stripDefault(types.number, defaultHeight)
-```
-
-#### property: hideVerticalResizeHandle
-
-```ts
-// type signature
-type hideVerticalResizeHandle = IOptionalIType<
-  ISimpleType<boolean>,
-  [undefined]
->
-// code
-hideVerticalResizeHandle: types.stripDefault(types.boolean, false)
-```
-
-#### property: hideFilterControls
-
-```ts
-// type signature
-type hideFilterControls = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-hideFilterControls: types.stripDefault(types.boolean, false)
-```
-
-#### property: importWizard
-
-```ts
-// type signature
-type importWizard = IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
-// code
-importWizard: types.optional(ImportWizardModel, () =>
-            ImportWizardModel.create(),
-          )
-```
-
-#### property: spreadsheet
-
-```ts
-// type signature
-type spreadsheet = IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomi...
-// code
-spreadsheet: types.maybe(Spreadsheet())
-```
+| Member                                                                       | Type                                                |
+| ---------------------------------------------------------------------------- | --------------------------------------------------- |
+| <span id="property-type">type</span>                                         | `ISimpleType<"SpreadsheetView">`                    |
+| <span id="property-offsetpx">offsetPx</span>                                 | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| <span id="property-height">height</span>                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| <span id="property-hideverticalresizehandle">hideVerticalResizeHandle</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| <span id="property-hidefiltercontrols">hideFilterControls</span>             | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| <span id="property-importwizard">importWizard</span>                         | `IOptionalIType<IModelType<…>, [...]>`              |
+| <span id="property-spreadsheet">spreadsheet</span>                           | `IMaybe<IModelType<…>>`                             |
 
 </details>
 
 <details>
 <summary>SpreadsheetView - Volatiles</summary>
 
-#### volatile: width
-
-```ts
-// type signature
-type width = number
-// code
-width: 400
-```
+| Member                                 | Type     |
+| -------------------------------------- | -------- |
+| <span id="volatile-width">width</span> | `number` |
 
 </details>
 
 <details>
 <summary>SpreadsheetView - Getters</summary>
 
-#### getter: assembly
-
-```ts
-type assembly = any
-```
+| Member                                     | Type  |
+| ------------------------------------------ | ----- |
+| <span id="getter-assembly">assembly</span> | `any` |
 
 </details>
 
 <details>
 <summary>SpreadsheetView - Methods</summary>
 
-#### method: menuItems
-
-```ts
-type menuItems = () => {
-  label: string
-  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
-  onClick: () => void
-}[]
-```
+| Member                                       | Type                                                                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| <span id="method-menuitems">menuItems</span> | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]` |
 
 </details>
 
@@ -202,7 +131,7 @@ parse only supplies columns/rowSet, so a plain replace would reset them. The
 column match keeps this from leaking view state across different files.
 
 ```ts
-type displaySpreadsheet = (spreadsheet?: ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }>> | undefined) =>...
+type displaySpreadsheet = (spreadsheet?: ModelCreationType<ExtractCFromProps<…>> | undefined) => void
 ```
 
 #### action: loadSpreadsheet
@@ -230,35 +159,13 @@ type applyInit = (init: SpreadsheetViewInit) => Promise<void>
 <details>
 <summary>SpreadsheetView - Actions (other undocumented members)</summary>
 
-#### action: setWidth
-
-```ts
-type setWidth = (newWidth: number) => number
-```
-
-#### action: setHeight
-
-```ts
-type setHeight = (newHeight: number) => number
-```
-
-#### action: resizeHeight
-
-```ts
-type resizeHeight = (distance: number) => number
-```
-
-#### action: resizeWidth
-
-```ts
-type resizeWidth = (distance: number) => number
-```
-
-#### action: setInit
-
-```ts
-type setInit = (init?: SpreadsheetViewInit | undefined) => void
-```
+| Member                                             | Type                                                |
+| -------------------------------------------------- | --------------------------------------------------- |
+| <span id="action-setwidth">setWidth</span>         | `(newWidth: number) => number`                      |
+| <span id="action-setheight">setHeight</span>       | `(newHeight: number) => number`                     |
+| <span id="action-resizeheight">resizeHeight</span> | `(distance: number) => number`                      |
+| <span id="action-resizewidth">resizeWidth</span>   | `(distance: number) => number`                      |
+| <span id="action-setinit">setInit</span>           | `(init?: SpreadsheetViewInit \| undefined) => void` |
 
 </details>
 
@@ -275,15 +182,6 @@ its most-specific definition.
 
 **Properties**
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
 #### property: displayName
 
 displayName is displayed in the header of the view, or assembly names being used
@@ -296,27 +194,16 @@ type displayName = IMaybe<ISimpleType<string>>
 displayName: types.maybe(types.string)
 ```
 
-#### property: minimized
-
-```ts
-// type signature
-type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-minimized: types.stripDefault(types.boolean, false)
-```
+| Member                                         | Type                                                |
+| ---------------------------------------------- | --------------------------------------------------- |
+| <span id="property-id">id</span>               | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| <span id="property-minimized">minimized</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 
 **Actions**
 
-#### action: setDisplayName
-
-```ts
-type setDisplayName = (name: string) => void
-```
-
-#### action: setMinimized
-
-```ts
-type setMinimized = (flag: boolean) => void
-```
+| Member                                                 | Type                      |
+| ------------------------------------------------------ | ------------------------- |
+| <span id="action-setdisplayname">setDisplayName</span> | `(name: string) => void`  |
+| <span id="action-setminimized">setMinimized</span>     | `(flag: boolean) => void` |
 
 </details>

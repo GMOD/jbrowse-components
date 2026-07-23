@@ -13,63 +13,42 @@ JBrowse core.
 
 ## Members
 
-| Member                                                                   | Kind       | Defined by               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------------------------ | ---------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [id](#property-id)                                                       | Properties | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [type](#property-type)                                                   | Properties | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [configuration](#property-configuration)                                 | Properties | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [name](#getter-name)                                                     | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [description](#getter-description)                                       | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [internetAccountId](#getter-internetaccountid)                           | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [authHeader](#getter-authheader)                                         | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [tokenType](#getter-tokentype)                                           | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [domains](#getter-domains)                                               | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [toggleContents](#getter-togglecontents)                                 | Getters    | BaseInternetAccountModel | Can use this to customize what is displayed in fileSelector's toggle box                                                                                                                                                                                                                                                                                                                                                                             |
-| [SelectorComponent](#getter-selectorcomponent)                           | Getters    | BaseInternetAccountModel | Can use this to customize what the fileSelector. It takes a prop called `setLocation` that should be used to set a UriLocation                                                                                                                                                                                                                                                                                                                       |
-| [selectorLabel](#getter-selectorlabel)                                   | Getters    | BaseInternetAccountModel | Can use this to add a label to the UrlChooser. Has no effect if a custom SelectorComponent is supplied                                                                                                                                                                                                                                                                                                                                               |
-| [tokenKey](#getter-tokenkey)                                             | Getters    | BaseInternetAccountModel | The key used to store this internetAccount's token in sessionStorage                                                                                                                                                                                                                                                                                                                                                                                 |
-| [handlesLocation](#method-handleslocation)                               | Methods    | BaseInternetAccountModel | Determine whether this internetAccount provides credentials for a URL                                                                                                                                                                                                                                                                                                                                                                                |
-| [getTokenFromUser](#action-gettokenfromuser)                             | Actions    | BaseInternetAccountModel | Must be implemented by a model extending or composing this one. Pass the user's token to `resolve`.                                                                                                                                                                                                                                                                                                                                                  |
-| [storeToken](#action-storetoken)                                         | Actions    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [retrieveToken](#action-retrievetoken)                                   | Actions    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [validateToken](#action-validatetoken)                                   | Actions    | BaseInternetAccountModel | This can be used by an internetAccount to validate a token works before it is used. This is run when preAuthorizationInformation is requested, so it can be used to check that a token is valid before sending it to a worker thread. It expects the token to be returned so that this action can also be used to generate a new token (e.g. by using a refresh token) if the original one was invalid. Should throw an error if a token is invalid. |
-| [removeToken](#action-removetoken)                                       | Actions    | BaseInternetAccountModel | Clears the stored token. Also drops the in-memory cached promise so a subsequent `getToken` re-prompts / re-derives rather than handing back the token that was just invalidated.                                                                                                                                                                                                                                                                    |
-| [getToken](#action-gettoken)                                             | Actions    | BaseInternetAccountModel | Try to get the token from the location pre-auth, from local storage, or from a previously cached promise. If token is not available, uses `getTokenFromUser`.                                                                                                                                                                                                                                                                                        |
-| [addAuthHeaderToInit](#action-addauthheadertoinit)                       | Actions    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [getValidatedToken](#action-getvalidatedtoken)                           | Actions    | BaseInternetAccountModel | Fetch a token and, when a location is supplied, run it through `validateToken` so subclasses can refresh an expired token before it is used. Shared by the auth-aware fetchers.                                                                                                                                                                                                                                                                      |
-| [getPreAuthorizationInformation](#action-getpreauthorizationinformation) | Actions    | BaseInternetAccountModel | Gets the token and returns it along with the information needed to create a new internetAccount.                                                                                                                                                                                                                                                                                                                                                     |
-| [getFetcher](#action-getfetcher)                                         | Actions    | BaseInternetAccountModel | Get a fetch method that will add any needed authentication headers to the request before sending it. If location is provided, it will be checked to see if it includes a token in it pre-auth information.                                                                                                                                                                                                                                           |
-| [openLocation](#action-openlocation)                                     | Actions    | BaseInternetAccountModel | Gets a filehandle that uses a fetch that adds auth headers                                                                                                                                                                                                                                                                                                                                                                                           |
+| Member                                                                   | Kind       | Defined by               | Description                                                                                                                                  |
+| ------------------------------------------------------------------------ | ---------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                                       | Properties | BaseInternetAccountModel |                                                                                                                                              |
+| [type](#property-type)                                                   | Properties | BaseInternetAccountModel |                                                                                                                                              |
+| [configuration](#property-configuration)                                 | Properties | BaseInternetAccountModel |                                                                                                                                              |
+| [name](#getter-name)                                                     | Getters    | BaseInternetAccountModel |                                                                                                                                              |
+| [description](#getter-description)                                       | Getters    | BaseInternetAccountModel |                                                                                                                                              |
+| [internetAccountId](#getter-internetaccountid)                           | Getters    | BaseInternetAccountModel |                                                                                                                                              |
+| [authHeader](#getter-authheader)                                         | Getters    | BaseInternetAccountModel |                                                                                                                                              |
+| [tokenType](#getter-tokentype)                                           | Getters    | BaseInternetAccountModel |                                                                                                                                              |
+| [domains](#getter-domains)                                               | Getters    | BaseInternetAccountModel |                                                                                                                                              |
+| [toggleContents](#getter-togglecontents)                                 | Getters    | BaseInternetAccountModel | Can use this to customize what is displayed in fileSelector's toggle box                                                                     |
+| [SelectorComponent](#getter-selectorcomponent)                           | Getters    | BaseInternetAccountModel | Can use this to customize what the fileSelector.                                                                                             |
+| [selectorLabel](#getter-selectorlabel)                                   | Getters    | BaseInternetAccountModel | Can use this to add a label to the UrlChooser.                                                                                               |
+| [tokenKey](#getter-tokenkey)                                             | Getters    | BaseInternetAccountModel | The key used to store this internetAccount's token in sessionStorage                                                                         |
+| [handlesLocation](#method-handleslocation)                               | Methods    | BaseInternetAccountModel | Determine whether this internetAccount provides credentials for a URL                                                                        |
+| [getTokenFromUser](#action-gettokenfromuser)                             | Actions    | BaseInternetAccountModel | Must be implemented by a model extending or composing this one.                                                                              |
+| [storeToken](#action-storetoken)                                         | Actions    | BaseInternetAccountModel |                                                                                                                                              |
+| [retrieveToken](#action-retrievetoken)                                   | Actions    | BaseInternetAccountModel |                                                                                                                                              |
+| [validateToken](#action-validatetoken)                                   | Actions    | BaseInternetAccountModel | This can be used by an internetAccount to validate a token works before it is used.                                                          |
+| [removeToken](#action-removetoken)                                       | Actions    | BaseInternetAccountModel | Clears the stored token.                                                                                                                     |
+| [getToken](#action-gettoken)                                             | Actions    | BaseInternetAccountModel | Try to get the token from the location pre-auth, from local storage, or from a previously cached promise.                                    |
+| [addAuthHeaderToInit](#action-addauthheadertoinit)                       | Actions    | BaseInternetAccountModel |                                                                                                                                              |
+| [getValidatedToken](#action-getvalidatedtoken)                           | Actions    | BaseInternetAccountModel | Fetch a token and, when a location is supplied, run it through `validateToken` so subclasses can refresh an expired token before it is used. |
+| [getPreAuthorizationInformation](#action-getpreauthorizationinformation) | Actions    | BaseInternetAccountModel | Gets the token and returns it along with the information needed to create a new internetAccount.                                             |
+| [getFetcher](#action-getfetcher)                                         | Actions    | BaseInternetAccountModel | Get a fetch method that will add any needed authentication headers to the request before sending it.                                         |
+| [openLocation](#action-openlocation)                                     | Actions    | BaseInternetAccountModel | Gets a filehandle that uses a fetch that adds auth headers                                                                                   |
 
 <details>
 <summary>BaseInternetAccountModel - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<string>
-// code
-type: types.string
-```
-
-#### property: configuration
-
-```ts
-// type signature
-type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly name: { readonly description: "descriptive name of the internet account"; readonly type: "string"; readonly defaultValue: ""; }; readonly description: { readonly description: "a description of the internet account"; readonly type: "string"; readonly defaultV...
-// code
-configuration: ConfigurationReference(BaseInternetAccountConfig)
-```
+| Member                                                 | Type                                                  |
+| ------------------------------------------------------ | ----------------------------------------------------- |
+| <span id="property-id">id</span>                       | `IOptionalIType<ISimpleType<string>, [undefined]>`    |
+| <span id="property-type">type</span>                   | `ISimpleType<string>`                                 |
+| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
 
 </details>
 
@@ -115,41 +94,14 @@ type tokenKey = string
 <details>
 <summary>BaseInternetAccountModel - Getters (other undocumented members)</summary>
 
-#### getter: name
-
-```ts
-type name = string
-```
-
-#### getter: description
-
-```ts
-type description = string
-```
-
-#### getter: internetAccountId
-
-```ts
-type internetAccountId = string
-```
-
-#### getter: authHeader
-
-```ts
-type authHeader = string
-```
-
-#### getter: tokenType
-
-```ts
-type tokenType = string
-```
-
-#### getter: domains
-
-```ts
-type domains = string[]
-```
+| Member                                                       | Type       |
+| ------------------------------------------------------------ | ---------- |
+| <span id="getter-name">name</span>                           | `string`   |
+| <span id="getter-description">description</span>             | `string`   |
+| <span id="getter-internetaccountid">internetAccountId</span> | `string`   |
+| <span id="getter-authheader">authHeader</span>               | `string`   |
+| <span id="getter-tokentype">tokenType</span>                 | `string`   |
+| <span id="getter-domains">domains</span>                     | `string[]` |
 
 </details>
 
@@ -260,22 +212,10 @@ type openLocation = (location: UriLocation) => RemoteFileWithRangeCache
 <details>
 <summary>BaseInternetAccountModel - Actions (other undocumented members)</summary>
 
-#### action: storeToken
-
-```ts
-type storeToken = (token: string) => void
-```
-
-#### action: retrieveToken
-
-```ts
-type retrieveToken = () => string | null
-```
-
-#### action: addAuthHeaderToInit
-
-```ts
-type addAuthHeaderToInit = (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
-```
+| Member                                                           | Type                                                                    |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| <span id="action-storetoken">storeToken</span>                   | `(token: string) => void`                                               |
+| <span id="action-retrievetoken">retrieveToken</span>             | `() => string \| null`                                                  |
+| <span id="action-addauthheadertoinit">addAuthHeaderToInit</span> | `(init?: RequestInit \| undefined, token?: string \| undefined) => {…}` |
 
 </details>

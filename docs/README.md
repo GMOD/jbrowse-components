@@ -109,15 +109,32 @@ covers the same whole surface — own members first, then each ancestor's — wi
 "Defined by" column naming the source (a link to the ancestor's page for
 inherited members), so scanning the table finds any member on the page. Both the
 table and the inherited section render from one deduped computation, so they
-cannot disagree. The composition graph is **derived from code**, not authored —
-the generator resolves the models passed to the factory's `types.compose(...)`
-call, and the base of a `return BaseFactory(args).views(...)` extension chain,
-through the TypeScript checker (alias-followed, and following
-`const X = factory()` exports), so no `extends`/`composed of` comment needs to
-be written or kept in sync. The only requirement is that the `#stateModel` JSDoc
-sit on the model's factory (or its `types.compose`), not an unrelated preceding
-declaration. Any leftover hand-authored `extends`/`composed of` block is
-stripped from the rendered prose so it cannot drift from the derived list.
+cannot disagree.
+
+Every member is on the page, but they are not all the same size. A member whose
+author wrote prose or an `#example` renders as a full entry (heading, prose,
+type/code block); the rest — bare setters, internal accessors, the plumbing the
+structural pass recovers so the API surface stays complete — compact into a
+name-and-type table, since the type is their entire content. Those rows carry an
+explicit `<span id>` reproducing the anchor the heading would have had, so the
+"Members" index still links to every member. The same split applies inside each
+ancestor's "Derived from" block.
+
+Type signatures come from the TypeScript checker, which truncates past ~340
+characters by cutting mid-token. `elideSignature` in `util.ts` shortens
+over-long types structurally instead, collapsing generic arguments from the
+inside out (`IConfigurationReference<ConfigurationSchemaType<…>>`) so what
+survives is the outer constructor and the function's own parameter/return shape.
+
+The composition graph is **derived from code**, not authored — the generator
+resolves the models passed to the factory's `types.compose(...)` call, and the
+base of a `return BaseFactory(args).views(...)` extension chain, through the
+TypeScript checker (alias-followed, and following `const X = factory()`
+exports), so no `extends`/`composed of` comment needs to be written or kept in
+sync. The only requirement is that the `#stateModel` JSDoc sit on the model's
+factory (or its `types.compose`), not an unrelated preceding declaration. Any
+leftover hand-authored `extends`/`composed of` block is stripped from the
+rendered prose so it cannot drift from the derived list.
 
 This mirrors how `#baseConfiguration` derives config inheritance (below).
 

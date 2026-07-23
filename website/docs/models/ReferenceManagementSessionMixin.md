@@ -13,11 +13,11 @@ JBrowse core.
 
 ## Members
 
-| Member                                               | Kind    | Defined by                      | Description                                                                                                                                                                                                                                                                  |
-| ---------------------------------------------------- | ------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [getReferringMultiple](#method-getreferringmultiple) | Methods | ReferenceManagementSessionMixin | Walk the tree once and map each requested trackId to the nodes holding a `types.reference` that resolves to it (a view's track entry, a config editor widget). Track configs are matched by trackId, not identity, so a frozen base and its hydrated MST node compare equal. |
-| [getReferring](#method-getreferring)                 | Methods | ReferenceManagementSessionMixin | The nodes currently referring to `trackId` (see getReferringMultiple).                                                                                                                                                                                                       |
-| [dereferenceTrack](#action-dereferencetrack)         | Actions | ReferenceManagementSessionMixin | Remove `trackId` from every view referring to it and close any config editor widget open on it. Runs immediately: the walk that produced `referring` has finished, so mutating those views here is safe.                                                                     |
+| Member                                               | Kind    | Defined by                      | Description                                                                                                                                                    |
+| ---------------------------------------------------- | ------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [getReferringMultiple](#method-getreferringmultiple) | Methods | ReferenceManagementSessionMixin | Walk the tree once and map each requested trackId to the nodes holding a `types.reference` that resolves to it (a view's track entry, a config editor widget). |
+| [getReferring](#method-getreferring)                 | Methods | ReferenceManagementSessionMixin | The nodes currently referring to `trackId` (see getReferringMultiple).                                                                                         |
+| [dereferenceTrack](#action-dereferencetrack)         | Actions | ReferenceManagementSessionMixin | Remove `trackId` from every view referring to it and close any config editor widget open on it.                                                                |
 
 <details>
 <summary>ReferenceManagementSessionMixin - Methods</summary>

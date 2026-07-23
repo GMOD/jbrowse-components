@@ -37,19 +37,19 @@ yet computed or no regions loaded).
 
 ## Members
 
-| Member                                                       | Kind      | Defined by           | Description                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------------------------------------------------------ | --------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [canvasDrawn](#volatile-canvasdrawn)                         | Volatiles | RenderLifecycleMixin | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                          |
-| [currentRenderingBackend](#volatile-currentrenderingbackend) | Volatiles | RenderLifecycleMixin | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.                                                                       |
-| [renderTick](#volatile-rendertick)                           | Volatiles | RenderLifecycleMixin | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                                                                                                            |
-| [autorunsInstalled](#volatile-autorunsinstalled)             | Volatiles | RenderLifecycleMixin | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                                                                                                                  |
-| [renderError](#volatile-rendererror)                         | Volatiles | RenderLifecycleMixin | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay). |
-| [markCanvasDrawn](#action-markcanvasdrawn)                   | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                 | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [stopRenderingBackend](#action-stoprenderingbackend)         | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [renderNow](#action-rendernow)                               | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [setRenderError](#action-setrendererror)                     | Actions   | RenderLifecycleMixin | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.                                                                                                                                                                                                              |
-| [attachRenderingBackend](#action-attachrenderingbackend)     | Actions   | RenderLifecycleMixin | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                 |
+| Member                                                       | Kind      | Defined by           | Description                                                                                                                 |
+| ------------------------------------------------------------ | --------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [canvasDrawn](#volatile-canvasdrawn)                         | Volatiles | RenderLifecycleMixin | flips true on first paint; read by test selectors to detect render                                                          |
+| [currentRenderingBackend](#volatile-currentrenderingbackend) | Volatiles | RenderLifecycleMixin | current backend reference, updated on context-loss recovery.                                                                |
+| [renderTick](#volatile-rendertick)                           | Volatiles | RenderLifecycleMixin | counter the render autorun observes; bumped to force a re-render                                                            |
+| [autorunsInstalled](#volatile-autorunsinstalled)             | Volatiles | RenderLifecycleMixin | guards attachRenderingBackend so the autorun pair spawns once per instance                                                  |
+| [renderError](#volatile-rendererror)                         | Volatiles | RenderLifecycleMixin | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                 |
+| [markCanvasDrawn](#action-markcanvasdrawn)                   | Actions   | RenderLifecycleMixin |                                                                                                                             |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                 | Actions   | RenderLifecycleMixin |                                                                                                                             |
+| [stopRenderingBackend](#action-stoprenderingbackend)         | Actions   | RenderLifecycleMixin |                                                                                                                             |
+| [renderNow](#action-rendernow)                               | Actions   | RenderLifecycleMixin |                                                                                                                             |
+| [setRenderError](#action-setrendererror)                     | Actions   | RenderLifecycleMixin | set/clear the render-backend error.                                                                                         |
+| [attachRenderingBackend](#action-attachrenderingbackend)     | Actions   | RenderLifecycleMixin | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend) |
 
 <details>
 <summary>RenderLifecycleMixin - Volatiles</summary>
@@ -150,28 +150,11 @@ type attachRenderingBackend = <B>(
 <details>
 <summary>RenderLifecycleMixin - Actions (other undocumented members)</summary>
 
-#### action: markCanvasDrawn
-
-```ts
-type markCanvasDrawn = () => void
-```
-
-#### action: resetCanvasDrawn
-
-```ts
-type resetCanvasDrawn = () => void
-```
-
-#### action: stopRenderingBackend
-
-```ts
-type stopRenderingBackend = () => void
-```
-
-#### action: renderNow
-
-```ts
-type renderNow = () => void
-```
+| Member                                                             | Type         |
+| ------------------------------------------------------------------ | ------------ |
+| <span id="action-markcanvasdrawn">markCanvasDrawn</span>           | `() => void` |
+| <span id="action-resetcanvasdrawn">resetCanvasDrawn</span>         | `() => void` |
+| <span id="action-stoprenderingbackend">stopRenderingBackend</span> | `() => void` |
+| <span id="action-rendernow">renderNow</span>                       | `() => void` |
 
 </details>

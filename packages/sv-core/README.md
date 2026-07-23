@@ -28,7 +28,7 @@ cannot be found.
 
 ```js
 // type signature
-({ feature, session, assemblyName, }: { feature: Feature; session: AbstractSessionModel; assemblyName: string; }) => Promise<{ coverage: { pos: number; refName: string; mateRefName: string; matePos: number; }; region: BasicRegion; mateRegion: BasicRegion; }>
+({ feature, session, assemblyName, }: { feature: Feature; session: AbstractSessionModel; assemblyName: string; }) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -39,7 +39,7 @@ Resolves the two canonical-refName endpoints a breakend/SV feature spans.
 
 ```js
 // type signature
-({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & ... 13 more ... & IStateTreeNode<...>; }) => { ...; }
+({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<…>>; }> & ... 13 more ... & IStateTreeNode<...>; }) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -63,7 +63,7 @@ there stays visible in each.
 
 ```js
 // type signature
-<T extends { refName: string; start: number; end: number; }>(region: T, pos: number, assemblyName?: string | undefined) => [T & { assemblyName?: string | undefined; }, T & { ...; }]
+<…>(region: T, pos: number, assemblyName?: string | undefined) => [T & { assemblyName?: string | undefined; }, T & { ...; }]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

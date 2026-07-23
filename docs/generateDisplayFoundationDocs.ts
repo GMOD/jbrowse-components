@@ -1,7 +1,11 @@
 import fs from 'fs'
-import path from 'path'
 
-import { markdownTable, rewriteMarkerBlock, runMarkerScript } from './util.ts'
+import {
+  listSources,
+  markdownTable,
+  rewriteMarkerBlock,
+  runMarkerScript,
+} from './util.ts'
 
 // Render the display-foundations table into the hand-written creating_display
 // guide from the source itself, so the "used by" column can't drift. It already
@@ -28,7 +32,6 @@ import { markdownTable, rewriteMarkerBlock, runMarkerScript } from './util.ts'
 // Editing between the markers is pointless — it is overwritten on regen.
 
 const SOURCE_DIRS = ['packages', 'plugins']
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
 
 // `#stateModel <Name>` followed, within the same JSDoc, by one of the two tags.
 // The `[^*]*(?:\*(?!/)[^*]*)*?` run walks comment body without escaping the
@@ -42,16 +45,6 @@ interface Foundation {
   name: string
   brings: string
   displays: string[]
-}
-
-function listSources(dir: string): string[] {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) {
-      return SKIP_DIRS.has(e.name) ? [] : listSources(full)
-    }
-    return /\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [full] : []
-  })
 }
 
 export function collectFoundations() {
