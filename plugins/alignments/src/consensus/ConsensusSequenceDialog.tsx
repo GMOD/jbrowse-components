@@ -33,6 +33,7 @@ import {
 import { observer } from 'mobx-react'
 
 import { defaultFilterFlags } from '../shared/util.ts'
+import FractionSlider from './FractionSlider.tsx'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
@@ -182,7 +183,14 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           and unlike samtools it is not capped at two alleles, so pooled or
           higher-ploidy samples can show a real 3- or 4-way split.
         </Typography>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 16,
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+          }}
+        >
           <TextField
             label="Min read depth"
             helperText="positions covered by fewer reads than this are N, regardless of agreement"
@@ -195,28 +203,20 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               setMinDepth(Number.isFinite(v) && v >= 1 ? v : 1)
             }}
           />
-          <TextField
+          <FractionSlider
             label="Min call fraction"
-            helperText="the called base(s) must together account for at least this fraction of the reads, or it's N"
-            type="number"
-            size="small"
+            helpText="the called base(s) must together account for at least this fraction of the reads, or it's N"
             value={callFract}
-            slotProps={{ htmlInput: { min: 0, max: 1, step: 0.05 } }}
-            onChange={event => {
-              const v = Number.parseFloat(event.target.value)
-              setCallFract(Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)
+            onCommit={v => {
+              setCallFract(v)
             }}
           />
-          <TextField
+          <FractionSlider
             label="Min het fraction"
-            helperText="with ambiguity codes on, a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
-            type="number"
-            size="small"
+            helpText="with ambiguity codes on, a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
             value={hetFract}
-            slotProps={{ htmlInput: { min: 0, max: 1, step: 0.05 } }}
-            onChange={event => {
-              const v = Number.parseFloat(event.target.value)
-              setHetFract(Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)
+            onCommit={v => {
+              setHetFract(v)
             }}
           />
           <FormControlLabel
