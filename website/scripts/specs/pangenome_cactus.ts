@@ -223,6 +223,110 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The payoff for the boxed loci: the first box (K12 1.0-1.1 Mb, blue in
+  // graph_correspondence) opened as a four-way synteny view, so the reader can
+  // see what the depth dip and the over-wide graph box actually contain.
+  //
+  // Each row's window is read off the same halSynteny PAF the ribbons are drawn
+  // from (ecoli_cactus_ava.pif.gz), not chosen by eye: the K12 window's end
+  // points are walked through the blocks that span them, so every row holds the
+  // stretch of its own genome that aligns to K12 1.0-1.1 Mb.
+  //
+  //   K12      chr:1,000,000-1,100,000     100 kb
+  //   Sakai    chr:1,129,000-1,462,000     333 kb (carries the 66 kb stx2
+  //                                        prophage, Sakai 1,243,711-1,309,458,
+  //                                        plus an 84 kb private stretch)
+  //   CFT073   chr:1,044,000-1,243,500     200 kb
+  //   NCTC86   chr:2,972,000-3,062,000      90 kb, reverse orientation, so its
+  //                                        ribbon crosses (as in the
+  //                                        whole-genome synteny figure)
+  //
+  // The spans are the figure: the rows are deliberately NOT squared to the same
+  // bp/px, because the whole point is that the same K12 window costs 90-333 kb
+  // in the other strains. That ratio is the graph axis being 2-3x wider than the
+  // K12 axis in the graph_correspondence pair.
+  //
+  // showOnlyGenes + compact drops the CDS lanes and the full-width RefSeq
+  // `region` feature so the accessory content is readable at four rows.
+  {
+    mode: 'url',
+    name: 'pangenome_cactus/boxed_locus_synteny',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'K12',
+              loc: 'chr:1,000,000-1,100,000',
+              tracks: [
+                {
+                  trackId: 'K12_genes',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showDescriptions: false,
+                },
+              ],
+            },
+            {
+              assembly: 'Sakai',
+              loc: 'chr:1,129,000-1,462,000',
+              tracks: [
+                {
+                  trackId: 'Sakai_genes',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showDescriptions: false,
+                },
+              ],
+            },
+            {
+              assembly: 'CFT073',
+              loc: 'chr:1,044,000-1,243,500',
+              tracks: [
+                {
+                  trackId: 'CFT073_genes',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showDescriptions: false,
+                },
+              ],
+            },
+            {
+              assembly: 'NCTC86',
+              loc: 'chr:2,972,000-3,062,000',
+              tracks: [
+                {
+                  trackId: 'NCTC86_genes',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showDescriptions: false,
+                },
+              ],
+            },
+          ],
+          tracks: [
+            ['ecoli_cactus_ava'],
+            ['ecoli_cactus_ava'],
+            ['ecoli_cactus_ava'],
+          ],
+          drawCurves: true,
+          colorBy: 'default',
+          // three bands at 90px: enough for the wedges to read without the
+          // four gene rows falling off the frame
+          levelHeights: [90, 90, 90],
+          alpha: 0.8,
+        },
+      ],
+    }),
+    // 1000 clipped the bottom gene row; this fits all four rows plus the three
+    // 90px bands
+    viewportHeight: 1080,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
+
   // Projection 4b: per-strain presence (odgi pav) as a MultiQuantitativeTrack,
   // whole-chromosome so each strain's accessory dips read beside the aggregate
   // depth curve.

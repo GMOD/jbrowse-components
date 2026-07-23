@@ -290,6 +290,38 @@ counts K12 bases and holds every locus to its reference width. The boxed loci
 are the three where that gap is largest, which is why each one also sits over a
 dip in the depth track.
 
+## Opening a boxed locus in a multi-way synteny view
+
+The depth track says a locus is accessory and the graph raster says it is wide,
+but neither says _what_ is there. The synteny projection does: stack the four
+strains as above and zoom every row to that locus.
+
+| Box    | K12 window                | What the graph is counting                                                           |
+| ------ | ------------------------- | ------------------------------------------------------------------------------------ |
+| blue   | `chr:1,000,000-1,100,000` | Sakai's 66 kb stx2 prophage, plus an 84 kb second Sakai-only stretch                 |
+| orange | `chr:2,040,000-2,140,000` | a 33 kb K12 stretch none of the three carry, and a 171 kb CFT073-only insert         |
+| green  | `chr:3,100,000-3,200,000` | one breakpoint, three different inserts: 128 kb in CFT073, 84 kb NCTC86, 23 kb Sakai |
+
+Each row needs its own window, because the same locus is at a different
+coordinate (and a different length) in each strain. Read them off the synteny
+PAF rather than guessing: for the blue box the K12 window's end points fall in
+halSynteny blocks that place it at Sakai `chr:1,129,000-1,462,000`, CFT073
+`chr:1,044,000-1,243,500`, and NCTC86 `chr:2,972,000-3,062,000` (reverse
+orientation, so that ribbon crosses). The interactive equivalent is to navigate
+the K12 row, then right-click a ribbon and pick **Center on feature**, which
+puts the row below on the matching alignment.
+
+Do not square the rows to a common width here. The span each row needs _is_ the
+result: 100 kb of K12 costs 333 kb in Sakai, 200 kb in CFT073, and 90 kb in
+NCTC86, which is the same 2 to 3 times spread the graph axis showed.
+
+<Figure caption="The blue box opened as a four-way synteny view, each row windowed to the sequence that aligns to K12 chr:1,000,000-1,100,000. The ribbons shear instead of running horizontal because each row spans a different amount of its own genome, and the gaps between ribbons are the accessory sequence: the widest one is Sakai's Shiga-toxin prophage, which has no K12 counterpart at all." src="/img/pangenome_cactus/boxed_locus_synteny.png" />
+
+The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) covers the same
+stack driven from the UI, and
+[Synteny from ortholog tables](/docs/tutorials/multiway_synteny) covers the
+gene-level version of this zoom.
+
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_cactus.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_cactus.sh)
