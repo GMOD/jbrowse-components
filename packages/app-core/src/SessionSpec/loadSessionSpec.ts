@@ -134,8 +134,7 @@ export async function loadSessionSpec(
         setInit: (init: DockviewLayoutNode | undefined) => void
       }
 
-      // Enable workspaces mode for this session only — a spec URL shouldn't
-      // rewrite the visitor's own preference
+      // Enable workspaces mode
       session.setUseWorkspaces(true)
 
       // Convert layout from view indices to view IDs and set init

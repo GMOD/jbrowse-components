@@ -134,7 +134,7 @@ export function workspacesMenuItem(
     checked: session?.effectiveUseWorkspaces ?? false,
     helpText: WORKSPACES_HELP_TEXT,
     onClick: () => {
-      session?.setUseWorkspacesPreference(!session.effectiveUseWorkspaces)
+      session?.setUseWorkspaces(!session.effectiveUseWorkspaces)
     },
   }
 }

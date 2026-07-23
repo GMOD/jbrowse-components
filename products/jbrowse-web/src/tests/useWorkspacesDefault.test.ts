@@ -30,7 +30,7 @@ test("a session snapshot's own value beats the admin default", () => {
 
 test("a user's toggle beats the admin default and persists as an override", () => {
   const session = sessionWith(true)
-  session.setUseWorkspacesPreference(false)
+  session.setUseWorkspaces(false)
 
   expect(session.effectiveUseWorkspaces).toBe(false)
   expect(session.getPreferenceChanges()).toEqual([
@@ -38,16 +38,6 @@ test("a user's toggle beats the admin default and persists as an override", () =
   ])
 
   session.resetUseWorkspaces()
-  expect(session.effectiveUseWorkspaces).toBe(true)
-  expect(session.getPreferenceChanges()).toEqual([])
-})
-
-// the session-scoped setter is what a spec `layout` uses: it must not rewrite
-// the visitor's own preference
-test('setUseWorkspaces is session-scoped and writes no override', () => {
-  const session = sessionWith()
-  session.setUseWorkspaces(true)
-
   expect(session.effectiveUseWorkspaces).toBe(true)
   expect(session.getPreferenceChanges()).toEqual([])
 })

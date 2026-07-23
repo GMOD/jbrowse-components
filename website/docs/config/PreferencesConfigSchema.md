@@ -47,9 +47,8 @@ holding Ctrl. Applies globally to all wheel-zoom views.
 #### slot: configuration.preferences.useWorkspaces
 
 when true, views open in the dockview-based tabbed/tiled workspace layout rather
-than stacked vertically. Only the default: a session that names `useWorkspaces`
-itself (a shared snapshot, or a session spec carrying a `layout`) still wins,
-and a user's own toggle overrides it.
+than stacked vertically. Only the default: a session naming `useWorkspaces`
+itself still wins, as does a user's own toggle.
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `false`

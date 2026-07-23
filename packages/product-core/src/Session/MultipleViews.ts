@@ -38,9 +38,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         /**
          * #property
          * enables the dockview-based tabbed/tiled workspace layout for this
-         * session specifically. Undefined means "unspecified": read
-         * `effectiveUseWorkspaces`, which falls back to the user's preference
-         * and then the `configuration.preferences.useWorkspaces` admin default.
+         * session. Undefined means unspecified — read `effectiveUseWorkspaces`.
          */
         useWorkspaces: types.stripDefault(
           types.maybe(types.boolean),
@@ -51,10 +49,11 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * resolved workspaces layout flag (never undefined): this session's
-       * explicit value if it has one, else the user preference resolved against
-       * the admin default. Every consumer reads this, not the raw property —
-       * only the four session-creation paths that carry a snapshot set that.
+       * resolved workspaces flag (never undefined): this session's value, else
+       * the user preference over the `configuration.preferences.useWorkspaces`
+       * admin default. Every consumer reads this, not the raw property — only
+       * sessions built from a snapshot or a spec `layout` set that, so the
+       * admin default is what reaches the arrivals that bypass defaultSession.
        */
       get effectiveUseWorkspaces(): boolean {
         return (
@@ -126,32 +125,21 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * set the workspaces layout for this session only, leaving the user's
-         * personal default untouched. For session-scoped intent (a spec
-         * carrying a `layout`); the user-facing toggle is
-         * `setUseWorkspacesPreference`.
+         * applies to this session and becomes the user's default for sessions
+         * that don't specify one. Persisted only here, on an explicit set — an
+         * autorun mirroring the resolved value would bake the admin default
+         * into every visitor's localStorage as if they had chosen it, leaving a
+         * later admin change unable to reach them.
          */
         setUseWorkspaces(useWorkspaces: boolean) {
-          self.useWorkspaces = useWorkspaces
-        },
-
-        /**
-         * #action
-         * the user-facing workspaces toggle: applies to this session and
-         * becomes their default for sessions that don't specify one. Persisted
-         * only here, on an explicit toggle — an autorun mirroring the resolved
-         * value would bake the admin default into every visitor's localStorage
-         * on first load, so a later admin change could never reach them.
-         */
-        setUseWorkspacesPreference(useWorkspaces: boolean) {
           self.useWorkspaces = useWorkspaces
           self.setPreferenceOverride('useWorkspaces', useWorkspaces)
         },
 
         /**
          * #action
-         * drop both this session's explicit value and the user's override so
-         * workspaces falls back to the admin default
+         * drop this session's value and the user's override so workspaces falls
+         * back to the admin default
          */
         resetUseWorkspaces() {
           self.useWorkspaces = undefined
@@ -184,7 +172,6 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       // stays localStorage-backed, so each browser keeps its own value.
       // useWorkspaces stays: it changes layout intent (and pairs with the
       // dockviewLayout the snapshot carries), which is meaningful to share.
-      // Unset drops itself — it's a stripDefault maybe.
       const { stickyViewHeaders, ...rest } = snap
       return rest as typeof snap
     })
