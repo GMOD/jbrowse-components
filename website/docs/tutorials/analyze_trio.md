@@ -210,10 +210,12 @@ java -jar flare.jar \
 ```
 
 FLARE writes per-marker calls into the `AN1`/`AN2` `FORMAT` fields of
-`asw_trio.anc.vcf.gz`, which get collapsed into per-haplotype runs, one BED9
-line each, rows labeled `Child/Mother/Father hap1|hap2`, colored by ancestry via
-`itemRgb`. Picking the reference panel, pulling genotypes from the public 1000
-Genomes phased panel, running FLARE, and writing the BED all live in one script:
+`asw_trio.anc.vcf.gz`, which
+[`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
+collapses into per-haplotype runs, one BED9 line each, rows labeled
+`Child/Mother/Father hap1|hap2`, colored by ancestry via `itemRgb`. Picking the
+reference panel, pulling genotypes from the public 1000 Genomes phased panel,
+running FLARE, and writing the BED all live in one script:
 [`build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh).
 
 Load that as a `LinearMultiRowFeatureDisplay` partitioned by `sample`, so each
@@ -312,28 +314,39 @@ the well-supported ones.
 
 ## Reproduce it end to end
 
+Both scripts below live in the
+[jbrowse-components](https://github.com/GMOD/jbrowse-components) repo, so run
+them from a checkout (`git clone` it first, or download the single file you want
+from the links).
+
 [`build_khv_trio_hapibd.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_khv_trio_hapibd.sh)
 runs the whole pipeline in one shot. It downloads the trio VCF, hap-ibd, and the
 genetic map, runs hap-ibd, builds the painted BED, downloads JBrowse, and writes
 a `config.json` with the hg38 assembly plus the VCF and hap-ibd tracks.
 
 ```bash
-bash scripts/build_khv_trio_hapibd.sh
+bash scripts/build_khv_trio_hapibd.sh   # builds ./khv_trio_build/jbrowse2
+npx --yes serve khv_trio_build/jbrowse2 # then open the printed URL
 ```
 
-It needs java, python3, node, and htslib (`bgzip` and `tabix`). Serve the
-resulting `jbrowse2/` directory to open the finished view.
+It needs java, python3, node, and htslib (`bgzip` and `tabix`). You can also
+open `khv_trio_build/jbrowse2/config.json` in JBrowse Desktop via **File ->
+Session -> Open config.json or .jbrowse file...** to get the same view without
+serving anything.
 
 The admixed-ancestry track (the ASW trio, from the FLARE section above) is a
 separate script,
 [`build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh):
 
 ```bash
-bash scripts/build_asw_trio_ancestry.sh
+bash scripts/build_asw_trio_ancestry.sh # builds ./asw_trio_build/
 ```
 
 It needs `bcftools`, htslib (`bgzip`/`tabix`), Java 8+, `python3`, `curl`, and
-`unzip`.
+`unzip`. Unlike the hap-ibd script it writes just the painted BED,
+`asw_trio_build/NA19828_ASW_trio.chr1.ancestry.bed.gz` (plus its `.tbi`), which
+you load with the track JSON from the
+[local ancestry section](#painting-the-same-trio-by-local-ancestry) above.
 
 ## See also
 
