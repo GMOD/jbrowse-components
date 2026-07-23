@@ -20,7 +20,7 @@ The
 is the source of truth for the lifecycle, mixins, and invariants; its
 [GPU rendering architecture](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
 and
-[Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#adding-a-new-gpu-display-type)
+[Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#adding-a-new-gpu-display-type)
 sections mirror the steps below.
 
 `@jbrowse/render-core` is published but marked `@experimental`: names and
@@ -326,7 +326,7 @@ For a real, complete example of this shape see
 ## Step 4: Canvas2D renderer (required)
 
 Implement the same interface using `ctx.fillRect` etc. Canvas2D is
-[the floor every display must ship](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator):
+[the floor every display must ship](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator):
 **SVG export runs the Canvas2D path**, and the GPU shader is the optional
 accelerator layered on top. This renderer also runs when WebGPU and WebGL2 are
 both unavailable:
@@ -391,7 +391,7 @@ Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin` and the
 fetch autoruns), store the worker output in an `rpcDataMap`, and wire the render
 lifecycle with `installPerRegionLifecycle`. This is the **per-region streamed**
 upload pattern from the
-[architecture spec's three upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#three-upload-patterns),
+[architecture spec's three upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#three-upload-patterns),
 the right shape when each region's data is independent (no cross-region layout
 coupling). It's identical in structure to the Canvas2D model in
 [Plotting features](/docs/developer_guides/plotting_features#step-3-the-mst-model);
@@ -519,7 +519,7 @@ export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
 ```
 
 `installPerRegionLifecycle` wraps the lower-level
-[`attachRenderingBackend`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-core-contract)
+[`attachRenderingBackend`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
 contract (one upload autorun, one render autorun), giving each region key its
 own upload autorun to avoid O(N²) re-uploads as regions stream in. Only displays
 that lay features into Y-rows _across_ regions (`LinearBasicDisplay`,
@@ -545,7 +545,7 @@ a display's _chrome_: the UI framing around your canvas (loading scrim, error
 bar, "region too large" banner, in the sense of "browser chrome") plus
 WebGL/WebGPU context-loss recovery). It is the **only** place
 `useRenderingBackend` is called. A display must not call the hook itself
-([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-api)).
+([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-api)).
 Its render-prop child makes it agnostic to how many canvases a display draws.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->

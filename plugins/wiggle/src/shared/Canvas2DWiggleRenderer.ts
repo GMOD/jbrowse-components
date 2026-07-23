@@ -23,7 +23,7 @@ import type {
   WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'
 
-// Pure draw entry point per ARCHITECTURE.md "SVG export pipeline". Paints
+// Pure draw entry point per agent-docs/reference/SVG_EXPORT.md. Paints
 // line / density / scatter / xyplot per render type, one source per row.
 function drawWiggleBlocks(
   ctx: Ctx2D,
@@ -97,9 +97,10 @@ function drawWiggleBlocks(
   }
 }
 
-// One-shot pure entry point used by SVG export per ARCHITECTURE.md "SVG
-// export pipeline". On-screen uses the streamed per-region path via
-// Canvas2DWiggleRenderer because rpcDataMap entries arrive incrementally.
+// One-shot pure entry point used by SVG export per
+// agent-docs/reference/SVG_EXPORT.md. On-screen uses the streamed per-region
+// path via Canvas2DWiggleRenderer because rpcDataMap entries arrive
+// incrementally.
 export function drawWiggleToCtx<Data>(
   ctx: Ctx2D,
   sources: {

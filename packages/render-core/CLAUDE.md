@@ -32,9 +32,8 @@ neutral name (`RenderLifecycleMixin`, `PerRegionRenderingBackend`, `Canvas2D*`,
 runs the Canvas2D fallback. `useRenderingBackend` owns the whole canvas-init /
 context-loss / device-loss / pagehide / retry lifecycle.
 
-**Conceptual reference: `agent-docs/ARCHITECTURE.md` → "GPU Rendering
-Architecture."** This file documents only what bites when editing _this
-package_.
+**Conceptual reference: `agent-docs/reference/GPU_RENDERING.md`.** This file
+documents only what bites when editing _this package_.
 
 ## Local invariants
 

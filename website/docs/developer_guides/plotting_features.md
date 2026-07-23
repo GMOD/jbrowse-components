@@ -68,7 +68,7 @@ The simplest complete in-tree reference is
 whose renderer is ~30 lines; this guide mirrors its shape. The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
 is the canonical reference for the lifecycle below (see
-[Canvas2D is the floor, GPU is the optional accelerator](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator)).
+[Canvas2D is the floor, GPU is the optional accelerator](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator)).
 
 ## Files to create
 

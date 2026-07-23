@@ -7,8 +7,8 @@
  * @experimental The surface of this package is still being refined; names and
  * signatures may change before it is frozen under semver. If you depend on it
  * from a third-party plugin, pin an exact version and expect to rebuild on
- * upgrades. The conceptual reference is `agent-docs/ARCHITECTURE.md` →
- * "GPU Rendering Architecture".
+ * upgrades. The conceptual reference is
+ * `agent-docs/reference/GPU_RENDERING.md`.
  *
  * This is the curated public surface. Internal building blocks (`webgpuUtils`,
  * the shader codegen) are intentionally not re-exported here.

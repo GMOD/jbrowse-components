@@ -13,7 +13,7 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-// Bezier-arc-overlay exception (see ARCHITECTURE.md "SVG export pipeline"): arc
+// Bezier-arc-overlay exception (see agent-docs/reference/SVG_EXPORT.md): arc
 // paths render as vector SVG on both the on-screen and export paths so
 // hover/tooltips work natively, so the body returns <Arcs> JSX directly rather
 // than routing through paintLayer. SvgChrome still owns the SVGErrorBox terminal
