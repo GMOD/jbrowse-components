@@ -7,34 +7,45 @@ description: The byte/density gate that raises the "region too large" banner and
 
 ## TL;DR
 
-Two byte numbers. Both estimate what a fetch would pull over the wire; they
-differ only in which span of the genome they cover:
+**What it does:** you load `chr1:1-1,000,000`. Before fetching, we ask the
+adapter roughly how many bytes that region would download. Over the limit → skip
+the fetch, show the "region too large" banner. Under → fetch normally. For tabix
+the estimate is just an index lookup (a byte range in the file), so it's free.
 
-- **`estimatedBytesForMeasuredSpan`** — the adapter's estimate for the span that
-  was on screen when it was taken. Never changes as you navigate.
-- **`estimatedBytesForVisibleSpan`** — that estimate rescaled to the span on
-  screen right now. Shrinks as you zoom in.
+There's a second gate on the same banner: canvas also blocks regions with too
+many *features* to draw, even when the byte count is fine. Same machinery,
+different axis (`densityTooLarge`).
 
-The gate always compares the visible-span number against the limit. Gating on
-the measured-span number is the classic bug: it doesn't shrink on zoom-in, so
-the banner never clears.
+**Why there are two byte numbers:** once loaded, panning/zooming changes the span
+you'd fetch. Instead of re-asking the adapter every time, we keep the one
+estimate we captured and rescale it — bytes scale with span, so half the bp is
+half the bytes. `regionTooLarge` is a derived getter that redoes this rescale on
+every read, so the banner clears itself once you've zoomed in enough.
 
-- `regionTooLarge` is a **derived getter**, not a flag. It recomputes
-  `estimatedBytesForVisibleSpan` on every read, so it releases itself on zoom-in
-  and doesn't flicker while panning.
-- Gating is **opt-in**. `derivedRegionTooLargeEnabled` defaults to false;
-  `MultiRegionDisplayMixin` derives it from `getByteEstimateConfig() !== null`,
-  and LD/arc/canvas set it explicitly.
-- Canvas skips the pre-flight RPC and short-circuits **inside** its feature RPC
-  via the adapter's `getRegionByteSize`, downloading no features.
-- **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
-  Both define `derivedRegionTooLargeEnabled` and the later wins; swap them and
-  the whole gate silently switches off, with no error and no type failure.
-- Force-load limits are volatile, never persisted. `resolveForceLoadLimits`
-  raises the axis that actually tripped. The durable hatch is the `forceLoad`
-  config slot.
-- `alwaysRender` exempts adapters that self-summarize at screen resolution
-  (BigWig, MultiWiggle, HiC, sequence).
+- **`estimatedBytesForVisibleSpan`** — rescaled to the span in view now. **Gate on this.**
+- **`estimatedBytesForMeasuredSpan`** — the frozen number from when we captured
+  it. Gating on this is the classic bug: it never shrinks, so the banner never
+  clears.
+
+**Two footguns:**
+
+- Gating is **opt-in** via `derivedRegionTooLargeEnabled` (defaults to false).
+  `MultiRegionDisplayMixin` derives it from `getByteEstimateConfig() !== null`;
+  LD/arc/canvas set it explicitly. Displays that don't opt in never gate.
+- **`CanvasFeatureGateMixin()` must compose *after* `MultiRegionDisplayMixin()`.**
+  Both define `derivedRegionTooLargeEnabled` and the later one wins. Swap the
+  order and the whole gate silently switches off — no error, no type failure.
+
+**The rest:**
+
+- Canvas doesn't do a separate estimate RPC. It folds the byte check **inside**
+  its feature RPC (via the adapter's `getRegionByteSize`), so an over-budget
+  region short-circuits before downloading any features.
+- Force-load ("show me this anyway") is **volatile** — never saved to a session.
+  `resolveForceLoadLimits` raises whichever axis actually tripped. The durable
+  escape hatch is the `forceLoad` config slot.
+- `alwaysRender` exempts adapters that summarize at screen resolution (BigWig,
+  MultiWiggle, HiC, sequence) — they can never be "too large".
 
 | Code | Path |
 | --- | --- |
