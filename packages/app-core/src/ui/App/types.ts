@@ -14,7 +14,7 @@ export type AppSession = SessionWithFocusedViewAndDrawerWidgets & {
   setErrorDialog: (state: ErrorDialogState | undefined) => void
   renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown
-  useWorkspaces: boolean
+  effectiveUseWorkspaces: boolean
 }
 
 export type DockviewSessionType = SessionWithFocusedViewAndDrawerWidgets & {

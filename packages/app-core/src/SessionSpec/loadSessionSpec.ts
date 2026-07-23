@@ -130,12 +130,12 @@ export async function loadSessionSpec(
     if (layout) {
       // Cast through unknown since AbstractSessionModel doesn't include workspace types
       const session = rootModel.session as unknown as {
-        useWorkspaces: boolean
         setUseWorkspaces: (value: boolean) => void
         setInit: (init: DockviewLayoutNode | undefined) => void
       }
 
-      // Enable workspaces mode
+      // Enable workspaces mode for this session only — a spec URL shouldn't
+      // rewrite the visitor's own preference
       session.setUseWorkspaces(true)
 
       // Convert layout from view indices to view IDs and set init

@@ -35,5 +35,16 @@ export function PreferencesConfigSchemaFactory() {
       type: 'boolean',
       defaultValue: false,
     },
+    /**
+     * #slot configuration.preferences.useWorkspaces
+     * when true, views open in the dockview-based tabbed/tiled workspace layout
+     * rather than stacked vertically. Only the default: a session that names
+     * `useWorkspaces` itself (a shared snapshot, or a session spec carrying a
+     * `layout`) still wins, and a user's own toggle overrides it.
+     */
+    useWorkspaces: {
+      type: 'boolean',
+      defaultValue: false,
+    },
   })
 }

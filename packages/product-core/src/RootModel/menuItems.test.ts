@@ -116,14 +116,14 @@ describe('undoMenuItem / redoMenuItem', () => {
 
 describe('workspacesMenuItem', () => {
   it('reflects current state and toggles on click', () => {
-    const setUseWorkspaces = jest.fn()
+    const setUseWorkspacesPreference = jest.fn()
     const item = workspacesMenuItem({
-      useWorkspaces: true,
-      setUseWorkspaces,
+      effectiveUseWorkspaces: true,
+      setUseWorkspacesPreference,
     } as unknown as SessionWithMultipleViews)
     expect('checked' in item && item.checked).toBe(true)
     clickOf(item)()
-    expect(setUseWorkspaces).toHaveBeenCalledWith(false)
+    expect(setUseWorkspacesPreference).toHaveBeenCalledWith(false)
   })
 
   it('defaults checked to false when no session', () => {

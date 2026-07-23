@@ -32,7 +32,8 @@ const ViewMenu = observer(function ViewMenu({
   const session = getSession(model) as unknown as ViewMenuSession
 
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
-  const usePanel = session.useWorkspaces && isSessionWithDockviewLayout(session)
+  const usePanel =
+    session.effectiveUseWorkspaces && isSessionWithDockviewLayout(session)
   const viewCount = usePanel
     ? (session.getPanelContainingView(model.id)?.viewIds.length ?? 0)
     : session.views.length

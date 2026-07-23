@@ -43,8 +43,9 @@ export interface PreferencesDialogSession {
   setThemeName: (arg: string) => void
   stickyViewHeaders: boolean
   setStickyViewHeaders: (sticky: boolean) => void
-  useWorkspaces: boolean
-  setUseWorkspaces: (useWorkspaces: boolean) => void
+  effectiveUseWorkspaces: boolean
+  setUseWorkspacesPreference: (useWorkspaces: boolean) => void
+  resetUseWorkspaces: () => void
   animationMode: AnimationMode
   setPreferenceOverride: (key: string, value: unknown) => void
   clearPreferenceOverride: (key: string) => void
@@ -57,8 +58,10 @@ export interface PreferencesDialogSession {
   getPreferenceChanges: () => TrackConfigChange[]
 }
 
-// The preference subsystems that live outside the session override map — theme
-// plus the two layout flags — each its own mixin with its own default. Defined
+// The preference subsystems whose reset doesn't reduce to dropping a key from
+// the session override map — theme and the two layout flags, each its own mixin
+// with its own default (useWorkspaces spans both: the map holds the user's
+// override, the session model holds this session's explicit value). Defined
 // once here so the reset diff (`change`) and the reset actions
 // (`resetAllPreferences`, `resetPreferenceChange`) can't enumerate them
 // differently: `head` both tags the change row and routes its reset, so a row
@@ -67,8 +70,11 @@ export interface PreferencesDialogSession {
 // defaults) is enumerated separately by the session.
 interface PreferenceSubsystem {
   head: string
-  // the change row when this subsystem differs from its default, else undefined
-  change: (session: PreferencesDialogSession) => TrackConfigChange | undefined
+  // the change row when this subsystem differs from its default, else
+  // undefined. Omitted when the session's override map already reports the row
+  // (useWorkspaces) and this entry exists only to route its reset, which has to
+  // clear the session property as well as the override.
+  change?: (session: PreferencesDialogSession) => TrackConfigChange | undefined
   reset: (session: PreferencesDialogSession) => void
 }
 
@@ -95,12 +101,8 @@ const PREFERENCE_SUBSYSTEMS: PreferenceSubsystem[] = [
   },
   {
     head: 'useWorkspaces',
-    change: s =>
-      s.useWorkspaces
-        ? { path: ['useWorkspaces'], from: false, to: true }
-        : undefined,
     reset: s => {
-      s.setUseWorkspaces(false)
+      s.resetUseWorkspaces()
     },
   },
 ]
@@ -113,7 +115,7 @@ function collectPreferenceChanges(
 ): TrackConfigChange[] {
   return [
     ...session.getPreferenceChanges(),
-    ...PREFERENCE_SUBSYSTEMS.map(p => p.change(session)).filter(
+    ...PREFERENCE_SUBSYSTEMS.map(p => p.change?.(session)).filter(
       c => c !== undefined,
     ),
   ]
@@ -255,10 +257,10 @@ const PreferencesDialog = observer(function PreferencesDialog({
             }}
           />
           <FormControlLabel
-            control={<Checkbox checked={session.useWorkspaces} />}
+            control={<Checkbox checked={session.effectiveUseWorkspaces} />}
             label="Use workspaces (tabbed/tiled view layout)"
             onChange={(_, checked) => {
-              session.setUseWorkspaces(checked)
+              session.setUseWorkspacesPreference(checked)
             }}
           />
         </FormGroup>

@@ -37,13 +37,31 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * enables the dockview-based tabbed/tiled workspace layout
+         * enables the dockview-based tabbed/tiled workspace layout for this
+         * session specifically. Undefined means "unspecified": read
+         * `effectiveUseWorkspaces`, which falls back to the user's preference
+         * and then the `configuration.preferences.useWorkspaces` admin default.
          */
-        useWorkspaces: types.optional(types.boolean, () =>
-          localStorageGetBoolean('useWorkspaces', false),
+        useWorkspaces: types.stripDefault(
+          types.maybe(types.boolean),
+          undefined,
         ),
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       * resolved workspaces layout flag (never undefined): this session's
+       * explicit value if it has one, else the user preference resolved against
+       * the admin default. Every consumer reads this, not the raw property —
+       * only the four session-creation paths that carry a snapshot set that.
+       */
+      get effectiveUseWorkspaces(): boolean {
+        return (
+          self.useWorkspaces ?? self.getPreference('useWorkspaces') === true
+        )
+      },
+    }))
     .actions(self => {
       const move = (id: string, direction: ReorderDirection) => {
         const idx = self.views.findIndex(v => v.id === id)
@@ -108,9 +126,36 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
+         * set the workspaces layout for this session only, leaving the user's
+         * personal default untouched. For session-scoped intent (a spec
+         * carrying a `layout`); the user-facing toggle is
+         * `setUseWorkspacesPreference`.
          */
         setUseWorkspaces(useWorkspaces: boolean) {
           self.useWorkspaces = useWorkspaces
+        },
+
+        /**
+         * #action
+         * the user-facing workspaces toggle: applies to this session and
+         * becomes their default for sessions that don't specify one. Persisted
+         * only here, on an explicit toggle — an autorun mirroring the resolved
+         * value would bake the admin default into every visitor's localStorage
+         * on first load, so a later admin change could never reach them.
+         */
+        setUseWorkspacesPreference(useWorkspaces: boolean) {
+          self.useWorkspaces = useWorkspaces
+          self.setPreferenceOverride('useWorkspaces', useWorkspaces)
+        },
+
+        /**
+         * #action
+         * drop both this session's explicit value and the user's override so
+         * workspaces falls back to the admin default
+         */
+        resetUseWorkspaces() {
+          self.useWorkspaces = undefined
+          self.clearPreferenceOverride('useWorkspaces')
         },
 
         afterAttach() {
@@ -126,15 +171,6 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
               { name: 'StickyViewHeaders' },
             ),
           )
-          addDisposer(
-            self,
-            autorun(
-              function workspacesAutorun() {
-                localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
-              },
-              { name: 'UseWorkspaces' },
-            ),
-          )
         },
       }
     })
@@ -146,13 +182,11 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       // stickyViewHeaders is a personal per-browser UI preference, not shared
       // view state: destructure it out so it never lands in the snapshot. It
       // stays localStorage-backed, so each browser keeps its own value.
-      // useWorkspaces is kept in the snapshot because it changes layout intent,
-      // which is meaningful to carry across a shared session.
-      const { stickyViewHeaders, useWorkspaces, ...rest } = snap
-      return {
-        ...rest,
-        ...(useWorkspaces ? { useWorkspaces } : {}),
-      } as typeof snap
+      // useWorkspaces stays: it changes layout intent (and pairs with the
+      // dockviewLayout the snapshot carries), which is meaningful to share.
+      // Unset drops itself — it's a stripDefault maybe.
+      const { stickyViewHeaders, ...rest } = snap
+      return rest as typeof snap
     })
 }
 

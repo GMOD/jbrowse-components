@@ -22,6 +22,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | -------------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [configuration.preferences.animationMode](#slot-configurationpreferencesanimationmode) | `stringEnum` (system, enabled, disabled) | controls feature-layout animations: 'enabled' always animates (the default), 'system' respects the OS prefers-reduced-motion setting, 'disabled' never animates |
 | [configuration.preferences.scrollZoom](#slot-configurationpreferencesscrollzoom)       | `boolean`                                | when true, scrolling the mouse wheel over a track zooms in and out without holding Ctrl.                                                                        |
+| [configuration.preferences.useWorkspaces](#slot-configurationpreferencesuseworkspaces) | `boolean`                                | when true, views open in the dockview-based tabbed/tiled workspace layout rather than stacked vertically.                                                       |
 
 <details>
 <summary>PreferencesConfigSchema - Slots</summary>
@@ -39,6 +40,16 @@ animates
 
 when true, scrolling the mouse wheel over a track zooms in and out without
 holding Ctrl. Applies globally to all wheel-zoom views.
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
+
+#### slot: configuration.preferences.useWorkspaces
+
+when true, views open in the dockview-based tabbed/tiled workspace layout rather
+than stacked vertically. Only the default: a session that names `useWorkspaces`
+itself (a shared snapshot, or a session spec carrying a `layout`) still wins,
+and a user's own toggle overrides it.
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `false`

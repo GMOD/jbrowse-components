@@ -25,14 +25,14 @@ interface Props {
 
 const ViewsContainer = observer(function ViewsContainer(props: Props) {
   const { session } = props
-  const { views, useWorkspaces } = session
+  const { views, effectiveUseWorkspaces } = session
   const { classes } = useStyles()
 
   return (
     <div className={classes.viewsContainer}>
       <Suspense fallback={null}>
         {views.length > 0 ? (
-          useWorkspaces && isSessionWithDockviewLayout(session) ? (
+          effectiveUseWorkspaces && isSessionWithDockviewLayout(session) ? (
             <TiledViewsContainer session={session} />
           ) : (
             <ClassicViewsContainer session={session} />

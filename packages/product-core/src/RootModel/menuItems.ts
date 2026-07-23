@@ -131,10 +131,10 @@ export function workspacesMenuItem(
     label: 'Use workspaces',
     icon: SpaceDashboardIcon,
     type: 'checkbox',
-    checked: session?.useWorkspaces ?? false,
+    checked: session?.effectiveUseWorkspaces ?? false,
     helpText: WORKSPACES_HELP_TEXT,
     onClick: () => {
-      session?.setUseWorkspaces(!session.useWorkspaces)
+      session?.setUseWorkspacesPreference(!session.effectiveUseWorkspaces)
     },
   }
 }
