@@ -1059,12 +1059,12 @@ describe('computeMultiRegionLayout', () => {
 // Pileup layout must be a pure function of the read SET, not of the order the
 // reads arrive in. First-fit-lowest-row placement is arrival-order-sensitive by
 // construction, and JS sort is stable, so any comparator with a tie class hands
-// the tie to input-array position. That made the cross-backend browser gate
-// flaky: two independent browser processes that ordered equal-keyed reads
-// differently laid out the same pileup differently (crossBackendGate.ts records
-// multiregion-strand-sorted drifting 27%, and `strand` has only two keys, so its
-// tie classes are half the pileup). These tests pin the invariant directly, so
-// the failure is a deterministic unit test rather than a rare browser diff.
+// the tie to input-array position. Reversal is asserted rather than a specific
+// layout, so these stay meaningful if the placement rule itself changes.
+//
+// The identity permutation takes buildCanonicalOrder's already-in-order fast
+// bail and the reversed one takes its sort, so asserting the two agree also
+// pins those two paths equivalent.
 describe('layout is independent of read arrival order', () => {
   // Reads with heavily-tied sort keys: many share a start, and strand/tag take
   // few distinct values, so ordering among equals is decided by array position.
@@ -1080,6 +1080,9 @@ describe('layout is independent of read arrival order', () => {
       strand: 1,
       tagValue: 'x',
       baseAtSortPos: 'A',
+      // r0 and r2 both expand to the same left edge (70), so the soft-clip
+      // order has a tie of its own to resolve.
+      softclip: { pos: 100, length: 30 },
     },
     {
       id: 'r1',
@@ -1096,6 +1099,7 @@ describe('layout is independent of read arrival order', () => {
       strand: 1,
       tagValue: 'x',
       baseAtSortPos: 'A',
+      softclip: { pos: 100, length: 30 },
     },
     {
       id: 'r3',
@@ -1170,6 +1174,13 @@ describe('layout is independent of read arrival order', () => {
   it('largest-features-first is order-independent', () => {
     const layout = (d: PileupDataResult) =>
       computeLayout(d, false, Number.POSITIVE_INFINITY, true).readYs
+    expect(rowsByOriginalIndex(reversed, layout)).toEqual(
+      rowsByOriginalIndex(identity, layout),
+    )
+  })
+
+  it('soft-clip order is order-independent', () => {
+    const layout = (d: PileupDataResult) => computeLayout(d, true).readYs
     expect(rowsByOriginalIndex(reversed, layout)).toEqual(
       rowsByOriginalIndex(identity, layout),
     )

@@ -19,10 +19,10 @@ const DELETION_CHAR = 42 // '*'
  * The id matters. First-fit-lowest-row placement is arrival-order-sensitive by
  * construction and JS sort is stable, so a comparator that leaves ties hands
  * them to array position — i.e. to whatever order the worker happened to emit
- * reads in. That order is not guaranteed stable across processes, which is what
- * made the cross-backend browser gate drift on pileups (a different pileup each
- * run, same input; see browser-tests/crossBackendGate.ts). Comparators here must
- * be total so layout is a pure function of the read set.
+ * reads in. Nothing guarantees that order, so layout was a function of the read
+ * set AND its arrival order; comparators here must be total so it is a function
+ * of the set alone. (This was suspected of causing the cross-backend gate's
+ * pileup drift, but never confirmed to — see browser-tests/crossBackendGate.ts.)
  *
  * Span is compared first so the common case stays numeric; the string compare
  * only runs for reads sharing both endpoints.
@@ -382,20 +382,27 @@ class MinHeap {
 // edge (soft-clip-aware), genomic start as tiebreak. The placeRect algorithm
 // (and the fast path below) need left-to-right ordering.
 /**
- * Placement order for a plain pileup: genomic span, then read id.
+ * Placement order for a plain pileup: genomic span, then read id. Returns
+ * undefined when the array is already in that order, which is the normal case —
+ * worker output is start-sorted, so the only reads that can be out of place are
+ * ones sharing a start whose ids happen to descend. The caller then walks the
+ * array directly and no permutation is allocated.
  *
- * Worker output is already start-sorted, so this only ever reorders reads that
- * share a start — but it is a full sort because that measured faster than
- * scanning for equal-start runs and sorting each (one optimized sort beats many
- * small ones plus the slicing: ~23ms vs ~30ms at 300k reads). Cost is paid on a
- * layout MobX recomputes on sort toggles and resize, so it is worth knowing;
- * typical pileups are a few thousand reads and sub-millisecond.
+ * The O(n) check is what makes the invariant free in the common case. Sorting
+ * unconditionally costs ~23ms at 300k reads on a layout MobX recomputes on sort
+ * toggles and resize; sorting only the equal-start runs was slower still
+ * (~30ms — many small sorts plus the slicing beat one optimized sort).
  */
 function buildCanonicalOrder(data: PileupDataResult, numReads: number) {
   const { readPositions, readIds } = data
-  return Array.from({ length: numReads }, (_, i) => i).sort((a, b) =>
-    compareReadsCanonically(readPositions, readIds, a, b),
-  )
+  for (let i = 1; i < numReads; i++) {
+    if (compareReadsCanonically(readPositions, readIds, i - 1, i) > 0) {
+      return Array.from({ length: numReads }, (_, k) => k).sort((a, b) =>
+        compareReadsCanonically(readPositions, readIds, a, b),
+      )
+    }
+  }
+  return undefined
 }
 
 function buildSoftclipOrder(
@@ -438,14 +445,15 @@ function buildLargeFirstOrder(
  * First-fit-lowest-row pileup layout via interval-partitioning min-heaps:
  * O(reads * log depth) instead of the placeRect row-scan's O(reads * depth).
  * Reads must be visited in non-decreasing start order (`order` = the soft-clip
- * or canonical placement order). Returns null if a start ever goes
+ * or canonical placement order, or undefined when the array is already in it).
+ * Returns null if a start ever goes
  * backwards, so the caller falls back to the row-scan. Output is identical to
  * repeated `placeRectCapped` for monotone input — same lowest-free-row choice
  * and the same `maxRows` overflow sentinel — verified in sortLayout.test.ts.
  */
 function partitionStartSorted(
   data: PileupDataResult,
-  order: number[],
+  order: number[] | undefined,
   expansions: Map<number, { start: number; end: number }> | undefined,
   maxRows: number,
   readYs: Uint16Array,
@@ -460,7 +468,7 @@ function partitionStartSorted(
   // start, and -1 would spuriously bail the whole region to the row-scan.
   let prevStart = Number.NEGATIVE_INFINITY
   for (let k = 0; k < n; k++) {
-    const i = order[k]!
+    const i = order ? order[k]! : k
     const exp = expansions?.get(i)
     const rs = readPositions[i * 2]!
     const start = exp ? Math.min(rs, exp.start) : rs
@@ -544,7 +552,7 @@ export function computeLayout(
   const rows: number[][] = []
   let truncated = false
   for (let k = 0; k < numReads; k++) {
-    const i = order[k]!
+    const i = order ? order[k]! : k
     // ext holds soft-clip-expanded extents; without it (plain pileup) the read's
     // raw genomic span is its extent.
     const start = ext ? ext.starts[i]! : data.readPositions[i * 2]!
