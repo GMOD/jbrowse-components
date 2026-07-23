@@ -127,6 +127,13 @@ jobs:
           website/scripts/generate-cli-doc.ts --check
       - name: Check gallery links are up to date
         run: node website/scripts/gen-gallery-links.ts --check
+      # Round-trips every figure's jbrowse:// link through Desktop's
+      # parseProtocolUrl and app-core's parseSessionSpecUrl — three modules only
+      # unit-tested apart — and checks the committed list of spec fields with no
+      # recipe click-path. Neither half ran anywhere before: the script is not
+      # part of `astro build`, so a broken "Open in Desktop" link could ship.
+      - name: Check figure recipes round-trip and their field list is current
+        run: node website/scripts/check-spec-recipes.ts --check
       - name: Check homepage images are up to date
         run: node website/scripts/gen-home-images.ts --check
       - name: Check doc code/path references resolve

@@ -230,7 +230,10 @@ export const trackFields: Record<string, FieldRecipe> = {
     note: 'Hides variants whose fraction of no-call genotypes is above this; 1 keeps every variant.',
   })),
   defaultRendering: renderingTypeStep,
-  summaryScoreMode: fromTable('Score → Summary score mode', SUMMARY_SCORE_MODES),
+  summaryScoreMode: fromTable(
+    'Score → Summary score mode',
+    SUMMARY_SCORE_MODES,
+  ),
   showDescriptions: checkbox('Show... → Show descriptions'),
   resolution: numberField(n => ({
     path: `${TRACK_MENU} → Resolution → Finer / Coarser`,
@@ -271,9 +274,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined,
   trackLabels: value => {
     const option = typeof value === 'string' ? TRACK_LABELS[value] : undefined
-    return option
-      ? { path: `View menu → Track labels → ${option}` }
-      : undefined
+    return option ? { path: `View menu → Track labels → ${option}` } : undefined
   },
   colorByCDS: value =>
     typeof value === 'boolean'

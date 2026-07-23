@@ -16,7 +16,7 @@ chosen reference, every other sample is aligned onto it, and Cactus normalizes
 the result into a graph.
 
 This tutorial builds a graph from the **same four _E. coli_ strains** as the
-[pggb tutorial](/docs/tutorials/pangenome) and loads the same four linear
+[pggb tutorial](/docs/tutorials/pangenome_ecoli) and loads the same four linear
 projections onto the K12 reference, so the two are a side-by-side comparison of
 the builders on identical input. The pggb tutorial explains what each projection
 _means_; this one focuses on producing them from Minigraph-Cactus. What differs:
@@ -31,8 +31,9 @@ _means_; this one focuses on producing them from Minigraph-Cactus. What differs:
 | Depth / presence | `odgi depth` / `odgi pav`                   | same (odgi ships in the cactus image)                            |
 
 Every projection lands on a JBrowse track type you already have. The four are
-laid out in the [pggb tutorial's projection table](/docs/tutorials/pangenome);
-the sections below build each from the Cactus outputs.
+laid out in the
+[pggb tutorial's projection table](/docs/tutorials/pangenome_ecoli); the
+sections below build each from the Cactus outputs.
 
 ## What you need
 
@@ -63,14 +64,18 @@ EOF
 ```
 
 Then run it. `--reference K12` makes K12 the minigraph backbone and the path
-every projection is decomposed against:
+every projection is decomposed against. Every later step runs in this same
+image, so wrap the `docker run` once and call it `in_cactus`:
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
-  quay.io/comparative-genomics-toolkit/cactus:v3.2.1 \
-  cactus-pangenome /data/js /data/seqfile.txt \
-    --outDir /data/mc --outName ecoli --reference K12 \
-    --vcf --gfa --gbz --odgi --viz --draw --consCores 8
+in_cactus() {
+  docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
+    quay.io/comparative-genomics-toolkit/cactus:v3.2.1 "$@"
+}
+
+in_cactus cactus-pangenome /data/js /data/seqfile.txt \
+  --outDir /data/mc --outName ecoli --reference K12 \
+  --vcf --gfa --gbz --odgi --viz --draw --consCores 8
 ```
 
 Pinning the image to a dated version tag (not `:latest`) keeps the graph
@@ -92,8 +97,7 @@ A single run emits everything the sections below use:
 The cactus image also carries [odgi](https://github.com/pangenome/odgi),
 `halSynteny`, `hal2maf`, and
 [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), so no other tool
-is needed for the projections. Every `in_cactus` command below is that same
-`docker run … cactus:v3.2.1` wrapper.
+is needed for the projections.
 
 ## All-vs-all synteny projection
 
@@ -161,8 +165,7 @@ on K12 and pick the matrix display (one column per variant, one row per sample):
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": "ecoli_cactus.vcf.gz" },
-    "index": { "location": { "uri": "ecoli_cactus.vcf.gz.tbi" } }
+    "uri": "mc/ecoli.vcf.gz"
   },
   "displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
 }
@@ -218,13 +221,13 @@ more divergent species.
 
 ## Pangenome depth and per-strain presence
 
-These two projections are byte-for-byte the same commands as the pggb tutorial's
-[depth](/docs/tutorials/pangenome#pangenome-depth-projection-core-vs-accessory)
-and [per-strain presence](/docs/tutorials/pangenome#per-strain-presence)
-sections, run on the Cactus `.og` instead of the pggb GFA, because odgi ships in
-the cactus image. The one difference is the path names: the reference path is
-`K12#0#chr`, and the non-reference strains carry a trailing subpath tag
-(`Sakai#0#chr#0`), so filter on those.
+These two projections run the same commands as the pggb tutorial's
+[depth](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory)
+and [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)
+sections, on the Cactus `.og` instead of the pggb GFA, because odgi ships in the
+cactus image. Only the path names differ: the reference path is `K12#0#chr`, and
+the non-reference strains carry a trailing subpath tag (`Sakai#0#chr#0`), so
+filter on those.
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
 counts how many paths traverse the graph under each K12 base (near 4 where all
@@ -271,7 +274,7 @@ done
 graph raster the pggb tutorial contrasts against its projections: one row per
 strain, but with the graph's node order on the horizontal axis instead of a
 genome coordinate. The
-[pggb tutorial's `odgi viz` section](/docs/tutorials/pangenome#compared-to-odgi-viz)
+[pggb tutorial's `odgi viz` section](/docs/tutorials/pangenome_ecoli#compared-to-odgi-viz)
 explains that trade-off in full; it applies identically here, because both
 builders produce the same kind of graph and the same odgi renders it.
 
@@ -281,7 +284,7 @@ The two axes are easiest to tell apart by putting the same loci on both. The
 three boxes above and the three bands below are the same three 100 kb stretches
 of K12, in the same three colors:
 
-<Figure caption="The same three loci on K12's coordinates, over the pangenome depth track. Each band is 100 kb — 2.15% of the K12 axis — but the matching box above spans 4.4-6.2% of the graph axis, because the graph counts the other strains' accessory sequence through the same locus as well." src="/img/pangenome_cactus/graph_correspondence.png" />
+<Figure caption="The same three loci on K12's coordinates, over the pangenome depth track. Each band is 100 kb (2.15% of the K12 axis) but the matching box above spans 4.4-6.2% of the graph axis, because the graph counts the other strains' accessory sequence through the same locus as well." src="/img/pangenome_cactus/graph_correspondence.png" />
 
 Every box is wider than its band, by 2 to 3 times. That difference is the whole
 distinction: the graph axis counts pangenome bases, so a locus where the other
@@ -335,16 +338,12 @@ npx --yes serve ecoli_cactus_build/jbrowse2
 It downloads the same four RefSeq genomes as the pggb build, runs
 `cactus-pangenome`, converts the HAL, VCF, `odgi depth`, and `odgi pav` into the
 projections above, downloads JBrowse, and writes a `config.json` with the four
-assemblies, per-strain gene tracks, the five graph projections, and a default
-session. It needs `docker` (the cactus image, which carries
-odgi/halSynteny/hal2maf/taffy and `samtools`), the NCBI
-[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-CLI, `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
-`wget`, and `node`.
+assemblies, per-strain gene tracks, the projection tracks above, and a default
+session. It needs the same tools listed under [What you need](#what-you-need).
 
 ## See also
 
-- [Pangenome graphs (pggb)](/docs/tutorials/pangenome)
+- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli)
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [MAF track](/docs/user_guides/maf_track)
 - [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)

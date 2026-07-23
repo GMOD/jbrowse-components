@@ -2,12 +2,18 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Figures for the pangenome-graph tutorial (pangenome.md). They load the hosted
-// ecoli_pangenome demo config, whose pggb-graph tracks (ecoli_pggb_variants,
-// ecoli_pggb_maf) are newer than jbrowse.org/code/jb2/latest, as a bare
-// ?config= against the local build. All three graph projections are projected
-// onto the K12 reference, so each figure is a plain LinearGenomeView on K12 with
-// the K12 gene lane for context. Remote demo data → generous settle.
+// Figures for the E. coli pangenome tutorial (pangenome_ecoli.md). They load the
+// hosted ecoli_pangenome demo config, whose pggb-graph tracks
+// (ecoli_pggb_variants, ecoli_pggb_maf) are newer than
+// jbrowse.org/code/jb2/latest, as a bare ?config= against the local build. Each
+// projection is projected onto the K12 reference, so each figure is a plain
+// LinearGenomeView on K12 with the K12 gene lane for context. Remote demo data →
+// generous settle.
+//
+// The graph-view figures (the Bandage force-directed and rGFA anchored subgraph
+// pictures) moved out with the GraphGenomeView, which is now the third-party
+// jbrowse-plugin-graphgenomeview and no longer bundled in jbrowse-web. Those
+// figures are hand-curated in static/img/pangenome and carry no live link.
 const CONFIG = encodeURIComponent(
   'https://jbrowse.org/demos/ecoli_pangenome/config.json',
 )

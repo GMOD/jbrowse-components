@@ -1,0 +1,78 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "hprc2_wave_grch38",
+      "name": "HPRC2 pangenome \u2014 232 samples / 464 haplotypes (MC wave VCF)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantMatrixDisplay",
+          "displayId": "hprc2_wave_grch38_matrix",
+          "renderingMode": "phased"
+        },
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "hprc2_wave_grch38_regular",
+          "renderingMode": "phased"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc2_pclai_painting",
+      "name": "HPRC2 local ancestry (PCLAI) \u2014 64 haplotypes, chr1",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "hprc2_pclai_chr1.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "hprc2_pclai_painting-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "forceLoad": true
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "HPRC2 MHC class II",
+    "views": [
+      {
+        "id": "hprc2view",
+        "type": "LinearGenomeView",
+        "loc": "chr6:32,550,000-32,600,000",
+        "assembly": "hg38",
+        "tracks": [
+          {
+            "type": "VariantTrack",
+            "configuration": "hprc2_wave_grch38",
+            "displays": [
+              {
+                "type": "LinearMultiSampleVariantMatrixDisplay",
+                "configuration": "hprc2_wave_grch38_matrix",
+                "heightPreConfig": 700
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

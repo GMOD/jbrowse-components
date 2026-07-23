@@ -419,14 +419,14 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Graph variant matrix',
         spec: 'pangenome/variant_matrix',
-        guide: 'tutorials/pangenome',
+        guide: 'tutorials/pangenome_ecoli',
         description:
           "A four-strain E. coli pangenome graph projected onto the K12 reference: the graph's variants as a multi-sample matrix, one column per called variant and one row per other strain, with the MAF alignment stacked below and the K12 gene lane above.",
       },
       {
         label: 'Presence/absence by strain (PAV)',
         spec: 'pangenome/pav',
-        guide: 'tutorials/pangenome',
+        guide: 'tutorials/pangenome_ecoli',
         description:
           'odgi presence/absence across K12 windows, one row per non-K12 strain: each row holds near 1 where the strain is present and drops to 0 over its own accessory sequence, so a single dip in aggregate graph depth resolves into which strain accounts for it.',
       },

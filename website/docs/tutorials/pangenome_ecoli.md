@@ -1,6 +1,8 @@
 ---
 title: Pangenome graphs
-description: Visualize a pggb / Minigraph-Cactus pangenome graph in JBrowse
+description:
+  Build a four-strain pggb pangenome graph and load its linear projections plus
+  the graph itself in JBrowse
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -13,10 +15,10 @@ and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
 them.
 
-JBrowse has no graph-native track. What it draws are the graph's **linear
-projections**: the same graph flattened onto one reference genome's coordinates,
-in four complementary views. Every builder can emit all four, so a graph built
-with any of these tools lands on JBrowse track types you already have:
+Most of what JBrowse draws are the graph's **linear projections**: the same
+graph flattened onto one reference genome's coordinates, in four complementary
+views. Every builder can emit all four, so a graph built with any of these tools
+lands on JBrowse track types you already have:
 
 | Projection             | What it shows                                               | From the graph                                           | JBrowse track                                                      |
 | ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -63,17 +65,22 @@ samtools faidx all.fa.gz
 ```
 
 Then run pggb. `-V K12` decomposes the graph into a VCF against the K12 path,
-and `-M` writes the multiple alignment as a MAF:
+and `-M` writes the multiple alignment as a MAF. The image also carries
+[odgi](https://github.com/pangenome/odgi), which the subgraph, depth, and
+presence sections below reuse, so wrap the `docker run` once and call it
+`in_pggb`:
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
-  ghcr.io/pangenome/pggb:202603141454453ade6b \
-  pggb -i /data/all.fa.gz -o /data/pggb -n 4 -c 3 -p 90 -s 5000 -V K12 -M -t 16
+in_pggb() {
+  docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
+    ghcr.io/pangenome/pggb:202603141454453ade6b "$@"
+}
+
+in_pggb pggb -i /data/all.fa.gz -o /data/pggb -n 4 -c 3 -p 90 -s 5000 -V K12 -M -t 16
 ```
 
 Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
-reproducible. The same image also carries
-[odgi](https://github.com/pangenome/odgi), which the depth projection uses.
+reproducible.
 
 `-n` is the number of haplotypes, `-p` the minimum alignment identity, `-s` the
 segment length. `-p 90 -s 5000` suits a bacterial pangenome. `-c 3` is the one
@@ -81,7 +88,7 @@ easy flag to miss: pggb's separate `-c, --n-mappings` defaults to `1`, so `-n 4`
 alone keeps only each segment's single best match (one other genome), which
 builds an under-connected all-vs-all graph that crashes smoothxg during graph
 prep. Set `-c` to the number of haplotypes minus one so every segment maps to
-every other genome. The `-w /data` flag is not optional when running the
+every other genome. In the wrapper, `-w /data` is not optional when running the
 container as your own user (`-u`): it gives that user a writable working
 directory, without which seqwish cannot write its temporary files and the run
 dies mid-graph.
@@ -102,6 +109,91 @@ four-strain demo that way and loads the same four projections.
 **progressiveCactus** produces a HAL. `hal2maf` turns it into the MAF and
 `halSynteny` into a PSL/PAF for the synteny projection. **odgi** projects any
 graph to the synteny PAF with `odgi untangle -i graph.og -r <ref> -p`.
+
+## The graph itself: a local subgraph
+
+:::info Requires the graph genome view plugin
+
+The **Graph genome view** used in this section is a separate plugin,
+[jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
+not bundled in JBrowse Web. Its force-directed layout is computed by the
+[Bandage](https://github.com/rrwick/Bandage) engine (its
+[OGDF](https://ogdf.github.io/) FMMM layout, both GPL-licensed), loaded at
+runtime, which is why it ships on its own. Install it from the
+[plugin store](/docs/user_guides/plugin_store) (Tools menu), or add it to your
+`config.json` (see [configuring plugins](/docs/config_guides/plugins)), to get
+the **Add, then Graph genome view** menu item. The projection tracks below need
+none of this.
+
+:::
+
+The projections below flatten the graph onto K12. JBrowse can also draw the
+graph _as a graph_, a Bandage-style 2-D view of one locus. The whole-genome
+graph is far too large to lay out (500k nodes here, millions for a vertebrate
+pangenome), so you cut a window out of it first and open that subgraph. Three
+odgi commands do it: `extract -E` takes every node between the first and last in
+the range, `sort -O` compacts the node ids, `view -g` writes GFA:
+
+```bash
+# resolve the graph on the host, since a /data/*.og glob can't expand in docker
+og=$(ls pggb/*.smooth.final.og)
+in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - \
+  | odgi sort -i - -o - -O \
+  | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
+```
+
+(`vg chunk -x graph.xg -p K12#1#chr:1004500-1004900 -c 20` is the vg equivalent
+if your graph came from Minigraph-Cactus.)
+
+Open a **Graph genome view** (Add, then Graph genome view) and load
+`ecoli_pggb_subgraph.gfa` by file or URL. For this demo the hosted copy is at
+`https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_subgraph.gfa`.
+
+Keep the window small, because a pggb graph is fragmented at base resolution:
+between four _E. coli_ strains a few hundred bp already carries a dozen bubbles.
+Node lengths are scaled the way Bandage scales them, derived per graph so the
+mean drawn node lands at a usable size. That is what keeps a 1 bp SNP allele and
+a 164 bp backbone segment on one picture, with the SNP alleles as the specks, in
+proportion. A few hundred bp is what makes that structure legible, not what the
+view can load.
+
+<Figure caption="A 400 bp slice of the four-strain graph in the Bandage force-directed layout: the axis is graph structure, not K12 coordinates. Node color is depth, how many of the four strains traverse that node, so the backbone runs yellow where all four share it and blue where only two do, and each eye-shaped bubble is one site where the strains diverge. This is the structure the projections below re-express as a variant column, a synteny break, or a coverage dip." src="/img/pangenome/local_subgraph.png" />
+
+### rGFA graphs carry their own coordinates
+
+A pggb or Minigraph-Cactus GFA has no coordinates on its segments. The only
+reference positions in the file live inside the P/W lines, which is why a
+subgraph has to be cut with `odgi extract` and why the layout above has to
+_infer_ a backbone by force simulation.
+
+[rGFA](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md), what minigraph
+emits, is different: every segment carries `SN` (stable sequence name), `SO`
+(offset on it) and `SR` (rank, `0` on the reference). So the graph states where
+each segment sits and which segments are the reference backbone:
+
+```bash
+minigraph -cxggs -t 8 K12.fa Sakai.fa CFT073.fa NCTC86.fa > ecoli_minigraph.rgfa
+gfatools view -R "K12#1#chr:1000000-1300000" -r 1 ecoli_minigraph.rgfa \
+  > ecoli_rgfa_slice.gfa
+```
+
+`gfatools view -R` takes a region in those stable coordinates, so unlike plain
+GFA no graph-specific extraction step is needed. Load the result in a **Graph
+genome view** and it lays out from the file rather than from a force simulation:
+rank-0 segments at the reference offset they declare, each higher rank on its
+own row. Pick **Stable rank (rGFA)** in the Color dropdown to color by rank. A
+minigraph graph is also far less fragmented than a pggb one, since it records
+structural variation rather than every SNP, so a legible window is hundreds of
+kb rather than hundreds of bp.
+
+<Figure caption="A 300 kb K12 window of the same four strains built with minigraph, colored by stable rank. The straight blue line is rank 0, the K12 reference backbone, drawn at the offsets the segments declare; each row below is one rank of non-reference sequence, and the long bars are multi-kb insertions carried by one strain. Compare the pggb figure above, where the backbone has to be inferred by a force layout." src="/img/pangenome/rgfa_backbone.png" />
+
+The rank-ladder layout above is anchored to K12, so it lines up with a linear
+view of the same window. The toolbar's **Layout** dropdown trades that
+correspondence for the classic Bandage picture of the same subgraph
+(**Force-directed layout**):
+
+<Figure caption="A 50 kb K12 window of the minigraph graph in force-directed layout, over the segments track for the same window. The rank-ladder view above says where each alternate allele sits on K12; this one says what the graph looks like, with the alleles as bubbles off the backbone rather than bars on parallel rows." src="/img/pangenome/rgfa_bandage_ecoli.png" />
 
 ## All-vs-all synteny projection
 
@@ -253,11 +345,8 @@ reflen=$(awk '$1 == "K12#1#chr" {print $2}' all.fa.gz.fai)
 awk -v len="$reflen" 'BEGIN{for(s=0;s<len;s+=500){e=s+500; if(e>len)e=len; print "K12#1#chr\t"s"\t"e}}' \
   > depth_windows.bed
 
-# resolve the graph on the host (a /data/*.gfa glob can't expand inside docker)
 gfa=$(ls pggb/*.smooth.final.gfa)
-docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
-  ghcr.io/pangenome/pggb:202603141454453ade6b \
-  odgi depth -i "/data/$gfa" -b /data/depth_windows.bed \
+in_pggb odgi depth -i "/data/$gfa" -b /data/depth_windows.bed \
   | awk -v OFS='\t' '$1 == "K12#1#chr" {print "chr", $2, $3, $4}' \
   | sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
 
@@ -302,11 +391,12 @@ the set as one
 subtrack per strain:
 
 ```bash
-odgi pav -i "$gfa" -b depth_windows.bed > pav.tsv   # cols: chrom start end name group pav
+# cols: chrom start end name group pav
+in_pggb odgi pav -i "/data/$gfa" -b /data/depth_windows.bed > pav.tsv
 for strain in Sakai CFT073 NCTC86; do
   awk -v OFS='\t' -v g="$strain#1#chr" '$5 == g && $6 + 0 == $6 { print "chr", $2, $3, $6 }' \
-    pav.tsv | sort -k1,1 -k2,2n > "pav_$strain.bedgraph"
-  bedGraphToBigWig "pav_$strain.bedgraph" chrom.sizes "pav_$strain.bw"
+    pav.tsv | sort -k1,1 -k2,2n > "ecoli_pggb_pav_$strain.bedgraph"
+  bedGraphToBigWig "ecoli_pggb_pav_$strain.bedgraph" chrom.sizes "ecoli_pggb_pav_$strain.bw"
 done
 ```
 
@@ -394,12 +484,8 @@ MAF, `odgi depth`, and `odgi pav` into the projections above, downloads JBrowse,
 and writes a `config.json` with the four assemblies, per-strain gene tracks, the
 five graph-derived tracks (synteny, variants, MAF, depth, per-strain presence),
 and a default session (a stacked synteny view plus the K12 reference lane). It
-also writes the `odgi viz` graph raster (`ecoli_pggb_graph.png`). It needs
-`docker` (for the pggb image, which also carries odgi), the NCBI
-[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-CLI, `samtools`, [`taffy`](https://github.com/ComparativeGenomicsToolkit/taffy),
-`bedGraphToBigWig` (UCSC kentUtils), `python3`, htslib (`bgzip`, `tabix`),
-`unzip`, and `node`.
+also writes the `odgi viz` graph raster (`ecoli_pggb_graph.png`). It needs the
+same tools listed under [What you need](#what-you-need).
 
 The all-vs-all PAF sort and bigWig conversion spill large temp files. The
 default `/tmp` is often a small in-memory tmpfs that they overflow, failing the

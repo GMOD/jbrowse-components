@@ -138,13 +138,19 @@ Rules for `spec-recipe/fields.ts`, which maps a spec field to a click-path:
   `COMPACTNESS_PRESETS` lives in `compactnessPresets.ts` rather than the
   React-importing `featureSize.ts` that re-exports it.
 - `pnpm check-spec-recipes` lists every spec field with no click-path yet — the
-  worklist for growing coverage. `--check` fails past `SPEC_RECIPE_BASELINE`. It
-  also round-trips every figure's `jbrowse://` link through Desktop's own
-  `parseProtocolUrl` + app-core's `parseSessionSpecUrl` and **fails the build**
-  on any break — the three modules are only unit-tested apart, and this chain is
-  what caught app-core rejecting the deliberate `views: []` of the import-form
-  figures. Jest doesn't cover `website/`, and `screenshot-specs.ts` pulls in
-  puppeteer, which is why this is a script and not a `*.test.ts`.
+  worklist for growing coverage — and writes their names to
+  `scripts/spec-recipe-unmapped.txt`, which is **tracked**. `--check` (run in
+  `push.yml`) fails when that list moves, printing `+ field` for a new field
+  with no click-path and `- field` for one you just mapped; regenerate and
+  commit to record the win. The list is names rather than a count so the
+  regression is visible in review, is attributed to the change that caused it,
+  and can't hide behind an unchanged total when one field is mapped as another
+  is added. It also round-trips every figure's `jbrowse://` link through
+  Desktop's own `parseProtocolUrl` + app-core's `parseSessionSpecUrl` and
+  **fails** on any break — the three modules are only unit-tested apart, and
+  this chain is what caught app-core rejecting the deliberate `views: []` of the
+  import-form figures. Jest doesn't cover `website/`, and `screenshot-specs.ts`
+  pulls in puppeteer, which is why this is a script and not a `*.test.ts`.
 
 Because docs render to an HTML string (`src/lib/markdown.ts`) rather than to
 Astro components, the dialog is plain `<dialog>` markup with CSS-only (radio)

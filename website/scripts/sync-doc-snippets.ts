@@ -83,7 +83,9 @@ const stale: string[] = []
 // script, and nothing stops a new one being added. Counting the un-included
 // ones and failing when the total *rises* freezes that debt without demanding a
 // big-bang conversion — the number only ever goes down, one guide at a time.
-// Same shape as SPEC_RECIPE_BASELINE in check-spec-recipes.ts.
+// A count works here, unlike the spec-recipe ratchet that became a tracked list
+// of field names: an un-included fence has no stable identity to list, so there
+// is nothing to name in the diff beyond the file it sits in.
 //
 // Only TS/JS fences count: a `json` config sample or a `bash` command has no
 // compiled source to point an include at.

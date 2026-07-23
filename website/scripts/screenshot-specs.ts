@@ -11,6 +11,7 @@ import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
 import { gwasSpecs } from './specs/gwas.ts'
+import { hprc2Specs } from './specs/hprc2.ts'
 import { ldSpecs } from './specs/ld.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
@@ -49,6 +50,7 @@ export const specs: ScreenshotSpec[] = [
   ...mafSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,
+  ...hprc2Specs,
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,

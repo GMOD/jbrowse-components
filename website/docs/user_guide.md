@@ -55,8 +55,9 @@ sidebar_label: Overview
 - [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle across a selective sweep and an inversion
 - [Long-read methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
-- [Pangenome graphs](/docs/tutorials/pangenome) - Visualize a pggb / Minigraph-Cactus pangenome graph in JBrowse
 - [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
+- [Pangenome graphs](/docs/tutorials/pangenome_ecoli) - Build a four-strain pggb pangenome graph and load its linear projections plus the graph itself in JBrowse
+- [The HPRC human pangenome](/docs/tutorials/pangenome_hprc) - Stream HPRC release 2's pangenome VCF off S3, cluster 464 haplotypes at a locus, and open the same region as a graph
 - [Population genomics](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from one VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
