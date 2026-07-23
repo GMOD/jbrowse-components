@@ -9,6 +9,28 @@ import configSchema from '../BamAdapter/configSchema.ts'
 
 import type { ConsensusFeature } from '@jbrowse/alignments-core'
 
+// Parity tests for our port of samtools' calculate_consensus_simple (see the
+// attribution and license header on computeConsensus.ts). The windows below are
+// the checked-in regression surface; they were chosen from a full-contig sweep
+// against real samtools, done once by hand and recorded here so the result
+// isn't lost:
+//
+//   samtools 1.23.1, all 50kb of volvox ctgA, callFract 0.75 / hetFract 0.5
+//     ambiguity off vs `samtools consensus -a -m simple`
+//        -> 0 differing positions out of 50000
+//     ambiguity on vs the same plus `-A`
+//        -> 1 differing position out of 50000, at ctgA:49680
+//
+// That single position is the intended uncapped divergence, not a bug. Its
+// pileup is A=1, C=1, G=2: G wins at weight 16, het-fract needs 8, and A and C
+// both sit at exactly 8. samtools folds in only the runner-up and emits 'R'
+// (used score 24/32, exactly its 0.75 call-fract); folding in all three gives
+// 'V'. It is a depth-4 column, so it is a thin example of the tetraploid/pooled
+// case the uncapped fold exists for, but it is arithmetically the same case.
+//
+// Worth re-running after any change to the scoring or threshold arithmetic;
+// three windows can't catch what a 50kb sweep can.
+
 // Reference ctgA sequence, loaded once and sliced per region.
 function loadCtgA() {
   const fa = fs.readFileSync(

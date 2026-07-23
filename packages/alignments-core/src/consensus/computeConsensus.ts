@@ -1,3 +1,40 @@
+/* The consensus calling here is a port of `calculate_consensus_simple` and its
+ * seqi weight tables from samtools' bam_consensus.c (the `samtools consensus
+ * -m simple` code path), with the deliberate divergences noted at decideCall.
+ * Upstream: https://github.com/samtools/samtools/blob/develop/bam_consensus.c
+ *
+ * Cross-checked against samtools 1.23.1 over all 50kb of volvox ctgA; see
+ * plugins/alignments/src/RenderAlignmentDataRPC/consensusGolden.test.ts for the
+ * method, the commands, and the one position where output intentionally
+ * differs.
+ *
+ * bam_consensus.c is copyright Genome Research Ltd. and licensed MIT/Expat,
+ * reproduced below. (That file also carries Gap4/Gap5-derived sections under a
+ * compatible modified BSD license; none of those are ported here — only the
+ * post-2021 GRL `simple` path, which is MIT.)
+ *
+ *   Copyright (C) 2003-2005,2007-2026 Genome Research Ltd.
+ *   Author: James Bonfield <jkb@sanger.ac.uk>
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a
+ *   copy of this software and associated documentation files (the "Software"),
+ *   to deal in the Software without restriction, including without limitation
+ *   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ *   and/or sell copies of the Software, and to permit persons to whom the
+ *   Software is furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in
+ *   all copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ *   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ *   DEALINGS IN THE SOFTWARE.
+ */
+
 import {
   DELETION_TYPE,
   INSERTION_TYPE,
@@ -193,6 +230,17 @@ const CALL_CHARS = 'ACGT*'
 // by the BAM 4-bit base mask (1=A, 2=C, 4=G, 8=T) — e.g. mask 5 (A+G) -> 'R'.
 // Index 0 has no IUPAC base and defensively reads as 'N'; index 15 (all four)
 // is the standard 'N'.
+//
+// This is the first half of samtools' own lookup, which is a 32-entry table
+// over a 5-bit mask whose top bit is the gap:
+//   "NACMGRSVTWYHKDBN" "*ac?g???t???????"
+// The second half is the base+gap row: '*' for gap alone, then a lowercase
+// base for gap plus exactly one base, and '?' everywhere else. Those '?' cells
+// are unreachable upstream ("shouldn't be possible to generate", per its own
+// comment) precisely because samtools folds in at most one runner-up, so gap
+// plus two bases can never arise. Uncapped, it can, and this implementation
+// fills those cells with the lowercase IUPAC code instead of '?' — the natural
+// extension of samtools' own base/gap convention.
 const IUPAC_FROM_MASK = [
   'N',
   'A',
@@ -223,8 +271,9 @@ const IUPAC_FROM_MASK = [
 // deletion ('*'), but a sub-threshold base is 'N' (verified against
 // `samtools consensus -a -m simple`).
 //
-// A defined hetFract opts into samtools `--ambig`, but uncapped: samtools only
-// ever folds in the single runner-up (call2) alongside the winner (call1) —
+// A defined hetFract opts into samtools `--ambig` (upstream gates the same fold
+// on `opts->ambig`, so this being opt-in matches it), but uncapped: samtools
+// only folds in the single runner-up (call2) alongside the winner (call1) —
 // fine for human-diploid "het" calls, but it silently drops a real 3rd/4th
 // allele in a tetraploid, mixed infection, or pooled sample. Here, *every*
 // base whose score is at least hetFract of the winner's gets folded in, so a
