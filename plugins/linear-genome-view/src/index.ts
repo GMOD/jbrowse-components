@@ -120,8 +120,8 @@ export {
   raiseLimitPast,
   resolveByteLimit,
   resolveForceLoadLimits,
-  scaleByteEstimate,
-  scaledForceLoadByteLimit,
+  rescaleByteEstimateToVisibleSpan,
+  forceLoadByteLimit,
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {

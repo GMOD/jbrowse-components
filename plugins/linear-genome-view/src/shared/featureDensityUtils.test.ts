@@ -4,11 +4,11 @@ import {
   TOO_MANY_FEATURES_REASON,
   bytesTooLargeReason,
   evaluateRegionTooLarge,
+  forceLoadByteLimit,
   raiseLimitPast,
+  rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
   resolveForceLoadLimits,
-  scaleByteEstimate,
-  scaledForceLoadByteLimit,
 } from './featureDensityUtils.ts'
 
 describe('raiseLimitPast', () => {
@@ -26,31 +26,41 @@ describe('raiseLimitPast', () => {
   })
 })
 
-describe('scaledForceLoadByteLimit', () => {
-  it('is undefined when there are no raw bytes to gate', () => {
+describe('forceLoadByteLimit', () => {
+  it('is undefined when neither estimate is available', () => {
     expect(
-      scaledForceLoadByteLimit({ scaledEstimate: 500, rawBytes: undefined }),
+      forceLoadByteLimit({
+        estimatedBytesForVisibleSpan: undefined,
+        estimatedBytesForMeasuredSpan: undefined,
+      }),
     ).toBeUndefined()
+    // an adapter with no index estimate reports 0, which is not a budget
     expect(
-      scaledForceLoadByteLimit({ scaledEstimate: 500, rawBytes: 0 }),
+      forceLoadByteLimit({
+        estimatedBytesForVisibleSpan: 0,
+        estimatedBytesForMeasuredSpan: 0,
+      }),
     ).toBeUndefined()
   })
 
-  it('raises past the scaled estimate, not the raw bytes (the LD force-load bug)', () => {
-    // view zoomed out after capture: scaled estimate (6MB) far exceeds the raw
-    // captured bytes (1.5MB). Basing the limit on raw bytes would under-raise
-    // and leave the banner up; the scaled estimate is the correct baseline.
+  it('raises past the visible-span estimate, not the measured-span one (the LD force-load bug)', () => {
+    // view zoomed out after the measurement: the visible-span estimate (6MB)
+    // far exceeds the measured-span one (1.5MB). Basing the limit on the
+    // measured-span number would under-raise and leave the banner up.
     expect(
-      scaledForceLoadByteLimit({
-        scaledEstimate: 6_000_000,
-        rawBytes: 1_500_000,
+      forceLoadByteLimit({
+        estimatedBytesForVisibleSpan: 6_000_000,
+        estimatedBytesForMeasuredSpan: 1_500_000,
       }),
     ).toBe(raiseLimitPast(6_000_000))
   })
 
-  it('falls back to raw bytes when no scaled estimate is available', () => {
+  it('falls back to the measured-span estimate when there is no visible-span one', () => {
     expect(
-      scaledForceLoadByteLimit({ scaledEstimate: undefined, rawBytes: 900 }),
+      forceLoadByteLimit({
+        estimatedBytesForVisibleSpan: undefined,
+        estimatedBytesForMeasuredSpan: 900,
+      }),
     ).toBe(raiseLimitPast(900))
   })
 })
@@ -67,8 +77,8 @@ describe('resolveForceLoadLimits', () => {
     const { userByteSizeLimit, userFeatureDensityLimit } =
       resolveForceLoadLimits({
         ...base,
-        estimatedVisibleBytes: 8_000_000,
-        rawBytes: 8_000_000,
+        estimatedBytesForVisibleSpan: 8_000_000,
+        estimatedBytesForMeasuredSpan: 8_000_000,
       })
     expect(userByteSizeLimit).toBe(raiseLimitPast(8_000_000))
     expect(userFeatureDensityLimit).toBeUndefined()
@@ -82,8 +92,8 @@ describe('resolveForceLoadLimits', () => {
     const { userByteSizeLimit, userFeatureDensityLimit } =
       resolveForceLoadLimits({
         ...base,
-        estimatedVisibleBytes: 100_000,
-        rawBytes: 100_000,
+        estimatedBytesForVisibleSpan: 100_000,
+        estimatedBytesForMeasuredSpan: 100_000,
       })
     expect(userByteSizeLimit).toBeUndefined()
     expect(userFeatureDensityLimit).toBe(raiseLimitPast(4)) // past observedMax
@@ -93,8 +103,8 @@ describe('resolveForceLoadLimits', () => {
     const { userFeatureDensityLimit } = resolveForceLoadLimits({
       ...base,
       observedMaxDensity: 0,
-      estimatedVisibleBytes: undefined,
-      rawBytes: undefined,
+      estimatedBytesForVisibleSpan: undefined,
+      estimatedBytesForMeasuredSpan: undefined,
     })
     expect(userFeatureDensityLimit).toBe(raiseLimitPast(1)) // configuredMaxDensity
   })
@@ -104,8 +114,8 @@ describe('resolveForceLoadLimits', () => {
       resolveForceLoadLimits({
         ...base,
         densityGateActive: false,
-        estimatedVisibleBytes: undefined,
-        rawBytes: undefined,
+        estimatedBytesForVisibleSpan: undefined,
+        estimatedBytesForMeasuredSpan: undefined,
       }),
     ).toEqual({})
   })
@@ -171,44 +181,67 @@ describe('resolveByteLimit', () => {
   })
 })
 
-describe('scaleByteEstimate', () => {
+describe('rescaleByteEstimateToVisibleSpan', () => {
   it('returns undefined when there is no estimate yet', () => {
     expect(
-      scaleByteEstimate({ bytes: undefined, captureBp: 10, visibleBp: 5 }),
+      rescaleByteEstimateToVisibleSpan({
+        estimatedBytesForMeasuredSpan: undefined,
+        visibleBpWhenMeasured: 10,
+        visibleBp: 5,
+      }),
     ).toBeUndefined()
     expect(
-      scaleByteEstimate({ bytes: 0, captureBp: 10, visibleBp: 5 }),
+      rescaleByteEstimateToVisibleSpan({
+        estimatedBytesForMeasuredSpan: 0,
+        visibleBpWhenMeasured: 10,
+        visibleBp: 5,
+      }),
     ).toBeUndefined()
   })
 
-  it('falls back to the raw estimate when the capture span is unknown', () => {
+  it('passes the estimate through when the measured span is unknown', () => {
     expect(
-      scaleByteEstimate({ bytes: 1000, captureBp: undefined, visibleBp: 5 }),
+      rescaleByteEstimateToVisibleSpan({
+        estimatedBytesForMeasuredSpan: 1000,
+        visibleBpWhenMeasured: undefined,
+        visibleBp: 5,
+      }),
     ).toBe(1000)
   })
 
   it('scales proportionally: zoom-in (smaller visibleBp) shrinks the estimate', () => {
-    // captured 1MB at bpPerPx-span 100; zooming in to span 25 → quarter the data
+    // measured 1MB over a span of 100; zooming in to span 25 → quarter the data
     expect(
-      scaleByteEstimate({ bytes: 1_000_000, captureBp: 100, visibleBp: 25 }),
+      rescaleByteEstimateToVisibleSpan({
+        estimatedBytesForMeasuredSpan: 1_000_000,
+        visibleBpWhenMeasured: 100,
+        visibleBp: 25,
+      }),
     ).toBe(250_000)
   })
 
-  it('is a no-op at the capture span', () => {
+  it('is a no-op at the span it was measured over', () => {
     expect(
-      scaleByteEstimate({ bytes: 1_000_000, captureBp: 100, visibleBp: 100 }),
+      rescaleByteEstimateToVisibleSpan({
+        estimatedBytesForMeasuredSpan: 1_000_000,
+        visibleBpWhenMeasured: 100,
+        visibleBp: 100,
+      }),
     ).toBe(1_000_000)
   })
 
-  // The whole point of scaling: a too-large verdict captured while zoomed out
+  // The whole point of scaling: a too-large verdict measured while zoomed out
   // must self-release once the user zooms in, without any imperative re-clear.
   it('lets the too-large verdict self-release on zoom-in', () => {
     const byteLimit = 500_000
-    const captured = { bytes: 2_000_000, captureBp: 200 }
+    const measured = {
+      estimatedBytesForMeasuredSpan: 2_000_000,
+      visibleBpWhenMeasured: 200,
+    }
 
     const zoomedOut = evaluateRegionTooLarge({
       visibleBp: AUTO_FORCE_LOAD_BP * 2,
-      bytes: scaleByteEstimate({ ...captured, visibleBp: 200 }),
+      bytes: rescaleByteEstimateToVisibleSpan({ ...measured, visibleBp: 200 }),
       byteLimit,
     })
     expect(zoomedOut.tooLarge).toBe(true)
@@ -216,7 +249,7 @@ describe('scaleByteEstimate', () => {
     // zoom in 5× (span 200 → 40): scaled estimate 400_000 < 500_000 limit
     const zoomedIn = evaluateRegionTooLarge({
       visibleBp: AUTO_FORCE_LOAD_BP * 2,
-      bytes: scaleByteEstimate({ ...captured, visibleBp: 40 }),
+      bytes: rescaleByteEstimateToVisibleSpan({ ...measured, visibleBp: 40 }),
       byteLimit,
     })
     expect(zoomedIn.tooLarge).toBe(false)

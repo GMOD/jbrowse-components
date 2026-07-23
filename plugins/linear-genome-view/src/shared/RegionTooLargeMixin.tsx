@@ -4,10 +4,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   evaluateRegionTooLarge,
-  raiseLimitPast,
+  forceLoadByteLimit,
+  rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
-  scaleByteEstimate,
-  scaledForceLoadByteLimit,
 } from './featureDensityUtils.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
@@ -77,12 +76,12 @@ export default function RegionTooLargeMixin() {
       featureDensityStats: undefined as FeatureDensityStats | undefined,
       /**
        * #volatile
-       * visibleBp at which the current `featureDensityStats` byte estimate was
-       * captured, so the derived gate (`estimatedVisibleBytes`) can scale it to
-       * the current view. Written by `setFeatureDensityStats`; ignored unless
+       * The span (visibleBp) that the current `featureDensityStats` byte
+       * estimate covers, so the derived gate can rescale that estimate to the
+       * span on screen now. Written by `setFeatureDensityStats`; ignored unless
        * `derivedRegionTooLargeEnabled`.
        */
-      byteEstimateVisibleBp: undefined as number | undefined,
+      visibleBpWhenBytesMeasured: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -133,22 +132,23 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * The cached byte estimate scaled from the span it was measured over
-       * (`byteEstimateVisibleBp`) to the currently visible span. Roughly
-       * proportional to span, so scaling makes the derived verdict a pure
-       * function of the current view and self-releases on zoom-in — without it a
-       * large zoomed-out estimate stays above the limit forever and gates
-       * refetch. Only meaningful when `derivedRegionTooLargeEnabled`.
+       * How many bytes we estimate a fetch of the span on screen right now would
+       * pull, obtained by rescaling the stored estimate from the span it was
+       * measured over (`visibleBpWhenBytesMeasured`). Rescaling is what makes
+       * the derived verdict a pure function of the current view and lets it
+       * self-release on zoom-in — without it a large zoomed-out estimate stays
+       * above the limit forever and gates refetch. Only meaningful when
+       * `derivedRegionTooLargeEnabled`.
        */
-      get estimatedVisibleBytes() {
+      get estimatedBytesForVisibleSpan() {
         const view = getContainingView(self) as LinearGenomeViewModel
         // Guard: `visibleBp` reads `view.width`, which throws before the view is
         // measured. A bare getter must never throw, and there's no estimate to
         // scale without a viewport, so yield undefined until the view is ready.
         return view.initialized
-          ? scaleByteEstimate({
-              bytes: self.featureDensityStats?.bytes,
-              captureBp: self.byteEstimateVisibleBp,
+          ? rescaleByteEstimateToVisibleSpan({
+              estimatedBytesForMeasuredSpan: self.featureDensityStats?.bytes,
+              visibleBpWhenMeasured: self.visibleBpWhenBytesMeasured,
               visibleBp: view.visibleBp,
             })
           : undefined
@@ -169,7 +169,7 @@ export default function RegionTooLargeMixin() {
         return view.initialized
           ? evaluateRegionTooLarge({
               visibleBp: view.visibleBp,
-              bytes: self.estimatedVisibleBytes,
+              bytes: self.estimatedBytesForVisibleSpan,
               byteLimit: resolveByteLimit({
                 userByteSizeLimit: self.userByteSizeLimit,
                 adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
@@ -221,12 +221,12 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * Commits the byte estimate and records the span it was measured at
-       * (`byteEstimateVisibleBp`) so the derived gate can scale it to the current
-       * view. The capture is harmless for non-gated displays (they ignore it).
+       * Commits the byte estimate and records the span it covers
+       * (`visibleBpWhenBytesMeasured`) so the derived gate can rescale it to
+       * the span on screen. Harmless for non-gated displays (they ignore it).
        */
       setFeatureDensityStats(stats?: FeatureDensityStats) {
-        self.byteEstimateVisibleBp = stats
+        self.visibleBpWhenBytesMeasured = stats
           ? (getContainingView(self) as LinearGenomeViewModel).visibleBp
           : undefined
         self.featureDensityStats = stats
@@ -235,21 +235,19 @@ export default function RegionTooLargeMixin() {
       /**
        * #action
        * force-load: raise the byte limit past the current request so the gate
-       * releases. Raises past the estimate scaled to the *current* view (not the
-       * raw captured bytes), so it clears even if the view zoomed out after the
-       * estimate was captured; `raiseLimitPast` is the raw fallback for a display
-       * with no scaled estimate. Canvas (which also has a density force-load)
+       * releases. Prefers the estimate for the span on screen now, so it clears
+       * even if the view zoomed out since the measurement; a display with the
+       * derived gate off has no such estimate and falls back to the
+       * measured-span number. Canvas (which also has a density force-load)
        * overrides this entirely.
        */
       setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
-        const limit = self.derivedRegionTooLargeEnabled
-          ? scaledForceLoadByteLimit({
-              scaledEstimate: self.estimatedVisibleBytes,
-              rawBytes: stats?.bytes,
-            })
-          : stats?.bytes
-            ? raiseLimitPast(stats.bytes)
-            : undefined
+        const limit = forceLoadByteLimit({
+          estimatedBytesForVisibleSpan: self.derivedRegionTooLargeEnabled
+            ? self.estimatedBytesForVisibleSpan
+            : undefined,
+          estimatedBytesForMeasuredSpan: stats?.bytes,
+        })
         if (limit !== undefined) {
           self.userByteSizeLimit = limit
         }

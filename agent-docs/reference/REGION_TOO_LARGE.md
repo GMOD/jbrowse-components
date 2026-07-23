@@ -7,11 +7,21 @@ description: The byte/density gate that raises the "region too large" banner and
 
 ## TL;DR
 
-- `regionTooLarge` is a **derived getter**, not a flag: it rescales the cached
-  byte estimate to the current viewport, so it releases itself on zoom-in and
-  doesn't flicker while panning.
-- Gate on `estimatedVisibleBytes`, never raw `bytes` — raw bytes don't shrink on
-  zoom, so the banner never clears.
+There are two byte numbers. Both estimate how much would come over the wire if
+we fetched, and they differ only in which span of the genome they cover:
+
+- **`estimatedBytesForMeasuredSpan`** — the adapter's estimate for the span that
+  was on screen when the estimate was taken. Never changes as you navigate.
+- **`estimatedBytesForVisibleSpan`** — the same estimate scaled to the span on
+  screen right now. Shrinks as you zoom in.
+
+The gate always compares the visible-span one against the limit. Gating on the
+measured-span number instead is the classic bug: it doesn't shrink when you zoom
+in, so the banner never clears.
+
+- `regionTooLarge` is a **derived getter**, not a flag: it recomputes
+  `estimatedBytesForVisibleSpan` on every read, so it releases itself on zoom-in
+  and doesn't flicker while panning.
 - Gating is **opt-in**. `derivedRegionTooLargeEnabled` defaults to false;
   `MultiRegionDisplayMixin` derives it from `getByteEstimateConfig() !== null`,
   and LD/arc/canvas set it explicitly.
@@ -47,14 +57,13 @@ For the wider picture and the five fetch autoruns that consult it, see
 Four steps, all on `RegionTooLargeMixin`:
 
 - `setFeatureDensityStats(stats)` stores the byte estimate together with the span
-  it was measured at (`byteEstimateVisibleBp = view.visibleBp`). Storing the span
-  is what makes the rest of this work.
-- `estimatedVisibleBytes` rescales that estimate to whatever span is visible now
-  (`bytes × visibleBp / byteEstimateVisibleBp`). Always gate on this, never on
-  raw `bytes`: a raw byte count doesn't shrink when you zoom in, so the banner
-  would never clear. The getter returns `undefined` until `view.initialized`,
-  since `visibleBp` reads `view.width` and that throws before the view is
-  measured, and a bare getter must never throw.
+  it covers (`visibleBpWhenBytesMeasured = view.visibleBp`). Storing the span is
+  what makes the rest of this work.
+- `estimatedBytesForVisibleSpan` rescales that estimate to whatever span is
+  visible now (`bytes × visibleBp / visibleBpWhenBytesMeasured`). The getter
+  returns `undefined` until `view.initialized`, since `visibleBp` reads
+  `view.width` and that throws before the view is measured, and a bare getter
+  must never throw.
 - `tooLargeStatus` hands the scaled estimate and `densityTooLargeForDerivedGate`
   to `evaluateRegionTooLarge`. `regionTooLarge` and `regionTooLargeReason` are
   thin readers over it.
@@ -182,8 +191,8 @@ paths can't drift apart.
   is the one place a byte budget gets resolved. A non-positive adapter limit
   means "no opinion" and is skipped, which guards both a `0` and a negative
   sentinel.
-- `scaleByteEstimate`, `scaledForceLoadByteLimit`, and `raiseLimitPast` hold the
-  scaling math and the shared `FORCE_LOAD_HEADROOM`.
+- `rescaleByteEstimateToVisibleSpan`, `forceLoadByteLimit`, and
+  `raiseLimitPast` hold the scaling math and the shared `FORCE_LOAD_HEADROOM`.
 - `bytesTooLargeReason(bytes)` and `TOO_MANY_FEATURES_REASON` are the only two
   banner strings.
 - `evaluateRegionTooLarge({ visibleBp, bytes, byteLimit, densityTooLarge, alwaysRender })`

@@ -29,7 +29,7 @@ interface GateHost {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   userByteSizeLimit?: number
-  estimatedVisibleBytes?: number
+  estimatedBytesForVisibleSpan?: number
   configuredFetchSizeLimit: number
   configForceLoad: boolean
   setFeatureDensityStats: (stats?: FeatureDensityStats) => void
@@ -264,8 +264,8 @@ export default function CanvasFeatureGateMixin() {
         host(self).userByteSizeLimit = undefined
         self.userFeatureDensityLimit = undefined
         const limits = resolveForceLoadLimits({
-          estimatedVisibleBytes: host(self).estimatedVisibleBytes,
-          rawBytes: stats?.bytes,
+          estimatedBytesForVisibleSpan: host(self).estimatedBytesForVisibleSpan,
+          estimatedBytesForMeasuredSpan: stats?.bytes,
           baselineByteLimit: resolveByteLimit({
             userByteSizeLimit: undefined,
             adapterFetchSizeLimit: self.adapterFetchSizeLimit,

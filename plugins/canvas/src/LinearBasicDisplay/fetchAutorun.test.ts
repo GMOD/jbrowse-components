@@ -1011,7 +1011,7 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
 // lower the byte ceiling. The worker returns an index-byte estimate alongside a
 // density rejection (VCF/BAM/CRAM always report one), and production forceLoad()
 // passes the stored featureDensityStats — bytes included — to the override. The
-// pre-fix code adopted `scaledForceLoadByteLimit` whenever `bytes` was truthy,
+// pre-fix code adopted `forceLoadByteLimit` whenever `bytes` was truthy,
 // installing a userByteSizeLimit BELOW the config default (a dense-but-byte-small
 // region), which then wrongly gated later, larger-byte regions. Earlier tests
 // missed this because they seeded a density result with no `bytes` and called

@@ -77,8 +77,8 @@ export {
   raiseLimitPast,
   resolveByteLimit,
   resolveForceLoadLimits,
-  scaleByteEstimate,
-  scaledForceLoadByteLimit,
+  rescaleByteEstimateToVisibleSpan,
+  forceLoadByteLimit,
 } from '../shared/featureDensityUtils.ts'
 export type { RegionTooLargeStatus } from '../shared/featureDensityUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'

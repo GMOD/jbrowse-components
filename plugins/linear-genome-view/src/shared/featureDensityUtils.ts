@@ -12,6 +12,22 @@ export function getDisplayStr(totalBytes: number) {
   }
 }
 
+/**
+ * Two byte numbers flow through this file. Both estimate how many bytes would
+ * come over the wire if we fetched, and they differ only in WHICH SPAN of the
+ * genome they cover:
+ *
+ * - `estimatedBytesForMeasuredSpan` — the adapter's estimate for the span that
+ *   was on screen at the moment the estimate was taken. It never changes as you
+ *   navigate. Stored as `featureDensityStats.bytes`, alongside the span it
+ *   covers (`visibleBpWhenBytesMeasured`).
+ * - `estimatedBytesForVisibleSpan` — the same estimate scaled to the span on
+ *   screen right now, since bytes are roughly proportional to span. This one
+ *   shrinks as you zoom in, which is what lets the banner release itself.
+ *
+ * The gate always compares `estimatedBytesForVisibleSpan` against the limit.
+ */
+
 // Reason text shown in the too-large banner. Single source so every gating path
 // (block density, canvas derived stats, pre-fetch byte estimate) renders an
 // identical message.
@@ -60,47 +76,53 @@ export function raiseLimitPast(estimate: number) {
 
 /**
  * The byte limit a derived-path force-load should install. Raises past the
- * estimate scaled to the *current* view (`scaledEstimate`), not the raw captured
- * bytes: the derived gate compares against the scaled estimate, so if the view
- * zoomed out between the estimate capture and the force-load click, raising past
- * the raw bytes would leave the estimate above the new limit and the banner up.
- * Returns undefined when there's nothing to gate. Single source for canvas and
- * LD so the two force-load paths can't drift (a drift that once left LD's
- * force-load under-raising — it used the RegionTooLargeMixin raw-bytes default).
+ * visible-span estimate, not the measured-span one, because the visible-span
+ * estimate is what the gate compares against: if the view zoomed out between
+ * the measurement and the force-load click, raising past the measured-span
+ * number leaves the gate still tripped and the banner up. Returns undefined
+ * when there's nothing to gate. Single source for canvas and LD so the two
+ * force-load paths can't drift (a drift that once left LD's force-load
+ * under-raising — it used the RegionTooLargeMixin measured-span default).
  */
-export function scaledForceLoadByteLimit({
-  scaledEstimate,
-  rawBytes,
+export function forceLoadByteLimit({
+  estimatedBytesForVisibleSpan,
+  estimatedBytesForMeasuredSpan,
 }: {
-  scaledEstimate?: number
-  rawBytes?: number
+  estimatedBytesForVisibleSpan?: number
+  estimatedBytesForMeasuredSpan?: number
 }) {
-  return rawBytes ? raiseLimitPast(scaledEstimate ?? rawBytes) : undefined
+  // the measured-span number is the fallback for a display with no rescaled
+  // estimate (view not measured yet, or the derived gate turned off)
+  const estimate = estimatedBytesForVisibleSpan ?? estimatedBytesForMeasuredSpan
+  return estimate ? raiseLimitPast(estimate) : undefined
 }
 
 /**
- * Scale a captured byte estimate from the span it was measured over
- * (`captureBp`) to the currently visible span (`visibleBp`). The estimate is
- * roughly proportional to span, so scaling makes the too-large verdict a pure
- * function of the current view — it self-releases on zoom-in instead of a large
- * zoomed-out estimate staying above the limit forever and gating refetch. The
- * derived `regionTooLarge` getter on the canvas and LD displays feeds the result
- * to `evaluateRegionTooLarge`. Returns undefined when there's no estimate yet;
- * falls back to the raw estimate when the capture span is unknown.
+ * Produce `estimatedBytesForVisibleSpan` from `estimatedBytesForMeasuredSpan`,
+ * by scaling from the span the estimate covers (`visibleBpWhenMeasured`) to the
+ * span on screen now (`visibleBp`). This is what makes the too-large verdict a
+ * pure function of the current view, so it self-releases on zoom-in instead of
+ * a large zoomed-out estimate staying above the limit forever and gating
+ * refetch. The derived `regionTooLarge` getter on the canvas and LD displays
+ * feeds the result to `evaluateRegionTooLarge`. Returns undefined when there's
+ * no estimate yet, and passes the estimate through unchanged when the span it
+ * was measured over is unknown.
  */
-export function scaleByteEstimate({
-  bytes,
-  captureBp,
+export function rescaleByteEstimateToVisibleSpan({
+  estimatedBytesForMeasuredSpan,
+  visibleBpWhenMeasured,
   visibleBp,
 }: {
-  bytes?: number
-  captureBp?: number
+  estimatedBytesForMeasuredSpan?: number
+  visibleBpWhenMeasured?: number
   visibleBp: number
 }) {
-  if (!bytes) {
+  if (!estimatedBytesForMeasuredSpan) {
     return undefined
   }
-  return captureBp ? (bytes * visibleBp) / captureBp : bytes
+  return visibleBpWhenMeasured
+    ? (estimatedBytesForMeasuredSpan * visibleBp) / visibleBpWhenMeasured
+    : estimatedBytesForMeasuredSpan
 }
 
 /**
@@ -123,23 +145,23 @@ export function scaleByteEstimate({
  * the other axis's stale value is always cleared.
  */
 export function resolveForceLoadLimits({
-  estimatedVisibleBytes,
-  rawBytes,
+  estimatedBytesForVisibleSpan,
+  estimatedBytesForMeasuredSpan,
   baselineByteLimit,
   densityGateActive,
   observedMaxDensity,
   configuredMaxDensity,
 }: {
-  estimatedVisibleBytes?: number
-  rawBytes?: number
+  estimatedBytesForVisibleSpan?: number
+  estimatedBytesForMeasuredSpan?: number
   baselineByteLimit: number
   densityGateActive: boolean
   observedMaxDensity: number
   configuredMaxDensity: number
 }): { userByteSizeLimit?: number; userFeatureDensityLimit?: number } {
-  const raisedByteLimit = scaledForceLoadByteLimit({
-    scaledEstimate: estimatedVisibleBytes,
-    rawBytes,
+  const raisedByteLimit = forceLoadByteLimit({
+    estimatedBytesForVisibleSpan,
+    estimatedBytesForMeasuredSpan,
   })
   if (raisedByteLimit !== undefined && raisedByteLimit > baselineByteLimit) {
     return { userByteSizeLimit: raisedByteLimit }
