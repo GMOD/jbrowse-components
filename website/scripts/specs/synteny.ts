@@ -1,8 +1,10 @@
 import {
   CGIAB_ASM_PIF_TRACK,
   DOTPLOT_CONFIG,
+  HG38_HS1_CONFIG,
   HS1_MM39_CONFIG,
   PICALM_ALU_LOCUS,
+  UCSC_HG38_CONFIG,
   VAPB_SVA_LOCUS,
   VOLVOX,
   cgiabUrl,
@@ -485,6 +487,142 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     settleMs: 15000,
   },
+
+  // hg38 vs T2T-CHM13 at TNNT3, reproducing the genomes.jbrowse.org/demos/
+  // session (Fig 5C of the T2T variation paper, science.abl3533). Called
+  // against GRCh38 the locus looks like a 24 kb inversion plus a 22 kb deletion
+  // ablating LINC01150 in every individual; against T2T-CHM13 the same 22 kb is
+  // simply inversely transposed to the other side of TNNT3. colorBy 'strand'
+  // paints that flipped segment against the collinear ribbons around it, so the
+  // rearrangement is the only off-color block in the view.
+  {
+    mode: 'url',
+    name: 'synteny_hg38_hs1_tnnt3',
+    url: sessionSpec(HG38_HS1_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          colorBy: 'strand',
+          showColorLegend: true,
+          tracks: [['hg38_hs1_synteny']],
+          views: [
+            {
+              assembly: 'hg38',
+              loc: 'chr11:1,881,000-1,955,000',
+              tracks: [
+                { trackId: 'hg38-genes', geneGlyphMode: 'longestCoding' },
+              ],
+              trackLabels: 'offset',
+            },
+            {
+              // same window shifted by the +83.7 kb hg38->hs1 offset the demo
+              // session's two views were parked at, so the two panels frame the
+              // same genes
+              assembly: 'hs1',
+              loc: 'chr11:1,964,700-2,038,700',
+              // the hs1 GFF is RefSeq All plus regulatory/"biological region"
+              // features, so showOnlyGenes is what makes it read like the
+              // curated hg38 track above
+              tracks: [
+                {
+                  trackId: 'hs1-genes',
+                  geneGlyphMode: 'longestCoding',
+                  showOnlyGenes: true,
+                },
+              ],
+              trackLabels: 'offset',
+            },
+          ],
+        },
+      ],
+    }),
+    viewportWidth: 1200,
+    viewportHeight: 520,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    // remote 2bit genomes + hosted PIF/GFF, so allow headroom
+    readyTimeout: 120000,
+    settleMs: 12000,
+  },
+
+  // genomes_synteny tutorial: the same TNNT3 comparison reached the way a
+  // reader reaches it on genomes.jbrowse.org, from a plain hg38 LGV. Loads that
+  // site's own hg38 config, so the track names, categories and menu are the
+  // ones on screen there. That config declares only hg38; hs1 arrives on its
+  // own because the Hubs plugin it loads answers Core-handleUnrecognizedAssembly
+  // for the name the liftOver track references, and the launch menu item is
+  // gated on exactly that mate assembly resolving.
+  //
+  // The right-click is a viewport coordinate, not a selector: the pileup canvas
+  // fills the display's whole height, so its center lands well below the two
+  // rows of chain blocks. (400, 340) is the purple reverse-strand block, the
+  // one worth launching a synteny view on. The loc and viewport width are
+  // fixed, so the block is at that coordinate every run.
+  ...(
+    [
+      // Step 1: the liftOver track in an LGV. Each chain block is drawn as a
+      // feature, so a liftOver track reads like an alignments track until you
+      // ask it for a synteny view.
+      { name: 'genomes_synteny/lgv_liftover', height: 370, stages: undefined },
+      // Step 2: right-clicking a chain block.
+      {
+        name: 'genomes_synteny/launch_menu',
+        height: 500,
+        stages: [
+          {
+            actions: [
+              { type: 'rightclick' as const, from: { x: 400, y: 340 } },
+              { type: 'waitForText' as const, text: 'Open feature details' },
+            ],
+          },
+        ],
+      },
+      // Step 3: the dialog the item opens, which is where each panel's region
+      // is confirmed before the synteny view is created.
+      {
+        name: 'genomes_synteny/launch_dialog',
+        height: 500,
+        stages: [
+          {
+            actions: [
+              { type: 'rightclick' as const, from: { x: 400, y: 340 } },
+              {
+                type: 'click' as const,
+                text: 'Launch synteny view for this position',
+              },
+              { type: 'waitForText' as const, text: 'Launch' },
+            ],
+          },
+        ],
+      },
+    ] as const
+  ).map(({ name, height, stages }) => ({
+    mode: 'url' as const,
+    name,
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr11:1,881,000-1,955,000',
+          tracks: [
+            {
+              trackId: 'hg38-ncbiRefSeqCurated',
+              geneGlyphMode: 'longestCoding',
+            },
+            { trackId: 'hg38_to_hs1_liftOver' },
+          ],
+        },
+      ],
+    }),
+    ...(stages ? { stages } : {}),
+    viewportWidth: 1200,
+    viewportHeight: height,
+    hideTooltip: true,
+    readySelector: '[data-testid="pileup-display-done"]',
+    // the UCSC hub config is ~570 tracks and pulls three remote plugins
+    readyTimeout: 120000,
+    settleMs: 10000,
+  })),
 
   // One dotplot per haplotype. HG008T v3.2 is haplotype-resolved, so a single
   // plot puts both haplotypes' scaffolds on one axis interleaved — every GRCh38

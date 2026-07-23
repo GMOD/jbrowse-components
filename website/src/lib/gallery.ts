@@ -124,14 +124,21 @@ export const gallerySections: readonly GallerySection[] = [
           'Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny from liftOver chains, auto-diagonalized so the chromosomes of one genome are reordered to match the other, and colored by query chromosome to follow where each one lands.',
       },
       {
-        label: 'Grape vs peach vs cacao - synteny view',
+        label: 'hg38 vs T2T-CHM13 at TNNT3',
+        spec: 'synteny_hg38_hs1_tnnt3',
+        guide: 'tutorials/genomes_synteny',
+        description:
+          'The UCSC hg38 to T2T-CHM13 liftOver chain at TNNT3, colored by strand: the one reverse-strand block is the 22 kb segment that GRCh38 places upstream of the gene and T2T-CHM13 places on the other side of it, the rearrangement from Fig 5C of the T2T human variation paper.',
+      },
+      {
+        label: 'Grape/peach/cacao synteny',
         spec: 'multiway_synteny/grape_peach_cacao',
         guide: 'tutorials/multiway_synteny',
         description:
           'Three genomes (grape, peach, cacao) stacked in one synteny view, connected by orthologs computed with MCScan, one track per adjacent pair, auto-diagonalized and colored by the shared anchor genome.',
       },
       {
-        label: 'E. coli 4-strain all vs all PAF',
+        label: 'E. coli all-vs-all PAF',
         spec: 'multiway_synteny/ecoli_pangenome',
         guide: 'tutorials/allvsall_synteny',
         description:
@@ -158,7 +165,7 @@ export const gallerySections: readonly GallerySection[] = [
           'An SKBR3 translocation with each side of the rearrangement in its own panel and the connections drawn across them: supporting reads as black curves, the variant call in green with feet showing directionality.',
       },
       {
-        label: '1000 Genomes SVs (chr19 inversion)',
+        label: '1000 Genomes SVs (chr19 inv)',
         spec: 'multisv',
         guide: 'tutorials/sv_multisamples',
         description:
@@ -226,7 +233,7 @@ export const gallerySections: readonly GallerySection[] = [
           'Human nanopore reads over a chr20 CpG island in methylation coloring mode: red CpGs where the 5mC call is methylated, blue where it is not. The calls come straight from the CRAM modification tags, with no bedMethyl track involved.',
       },
       {
-        label: 'Bisulfite methylation (Arabidopsis)',
+        label: 'Arabidopsis bisulfite (WGBS)',
         spec: 'methylation/arabidopsis_wgbs_contexts',
         guide: 'tutorials/bisulfite',
         description:
@@ -268,8 +275,8 @@ export const gallerySections: readonly GallerySection[] = [
     ],
   },
   {
-    id: 'copynumber',
-    title: 'Coverage and copy number',
+    id: 'coverage',
+    title: 'Coverage, copy number, and epigenomics',
     items: [
       {
         label: 'CNV track (COLO829 tumor/normal)',
@@ -279,31 +286,12 @@ export const gallerySections: readonly GallerySection[] = [
           'COLO829 tumor and normal mosdepth BigWigs as one multi-quantitative track in scatter rendering, sharing an autoscaled y-axis. The view holds every main chromosome at once, so genome-wide copy number fits on one screen.',
       },
       {
-        label: 'Clustered copy-number (1000 Genomes)',
+        label: 'Clustered copy-number (1000G)',
         spec: 'gallery/copynumber_clustered',
         guide: 'user_guides/multiquantitative_track',
         description:
           'Copy-number profiles for many 1000 Genomes individuals as a multi-row density heatmap, reordered by the track menu\'s "Cluster rows by score", which groups rows by signal similarity without leaving the browser.',
       },
-    ],
-  },
-  {
-    id: 'hic',
-    title: 'Hi-C contact maps',
-    items: [
-      {
-        label: 'Hi-C contact matrix',
-        spec: 'hic_track',
-        guide: 'user_guides/hic_track',
-        description:
-          'A Hi-C contact matrix over ~11 Mb of chr8 with the RefSeq gene track above. JBrowse reads the .hic file in place over HTTP range requests and picks the binning resolution from the zoom level; the track menu steps that resolution and sets the color ramp.',
-      },
-    ],
-  },
-  {
-    id: 'epigenomics',
-    title: 'Epigenomics and chromatin state',
-    items: [
       {
         label: 'ChromHMM state painting',
         spec: 'chromhmm',
@@ -318,11 +306,18 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'CATlas single-cell ATAC pseudobulk around the INS locus: 16 cell-type BigWigs gathered into one multi-quantitative track, one labeled row each on a shared scale, rather than 16 separate tracks to line up by hand.',
       },
+      {
+        label: 'Hi-C contact matrix',
+        spec: 'hic_track',
+        guide: 'user_guides/hic_track',
+        description:
+          'A Hi-C contact matrix over ~11 Mb of chr8 with the RefSeq gene track above. JBrowse reads the .hic file in place over HTTP range requests and picks the binning resolution from the zoom level; the track menu steps that resolution and sets the color ramp.',
+      },
     ],
   },
   {
     id: 'genes',
-    title: 'Genes, proteins, and compact genomes',
+    title: 'Genes and proteins',
     items: [
       {
         label: 'Horizontally flipped view',
@@ -394,7 +389,7 @@ export interface ExternalLink {
 // sessions, so they live outside gallerySections.
 export const guidedDemos: readonly ExternalLink[] = [
   {
-    label: '2025 Biocuration workshop w/ Apollo 3',
+    label: '2025 Biocuration workshop',
     href: 'https://github.com/GMOD/2025-biocuration-tutorial',
   },
   {
@@ -414,7 +409,7 @@ export const guidedDemos: readonly ExternalLink[] = [
     href: 'http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2023',
   },
   {
-    label: '2023 publication figures (Genome Biology)',
+    label: '2023 publication figures',
     href: 'https://jbrowse.org/demos/paper2022/',
   },
   {

@@ -84,6 +84,22 @@ export const PTEN_RNASEQ_ADAPTER = {
 }
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
+// hg38 vs T2T-CHM13 (hs1) from the hosted UCSC hg38->hs1 liftOver PIF, plus
+// NCBI RefSeq genes on both. Backs the TNNT3 figure that reproduces the
+// genomes.jbrowse.org/demos/ session.
+export const HG38_HS1_CONFIG = 'test_data/hg38_hs1_synteny/config.json'
+
+// genomes.jbrowse.org's own hg38 config: the UCSC hub build, which already
+// carries every `hg38_to_<db>_liftOver` SyntenyTrack plus the RefSeq gene
+// tracks. The genomes_synteny tutorial figures load *this* file (against the
+// local build) rather than a repo test_data config, so the click-path they
+// document is the one a reader gets on the real site. It declares only hg38,
+// but it also loads the Hubs plugin, whose Core-handleUnrecognizedAssembly
+// handler pulls in hs1 the moment the hg38->hs1 liftOver track references it —
+// which is why no sessionAssembly is needed to make the launch item appear.
+export const UCSC_HG38_CONFIG = encodeURIComponent(
+  'https://jbrowse.org/ucsc/hg38/config.json',
+)
 export const DEMO_CONFIG = 'test_data/config_demo.json'
 // hg38 + NCBI RefSeq + ClinVar, loading the Protein3d plugin from the
 // version-agnostic jbrowse.org plugin-store `latest/` path (served no-cache), so

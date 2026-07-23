@@ -34,6 +34,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.25, 0.5875],
     position: 'left',
   },
+  genomes_synteny: {
+    src: 'synteny_hg38_hs1_tnnt3.png',
+    // the two gene panels and the strand-colored ribbons between them, without
+    // the app header
+    band: [0.28, 0.95],
+  },
 }
 
 const WIDTH = 600

@@ -1,0 +1,94 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt"
+        }
+      }
+    },
+    {
+      "name": "hs1",
+      "displayName": "Human (T2T-CHM13v2.0/hs1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hs1-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chromAlias.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz",
+        "csi": true
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hg38-genes-LinearBasicDisplay",
+          "autoHeight": true
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hs1-genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hs1"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hs1/hs1.gff.gz",
+        "csi": true
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hs1-genes-LinearBasicDisplay",
+          "autoHeight": true
+        }
+      ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg38_hs1_synteny",
+      "name": "hg38 vs T2T-CHM13 (UCSC liftOver)",
+      "assemblyNames": ["hg38", "hs1"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz",
+        "csi": true,
+        "assemblyNames": ["hs1", "hg38"]
+      }
+    }
+  ]
+}

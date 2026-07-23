@@ -155,6 +155,8 @@ The synteny settings also include a **Fade by identity** toggle, which modulates
 ribbon opacity by identity independently of the color mode so low-identity
 regions fade out.
 
+<Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) over the UCSC liftOver chain, with NCBI RefSeq genes on each. Strand coloring makes the one purple reverse ribbon the whole story: LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13." src="/img/synteny_hg38_hs1_tnnt3.png" />
+
 ### Coloring genes by ortholog
 
 The ribbons connect aligned _sequence_, but you can color the gene tracks on
