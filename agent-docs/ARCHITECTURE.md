@@ -5,54 +5,40 @@ description: How JBrowse renders a track — display stacks, the worker→main f
 
 # Architecture
 
-The canonical reference for how JBrowse renders a track. Read the TL;DR and
-overview for the mental model, then jump to the section for whatever you're
-touching. Deep subsystems that come up only on a specific task live in their own
-docs, collected under [See also](#see-also) at the end.
+The canonical reference for how JBrowse renders a track. Read the TL;DR for the
+mental model, then jump to the section for whatever you're touching. Deep
+subsystems that come up only on a specific task live in their own docs,
+collected under [See also](#see-also) at the end.
 
 ## TL;DR
 
-- Adapters fetch and parse in an **RPC worker**; the main thread renders. Worker
+- Adapters fetch and parse in an RPC worker; the main thread renders. Worker
   output is **absolute genomic uint32** — never pixels, never region-relative.
-- A display is an **MST model**. `attachRenderingBackend(backend, { upload,
+- A display is an MST model. `attachRenderingBackend(backend, { upload,
   render })` spawns two MobX autoruns: upload bytes on data change, redraw on
   any visible change. Pan/zoom is a redraw, not a refetch.
-- Rendering picks **WebGPU → WebGL2 → Canvas2D** at runtime behind the HAL. A
-  Canvas2D draw fn is the floor for canvas-based displays because **SVG export
-  runs it**; the shader path is an optional accelerator.
-- Two fetch foundations cover everything: **`MultiRegionDisplayMixin`** (per
-  region, five autoruns) and **`GlobalFetchMixin`** (one dataset, display
-  installs its own autorun).
-- **`DisplayChrome`** owns every terminal state — loading, error, render error,
+- Rendering picks WebGPU → WebGL2 → Canvas2D at runtime behind the HAL. A
+  Canvas2D draw fn is the floor for canvas-based displays because SVG export
+  runs it; the shader path is an optional accelerator.
+- Two fetch foundations cover everything: `MultiRegionDisplayMixin` (per region,
+  its own autoruns) and `GlobalFetchMixin` (one dataset, display installs its
+  own autorun).
+- `DisplayChrome` owns every terminal state — loading, error, render error,
   region-too-large — via the single `displayPhase` getter.
 - Shaders are `.slang` compiled by `pnpm gen:shaders`. **Never hand-edit
   `*.generated.ts`.**
 - `rpcProps()` = user settings that invalidate the fetch. Putting a fetch result
-  in it is an infinite loop.
+  in it is an infinite loop; see
+  [the trap](#rpcprops-loop-trap-and-how-to-break-it).
 
 ## Overview
 
 A **display** is the object that draws one track inside a view — the pileup in an
-alignments track, the bars in a wiggle track, the matrix in a Hi-C track. Every
-display, whatever it draws, follows the same three-part shape:
-
-- **Workers fetch, the main thread renders.** Data is loaded and parsed in an RPC
-  worker, off the UI thread. The worker returns feature data as **absolute
-  genomic coordinates** — uint32 base positions, never pixels and never
-  region-relative offsets — so the same data stays valid as the user pans and
-  zooms.
-- **The main thread uploads once, then redraws every frame.** An MST model holds
-  the worker's output in an observable map. Two MobX autoruns watch it: one
-  *uploads* the bytes to the GPU when the data changes, one *renders* a frame
-  when anything visible changes. Pan and zoom become a cheap redraw of buffers
-  already on the GPU, not a refetch.
-- **Three interchangeable backends.** Rendering targets WebGPU first, falls back
-  to WebGL2, then to Canvas2D, chosen at runtime behind a hardware abstraction
-  layer (HAL). Every canvas-drawing display **must** provide a Canvas2D draw
-  function; the GPU shader path is an optional accelerator layered on top. **SVG
-  export runs the Canvas2D path**, so on-screen and exported pixels can't drift.
-  (Arc is the one non-canvas class — it paints JSX SVG on both paths; see
-  "Display stacks".)
+alignments track, the bars in a wiggle track, the matrix in a Hi-C track. Whatever
+it draws, it follows the same shape: a worker fetches and parses off the UI
+thread, the main thread uploads the result once and then redraws it every frame,
+and the frame goes through whichever of three interchangeable backends the
+runtime picked.
 
 ```
 worker:  adapter → features            (absolute uint32 bp)
@@ -69,12 +55,18 @@ main:    model.rpcDataMap              (MST node, observable)
          SVG export reuses the same Canvas2D draw fn — never the shader.
 ```
 
+Every canvas-drawing display **must** provide a Canvas2D draw function; the GPU
+shader path is an optional accelerator layered on top. Because SVG export runs
+the Canvas2D path, on-screen and exported pixels can't drift. Arc is the one
+non-canvas class — it paints JSX SVG on both paths; see
+[Display stacks](#display-stacks).
+
 ## Vocabulary
 
 Terms used throughout this doc:
 
-- **Display** — draws one track in one view. Composed from MST mixins that supply
-  its behavior (fetch, render lifecycle, height). The subject of most of this doc.
+- **Display** — the subject of most of this doc, defined above. Composed from MST
+  mixins that supply its behavior: fetch, render lifecycle, height.
 - **Backend** — the per-display object that actually draws, either GPU
   (`GpuXxxRenderer`) or Canvas2D (`Canvas2DXxxRenderer`), produced by a factory
   that picks one at runtime.
@@ -95,47 +87,34 @@ BED/BAM. Worker output is **absolute genomic uint32** — no regionStart-relativ
 arithmetic crosses the worker boundary. The precision machinery that makes this
 work on a float32 GPU is in [reference/BP_PRECISION.md](reference/BP_PRECISION.md).
 
-## How this doc is organized
+## Public developer guides mirror this spec
 
-- **Display stacks** — which foundation mixins a display composes.
-- **Data fetching pipeline** — the fetch autoruns, the region-too-large gate, and
-  the refetch-loop traps.
-- **GPU rendering architecture** — a summary plus a map into
-  [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md), which holds the
-  lifecycle in depth: the mixin, the upload/render autoruns, the per-plugin
-  backends, the three upload patterns, the HAL, shaders, and the
-  new-display checklist.
-- **SVG export**, **`rpcProps()` / `gpuProps()`**, **Per-region zoom-staleness** —
-  how settings and staleness reach the worker, the encoder, and the export.
-- **What NOT to do** — the invariants, as a quick-scan list.
-
-**Public developer guides mirror this spec.** The hand-written walkthroughs at
-[website/docs/developer_guides/plotting_features.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
+The hand-written walkthroughs in `website/docs/developer_guides/` —
+[plotting_features.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
 (Canvas2D),
 [creating_gpu_display.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_gpu_display.md)
 (GPU), and
 [data_fetching.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/data_fetching.md)
-turn the sections below into step-by-step tutorials and link back to them. When
+— turn the sections below into step-by-step tutorials and link back to them. When
 the lifecycle, mixins, or upload patterns here change, update those guides in
-the same pass — `pnpm lint-docs-check` (which runs `website/scripts/check-doc-imports.ts`)
-validates the cross-links both ways but not the prose.
-
----
+the same pass. `pnpm lint-docs-check` (which runs
+`website/scripts/check-doc-imports.ts`) validates the cross-links both ways but
+not the prose.
 
 ## Display stacks
 
-**What this section answers: which mixins do I compose to build a display, and
-why?** Linear-genome-view displays are built from a small set of **foundation
-mixins** on `BaseDisplay` (they all share `baseLinearDisplayConfigSchema` as their
-config base). Which mixins a display composes is the primary axis of code
-sharing; *how* it renders (GPU vs Canvas2D) is a separate axis layered on top.
-Two fetch foundations — per-region (`MultiRegionDisplayMixin`) and single-global
-(`GlobalFetchMixin`) — cover every in-tree display:
+Which mixins do you compose to build a display, and why? Linear-genome-view
+displays are built from a small set of **foundation mixins** on `BaseDisplay`,
+all sharing `baseLinearDisplayConfigSchema` as their config base. Which mixins a
+display composes is the primary axis of code sharing; *how* it renders (GPU vs
+Canvas2D) is a separate axis layered on top. Two fetch foundations — per-region
+(`MultiRegionDisplayMixin`) and single-global (`GlobalFetchMixin`) — cover every
+in-tree display:
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
-| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the five fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays, `LinearReferenceSequenceDisplay`, `LinearMafDisplay`, plus the canvas displays (`LinearMultiRowFeatureDisplay` directly; `LinearBasicDisplay`/`LinearVariantDisplay` via `LinearCanvasBaseDisplay` — see below) |
-| `GlobalDataDisplayMixin()` = `GlobalFetchMixin()` + `RenderLifecycleMixin` | the single-global fetch foundation **plus** GPU render lifecycle + `displayPhase`; **no** fetch autoruns (each display installs its own `afterAttach` autorun via `installGlobalFetchAutorun`) | HiC (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`) |
+| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays, `LinearReferenceSequenceDisplay`, `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, and via `LinearCanvasBaseDisplay` the `LinearBasicDisplay` / `LinearVariantDisplay` pair |
+| `GlobalDataDisplayMixin()` = `GlobalFetchMixin()` + `RenderLifecycleMixin` | the single-global fetch foundation plus GPU render lifecycle and `displayPhase`. No fetch autoruns: each display installs its own `afterAttach` autorun via `installGlobalFetchAutorun` | HiC (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`) |
 | `GlobalFetchMixin()` bare (via arc's `ArcFetchModel`) + main-thread SVG render | the same fetch foundation (`RegionTooLargeMixin` + `FetchMixin` + `reloadCounter`) with **no** `RenderLifecycleMixin` — a non-GPU display shouldn't drag in the render lifecycle to get fetch/cancel/too-large/reload | `LinearArcDisplay`, `LinearPairedArcDisplay` |
 
 `GlobalFetchMixin` is the rendering-agnostic fetch foundation shared by the last
@@ -144,7 +123,8 @@ two rows: GPU global displays layer `RenderLifecycleMixin` on top of it
 `displayPhase` lives in `GlobalDataDisplayMixin`, not `GlobalFetchMixin`, because
 it reads `renderError` — the one genuinely GPU-only piece. `RegionTooLargeMixin`'s
 gate is derived and opt-in; arc's `ArcFetchModel` enables it like every other
-byte-gated display (see "The derived region-too-large gate").
+byte-gated display (see [the region-too-large
+gate](#the-region-too-large-gate-summary)).
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
@@ -161,10 +141,9 @@ composes no `RenderLifecycleMixin`, and instead of `DisplayChrome` it renders
 GPU display's. `features !== undefined` is its `canvasDrawn` analogue.
 
 **Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame at
-the backend factory (see "RenderingBackend interfaces per plugin"), not by which
-foundation a display composes.
-
----
+the backend factory
+([GPU_RENDERING.md § RenderingBackend interfaces per plugin](reference/GPU_RENDERING.md#renderingbackend-interfaces-per-plugin)),
+not by which foundation a display composes.
 
 ## Data fetching pipeline
 
@@ -175,7 +154,7 @@ wrapper, `rpcProps`, cancellation, byte gate).
 
 `MultiRegionDisplayMixin` (in
 `plugins/linear-genome-view/src/BaseLinearDisplay/`) drives RPC fetches for all
-LGV displays (alignments, canvas, wiggle, variants) via five autoruns:
+LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 
 | Autorun | Trigger | Action |
 | --- | --- | --- |
@@ -196,6 +175,12 @@ The `error`/`fetchCanceled` reads in `ClearBlockingStateOnViewportChange` are
 `untracked` for correctness — tracking either would let `set…` re-fire the
 autorun and wipe the flag before any viewport change.
 
+Variants are the exception to per-region granularity:
+`MultiSampleVariantGetCellData` returns one batched payload covering all visible
+regions, so variants' `fetchNeeded` expands `needed` to all
+`bufferedVisibleRegions` and marks them all loaded together when the work
+callback returns.
+
 ### The region-too-large gate (summary)
 
 `regionTooLarge` raises the "region too large" banner and holds off the fetch.
@@ -210,35 +195,6 @@ estimate; the shared verdict/threshold/banner-text primitives live in
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
 shared decision primitives: [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).
-
-Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
-payload covering all visible regions, so variants' `fetchNeeded` expands `needed`
-to all `bufferedVisibleRegions` and marks them all loaded together when the work
-callback returns.
-
-### Terminal states early-return their own root
-
-`DisplayChrome` branches on `model.displayPhase`. For the `renderError` /
-`tooLarge` banners it **early-`return`s** the banner as its *entire* output,
-replacing the display subtree — rather than keeping the container `<div>` mounted
-and swapping the banner in beside the canvas. This looks like a leak (the caller's
-`className`/`ref`/mouse handlers are absent in those two states) but the leak is
-benign: a too-large region has no canvas to interact with, and the ref
-re-attaches on force-load. Three things make this the right shape:
-
-- **Clean GPU dispose/re-init.** Early-`return` unmounts the canvas subtree,
-  which fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
-  `stopRenderingBackend()`; force-load remounts and re-inits via the callback
-  ref. Nesting the banner beside a still-mounted canvas would skip that cycle.
-  Unmounting is safe precisely because that full dispose→re-init cycle runs.
-- **The loading term stays lazy.** `computeDisplayPhase(self, loading)` takes
-  `loading` as a **thunk** and calls it only after ruling out the terminal flags,
-  so when a banner is up the chrome's observer tracks only that flag — not the
-  view's churning `visibleRegions`/`loadedRegions`.
-- **React Compiler opt-out.** `DisplayChromeInner` carries `'use no memo'`, so
-  babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read on
-  `model`'s stable identity. Full analysis:
-  `reference/COMPILER_TERNARY_FINDING.md`.
 
 ### `rpcProps()` loop trap and how to break it
 
@@ -296,19 +252,10 @@ omits it.
 is no wrapper-over-BAM/CRAM today; if one is reintroduced, plumb inheritance
 through `getSubAdapter`).
 
-## Status / progress reporting
-
-Loading status travels from workers to the loading UI over one out-of-band
-channel (`statusCallback`), with helpers for determinate bars, concurrent-fetch
-aggregation, and durable cancel. Full detail:
-[reference/PROGRESS_REPORTING.md](reference/PROGRESS_REPORTING.md).
-
----
-
 ## GPU rendering architecture
 
-**Full detail lives in [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md)**
-— this section is the summary.
+This section is the summary; full detail lives in
+[reference/GPU_RENDERING.md](reference/GPU_RENDERING.md).
 
 A GPU display composes `RenderLifecycleMixin` and calls
 `self.attachRenderingBackend(backend, { upload, render })` in its
@@ -341,6 +288,34 @@ What the GPU doc covers, so you can jump straight in:
 | Shaders (Slang codegen) | Editing a `.slang` or a generated module |
 | Canvas scaling & hi-DPI / `displayedRegionIndex` | Blurry canvases; region↔buffer join keys |
 | Adding a new GPU display type | The end-to-end checklist |
+
+### Terminal states early-return their own root
+
+`DisplayChrome` branches on `model.displayPhase`. For the `renderError` /
+`tooLarge` banners it early-`return`s the banner as its *entire* output,
+replacing the display subtree, rather than keeping the container `<div>` mounted
+and swapping the banner in beside the canvas. This looks like a leak — the
+caller's `className`/`ref`/mouse handlers are absent in those two states — but a
+benign one: a too-large region has no canvas to interact with, and the ref
+re-attaches on force-load. What makes it the right shape:
+
+- **Clean GPU dispose/re-init.** Early-`return` unmounts the canvas subtree,
+  which fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
+  `stopRenderingBackend()`; force-load remounts and re-inits via the callback
+  ref. Nesting the banner beside a still-mounted canvas would skip that cycle.
+  Unmounting is safe precisely because that full dispose→re-init cycle runs.
+- **The loading term stays lazy.** `computeDisplayPhase(self, loading)` takes
+  `loading` as a thunk and calls it only after ruling out the terminal flags, so
+  when a banner is up the chrome's observer tracks only that flag, not the
+  view's churning `visibleRegions`/`loadedRegions`.
+- **React Compiler opt-out.** `DisplayChromeInner` carries `'use no memo'`, so
+  babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read on
+  `model`'s stable identity. Full analysis:
+  [reference/COMPILER_TERNARY_FINDING.md](reference/COMPILER_TERNARY_FINDING.md).
+
+The rest of the shared chrome — the phase precedence, the retry affordances, the
+overlay components — is in
+[reference/DISPLAYCHROME.md](reference/DISPLAYCHROME.md).
 
 ## SVG export
 
@@ -410,9 +385,9 @@ would widen the typed return through MST's `.views()` chain and force consumers 
 re-spread named fields. The mixin's `SettingsInvalidate` autorun looks up
 `rpcProps` dynamically and is installed only when the method exists, so a
 per-region display with no settings-driven refetch (e.g.
-`LinearReferenceSequenceDisplay`) can simply not define it. (HiC/LD compose
-`GlobalDataDisplayMixin`, not MultiRegion, and both *do* define `rpcProps()`;
-`installGlobalFetchAutorun` reads it directly.)
+`LinearReferenceSequenceDisplay`) can simply not define it. HiC and LD compose
+`GlobalDataDisplayMixin` rather than MultiRegion, and both *do* define
+`rpcProps()`; `installGlobalFetchAutorun` reads it directly.
 
 `gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle,
 multi-wiggle, MAF, HiC, multi-LGV synteny (and GC-content, which inherits
@@ -434,19 +409,21 @@ Color palettes are a pure function of the active theme, so derive them in a mode
 getter — `buildColorPaletteFromTheme(getSession(self).theme)` — that `gpuProps()`
 / `renderState` read directly. Do **not** stage them in a volatile that a React
 `useEffect` pushes in via a `setColorPalette` action: the effect runs only on
-mount, so SVG export and RPC (no component) saw a null palette and rendered blank.
-As a getter the value is always present and MobX recomputes it only when the theme
-changes — same re-encode invalidation, no mount dependency. `session.theme` is the
-resolved MUI `Theme` (required on `AbstractSessionModel`); embedded products
-without `ThemeManagerSessionMixin` supply a minimal `get theme()` =
-`createJBrowseTheme(getConf(self, 'theme'))`. SVG export still overrides the
-palette with the *export* theme (`opts.theme`). (Applies equally to alignments,
-MAF, and the reference sequence display.)
+mount, so SVG export and RPC — neither of which has a component — see a null
+palette and render blank. As a getter the value is always present and MobX
+recomputes it only when the theme changes: same re-encode invalidation, no mount
+dependency. This applies equally to alignments, MAF, and the reference sequence
+display.
+
+`session.theme` is the resolved MUI `Theme`, required on
+`AbstractSessionModel`. Embedded products without `ThemeManagerSessionMixin`
+supply a minimal `get theme()` = `createJBrowseTheme(getConf(self, 'theme'))`.
+SVG export still overrides the palette with the *export* theme (`opts.theme`).
 
 ## Per-region zoom-staleness
 
 All worker position output is **absolute genomic uint32**, so data stays valid
-under zoom. Two exceptions for zoom-dependent *content* (not coords):
+under zoom. The exceptions are for zoom-dependent *content*, not coords:
 
 - **Wiggle**: BigWig has discrete zoom levels; the worker picks one based on
   `bpPerPx / resolution`. `isCacheValid` uses strict equality (`view.bpPerPx ===
@@ -466,10 +443,7 @@ no data — refetches the moment the gate releases).
 `MultiRegionDisplayMixin`'s `FetchVisibleRegions` autorun calls the override per
 region and refetches stale ones.
 
----
-
-
-## What NOT to do
+## What not to do
 
 - Don't put upload/render logic in React `useEffect`/`useLayoutEffect` — it
   belongs in the MST autorun pair spawned by `attachRenderingBackend`.
@@ -491,16 +465,15 @@ region and refetches stale ones.
   outputs. Consume generated constants by name from TS — never copy a literal
   offset into a renderer.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
-  `rpcProps()` — `SettingsInvalidate` watches the payload `rpcProps()` returns
-  and calls `clearAllRpcData`, creating an infinite fetch loop.
+  `rpcProps()`; it is an infinite fetch loop. See
+  [the trap](#rpcprops-loop-trap-and-how-to-break-it).
 - Don't diverge the two render backends. Import shader constants into TS rather
   than retyping them, put shared glyph geometry/color math in one draw helper, and
   keep multi-layer order/gating in one exhaustively-keyed registry. And don't go
   the other way: a Canvas2D sub-pixel *overdraw* (fudge factor / `f2`) or
   stroke-vs-fill swap is deliberate AA compensation with no shader equivalent —
-  don't port it into a `.slang`. See "Keeping the two backends in parity."
-
----
+  don't port it into a `.slang`. See
+  [GPU_RENDERING.md § Keeping the two backends in parity](reference/GPU_RENDERING.md#keeping-the-two-backends-in-parity).
 
 ## See also
 
