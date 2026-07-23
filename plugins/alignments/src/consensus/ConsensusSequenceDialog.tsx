@@ -265,6 +265,12 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               : sequence
           }
         />
+        <Typography variant="caption" color="text.secondary">
+          Variants are simply the positions where this consensus differs from
+          the reference. Base qualities are not used and the output has no
+          genotypes or quality scores, so use a variant caller if you need
+          those. Positions called N or an ambiguity code are left out.
+        </Typography>
       </DialogContent>
       <DialogActions>
         <CopyToClipboardButton
