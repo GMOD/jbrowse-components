@@ -1,13 +1,14 @@
 ---
 import NewsletterSignup from '../components/NewsletterSignup.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
 import { newsletterApiUrl } from '../lib/newsletter.ts'
 import page from '../styles/page.module.css'
 ---
 
 <BaseLayout
   title="Contact — JBrowse"
-  description="Get in touch with the JBrowse team and community — discussion forums, issue tracker, chat, mailing list, and release announcements."
+  description="Get in touch with the JBrowse team and community — discussion forums, issue tracker, chat, mailing list, newsletter, RSS feed, and social media."
 >
   <div class={page.content}>
     <h1>Contact us</h1>
@@ -52,8 +53,13 @@ import page from '../styles/page.module.css'
       )
     }
 
-    <h2>Social media</h2>
+    <h2>Follow along</h2>
     <ul>
+      <li>
+        Blog RSS feed: <a href={`${baseUrl}/rss.xml`}
+          >subscribe in your feed reader</a
+        >
+      </li>
       <li>
         Bluesky: <a href="https://bsky.app/profile/jbrowse.org"
           >bsky.app/profile/jbrowse.org</a
@@ -62,6 +68,11 @@ import page from '../styles/page.module.css'
       <li>
         Mastodon: <a href="https://genomic.social/@usejbrowse"
           >genomic.social/@usejbrowse</a
+        >
+      </li>
+      <li>
+        YouTube: <a href="https://www.youtube.com/@jbrowse6740"
+          >youtube.com/@jbrowse6740</a
         >
       </li>
     </ul>
