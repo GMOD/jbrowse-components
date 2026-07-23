@@ -27,8 +27,10 @@ nothing to recompute.
 
 ## Build the cohort file
 
-One script does the whole data pipeline: query the GDC, download every sample's
-segments, and merge them into one indexed BED.
+One script does the whole data pipeline:
+[`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh)
+queries the GDC, downloads every sample's segments, and merges them into one
+indexed BED.
 
 ```bash
 bash scripts/build_tcga_cohort_cnv.sh TCGA-BRCA
@@ -104,8 +106,8 @@ The result is a BED whose `#`-prefixed header names the extra columns:
 
 ```
 #chrom  start     end        name    sample             segmean
-chr1    3301764   97332922   -0.01   TCGA-3C-AAAU-01A   -0.0110
-chr1    97337298  97338168   -1.29   TCGA-3C-AAAU-01A   -1.2888
+chr1    3301764   30796057   +0.15   TCGA-3C-AAAU-01A   0.1480
+chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
 ```
 
 `sample` is what splits the rows, `segmean` is what colors them.
@@ -136,15 +138,13 @@ because the display config is the interesting part:
   "category": ["TCGA"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "bedGzLocation": { "uri": "tcga_brca_cnv.bed.gz" },
-    "index": { "location": { "uri": "tcga_brca_cnv.bed.gz.tbi" } }
+    "uri": "tcga_brca_cnv.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "tcga_brca_cnv-LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
-      "rowHeight": 0,
       "color": "jexl:get(feature,'segmean')<-1?'#2166ac':get(feature,'segmean')<-0.3?'#92c5de':get(feature,'segmean')<0.3?'#f7f7f7':get(feature,'segmean')<1?'#f4a582':'#b2182b'",
       "legend": [
         { "label": "Deep loss (log2 < -1)", "color": "#2166ac" },
@@ -158,15 +158,16 @@ because the display config is the interesting part:
 }
 ```
 
-Four settings do the work:
+The adapter's `uri` shorthand resolves the `.tbi` beside the file, and
+[`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight) is left
+at its auto-fit default, which divides the display height across the rows with a
+1px floor: at this row count every tumor is a single pixel line, which is the
+point, since the pattern lives in the stack rather than in any one row. That
+leaves three settings to write:
 
 - [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
   splits the one file into one labeled row per `sample`. A thousand barcodes
   gives a thousand rows.
-- [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight) of
-  `0` auto-fits: the display height divided across the rows, with a 1px floor.
-  At this row count every tumor is a single pixel line, which is the point,
-  since the pattern lives in the stack rather than in any one row.
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
   [jexl](/docs/config_guides/jexl) expression binning `segmean` onto a diverging
   blue-to-red scale. Other multi-row tutorials skip this because their BED
@@ -177,12 +178,13 @@ Four settings do the work:
 
 ## Read it
 
-Open the track at whole-genome zoom and turn on the cluster tree from the track
-menu ("Show tree"). Clustering reorders the rows so tumors with similar profiles
-sit together, which turns a noisy stack into blocks.
+Open the track at whole-genome zoom, then run **Track menu > Cluster rows by
+similarity**. Clustering reorders the rows so tumors with similar profiles sit
+together, which turns a noisy stack into blocks, and draws the dendrogram in the
+sidebar (**Sidebar with tree and labels**, on by default).
 
-- **Vertical blue stripes** are recurrent deletions, clearest at 9p21 (CDKN2A)
-  and 10q23 (PTEN).
+- **Vertical blue stripes** are recurrent deletions, clearest at 9p21 (CDKN2A);
+  10q23 (PTEN) is present but faint in this cohort.
 - **Vertical red stripes** are recurrent amplifications: 17q12 (ERBB2), 8q24
   (MYC), 11q13 (CCND1).
 - **Whole rows tending red or blue** are heavily aneuploid tumors, which

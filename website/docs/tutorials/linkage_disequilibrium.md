@@ -64,11 +64,12 @@ panel.
 
 ## Marking where a block ends
 
-Turn on the LD display's recombination track (`showRecombination`) to make block
-boundaries explicit: the 1 − r² curve between adjacent SNPs peaks in the white
-gaps (LD breaking down) and dips inside the red blocks (SNPs locked together).
-Open the figure above live and turn on **Show recombination track** in the track
-menu to see the curve step down over the LCT block.
+Turn on the LD display's recombination track
+([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)) to
+make block boundaries explicit: the 1 − r² curve between adjacent SNPs peaks in
+the white gaps (LD breaking down) and dips inside the red blocks (SNPs locked
+together). Open the figure above live and turn on **Show recombination track**
+in the track menu to see the curve step down over the LCT block.
 
 ## LD is a local tool, so mind the scale
 
