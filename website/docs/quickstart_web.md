@@ -18,7 +18,7 @@ Other ways to run JBrowse:
 
 The `config.json` directory you build in this guide isn't web-only: the same
 folder opens directly in JBrowse Desktop, so you don't have to choose up front.
-See [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop).
+See [CLI config for Desktop](/docs/tutorials/cli_desktop).
 
 ## TLDR
 
@@ -247,11 +247,11 @@ can be typed directly into the location search box. See the
 
 ## Tutorials
 
-- [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop)
+- [CLI config for Desktop](/docs/tutorials/cli_desktop)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Cancer structural variants](/docs/tutorials/sv_visualization_cgiab)
 - [Population genomics](/docs/tutorials/population_genomics)
-- [DNA methylation](/docs/tutorials/methylation)
+- [Long-read methylation](/docs/tutorials/methylation)
 - [RNA-seq](/docs/tutorials/rnaseq)
 - [All tutorials](/docs/tutorials)
 

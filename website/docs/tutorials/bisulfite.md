@@ -1,7 +1,8 @@
 ---
-title: Bisulfite / EM-seq methylation
+title: Bisulfite methylation
 description:
-  A WGBS pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
+  A WGBS/EM-seq pipeline from SRA reads to per-read CpG/CHG/CHH methylation
+  coloring
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
@@ -255,6 +256,6 @@ is left out of the script. Add it by hand if you want it.
 
 ## See also
 
-- [DNA methylation](/docs/tutorials/methylation)
+- [Long-read methylation](/docs/tutorials/methylation)
 - [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
 - [Alignments track](/docs/user_guides/alignments_track)

@@ -24,7 +24,7 @@ its assemblies in is not a claim about which genome belongs on top. Switch to
 **Manual** to select the two assemblies to compare yourself, where you can
 optionally add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
 .anchors.simple (MCScan) file. Manual also lets you stack more than two genomes;
-see [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) for a worked example.
+see [All-vs-all synteny](/docs/tutorials/allvsall_synteny) for a worked example.
 
 <Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). Its Manual mode, shown here, is where you select two different assemblies and can supply an additional file." src="/img/dotplot_add.png" />
 

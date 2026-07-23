@@ -1,5 +1,5 @@
 ---
-title: QTL mapping in the BXD family
+title: BXD QTL mapping
 description:
   Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 guide_category: Tutorials

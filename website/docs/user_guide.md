@@ -42,25 +42,24 @@ sidebar_label: Overview
 
 ## Tutorials
 
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - Stack strains in a linear synteny view from one all-vs-all PAF
+- [All-vs-all synteny](/docs/tutorials/allvsall_synteny) - Stack strains in a linear synteny view from one all-vs-all PAF
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
-- [Bisulfite / EM-seq methylation](/docs/tutorials/bisulfite) - A WGBS pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
-- [QTL mapping in the BXD family](/docs/tutorials/bxd_qtl) - Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
+- [Bisulfite methylation](/docs/tutorials/bisulfite) - A WGBS/EM-seq pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
+- [BXD QTL mapping](/docs/tutorials/bxd_qtl) - Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Paint many-cell-type ChromHMM states in one multi-row track
-- [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop) - Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
+- [CLI config for Desktop](/docs/tutorials/cli_desktop) - Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 - [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
-- [Browsing synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
-- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle, see a selective sweep and an inversion, and know when LD is the wrong tool
-- [DNA methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
+- [Using genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
+- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle across a selective sweep and an inversion
+- [Long-read methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
 - [Pangenome graphs](/docs/tutorials/pangenome) - Visualize a pggb / Minigraph-Cactus pangenome graph in JBrowse
-- [Pangenome graphs with Minigraph-Cactus](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
+- [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
 - [Population genomics](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus a genotype matrix from one VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
-- [Read-pair heatmaps](/docs/tutorials/readpair_heatmap) - Turn an ordinary paired-end WGS alignment into a Hi-C-style contact heatmap that reveals structural variants, and load it in JBrowse as a .hic track
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
-- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs
+- [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs
 - [1000 Genomes SVs](/docs/tutorials/sv_multisamples) - Population SVs, a family trio, and a large chromosomal inversion
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
 - [Synteny visualization](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views

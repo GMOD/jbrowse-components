@@ -1,5 +1,5 @@
 ---
-title: DNA methylation
+title: Long-read methylation
 description:
   Per-read, aggregate, and allele-specific methylation from long reads
 guide_category: Tutorials

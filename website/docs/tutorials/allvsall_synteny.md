@@ -1,5 +1,5 @@
 ---
-title: Synteny all-vs-all
+title: All-vs-all synteny
 description: Stack strains in a linear synteny view from one all-vs-all PAF
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics

@@ -1,8 +1,6 @@
 ---
 title: Linkage disequilibrium
-description:
-  Read an LD triangle, see a selective sweep and an inversion, and know when LD
-  is the wrong tool
+description: Read an LD triangle across a selective sweep and an inversion
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---

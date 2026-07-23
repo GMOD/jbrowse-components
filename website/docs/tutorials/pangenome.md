@@ -409,8 +409,8 @@ output (on real disk) so a fresh run works out of the box. Export your own
 
 ## See also
 
-- [Pangenome graphs with Minigraph-Cactus](/docs/tutorials/pangenome_cactus)
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus)
+- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [MAF track](/docs/user_guides/maf_track)
 - [Multi-sample variant track](/docs/user_guides/multivariant_track)
 - [PIF format](/docs/developer_guides/pif_format)

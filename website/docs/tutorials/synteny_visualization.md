@@ -236,7 +236,7 @@ dotplot figure above shows.
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [Dotplot view](/docs/user_guides/dotplot_view)
 - [Linear synteny view](/docs/user_guides/linear_synteny_view)
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
 
 ## References

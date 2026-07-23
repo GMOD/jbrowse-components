@@ -121,8 +121,9 @@ the view menu.
 
 You can inspect the mapping yourself: the **Pairwise alignment** panel below the
 structure shows the transcript row against the structure row with a consensus
-line, so you can check it is sane before trusting a residue highlight. If you need exact correspondence, fold the transcript's own sequence
-with AlphaFold instead of using a database structure.
+line, so you can check it is sane before trusting a residue highlight. If you
+need exact correspondence, fold the transcript's own sequence with AlphaFold
+instead of using a database structure.
 
 When you open a structure of your own, the transcript picker uses this same
 comparison, listing isoforms whose translation exactly matches the structure

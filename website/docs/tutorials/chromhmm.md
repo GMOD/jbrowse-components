@@ -207,6 +207,6 @@ On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib
 ## See also
 
 - [Phased trio analysis](/docs/tutorials/analyze_trio)
-- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk)
+- [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk)
 - [jexl](/docs/config_guides/jexl)
 - [Configuring tracks](/docs/config_guides/tracks)

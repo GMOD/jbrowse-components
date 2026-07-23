@@ -1,5 +1,5 @@
 ---
-title: Single-cell ATAC pseudobulk tracks
+title: Single-cell ATAC pseudobulk
 description: Aggregate single-cell ATAC into per-cell-type coverage BigWigs
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell

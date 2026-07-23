@@ -1,5 +1,5 @@
 ---
-title: Building a config with the CLI for Desktop
+title: CLI config for Desktop
 description:
   Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 guide_category: Tutorials

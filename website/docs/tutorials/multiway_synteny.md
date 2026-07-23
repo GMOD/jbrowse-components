@@ -13,7 +13,7 @@ cross-species ortholog table.
 
 For closely related genomes (strains or accessions of one species), a
 whole-genome all-vs-all PAF is usually a better source. See
-[Synteny all-vs-all](/docs/tutorials/allvsall_synteny).
+[All-vs-all synteny](/docs/tutorials/allvsall_synteny).
 
 ## What you need
 
@@ -204,7 +204,7 @@ and `tabix`, `wget`, and node (for the JBrowse CLI).
 
 ## See also
 
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Linear synteny view](/docs/user_guides/linear_synteny_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)

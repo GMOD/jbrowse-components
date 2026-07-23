@@ -1,5 +1,5 @@
 ---
-title: Pangenome graphs with Minigraph-Cactus
+title: Minigraph-Cactus pangenomes
 description:
   Build a Minigraph-Cactus pangenome graph and load its linear projections in
   JBrowse
@@ -313,6 +313,6 @@ CLI, `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
 ## See also
 
 - [Pangenome graphs (pggb)](/docs/tutorials/pangenome)
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny)
+- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [MAF track](/docs/user_guides/maf_track)
 - [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
