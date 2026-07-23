@@ -49,7 +49,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
 
   // Every display's `renderSvg` owns its own readiness wait — block
-  // renderers await their feature-density stats inside
+  // renderers await their byte estimate inside
   // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout
   // inside their own `renderSvg` implementations.
   const displayResults = await Promise.all(

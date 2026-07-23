@@ -1,4 +1,4 @@
-import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
+import type { RegionByteEstimate } from '../data_adapters/BaseAdapter/types.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { Feature } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
@@ -47,7 +47,7 @@ export interface RpcRegistry {
     }
     return: Feature[]
   }
-  CoreGetFeatureDensityStats: {
+  CoreGetRegionByteEstimate: {
     args: {
       adapterConfig: Record<string, unknown>
       regions: RegionLike[]
@@ -55,7 +55,7 @@ export interface RpcRegistry {
       headers?: Record<string, string>
       statusCallback?: StatusCallback
     }
-    return: FeatureDensityStats
+    return: RegionByteEstimate
   }
   CoreGetInfo: {
     args: {

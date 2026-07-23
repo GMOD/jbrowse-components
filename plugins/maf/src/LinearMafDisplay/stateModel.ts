@@ -1594,7 +1594,7 @@ export default function stateModelFactory(
           // pan); this hook is the one path that clears it. Canvas does the same
           // for its densityStatsPerRegion.
           onDisplayedRegionsChange(self, () => {
-            self.setFeatureDensityStats(undefined)
+            self.setByteEstimate(undefined)
           })
           try {
             const { setupTreeDrawingAutorun } =

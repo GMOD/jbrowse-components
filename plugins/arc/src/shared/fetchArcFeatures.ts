@@ -8,7 +8,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Fetches every arc feature for the current static blocks. Structured like
 // LinearWiggle/LD's global fetch: probe the compressed byte size
-// (CoreGetFeatureDensityStats), commit it, and let the DERIVED regionTooLarge
+// (CoreGetRegionByteEstimate), commit it, and let the DERIVED regionTooLarge
 // getter (ArcFetchModel) decide — no imperative flag, no bespoke gating. The
 // installGlobalFetchAutorun trigger (afterAttach.ts) gates on regionTooLarge +
 // dataLoaded, so this only runs when a fetch is actually needed; runFetch makes
@@ -31,7 +31,7 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
     const sessionId = getRpcSessionId(self)
     const stats = await rpcManager.call(
       sessionId,
-      'CoreGetFeatureDensityStats',
+      'CoreGetRegionByteEstimate',
       { regions, adapterConfig },
     )
     if (ctx.isStale()) {
@@ -39,7 +39,7 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
     }
     // Commit the estimate; the derived regionTooLarge getter then composes the
     // shared verdict as a pure function of the estimate × current viewport.
-    self.setFeatureDensityStats(stats)
+    self.setByteEstimate(stats)
     if (self.regionTooLarge) {
       return
     }

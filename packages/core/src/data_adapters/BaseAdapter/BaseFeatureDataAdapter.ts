@@ -8,7 +8,7 @@ import { aggregateQuantitativeStats } from './stats.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
-import type { BaseOptions, FeatureDensityStats } from './types.ts'
+import type { BaseOptions, RegionByteEstimate } from './types.ts'
 import type { Observable } from 'rxjs'
 
 /**
@@ -159,10 +159,10 @@ export abstract class BaseFeatureDataAdapter<
    * and aren't byte-gated. BAM/CRAM/VCF override this to attach their own
    * `fetchSizeLimit`; self-summarizing adapters (BigWig) return `alwaysRender`.
    */
-  public async getMultiRegionFeatureDensityStats(
+  public async getMultiRegionByteEstimate(
     regions: Region[],
     opts?: BaseOptions,
-  ): Promise<FeatureDensityStats> {
+  ): Promise<RegionByteEstimate> {
     return regions[0]
       ? { bytes: await this.getRegionByteSize(regions, opts) }
       : {}

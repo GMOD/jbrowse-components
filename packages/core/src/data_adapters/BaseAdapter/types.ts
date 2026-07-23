@@ -47,7 +47,7 @@ export interface BaseTextSearchArgs {
   stopToken?: StopToken
 }
 
-export interface FeatureDensityStats {
+export interface RegionByteEstimate {
   // cheap index-only byte estimate for the requested regions; over the
   // resolved fetchSizeLimit means "too large"
   bytes?: number

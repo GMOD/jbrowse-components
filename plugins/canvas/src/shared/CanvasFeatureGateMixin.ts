@@ -13,7 +13,7 @@ import { screenDensity } from '../LinearBasicDisplay/baseModelHelpers.ts'
 
 import type { RegionDensityStats } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -32,7 +32,7 @@ interface GateHost {
   estimatedBytesForVisibleSpan?: number
   configuredFetchSizeLimit: number
   configForceLoad: boolean
-  setFeatureDensityStats: (stats?: FeatureDensityStats) => void
+  setByteEstimate: (stats?: RegionByteEstimate) => void
 }
 
 function host(self: object) {
@@ -66,7 +66,7 @@ export interface FeatureGateRegionResult {
  * mixin clears its own stale per-region stats on chromosome nav (its `afterAttach`,
  * so a composing display can't forget the cleanup and silently mis-gate a reused
  * `displayedRegionIndex`). Every gating decision routes through the shared pure
- * helpers in `featureDensityUtils` (`resolveByteLimit`, `resolveForceLoadLimits`,
+ * helpers in `regionTooLargeUtils` (`resolveByteLimit`, `resolveForceLoadLimits`,
  * `evaluateRegionTooLarge` via the base mixin) so both canvas feature displays
  * decide identically.
  *
@@ -110,14 +110,13 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #getter
-       * Turns off the density (features-per-pixel) axis, leaving only the byte
-       * budget. Byte-only displays override this to `true`: e.g.
-       * `LinearMultiRowFeatureDisplay` paints features into fixed lanes, so a high
-       * total feature count is not a per-glyph render cost — only the download
-       * (byte) budget should gate it.
+       * Whether the density (features-per-pixel) axis applies. Byte-only displays
+       * override this to `false`: e.g. `LinearMultiRowFeatureDisplay` paints
+       * features into fixed lanes, so a high total feature count is not a
+       * per-glyph render cost — only the download (byte) budget should gate it.
        */
-      get densityGateDisabled() {
-        return false
+      get densityGateEnabled() {
+        return true
       },
       /**
        * #getter
@@ -158,7 +157,7 @@ export default function CanvasFeatureGateMixin() {
        * AUTO_FORCE_LOAD_BP; otherwise the density force-load ceiling or the config.
        */
       get maxFeatureDensity(): number | undefined {
-        return self.densityGateDisabled ||
+        return !self.densityGateEnabled ||
           host(self).configForceLoad ||
           host(self).userByteSizeLimit !== undefined ||
           gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
@@ -218,7 +217,7 @@ export default function CanvasFeatureGateMixin() {
        */
       clearFeatureGateStats() {
         self.densityStatsPerRegion.clear()
-        host(self).setFeatureDensityStats(undefined)
+        host(self).setByteEstimate(undefined)
       },
     }))
     .actions(self => ({
@@ -247,7 +246,7 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-        host(self).setFeatureDensityStats({
+        host(self).setByteEstimate({
           bytes: maxBytes,
           fetchSizeLimit: self.adapterFetchSizeLimit,
         })
@@ -258,14 +257,14 @@ export default function CanvasFeatureGateMixin() {
        * axis that's actually blocking (`resolveForceLoadLimits` — byte only when it
        * lifts the baseline, else density).
        */
-      setFeatureDensityStatsLimit(stats?: { bytes?: number }) {
+      raiseForceLoadLimits(estimate?: { bytes?: number }) {
         // Clear first so maxFeatureDensity (undefined while userByteSizeLimit is
         // set) re-evaluates for the density branch.
         host(self).userByteSizeLimit = undefined
         self.userFeatureDensityLimit = undefined
         const limits = resolveForceLoadLimits({
           estimatedBytesForVisibleSpan: host(self).estimatedBytesForVisibleSpan,
-          estimatedBytesForMeasuredSpan: stats?.bytes,
+          estimatedBytesForMeasuredSpan: estimate?.bytes,
           baselineByteLimit: resolveByteLimit({
             userByteSizeLimit: undefined,
             adapterFetchSizeLimit: self.adapterFetchSizeLimit,

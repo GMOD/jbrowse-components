@@ -79,8 +79,8 @@ export {
   resolveForceLoadLimits,
   rescaleByteEstimateToVisibleSpan,
   forceLoadByteLimit,
-} from '../shared/featureDensityUtils.ts'
-export type { RegionTooLargeStatus } from '../shared/featureDensityUtils.ts'
+} from '../shared/regionTooLargeUtils.ts'
+export type { RegionTooLargeStatus } from '../shared/regionTooLargeUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'

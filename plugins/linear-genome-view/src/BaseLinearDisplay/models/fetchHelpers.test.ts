@@ -5,7 +5,7 @@ import type { ByteEstimateConfig } from './fetchHelpers.ts'
 // checkByteEstimate is now just the estimate RPC + the force-load-floor
 // short-circuit; the too-large *verdict* (resolveByteLimit precedence,
 // evaluateRegionTooLarge) is derived from the returned stats by
-// RegionTooLargeMixin and unit-tested in featureDensityUtils.test.ts, so this
+// RegionTooLargeMixin and unit-tested in regionTooLargeUtils.test.ts, so this
 // only covers the RPC gating/plumbing.
 function makeConfig(
   overrides: Partial<ByteEstimateConfig> = {},
@@ -106,7 +106,7 @@ describe('checkByteEstimate', () => {
 
     expect(rpc.call).toHaveBeenCalledWith(
       'session-abc',
-      'CoreGetFeatureDensityStats',
+      'CoreGetRegionByteEstimate',
       { regions: testRegions, adapterConfig },
     )
   })

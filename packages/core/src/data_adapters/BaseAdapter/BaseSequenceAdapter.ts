@@ -12,7 +12,7 @@ export abstract class BaseSequenceAdapter<
   implements RegionsAdapter
 {
   // a sequence track renders the reference at any zoom and is never too large
-  async getMultiRegionFeatureDensityStats() {
+  async getMultiRegionByteEstimate() {
     return { alwaysRender: true }
   }
 

@@ -19,8 +19,8 @@ export function getDisplayStr(totalBytes: number) {
  *
  * - `estimatedBytesForMeasuredSpan` — the adapter's estimate for the span that
  *   was on screen at the moment the estimate was taken. It never changes as you
- *   navigate. Stored as `featureDensityStats.bytes`, alongside the span it
- *   covers (`visibleBpWhenBytesMeasured`).
+ *   navigate. Stored as `byteEstimate.bytes`, alongside the span it
+ *   covers (`measuredSpanBp`).
  * - `estimatedBytesForVisibleSpan` — the same estimate scaled to the span on
  *   screen right now, since bytes are roughly proportional to span. This one
  *   shrinks as you zoom in, which is what lets the banner release itself.
@@ -99,7 +99,7 @@ export function forceLoadByteLimit({
 
 /**
  * Produce `estimatedBytesForVisibleSpan` from `estimatedBytesForMeasuredSpan`,
- * by scaling from the span the estimate covers (`visibleBpWhenMeasured`) to the
+ * by scaling from the span the estimate covers (`measuredSpanBp`) to the
  * span on screen now (`visibleBp`). This is what makes the too-large verdict a
  * pure function of the current view, so it self-releases on zoom-in instead of
  * a large zoomed-out estimate staying above the limit forever and gating
@@ -110,18 +110,18 @@ export function forceLoadByteLimit({
  */
 export function rescaleByteEstimateToVisibleSpan({
   estimatedBytesForMeasuredSpan,
-  visibleBpWhenMeasured,
+  measuredSpanBp,
   visibleBp,
 }: {
   estimatedBytesForMeasuredSpan?: number
-  visibleBpWhenMeasured?: number
+  measuredSpanBp?: number
   visibleBp: number
 }) {
   if (!estimatedBytesForMeasuredSpan) {
     return undefined
   }
-  return visibleBpWhenMeasured
-    ? (estimatedBytesForMeasuredSpan * visibleBp) / visibleBpWhenMeasured
+  return measuredSpanBp
+    ? (estimatedBytesForMeasuredSpan * visibleBp) / measuredSpanBp
     : estimatedBytesForMeasuredSpan
 }
 

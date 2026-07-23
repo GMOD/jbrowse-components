@@ -21,7 +21,7 @@ type WiggleDisplayModel = Instance<
 // type). Typing this union — rather than the loose
 // `view.tracks[number].displays[number]`, whose pluggable element type permits
 // any property access — is what lets tsc catch a residual action call to a
-// method that exists on no display (e.g. a renamed setFeatureDensityStatsLimit).
+// method that exists on no display (e.g. a renamed raiseForceLoadLimits).
 export type TrackDisplay =
   | LinearAlignmentsDisplayModel
   | LinearBasicDisplayModel
@@ -584,10 +584,10 @@ export function applyDisplayOpts(
   const display = opened.displays[0] as TrackDisplay
 
   // `force` is the lone non-snapshot setting: it flips a volatile load-gate.
-  // (every display in the union implements setFeatureDensityStatsLimit, so no
+  // (every display in the union implements raiseForceLoadLimits, so no
   // optional chain is needed here — unlike the display-specific actions above.)
   if (force) {
-    display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
+    display.raiseForceLoadLimits({ bytes: Number.MAX_VALUE })
   }
 }
 

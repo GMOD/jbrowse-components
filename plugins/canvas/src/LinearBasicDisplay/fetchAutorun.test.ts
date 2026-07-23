@@ -173,8 +173,8 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     // Now simulate "Force Load": raise limit, clear state, reload.
-    // setFeatureDensityStatsLimit triples the limit so the RPC succeeds.
-    display.setFeatureDensityStatsLimit()
+    // raiseForceLoadLimits triples the limit so the RPC succeeds.
+    display.raiseForceLoadLimits()
     mockRpcCall.mockResolvedValue(makeFeatureData())
     display.reload()
 
@@ -621,7 +621,7 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
     })
     // the stored estimate carries the adapter limit, so the banner and worker
     // gate agree
-    expect(display.featureDensityStats?.fetchSizeLimit).toBe(50_000_000)
+    expect(display.byteEstimate?.fetchSizeLimit).toBe(50_000_000)
   })
 
   // Control: no adapter limit → the display config (5MB) gates, so the same
@@ -642,10 +642,10 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
   })
 })
 
-// Derived regionTooLarge: stays a pure function of cached density stats ×
-// current bpPerPx. These tests pin down the behavior the imperative path
-// used to get wrong (banner flicker on small zoom, refetch loops, stale
-// stats across chromosome navigation).
+// Derived regionTooLarge: stays a pure function of the cached density stats
+// and byte estimate at the current bpPerPx. These tests pin down the behavior
+// the imperative path used to get wrong (banner flicker on small zoom, refetch
+// loops, stale estimates across chromosome navigation).
 //
 // Geometry: width=800, region=50kbp. view.visibleBp ≈ 406 × bpPerPx empirically
 // (sum of visible region span clipped to viewport). AUTO_FORCE_LOAD_BP=20_000
@@ -731,7 +731,7 @@ describe('derived regionTooLarge', () => {
 
     // ClearBlockingStateOnViewportChange autorun fires on the zoom change
     // and calls clearAllRpcData (loadedRegions wiped). Density stats and
-    // featureDensityStats must survive so the derived banner stays stable.
+    // byteEstimate must survive so the derived banner stays stable.
     view.zoomTo(55)
     jest.advanceTimersByTime(100)
 
@@ -762,7 +762,7 @@ describe('derived regionTooLarge', () => {
     ])
 
     expect(display.densityStatsPerRegion.size).toBe(0)
-    expect(display.featureDensityStats).toBeUndefined()
+    expect(display.byteEstimate).toBeUndefined()
   })
 
   it('force load past the byte estimate flips banner false and renders', async () => {
@@ -819,7 +819,7 @@ describe('derived regionTooLarge', () => {
     // initial bpPerPx — trips at limit=1 but not at the tripled limit=3
     // after force load. Derived banner recomputes immediately — no
     // imperative flag to clear.
-    display.setFeatureDensityStatsLimit()
+    display.raiseForceLoadLimits()
     expect(display.regionTooLarge).toBe(false)
 
     jest.advanceTimersByTime(800)
@@ -888,7 +888,7 @@ describe('derived regionTooLarge', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // featureDensityStats is preserved across clearAllRpcData (it's not in
+    // byteEstimate is preserved across clearAllRpcData (it's not in
     // the clearing path), so the derived banner stays true on viewport
     // change. The FetchVisibleRegions autorun is gated on regionTooLarge,
     // so no new RPC calls happen.
@@ -943,7 +943,7 @@ describe('derived regionTooLarge', () => {
   })
 })
 
-// Regression: setFeatureDensityStatsLimit used to set EITHER userByteSizeLimit
+// Regression: raiseForceLoadLimits used to set EITHER userByteSizeLimit
 // OR userFeatureDensityLimit but never clear the other one. A stale value left
 // behind silently disables the path that didn't get re-set:
 //   - userByteSizeLimit !== undefined makes maxFeatureDensity return undefined,
@@ -951,7 +951,7 @@ describe('derived regionTooLarge', () => {
 //     return false even when feature counts are huge.
 //   - A leftover userFeatureDensityLimit keeps relaxing density gating after
 //     the user has switched to a byte-driven force-load.
-describe('setFeatureDensityStatsLimit gate toggling', () => {
+describe('raiseForceLoadLimits gate toggling', () => {
   it('byte → density toggle clears stale userByteSizeLimit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
@@ -970,7 +970,7 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
     // fetchSizeLimit (5MB) to represent a real byte-gate trip — only then does
     // raising the ceiling past it actually lift the limit; a value under the
     // baseline is a density trip in disguise and stays on the density branch.
-    display.setFeatureDensityStatsLimit({ bytes: 10_000_000 })
+    display.raiseForceLoadLimits({ bytes: 10_000_000 })
     expect(display.userByteSizeLimit).toBeDefined()
 
     // Then: density force-load. The pre-fix bug was that userByteSizeLimit
@@ -978,7 +978,7 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
     // branch silently no-op'd. After the fix both gates are cleared first,
     // letting the density branch see the real maxFeatureDensity and set a
     // fresh userFeatureDensityLimit.
-    display.setFeatureDensityStatsLimit()
+    display.raiseForceLoadLimits()
     expect(display.userByteSizeLimit).toBeUndefined()
     expect(display.userFeatureDensityLimit).toBeDefined()
   })
@@ -996,12 +996,12 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
       expect(display.densityStatsPerRegion.size).toBe(1)
     })
 
-    display.setFeatureDensityStatsLimit()
+    display.raiseForceLoadLimits()
     expect(display.userFeatureDensityLimit).toBeDefined()
 
     // Byte estimate over the 5MB config baseline → a real byte-gate trip that
     // raises the byte ceiling and clears the stale density limit.
-    display.setFeatureDensityStatsLimit({ bytes: 10_000_000 })
+    display.raiseForceLoadLimits({ bytes: 10_000_000 })
     expect(display.userFeatureDensityLimit).toBeUndefined()
     expect(display.userByteSizeLimit).toBeDefined()
   })
@@ -1010,12 +1010,12 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
 // Regression: a *density*-gated force-load on a tabix-style adapter must not
 // lower the byte ceiling. The worker returns an index-byte estimate alongside a
 // density rejection (VCF/BAM/CRAM always report one), and production forceLoad()
-// passes the stored featureDensityStats — bytes included — to the override. The
+// passes the stored byteEstimate — bytes included — to the override. The
 // pre-fix code adopted `forceLoadByteLimit` whenever `bytes` was truthy,
 // installing a userByteSizeLimit BELOW the config default (a dense-but-byte-small
 // region), which then wrongly gated later, larger-byte regions. Earlier tests
 // missed this because they seeded a density result with no `bytes` and called
-// setFeatureDensityStatsLimit() bare rather than driving forceLoad().
+// raiseForceLoadLimits() bare rather than driving forceLoad().
 describe('density force-load with a byte estimate present', () => {
   it('raises the density limit and leaves the byte ceiling at the config default', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
@@ -1034,11 +1034,11 @@ describe('density force-load with a byte estimate present', () => {
       expect(display.regionTooLarge).toBe(true)
     })
     // sanity: the stored estimate really does carry the (small) byte count
-    expect(display.featureDensityStats?.bytes).toBe(100_000)
+    expect(display.byteEstimate?.bytes).toBe(100_000)
     const configLimit = display.configuredFetchSizeLimit
 
     // Production path: the banner button calls forceLoad(), which forwards
-    // featureDensityStats (bytes: 100_000) to the canvas override.
+    // byteEstimate (bytes: 100_000) to the canvas override.
     display.forceLoad()
 
     // Density axis was raised; the byte ceiling stays at the config default so

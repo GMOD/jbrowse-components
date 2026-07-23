@@ -239,7 +239,7 @@ describe('FetchVisibleRegions autorun', () => {
     view.zoomTo(50)
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
+      if (method === 'CoreGetRegionByteEstimate') {
         return Promise.resolve({
           bytes: 50_000_000,
           fetchSizeLimit: 1_000_000,
@@ -279,7 +279,7 @@ describe('FetchVisibleRegions autorun', () => {
     view.zoomTo(50)
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
+      if (method === 'CoreGetRegionByteEstimate') {
         return Promise.resolve({
           bytes: 50_000_000,
           fetchSizeLimit: 1_000_000,
@@ -333,7 +333,7 @@ describe('FetchVisibleRegions autorun', () => {
     view.zoomTo(50)
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
+      if (method === 'CoreGetRegionByteEstimate') {
         return Promise.resolve({
           bytes: 50_000_000,
           fetchSizeLimit: 1_000_000,
@@ -349,7 +349,7 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    display.setFeatureDensityStatsLimit(display.featureDensityStats)
+    display.raiseForceLoadLimits(display.byteEstimate)
     display.reload()
 
     jest.advanceTimersByTime(400)
@@ -404,7 +404,7 @@ describe('FetchVisibleRegions autorun', () => {
     view.zoomTo(50)
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
+      if (method === 'CoreGetRegionByteEstimate') {
         return Promise.resolve({
           bytes: 50_000_000,
           fetchSizeLimit: 1_000_000,
@@ -439,7 +439,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     let forceLoaded = false
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
+      if (method === 'CoreGetRegionByteEstimate') {
         if (!forceLoaded) {
           return Promise.resolve({
             bytes: 50_000_000,
@@ -463,7 +463,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     forceLoaded = true
-    display.setFeatureDensityStatsLimit(display.featureDensityStats)
+    display.raiseForceLoadLimits(display.byteEstimate)
     display.reload()
 
     jest.advanceTimersByTime(400)
@@ -492,7 +492,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     let densityCallCount = 0
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
+      if (method === 'CoreGetRegionByteEstimate') {
         densityCallCount++
         return Promise.resolve({
           bytes: 50_000_000,
@@ -509,7 +509,7 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // Only one CoreGetFeatureDensityStats call should have been made
+    // Only one CoreGetRegionByteEstimate call should have been made
     // (isLoading guard prevents the autorun from firing concurrently)
     expect(densityCallCount).toBe(1)
   })
@@ -820,7 +820,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Display config default is 1MB.
     // With adapter limit respected, 3MB < 5MB → should NOT be regionTooLarge
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
+      if (method === 'CoreGetRegionByteEstimate') {
         return Promise.resolve({
           bytes: 3_000_000,
           fetchSizeLimit: 5_000_000,

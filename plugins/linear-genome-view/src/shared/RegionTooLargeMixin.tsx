@@ -7,11 +7,11 @@ import {
   forceLoadByteLimit,
   rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
-} from './featureDensityUtils.ts'
+} from './regionTooLargeUtils.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 
 // The mixin declares no `configuration`, but every display that composes it has
 // one (BaseDisplay via MultiRegionDisplayMixin, or the SVG arc displays
@@ -42,7 +42,7 @@ function host(self: object) {
  * feature-density gate). The budget hooks default off the display config, so
  * nothing else needs overriding. It also clears the cached estimate on
  * chromosome nav with
- * `onDisplayedRegionsChange(self, () => self.setFeatureDensityStats(undefined))`
+ * `onDisplayedRegionsChange(self, () => self.setByteEstimate(undefined))`
  * in its `afterAttach` (the estimate intentionally survives viewport-change
  * clears, so only region navigation drops it). Used by
  * canvas/LD/arc/maf/MultiSampleVariant/alignments.
@@ -72,21 +72,20 @@ export default function RegionTooLargeMixin() {
       userByteSizeLimit: undefined as number | undefined,
       /**
        * #volatile
-       * Last byte/density estimate reported for this display, together with the
-       * adapter's own `fetchSizeLimit` and `alwaysRender` flag. Its `bytes` is
-       * the measured-span estimate; `visibleBpWhenBytesMeasured` records the
-       * span it covers. Survives `clearAllRpcData` so an ordinary viewport
-       * change doesn't flicker the banner; only chromosome navigation drops it.
+       * Last byte estimate reported for this display, with the adapter's own
+       * `fetchSizeLimit` and `alwaysRender` flag. Its `bytes` covers
+       * `measuredSpanBp`, not the span on screen now. Survives
+       * `clearAllRpcData` so an ordinary viewport change doesn't flicker the
+       * banner; only chromosome navigation drops it.
        */
-      featureDensityStats: undefined as FeatureDensityStats | undefined,
+      byteEstimate: undefined as RegionByteEstimate | undefined,
       /**
        * #volatile
-       * The span (visibleBp) that the current `featureDensityStats` byte
-       * estimate covers, so the derived gate can rescale that estimate to the
-       * span on screen now. Written by `setFeatureDensityStats`; ignored unless
-       * `derivedRegionTooLargeEnabled`.
+       * The span the current `byteEstimate` was measured over, so the derived
+       * gate can rescale it to the span on screen now. Written by
+       * `setByteEstimate`; ignored unless `derivedRegionTooLargeEnabled`.
        */
-      visibleBpWhenBytesMeasured: undefined as number | undefined,
+      measuredSpanBp: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -139,7 +138,7 @@ export default function RegionTooLargeMixin() {
        * #getter
        * How many bytes we estimate a fetch of the span on screen right now would
        * pull, obtained by rescaling the stored estimate from the span it was
-       * measured over (`visibleBpWhenBytesMeasured`). Rescaling is what makes
+       * measured over (`measuredSpanBp`). Rescaling is what makes
        * the derived verdict a pure function of the current view and lets it
        * self-release on zoom-in — without it a large zoomed-out estimate stays
        * above the limit forever and gates refetch. Only meaningful when
@@ -152,8 +151,8 @@ export default function RegionTooLargeMixin() {
         // scale without a viewport, so yield undefined until the view is ready.
         return view.initialized
           ? rescaleByteEstimateToVisibleSpan({
-              estimatedBytesForMeasuredSpan: self.featureDensityStats?.bytes,
-              visibleBpWhenMeasured: self.visibleBpWhenBytesMeasured,
+              estimatedBytesForMeasuredSpan: self.byteEstimate?.bytes,
+              measuredSpanBp: self.measuredSpanBp,
               visibleBp: view.visibleBp,
             })
           : undefined
@@ -177,7 +176,7 @@ export default function RegionTooLargeMixin() {
               estimatedBytesForVisibleSpan: self.estimatedBytesForVisibleSpan,
               byteLimit: resolveByteLimit({
                 userByteSizeLimit: self.userByteSizeLimit,
-                adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
+                adapterFetchSizeLimit: self.byteEstimate?.fetchSizeLimit,
                 configFetchSizeLimit: self.configuredFetchSizeLimit,
               }),
               densityTooLarge: self.densityTooLargeForDerivedGate,
@@ -189,7 +188,7 @@ export default function RegionTooLargeMixin() {
               // the declarative force-load short-circuits the verdict exactly as
               // a self-summarizing adapter would.
               alwaysRender:
-                self.featureDensityStats?.alwaysRender || self.configForceLoad,
+                self.byteEstimate?.alwaysRender || self.configForceLoad,
             })
           : { tooLarge: false, reason: '' }
       },
@@ -235,14 +234,14 @@ export default function RegionTooLargeMixin() {
       /**
        * #action
        * Commits the byte estimate and records the span it covers
-       * (`visibleBpWhenBytesMeasured`) so the derived gate can rescale it to
-       * the span on screen. Harmless for non-gated displays (they ignore it).
+       * (`measuredSpanBp`) so the derived gate can rescale it to the span on
+       * screen. Harmless for non-gated displays (they ignore it).
        */
-      setFeatureDensityStats(stats?: FeatureDensityStats) {
-        self.visibleBpWhenBytesMeasured = stats
+      setByteEstimate(estimate?: RegionByteEstimate) {
+        self.measuredSpanBp = estimate
           ? (getContainingView(self) as LinearGenomeViewModel).visibleBp
           : undefined
-        self.featureDensityStats = stats
+        self.byteEstimate = estimate
       },
 
       /**
@@ -254,12 +253,12 @@ export default function RegionTooLargeMixin() {
        * measured-span number. Canvas (which also has a density force-load)
        * overrides this entirely.
        */
-      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
+      raiseForceLoadLimits(estimate?: RegionByteEstimate) {
         const limit = forceLoadByteLimit({
           estimatedBytesForVisibleSpan: self.derivedRegionTooLargeEnabled
             ? self.estimatedBytesForVisibleSpan
             : undefined,
-          estimatedBytesForMeasuredSpan: stats?.bytes,
+          estimatedBytesForMeasuredSpan: estimate?.bytes,
         })
         if (limit !== undefined) {
           self.userByteSizeLimit = limit
@@ -276,13 +275,13 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * Raises the byte limit past the current density stats and triggers a
+       * Raises the byte limit past the current estimate and triggers a
        * reload. The display chrome calls this via TooLargeMessage's force-load
        * button; concrete display models override reload() to do the actual
        * refetch.
        */
       forceLoad() {
-        self.setFeatureDensityStatsLimit(self.featureDensityStats)
+        self.raiseForceLoadLimits(self.byteEstimate)
         self.reload()
       },
     }))

@@ -9,7 +9,7 @@ import {
   rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
   resolveForceLoadLimits,
-} from './featureDensityUtils.ts'
+} from './regionTooLargeUtils.ts'
 
 describe('raiseLimitPast', () => {
   it('raises the limit past the estimate by the shared headroom, rounded up', () => {
@@ -186,14 +186,14 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
         estimatedBytesForMeasuredSpan: undefined,
-        visibleBpWhenMeasured: 10,
+        measuredSpanBp: 10,
         visibleBp: 5,
       }),
     ).toBeUndefined()
     expect(
       rescaleByteEstimateToVisibleSpan({
         estimatedBytesForMeasuredSpan: 0,
-        visibleBpWhenMeasured: 10,
+        measuredSpanBp: 10,
         visibleBp: 5,
       }),
     ).toBeUndefined()
@@ -203,7 +203,7 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
         estimatedBytesForMeasuredSpan: 1000,
-        visibleBpWhenMeasured: undefined,
+        measuredSpanBp: undefined,
         visibleBp: 5,
       }),
     ).toBe(1000)
@@ -214,7 +214,7 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
         estimatedBytesForMeasuredSpan: 1_000_000,
-        visibleBpWhenMeasured: 100,
+        measuredSpanBp: 100,
         visibleBp: 25,
       }),
     ).toBe(250_000)
@@ -224,7 +224,7 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
         estimatedBytesForMeasuredSpan: 1_000_000,
-        visibleBpWhenMeasured: 100,
+        measuredSpanBp: 100,
         visibleBp: 100,
       }),
     ).toBe(1_000_000)
@@ -236,7 +236,7 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     const byteLimit = 500_000
     const measured = {
       estimatedBytesForMeasuredSpan: 2_000_000,
-      visibleBpWhenMeasured: 200,
+      measuredSpanBp: 200,
     }
 
     const zoomedOut = evaluateRegionTooLarge({

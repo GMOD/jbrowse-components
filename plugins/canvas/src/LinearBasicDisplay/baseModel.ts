@@ -305,7 +305,7 @@ export default function baseStateModelFactory(
         // sibling of DisplayChrome. Supplies densityStatsPerRegion,
         // userFeatureDensityLimit, byteSizeLimit(), maxFeatureDensity,
         // observedMaxDensity/visibleFeatureDensityPerPx, the dual-axis
-        // setFeatureDensityStatsLimit, and commit/clear helpers — folded into the
+        // raiseForceLoadLimits, and commit/clear helpers — folded into the
         // feature fetch below. Same instance the multi-row display composes.
         CanvasFeatureGateMixin(),
         PromotableDefaultsMixin(configSchema),

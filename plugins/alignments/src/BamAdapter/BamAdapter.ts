@@ -224,7 +224,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     })
   }
 
-  async getMultiRegionFeatureDensityStats(
+  async getMultiRegionByteEstimate(
     regions: Region[],
     opts?: BaseOptions,
   ) {
@@ -238,7 +238,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
         fetchSizeLimit,
       }
     }
-    return super.getMultiRegionFeatureDensityStats(regions, opts)
+    return super.getMultiRegionByteEstimate(regions, opts)
   }
 
   refIdToName(refId: number) {

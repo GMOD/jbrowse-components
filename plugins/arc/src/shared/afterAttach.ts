@@ -30,6 +30,6 @@ export function doAfterAttach(self: ArcDisplayModel) {
   // flicker on pan; this is the one path that clears it, so a previous region's
   // estimate can't gate the new region against the wrong stats.
   onDisplayedRegionsChange(self, () => {
-    self.setFeatureDensityStats(undefined)
+    self.setByteEstimate(undefined)
   })
 }

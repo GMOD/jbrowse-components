@@ -6,8 +6,8 @@ import type { Region } from '../../util/index.ts'
 import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
-export default class CoreGetFeatureDensityStats extends RpcMethodTypeWithRenameRegions {
-  name = 'CoreGetFeatureDensityStats'
+export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRegions {
+  name = 'CoreGetRegionByteEstimate'
 
   async execute(
     args: {
@@ -31,9 +31,6 @@ export default class CoreGetFeatureDensityStats extends RpcMethodTypeWithRenameR
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    return dataAdapter.getMultiRegionFeatureDensityStats(
-      regions,
-      deserializedArgs,
-    )
+    return dataAdapter.getMultiRegionByteEstimate(regions, deserializedArgs)
   }
 }

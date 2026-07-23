@@ -74,7 +74,7 @@ real and correct — they just don't loop during a steady too-large state.
 ## The 50kb→5mb→50kb stuck-banner bug (derived regionTooLarge)
 
 Canvas's derived byte gate reads `estimatedBytesForVisibleSpan` (the stored
-estimate rescaled by `view.visibleBp / visibleBpWhenBytesMeasured`), not the
+estimate rescaled by `view.visibleBp / measuredSpanBp`), not the
 measured-span estimate. Reading the measured-span number deadlocked: it survived
 `clearAllRpcData`, stayed above the limit after zooming back into a small region,
 and `FetchVisibleRegions` wouldn't re-estimate while `regionTooLarge` held — so

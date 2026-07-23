@@ -245,7 +245,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
   // hic is binned at screen resolution like bigwig, so it's never too large to
   // render — skip the density/byte estimate
-  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
+  async getMultiRegionByteEstimate(_regions: Region[]) {
     return {
       alwaysRender: true,
     }

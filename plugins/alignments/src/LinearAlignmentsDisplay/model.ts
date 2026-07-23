@@ -3114,7 +3114,7 @@ export default function stateModelFactory(
           // estimate intentionally survives viewport-change clears (no flicker on
           // pan); this hook is the one path that clears it. Mirrors canvas/maf.
           onDisplayedRegionsChange(self, () => {
-            self.setFeatureDensityStats(undefined)
+            self.setByteEstimate(undefined)
           })
           // Keep the fitted-height cache in sync while in "fit to display height"
           // mode — re-fits as the display resizes, data loads, or groups collapse.

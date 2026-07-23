@@ -252,7 +252,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
 
   // bbi zoom levels cap returned data at screen resolution, so a bigwig is
   // never too large to render — skip the density/byte estimate entirely
-  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
+  async getMultiRegionByteEstimate(_regions: Region[]) {
     return {
       alwaysRender: true,
     }

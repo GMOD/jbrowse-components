@@ -203,11 +203,11 @@ getByteEstimateConfig(): ByteEstimateConfig | null {
 }
 ```
 
-When configured, `fetchRegions` calls `CoreGetFeatureDensityStats` before
+When configured, `fetchRegions` calls `CoreGetRegionByteEstimate` before
 invoking your work callback. If the estimate exceeds the limit, it sets
 `regionTooLarge = true` and the UI shows a "zoom in" message. The user can
-override by clicking "Force load", which calls `setFeatureDensityStatsLimit()`
-to set `userByteSizeLimit` to the observed byte count.
+override by clicking "Force load", which calls `raiseForceLoadLimits()` to set
+`userByteSizeLimit` to the observed byte count.
 
 `regionTooLarge` is automatically cleared when the user pans or zooms to a
 different region, allowing a retry.

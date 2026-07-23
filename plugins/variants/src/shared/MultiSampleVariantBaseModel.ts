@@ -1307,7 +1307,7 @@ export default function MultiSampleVariantBaseModelF(
           // estimate intentionally survives viewport-change clears (no flicker on
           // pan); this hook is the one path that clears it. Mirrors canvas/maf.
           onDisplayedRegionsChange(self, () => {
-            self.setFeatureDensityStats(undefined)
+            self.setByteEstimate(undefined)
           })
           // Keep scrollTop within the content by construction. A row-height
           // shrink or a display drag-resize lowers scrollableHeight, and the

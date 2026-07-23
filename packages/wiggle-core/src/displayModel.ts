@@ -1,7 +1,7 @@
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { YScaleTicks } from './index.ts'
 import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -24,8 +24,8 @@ export interface WiggleGpuDisplayModel<
   reload: () => void
   regionTooLarge: boolean
   regionTooLargeReason: string
-  featureDensityStats?: FeatureDensityStats
-  setFeatureDensityStatsLimit: (s?: FeatureDensityStats) => void
+  byteEstimate?: RegionByteEstimate
+  raiseForceLoadLimits: (s?: RegionByteEstimate) => void
   forceLoad: () => void
   displayCrossHatches: boolean
   scalebarOverlapLeft: number

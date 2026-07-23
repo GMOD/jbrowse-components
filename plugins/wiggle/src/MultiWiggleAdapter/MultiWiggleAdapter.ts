@@ -242,7 +242,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   // subadapters are bigwig-like and cap data at screen resolution, so a
   // multiwiggle is never too large to render — skip the estimate entirely
-  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
+  async getMultiRegionByteEstimate(_regions: Region[]) {
     return {
       alwaysRender: true,
     }

@@ -279,7 +279,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   // Byte budget from the .tai index alone: the compressed span between the
   // block bracketing the region start and the one after the region end. No
   // block download.
-  async getMultiRegionFeatureDensityStats(regions: Region[]) {
+  async getMultiRegionByteEstimate(regions: Region[]) {
     const { index } = await this.setup()
     let bytes = 0
     for (const region of regions) {

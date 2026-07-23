@@ -23,7 +23,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // Headless harness for the multi-row display, modeled on maf/LD's
 // derivedRegionTooLarge harness. Exercises the CanvasFeatureGateMixin gate (byte
 // + density) through the real state model without a worker: drive
-// setFeatureDensityStats / setDensityStats and read the derived regionTooLarge.
+// setByteEstimate / setDensityStats and read the derived regionTooLarge.
 function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
   console.warn = jest.fn()
   console.error = jest.fn()
@@ -181,7 +181,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('trips when the captured byte estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp > AUTO_FORCE_LOAD_BP
-    display.setFeatureDensityStats({ bytes: 8_000_000 }) // over the 5MB config
+    display.setByteEstimate({ bytes: 8_000_000 }) // over the 5MB config
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -189,7 +189,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(20)
@@ -202,7 +202,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     }).createDisplay()
     view.zoomTo(100)
     // 8MB is over the 5MB display config but under the 50MB adapter limit
-    display.setFeatureDensityStats({
+    display.setByteEstimate({
       bytes: 8_000_000,
       fetchSizeLimit: 50_000_000,
     })
@@ -213,7 +213,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
     display.forceLoad()
@@ -224,7 +224,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
     display.configuration.setSlot('forceLoad', true)
@@ -237,11 +237,11 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('clears the cached estimate on region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
     display.clearFeatureGateStats()
-    expect(display.featureDensityStats).toBeUndefined()
+    expect(display.byteEstimate).toBeUndefined()
     expect(display.regionTooLarge).toBe(false)
   })
 })
@@ -257,7 +257,7 @@ describe('multi-row derived regionTooLarge (density axis)', () => {
     ).setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   }
 
-  // Multi-row disables the density axis (densityGateDisabled): it paints features
+  // Multi-row disables the density axis (densityGateEnabled): it paints features
   // into fixed lanes, so a high total feature count is not a per-glyph render
   // cost — only the byte/download budget gates it. The "Too many features"
   // banner must never show here regardless of density.

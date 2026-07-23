@@ -758,7 +758,7 @@ export default function sharedModelFactory(
             const { rpcManager } = getSession(self)
             const sessionId = getRpcSessionId(self)
             // The feature-density byte-gate estimates fetch size via
-            // CoreGetFeatureDensityStats -> getFeatures, which only the
+            // CoreGetRegionByteEstimate -> getFeatures, which only the
             // VCF-computed path's feature adapter implements. Pre-computed LD
             // adapters (PlinkLD*) aren't feature adapters and ship pre-thinned
             // files, so skip the density probe (it would throw "Adapter does not
@@ -766,7 +766,7 @@ export default function sharedModelFactory(
             if (!self.isPrecomputedLD) {
               const stats = await rpcManager.call(
                 sessionId,
-                'CoreGetFeatureDensityStats',
+                'CoreGetRegionByteEstimate',
                 { regions: [...regions], adapterConfig },
               )
               if (ctx.isStale()) {
@@ -776,7 +776,7 @@ export default function sharedModelFactory(
               // composes the shared verdict (AUTO_FORCE_LOAD_BP floor + bytes>limit
               // precedence) as a pure function of the estimate × current viewport,
               // so it self-releases on zoom-in without an imperative re-clear.
-              self.setFeatureDensityStats(stats)
+              self.setByteEstimate(stats)
               if (self.regionTooLarge) {
                 return
               }

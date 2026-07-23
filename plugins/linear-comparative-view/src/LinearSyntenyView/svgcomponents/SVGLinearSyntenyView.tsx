@@ -47,7 +47,7 @@ export async function renderToSvg(
   )
 
   // each display's renderSvg owns its own readiness wait (LGV track displays
-  // await feature-density stats internally, renderSyntenyDisplaySvg awaits
+  // await their byte estimate internally, renderSyntenyDisplaySvg awaits
   // featureData/error), so no outer when() gate is needed here. The genome-view
   // track results and the ribbon levels are independent, so let both fan out
   // concurrently rather than blocking one behind the other.

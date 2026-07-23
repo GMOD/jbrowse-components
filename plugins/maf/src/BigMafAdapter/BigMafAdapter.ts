@@ -126,7 +126,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   // hang the tab — so it must be byte-gated like any indexed track. NOT
   // `alwaysRender`: that self-summarizing exemption is for screen-reduced
   // adapters (BigWig), which bigMaf is not. The base
-  // getMultiRegionFeatureDensityStats wraps this into `{ bytes }`.
+  // getMultiRegionByteEstimate wraps this into `{ bytes }`.
   async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
     const { adapter } = await this.setupPre(opts)
     return adapter.getRegionByteSize(regions, opts)

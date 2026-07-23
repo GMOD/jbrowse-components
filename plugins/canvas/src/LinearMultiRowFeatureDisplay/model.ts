@@ -184,8 +184,8 @@ export default function stateModelFactory(
        * gate it. Disable the density axis of CanvasFeatureGateMixin so the
        * "too many features" banner never shows here.
        */
-      get densityGateDisabled() {
-        return true
+      get densityGateEnabled() {
+        return false
       },
       /**
        * #getter

@@ -3,7 +3,7 @@ import {
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 interface LDModel extends IAnyStateTreeNode {
@@ -13,7 +13,7 @@ interface LDModel extends IAnyStateTreeNode {
   reloadCounter: number
   rpcProps(): Record<string, unknown>
   performLDFetch(): void
-  setFeatureDensityStats(stats?: FeatureDensityStats): void
+  setByteEstimate(stats?: RegionByteEstimate): void
 }
 
 export function doAfterAttach(self: LDModel) {
@@ -37,6 +37,6 @@ export function doAfterAttach(self: LDModel) {
   // to actual region-list mutation, so a previous region's estimate can't gate
   // the new region against the wrong stats and wedge refetch.
   onDisplayedRegionsChange(self, () => {
-    self.setFeatureDensityStats(undefined)
+    self.setByteEstimate(undefined)
   })
 }

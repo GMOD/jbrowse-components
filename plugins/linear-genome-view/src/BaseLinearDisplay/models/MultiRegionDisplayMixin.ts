@@ -334,7 +334,7 @@ export default function MultiRegionDisplayMixin() {
           const byteEstimateConfig = self.getByteEstimateConfig()
           if (byteEstimateConfig) {
             const session = getSession(self)
-            const stats = await checkByteEstimate(
+            const estimate = await checkByteEstimate(
               session.rpcManager,
               getRpcSessionId(self),
               needed.map(r => r.region),
@@ -344,10 +344,10 @@ export default function MultiRegionDisplayMixin() {
             if (ctx.isStale()) {
               return
             }
-            if (stats) {
-              self.setFeatureDensityStats(stats)
+            if (estimate) {
+              self.setByteEstimate(estimate)
               // The derived regionTooLarge getter reflects the just-captured
-              // estimate (setFeatureDensityStats recorded the current viewport as
+              // estimate (setByteEstimate recorded the current viewport as
               // its capture span), so short-circuit the download when it's over
               // budget.
               if (self.regionTooLarge) {
