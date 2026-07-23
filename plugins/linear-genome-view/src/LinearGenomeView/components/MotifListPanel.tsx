@@ -16,6 +16,19 @@ import { DEFAULT_MOTIFS } from './defaultMotifs.ts'
 import { addReferenceScanTrack } from './searchModes.ts'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
+import type { ParsedMotif } from '@jbrowse/core/util'
+
+// Reconstructs the single-line REBASE text parseMotifList produced a motif
+// from, so each motif can be sent to its own track's adapter unmodified.
+function motifToLine(motif: ParsedMotif) {
+  const site =
+    motif.cutOffset === undefined
+      ? motif.site
+      : motif.site.slice(0, motif.cutOffset) +
+        '^' +
+        motif.site.slice(motif.cutOffset)
+  return `${motif.name}\t${site}`
+}
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -42,7 +55,7 @@ const MotifListPanel = observer(function MotifListPanel({
   const strandValid = !hasStrandedMotif || searchForward || searchReverse
   const canSubmit = motifs.length > 0 && errors.length === 0 && strandValid
 
-  function handleSubmit() {
+  function handleSubmitCombined() {
     addReferenceScanTrack(model, {
       trackId: `motif_search_${Date.now()}`,
       name:
@@ -56,6 +69,23 @@ const MotifListPanel = observer(function MotifListPanel({
         searchReverse,
       },
     })
+    handleClose()
+  }
+
+  function handleSubmitSeparate() {
+    const now = Date.now()
+    for (const [idx, motif] of motifs.entries()) {
+      addReferenceScanTrack(model, {
+        trackId: `motif_search_${now}_${idx}`,
+        name: `Motif ${motif.name}`,
+        adapter: {
+          type: 'MotifListAdapter',
+          motifs: motifToLine(motif),
+          searchForward,
+          searchReverse,
+        },
+      })
+    }
     handleClose()
   }
 
@@ -101,14 +131,26 @@ const MotifListPanel = observer(function MotifListPanel({
       <DialogActions>
         <Button
           onClick={() => {
-            handleSubmit()
+            handleSubmitCombined()
           }}
           disabled={!canSubmit}
           variant="contained"
           color="primary"
         >
-          Submit
+          Launch as one track
         </Button>
+        {motifs.length > 1 ? (
+          <Button
+            onClick={() => {
+              handleSubmitSeparate()
+            }}
+            disabled={!canSubmit}
+            variant="contained"
+            color="primary"
+          >
+            Launch one track per motif
+          </Button>
+        ) : null}
         <Button
           onClick={() => {
             handleClose()

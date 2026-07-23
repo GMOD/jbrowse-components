@@ -42,7 +42,12 @@ test('opens ready to submit, with strand controls hidden for palindromes', () =>
   expect(getByText(`${motifs.length} motifs`)).toBeTruthy()
   expect(getByText(/All motifs are palindromic/)).toBeTruthy()
   expect(queryByText('Forward strand')).toBeNull()
-  expect(getByText('Submit').closest('button')!.disabled).toBe(false)
+  expect(getByText('Launch as one track').closest('button')!.disabled).toBe(
+    false,
+  )
+  expect(
+    getByText('Launch one track per motif').closest('button')!.disabled,
+  ).toBe(false)
 })
 
 test('a non-palindromic motif brings the strand controls back', () => {
@@ -64,5 +69,17 @@ test('a bad line blocks submit and points at the line', () => {
     target: { value: 'EcoRI G^AATTC\nOops GAXTTC' },
   })
   expect(getByText(/Line 2:.*non-IUPAC/)).toBeTruthy()
-  expect(getByText('Submit').closest('button')!.disabled).toBe(true)
+  expect(getByText('Launch as one track').closest('button')!.disabled).toBe(
+    true,
+  )
+})
+
+test('a single motif has no per-motif split button, since there is nothing to split', () => {
+  const { getByLabelText, queryByText } = render(
+    <MotifListPanel model={model} handleClose={() => {}} />,
+  )
+  fireEvent.change(getByLabelText('Motifs'), {
+    target: { value: 'BsaI GGTCTC' },
+  })
+  expect(queryByText('Launch one track per motif')).toBeNull()
 })

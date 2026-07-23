@@ -38,6 +38,7 @@ sidebar_label: Overview
 - [BLAT and in-silico PCR](/docs/user_guides/blat) - Search a sequence against a genome and find primer amplicons
 - [Bookmark widget](/docs/user_guides/bookmark_widget) - Saving and sharing genomic locations
 - [Plugin store](/docs/user_guides/plugin_store) - Installing community plugins
+- [Sequence search](/docs/user_guides/sequence_search) - Search the reference sequence for a pattern, CRISPR guide, or named motif list
 
 ## Tutorials
 
