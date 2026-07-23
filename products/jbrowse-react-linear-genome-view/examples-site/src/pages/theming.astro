@@ -1,21 +1,21 @@
 ---
-import WithCustomTheme from "../examples/WithCustomTheme.tsx"
-import WithCustomThemeCode from "../examples/WithCustomTheme.tsx?raw"
-import WithDarkTheme from "../examples/WithDarkTheme.tsx"
-import WithDarkThemeCode from "../examples/WithDarkTheme.tsx?raw"
-import WithOutsideStyling from "../examples/WithOutsideStyling.tsx"
-import WithOutsideStylingCode from "../examples/WithOutsideStyling.tsx?raw"
-import ShadowDOMOneLinearGenomeView from "../examples/ShadowDOMOneLinearGenomeView.tsx"
-import ShadowDOMOneLinearGenomeViewCode from "../examples/ShadowDOMOneLinearGenomeView.tsx?raw"
-import { getPage, section } from "../examples.ts"
-import Layout from "../layouts/ExampleLayout.astro"
-import Section from "../layouts/ExampleSection.astro"
+import WithCustomTheme from '../examples/WithCustomTheme.tsx'
+import WithCustomThemeCode from '../examples/WithCustomTheme.tsx?raw'
+import WithDarkTheme from '../examples/WithDarkTheme.tsx'
+import WithDarkThemeCode from '../examples/WithDarkTheme.tsx?raw'
+import WithOutsideStyling from '../examples/WithOutsideStyling.tsx'
+import WithOutsideStylingCode from '../examples/WithOutsideStyling.tsx?raw'
+import ShadowDOMOneLinearGenomeView from '../examples/ShadowDOMOneLinearGenomeView.tsx'
+import ShadowDOMOneLinearGenomeViewCode from '../examples/ShadowDOMOneLinearGenomeView.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
 
-const page = getPage("theming")
-const sec0 = section(page, "with-custom-theme")
-const sec1 = section(page, "with-dark-theme")
-const sec2 = section(page, "with-outside-styling")
-const sec3 = section(page, "shadow-dom")
+const page = getPage('theming')
+const sec0 = section(page, 'with-custom-theme')
+const sec1 = section(page, 'with-dark-theme')
+const sec2 = section(page, 'with-outside-styling')
+const sec3 = section(page, 'shadow-dom')
 ---
 
 <Layout page={page}>

@@ -31,7 +31,8 @@ export function extractAlignmentData(
   const out: AlignmentData[] = []
   for (const feat of features) {
     const mate = feat.get('mate') as
-      { refName: string; start: number; end: number } | undefined
+      | { refName: string; start: number; end: number }
+      | undefined
     if (mate) {
       const refName = feat.get('refName')
       out.push({

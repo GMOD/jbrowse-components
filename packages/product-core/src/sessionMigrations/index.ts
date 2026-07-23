@@ -352,7 +352,8 @@ export function migrateSessionSnapshot(
   // each through the same track migrator; migrateTrackSnapshot is a no-op for a
   // delta that carries no stale display type.
   const deltas = snapshot.trackConfigDeltas as
-    Record<string, unknown> | undefined
+    | Record<string, unknown>
+    | undefined
   if (deltas && typeof deltas === 'object') {
     let deltasChanged = false
     const newDeltas: Record<string, unknown> = {}

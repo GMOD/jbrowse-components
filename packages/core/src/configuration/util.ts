@@ -132,8 +132,8 @@ function readSlot(
 export function readConfObject<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] =
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   confObject: CONFMODEL,
   slotPath?: SLOT,

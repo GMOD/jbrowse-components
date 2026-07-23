@@ -252,7 +252,8 @@ export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   for (const f of feats.values()) {
     const mate = f.get('mate') as
-      { refName: string; start: number; end: number } | undefined
+      | { refName: string; start: number; end: number }
+      | undefined
     if (!isPairedFeature(f) || !mate) {
       continue
     }

@@ -202,7 +202,8 @@ export default function stateModelFactory(
         resizing: false,
         // Debounce handle that clears `resizing` after the drag stops.
         resizeSettleTimer: undefined as
-          ReturnType<typeof setTimeout> | undefined,
+          | ReturnType<typeof setTimeout>
+          | undefined,
       }))
       .views(self => ({
         /**
@@ -1247,7 +1248,10 @@ export default function stateModelFactory(
          * disagree about what's on screen.
          */
         get activeRowRendering():
-          'bases' | 'codon' | 'sourceChrom' | RowIdentityMode {
+          | 'bases'
+          | 'codon'
+          | 'sourceChrom'
+          | RowIdentityMode {
           if (self.codonViewActive) {
             return 'codon'
           }

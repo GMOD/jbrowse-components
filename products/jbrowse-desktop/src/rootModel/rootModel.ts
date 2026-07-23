@@ -305,7 +305,8 @@ export default function rootModelFactory({
                         icon: PublicIcon,
                         onClick: () => {
                           const session = self.session as
-                            BaseSession | undefined
+                            | BaseSession
+                            | undefined
                           if (session) {
                             session.queueDialog(doneCallback => [
                               ExportToWebDialog,

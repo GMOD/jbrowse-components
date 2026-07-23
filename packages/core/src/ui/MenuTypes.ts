@@ -78,7 +78,9 @@ export interface CustomMenuItem extends BaseMenuItem {
 // A clickable row: what remains once divider/subHeader/subMenu/custom items are
 // handled — a plain action, or a checkbox/radio carrying a checked value.
 export type ClickableMenuItem =
-  NormalMenuItem | CheckboxMenuItem | RadioMenuItem
+  | NormalMenuItem
+  | CheckboxMenuItem
+  | RadioMenuItem
 
 export type MenuItem =
   | MenuDivider

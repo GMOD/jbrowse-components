@@ -18,4 +18,4 @@ export type AnyReactComponentType = React.ComponentType<any>
 
 /** get the type that a predicate asserts */
 export type TypeTestedByPredicate<PREDICATE extends (thing: any) => boolean> =
-  PREDICATE extends (thing: any) => thing is infer TYPE ? TYPE : never
+  PREDICATE extends ((thing: any) => thing is infer TYPE) ? TYPE : never

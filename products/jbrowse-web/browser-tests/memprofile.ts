@@ -223,7 +223,8 @@ async function toggleTrackByName(page: Page, name: string) {
       l.textContent?.includes(n),
     )
     const cb = label?.querySelector('input[type="checkbox"]') as
-      HTMLInputElement | undefined
+      | HTMLInputElement
+      | undefined
     if (cb) {
       cb.click()
       return true

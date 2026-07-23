@@ -1,7 +1,9 @@
 import type { FileLocation } from '@jbrowse/core/util'
 
 export type AdapterTypeOptions =
-  'BigMafAdapter' | 'MafTabixAdapter' | 'BgzipTaffyAdapter'
+  | 'BigMafAdapter'
+  | 'MafTabixAdapter'
+  | 'BgzipTaffyAdapter'
 export type IndexTypeOptions = 'TBI' | 'CSI'
 
 /**

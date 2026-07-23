@@ -216,7 +216,8 @@ export function facetedStateTreeF() {
                   adapter: (track.adapter as { type?: string } | undefined)
                     ?.type,
                   description: readConfObject(track, 'description') as
-                    string | undefined,
+                    | string
+                    | undefined,
                   metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
                     string,
                     unknown

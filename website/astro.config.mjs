@@ -1,9 +1,10 @@
-import { unified } from '@astrojs/markdown-remark'
-import { defineConfig, fontProviders } from 'astro/config'
-import icon from 'astro-icon'
 import fs from 'node:fs/promises'
 import { glob } from 'node:fs/promises'
 import path from 'node:path'
+
+import { unified } from '@astrojs/markdown-remark'
+import icon from 'astro-icon'
+import { defineConfig, fontProviders } from 'astro/config'
 
 import { emitRawMarkdown } from './src/lib/emit-raw-markdown.ts'
 import rehypeBaseUrls from './src/lib/rehype-base-urls.ts'

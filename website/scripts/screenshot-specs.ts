@@ -1,5 +1,6 @@
 export type * from './screenshot-spec-types.ts'
 
+import { CODE_BASE } from '../src/lib/code-base.ts'
 // jbrowse-img CLI example figures (products/jbrowse-img/README.md)
 import { jbrowseImgSpecs } from './screenshot-spec-helpers.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
@@ -24,7 +25,6 @@ import { tcgaSpecs } from './specs/tcga.ts'
 import { trioSpecs } from './specs/trio.ts'
 import { uiSpecs } from './specs/ui.ts'
 import { variantsSpecs } from './specs/variants.ts'
-import { CODE_BASE } from '../src/lib/code-base.ts'
 
 import type { ScreenshotSpec } from './screenshot-spec-types.ts'
 

@@ -18,7 +18,8 @@ const SASHIMI_MODE_OPTIONS: {
   value: SashimiArcsMode
   label: string
   displayTypeDefaultKey?:
-    'sashimiDownDisplayTypeDefault' | 'sashimiAutoDisplayTypeDefault'
+    | 'sashimiDownDisplayTypeDefault'
+    | 'sashimiAutoDisplayTypeDefault'
 }[] = [
   {
     value: 'auto',

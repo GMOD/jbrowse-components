@@ -1,9 +1,9 @@
+import crypto from 'crypto'
 // Local helper: flip screenshot-review.json entries.
 // Usage:
 //   node flip-review.mjs good <name> "<note>"    -> status good, hash=sha1 of PNG, note set
 //   node flip-review.mjs remove <name>            -> delete the entry (spec+PNG gone)
 import fs from 'fs'
-import crypto from 'crypto'
 
 const [, , cmd, name, note] = process.argv
 const p = new URL('./screenshot-review.json', import.meta.url)

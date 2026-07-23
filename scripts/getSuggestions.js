@@ -22,12 +22,14 @@ async function getFiles(dir) {
       if (stats.isDirectory()) {
         return getFiles(filePath)
       }
-      if (!(
-        file.endsWith('.ts') ||
-        file.endsWith('.tsx') ||
-        file.endsWith('.js') ||
-        file.endsWith('.jsx')
-      )) {
+      if (
+        !(
+          file.endsWith('.ts') ||
+          file.endsWith('.tsx') ||
+          file.endsWith('.js') ||
+          file.endsWith('.jsx')
+        )
+      ) {
         return null
       }
       if (stats.isFile()) {

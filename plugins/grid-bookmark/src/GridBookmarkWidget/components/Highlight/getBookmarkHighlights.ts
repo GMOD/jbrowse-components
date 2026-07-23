@@ -14,7 +14,8 @@ export function getBookmarkWidget(model: IExtendedLGV | IExtendedDotplotView) {
   return {
     session,
     bookmarkWidget: session.widgets.get('GridBookmark') as
-      GridBookmarkModel | undefined,
+      | GridBookmarkModel
+      | undefined,
   }
 }
 

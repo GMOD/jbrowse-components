@@ -35,7 +35,8 @@ export function parseSvAlt(
 
   if (alt !== undefined && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
     const info = feature.get('INFO') as
-      Record<string, (string | number)[]> | undefined
+      | Record<string, (string | number)[]>
+      | undefined
     const matePos = info?.END?.[0] as number | undefined
     if (matePos === undefined) {
       return undefined

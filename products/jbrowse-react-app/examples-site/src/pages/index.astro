@@ -19,9 +19,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '')
 >
   <h1>JBrowse React App</h1>
   <p class="intro">
-    <code>@jbrowse/react-app2</code> embeds the full multi-view JBrowse 2 app —
-    menu bar, view manager, drawer widgets, and every view type — in a single
-    React component. If you only need a single track view, the lighter{' '}
+    <code>@jbrowse/react-app2</code> embeds the full multi-view JBrowse 2 app — menu
+    bar, view manager, drawer widgets, and every view type — in a single React component.
+    If you only need a single track view, the lighter{' '}
     <a href="https://jbrowse.org/storybook/lgv/"
       ><code>@jbrowse/react-linear-genome-view2</code></a
     > component is a better fit.
@@ -48,14 +48,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '')
     <h2>Quick start</h2>
     <p>
       Render the <code>JBrowse</code> component with your assemblies, tracks, and
-      the views to open on load. This minimal example shows one assembly and one
-      alignments track in a linear genome view:
+      the views to open on load. This minimal example shows one assembly and one alignments
+      track in a linear genome view:
     </p>
     <Code code={quickstart} lang="tsx" />
     <p>
       For production, offload data parsing and rendering to a web worker so the
       main thread stays responsive — see{' '}
-      <a href={`${base}/customizing-the-app/#with-web-worker`}>Web worker RPC</a>{' '}
+      <a href={`${base}/customizing-the-app/#with-web-worker`}>Web worker RPC</a
+      >{' '}
       in the sidebar.
     </p>
 
@@ -67,17 +68,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '')
         observing state, and fitting the app to a container.
       </li>
       <li>
-        <strong>Loading config</strong> — bundle a <code>config.json</code>, fetch
-        one at runtime, add tracks programmatically, or launch a view imperatively.
+        <strong>Loading config</strong> — bundle a <code>config.json</code>,
+        fetch one at runtime, add tracks programmatically, or launch a view
+        imperatively.
       </li>
       <li>
-        <strong>View types</strong> — comparative views (dotplot, synteny,
-        multi-way) and structural-variant views (circular, breakpoint-split,
-        spreadsheet, SV-inspector, multi-view sessions).
+        <strong>View types</strong> — comparative views (dotplot, synteny, multi-way)
+        and structural-variant views (circular, breakpoint-split, spreadsheet, SV-inspector,
+        multi-view sessions).
       </li>
       <li>
-        <strong>Plugins</strong> — extend the app with inline or runtime-loaded
-        plugins.
+        <strong>Plugins</strong> — extend the app with inline or runtime-loaded plugins.
       </li>
     </ul>
     <p>

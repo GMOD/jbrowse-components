@@ -11,7 +11,8 @@ type BasicComponent = React.ComponentType<{
   switchWorkflow: (name: string) => void
 }>
 type AddTrackWorkflowComponentType =
-  React.LazyExoticComponent<BasicComponent> | BasicComponent
+  | React.LazyExoticComponent<BasicComponent>
+  | BasicComponent
 
 // 'general' workflows accept any track (file/URL, JSON, bulk); 'specialized'
 // ones target a particular data type (GWAS, MAF, multi-wiggle). Used to group

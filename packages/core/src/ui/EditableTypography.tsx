@@ -11,7 +11,10 @@ import type { Ref } from 'react'
 type Variant = TypographyProps['variant']
 
 type EditableTypographyClassKey =
-  'input' | 'inputBase' | 'inputRoot' | 'inputFocused'
+  | 'input'
+  | 'inputBase'
+  | 'inputRoot'
+  | 'inputFocused'
 
 const useStyles = makeStyles()(theme => ({
   typography: {

@@ -31,8 +31,8 @@ import type {
 export function getConf<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] =
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   model: { configuration: CONFMODEL },
   slotPath?: SLOT,
@@ -74,8 +74,8 @@ export function getConf<
 export function setConf<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string =
-    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | string = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
   ;(
     model.configuration as CONFMODEL & {

@@ -16,7 +16,8 @@ export function mergeFeaturesToRegions(features: Map<string, Feature[]>) {
   const regions: { refName: string; start: number; end: number }[] = []
   for (const [refName, feats] of features) {
     let currentRegion:
-      { refName: string; start: number; end: number } | undefined
+      | { refName: string; start: number; end: number }
+      | undefined
     for (const feature of feats) {
       if (
         currentRegion &&

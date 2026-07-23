@@ -1,3 +1,5 @@
+import './svgExportMocks.ts'
+
 import { fireEvent } from '@testing-library/react'
 
 import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
@@ -8,8 +10,6 @@ import {
   mockConsoleWarn,
   setup,
 } from './util.tsx'
-
-import './svgExportMocks.ts'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 

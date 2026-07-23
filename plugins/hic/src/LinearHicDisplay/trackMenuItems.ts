@@ -170,17 +170,19 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
           {
             label: 'Normalization',
             type: 'subMenu' as const,
-            subMenu: self.availableNormalizations.map((norm): MenuItem => ({
-              label: norm,
-              type: 'radio',
-              checked: norm === self.activeNormalization,
-              helpText:
-                NORM_HELP[norm] ??
-                'Matrix normalization scheme provided by this .hic file.',
-              onClick: () => {
-                self.setActiveNormalization(norm)
-              },
-            })),
+            subMenu: self.availableNormalizations.map(
+              (norm): MenuItem => ({
+                label: norm,
+                type: 'radio',
+                checked: norm === self.activeNormalization,
+                helpText:
+                  NORM_HELP[norm] ??
+                  'Matrix normalization scheme provided by this .hic file.',
+                onClick: () => {
+                  self.setActiveNormalization(norm)
+                },
+              }),
+            ),
           },
         ]
       : []),

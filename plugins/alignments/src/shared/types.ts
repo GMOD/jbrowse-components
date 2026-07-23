@@ -8,7 +8,9 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // help text (see arcColorOptions in menus/colorBy.tsx). getArcColorType
 // (features/arcs/compute.ts) mirrors the matching read-fill logic.
 export type ArcColorByType =
-  'insertSizeAndOrientation' | 'insertSize' | 'orientation'
+  | 'insertSizeAndOrientation'
+  | 'insertSize'
+  | 'orientation'
 
 // Minimum modification-call probability (%) shown by default. Stored threshold
 // is omitted at this value so default sessions don't carry a redundant field.

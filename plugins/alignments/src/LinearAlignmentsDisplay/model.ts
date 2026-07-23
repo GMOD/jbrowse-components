@@ -650,7 +650,8 @@ export default function stateModelFactory(
            * one. `undefined` when not hovering coverage.
            */
           hoverCoverageBand: undefined as
-            { topOffset: number; coverageHeight: number } | undefined,
+            | { topOffset: number; coverageHeight: number }
+            | undefined,
         }
       })
       // Named getters for frequently-tested conditions so the inline boolean

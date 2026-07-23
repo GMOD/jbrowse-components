@@ -4,16 +4,13 @@
   "trailingComma": "all",
   "arrowParens": "avoid",
   "proseWrap": "always",
-  "plugins": ["@ianvs/prettier-plugin-sort-imports"],
-  "importOrder": [
-    "^react$",
-    "",
-    "<THIRD_PARTY_MODULES>",
-    "",
-    "^[.]",
-    "",
-    "<TYPES>"
-  ],
-  "importOrderCaseSensitive": true,
-  "importOrderTypeScriptVersion": "5.5.0"
+  "plugins": ["prettier-plugin-astro"],
+  "overrides": [
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "astro"
+      }
+    }
+  ]
 }

@@ -133,7 +133,8 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
         name: feature.get('name'),
         id: feature.get('id'),
         tags: feature.get('tags') as
-          ({ SA?: string } & Record<string, unknown>) | undefined,
+          | ({ SA?: string } & Record<string, unknown>)
+          | undefined,
         pair_orientation: feature.get('pair_orientation') as string | undefined,
         type: feature.get('type'),
         ALT: feature.get('ALT') as string[] | undefined,

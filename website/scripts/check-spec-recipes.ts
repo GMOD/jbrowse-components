@@ -1,7 +1,7 @@
-import { screenshotLiveUrls } from './screenshot-specs.ts'
 import { parseSessionSpecUrl } from '../../packages/app-core/src/SessionSpec/parseSessionSpecUrl.ts'
 import { parseProtocolUrl } from '../../products/jbrowse-desktop/electron/launchTarget.ts'
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
+import { screenshotLiveUrls } from './screenshot-specs.ts'
 
 // Checks the figure recipes against every real figure link.
 //

@@ -14,7 +14,8 @@ export async function locationLinkClick({
 }) {
   const newViewId = `${spreadsheetViewId}_${assemblyName}`
   const view = session.views.find(v => v.id === newViewId) as
-    LinearGenomeViewModel | undefined
+    | LinearGenomeViewModel
+    | undefined
   if (view) {
     // reuse an already-open view by navigating it directly
     await view.navToLocString(locString, assemblyName)

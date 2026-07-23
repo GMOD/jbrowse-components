@@ -1,16 +1,9 @@
-/**
- * Owns the SessionLoader state slot for jbrowse-web. The loader MST model
- * handles config + plugin loading; useLoaderLifecycle bridges its `ready`
- * signal to React (build the pluginManager via autorun) and the host-unmount
- * signal back to MST (dispose the rootModel). Plugin reloads swap the loader
- * instance via setLoader.
- */
+import '@fontsource/roboto'
+
 import { useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-
-import '@fontsource/roboto'
 
 import { createSessionLoaderFromUrl } from '../createSessionLoader.ts'
 import factoryReset from '../factoryReset.ts'

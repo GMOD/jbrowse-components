@@ -192,7 +192,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Check codebase format
-        run: pnpm prettier --check .
+        run: pnpm check-format
 
   typecheck_infrastructure:
     name: Typecheck infrastructure

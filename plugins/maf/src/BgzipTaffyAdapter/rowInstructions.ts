@@ -43,7 +43,11 @@ interface RowGapSubstring {
   gapSubstring: string
 }
 export type RowInstruction =
-  RowInsert | RowDelete | RowGap | RowGapSubstring | RowSubstitute
+  | RowInsert
+  | RowDelete
+  | RowGap
+  | RowGapSubstring
+  | RowSubstitute
 
 // Faithfully replicates change_s_coordinates_to_i from taffy/impl/tai.c
 // When starting from an indexed position:

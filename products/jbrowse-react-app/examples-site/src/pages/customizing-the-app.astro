@@ -1,21 +1,21 @@
 ---
-import DarkTheme from "../examples/DarkTheme.tsx"
-import darkThemeCode from "../examples/DarkTheme.tsx?raw"
-import WithOnChange from "../examples/WithOnChange.tsx"
-import withOnChangeCode from "../examples/WithOnChange.tsx?raw"
-import FitToContainer from "../examples/FitToContainer.tsx"
-import fitToContainerCode from "../examples/FitToContainer.tsx?raw"
-import WithWebWorker from "../examples/WithWebWorker.tsx"
-import withWebWorkerCode from "../examples/WithWebWorker.tsx?raw"
-import { pages, section } from "../examples.ts"
-import Layout from "../layouts/ExampleLayout.astro"
-import Section from "../layouts/ExampleSection.astro"
+import DarkTheme from '../examples/DarkTheme.tsx'
+import darkThemeCode from '../examples/DarkTheme.tsx?raw'
+import WithOnChange from '../examples/WithOnChange.tsx'
+import withOnChangeCode from '../examples/WithOnChange.tsx?raw'
+import FitToContainer from '../examples/FitToContainer.tsx'
+import fitToContainerCode from '../examples/FitToContainer.tsx?raw'
+import WithWebWorker from '../examples/WithWebWorker.tsx'
+import withWebWorkerCode from '../examples/WithWebWorker.tsx?raw'
+import { pages, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
 
-const page = pages.find(p => p.slug === "customizing-the-app")!
-const darkTheme = section(page, "dark-theme")
-const withOnChange = section(page, "with-on-change")
-const fitToContainer = section(page, "fit-to-container")
-const withWebWorker = section(page, "with-web-worker")
+const page = pages.find(p => p.slug === 'customizing-the-app')!
+const darkTheme = section(page, 'dark-theme')
+const withOnChange = section(page, 'with-on-change')
+const fitToContainer = section(page, 'fit-to-container')
+const withWebWorker = section(page, 'with-web-worker')
 ---
 
 <Layout page={page}>

@@ -55,8 +55,8 @@ export class BaseAdapter<
   /** shorthand for `readConfObject(this.config, arg)` */
   getConf<
     SLOT extends
-      ConfigurationSlotName<ConfigurationSchemaForModel<CONF>> | string[] =
-      ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
+      | ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>
+      | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
   >(
     arg: SLOT,
     args?: Record<string, unknown>,

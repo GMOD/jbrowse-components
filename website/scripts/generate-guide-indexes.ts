@@ -1,7 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { checkOrWrite } from './check-utils.ts'
 // The category order (and thus the allowed `guide_category` values) for each
 // guide index, shared with the sidebar builder so the two groupings can't
 // drift. A page tagged with a category not in its guide's list is silently
@@ -11,6 +10,7 @@ import {
   DEVELOPER_CATEGORIES,
   USER_CATEGORIES,
 } from '../src/lib/guide-categories.ts'
+import { checkOrWrite } from './check-utils.ts'
 
 const docsDir = join(import.meta.dirname, '..', 'docs')
 

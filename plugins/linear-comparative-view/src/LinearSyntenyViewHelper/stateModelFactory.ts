@@ -64,7 +64,8 @@ export function linearSyntenyViewHelperModelFactory(
        */
       get gpuRenderingBackend(): SyntenyRenderingBackend | undefined {
         return self.currentRenderingBackend as
-          SyntenyRenderingBackend | undefined
+          | SyntenyRenderingBackend
+          | undefined
       },
     }))
     .actions(self => ({

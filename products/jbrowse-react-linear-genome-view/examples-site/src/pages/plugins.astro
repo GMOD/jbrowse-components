@@ -1,21 +1,21 @@
 ---
-import WithExternalPlugin from "../examples/WithExternalPlugin.tsx"
-import WithExternalPluginCode from "../examples/WithExternalPlugin.tsx?raw"
-import WithInlinePlugins from "../examples/WithInlinePlugins.tsx"
-import WithInlinePluginsCode from "../examples/WithInlinePlugins.tsx?raw"
-import WithInternetAccounts from "../examples/WithInternetAccounts.tsx"
-import WithInternetAccountsCode from "../examples/WithInternetAccounts.tsx?raw"
-import WithWebWorker from "../examples/WithWebWorker.tsx"
-import WithWebWorkerCode from "../examples/WithWebWorker.tsx?raw"
-import { getPage, section } from "../examples.ts"
-import Layout from "../layouts/ExampleLayout.astro"
-import Section from "../layouts/ExampleSection.astro"
+import WithExternalPlugin from '../examples/WithExternalPlugin.tsx'
+import WithExternalPluginCode from '../examples/WithExternalPlugin.tsx?raw'
+import WithInlinePlugins from '../examples/WithInlinePlugins.tsx'
+import WithInlinePluginsCode from '../examples/WithInlinePlugins.tsx?raw'
+import WithInternetAccounts from '../examples/WithInternetAccounts.tsx'
+import WithInternetAccountsCode from '../examples/WithInternetAccounts.tsx?raw'
+import WithWebWorker from '../examples/WithWebWorker.tsx'
+import WithWebWorkerCode from '../examples/WithWebWorker.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
 
-const page = getPage("plugins")
-const sec0 = section(page, "with-external-plugin")
-const sec1 = section(page, "with-inline-plugins")
-const sec2 = section(page, "with-internet-accounts")
-const sec3 = section(page, "with-web-worker")
+const page = getPage('plugins')
+const sec0 = section(page, 'with-external-plugin')
+const sec1 = section(page, 'with-inline-plugins')
+const sec2 = section(page, 'with-internet-accounts')
+const sec3 = section(page, 'with-web-worker')
 ---
 
 <Layout page={page}>

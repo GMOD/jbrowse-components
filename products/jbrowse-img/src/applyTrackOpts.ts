@@ -202,7 +202,10 @@ interface DisplaySnapshot {
 // routes all four onto the config, so `keyof` the instance misses them. `height`
 // resolves fine — it's the getter.
 type WiggleConfigSlotKey =
-  'autoscale' | 'defaultRendering' | 'color' | 'useBicolor'
+  | 'autoscale'
+  | 'defaultRendering'
+  | 'color'
+  | 'useBicolor'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel

@@ -72,7 +72,8 @@ export default class VariantsPlugin extends Plugin {
     // callers keep their 0 fallback without building an empty counts object.
     const featureAlleleCounts = (feature: Feature) => {
       const genotypes = feature.get('genotypes') as
-        Record<string, string> | undefined
+        | Record<string, string>
+        | undefined
       return genotypes ? calculateAlleleCounts(genotypes) : undefined
     }
     jexl.addFunction('maf', (feature: Feature) => {

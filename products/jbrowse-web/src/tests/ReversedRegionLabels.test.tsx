@@ -1,3 +1,5 @@
+import './svgExportMocks.ts'
+
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 
 import {
@@ -7,8 +9,6 @@ import {
   hts,
   setup,
 } from './util.tsx'
-
-import './svgExportMocks.ts'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 

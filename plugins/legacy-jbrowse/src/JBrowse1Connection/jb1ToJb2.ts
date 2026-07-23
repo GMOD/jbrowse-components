@@ -401,12 +401,14 @@ function generateFromConfigTrackConfig(
   jb2TrackConfig: Jb2Track,
 ): Jb2Track {
   const jb1Features = jb1TrackConfig.features ?? []
-  const features = jb1Features.map((f): Jb2Feature => ({
-    refName: f.seq_id,
-    uniqueId: `${f.seq_id}:${f.start}-${f.end}:${f.name ?? ''}`,
-    start: f.start,
-    end: f.end,
-  }))
+  const features = jb1Features.map(
+    (f): Jb2Feature => ({
+      refName: f.seq_id,
+      uniqueId: `${f.seq_id}:${f.start}-${f.end}:${f.name ?? ''}`,
+      start: f.start,
+      end: f.end,
+    }),
+  )
   return {
     ...jb2TrackConfig,
     type: 'FeatureTrack',
@@ -465,12 +467,14 @@ export async function createRefSeqsAdapter(
 }
 
 function refSeqAdapterFromConfig(refSeqsData: RefSeq[]): Jb2Adapter {
-  const features = refSeqsData.map((refSeq): Jb2Feature => ({
-    refName: refSeq.name,
-    uniqueId: refSeq.name,
-    start: refSeq.start,
-    end: refSeq.end,
-  }))
+  const features = refSeqsData.map(
+    (refSeq): Jb2Feature => ({
+      refName: refSeq.name,
+      uniqueId: refSeq.name,
+      start: refSeq.start,
+      end: refSeq.end,
+    }),
+  )
   return {
     type: 'FromConfigAdapter',
     features,

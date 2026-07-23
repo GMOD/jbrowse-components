@@ -112,16 +112,19 @@ describe('runCoveragePipeline bisulfite mod coverage', () => {
   // base counts and would cap the methylated share near 0.5.
   function bisulfiteCalls(pos: number) {
     const at = (noMod: boolean, count: number, color: number) =>
-      Array.from({ length: count }, (_, readIndex): ModificationEntry => ({
-        readIndex,
-        position: pos,
-        base: 'C',
-        modType: 'm',
-        strand: 1,
-        color,
-        prob: 1,
-        noMod,
-      }))
+      Array.from(
+        { length: count },
+        (_, readIndex): ModificationEntry => ({
+          readIndex,
+          position: pos,
+          base: 'C',
+          modType: 'm',
+          strand: 1,
+          color,
+          prob: 1,
+          noMod,
+        }),
+      )
     return [
       ...at(false, 30, packAbgr(255, 0, 0, 255)),
       ...at(true, 10, packAbgr(0, 0, 255, 255)),

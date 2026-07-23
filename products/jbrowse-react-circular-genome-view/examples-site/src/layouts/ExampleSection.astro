@@ -28,7 +28,13 @@ const Doc = doc?.Content
 <section id={slug} class="example-section">
   {title && <h2>{title}</h2>}
   {description && <p class="lead">{description}</p>}
-  {Doc && <div class="doc"><Doc /></div>}
+  {
+    Doc && (
+      <div class="doc">
+        <Doc />
+      </div>
+    )
+  }
   <div class:list={['demo', { fill: demoFillHeight }]}><slot /></div>
   <details class="source">
     <summary>View source</summary>

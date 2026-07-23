@@ -18,7 +18,8 @@ export function applyDefaultSessionViewInit(
   init: Partial<InitState>,
 ) {
   const view = session?.views.find(v => v.type === 'LinearGenomeView') as
-    LinearGenomeViewLike | undefined
+    | LinearGenomeViewLike
+    | undefined
   const assembly = init.assembly ?? view?.assemblyNames[0]
   if (view && assembly) {
     view.setInit({ ...init, assembly })

@@ -1,3 +1,5 @@
+import './svgExportMocks.ts'
+
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -5,8 +7,6 @@ import { fireEvent } from '@testing-library/react'
 import { createCanvas as nodeCreateCanvas } from 'canvas'
 
 import { createView, doBeforeEach, getSavedSvg, hts, setup } from './util.tsx'
-
-import './svgExportMocks.ts'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 

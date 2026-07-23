@@ -28,14 +28,16 @@ export function getDependencyArrayRef(obj: any): any {
 
     const typeofValue = typeof value
 
-    if (!(
-      typeofValue === 'string' ||
-      // eslint-disable-next-line unicorn/prefer-number-properties -- vendored tss-react, keep upstream form
-      (typeofValue === 'number' && !isNaN(value)) ||
-      typeofValue === 'boolean' ||
-      value === undefined ||
-      value === null
-    )) {
+    if (
+      !(
+        typeofValue === 'string' ||
+        // eslint-disable-next-line unicorn/prefer-number-properties -- vendored tss-react, keep upstream form
+        (typeofValue === 'number' && !isNaN(value)) ||
+        typeofValue === 'boolean' ||
+        value === undefined ||
+        value === null
+      )
+    ) {
       return obj
     }
 

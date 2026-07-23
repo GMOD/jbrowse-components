@@ -1,3 +1,5 @@
+import './svgExportMocks.ts'
+
 import { fireEvent, waitFor } from '@testing-library/react'
 
 import {
@@ -8,8 +10,6 @@ import {
   hts,
   setup,
 } from './util.tsx'
-
-import './svgExportMocks.ts'
 
 setup()
 

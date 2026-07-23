@@ -103,7 +103,8 @@ export function generateUcscTranscript(
   // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order.
   // _exonFrames fallback supports BED files that use the underscore-prefixed column name.
   const exonFrames = (rest.exonFrames ?? rest._exonFrames) as
-    number[] | undefined
+    | number[]
+    | undefined
 
   const feats = oldSubfeatures
     .filter(child => child.type === 'block')

@@ -1,3 +1,5 @@
+import './svgExportMocks.ts'
+
 import { fireEvent } from '@testing-library/react'
 
 import {
@@ -8,8 +10,6 @@ import {
   mockConsole,
   setup,
 } from './util.tsx'
-
-import './svgExportMocks.ts'
 
 // @ts-expect-error
 global.indexedDB = {}

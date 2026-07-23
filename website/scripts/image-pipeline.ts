@@ -68,7 +68,9 @@ function moveIntoPlace(tmpPath: string, outputPath: string) {
 }
 
 export type CommitResult =
-  { status: 'new' } | { status: 'updated'; detail: string } | { status: 'kept' }
+  | { status: 'new' }
+  | { status: 'updated'; detail: string }
+  | { status: 'kept' }
 
 // Move a freshly captured PNG into place only when its content actually changed
 // (or with force / for a brand-new spec), so a regen doesn't rewrite every PNG.

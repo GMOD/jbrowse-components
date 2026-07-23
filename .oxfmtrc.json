@@ -1,0 +1,30 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "avoid",
+  "proseWrap": "always",
+  "printWidth": 80,
+  "sortPackageJson": false,
+  "ignorePatterns": ["**/*.toml"],
+  "sortImports": {
+    "customGroups": [
+      {
+        "groupName": "react",
+        "elementNamePattern": ["react"],
+        "modifiers": ["value"]
+      }
+    ],
+    "groups": [
+      ["side_effect", "side_effect_style"],
+      "react",
+      "value-builtin",
+      "value-external",
+      ["value-parent", "value-sibling", "value-index"],
+      "type",
+      "unknown"
+    ],
+    "newlinesBetween": true,
+    "ignoreCase": false
+  }
+}

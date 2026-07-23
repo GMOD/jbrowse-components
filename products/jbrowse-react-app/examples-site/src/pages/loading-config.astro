@@ -1,21 +1,21 @@
 ---
-import WithImportConfigJson from "../examples/WithImportConfigJson.tsx"
-import withImportConfigJsonCode from "../examples/WithImportConfigJson.tsx?raw"
-import WithFetchConfigJson from "../examples/WithFetchConfigJson.tsx"
-import withFetchConfigJsonCode from "../examples/WithFetchConfigJson.tsx?raw"
-import AddTracksProgrammatically from "../examples/AddTracksProgrammatically.tsx"
-import addTracksCode from "../examples/AddTracksProgrammatically.tsx?raw"
-import WithLaunchLinearGenomeView from "../examples/WithLaunchLinearGenomeView.tsx"
-import launchViewCode from "../examples/WithLaunchLinearGenomeView.tsx?raw"
-import { pages, section } from "../examples.ts"
-import Layout from "../layouts/ExampleLayout.astro"
-import Section from "../layouts/ExampleSection.astro"
+import WithImportConfigJson from '../examples/WithImportConfigJson.tsx'
+import withImportConfigJsonCode from '../examples/WithImportConfigJson.tsx?raw'
+import WithFetchConfigJson from '../examples/WithFetchConfigJson.tsx'
+import withFetchConfigJsonCode from '../examples/WithFetchConfigJson.tsx?raw'
+import AddTracksProgrammatically from '../examples/AddTracksProgrammatically.tsx'
+import addTracksCode from '../examples/AddTracksProgrammatically.tsx?raw'
+import WithLaunchLinearGenomeView from '../examples/WithLaunchLinearGenomeView.tsx'
+import launchViewCode from '../examples/WithLaunchLinearGenomeView.tsx?raw'
+import { pages, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
 
-const page = pages.find(p => p.slug === "loading-config")!
-const importConfig = section(page, "with-import-config-json")
-const fetchConfig = section(page, "with-fetch-config-json")
-const addTracks = section(page, "add-tracks-programmatically")
-const launchView = section(page, "with-launch-linear-genome-view")
+const page = pages.find(p => p.slug === 'loading-config')!
+const importConfig = section(page, 'with-import-config-json')
+const fetchConfig = section(page, 'with-fetch-config-json')
+const addTracks = section(page, 'add-tracks-programmatically')
+const launchView = section(page, 'with-launch-linear-genome-view')
 ---
 
 <Layout page={page}>

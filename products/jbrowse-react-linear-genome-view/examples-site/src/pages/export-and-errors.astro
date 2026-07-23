@@ -1,15 +1,15 @@
 ---
-import ExportSvg from "../examples/ExportSvg.tsx"
-import ExportSvgCode from "../examples/ExportSvg.tsx?raw"
-import WithErrorHandler from "../examples/WithErrorHandler.tsx"
-import WithErrorHandlerCode from "../examples/WithErrorHandler.tsx?raw"
-import { getPage, section } from "../examples.ts"
-import Layout from "../layouts/ExampleLayout.astro"
-import Section from "../layouts/ExampleSection.astro"
+import ExportSvg from '../examples/ExportSvg.tsx'
+import ExportSvgCode from '../examples/ExportSvg.tsx?raw'
+import WithErrorHandler from '../examples/WithErrorHandler.tsx'
+import WithErrorHandlerCode from '../examples/WithErrorHandler.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
 
-const page = getPage("export-and-errors")
-const sec0 = section(page, "export-svg")
-const sec1 = section(page, "with-error-handler")
+const page = getPage('export-and-errors')
+const sec0 = section(page, 'export-svg')
+const sec1 = section(page, 'with-error-handler')
 ---
 
 <Layout page={page}>

@@ -9,7 +9,8 @@ import type { Frame } from '@jbrowse/core/util'
 // rows carry a conceptual strand (+ forward, - reverse); `translation` rows
 // carry their reading frame.
 export type SequenceRow =
-  { type: 'base'; strand: 1 | -1 } | { type: 'translation'; frame: Frame }
+  | { type: 'base'; strand: 1 | -1 }
+  | { type: 'translation'; frame: Frame }
 
 /**
  * Top-to-bottom row order for a block, mirroring the frame layout and
@@ -38,10 +39,12 @@ export function rowLayout({
     ...topFrames.map((frame): SequenceRow => ({ type: 'translation', frame })),
     ...(showForward ? [{ type: 'base', strand: 1 } as const] : []),
     ...(showReverse ? [{ type: 'base', strand: -1 } as const] : []),
-    ...bottomFrames.map((frame): SequenceRow => ({
-      type: 'translation',
-      frame,
-    })),
+    ...bottomFrames.map(
+      (frame): SequenceRow => ({
+        type: 'translation',
+        frame,
+      }),
+    ),
   ]
 }
 

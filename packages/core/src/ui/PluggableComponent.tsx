@@ -17,7 +17,8 @@ const PluggableComponent = observer(function PluggableComponent<
   pluginManager: PluginManager
   name: string
   component:
-    React.ComponentType<P> | React.LazyExoticComponent<React.ComponentType<P>>
+    | React.ComponentType<P>
+    | React.LazyExoticComponent<React.ComponentType<P>>
   props: P
 }) {
   // props is forwarded verbatim as the extension-point context bag; any object

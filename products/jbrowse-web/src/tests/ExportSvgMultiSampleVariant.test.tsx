@@ -1,7 +1,7 @@
+import './svgExportMocks.ts'
+
 import { openMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
 import { doBeforeEach, getSavedSvg, setup } from './util.tsx'
-
-import './svgExportMocks.ts'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
