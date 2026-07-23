@@ -21,12 +21,11 @@ Two plugins provide this:
   views, and can run NCBI BLAST
 
 Both add new view types, launched from a gene's right-click menu in JBrowse Web
-and Desktop. The single-view embedded components render only a linear genome
-view, so neither view type appears there; the full-app embedded components can
-in principle host one, since [JBrowseR](/docs/jbrowser)'s `JBrowseRApp` takes
-both runtime plugins and a `views` list, while
-[anywidget](/docs/jbrowse_jupyter)'s `JBrowseApp` currently has no plugin
-loading.
+and Desktop. The single-view embedded components host only a linear genome view,
+so neither view type appears there. The full-app embedded components can host
+one in principle: [JBrowseR](/docs/jbrowser)'s `JBrowseRApp` takes both runtime
+plugins and a `views` list, while [anywidget](/docs/jbrowse_jupyter)'s
+`JBrowseApp` has no plugin loading yet.
 
 The approach is described in our
 [_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
@@ -34,9 +33,9 @@ The approach is described in our
 
 ## What you need
 
-Nothing, to start: the next section opens a preconfigured instance with both
-plugins already loaded. To use them on your own data you add the two plugins to
-a JBrowse instance, covered under
+Nothing to start: the next section opens a preconfigured instance with both
+plugins already loaded. To use them on your own data, add the two plugins to a
+JBrowse instance, covered under
 [Installing the plugins](#installing-the-plugins).
 
 ## Try it without installing anything
@@ -112,7 +111,7 @@ sequences are identical the positions map one to one.
 When they differ, the launch dialog says so ("Transcript and structure sequences
 differ, will run Smith-Waterman alignment") and the plugin aligns them in the
 browser with BLOSUM62 and EMBOSS-style gap penalties. Residue positions are then
-mapped through the alignment columns, and positions falling in a gap are simply
+mapped through the alignment columns, and positions falling in a gap are left
 unmapped, which is what you are seeing when hovering a variant highlights
 nothing. The gear beside that notice switches between Smith-Waterman (local, the
 default, good for a structure covering only part of the protein) and
@@ -120,10 +119,9 @@ Needleman-Wunsch (global), or takes a precomputed pairwise alignment pasted in
 Clustal format. The same options are available afterwards under **Advanced** in
 the view menu.
 
-The resulting alignment is not hidden: the **Pairwise alignment** panel below
-the structure shows the transcript row against the structure row with a
-consensus line, so you can check the mapping is sane before trusting a residue
-highlight. If you need exact correspondence, fold the transcript's own sequence
+You can inspect the mapping yourself: the **Pairwise alignment** panel below the
+structure shows the transcript row against the structure row with a consensus
+line, so you can check it is sane before trusting a residue highlight. If you need exact correspondence, fold the transcript's own sequence
 with AlphaFold instead of using a database structure.
 
 When you open a structure of your own, the transcript picker uses this same
