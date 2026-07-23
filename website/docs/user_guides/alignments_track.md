@@ -236,6 +236,7 @@ pairs drawn pink lift away from the background.
 
 ## See also
 
+- [Consensus sequence](/docs/user_guides/consensus_sequence)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [SV inspector](/docs/user_guides/sv_inspector_view)
 - [Variant track](/docs/user_guides/variant_track)
