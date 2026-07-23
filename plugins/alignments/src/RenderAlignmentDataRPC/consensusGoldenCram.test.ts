@@ -87,12 +87,11 @@ test.each(CASES)(
     )) as unknown as ConsensusFeature[]
 
     const tally = buildConsensusTally(features, region)
-    // Pins call/het-fract to samtools' own defaults explicitly, independent
-    // of computeConsensus's own defaults.
+    // Pins callFract to samtools' own default explicitly, independent of
+    // computeConsensus's.
     const consensus = computeConsensus(ctgA.slice(start, end), tally, {
       includeInsertions: insertions,
       callFract: 0.75,
-      hetFract: 0.5,
     })
 
     expect(consensus).toBe(golden)

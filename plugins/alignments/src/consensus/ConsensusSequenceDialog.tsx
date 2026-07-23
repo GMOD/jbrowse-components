@@ -63,6 +63,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
 }) {
   const [minDepth, setMinDepth] = useState(1)
   const [callFract, setCallFract] = useState(0.75)
+  const [ambiguityCodes, setAmbiguityCodes] = useState(false)
   const [hetFract, setHetFract] = useState(0.5)
   const [includeInsertions, setIncludeInsertions] = useState(true)
   const [excludeSecondary, setExcludeSecondary] = useState(true)
@@ -84,6 +85,9 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_CONSENSUS_BP
 
+  // undefined hetFract is what turns ambiguity off in computeConsensus
+  const effectiveHetFract = ambiguityCodes ? hetFract : undefined
+
   const { data, error } = useFetch(
     tooLargeToFetch
       ? false
@@ -94,6 +98,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           filterBy,
           minDepth,
           callFract,
+          ambiguityCodes,
           hetFract,
           includeInsertions,
         ],
@@ -117,7 +122,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               filterBy,
               minDepth,
               callFract,
-              hetFract,
+              hetFract: effectiveHetFract,
               includeInsertions,
             },
           )) as { consensus: string; variants: ConsensusVariant[] }
@@ -171,13 +176,11 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           <LoadingEllipses message="Computing consensus" />
         ) : null}
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          At each position, the reads &quot;vote&quot; for a base. This works
-          like the widely-used samtools tool, with one difference: if your reads
-          disagree, it can report a standard IUPAC ambiguity code (e.g. R for
-          A-or-G) covering more than just two bases. That means samples with
-          more than two chromosome copies, or mixed/pooled samples, can show a
-          real 3- or 4-way split instead of being forced into a two-allele
-          result.
+          At each position the reads &quot;vote&quot; for a base, matching
+          samtools consensus. With ambiguity codes on, a position where the
+          reads disagree reports an IUPAC code (e.g. R for A-or-G) instead of N,
+          and unlike samtools it is not capped at two alleles, so pooled or
+          higher-ploidy samples can show a real 3- or 4-way split.
         </Typography>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <TextField
@@ -206,7 +209,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           />
           <TextField
             label="Min het fraction"
-            helperText="a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
+            helperText="with ambiguity codes on, a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
             type="number"
             size="small"
             value={hetFract}
@@ -215,6 +218,17 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               const v = Number.parseFloat(event.target.value)
               setHetFract(Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)
             }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={ambiguityCodes}
+                onChange={event => {
+                  setAmbiguityCodes(event.target.checked)
+                }}
+              />
+            }
+            label="IUPAC ambiguity codes"
           />
           <FormControlLabel
             control={

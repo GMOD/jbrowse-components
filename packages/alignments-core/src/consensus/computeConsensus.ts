@@ -30,13 +30,17 @@ export interface ConsensusOptions {
   // `--call-fract`, default 0.75 matches samtools).
   callFract?: number
   // Minimum ratio of a base's score to the winner's for it to be folded into
-  // an IUPAC ambiguity call (samtools `--het-fract`, default 0.5 matches
-  // samtools) — a ratio to the winner, not to total depth, so it stays stable
-  // across coverage rather than being swamped by noise at high depth.
-  // Independent of callFract, and (unlike samtools) not capped at folding in
-  // just one runner-up: every base clearing this ratio joins the call, so a
-  // real 3-/4-way split (tetraploid, mixed sample) reports as such rather than
-  // being truncated to two alleles.
+  // an IUPAC ambiguity call — a ratio to the winner, not to total depth, so it
+  // stays stable across coverage rather than being swamped by noise at high
+  // depth. Independent of callFract, and (unlike samtools) not capped at
+  // folding in just one runner-up: every base clearing this ratio joins the
+  // call, so a real 3-/4-way split (tetraploid, mixed sample) reports as such
+  // rather than being truncated to two alleles.
+  //
+  // Undefined (the default) disables ambiguity entirely, matching plain
+  // `samtools consensus`: a column that doesn't resolve to one base is 'N'.
+  // Setting it opts into samtools `--ambig`, whose own --het-fract default is
+  // 0.5.
   hetFract?: number
   includeInsertions?: boolean
   // Character emitted for a called deletion. Default '' omits it, so the output
@@ -183,6 +187,8 @@ export function buildConsensusTally(
   }
 }
 
+const CALL_CHARS = 'ACGT*'
+
 // IUPAC ambiguity code for a set of bases folded into a call, indexed directly
 // by the BAM 4-bit base mask (1=A, 2=C, 4=G, 8=T) — e.g. mask 5 (A+G) -> 'R'.
 // Index 0 has no IUPAC base and defensively reads as 'N'; index 15 (all four)
@@ -206,28 +212,38 @@ const IUPAC_FROM_MASK = [
   'N',
 ]
 
-// samtools --mode simple, quality-independent, ported from
-// calculate_consensus_simple (bam_consensus.c) but uncapped: samtools only
+// samtools --mode simple, quality-independent. scores = weighted [A,C,G,T,*];
+// totDepth is the read count (for the min-depth gate).
+//
+// With hetFract undefined this is plain `samtools consensus`: the call fraction
+// is checked against the weighted total (tscore), exactly as samtools does, so
+// ambiguity codes in the reads dilute the winner the same way. When the
+// plurality winner falls below the fraction (or depth is too low), samtools is
+// asymmetric and we mirror it: a sub-threshold gap is still emitted as a called
+// deletion ('*'), but a sub-threshold base is 'N' (verified against
+// `samtools consensus -a -m simple`).
+//
+// A defined hetFract opts into samtools `--ambig`, but uncapped: samtools only
 // ever folds in the single runner-up (call2) alongside the winner (call1) —
 // fine for human-diploid "het" calls, but it silently drops a real 3rd/4th
 // allele in a tetraploid, mixed infection, or pooled sample. Here, *every*
 // base whose score is at least hetFract of the winner's gets folded in, so a
 // true 3-/4-way split reports as V/H/D/B/N instead of being truncated to two.
-// hetFract (samtools default 0.5) is what makes this depth-insensitive: it's
-// a ratio to the winner's score, not to total depth, so a fixed per-read error
-// rate stays a small ratio at any coverage — 3 error reads out of 1000 is the
-// same ~0.3%-of-winner ratio as 1 out of 300, neither remotely close to 0.5.
-// callFract (samtools default 0.75) is then the final sanity gate: even after
-// folding in everything that clears hetFract, the result must still explain
-// most of the column, or it falls back to plain 'N' — this is what samtools'
-// own doc comment's "6A, 5G, 4C is N" example demonstrates for its capped
-// version; uncapped, that same column instead folds in all three (C also
-// clears hetFract relative to A) and reports V rather than giving up to N.
-// Gaps take part in the same fold. IUPAC has no base/gap codes, so samtools
-// writes a base+gap call as a lowercase base; this implementation extends that
-// convention to lowercase IUPAC for an uncapped multi-base+gap call. A gap-only
-// call is '*'. If the final call/depth gate fails, samtools's asymmetry remains:
-// a winning gap falls back to '*', while a winning base falls back to 'N'.
+// hetFract is what makes this depth-insensitive: it's a ratio to the winner's
+// score, not to total depth, so a fixed per-read error rate stays a small ratio
+// at any coverage — 3 error reads out of 1000 is the same ~0.3%-of-winner ratio
+// as 1 out of 300, neither remotely close to samtools' 0.5 default. callFract
+// is then the final sanity gate: even after folding in everything that clears
+// hetFract, the result must still explain most of the column, or it falls back
+// to plain 'N' — this is what samtools' own doc comment's "6A, 5G, 4C is N"
+// example demonstrates for its capped version; uncapped, that same column
+// instead folds in all three (C also clears hetFract relative to A) and reports
+// V rather than giving up to N. Gaps take part in the same fold. IUPAC has no
+// base/gap codes, so samtools writes a base+gap call as a lowercase base; this
+// implementation extends that convention to lowercase IUPAC for an uncapped
+// multi-base+gap call. A gap-only call is '*'. If the final call/depth gate
+// fails, samtools's asymmetry above still applies.
+//
 // Writes the winning and total weighted scores into out[0]/out[1] (a caller-
 // owned scratch reused across the loop, so no per-position allocation). One
 // implementation shared by every column — main and insertion sub-columns — so a
@@ -241,7 +257,7 @@ function decideCall(
   totDepth: number,
   minDepth: number,
   callFract: number,
-  hetFract: number,
+  hetFract: number | undefined,
   out: Float64Array,
 ) {
   const tscore = sA + sC + sG + sT + gap
@@ -269,6 +285,12 @@ function decideCall(
   }
   out[0] = score1
   out[1] = tscore
+  if (hetFract === undefined) {
+    if (totDepth < minDepth || score1 < callFract * tscore) {
+      return call1 === 4 ? '*' : 'N'
+    }
+    return call1 === -1 ? 'N' : CALL_CHARS[call1]!
+  }
   if (totDepth < minDepth) {
     return call1 === 4 ? '*' : 'N'
   }
@@ -333,7 +355,7 @@ export function walkConsensus(
 ) {
   const minDepth = opts.minDepth ?? 1
   const callFract = opts.callFract ?? 0.75
-  const hetFract = opts.hetFract ?? 0.5
+  const { hetFract } = opts
   const includeInsertions = opts.includeInsertions ?? true
   const {
     length,
