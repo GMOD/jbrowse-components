@@ -35,8 +35,13 @@ export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
 
 // JBrowse assembly name -> its PanSN sample prefix in the PAF (identity when
 // unmapped).
+// `?? {}` so an adapter whose schema lacks the slot identity-maps rather than
+// throwing a TypeError deep inside a query, which is how this first surfaced.
 function assemblyNameToPanSN(adapter: BaseFeatureDataAdapter) {
-  return adapter.getConf('assemblyNameToPanSN') as Record<string, string>
+  return (adapter.getConf('assemblyNameToPanSN') ?? {}) as Record<
+    string,
+    string
+  >
 }
 
 // Resolve one assembly name to its PanSN sample prefix; undefined passes through

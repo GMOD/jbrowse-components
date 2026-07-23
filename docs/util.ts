@@ -1697,5 +1697,7 @@ export async function getAllFiles() {
   const { stdout } = await exec2(
     String.raw`git ls-files | grep "\(plugins\|products\|packages\).*\.\(t\|j\)sx\?$"`,
   )
-  return stdout.split('\n').filter(Boolean)
+  // `git ls-files` also lists files staged as added but since deleted from the
+  // worktree, which every generator downstream would then try to read.
+  return stdout.split('\n').filter(f => f && fs.existsSync(f))
 }
