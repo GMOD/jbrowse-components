@@ -176,10 +176,13 @@ export const gallerySections: readonly GallerySection[] = [
         // Rebuilt as a session spec: the old share link saved the pre-4.4
         // LinearReadCloudDisplay, whose settings no longer survive the unified
         // LinearAlignmentsDisplay migration, so it opened as a plain pileup.
+        // Its ONT-UL track is dropped — 52MB over this window, past the
+        // region-size gate, so the link sat on a "too much data" banner (or a
+        // minute of downloading with forceLoad) instead of showing the cloud.
         session:
-          '?config=test_data/config_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr1:197,745,000-197,767,000","tracks":[{"trackId":"pacbio_hg002","type":"LinearAlignmentsDisplay","readConnections":"cloud"},{"trackId":"HG002_hs37d5_ONT-UL_GIAB_20200204","type":"LinearAlignmentsDisplay","readConnections":"cloud"},{"trackId":"illumina_hg002","type":"LinearAlignmentsDisplay","readConnections":"cloud"}]}]}',
+          '?config=test_data/config_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr1:197,745,000-197,767,000","tracks":[{"trackId":"pacbio_hg002","type":"LinearAlignmentsDisplay","readConnections":"cloud","height":260},{"trackId":"illumina_hg002","type":"LinearAlignmentsDisplay","readConnections":"cloud","readConnectionsHeight":120,"height":320}]}]}',
         description:
-          'The same inversion with read connections on, which links each mate pair and split-read chain into one mark spanning both breakends instead of separate pileup rows.',
+          'The same locus in cloud mode, where each mate pair and split-read chain collapses to one mark placed by its insert size, so anomalously spaced or oriented pairs sit apart from the normal ones. PacBio and Illumina 2x250 above their pileups.',
       },
     ],
   },
