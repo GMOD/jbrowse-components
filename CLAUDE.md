@@ -7,7 +7,7 @@ and Canvas2D fallbacks). Worker output is **absolute genomic uint32** — no
 regionStart-relative arithmetic crosses the worker boundary. See
 `agent-docs/ARCHITECTURE.md`.
 
-**Agent front door: [`agent-docs/README.md`](agent-docs/README.md)** —
+**Agent front door: [`agent-docs/CLAUDE.md`](agent-docs/CLAUDE.md)** —
 invariants, definition of done, and pointers to the ADRs, reference notes, and
 guides under `agent-docs/`. Start there before non-trivial work on the rendering
 pipeline.
@@ -24,6 +24,9 @@ source, so it's what catches a packaging break before it reaches external plugin
 authors. Don't turn it into a workspace dependency.
 
 ## GPU rendering (`plugins/canvas`, `packages/render-core`)
+
+See `agent-docs/reference/GPU_RENDERING.md` for the render lifecycle, backends,
+upload patterns, HAL, and shaders.
 
 - **Never hand-edit `*.generated.ts` shader files.** Edit `.slang` source and
   run `pnpm gen:shaders`.

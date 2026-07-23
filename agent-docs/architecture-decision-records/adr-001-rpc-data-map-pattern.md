@@ -1,3 +1,8 @@
+---
+status: Superseded
+summary: "Keep `new Map()` reassignment pattern for volatile RPC data — superseded by ADR-017 (`rpcDataMap` is now `observable.map`)"
+---
+
 # ADR-001: Keep `new Map()` reassignment pattern for volatile RPC data
 
 ## Status

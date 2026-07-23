@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Variant display uses batch RPC and inputKey-gated uploads"
+---
+
 # ADR-002: Variant display uses batch RPC and inputKey-gated uploads
 
 ## Status

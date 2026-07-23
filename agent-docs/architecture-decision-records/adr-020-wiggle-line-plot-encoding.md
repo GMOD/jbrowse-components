@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Wiggle line-plot single-polyline encoding"
+---
+
 # ADR-020: Wiggle line-plot single-polyline encoding
 
 ## Status

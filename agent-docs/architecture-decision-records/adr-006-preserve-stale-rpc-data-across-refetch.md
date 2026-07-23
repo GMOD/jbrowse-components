@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Preserve stale `rpcDataMap` through a refetch"
+---
+
 # ADR-006: Preserve stale `rpcDataMap` through a refetch
 
 ## Status

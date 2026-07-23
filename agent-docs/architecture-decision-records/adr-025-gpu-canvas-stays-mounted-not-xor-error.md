@@ -1,3 +1,8 @@
+---
+status: Superseded
+summary: "GPU canvas stays mounted across error/retry — superseded by the DisplayChrome unification"
+---
+
 # ADR-025: GPU canvas stays mounted across error/retry — the invariant is mount-lifetime, not canvas-XOR-error
 
 ## Status

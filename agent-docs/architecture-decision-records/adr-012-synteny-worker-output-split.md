@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Synteny worker emits geometry only; main thread owns colors and picking IDs (picking part superseded by ADR-019)"
+---
+
 # ADR-012: Synteny worker emits geometry only; main thread owns colors and picking IDs
 
 ## Status

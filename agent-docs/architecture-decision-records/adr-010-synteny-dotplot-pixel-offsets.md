@@ -1,3 +1,8 @@
+---
+status: Superseded
+summary: "Synteny/dotplot pre-projected pixel offsets — superseded by ADR-018 for synteny"
+---
+
 # ADR-010: Synteny and dotplot keep pre-projected pixel offsets
 
 ## Status

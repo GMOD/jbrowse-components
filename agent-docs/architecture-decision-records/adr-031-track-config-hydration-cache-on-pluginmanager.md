@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Frozen-track hydration cache lives on `PluginManager`, not a module-level singleton"
+---
+
 # ADR-031: Frozen-track hydration cache lives on `PluginManager`, not a module-level singleton
 
 ## Status

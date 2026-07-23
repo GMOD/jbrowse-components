@@ -1,3 +1,8 @@
+---
+status: Closed
+summary: "Per-instance pad memory — no action"
+---
+
 # ADR-023: Per-instance pad memory — no action
 
 ## Status

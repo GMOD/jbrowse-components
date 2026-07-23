@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Wheel-input semantics stay per-handler — a unified resolver is relocation, not simplification"
+---
+
 # ADR-027: Wheel-input semantics stay per-handler — a unified resolver is relocation, not simplification
 
 ## Status

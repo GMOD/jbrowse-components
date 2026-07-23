@@ -1,3 +1,8 @@
+---
+status: Rejected
+summary: "Keep reference-identity upload gate; don't adopt inputKey pattern universally"
+---
+
 # ADR-004: Keep reference-identity upload gate; don't adopt inputKey pattern universally
 
 ## Status

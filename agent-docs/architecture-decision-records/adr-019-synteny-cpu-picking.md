@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Synteny picking moves from GPU framebuffer readback to CPU (supersedes ADR-012 picking)"
+---
+
 # ADR-019: Synteny picking moves from GPU framebuffer readback to CPU
 
 ## Status

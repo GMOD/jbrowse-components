@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Strict-equality `bpPerPx` cache check for wiggle"
+---
+
 # ADR-008: Strict-equality `bpPerPx` cache check for wiggle
 
 ## Status

@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "`canvasDrawn` reliability — backend-owned return and reset on invalidation"
+---
+
 # ADR-009: `canvasDrawn` reliability — backend-owned return and reset on invalidation
 
 ## Status

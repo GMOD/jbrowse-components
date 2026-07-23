@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Per-region streamed wiggle upload uses per-key autoruns"
+---
+
 # ADR-017: Per-region streamed wiggle upload uses per-key autoruns
 
 ## Status

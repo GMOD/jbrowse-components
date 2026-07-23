@@ -8,6 +8,8 @@ Statuses: **Accepted** (in force), **Rejected** (considered, not done — the AD
 records why *not*), **Superseded** (replaced; see the note), **Closed** (no
 action needed under current workloads), **Proposed** (not yet decided).
 
+<!-- BEGIN GENERATED ADR INDEX -->
+
 | ADR | Status | Decision |
 | --- | --- | --- |
 | [001](adr-001-rpc-data-map-pattern.md) | Superseded | Keep `new Map()` reassignment pattern for volatile RPC data — superseded by ADR-017 (`rpcDataMap` is now `observable.map`) |
@@ -48,3 +50,4 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [038](adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md) | Accepted | Desktop vets remote-config plugins at the `fetchConfig` funnel, not per caller; mitigation until contextIsolation |
 | [039](adr-039-synteny-no-read-time-binning.md) | Accepted | No read-time binning for synteny/PIF (optimizes the wrong end); the N→M lever is a deferred `make-pif` binned tier, not a region gate |
 | [040](adr-040-no-genome-quad-vertex-helper.md) | Accepted | No shared genome-quad vertex helper; hpmath atoms are the right granularity and the composition on top is single-consumer |
+<!-- END GENERATED ADR INDEX -->

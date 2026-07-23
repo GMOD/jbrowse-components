@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Synteny/dotplot LOD — prune at the data layer, draw survivors crisp at the shader"
+---
+
 # ADR-033: Synteny/dotplot LOD — prune at the data layer, draw survivors crisp at the shader
 
 ## Status

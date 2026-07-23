@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "`GlobalDataDisplayMixin` — fetch lifecycle for monolithic-dataset GPU displays"
+---
+
 # ADR-007: GlobalDataDisplayMixin — fetch lifecycle for monolithic-dataset GPU displays
 
 ## Status

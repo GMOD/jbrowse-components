@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "No batched wiggle RPC; per-region parallel dispatch is the right shape"
+---
+
 # ADR-022: No batched wiggle RPC; per-region parallel dispatch is the right shape
 
 ## Status

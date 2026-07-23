@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "No shared genome-quad vertex helper; hpmath atoms are the right granularity and the composition on top is single-consumer"
+---
+
 # ADR-040: No shared genome-quad vertex helper; hpmath atoms are the right granularity
 
 ## Status

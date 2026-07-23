@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "`bicolorPivot` split stays in the worker, not `gpuProps`"
+---
+
 # ADR-016: bicolorPivot split stays in the worker, not gpuProps
 
 ## Status

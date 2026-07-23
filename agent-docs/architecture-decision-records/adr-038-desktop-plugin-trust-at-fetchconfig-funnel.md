@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Desktop vets remote-config plugins at the `fetchConfig` funnel, not per caller; mitigation until contextIsolation"
+---
+
 # ADR-038: Desktop vets remote-config plugins at the `fetchConfig` funnel
 
 ## Status

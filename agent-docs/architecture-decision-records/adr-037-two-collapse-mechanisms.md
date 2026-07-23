@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Two \"collapse\" mechanisms stay distinct — automatic sub-pixel density-collapse vs. explicit `displayMode: 'collapsed'`; don't auto-select the preset for dense data"
+---
+
 # ADR-037: Two "collapse" mechanisms — automatic density-collapse vs. explicit `displayMode: 'collapsed'`
 
 ## Status

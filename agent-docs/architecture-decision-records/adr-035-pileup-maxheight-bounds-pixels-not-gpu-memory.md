@@ -1,3 +1,8 @@
+---
+status: Closed
+summary: "`maxHeight` bounds pixels, not GPU instance count — no action"
+---
+
 # ADR-035: `maxHeight` bounds pixels, not GPU instance count — no action
 
 ## Status

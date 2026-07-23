@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "DisplayChrome's layering stays — the split maps to concern boundaries"
+---
+
 # ADR-026: DisplayChrome's layering stays — the split maps to concern boundaries, not accidental indirection
 
 ## Status

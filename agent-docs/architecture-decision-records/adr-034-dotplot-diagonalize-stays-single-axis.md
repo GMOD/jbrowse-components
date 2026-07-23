@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Dotplot/synteny auto-diagonalize stays single-axis; both-axis seriation rejected"
+---
+
 # ADR-034: Dotplot/synteny auto-diagonalize stays single-axis; both-axis seriation rejected
 
 ## Status

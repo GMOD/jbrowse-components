@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Wiggle adapter fast path stays duck-typed; bicolor split lives at the executor"
+---
+
 # ADR-021: Wiggle adapter fast path stays duck-typed; bicolor split lives at the executor
 
 ## Status

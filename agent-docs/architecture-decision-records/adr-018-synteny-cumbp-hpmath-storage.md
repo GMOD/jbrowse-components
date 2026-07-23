@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Synteny corner storage moves to cumulative-bp hi/lo Float32 (supersedes ADR-010)"
+---
+
 # ADR-018: Synteny corner storage moves to cumulative-bp hi/lo Float32
 
 ## Status

@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Delete the stranded pluggable glyph registry; glyph extensibility reopens worker-side or not at all"
+---
+
 # ADR-036: Delete the stranded pluggable glyph registry
 
 ## Status

@@ -1,3 +1,8 @@
+---
+status: Superseded
+summary: "Settings-invalidation autorun pattern for withFetchLifecycle displays — mechanism replaced by the `rpcProps()`-reading `SettingsInvalidate` autorun; preserve-vs-clear revised by ADR-006"
+---
+
 # ADR-003: Settings-invalidation autorun pattern for withFetchLifecycle displays
 
 ## Status

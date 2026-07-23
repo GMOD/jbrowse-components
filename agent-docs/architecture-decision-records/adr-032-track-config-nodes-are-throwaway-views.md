@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Hydrated track-config MST nodes are throwaway views, not authoritative state"
+---
+
 # ADR-032: Hydrated track-config MST nodes are throwaway views, not authoritative state
 
 ## Status

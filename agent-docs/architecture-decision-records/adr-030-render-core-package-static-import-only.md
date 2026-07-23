@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Extract `@jbrowse/render-core`; GPU rendering API is static-import-only"
+---
+
 # ADR-030: Extract `@jbrowse/render-core`; GPU rendering API is static-import-only
 
 ## Status

@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Author shaders in Slang, cross-compile to WGSL/GLSL + generate TS layout"
+---
+
 # ADR-005: Author shaders in Slang, cross-compile to WGSL/GLSL + generate TS layout
 
 ## Status

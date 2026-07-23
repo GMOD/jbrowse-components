@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Browser-test snapshots are per-backend, rendered on a real GPU, run locally"
+---
+
 # ADR-024: Browser-test snapshots are per-backend, rendered on a real GPU, run locally
 
 ## Status

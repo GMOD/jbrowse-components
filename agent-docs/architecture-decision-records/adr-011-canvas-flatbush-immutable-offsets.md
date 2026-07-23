@@ -1,3 +1,8 @@
+---
+status: Rejected
+summary: "Canvas flatbushItem/subfeatureInfo stay mutable; reject parallel offset arrays"
+---
+
 # ADR-011: Canvas flatbushItem/subfeatureInfo stay mutable; reject parallel offset arrays
 
 ## Status

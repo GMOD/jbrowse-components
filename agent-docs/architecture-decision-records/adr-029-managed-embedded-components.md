@@ -1,3 +1,8 @@
+---
+status: Proposed
+summary: "Managed embedded React components (uncontrolled, init-driven)"
+---
+
 # ADR-029: Managed embedded React components (uncontrolled, init-driven)
 
 ## Status

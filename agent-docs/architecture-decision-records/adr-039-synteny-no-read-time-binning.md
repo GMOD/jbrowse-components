@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "No read-time binning for synteny/PIF (optimizes the wrong end); the N→M lever is a deferred `make-pif` binned tier, not a region gate"
+---
+
 # ADR-039: Synteny perf — no read-time binning; the N→M lever is a deferred make-pif tier
 
 ## Status

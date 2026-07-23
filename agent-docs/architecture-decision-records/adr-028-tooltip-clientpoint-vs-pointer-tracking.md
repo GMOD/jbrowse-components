@@ -1,3 +1,8 @@
+---
+status: Accepted
+summary: "Hover tooltips pass a controlled `clientPoint`; floating-ui pointer-tracking is opt-in"
+---
+
 # ADR-028: Hover tooltips pass a controlled `clientPoint`; floating-ui pointer-tracking is opt-in, not the default
 
 ## Status
