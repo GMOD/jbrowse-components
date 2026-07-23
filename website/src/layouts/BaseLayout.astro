@@ -22,9 +22,19 @@ const {
 const pathname = Astro.url.pathname
 const ogImage = new URL(`${baseUrl}/img/jbrowse-og.png`, Astro.site).href
 
+// Only the most specific matching nav link highlights, so /docs/tutorials/ marks
+// Tutorials rather than both it and its Docs prefix.
 function isActive(href: string) {
+  const matches = (h: string) =>
+    pathname === h || (h !== `${baseUrl}/` && pathname.startsWith(h))
   return (
-    pathname === href || (href !== `${baseUrl}/` && pathname.startsWith(href))
+    matches(href) &&
+    !navLinks.some(
+      ({ path }) =>
+        `${baseUrl}/${path}/` !== href &&
+        `${baseUrl}/${path}/`.startsWith(href) &&
+        matches(`${baseUrl}/${path}/`),
+    )
   )
 }
 // CSS module access is always defined; ! silences noUncheckedIndexedAccess
@@ -126,6 +136,7 @@ const year = new Date().getFullYear()
     </style>
   </head>
   <body>
+    <a class={styles.skipLink} href="#main-content">Skip to main content</a>
     <nav class={styles.nav} aria-label="Main">
       <a class={styles.brand} href={`${baseUrl}/`}>
         <img src={`${baseUrl}/img/logo.svg`} alt="" />
@@ -211,7 +222,7 @@ const year = new Date().getFullYear()
       </button>
     </nav>
 
-    <main style="flex:1">
+    <main id="main-content" style="flex:1">
       <slot />
     </main>
 
