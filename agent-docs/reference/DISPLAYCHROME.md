@@ -108,9 +108,9 @@ conflate them:
   `display.features` / `display.error` with a plain ternary, and keeps its own
   `Loading` (radial spinner) / `DisplayError` (chord-circle text) components
   because the rectangular LGV banners (`BlockMsg`, "Force load", "Zoom in to see
-  features") don't fit a radial view. This is the key contrast with arc: arc is
-  an *LGV* SVG display so it reuses the LGV banners (see the SVG exception above);
-  circular's different visual medium is why it legitimately doesn't.
+  features") don't fit a radial view. Contrast with arc: arc is an *LGV*
+  SVG display, so it reuses the LGV banners (see the SVG exception above);
+  circular's radial medium is why it legitimately can't.
 
 ## First-paint `-done` testid
 
@@ -126,17 +126,23 @@ canvas give the inner `<canvas>` a **static** selector (`hic_canvas`, `ld_canvas
 
 ### Three testid shapes coexist — and why they aren't unified
 
-The `display-${id}` base is passed to DisplayChrome by maf and alignments
-directly; every other display uses a static `<type>-display` base. Additionally,
-five displays (canvas-basic, LinearVariant, wiggle, manhattan, multi-wiggle) set
-`ReactComponent: BaseLinearDisplayComponent` — the legacy `BaseLinearDisplay.tsx`
-wrapper — so they render **inside** a second `position:relative` container that
-emits `display-${id}-done` on its own. canvas-basic/LinearVariant pass **no**
-`testid` to their inner DisplayChrome (single `-done`, from the wrapper);
-wiggle/manhattan/multi-wiggle pass a static base too, so they emit **both**
-`display-${id}-done` (wrapper) and `<type>-display-done` (chrome). LinearVariant
-also relies on the wrapper's container to position its `FloatingLegend` child,
-and it reuses canvas's `FeatureComponent` as its `DisplayMessageComponent`.
+Two things vary per display: the `testid` base passed to DisplayChrome, and
+whether a legacy `BaseLinearDisplay.tsx` wrapper sits above it. Five displays
+(canvas-basic, LinearVariant, wiggle, manhattan, multi-wiggle) set
+`ReactComponent: BaseLinearDisplayComponent`, so they render **inside** a second
+`position:relative` container that emits `display-${id}-done` on its own. The
+resulting emitters:
+
+| Display(s) | Base → DisplayChrome | `-done` testid(s) emitted |
+| --- | --- | --- |
+| maf, alignments | `display-${id}` | `display-${id}-done` (chrome) |
+| canvas-basic, LinearVariant | none — wrapper only | `display-${id}-done` (wrapper) |
+| wiggle, manhattan, multi-wiggle | `<type>-display` + wrapper | **both** `display-${id}-done` (wrapper) and `<type>-display-done` (chrome) |
+| every other display | `<type>-display` | `<type>-display-done` (chrome) |
+
+LinearVariant additionally leans on the wrapper's container to position its
+`FloatingLegend` child, and reuses canvas's `FeatureComponent` as its
+`DisplayMessageComponent`.
 
 This is genuine redundancy (a nested container that duplicates DisplayChrome's
 own `position:relative` + `-done`), but it is **deliberately not collapsed** — the
