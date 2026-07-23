@@ -172,12 +172,12 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
         ) : null}
         <Typography variant="body2" color="text.secondary" gutterBottom>
           At each position, the reads &quot;vote&quot; for a base. This works
-          like the widely-used samtools tool, with one difference: if your
-          reads disagree, it can report a standard IUPAC ambiguity code (e.g.
-          R for A-or-G) covering more than just two bases. That means samples
-          with more than two chromosome copies, or mixed/pooled samples, can
-          show a real 3- or 4-way split instead of being forced into a
-          two-allele result.
+          like the widely-used samtools tool, with one difference: if your reads
+          disagree, it can report a standard IUPAC ambiguity code (e.g. R for
+          A-or-G) covering more than just two bases. That means samples with
+          more than two chromosome copies, or mixed/pooled samples, can show a
+          real 3- or 4-way split instead of being forced into a two-allele
+          result.
         </Typography>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <TextField

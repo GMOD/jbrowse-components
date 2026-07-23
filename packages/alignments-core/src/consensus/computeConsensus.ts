@@ -48,7 +48,9 @@ export interface ConsensusOptions {
 // indexed by BAM 4-bit seqi. A pure base contributes 8 to its own score; an
 // ambiguity code splits its weight across component bases (e.g. R -> A+G at 4
 // each, N -> all four at 1). This is what makes the call fraction match samtools
-// even when reads contain N or IUPAC codes. seqi order matches SEQRET
+// even when reads contain N or IUPAC codes. These reproduce samtools's integer
+// tables exactly, including its asymmetric V and K weights; all components still
+// clear the default 0.5 fold threshold. seqi order matches SEQRET
 // ('=ACMGRSVTWYHKDBN').
 const SEQI2A = [0, 8, 0, 4, 0, 4, 0, 2, 0, 4, 0, 2, 0, 2, 0, 1]
 const SEQI2C = [0, 0, 8, 4, 0, 0, 4, 2, 0, 0, 4, 2, 0, 0, 2, 1]
@@ -181,12 +183,12 @@ export function buildConsensusTally(
   }
 }
 
-// IUPAC ambiguity code for a set of bases folded into a call, indexed by a
-// 4-bit mask (1=A, 2=C, 4=G, 8=T) — e.g. mask 5 (A+G) -> 'R'. Index 0 (no
-// base folded in — only reachable via the depth/callFract fallback below) and
-// index 15 (all four) both read as 'N'.
+// IUPAC ambiguity code for a set of bases folded into a call, indexed directly
+// by the BAM 4-bit base mask (1=A, 2=C, 4=G, 8=T) — e.g. mask 5 (A+G) -> 'R'.
+// Index 0 has no IUPAC base and defensively reads as 'N'; index 15 (all four)
+// is the standard 'N'.
 const IUPAC_FROM_MASK = [
-  '',
+  'N',
   'A',
   'C',
   'M',
@@ -221,9 +223,11 @@ const IUPAC_FROM_MASK = [
 // own doc comment's "6A, 5G, 4C is N" example demonstrates for its capped
 // version; uncapped, that same column instead folds in all three (C also
 // clears hetFract relative to A) and reports V rather than giving up to N.
-// Deletions stay a separate, samtools-asymmetric case: a gap that wins the
-// plurality is always called ('*'), never folded into an ambiguity code, and
-// never demoted to 'N', regardless of callFract/hetFract.
+// Gaps take part in the same fold. IUPAC has no base/gap codes, so samtools
+// writes a base+gap call as a lowercase base; this implementation extends that
+// convention to lowercase IUPAC for an uncapped multi-base+gap call. A gap-only
+// call is '*'. If the final call/depth gate fails, samtools's asymmetry remains:
+// a winning gap falls back to '*', while a winning base falls back to 'N'.
 // Writes the winning and total weighted scores into out[0]/out[1] (a caller-
 // owned scratch reused across the loop, so no per-position allocation). One
 // implementation shared by every column — main and insertion sub-columns — so a
@@ -268,36 +272,47 @@ function decideCall(
   if (totDepth < minDepth) {
     return call1 === 4 ? '*' : 'N'
   }
-  if (call1 === 4) {
-    return '*'
+  if (call1 === -1) {
+    return 'N'
   }
 
   const need = hetFract * score1
   let mask = 0
   let usedScore = 0
-  if (sA >= need) {
+  if (sA > 0 && sA >= need) {
     mask |= 1
     usedScore += sA
   }
-  if (sC >= need) {
+  if (sC > 0 && sC >= need) {
     mask |= 2
     usedScore += sC
   }
-  if (sG >= need) {
+  if (sG > 0 && sG >= need) {
     mask |= 4
     usedScore += sG
   }
-  if (sT >= need) {
+  if (sT > 0 && sT >= need) {
     mask |= 8
     usedScore += sT
   }
-  return usedScore >= callFract * tscore ? IUPAC_FROM_MASK[mask]! : 'N'
+  const hasGap = gap > 0 && gap >= need
+  if (hasGap) {
+    usedScore += gap
+  }
+  if (usedScore < callFract * tscore) {
+    return call1 === 4 ? '*' : 'N'
+  }
+  if (hasGap) {
+    return mask ? IUPAC_FROM_MASK[mask]!.toLowerCase() : '*'
+  }
+  return IUPAC_FROM_MASK[mask]!
 }
 
-// Per-column visitor. call is the raw call ('A'/'C'/'G'/'T'/'*'/'N', before any
-// gapChar substitution); insertions is the (already thresholded) inserted bases
-// following this column, or '' if none. callScore/tscore are the winning and
-// total weighted scores at this column (for allele-fraction reporting).
+// Per-column visitor. call is the raw base/IUPAC/'*'/'N' call before any
+// gapChar substitution; lowercase denotes a base+gap ambiguity. insertions is
+// the (already thresholded) inserted sequence following this column, or '' if
+// none. callScore/tscore are the winning and total weighted scores at this
+// column (for allele-fraction reporting).
 export type ConsensusColumnVisitor = (
   refPos: number,
   refCode: number,

@@ -96,10 +96,66 @@ describe('computeConsensusVariants', () => {
     ])
   })
 
-  test('N (no-call) positions are not variants', () => {
+  test('IUPAC ambiguity positions are not variants', () => {
     const reads = [
       ...times(5, { start: 0, end: 1, mismatches: [{ pos: 0, base: 'G' }] }),
       ...times(5, { start: 0, end: 1, mismatches: [{ pos: 0, base: 'C' }] }),
+    ]
+    expect(variants('A', reads)).toEqual([])
+  })
+
+  test('base/gap ambiguity is not emitted as a hard deletion', () => {
+    const reads = [
+      ...times(3, {
+        start: 0,
+        end: 3,
+        dels: [{ pos: 1, len: 1 }],
+      }),
+      ...times(2, { start: 0, end: 3 }),
+    ]
+    expect(variants('ACG', reads)).toEqual([])
+  })
+
+  test('IUPAC insertion sequences are not emitted as VCF alleles', () => {
+    const reads = [
+      ...times(6, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'A' }],
+      }),
+      ...times(4, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'G' }],
+      }),
+    ]
+    expect(variants('A', reads)).toEqual([])
+  })
+
+  test('an insertion with any ambiguous column is omitted in full', () => {
+    const reads = [
+      ...times(6, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'AA' }],
+      }),
+      ...times(4, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'AG' }],
+      }),
+    ]
+    expect(variants('A', reads)).toEqual([])
+  })
+
+  test('base/gap ambiguous insertions are not emitted as VCF alleles', () => {
+    const reads = [
+      ...times(3, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'T' }],
+      }),
+      ...times(2, { start: 0, end: 1 }),
     ]
     expect(variants('A', reads)).toEqual([])
   })

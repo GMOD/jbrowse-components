@@ -70,6 +70,59 @@ function times(count: number, r: ReadSpec) {
 }
 
 describe('computeConsensus', () => {
+  test.each([
+    ['A', 'A'],
+    ['C', 'C'],
+    ['AC', 'M'],
+    ['G', 'G'],
+    ['AG', 'R'],
+    ['CG', 'S'],
+    ['ACG', 'V'],
+    ['T', 'T'],
+    ['AT', 'W'],
+    ['CT', 'Y'],
+    ['ACT', 'H'],
+    ['GT', 'K'],
+    ['AGT', 'D'],
+    ['CGT', 'B'],
+    ['ACGT', 'N'],
+  ])('maps the pure-base set %s to IUPAC %s', (bases, expected) => {
+    const reads = bases.split('').map(base => ({
+      start: 0,
+      end: 1,
+      mismatches: [{ pos: 0, base }],
+    }))
+    expect(run('A', reads)).toBe(expected)
+  })
+
+  test.each('ACMGRSVTWYHKDBN'.split(''))(
+    'round-trips the BAM IUPAC read code %s in either case',
+    expected => {
+      for (const base of [expected, expected.toLowerCase()]) {
+        const reads = [
+          {
+            start: 0,
+            end: 1,
+            mismatches: [{ pos: 0, base }],
+          },
+        ]
+        expect(run('A', reads)).toBe(expected)
+      }
+    },
+  )
+
+  test('preserves samtools integer weighting for mixed V and K observations', () => {
+    const vote = (base: string): ReadSpec => ({
+      start: 0,
+      end: 1,
+      mismatches: [{ pos: 0, base }],
+    })
+    // The upstream tables reproduced here for parity are asymmetric: V votes
+    // A=2/C=2/G=1 and K votes G=4/T=8.
+    expect(run('A', [vote('A'), vote('V')])).toBe('A')
+    expect(run('A', [vote('G'), vote('K')])).toBe('K')
+  })
+
   test('all reads matching the reference reproduce it', () => {
     expect(run('ACGTACGT', times(5, { start: 0, end: 8 }))).toBe('ACGTACGT')
   })
@@ -140,15 +193,39 @@ describe('computeConsensus', () => {
     expect(run('ACGT', reads)).toBe('AGT')
   })
 
-  test('sub-threshold deletion is still called/omitted (samtools parity)', () => {
-    // 3 del : 2 ref at pos 1 -> gap has the plurality. A gap that wins the
-    // plurality is always called, regardless of callFract/hetFract — this is
-    // samtools' asymmetry, unrelated to the base ambiguity logic.
+  test('gap plurality with substantial base support is lowercase ambiguity', () => {
+    // 3 del : 2 ref C at pos 1. Both clear hetFract and together clear
+    // callFract, so samtools -A's base/gap convention emits lowercase c.
     const reads = [
       ...times(3, { start: 0, end: 5, dels: [{ pos: 1, len: 1 }] }),
       ...times(2, { start: 0, end: 5 }),
     ]
-    expect(run('ACGTA', reads)).toBe('AGTA')
+    expect(run('ACGTA', reads)).toBe('AcGTA')
+  })
+
+  test('base plurality with substantial gap support is lowercase ambiguity', () => {
+    const reads = [
+      ...times(2, { start: 0, end: 5, dels: [{ pos: 1, len: 1 }] }),
+      ...times(3, { start: 0, end: 5 }),
+    ]
+    expect(run('ACGTA', reads)).toBe('AcGTA')
+  })
+
+  test('uncapped multi-base plus gap support is lowercase IUPAC', () => {
+    const reads = [
+      ...times(4, { start: 0, end: 1 }),
+      ...times(3, {
+        start: 0,
+        end: 1,
+        mismatches: [{ pos: 0, base: 'G' }],
+      }),
+      ...times(2, {
+        start: 0,
+        end: 1,
+        dels: [{ pos: 0, len: 1 }],
+      }),
+    ]
+    expect(run('A', reads)).toBe('r')
   })
 
   test('gapChar keeps the deletion in the alignment frame', () => {
@@ -179,6 +256,45 @@ describe('computeConsensus', () => {
     expect(run('ACG', reads)).toBe('ACG')
   })
 
+  test.each([
+    [3, 2],
+    [2, 3],
+  ])(
+    '%i insertion reads versus %i non-insertion reads is lowercase ambiguity',
+    (insertionReads, nonInsertionReads) => {
+      const reads = [
+        ...times(insertionReads, {
+          start: 0,
+          end: 3,
+          ins: [{ afterPos: 0, bases: 'T' }],
+        }),
+        ...times(nonInsertionReads, { start: 0, end: 3 }),
+      ]
+      expect(run('ACG', reads)).toBe('AtCG')
+    },
+  )
+
+  test('insertion tails fold multiple bases plus no-insertion gaps', () => {
+    const reads = [
+      ...times(4, {
+        start: 0,
+        end: 3,
+        ins: [{ afterPos: 0, bases: 'AA' }],
+      }),
+      ...times(3, {
+        start: 0,
+        end: 3,
+        ins: [{ afterPos: 0, bases: 'AG' }],
+      }),
+      ...times(2, {
+        start: 0,
+        end: 3,
+        ins: [{ afterPos: 0, bases: 'A' }],
+      }),
+    ]
+    expect(run('ACG', reads)).toBe('AArCG')
+  })
+
   test('includeInsertions=false keeps the reference coordinate frame', () => {
     const reads = times(4, {
       start: 0,
@@ -198,6 +314,10 @@ describe('computeConsensus', () => {
   test('uncovered positions are N', () => {
     const reads = [{ start: 2, end: 4 }]
     expect(run('ACGT', reads)).toBe('NNGT')
+  })
+
+  test('hetFract zero folds observed alleles but not zero-support bases', () => {
+    expect(run('A', times(5, { start: 0, end: 1 }), { hetFract: 0 })).toBe('A')
   })
 
   test('N read bases dilute like samtools (8A + 2N still calls A)', () => {
