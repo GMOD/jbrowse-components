@@ -30,7 +30,7 @@ test("a session snapshot's own value beats the admin default", () => {
 
 test("a user's toggle beats the admin default and persists as an override", () => {
   const session = sessionWith(true)
-  session.setUseWorkspaces(false)
+  session.setUseWorkspacesPreference(false)
 
   expect(session.effectiveUseWorkspaces).toBe(false)
   expect(session.getPreferenceChanges()).toEqual([
@@ -38,6 +38,17 @@ test("a user's toggle beats the admin default and persists as an override", () =
   ])
 
   session.resetUseWorkspaces()
+  expect(session.effectiveUseWorkspaces).toBe(true)
+  expect(session.getPreferenceChanges()).toEqual([])
+})
+
+// the session-scoped setter is what a spec `layout` uses: getPreferenceChanges
+// is what PreferencesSessionMixin persists to localStorage, so a shared spec
+// link must leave it empty rather than rewriting the visitor's own preference
+test('setUseWorkspaces is session-scoped and writes no override', () => {
+  const session = sessionWith()
+  session.setUseWorkspaces(true)
+
   expect(session.effectiveUseWorkspaces).toBe(true)
   expect(session.getPreferenceChanges()).toEqual([])
 })

@@ -125,21 +125,33 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * applies to this session and becomes the user's default for sessions
-         * that don't specify one. Persisted only here, on an explicit set — an
-         * autorun mirroring the resolved value would bake the admin default
-         * into every visitor's localStorage as if they had chosen it, leaving a
-         * later admin change unable to reach them.
+         * set the workspaces layout for this session only, leaving the user's
+         * personal default untouched. For session-scoped intent — a spec
+         * carrying a `layout`, or an ad-hoc "move view to a tab/split" — where
+         * rewriting the visitor's global preference would be a surprise. The
+         * user-facing default toggle is `setUseWorkspacesPreference`.
          */
         setUseWorkspaces(useWorkspaces: boolean) {
+          self.useWorkspaces = useWorkspaces
+        },
+
+        /**
+         * #action
+         * the user-facing workspaces toggle: applies to this session and
+         * becomes their default for sessions that don't specify one. Persisted
+         * only here, on an explicit toggle — an autorun mirroring the resolved
+         * value would bake the admin default into every visitor's localStorage
+         * on first load, so a later admin change could never reach them.
+         */
+        setUseWorkspacesPreference(useWorkspaces: boolean) {
           self.useWorkspaces = useWorkspaces
           self.setPreferenceOverride('useWorkspaces', useWorkspaces)
         },
 
         /**
          * #action
-         * drop this session's value and the user's override so workspaces falls
-         * back to the admin default
+         * drop both this session's explicit value and the user's override so
+         * workspaces falls back to the admin default
          */
         resetUseWorkspaces() {
           self.useWorkspaces = undefined

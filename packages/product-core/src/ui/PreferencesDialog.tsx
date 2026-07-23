@@ -44,7 +44,7 @@ export interface PreferencesDialogSession {
   stickyViewHeaders: boolean
   setStickyViewHeaders: (sticky: boolean) => void
   effectiveUseWorkspaces: boolean
-  setUseWorkspaces: (useWorkspaces: boolean) => void
+  setUseWorkspacesPreference: (useWorkspaces: boolean) => void
   resetUseWorkspaces: () => void
   animationMode: AnimationMode
   setPreferenceOverride: (key: string, value: unknown) => void
@@ -60,18 +60,20 @@ export interface PreferencesDialogSession {
 
 // The preference subsystems whose reset doesn't reduce to dropping a key from
 // the session override map — theme and the two layout flags, each its own mixin
-// with its own default. Defined once here so the reset diff (`change`) and the
-// reset actions (`resetAllPreferences`, `resetPreferenceChange`) can't
-// enumerate them differently: `head` both tags the change row and routes its
-// reset, so a row always reverts through the same descriptor that produced it.
-// The preference-override map (animationMode, scrollZoom, promoted display-type
+// with its own default (useWorkspaces spans both: the map holds the user's
+// override, the session model holds this session's explicit value). Defined
+// once here so the reset diff (`change`) and the reset actions
+// (`resetAllPreferences`, `resetPreferenceChange`) can't enumerate them
+// differently: `head` both tags the change row and routes its reset, so a row
+// always reverts through the same descriptor that produced it. The
+// preference-override map (animationMode, scrollZoom, promoted display-type
 // defaults) is enumerated separately by the session.
 interface PreferenceSubsystem {
   head: string
   // the change row when this subsystem differs from its default, else
-  // undefined. Omitted by useWorkspaces, which lives in both stores: the
-  // override map already reports its row, so this entry only routes the reset,
-  // which must clear the session property too.
+  // undefined. Omitted when the session's override map already reports the row
+  // (useWorkspaces) and this entry exists only to route its reset, which has to
+  // clear the session property as well as the override.
   change?: (session: PreferencesDialogSession) => TrackConfigChange | undefined
   reset: (session: PreferencesDialogSession) => void
 }
@@ -258,7 +260,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
             control={<Checkbox checked={session.effectiveUseWorkspaces} />}
             label="Use workspaces (tabbed/tiled view layout)"
             onChange={(_, checked) => {
-              session.setUseWorkspaces(checked)
+              session.setUseWorkspacesPreference(checked)
             }}
           />
         </FormGroup>
