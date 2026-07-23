@@ -49,19 +49,19 @@ no-op. `ArcFetchModel` therefore overrides `reload()` to also drop
 stay on screen under the loading overlay instead of blanking.
 
 (The counter itself only works because `installGlobalFetchAutorun` reads it
-*above* its gate — read under the gate it falls out of the MobX dependency set
+_above_ its gate — read under the gate it falls out of the MobX dependency set
 on the very run that settles into "nothing to fetch". See ARCHITECTURE.md, "The
 global-fetch trigger list must be read unconditionally".)
 
 ## Readiness / testid
 
-Two separate flags, don't conflate them. `svgReady`
-(`dataLoaded` = `isDataCurrent(loadedRegionSignature, currentRegionSignature(self))`,
-or error, or too-large) is the **SVG-export terminal gate**: it goes false again
-on a pan/zoom past a block boundary, so an export fired mid-refetch waits for
-fresh arcs. The `arc-display${drawn ? '-done' : ''}` testid browser tests wait on
-uses the looser `drawn` (`features !== undefined || !!error`) — the SVG analogue
-of GPU `canvasDrawn`, which stays true across a refetch so the testid and the
+Two separate flags, don't conflate them. `svgReady` (`dataLoaded` =
+`isDataCurrent(loadedRegionSignature, currentRegionSignature(self))`, or error,
+or too-large) is the **SVG-export terminal gate**: it goes false again on a
+pan/zoom past a block boundary, so an export fired mid-refetch waits for fresh
+arcs. The `arc-display${drawn ? '-done' : ''}` testid browser tests wait on uses
+the looser `drawn` (`features !== undefined || !!error`) — the SVG analogue of
+GPU `canvasDrawn`, which stays true across a refetch so the testid and the
 loading anti-flash don't churn on pan. The `loadedRegionSignature` compare (a
 region-key string, the single-array analog of `loadedRegions`) is the staleness
 signal: an export fired right after a pan/zoom waits for fresh arcs instead of

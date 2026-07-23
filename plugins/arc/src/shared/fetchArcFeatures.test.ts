@@ -227,7 +227,8 @@ describe('arc derived regionTooLarge', () => {
 // reload() dropping loadedRegionSignature.
 describe('arc reload', () => {
   it('refetches after a successful load', async () => {
-    const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
+    const { display, view, mockRpcCall } =
+      createTestEnvironment().createDisplay()
     // zoom in under the byte cap so the first fetch actually commits
     view.zoomTo(50)
     await settle()
