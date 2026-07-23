@@ -203,6 +203,32 @@ gallery.ts can't import `screenshot-specs.ts` directly — that module's
 override only when the spec's base capture isn't the state to open live (e.g.
 `horizontally_flip`, whose figure flips at capture time).
 
+**The list is a curated highlight reel, not an auto-dump of every spec.** It's
+hand-maintained on purpose: most `screenshot-specs.ts` entries are doc-mechanics
+screenshots (`config_not_found`, `rubberband`, `share_button`, `top_level_menus`,
+add-track/bookmark flows) that document a UI, not a dataset worth featuring.
+Sections are organized by biological/analysis capability (synteny, SVs,
+variants/populations, pangenome, conservation…), each item the single strongest
+representative of one capability — don't add three near-duplicate cards for the
+same tutorial (BXD QTL and C-GIAB each have 10+ specs; pick one).
+
+To keep it current, the gap to close is a capability that has a committed figure
+_and_ a resolvable live link but no gallery item. Find candidates by diffing the
+specs that have both against the specs already referenced here:
+
+- has a figure: `static/img/<spec>.png` exists;
+- has a live link: `<spec>` is a key in `galleryLinks.generated.ts` (the throw in
+  `itemLiveHref` is the CI-visible tripwire if you reference one that isn't);
+- prefer specs whose figure appears in a `docs/tutorials|user_guides/*.md` file —
+  set that page as `guide:` and condense the item `description` from the figure's
+  own caption rather than writing new prose (keeps it factual and drift-resistant,
+  per the caption rules above).
+
+Skip specs flagged `heavyNetwork` in their spec (e.g. `gallery/hg002_dipcall`,
+1GB whole-chromosome BAM fetches) — the figure is fine but the live-open is a bad
+demo experience. After adding items, `node`-import gallery.ts and call
+`itemLiveHref` on every item to confirm none throw; a build also surfaces it.
+
 ## Newsletter
 
 Subscription form (`src/components/NewsletterSignup.tsx`) calls the AWS Lambda
