@@ -14,7 +14,7 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 // That bug was `babel-plugin-react-compiler` memoizing a MobX read on stable
 // identity; `DisplayChromeInner` now carries `'use no memo'`, so it is no longer
 // compiled and the ternary-vs-early-`return` sensitivity is gone (see
-// `agent-docs/COMPILER_TERNARY_FINDING.md`). These tests still guard the runtime
+// `agent-docs/reference/COMPILER_TERNARY_FINDING.md`). These tests still guard the runtime
 // commit behavior, plus rule 1b: the `displayPhase` loading term must stay a lazy
 // thunk so the observer doesn't track the churning `visibleRegions`/`loadedRegions`
 // set while a terminal banner is up (`terminal banner survives loading-condition

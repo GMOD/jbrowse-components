@@ -57,7 +57,7 @@ authors. Don't turn it into a workspace dependency.
 `observer(()=>…)` — always write observers that way, so MobX drives their
 reactivity. The `function F(){}; observer(F)` form DOES get compiled and can
 stale a MobX read (memoizes on stable identity); avoid it, or add
-`'use no memo'`. See `agent-docs/COMPILER_TERNARY_FINDING.md`.
+`'use no memo'`. See `agent-docs/reference/COMPILER_TERNARY_FINDING.md`.
 
 ## Tooling
 

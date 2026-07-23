@@ -205,7 +205,7 @@ re-attaches on force-load. Three things make this the right shape:
 - **React Compiler opt-out.** `DisplayChromeInner` carries `'use no memo'`, so
   babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read on
   `model`'s stable identity. Full analysis:
-  `COMPILER_TERNARY_FINDING.md`.
+  `reference/COMPILER_TERNARY_FINDING.md`.
 
 ### `rpcProps()` loop trap and how to break it
 

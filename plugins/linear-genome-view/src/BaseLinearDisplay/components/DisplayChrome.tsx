@@ -57,7 +57,7 @@ interface CanvasHandle {
 // avoiding needless re-renders while a banner is up. (This component carries
 // `'use no memo'`, so the react-compiler staleness that once made the terminal
 // branches sensitive to early-`return`-vs-ternary no longer applies; see the
-// directive below and `agent-docs/COMPILER_TERNARY_FINDING.md`.)
+// directive below and `agent-docs/reference/COMPILER_TERNARY_FINDING.md`.)
 //
 // Early-`return` also gives the canvas a clean dispose/re-init: unmounting the
 // body fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
@@ -85,7 +85,7 @@ interface CanvasHandle {
 // `observer` from a named declaration. That form IS compiled by
 // babel-plugin-react-compiler, so it carries `'use no memo'` below to opt out —
 // otherwise the compiler can memoize a MobX read on stable identity and drop an
-// update (see agent-docs/COMPILER_TERNARY_FINDING.md).
+// update (see agent-docs/reference/COMPILER_TERNARY_FINDING.md).
 function DisplayChromeInner<B extends { dispose(): void }>({
   model,
   factory,

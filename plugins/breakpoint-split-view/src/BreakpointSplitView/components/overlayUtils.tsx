@@ -62,7 +62,7 @@ export function useMouseoverElt() {
 // snapshot the call returns (offsetPx/scrollTop/height per level) would then
 // stay frozen at first-render values while the getX closure it hands back keeps
 // reading bpPerPx live — panning froze the overlay in place and zooming threw
-// it millions of px off-screen. See agent-docs/COMPILER_TERNARY_FINDING.md.
+// it millions of px off-screen. See agent-docs/reference/COMPILER_TERNARY_FINDING.md.
 export function useOverlayState({
   model,
   trackId,

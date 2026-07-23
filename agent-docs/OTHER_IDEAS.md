@@ -1283,6 +1283,62 @@ packed tarball), and programmatic consumers all use — which also closes the
 hook instead of its own copy. Don't bundle `@jbrowse/img` for this — it freezes the
 semver flow-through for one narrow consumer path.
 
+### Lazy display behavior via `extendInstance` (proposal, not implemented)
+
+Defer the dependency-heavy, interaction-only slice of display models out of the
+eager bundle. Today each plugin statically imports its model factory, and
+`createPluggableElements()` builds every display's full MST type at boot, because
+`track.displays[]` is `types.union(...allDisplays)` and must contain every type a
+saved session could reference. Only `ReactComponent` is `lazy()`-split.
+
+The primitive is the fork's `extendInstance(instance, fn)` (branch
+`feat/extend-instance-lazy-chain`, unlanded): attach `{actions, views, state}` to
+a **live** instance. Persisted props must stay on the base — the union hydrates
+props only, so a `.props()` in a deferred segment would be dropped from the
+snapshot.
+
+The split that makes it safe is by *when the member is read*, not by size:
+
+- **Render-critical, must be present at hydrate:** layout getters, `rpcProps()`,
+  `regionCannotBeRendered`, height, `renderProps`. Stay on the base.
+- **Interaction-triggered:** `trackMenuItems`, `contextMenuItems`, dialog
+  launchers, export sub-flows. Read only at interaction boundaries
+  (`TrackLabelMenu.tsx`, `BaseTrackModel`'s `displays.flatMap(d =>
+  d.trackMenuItems())`), never in the render loop, so an `await` there is fine.
+  `trackMenuItems` is a plain view *function* (installed `configurable:true`, and
+  observers re-invoke functions each reaction), so there is no stranded computed
+  atom — the fork's "sharp edge over lazy members" caveat is about getters.
+
+Mechanism: a volatile function slot (`menuImpl`) plus an idempotent
+`ensureBehaviorLoaded()` that `import()`s the menu module and `extendInstance`s
+it in; the base view delegates to `self.menuImpl?.(self)`. Either await it at the
+menu-open handler, or don't and let MobX fill the open menu a frame later.
+
+The payoff is **transitive deps** (MUI icons, editors, tree-sidebar, non-lazy
+dialog helpers), not model code — own-code was measured at single-digit KB
+gzipped per model. Several displays already have standalone menu modules
+(`hic/LinearHicDisplay/trackMenuItems.ts`,
+`canvas/LinearMultiRowFeatureDisplay/trackMenuItems.ts`,
+`maf/LinearMafDisplay/trackMenuItems.ts`,
+`variants/shared/multiSampleVariantMenuItems.ts`), so pilot on
+`LinearHicDisplay` and **measure before continuing**: diff the main chunk gzipped
+and confirm a new async chunk carries the icons out. If the deps don't leave the
+eager chunk (shared with other eager code), stop — ROI collapses. Hot-path
+displays (`LinearBasicDisplay`, `LinearAlignmentsDisplay`) can't defer their
+models but can defer this surface, after a mechanical extraction of the
+`superTrackMenuItems` wrap blocks.
+
+Risks: one value re-export from an `index.ts` re-pins the deferred module (add a
+check-script; type-only re-exports are erased); a render-critical getter reading
+a deferred slot gets `undefined`; `contextMenuItems` needs the same treatment or
+it re-pins the code.
+
+Orthogonal to deferring whole secondary *view* stacks (dotplot/synteny/circular/
+hic/breakpoint/sv-inspector) behind a thin registered base — that variant buys
+synchronous saved-session hydration of a code-split view but needs every
+persisted prop hoisted to the thin base plus a render-path loading gate. Revisit
+only after the interaction-surface approach is proven.
+
 ## Aborting in-flight network requests (proposal, not implemented)
 
 Cancel today (`FetchMixin.cancelFetchByUser` → `stopStopToken`) interrupts
@@ -1629,6 +1685,70 @@ every pin/promote affordance — not this.
 Export actual R plotting code corresponding to a JBrowse visualization, to
 connect JBrowse to reproducible R/ggplot2 figures (`ggplot2`/Bioconductor).
 Prototype work exists on the **`R_export2`** branch.
+
+### The vision: one brain, N pens
+
+The loop being closed: pipelines make every FASTQ→BAM→VCF edge re-runnable, then
+a human opens a separate interactive app and squints at pixels. **Author once,
+render both** — one spec drives the interactive view *and* a static figure
+regenerable inside Quarto/R Markdown. IGV can't (no spec), UCSC can't
+(server-bound), Gviz/ggbio can't (no interactive twin). **Not JBrowseR** — that
+embeds the JS app in an iframe and emits an interactive HTML blob, not an R
+figure object drawn by R's own graphics, composable with `patchwork`/`cowplot`.
+
+Tractable now because the GPU rearchitecture already separated *what to draw*
+from *how to draw it*: GPU and Canvas2D share the geometry/layout/color math and
+diverge only at the last inch (instanced quad vs `ctx.fillRect`), and SVG export
+already proves the draw layer can target a non-canvas surface. R is one more pen.
+
+**The one principle — diverge at the marks, never at the brain.** The brain
+(pileup row packing, mismatch computation, coverage binning, SV chaining,
+methylation aggregation, colorBy/scale/threshold resolution) must be identical
+and is never reimplemented in R. The pen (resolved marks → device output) may
+diverge freely and *should* be ggplot-native — R has no
+export-must-match-the-screen constraint, so chasing pixel identity forfeits the
+native-marks advantage for no reproducibility gain. A divergent pen is a
+different look; a divergent brain is a different result.
+
+**The load-bearing artifact is a render IR** — post-layout features with
+*resolved* semantic aesthetics in genomic + row space: geometry in absolute
+genomic coords plus assigned layout row (not x/y px), resolved fill/stroke/glyph
+kind/opacity (R does not re-derive them), text with anchors not raster boxes, and
+the coordinate frame. Baking pixels would kill it — a dead picture is neither
+re-themeable nor composable. Earn the format in-tree first: route **SVG export**
+through the explicit IR, and if it can't regenerate JBrowse's own SVG output
+visually identically, it isn't ready to cross a language boundary. The IR is the
+real deliverable; Python/matplotlib is nearly free afterward.
+
+Two decisions define who this is for:
+
+- **Where does the brain run at R's dimensions?** Layout is not
+  resolution-independent (row packing and label collision are pixel/DPI
+  functions), so layout baked at 800px can't replay at 2000px. R re-running
+  layout is the trap (rejected — guarantees drift); JS running layout headless at
+  the target size keeps one brain but drags Node/WASM into the R environment; a
+  language-neutral layout core (Rust/WASM) called by both is the principled
+  endgame and the biggest project.
+- **Who feeds the brain in the R path?** Bioconductor `GRanges`/`GAlignments` in
+  (pure `BiocManager`, offline HPC, no Node) means JBrowse's adapters — the crown
+  jewels — don't participate and you compete with Gviz on its own turf, so the
+  differentiator must be JBrowse-specific glyphs (methylation, SV, multi-sample
+  variant matrix, synteny). JBrowse JS adapters headless keeps the adapters and
+  the web app's data path but puts Node/WASM back in the R env. Ideally the IR is
+  producible both ways; the flagship choice is the product-identity choice.
+
+Anti-goals: don't reimplement the renderer in R; don't let R own brain logic;
+don't bake pixels into the IR; don't ship an htmlwidget and call it R export.
+
+Done looks like: the IR regenerates JBrowse's own SVG export before it ever
+crosses to R; an R figure and the browser view of one spec agree on layout and
+biology while differing in paint; the figure renders from a diffable spec with no
+GUI state; and adding a display type needs no bespoke R rendering code.
+
+Related: `ARCHITECTURE.md` "Keeping the two backends in parity" and "SVG export"
+(the one-brain/two-pen seam this generalizes), `reference/SVG_EXPORT.md` (the
+existing non-canvas pen, and the first IR consumer),
+`reference/BP_PRECISION.md` (the coordinate convention the IR inherits).
 
 **What's already built** (a two-part system, further along than "started"):
 

@@ -131,7 +131,7 @@ MobX read on `model`'s stable identity and silently drop an update.
 `DisplayChromeInner` now carries `'use no memo'`, so the compiler doesn't compile
 it and the early-`return`-vs-ternary choice is purely stylistic. Full analysis +
 minimal repro + codebase audit (DisplayChrome was the only compiled observer):
-`COMPILER_TERNARY_FINDING.md`.
+`COMPILER_TERNARY_FINDING.md` (this directory).
 
 ## SVG-only `renderToCtx` drift (removed pattern)
 

@@ -86,10 +86,8 @@ how-tos in **[guides/](guides/)**, and design rationale in
 | Doc                                     | Purpose                                                     | When to read                                  |
 | --------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
 | **[TODO.md](TODO.md)**                  | Action items to build/fix (backlog)                         | Picking up work                               |
-| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**    | Future / exploratory concepts + folded proposals, incl. block-level synteny import and request-abort (not current work) | Brainstorming, product direction |
+| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**    | Future / exploratory concepts + folded proposals — block-level synteny import, request-abort, lazy display behavior, the native-R export vision (none of it current work) | Brainstorming, product direction |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)**  | Canonical GPU lifecycle / shaders / HAL reference           | Touching a display, backend, or shader        |
-| **[LAZY_DISPLAY_BEHAVIOR_PLAN.md](LAZY_DISPLAY_BEHAVIOR_PLAN.md)** | Design note: defer displays' interaction surface (menus/dialogs) out of the eager bundle via the MST fork's `extendInstance` (not implemented) | Bundle-size work on display models; considering lazy MST behavior |
-| **[R_EXPORT_VISION.md](R_EXPORT_VISION.md)** | Vision: native-R figure export (not htmlwidget) via a language-neutral render IR — one brain, N pens — to close the reproducibility loop (not implemented; `R_export2` branch) | Working on R export; designing the render IR or SVG-export-through-IR |
 
 ### `reference/` — how the system works
 
@@ -98,6 +96,9 @@ how-tos in **[guides/](guides/)**, and design rationale in
 | **[SVG_EXPORT.md](reference/SVG_EXPORT.md)**                                 | SVG export pipeline: `renderSvg` shape, `svgReady`/`settled` gates, `paintLayer`, clip ids | Touching a display's `renderSvg.tsx` or export/capture readiness |
 | **[BP_PRECISION.md](reference/BP_PRECISION.md)**                             | Absolute-uint32 convention, hi/lo float math, window-relative cumBp, genome-size limits | Writing a `.slang` shader or a CPU instance packer |
 | **[PROGRESS_REPORTING.md](reference/PROGRESS_REPORTING.md)**                 | Worker→UI status channel: `statusCallback`, determinate bars, concurrent-fetch aggregation, cancel | Touching a progress bar or a download/worker loop |
+| **[REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md)**                     | The byte/density gate behind the "region too large" banner + the fetch hold-off | Touching fetch gating or the too-large banner |
+| **[SYNTENY_LOD.md](reference/SYNTENY_LOD.md)**                               | The two PIF tiers (fine/coarse), the profiled cost model, why read-time binning is capped | Touching make-pif, indexed PIF adapters, the synteny fetch RPC |
+| **[COMPILER_TERNARY_FINDING.md](reference/COMPILER_TERNARY_FINDING.md)**     | How babel-plugin-react-compiler coarsens a memo dep and stales a MobX read | Writing an `observer` or a custom hook that reads MobX; debugging a stale read |
 | **[HISTORICAL.md](reference/HISTORICAL.md)**                                 | Bugs that shaped the design + corrections to old writeups | "Why isn't it done the obvious way?" / avoiding a known-bad fix |
 | **[CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md)**                         | Display config → MST snapshot → plain object → renderer     | Touching config, JEXL callbacks, RPC payloads |
 | **[DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md)**           | Session-wide per-display-type slot defaults (promotable slots, CSS-cascade resolve) | Adding a "make default for all tracks like this" setting; touching `getConf` / `promotable` slots |
@@ -116,10 +117,12 @@ how-tos in **[guides/](guides/)**, and design rationale in
 | **[TOOLCHAIN.md](guides/TOOLCHAIN.md)**                                   | Why `typescript` (6.x) and `typescript7` coexist            | Touching TS versions, lint/typecheck/build scripts |
 | **[PERF_INSTRUMENTATION.md](guides/PERF_INSTRUMENTATION.md)**             | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
 | **[SCREENSHOT_REVIEW_HANDOFF.md](guides/SCREENSHOT_REVIEW_HANDOFF.md)**   | Working the `bad`-status screenshot-review backlog (regen pipeline, hosted-track sources) | Fixing website screenshot specs / gallery figures |
+| **[SCREENSHOT_CAPTURE_RACE.md](guides/SCREENSHOT_CAPTURE_RACE.md)**       | Why a canvas figure captures empty, and the readiness gate that fixes it | Debugging an empty/partial generated screenshot |
+| **[DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md)**   | Removing jbrowse-desktop's renderer privilege: what blocks it, what doesn't | Touching desktop IPC, preload, or plugin loading |
 
 ### `architecture-decision-records/`
 
-Design decisions (ADR-001 … ADR-039) — read to understand why something is the
+Design decisions (ADR-001 … ADR-040) — read to understand why something is the
 way it is. **[architecture-decision-records/README.md](architecture-decision-records/README.md)**
 indexes all of them by number, status, and one-line decision.
 
