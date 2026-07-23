@@ -1,5 +1,7 @@
 import { ErrorBanner } from '@jbrowse/core/ui'
+import { Button } from '@mui/material'
 
+import factoryReset from '../factoryReset.ts'
 import NoConfigMessage from './NoConfigMessage.tsx'
 
 export default function LoaderErrorBanner({ error }: { error: unknown }) {
@@ -31,6 +33,19 @@ export default function LoaderErrorBanner({ error }: { error: unknown }) {
     <div>
       <h1>JBrowse Error</h1>
       <ErrorBanner error={error} />
+      {/* the only way out of this screen: it renders instead of the app, so
+      there is no menu to reach. Reloading as-is just fails the same way when
+      the cause is in the URL (a bad ?config=, a session= that won't load), so
+      the escape hatch is the bare url */}
+      <Button
+        variant="contained"
+        style={{ margin: 20 }}
+        onClick={() => {
+          factoryReset()
+        }}
+      >
+        Start over without URL options
+      </Button>
     </div>
   )
 }
