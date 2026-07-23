@@ -25,6 +25,7 @@ const Arc = observer(function Arc({
   assembly,
   view,
   lineWidth,
+  hoverColor,
   exportSVG,
 }: {
   model: LinearPairedArcDisplayModel
@@ -32,9 +33,9 @@ const Arc = observer(function Arc({
   assembly: Assembly
   view: LGV
   lineWidth: number
+  hoverColor: string
   exportSVG?: boolean
 }) {
-  const theme = useTheme()
   const [mouseOvered, setMouseOvered] = useState(false)
   const { feature, alt, color, k1, k2 } = style
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
@@ -62,7 +63,7 @@ const Arc = observer(function Arc({
 
   const destY = Math.min(model.height, absrad)
   // hover emphasis: contrast against the track background in either theme
-  const col = mouseOvered ? theme.palette.text.primary : color
+  const col = mouseOvered ? hoverColor : color
   const events = {
     onMouseLeave: () => {
       setMouseOvered(false)
@@ -127,6 +128,9 @@ const Arcs = observer(function Arcs({
   const { assemblyManager } = getSession(model)
   const { arcStyles, height, lineWidth } = model
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
+  // resolved once here rather than per arc — every <Arc> would otherwise
+  // subscribe to theme context on its own to compute this one color
+  const hoverColor = useTheme().palette.text.primary
 
   if (!assembly) {
     return null
@@ -140,6 +144,7 @@ const Arcs = observer(function Arcs({
       view={view}
       assembly={assembly}
       lineWidth={lineWidth}
+      hoverColor={hoverColor}
       exportSVG={exportSVG}
     />
   ))

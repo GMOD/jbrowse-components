@@ -70,6 +70,24 @@ export function ArcFetchModel() {
           )
         },
       }))
+      .actions(self => {
+        const superReload = self.reload
+        return {
+          /**
+           * #action
+           * Arc's fetch trigger gates on `!dataLoaded`, so bumping
+           * `reloadCounter` alone can't refetch: the signature still matches the
+           * current blocks. Drop it so `dataLoaded` goes false and the autorun
+           * fires. `features` deliberately survives — the stale arcs stay on
+           * screen under the loading overlay rather than blanking, and
+           * `setFeatures` replaces them.
+           */
+          reload() {
+            superReload()
+            self.loadedRegionSignature = undefined
+          },
+        }
+      })
   )
 }
 

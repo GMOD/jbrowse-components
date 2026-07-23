@@ -737,8 +737,9 @@ export default function sharedModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Re-fetches LD matrix for the current viewport. Both the autorun
-         * (in `afterAttach`) and `reload()` invoke this directly.
+         * Re-fetches LD matrix for the current viewport. Driven by the
+         * `afterAttach` autorun; `reload()` reaches it by bumping
+         * `reloadCounter`, which that autorun tracks.
          */
         async performLDFetch() {
           if (self.isMinimized) {

@@ -61,7 +61,7 @@ function createTestEnvironment() {
 
   const mockRpcCall = jest.fn(async (_sessionId: string, method: string) =>
     method === 'CoreGetRegionByteEstimate'
-      ? { bytes: 1_500_000, fetchSizeLimit: 0, featureDensity: 1 }
+      ? { bytes: 100, fetchSizeLimit: 0, featureDensity: 1 }
       : [],
   )
   const LinearGenomeModel = linearGenomeViewStateModelFactory(pluginManager)
@@ -217,3 +217,35 @@ describe('arc derived regionTooLarge', () => {
 // direct call races the async afterAttach autoruns (which clear the estimate on
 // install). Browser tests cover the end-to-end path via the arc-display-done
 // testid.
+
+// Arc's fetch trigger gates on `!dataLoaded`, which goes false the moment a
+// fetch commits. That is the shape that breaks a naive reload: the skeleton
+// autorun stops re-reading `reloadCounter` once it settles into "nothing to
+// fetch", so bumping the counter can't wake it, and the signature still matches
+// so `shouldFetch` would stay false anyway. Covers both halves of the fix —
+// unconditional trigger reads in installGlobalFetchAutorun, and ArcFetchModel's
+// reload() dropping loadedRegionSignature.
+describe('arc reload', () => {
+  it('refetches after a successful load', async () => {
+    const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
+    // zoom in under the byte cap so the first fetch actually commits
+    view.zoomTo(50)
+    await settle()
+
+    const featureFetches = () =>
+      mockRpcCall.mock.calls.filter(c => c[1] === 'CoreGetFeatures').length
+    expect(display.dataLoaded).toBe(true)
+    expect(featureFetches()).toBe(1)
+
+    display.reload()
+    await settle()
+    expect(featureFetches()).toBe(2)
+  })
+})
+
+// the fetch autorun is debounced 1s, so give it room past that
+async function settle() {
+  for (let i = 0; i < 80; i++) {
+    await new Promise(resolve => setTimeout(resolve, 20))
+  }
+}

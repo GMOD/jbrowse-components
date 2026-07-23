@@ -138,7 +138,37 @@ composes no `RenderLifecycleMixin`, and instead of `DisplayChrome` it renders
 `BaseDisplayComponent` (plugins/arc), which re-uses the shared
 `computeDisplayPhase` precedence plus the shared `DisplayErrorBar` /
 `DisplayLoadingOverlay` / `TooLargeMessage` so its chrome stays identical to a
-GPU display's. `features !== undefined` is its `canvasDrawn` analogue.
+GPU display's. `features !== undefined || !!error` is its `canvasDrawn`
+analogue — the first-paint signal that gates the `-done` testid and the loading
+anti-flash. The stricter, staleness-aware `svgReady` is the export gate.
+
+### The global-fetch trigger list must be read unconditionally
+
+`installGlobalFetchAutorun` reads the viewport, `isMinimized`, `rpcProps()` and
+`reloadCounter` at the top of its body, *before* the display's `shouldFetch()`
+gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
+every run, so a read placed inside the gate drops out of it on any run that
+decides not to fetch — and can then never wake the autorun again. Arc is the
+shape that exposes this: its `shouldFetch` is `!regionTooLarge && !dataLoaded`,
+so it goes false on every successful fetch, and with `reloadCounter` read under
+the gate `reload()` was silently dead. The display's own `shouldFetch` is the
+only gate in the skeleton; each display's `fetch` re-checks `isMinimized` /
+`view.initialized` / an empty viewport for its direct callers.
+
+The general rule, which the other fetch autoruns already satisfy: **a gated
+trigger read is safe only if the gate is itself an observable that flips on the
+transition you want to wake up on.** `if (self.isMinimized) return` above the
+tracked deps (synteny, tree-sidebar, the variant sources autorun) is fine —
+un-minimizing re-runs the body and re-reads everything. A pure signal like
+`reloadCounter`, whose only job is to say "go again" and which no gate consults,
+is the dangerous case: nothing else will ever re-run the body on its behalf.
+`installGlobalFetchAutorun.test.ts` pins this.
+
+A global display whose `shouldFetch` gates on its own `dataLoaded` must also
+invalidate that freshness signal in `reload()` — bumping `reloadCounter` alone
+re-runs the autorun but leaves `shouldFetch` false. `ArcFetchModel.reload()`
+clears `loadedRegionSignature` for exactly this reason (keeping `features`, so
+the stale arcs stay under the loading overlay instead of blanking).
 
 **Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame at
 the backend factory
@@ -159,7 +189,7 @@ LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 | Autorun | Trigger | Action |
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` change | `clearAllRpcData()` |
-| `FetchVisibleRegions` | viewport / `fetchGeneration` (600ms debounce) | `fetchNeeded(needed)` for uncovered buffered regions; gated by `error`/`regionTooLarge` |
+| `FetchVisibleRegions` | viewport / `fetchGeneration` (600ms debounce) | `fetchNeeded(needed)` for uncovered buffered regions; gated by `error`/`regionTooLarge`/`fetchCanceled` and skipped while the track is minimized |
 | `SettingsInvalidate` | `rpcProps()` payload change | `clearAllRpcData()` |
 | `ClearBlockingStateOnViewportChange` | viewport change while `error` or `fetchCanceled` is set | `clearAllRpcData()` to unblock retry (the derived `regionTooLarge` self-releases, so it's not part of this) |
 | `ClearHoverOnRegionTooLarge` | `regionTooLarge` becomes true | fires the overridable `onRegionTooLarge()` hook (no-op base; alignments clears its hover) |
@@ -190,7 +220,9 @@ zoom-in with no imperative clear and doesn't flicker on pan. Displays opt in by
 overriding hooks (`derivedRegionTooLargeEnabled`, `configuredFetchSizeLimit`,
 `densityTooLargeForDerivedGate`) rather than shadowing the getter. Canvas folds
 its byte check into the feature-fetch RPC instead of a separate pre-flight
-estimate; the shared verdict/threshold/banner-text primitives live in
+estimate, and adds the density axis, via `CanvasFeatureGateMixin`
+(`plugins/canvas/src/shared/`), which both canvas feature displays compose; the
+shared verdict/threshold/banner-text primitives live in
 `shared/regionTooLargeUtils.ts` so the two paths can't drift.
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
@@ -390,9 +422,10 @@ per-region display with no settings-driven refetch (e.g.
 `rpcProps()`; `installGlobalFetchAutorun` reads it directly.
 
 `gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle,
-multi-wiggle, MAF, HiC, multi-LGV synteny (and GC-content, which inherits
-wiggle's wholesale). Canvas's worker pre-builds the buffer, so canvas has only
-`rpcProps()`. This splits refetch from re-upload: wiggle color change →
+multi-wiggle, MAF, HiC (and GC-content, which inherits wiggle's wholesale).
+Multi-LGV synteny fills the same role without the method: its `computedColors`
+getter is the re-upload-without-refetch half of the split. Canvas's worker
+pre-builds the buffer, so canvas has only `rpcProps()`. This splits refetch from re-upload: wiggle color change →
 re-encode only; `bicolorPivot` change → worker output differs → `rpcProps()` →
 refetch.
 

@@ -113,12 +113,11 @@ interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
  *
  * Unlike `MultiRegionDisplayMixin` (which installs its five fetch autoruns for
  * you), this mixin installs none — each global display owns its trigger. But
- * every global trigger shares the same skeleton: skip while the track is
- * minimized or the viewport has no content blocks; track `rpcProps()` +
- * `reloadCounter` so a settings change or a manual `reload()` refires; and
- * debounce. This helper owns that skeleton so a display supplies only its own
- * `shouldFetch` gate (reading — and thereby MobX-tracking — its display-specific
- * fetch inputs) and its `fetch` action.
+ * every global trigger shares the same skeleton: track the viewport,
+ * minimize/expand, `rpcProps()` and `reloadCounter` so any of them refires the
+ * fetch, then debounce. This helper owns that skeleton so a display supplies
+ * only its own `shouldFetch` gate (reading — and thereby MobX-tracking — its
+ * display-specific fetch inputs) and its `fetch` action.
  *
  * Runs through `autorunOnReadyView`, so the body never reads a throwing view
  * getter (`dynamicBlocks`, `width`) before the view is initialized, and
@@ -158,14 +157,21 @@ export function installGlobalFetchAutorun(
   autorunOnReadyView(
     self,
     view => {
-      if (
-        !self.isMinimized &&
-        view.dynamicBlocks.contentBlocks.length > 0 &&
-        opts.shouldFetch()
-      ) {
-        // Track user settings + manual reload so either refires the fetch.
-        void self.rpcProps?.()
-        void self.reloadCounter
+      // These reads are the trigger list: viewport, minimize/expand, user
+      // settings, manual reload. Keep them unconditional and above the gate —
+      // reading one inside the `if` drops it from the dependency set on every
+      // run that decides not to fetch, and then it can never wake the autorun
+      // again. That is exactly how `reload()` died on arc, whose `shouldFetch`
+      // goes false the moment data loads.
+      void view.dynamicBlocks
+      void self.isMinimized
+      void self.rpcProps?.()
+      void self.reloadCounter
+
+      // The only gate here is the display's own. Each `fetch` re-checks
+      // isMinimized / view.initialized / an empty viewport for its direct
+      // callers, so repeating them would be duplication, not safety.
+      if (opts.shouldFetch()) {
         opts.fetch()
         primed = true
       }
