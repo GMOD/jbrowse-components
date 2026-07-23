@@ -8,6 +8,21 @@ export interface BpOffset {
   end?: number
 }
 
+/**
+ * Offset in bp from a displayed region's **left screen edge**, which is its end
+ * when the region is reversed. This one reflection is what "reversed" means
+ * everywhere in a linear view: `bpToPx` below, the ruler's ticks
+ * (`LinearGenomeView/util.ts`), and any display placing a feature against a
+ * single block. Reach for it instead of writing `pos - region.start`, which
+ * silently lays out forward under a right-to-left ruler.
+ */
+export function bpOffsetInRegion(
+  region: { start: number; end: number; reversed?: boolean },
+  bp: number,
+) {
+  return region.reversed ? region.end - bp : bp - region.start
+}
+
 interface RegionSnap {
   start: number
   end: number
@@ -211,7 +226,7 @@ export function bpToPx({
       coord <= r.end &&
       (displayedRegionIndex === undefined || displayedRegionIndex === i)
     ) {
-      const regionOffset = r.reversed ? r.end - coord : coord - r.start
+      const regionOffset = bpOffsetInRegion(r, coord)
       return {
         index: i,
         offsetPx: Math.round((bpSoFar + regionOffset) / bpPerPx),

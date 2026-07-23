@@ -5,6 +5,8 @@
  * helpers only express what's unique to their marker type.
  */
 
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
+
 /**
  * The slice of the LGV model the overlay helpers read: the visible regions
  * (each with its screen-px origin and orientation) plus the zoom level.
@@ -51,9 +53,8 @@ export function* eachVisibleRegion<T>(
     if (data === undefined) {
       continue
     }
-    const bpToPx: BpToPx = vr.reversed
-      ? bp => vr.screenStartPx + (vr.end - bp) * scale
-      : bp => vr.screenStartPx + (bp - vr.start) * scale
+    const bpToPx: BpToPx = bp =>
+      vr.screenStartPx + bpOffsetInRegion(vr, bp) * scale
     yield { data, bpToPx, displayedRegionIndex: vr.displayedRegionIndex }
   }
 }

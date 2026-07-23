@@ -4,6 +4,7 @@ import {
   measureText,
   parseLocString,
 } from '@jbrowse/core/util'
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
@@ -57,9 +58,8 @@ export function makeOverviewTicks(
     const genomicCoord = reversed
       ? firstTick - i * majorPitch
       : firstTick + i * majorPitch
-    const offsetPx = reversed
-      ? (end - genomicCoord) / bpPerPx
-      : (genomicCoord - start) / bpPerPx
+    const offsetPx =
+      bpOffsetInRegion({ start, end, reversed }, genomicCoord) / bpPerPx
     return { genomicCoord, offsetPx }
   })
 }

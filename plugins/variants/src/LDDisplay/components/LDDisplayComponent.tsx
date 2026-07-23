@@ -6,10 +6,10 @@ import {
   getContainingView,
   maxFinite,
 } from '@jbrowse/core/util'
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import { bpOffsetInRegion } from '../../RenderLDDataRPC/reversedRegions.ts'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 import Crosshairs from './Crosshairs.tsx'

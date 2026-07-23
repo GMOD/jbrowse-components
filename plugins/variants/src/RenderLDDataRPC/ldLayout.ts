@@ -1,4 +1,4 @@
-import { bpOffsetInRegion } from './reversedRegions.ts'
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 
 import type { LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { Region } from '@jbrowse/core/util/types'

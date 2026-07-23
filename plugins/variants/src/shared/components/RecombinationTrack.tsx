@@ -1,8 +1,7 @@
 import { getFillProps, getStrokeProps, maxFinite } from '@jbrowse/core/util'
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
-
-import { bpOffsetInRegion } from '../../RenderLDDataRPC/reversedRegions.ts'
 
 const FILL_COLOR = 'rgba(59, 130, 246, 0.2)'
 const STROKE_COLOR = 'rgb(59, 130, 246)'

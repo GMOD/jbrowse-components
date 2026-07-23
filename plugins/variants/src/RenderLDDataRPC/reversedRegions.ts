@@ -3,20 +3,6 @@ import { ldPairIndex } from '../VariantRPC/getLDMatrix.ts'
 import type { LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
-/**
- * Offset in bp from a displayed region's **left screen edge**, which is its end
- * when the region is reversed. The same reflection `Base1DUtils.bpToPx` applies
- * (`r.reversed ? r.end - coord : coord - r.start`), so anything positioned with
- * this lands under the same ruler tick as a feature drawn by the normal block
- * machinery.
- */
-export function bpOffsetInRegion(
-  region: { start: number; end: number; reversed?: boolean },
-  bp: number,
-) {
-  return region.reversed ? region.end - bp : bp - region.start
-}
-
 // Index of the region a SNP sits in, or -1. Regions are the worker-side
 // (renamed) blocks, so refNames compare directly against the feature's.
 function regionIndexOf(snp: LDSnp, regions: Region[]) {
