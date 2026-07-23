@@ -16,6 +16,59 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+// hg38 vs T2T-CHM13 (hs1) at TNNT3, the locus the genomes.jbrowse.org demo
+// session parks on. `view` carries the ribbon-drawing settings that differ
+// between the default figure and the curved/transparent-indel one.
+function tnnt3Session(view: Record<string, unknown> = {}) {
+  return sessionSpec(HG38_HS1_CONFIG, {
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        colorBy: 'strand',
+        tracks: [['hg38_hs1_synteny']],
+        ...view,
+        views: [
+          {
+            assembly: 'hg38',
+            loc: 'chr11:1,881,000-1,955,000',
+            tracks: [{ trackId: 'hg38-genes', geneGlyphMode: 'longestCoding' }],
+            trackLabels: 'offset',
+          },
+          {
+            // same window shifted by the +83.7 kb hg38->hs1 offset the demo
+            // session's two views were parked at, so the two panels frame the
+            // same genes
+            assembly: 'hs1',
+            loc: 'chr11:1,964,700-2,038,700',
+            // the hs1 GFF is RefSeq All plus regulatory/"biological region"
+            // features, so showOnlyGenes is what makes it read like the
+            // curated hg38 track above
+            tracks: [
+              {
+                trackId: 'hs1-genes',
+                geneGlyphMode: 'longestCoding',
+                showOnlyGenes: true,
+              },
+            ],
+            trackLabels: 'offset',
+          },
+        ],
+      },
+    ],
+  })
+}
+
+// shared framing for the TNNT3 figures: remote 2bit genomes + hosted PIF/GFF,
+// so allow headroom, and equal heights so the two-part stack is clean
+const TNNT3_FRAME = {
+  mode: 'url' as const,
+  viewportWidth: 1200,
+  viewportHeight: 520,
+  readySelector: '[data-testid="synteny_canvas_done"]',
+  readyTimeout: 120000,
+  settleMs: 12000,
+}
+
 export const syntenySpecs: ScreenshotSpec[] = [
   // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with
   // a human-specific L1HS insertion). 'full' cigarMode paints the indel as a
@@ -496,52 +549,47 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // paints that flipped segment against the collinear ribbons around it, so the
   // rearrangement is the only off-color block in the view.
   {
-    mode: 'url',
+    ...TNNT3_FRAME,
     name: 'synteny_hg38_hs1_tnnt3',
-    url: sessionSpec(HG38_HS1_CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          colorBy: 'strand',
-          showColorLegend: true,
-          tracks: [['hg38_hs1_synteny']],
-          views: [
-            {
-              assembly: 'hg38',
-              loc: 'chr11:1,881,000-1,955,000',
-              tracks: [
-                { trackId: 'hg38-genes', geneGlyphMode: 'longestCoding' },
-              ],
-              trackLabels: 'offset',
-            },
-            {
-              // same window shifted by the +83.7 kb hg38->hs1 offset the demo
-              // session's two views were parked at, so the two panels frame the
-              // same genes
-              assembly: 'hs1',
-              loc: 'chr11:1,964,700-2,038,700',
-              // the hs1 GFF is RefSeq All plus regulatory/"biological region"
-              // features, so showOnlyGenes is what makes it read like the
-              // curated hg38 track above
-              tracks: [
-                {
-                  trackId: 'hs1-genes',
-                  geneGlyphMode: 'longestCoding',
-                  showOnlyGenes: true,
-                },
-              ],
-              trackLabels: 'offset',
-            },
-          ],
-        },
-      ],
-    }),
-    viewportWidth: 1200,
-    viewportHeight: 520,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    // remote 2bit genomes + hosted PIF/GFF, so allow headroom
-    readyTimeout: 120000,
-    settleMs: 12000,
+    url: tnnt3Session(),
+  },
+
+  // Two-part figure for the genomes_synteny tutorial: the same view as it opens
+  // (straight ribbons, colored indels) over the same view after the two ribbon
+  // settings the tutorial points at. Each part is its own session, so the stack
+  // can't drift from what the live links open.
+  {
+    ...TNNT3_FRAME,
+    name: 'genomes_synteny/ribbons_default',
+    url: tnnt3Session(),
+    annotations: [
+      { type: 'text', x: 24, y: 56, fontSize: 22, text: 'As it opens' },
+    ],
+  },
+  {
+    ...TNNT3_FRAME,
+    name: 'genomes_synteny/ribbons_curved',
+    // curved ribbons trace where each block lands instead of shearing across
+    // the gap; 'matches' leaves the CIGAR indels see-through so the strand
+    // coloring is the only thing painting the ribbons
+    url: tnnt3Session({ drawCurves: true, cigarMode: 'matches' }),
+    annotations: [
+      {
+        type: 'text',
+        x: 24,
+        y: 56,
+        fontSize: 22,
+        text: 'Curved lines + transparent indels',
+      },
+    ],
+  },
+  {
+    mode: 'compose',
+    name: 'genomes_synteny/ribbon_settings',
+    parts: [
+      'genomes_synteny/ribbons_default',
+      'genomes_synteny/ribbons_curved',
+    ],
   },
 
   // genomes_synteny tutorial: the same TNNT3 comparison reached the way a

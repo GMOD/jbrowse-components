@@ -64,6 +64,19 @@ view.
 
 <Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand. LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the purple ribbon is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
+## Two settings worth changing
+
+Both live on the synteny view's **View options** button:
+
+- **Show...** > **Show curved lines** draws each ribbon as a curve instead of a
+  straight shear, so a block that lands far from where it started is easier to
+  follow across the gap.
+- **CIGAR display mode** > **Transparent indels** stops painting the
+  insertions and deletions inside each block, leaving them as see-through gaps.
+  With strand coloring on, that keeps color meaning only one thing.
+
+<Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels, where the indels drop out to white and the reverse-strand segment is a single blue sweep crossing the forward-strand pink." />
+
 ## Trying other pairs
 
 The same click-path works for any liftOver track under **Pairwise alignments** >
