@@ -5,33 +5,6 @@ import { baseUrl } from '../lib/base-url.ts'
 import { followIcons } from '../lib/follow-icons.ts'
 import { newsletterApiUrl } from '../lib/newsletter.ts'
 import page from '../styles/page.module.css'
-
-const follow = [
-  {
-    icon: 'rss',
-    label: 'Blog RSS feed',
-    href: `${baseUrl}/rss.xml`,
-    text: 'subscribe in your feed reader',
-  },
-  {
-    icon: 'bluesky',
-    label: 'Bluesky',
-    href: 'https://bsky.app/profile/jbrowse.org',
-    text: 'bsky.app/profile/jbrowse.org',
-  },
-  {
-    icon: 'mastodon',
-    label: 'Mastodon',
-    href: 'https://genomic.social/@usejbrowse',
-    text: 'genomic.social/@usejbrowse',
-  },
-  {
-    icon: 'youtube',
-    label: 'YouTube',
-    href: 'https://www.youtube.com/@jbrowse6740',
-    text: 'youtube.com/@jbrowse6740',
-  },
-] as const
 ---
 
 <BaseLayout
@@ -83,18 +56,38 @@ const follow = [
 
     <h2>Follow along</h2>
     <ul class="follow">
-      {
-        follow.map(({ icon, label, href, text }) => (
-          <li>
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path d={followIcons[icon]} fill="currentColor" />
-            </svg>
-            <span>
-              {label}: <a href={href}>{text}</a>
-            </span>
-          </li>
-        ))
-      }
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d={followIcons.rss} fill="currentColor"></path>
+        </svg>
+        Blog RSS feed: <a href={`${baseUrl}/rss.xml`}
+          >subscribe in your feed reader</a
+        >
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d={followIcons.bluesky} fill="currentColor"></path>
+        </svg>
+        Bluesky: <a href="https://bsky.app/profile/jbrowse.org"
+          >bsky.app/profile/jbrowse.org</a
+        >
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d={followIcons.mastodon} fill="currentColor"></path>
+        </svg>
+        Mastodon: <a href="https://genomic.social/@usejbrowse"
+          >genomic.social/@usejbrowse</a
+        >
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d={followIcons.youtube} fill="currentColor"></path>
+        </svg>
+        YouTube: <a href="https://www.youtube.com/@jbrowse6740"
+          >youtube.com/@jbrowse6740</a
+        >
+      </li>
     </ul>
   </div>
 </BaseLayout>
@@ -110,20 +103,12 @@ const follow = [
     font-weight: 500;
     margin: 1.5rem 0 0.5rem;
   }
-  .follow {
-    list-style: none;
-    padding: 0;
-  }
-  .follow li {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin: 0.4rem 0;
-  }
-  /* Baseline alignment puts the icon a touch high next to the text box. */
+  /* Icons sit inline with the text, so the list keeps its normal bullets. */
   .follow svg {
-    flex-shrink: 0;
-    transform: translateY(3px);
+    width: 16px;
+    height: 16px;
+    vertical-align: -3px;
+    margin-right: 0.35rem;
     color: var(--color-text-muted);
   }
 </style>
