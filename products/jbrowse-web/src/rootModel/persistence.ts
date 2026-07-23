@@ -91,6 +91,12 @@ export async function setupSessionDB(self: WebRootModel) {
 // restore it.
 export function setupSessionStorageAutosave(self: WebRootModel) {
   let savingFailed = false
+  // pluginsUpdated latches true and this rootModel lives on until the
+  // replacement one mounts, so without this any session edit landing in that
+  // window would request a second reload — off a loader that is already being
+  // torn down. Kept local rather than clearing pluginsUpdated, which the
+  // autorun observes and would re-trigger itself by writing.
+  let reloadRequested = false
   addDisposer(
     self,
     autorun(
@@ -110,7 +116,8 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
               savingFailed = false
               s.notify('Auto-saving restored', 'info')
             }
-            if (self.pluginsUpdated) {
+            if (self.pluginsUpdated && !reloadRequested) {
+              reloadRequested = true
               self.reloadPluginManagerCallback(
                 structuredClone(getSnapshot(self.jbrowse)),
                 structuredClone(sessionSnap),

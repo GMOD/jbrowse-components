@@ -138,6 +138,13 @@ export async function writeGAAnalytics(
   document.getElementsByTagName('head')[0]!.append(analyticsScriptNode)
 }
 
+// One pageview per page load, not per pluginManager. jbrowse-web rebuilds the
+// whole pluginManager (and rootModel) whenever plugins change, and StrictMode
+// builds it twice on mount — without this guard each rebuild re-pings AWS and
+// appends another Google Analytics <script> to <head>, inflating pageviews and
+// growing the document on every plugin install.
+let analyticsSent = false
+
 export function doAnalytics(
   rootModel: AnalyticsRootModel | undefined,
   initialTimestamp: number,
@@ -145,8 +152,10 @@ export function doAnalytics(
 ) {
   if (
     rootModel &&
+    !analyticsSent &&
     !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
   ) {
+    analyticsSent = true
     // Defer off the critical load path: writeGAAnalytics injects a third-party
     // Google Analytics script and writeAWSAnalytics probes graphics
     // capabilities, together ~hundreds of ms of main-thread work at startup.

@@ -125,6 +125,7 @@ const SessionLoader = types
     pluginManagerError: unknown
     buildAutorunDisposer: (() => void) | undefined
     initializeStarted: boolean
+    superseded: boolean
   }>(() => ({
     /**
      * #volatile
@@ -161,6 +162,14 @@ const SessionLoader = types
      * by deactivate (unlike buildAutorunDisposer) so a remount never refetches.
      */
     initializeStarted: false,
+    /**
+     * #volatile
+     * set when a plugin reload has already built the replacement loader, so
+     * this one will never be re-activated and can be freed on detach. A plain
+     * unmount (StrictMode's double-invoked effect, a Fast Refresh remount)
+     * leaves it false, and that loader is reused as-is.
+     */
+    superseded: false,
   }))
   .views(self => ({
     /**
@@ -367,10 +376,16 @@ const SessionLoader = types
     ) {
       try {
         const sessionPlugins = dropVendoredPlugins(snap.sessionPlugins ?? [])
+        // cheap local checks first: checkPlugins hits the plugin store over the
+        // network for any plugin not on a trusted host, and it throws when the
+        // store is unreachable. That throw lands in the catch below and replaces
+        // the session with an error — so a store outage must not be able to eat
+        // an already-trusted session (the plugin-install reload path, which
+        // always passes userAcceptedConfirmation, is the common case)
         if (
-          (await checkPlugins(sessionPlugins)) ||
+          userAcceptedConfirmation ||
           arePluginsRemembered(sessionPlugins) ||
-          userAcceptedConfirmation
+          (await checkPlugins(sessionPlugins))
         ) {
           self.setSessionPlugins(await loadPluginRecords(sessionPlugins))
           self.setSessionSource({
@@ -675,6 +690,14 @@ const SessionLoader = types
           self.buildPluginManager(reloadCallback)
         }
       })
+    },
+    /**
+     * #action
+     * Marks this loader as replaced by a newer one, so detaching frees it
+     * rather than keeping it warm for a possible re-activation.
+     */
+    setSuperseded() {
+      self.superseded = true
     },
     /**
      * #action
