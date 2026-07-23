@@ -9,7 +9,6 @@ import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
-  bakePromotedDefaultsIntoSnapshot,
   openConnectionMenuItem,
   openTrackMenuItem,
   preferencesMenuItem,
@@ -24,11 +23,12 @@ import { autorun } from 'mobx'
 import { version } from '../version.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type {
-  AbstractSessionModel,
-  SessionWithWidgets,
-} from '@jbrowse/core/util'
-import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
 import type { AbstractWebRootModel } from '@jbrowse/web-core'
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
@@ -152,23 +152,14 @@ export default function RootModel({
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
-                  onClick: async (session: AbstractSessionModel) => {
+                  onClick: async (session: IAnyStateTreeNode) => {
                     const { saveAs } = await import('@jbrowse/core/util')
 
                     saveAs(
                       new Blob(
                         [
                           JSON.stringify(
-                            {
-                              // an exported file is read by someone who doesn't
-                              // have this browser's promoted display-type
-                              // defaults, so flatten the cascade into it (same
-                              // rule as jbrowse-web's ShareDialog)
-                              session: bakePromotedDefaultsIntoSnapshot(
-                                session,
-                                getSnapshot(session),
-                              ),
-                            },
+                            { session: getSnapshot(session) },
                             null,
                             2,
                           ),

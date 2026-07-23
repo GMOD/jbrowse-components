@@ -16,7 +16,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
-  PromotableDefaultsMixin,
   TrackHeightMixin,
   fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -76,7 +75,6 @@ export function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       WiggleScoreConfigMixin(),
-      PromotableDefaultsMixin(configSchema),
       types.model({
         type: types.literal('LinearManhattanDisplay'),
         /**

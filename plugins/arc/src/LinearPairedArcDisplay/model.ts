@@ -6,10 +6,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  PromotableDefaultsMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
+import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
 import { makeFeaturePair, pairKey } from './components/util.ts'
@@ -69,7 +66,6 @@ export function stateModelFactory(
       // reload/svgReady contract — identical structure to LD, so arc has no
       // special fetch or region-too-large behavior
       ArcFetchModel(),
-      PromotableDefaultsMixin(configSchema),
       types.model({
         /**
          * #property

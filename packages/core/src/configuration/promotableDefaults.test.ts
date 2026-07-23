@@ -1,7 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
-import SimpleFeature from '../util/simpleFeature.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { getConf } from './getConf.ts'
 import {
@@ -860,50 +859,5 @@ describe('getConf resolves promotable slots; readConfObject stays raw', () => {
   test('getConf on a plain (non-promotable) slot reads straight through', () => {
     const { display } = createDisplay(schema)
     expect(getConf(display, 'plainLabel')).toBe('hello')
-  })
-})
-
-// A promotable slot can hold a `jexl:` callback like any other slot. A callback
-// computes a different value per call, so it can't be compared against the slot
-// default to decide "follows the default" — it leaves the cascade as a
-// customization, and `getConf`'s `args` reach it.
-describe('promotable slot holding a jexl callback', () => {
-  const schema = ConfigurationSchema('CallbackDisplay', {
-    height: {
-      type: 'maybeNumber',
-      defaultValue: undefined,
-      promotedBase: 7,
-      contextVariable: ['feature'],
-      description: 'a promotable slot a user may write a callback into',
-      promotable: true,
-    },
-  })
-
-  test('getConf forwards its args to a callback on a promotable slot', () => {
-    const { session, display } = createDisplay(schema, {
-      height: 'jexl:get(feature,"h")',
-    })
-    session.setDisplayTypeDefault('TestDisplay', 'height', 3)
-    expect(
-      getConf(display, 'height', {
-        feature: new SimpleFeature({
-          uniqueId: 't',
-          refName: 'ctgA',
-          start: 0,
-          end: 1,
-          h: 11,
-        }),
-      }),
-    ).toBe(11)
-  })
-
-  test('a callback reads as customized, so the pin and badge report it as such', () => {
-    const { session, display } = createDisplay(schema, {
-      height: 'jexl:get(feature,"h")',
-    })
-    session.setDisplayTypeDefault('TestDisplay', 'height', 3)
-    // no feature to evaluate against here — these consumers must not need one
-    expect(isSlotCustomized(display, 'height')).toBe(true)
-    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 })

@@ -391,14 +391,9 @@ The row builders in `promotableMenuItems.tsx`:
   control (per-value, from `makeDisplayTypeDefaultControl`).
 - **`promotableRadioItem`** — a `type:'radio'` row for one option of a
   multi-value slot (a `colorBy` scheme, a `heightMode`/`sashimiArcsMode` option,
-  a feature-height preset). `displayTypeDefault` is optional per row, and the
-  two live patterns differ on the base value: `sashimiArcsMode` omits the pin on
-  its base `'up'` (nothing is promoted yet, so promoting the base looks like a
-  no-op row), while the alignments `heightMode` group pins every option
-  including its `promotedBase` `'fixed'`. Both are defensible — once a *non*-base
-  value is promoted, pinning the base is the only per-value way to promote it
-  back — so match the group you're adding to rather than treating either as the
-  rule.
+  a feature-height preset). `displayTypeDefault` is *omitted* on the base /
+  follow-the-default option (e.g. a mode enum's `'up'`/`'normal'`), since
+  promoting the base is meaningless with per-value semantics.
 
 Selecting a value **customizes** the track to it (a sentinel slot's base value
 included). An explicit **"Follow default" reset item** (writes the `'inherit'`

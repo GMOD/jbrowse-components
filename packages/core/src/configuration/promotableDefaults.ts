@@ -51,12 +51,7 @@ export function resolvePromotableConfigSnapshot(
 ): Record<string, unknown> {
   const snap = getConfSnapshot(self.configuration)
   for (const slot of promotableSlots(self)) {
-    // a callback slot keeps its raw `jexl:` string: the worker evaluates it
-    // per-feature, and there's no per-feature context to resolve it here
-    const res = resolveSlot(self, slot)
-    if (!res.callback) {
-      snap[slot] = res.value
-    }
+    snap[slot] = getConf(self, slot)
   }
   return snap
 }
@@ -190,12 +185,9 @@ export function tracksDifferingFrom(
   entries: PromotableEntry[],
 ): PromotableDisplay[] {
   return openDisplaysOfType(self).filter(display =>
-    entries.some(({ slot, value }) => {
-      // a callback track shows a per-feature value, so it never *is* this one
-      // value — count it as differing without evaluating it
-      const res = resolveSlot(display, slot)
-      return res.callback || !deepEqual(res.value, value)
-    }),
+    entries.some(
+      ({ slot, value }) => !deepEqual(resolveSlot(display, slot).value, value),
+    ),
   )
 }
 
@@ -308,11 +300,9 @@ export function getDisplayTypeDefaultChanges(
   self: PromotableDisplay,
 ): TrackConfigChange[] {
   return promotableSlots(self).flatMap(slot => {
-    // `customized` first: a customized slot inherits nothing, and reading
-    // `.value` on a callback slot would need a context this caller doesn't have
-    const res = resolveSlot(self, slot)
-    return !res.customized && !deepEqual(res.value, res.base)
-      ? [{ path: [slot], from: res.base, to: res.value } as TrackConfigChange]
+    const { base, customized, value } = resolveSlot(self, slot)
+    return !customized && !deepEqual(value, base)
+      ? [{ path: [slot], from: base, to: value } as TrackConfigChange]
       : []
   })
 }

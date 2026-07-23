@@ -1,3 +1,18 @@
+/* Offscreen until keyboard focus, then a pill over the sticky nav. */
+.skipLink {
+  position: absolute;
+  left: -9999px;
+  z-index: 300;
+  padding: 8px 16px;
+  background: white;
+  color: var(--color-primary);
+  border-radius: 0 0 4px 0;
+}
+.skipLink:focus {
+  left: 0;
+  top: 0;
+}
+
 /* ── Nav ── */
 .nav {
   background: var(--color-navy);

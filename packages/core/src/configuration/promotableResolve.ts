@@ -4,7 +4,6 @@ import { deepEqual } from '../util/deepEqual.ts'
 import { getSession } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getSlotDefinition } from './slotFacade.ts'
-import { isCallbackValue } from './slotValueUtils.ts'
 import {
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
@@ -176,14 +175,6 @@ export interface SlotResolution {
   customized: boolean
   /** the raw session-wide promoted default, if any */
   promoted: unknown
-  /**
-   * the track holds a `jexl:` callback, so it has no single value to compare:
-   * `customized` is true and `value` is whatever the callback returns for the
-   * `args` of this read. A consumer with no `args` (the pin, the badge) must
-   * branch on this instead of reading `value`, which evaluates lazily and would
-   * throw for a callback needing a context it can't supply.
-   */
-  callback: boolean
   /** the final cascaded value (never a slot's inherit sentinel) */
   value: unknown
 }
@@ -191,47 +182,21 @@ export interface SlotResolution {
 // The whole three-tier cascade for one slot, in one place. `getConf` routes
 // every promotable-slot read here, and the control builders in
 // `promotableDefaults.ts` read a field off this.
-//
-// `args` are the jexl callback arguments of the originating `getConf` read (a
-// `{ feature }`, say), forwarded so a promotable slot holding a `jexl:` value
-// evaluates with the same context an ordinary slot read would get. The cascade
-// consumers that have no such context (the pin, the badge) call with none — see
-// the callback short-circuit below for why that's still sound.
 export function resolveSlot(
   self: PromotableDisplay,
   slot: string,
-  args: Record<string, unknown> = {},
 ): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   const base = def.promotedBase ?? def.defaultValue
+  // raw read through `readConfObject`: the resolver wants the track's own stored
+  // value, before any cascade.
+  const own = readConfObject(self.configuration, slot)
   // `promoted` stays the raw session-wide value regardless of this display's
   // opt-out: it's a session-wide fact, and `isPromotableDefault` (the pin's
   // filled/outline state) reports on the session, not on one display's view of
   // it. The opt-out belongs to `inherited` below, which is the only tier of the
   // cascade it may neutralize.
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  // A `jexl:` value leaves the cascade immediately: a callback computes a
-  // different value per call (per feature), so it can't be compared against the
-  // slot default to decide "follows the default" — writing one *is* customizing
-  // the track. Reading it needs the caller's `args`, which the cascade's own
-  // consumers (the pin, the badge) don't have, so `value` evaluates lazily: they
-  // read `customized`/`promoted` without ever evaluating, while a real
-  // `getConf(self, slot, { feature })` read gets exactly what an ordinary slot
-  // read would — including the same error if the context is missing.
-  if (isCallbackValue(self.configuration[slot])) {
-    return {
-      base,
-      customized: true,
-      promoted,
-      callback: true,
-      get value() {
-        return readConfObject(self.configuration, slot, args)
-      },
-    }
-  }
-  // raw read through `readConfObject`: the resolver wants the track's own stored
-  // value, before any cascade.
-  const own = readConfObject(self.configuration, slot, args)
   // A track is customized only when it holds a *usable* value other than the
   // default. Routing `own` through the same `isUsableValue` gate as a promoted
   // default means an own value that's malformed or fails `validate` (e.g. a saved
@@ -252,5 +217,5 @@ export function resolveSlot(
       ? promoted
       : base
   const value = customized ? own : inherited
-  return { base, customized, promoted, callback: false, value }
+  return { base, customized, promoted, value }
 }

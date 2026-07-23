@@ -144,6 +144,13 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Four E. coli strains in one synteny view, every band backed by the same all-vs-all PAF. The view takes any number of assemblies, and a minimum alignment length filter drops the short alignments so the backbone stays readable.',
       },
+      {
+        label: 'hg19 vs hg38 dotplot',
+        spec: 'gallery/hg19_vs_hg38',
+        guide: 'user_guides/dotplot_view',
+        description:
+          'A same-species whole-genome dotplot of the hg19→hg38 liftOver chain: homologous chromosomes line up 1:1 down the diagonal, and the off-diagonal specks are the segments the two human assemblies place differently. Both chrom.sizes and the chain load straight from UCSC.',
+      },
     ],
   },
   {
@@ -177,6 +184,20 @@ export const gallerySections: readonly GallerySection[] = [
           '?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd',
         description:
           'An HG002 inversion with PacBio, Illumina 2x250, and ONT ultra-long tracks over the same window. Both breakends fit in one window, so the breakpoint split view runs as a single row instead of two linked panels.',
+      },
+      {
+        label: 'Read-pair contact heatmap',
+        spec: 'readpair_heatmap_translocation',
+        guide: 'tutorials/readpair_heatmap',
+        description:
+          'A chr3↔chr13 translocation as a read-pair heatmap: a chr3 window beside a chr13 window, with the pairs spanning the fusion collecting into one bright off-diagonal spot. Distance from the diagonal encodes how far apart the mates land, so large SVs read as dots set well off the diagonal.',
+      },
+      {
+        label: 'Cancer tumor/normal SV (C-GIAB)',
+        spec: 'sv_cgiab/translocation_breakpoint_split',
+        guide: 'tutorials/sv_visualization_cgiab',
+        description:
+          'A C-GIAB cancer benchmark translocation between chr3 and chr13 in a breakpoint split view: black splines connect tumor PacBio HiFi reads that map partway to each chromosome, the read-level evidence for the fusion the SV caller reported.',
       },
       {
         label: 'Inversion (linked reads)',
@@ -272,6 +293,27 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'The same LD-colored Manhattan track inside an embedded React linear genome view, with its source alongside.',
       },
+      {
+        label: 'LD triangle (LCT lactase locus)',
+        spec: 'ld/lct_lactase',
+        guide: 'tutorials/linkage_disequilibrium',
+        description:
+          'Haplotypic r² from phased 1000 Genomes genotypes drawn as an LD triangle at the human lactase locus, with a red block of high linkage under rs4988235 — the -13910 C>T variant behind lactase persistence — fading into paler flanks on both sides.',
+      },
+      {
+        label: 'BXD coat-color QTL',
+        spec: 'qtl/bxd_tyrp1_locus',
+        guide: 'tutorials/bxd_qtl',
+        description:
+          'A BXD mouse coat-color QTL scan over chr4 with the 198-strain haplotype painting below it: sorting the rows by genotype at the peak over Tyrp1 resolves the salt-and-pepper block into a clean B (red) over D (blue) split directly under the Manhattan peak the scan is scoring.',
+      },
+      {
+        label: "Population genomics (Fst, π)",
+        spec: 'popgen/fst_in2lt_2L',
+        guide: 'tutorials/population_genomics',
+        description:
+          'All six Drosophila dm6 arms at once: the In(2L)t inversion extent on top, Fst between inverted and standard lines in the middle — a tall block across the whole left arm of chr2 against low background elsewhere — and whole-panel nucleotide diversity (π) below.',
+      },
     ],
   },
   {
@@ -291,6 +333,13 @@ export const gallerySections: readonly GallerySection[] = [
         guide: 'user_guides/multiquantitative_track',
         description:
           'Copy-number profiles for many 1000 Genomes individuals as a multi-row density heatmap, reordered by the track menu\'s "Cluster rows by score", which groups rows by signal similarity without leaving the browser.',
+      },
+      {
+        label: 'TCGA cohort CNV (1104 tumors)',
+        spec: 'tcga/cohort_cnv_genome',
+        guide: 'tutorials/tcga_cohort_cnv',
+        description:
+          'TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor and clustered by profile: blue is loss, red is gain on the log2 ratio. Recurrent events read as vertical stripes through the stack, and the heavily aneuploid tumors cluster together into red/blue rows.',
       },
       {
         label: 'ChromHMM state painting',
@@ -354,6 +403,67 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           "Per-codon amino-acid lettering on GPX1, where the in-frame UGA shows as U49 on orange rather than a stop: translation follows the annotation's selenocysteine exception instead of a fixed codon table.",
       },
+      {
+        label: 'Protein structure (TP53, AlphaFold)',
+        spec: 'protein/connected',
+        guide: 'tutorials/protein_structure',
+        description:
+          "A connected genome↔protein session on TP53: the genome view with RefSeq models and ClinVar variants beside the AlphaFold structure, wired through the genome-to-structure alignment. Hovering a variant in the genome highlights the residue it hits on the 3D structure.",
+      },
+    ],
+  },
+  {
+    id: 'pangenome',
+    title: 'Pangenome graphs',
+    items: [
+      {
+        label: 'Graph variant matrix (E. coli)',
+        spec: 'pangenome/variant_matrix',
+        guide: 'tutorials/pangenome',
+        description:
+          "A four-strain E. coli pangenome graph projected onto the K12 reference: the graph's variants as a multi-sample matrix, one column per called variant and one row per other strain, with the MAF alignment stacked below and the K12 gene lane above.",
+      },
+      {
+        label: 'Presence/absence by strain (PAV)',
+        spec: 'pangenome/pav',
+        guide: 'tutorials/pangenome',
+        description:
+          'odgi presence/absence across K12 windows, one row per non-K12 strain: each row holds near 1 where the strain is present and drops to 0 over its own accessory sequence, so a single dip in aggregate graph depth resolves into which strain accounts for it.',
+      },
+      {
+        label: 'Cactus pangenome synteny (human)',
+        spec: 'pangenome_cactus/synteny',
+        guide: 'tutorials/pangenome_cactus',
+        description:
+          'A Minigraph-Cactus human pangenome rendered as synteny between haplotypes, the graph alignment re-plotted on genome coordinates so shared backbone and rearrangements read against the gene track rather than in abstract graph-node order.',
+      },
+    ],
+  },
+  {
+    id: 'conservation',
+    title: 'Multiple alignment and conservation',
+    items: [
+      {
+        label: '470-way multiz (identity heatmap)',
+        spec: 'maf_470way',
+        guide: 'user_guides/maf_track',
+        description:
+          'The UCSC hg38 470-way multiz over GAPDH in fit-to-height mode: all ~470 species squeezed into a 600px display with the guide tree down the left, each base colored by whether it matches the reference row, so conserved coding columns run blue top-to-bottom across the whole phylogeny.',
+      },
+      {
+        label: '470-way codon view',
+        spec: 'maf_470way_codon',
+        guide: 'user_guides/maf_track',
+        description:
+          'The same 470-way narrowed to ~30 representative mammals in codon view at a conserved GAPDH exon: each species is translated in the human reading frame, so conserved residues line up and the few amino-acid changes in the distant lineages stand out.',
+      },
+      {
+        label: 'phyloP conservation (TP53)',
+        spec: 'phylop_ncbi_refseq_tp53',
+        guide: 'user_guides/quantitative_track',
+        description:
+          'The UCSC 100-way phyloP conservation score over TP53 as a quantitative track above the NCBI RefSeq gene model, the per-base conservation peaks lining up with the coding exons.',
+      },
     ],
   },
   {
@@ -361,12 +471,12 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Full example instances and hubs',
     items: [
       {
-        label: 'Human demo instance',
+        label: 'GIAB insertion',
         session:
           '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
         demoOnly: true,
         description:
-          'The full demo config, whose track selector holds every hg19/hg38 track the other examples draw from.',
+          'A GIAB insertion across Nanopore, PacBio, and Illumina reads, opened in the full hg19/hg38 demo config.',
       },
       {
         label: 'UCSC GenArk hub import',

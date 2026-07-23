@@ -110,11 +110,9 @@ export function createTestEnvironment(opts?: {
       name: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.frozen()),
-      // promoted display-type defaults, behind the same
-      // get/setDisplayTypeDefault interface the cascade reads (BaseSession
-      // stores them flat in an observable.map — the nesting here is local, and
-      // reassigned wholesale so the promotable display getters track it
-      // reactively)
+      // same shape as BaseSession's preferencesOverrides.displayTypeDefaults:
+      // displayType -> slot -> value, reassigned wholesale so the promotable
+      // display getters (getConf) track it reactively
       displayTypeDefaults: types.frozen<
         Record<string, Record<string, unknown>>
       >({}),
