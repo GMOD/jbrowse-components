@@ -1,6 +1,6 @@
 ---
 name: region-too-large
-description: The byte/density gate that raises the "region too large" banner and holds off the fetch: the derived getter, the shared verdict primitives, and how canvas folds the byte check into its feature RPC. Read when touching fetch gating or the too-large banner.
+description: The byte/density gate that raises the "region too large" banner and holds off the fetch — the derived getter, the shared verdict primitives, and how canvas folds the byte check into its feature RPC. Read when touching fetch gating or the too-large banner.
 ---
 
 # The region-too-large gate
@@ -166,20 +166,23 @@ persisted: clicking force-load is a transient "show me this now" action that mus
 not leak a raised gate into a saved or shared session. The durable escape hatch
 is the declarative `forceLoad` config slot.
 
-A dual-axis display has to pick which axis to raise, and it has to pick by which
-gate actually tripped, not by whether a byte estimate happens to exist. Tabix
-adapters report an index-byte estimate even when the rejection was about
-density, so a region that is dense but small in bytes still carries a small
-`bytes` value; adopting it as `userByteLimit` would install a ceiling below
-the config or adapter default and then wrongly gate later regions that really are
-large. `raiseForceLoadLimits` (the action behind the button, overridden by
+A dual-axis display has to pick which axis to raise, and it picks by which gate
+actually tripped — not by whether a byte estimate happens to exist. That matters
+because tabix adapters report an index-byte estimate even when the rejection was
+about density: a dense-but-small region still carries a small `bytes` value, and
+adopting it as `userByteLimit` would install a ceiling below the config or
+adapter default, then wrongly gate later regions that really are large.
+
+`raiseForceLoadLimits` (the button's action, overridden by
 `CanvasFeatureGateMixin`) defers to `resolveForceLoadLimits`, the single place
-that decides: take the raised
-byte limit only when it exceeds the baseline `resolveByteLimit`, meaning the byte
-gate genuinely was the blocker; otherwise raise the density axis past the highest
-observed density. It uses observed density rather than the current
-`maxFeatureDensity`, which already folds in any earlier force-load and would
-compound across attempts.
+that decides:
+
+- Raise the **byte** limit only when the raised value exceeds the baseline
+  `resolveByteLimit` — that means the byte gate was the real blocker.
+- Otherwise raise the **density** axis, past the highest *observed* density.
+
+It reads observed density rather than the current `maxFeatureDensity`, which
+already folds in any earlier force-load and would compound across attempts.
 
 ## Shared primitives (`shared/regionTooLargeUtils.ts`)
 
@@ -199,10 +202,12 @@ paths can't drift apart.
 - `bytesTooLargeReason(bytes)` and `TOO_MANY_FEATURES_REASON` are the only two
   banner strings.
 - `evaluateRegionTooLarge({ visibleBp, estimatedBytesForVisibleSpan, byteLimit, densityTooLarge, alwaysRender })`
-  produces the verdict and its reason. `alwaysRender` is checked first and never
-  gates; below `AUTO_FORCE_LOAD_BP` (20,000 bp) nothing gates; after that, over-byte-limit
-  takes precedence over density. `densityTooLarge` is opt-in, so byte-only
-  displays never gate on it.
+  produces the verdict and its reason, applying its checks in order:
+  - `alwaysRender` wins first and never gates.
+  - Below `AUTO_FORCE_LOAD_BP` (20,000 bp) nothing gates.
+  - Otherwise over-byte-limit gates before density.
+
+  `densityTooLarge` is opt-in, so byte-only displays never gate on it.
 
 `alwaysRender` is the escape hatch for self-summarizing adapters. Adapters that
 cap what they return at screen resolution (BigWig, MultiWiggle, HiC, the
