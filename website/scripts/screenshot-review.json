@@ -1647,13 +1647,6 @@
     "reviewedAt": "2026-07-20T21:01:47.471Z",
     "hash": "4b116c3dd61f86f6a2e5d2786a03f4c25ee9f1c6"
   },
-  "readpair_heatmap_translocation": {
-    "name": "readpair_heatmap_translocation",
-    "status": "good",
-    "note": "KEEP, resolved (data-limited). The chr3<->chr13 fusion is one inter-chromosomal spot by nature; the two-region view correctly renders it linking the two chromosomes. Anchors both readpair_heatmap.md and sv_visualization_cgiab.md. Same data ceiling as chr3q (a tapestry needs many nested SVs + a new .hic). User deferred to judgment; kept as an honest illustration of the technique.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "61a7ec28dbea16cdedab279609a9dcb164963df6"
-  },
   "methylation/hg002_snrpn_combined": {
     "name": "methylation/hg002_snrpn_combined",
     "status": "good",
@@ -1666,13 +1659,6 @@
     "status": "good",
     "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) — the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
     "reviewedAt": "2026-07-20T22:02:04.675Z"
-  },
-  "readpair_heatmap_chr3q": {
-    "name": "readpair_heatmap_chr3q",
-    "status": "good",
-    "note": "KEEP, resolved (data-limited, verified). A single 1.4Mb tandem duplication is inherently one off-diagonal dot; the display already maxes contrast (log scale, max-count color domain, coarse resolutionBias). Tested tightening the window 182.35-184.0Mb this session (on top of the prior agent's wider-window test) — neither concentrates the sparse discordant-pair signal; reverted to the tuned 182.2-184.2Mb window. It correctly anchors the readpair_heatmap.md tutorial (an honest single-SV signature). The cue-style tapestry needs a chromothripsis-grade sample + a newly-built hosted .hic, a data decision, not a spec tweak. User deferred to judgment; kept rather than gut the tutorial's figures.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "8168c9756153b649b3f8c26df981bb3446773ef6"
   },
   "pangenome/pav": {
     "name": "pangenome/pav",

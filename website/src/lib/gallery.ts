@@ -186,13 +186,6 @@ export const gallerySections: readonly GallerySection[] = [
           'An HG002 inversion with PacBio, Illumina 2x250, and ONT ultra-long tracks over the same window. Both breakends fit in one window, so the breakpoint split view runs as a single row instead of two linked panels.',
       },
       {
-        label: 'Read-pair contact heatmap',
-        spec: 'readpair_heatmap_translocation',
-        guide: 'tutorials/readpair_heatmap',
-        description:
-          'A chr3↔chr13 translocation as a read-pair heatmap: a chr3 window beside a chr13 window, with the pairs spanning the fusion collecting into one bright off-diagonal spot. Distance from the diagonal encodes how far apart the mates land, so large SVs read as dots set well off the diagonal.',
-      },
-      {
         label: 'Cancer tumor/normal SV (C-GIAB)',
         spec: 'sv_cgiab/translocation_breakpoint_split',
         guide: 'tutorials/sv_visualization_cgiab',

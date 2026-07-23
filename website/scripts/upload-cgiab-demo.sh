@@ -44,7 +44,7 @@ done
 
 # `copy`, deliberately NOT `sync`. The staged dir holds only the files a build
 # regenerates, but demos/cgiab also serves things built by other recipes (the
-# CUZD1 read slice, the indexcov bigWigs, the readpair .hic matrices) that the
+# CUZD1 read slice, the indexcov bigWigs) that the
 # figure specs reference by URL. `sync` deletes remote files absent from $SRC,
 # so it would silently drop every one of them. `copy` only adds and overwrites.
 # Deleting anything under demos/cgiab is a deliberate, manual act.
