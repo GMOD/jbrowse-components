@@ -3,6 +3,7 @@ import * as React from 'react'
 
 import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
+import SvgIcon, { createSvgIcon } from '@mui/material/SvgIcon'
 import * as MUIUtils from '@mui/material/utils'
 import * as mobx from 'mobx'
 import * as mxreact from 'mobx-react'
@@ -88,6 +89,19 @@ const libs = {
   },
   ...lazyMap(Entries, '@mui/material/'),
   ...lazyMap(Entries, '@material-ui/core/'),
+
+  // @mui/icons-material — bundled into external plugins — reads the
+  // `createSvgIcon` *named* export from @mui/material/SvgIcon, but lazyMap
+  // exposes only the component (its default). SvgIcon is a primitive that's
+  // eagerly loaded in practice, so expose it directly with createSvgIcon
+  // attached: a default import still lands on a usable component (rollup-plugin-
+  // external-globals substitutes the value itself, esbuild's globalExternals
+  // reads `.default`), while the named import and icons-material's CJS
+  // `require(...).createSvgIcon` both find the util. A shallow copy carries the
+  // forwardRef's $$typeof/render so the shared SvgIcon export isn't mutated.
+  // Overrides the lazy entry above; verified against both bundlers.
+  // GMOD/jbrowse-components#5606.
+  '@mui/material/SvgIcon': Object.assign({}, SvgIcon, { createSvgIcon }),
 
   '@mui/material/styles': {
     ...MUIStyles,
