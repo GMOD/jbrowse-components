@@ -11,6 +11,8 @@ window.resolveIdentifier = resolveIdentifier
 
 /**
  * #stateModel JBrowseWebConfigModel
+ * #internal thin product wrapper that declares no members of its own — the
+ * documented surface is AppCoreJBrowseModel, so this gets no website page
  * #category root
  * the rootModel.jbrowse state model for JBrowse Web
  */

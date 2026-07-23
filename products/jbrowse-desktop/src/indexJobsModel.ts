@@ -77,6 +77,7 @@ function formatBytes(bytes: number) {
 
 /**
  * #stateModel JobsManager
+ * #internal desktop text-indexing queue internals — kept out of the website docs
  * Desktop text-indexing job queue: tracks the running job with its progress and
  * status message, plus the list of queued indexing jobs.
  */

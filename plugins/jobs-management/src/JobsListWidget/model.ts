@@ -22,6 +22,7 @@ export interface JobInput {
 
 /**
  * #stateModel JobsListModel
+ * #internal desktop text-indexing queue internals — kept out of the website docs
  * #category widget
  */
 export function stateModelFactory(_pluginManager: PluginManager) {

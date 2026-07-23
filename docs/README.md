@@ -55,6 +55,17 @@ config/model is being processed — so a second one in the same file would
 silently overwrite the first (`assertSingleHeader` in `util.ts` turns that into
 a hard error instead).
 
+## Hiding a model with `#internal`
+
+A `#stateModel` block that also carries `#internal` keeps all its in-source
+docstrings but gets no website page and no sidebar entry — for app-shell wiring
+(`SessionLoader`), desktop job-queue internals, and thin product wrappers whose
+documented surface lives on the model they compose.
+
+Do **not** put it on a mixin. A composed page's "Inherited members" section only
+includes ancestors that resolve to a documented `#stateModel`, so hiding a mixin
+also deletes its members from every display/session page that composes it.
+
 Unlike config/statemodel, **many `#api` exports per file** are allowed. Each
 `#api` tag documents one exported function or const. The text after the tag is
 an optional group/page name; with no name the export's package is used (e.g.

@@ -49,6 +49,8 @@ function readHiddenColumns(key: string): string[] {
 
 /**
  * #stateModel FacetedModel
+ * #internal faceted-selector UI state owned by the hierarchical track selector
+ * widget — kept out of the website docs
  * #category widget
  */
 export function facetedStateTreeF() {

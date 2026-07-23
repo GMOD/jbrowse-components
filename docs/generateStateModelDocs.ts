@@ -7,6 +7,7 @@ import {
   assertSingleHeader,
   collapsibleClosed,
   collectTransitive,
+  containsTag,
   docPage,
   exampleSection,
   filterUnseenByName,
@@ -130,6 +131,13 @@ export function accumulateModel(
   const member = parseNode(obj)
 
   if (obj.type === 'stateModel') {
+    // #internal keeps the in-source #stateModel/#property/#action docstrings —
+    // which are what a contributor reading the file wants — while dropping the
+    // model from the published docs. For internals like SessionLoader, the
+    // members are app-shell wiring, not an API a user can call.
+    if (containsTag(obj.comment, 'internal')) {
+      return
+    }
     assertSingleHeader({
       filename: file.filename,
       tag: 'stateModel',

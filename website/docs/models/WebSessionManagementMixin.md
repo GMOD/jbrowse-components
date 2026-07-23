@@ -12,8 +12,9 @@ JBrowse core.
 ## Overview
 
 Saved-session-database actions (favorites, recent sessions, activate/delete)
-delegating to the root's . Composed only by the full-app jbrowse-web session;
-react-app omits it (its root has no session database).
+delegating to the root's AbstractWebSessionDbRootModel. Composed only by the
+full-app jbrowse-web session; react-app omits it (its root has no session
+database).
 
 ## Members
 

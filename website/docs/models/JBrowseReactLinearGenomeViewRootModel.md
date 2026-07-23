@@ -10,8 +10,8 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 ## Overview
 
-Composes the shared with a LinearGenomeView session plus the LGV-only
-`disableAddTracks`/`drawerViewHeight` props.
+Composes the shared EmbeddedRootModel with a LinearGenomeView session plus the
+LGV-only `disableAddTracks`/`drawerViewHeight` props.
 
 ## Members
 

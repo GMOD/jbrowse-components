@@ -10,6 +10,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewRootModel
+ * #internal thin product wrapper that declares no members of its own — the
+ * documented surface is EmbeddedRootModel, so this gets no website page
  * #category root
  * Composes the shared {@link EmbeddedRootModel} with a CircularView session.
  */

@@ -15,7 +15,7 @@ Session getters shared by the "app" products (desktop + web) that simply
 delegate to the root model — `version`, `history`, `menus`, `assemblyManager` —
 plus `renameCurrentSession`. Centralized here so the products compose one mixin
 instead of re-declaring (and diverging on) the same root delegations. The root
-must satisfy .
+must satisfy AppRootModel.
 
 ## Members
 

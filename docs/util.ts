@@ -690,7 +690,7 @@ function stringPropValue(obj: ts.ObjectLiteralExpression, key: string) {
 // a prefix of a longer word — so `#getter` does not match `#getterById`, nor
 // `#category` match `#categoryManagement`. Used both for the whole-comment tag
 // scan and the per-line parse in parseTaggedComment.
-function containsTag(text: string, name: string) {
+export function containsTag(text: string, name: string) {
   return new RegExp(`#${name}(?![A-Za-z0-9_])`).test(text)
 }
 
@@ -706,6 +706,28 @@ function getNameNode(node: ts.Node): ts.Node | undefined {
   return undefined
 }
 
+// A `{@link Foo}` part parses as a JSDocLink node whose `text` holds only what
+// follows the target (a label, or nothing), with the target itself in `name` —
+// so reading `.text` alone silently deletes the word from the sentence
+// ("Composes the shared {@link EmbeddedRootModel} with ..." rendered as
+// "Composes the shared with ..."). Re-emit the target, and prefer an explicit
+// `{@link Foo|label}` / `{@link Foo label}` label when the author wrote one.
+function jsDocPartText(part: ts.JSDocComment): string {
+  if (
+    ts.isJSDocLink(part) ||
+    ts.isJSDocLinkCode(part) ||
+    ts.isJSDocLinkPlain(part)
+  ) {
+    // `{@link https://x}` parses as name `https` + text `://x`, so text only
+    // counts as a label when a `|` or space separates it from the target
+    const label = /^[|\s]/.test(part.text)
+      ? part.text.replace(/^[|\s]+/, '')
+      : ''
+    return label || (part.name?.getText() ?? '') + part.text
+  }
+  return part.text
+}
+
 // Flatten the comment bodies of a node's `jsDoc` parser array into one string. A
 // JSDoc comment is either a plain string or an array of parts (when it contains
 // `{@link}`-style nodes), so both shapes are normalized here. Shared by every
@@ -716,7 +738,7 @@ export function jsDocText(node: ts.Node): string {
     .map(jd =>
       typeof jd.comment === 'string'
         ? jd.comment
-        : (jd.comment?.map(p => p.text).join('') ?? ''),
+        : (jd.comment?.map(p => jsDocPartText(p)).join('') ?? ''),
     )
     .join('\n')
 }

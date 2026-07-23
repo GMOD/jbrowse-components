@@ -31,6 +31,8 @@ type ReloadPluginManagerCallback = (
 
 /**
  * #stateModel SessionLoader
+ * #internal app-shell boot wiring, not a user-facing API — kept out of the
+ * website docs, documented here for contributors
  * Bootstraps a jbrowse-web session from URL params: resolves the config plus the
  * shared/local session sources, builds the plugin manager, and exposes the
  * loading/error state the app shell renders around.

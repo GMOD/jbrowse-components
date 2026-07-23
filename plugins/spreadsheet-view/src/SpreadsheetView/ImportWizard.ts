@@ -73,6 +73,8 @@ export function detectFileType(
 
 /**
  * #stateModel SpreadsheetImportWizard
+ * #internal import-dialog state reached only through SpreadsheetView, not an
+ * API a user scripts against — kept out of the website docs
  * #category view
  */
 

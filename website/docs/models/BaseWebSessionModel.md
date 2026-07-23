@@ -11,9 +11,9 @@ JBrowse core.
 
 ## Overview
 
-Composable web session shared by jbrowse-web and react-app, before (the
-snapshotProcessor can't be `compose`d). jbrowse-web composes
-`WebSessionManagementMixin` onto this; react-app uses it as-is.
+Composable web session shared by jbrowse-web and react-app, before
+finalizeWebSession (the snapshotProcessor can't be `compose`d). jbrowse-web
+composes `WebSessionManagementMixin` onto this; react-app uses it as-is.
 
 ## Members
 

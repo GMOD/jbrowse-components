@@ -4,6 +4,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel
+ * #internal desktop text-indexing queue internals — kept out of the website docs
  * #category widget
  */
 export const Job = types

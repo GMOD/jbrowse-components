@@ -31,6 +31,8 @@ export interface GridRow {
 
 /**
  * #stateModel SpreadsheetViewSpreadsheet
+ * #internal sheet state reached only through SpreadsheetView, not an API a user
+ * scripts against — kept out of the website docs
  * #category view
  */
 export default function stateModelFactory() {
