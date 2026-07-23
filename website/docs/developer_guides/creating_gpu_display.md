@@ -231,9 +231,11 @@ checkout and copy the emitted `*.generated.ts` into your plugin.
 
 :::
 
-Use `bpHi`/`bpLo` (high/low float32 split) for genomic positions in shader code.
-In TypeScript outside shader uniform writes, use plain `bp - bpStart`. The hi/lo
-split is only needed inside the shader.
+Genomic positions travel as absolute `uint` attributes; convert them with the
+`bpToClipX` wrapper above and nothing else. The `bpHi`/`bpLo` split it hides
+exists because float32 can't represent every base past ~16.7 Mbp, and it is
+confined to that one line — in TypeScript outside uniform writes, use plain
+`bp - bpStart`.
 
 The `canvas_width` / `canvas_height` uniforms are CSS pixels, so do not scale by
 `devicePixelRatio` in your uniform writes.
