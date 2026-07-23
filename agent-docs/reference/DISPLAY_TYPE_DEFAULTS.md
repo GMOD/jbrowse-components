@@ -157,28 +157,31 @@ interface SlotResolution {
   base: unknown       // value a following track shows with nothing promoted
   customized: boolean // track holds its own value rather than following the default
   promoted: unknown   // raw session-wide promoted default, if any
+  callback: boolean   // track holds a `jexl:` value — see "Callback values" below
   value: unknown      // final cascaded value (never a slot's inherit sentinel)
 }
 
-function resolveSlot(self, slot): SlotResolution {
+function resolveSlot(self, slot, args = {}): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   const base = def.promotedBase ?? def.defaultValue
+  // `promoted` stays the raw session-wide value even for an opted-out display:
+  // it's a session-wide fact, and the pin's filled/outline state reports on the
+  // session, not on one display's view of it. The opt-out belongs to `inherited`
+  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
   // raw read: this *is* the resolver, so `readConfObject`, not `getConf` (which
   // would recurse back into resolveSlot for a promotable slot)
-  const own = readConfObject(self.configuration, slot)
-  // a display that arrived in a received session skips the session-wide tier
-  // entirely (see "Received sessions" below), collapsing to "own value, else base"
-  const promoted = self.ignorePromotedDefaults
-    ? undefined
-    : getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  const own = readConfObject(self.configuration, slot, args)
   // a track is customized only when it holds a *usable* value other than the
   // default — the same `isUsableValue` gate a promoted default passes, so a
   // malformed or stale own value reads as not-customized and degrades to the
   // inherited value rather than reaching a consumer that trusts every value
   const customized = !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
-  const inherited = isUsableValue(def, promoted) ? promoted : base
+  // a display that arrived in a received session skips the session-wide tier
+  // entirely (see "Received sessions" below), collapsing to "own value, else base"
+  const inherited =
+    !self.ignorePromotedDefaults && isUsableValue(def, promoted) ? promoted : base
   const value = customized ? own : inherited
-  return { base, customized, promoted, value }
+  return { base, customized, promoted, callback: false, value }
 }
 ```
 
@@ -199,6 +202,25 @@ inherit sentinel, so the display getter needs no post-guard — and
 `SlotValueFromDef` excludes the sentinel from the read type, so no cast either:
 `get displayMode(): DisplayMode { return getConf(self, 'displayMode') }`.
 
+### Callback values (`jexl:`)
+
+A promotable slot can hold a `jexl:` callback like any other slot, and
+`getConf(self, slot, args)` forwards its `args` so the callback evaluates with
+the caller's context. But a callback returns a **different value per call**, so
+it has no single value to compare against the slot default — it can't
+meaningfully "follow the default". A `jexl:` value therefore leaves the cascade
+at the top: `customized` is true, `callback` is true, and `value` is whatever the
+callback returns for this read's `args`.
+
+`value` on that branch evaluates **lazily**, because the cascade's own consumers
+(the pin, the badge, the share bake) have no per-feature context to supply and
+must not blow up on a track whose slot holds one. They branch on `callback`
+instead — `getDisplayTypeDefaultChanges` tests `customized` first,
+`tracksDifferingFrom` counts a callback track as differing without evaluating it,
+and `resolvePromotableConfigSnapshot` leaves the raw `jexl:` string in the worker
+payload for the worker to evaluate per-feature. A **new** consumer reading
+`.value` without `args` must do the same.
+
 ### Exported API (`@jbrowse/core/configuration`)
 
 An entry is a `{ slot, value }` pair (`PromotableEntry`); most controls take a
@@ -216,12 +238,15 @@ group of them so several slots move as one unit.
 
 `DisplayTypeDefaultControl` is `{ active: boolean; toggle: () => void }`.
 `active` = this exact value combination is the current default (filled pin);
-`toggle` sets or clears it (non-destructive — following tracks pick it up via
-`getConf`, customized tracks keep their own value). On **set**, `toggle`
-raises a snackbar `"Set as the default"` carrying an **"Apply to N open tracks"**
-action for any open tracks (across all views) not already showing this value —
-the action resets their own value so they follow the new default; on **clear**,
-`"Cleared the default"`.
+`toggle` sets or clears it (non-destructive for *other* tracks — following ones
+pick it up via `getConf`, customized ones keep their own value). On **set**,
+`toggle` also resets **the display the pin was clicked from** to inherit, so it
+shows the new default with one click; note that discards that display's own
+value, so pin-then-unpin leaves it at `promotedBase`, not at what it held
+before. It then raises a snackbar `"Set as the default"` carrying an **"Apply to
+N open tracks"** action for any open tracks (across all views) not already
+showing this value — the action resets their own value so they follow the new
+default; on **clear**, `"Cleared the default"`.
 
 The low-level primitives behind the builders — `isPromotableDefault(self,
 entries)`, `setPromotableDefault(self, entries, on)`, `tracksDifferingFrom(self,
@@ -255,7 +280,12 @@ to the same `===` value, so nothing downstream re-runs.
 ## Storage
 
 `BaseSession.get/setDisplayTypeDefault(displayType, slot, value)` on
-`preferencesOverrides.displayTypeDefaults` (nested `type → slot → value`).
+`preferencesOverrides`, under one **flat composite key** per promoted default
+(`displayTypeDefault\0<type>\0<slot>`), *not* a nested `displayTypeDefaults`
+object. `preferencesOverrides` is an `observable.map`, so a flat key makes each
+promoted default its own tracked entry — promoting one can't invalidate a reader
+of another, and every promotable display reads one per `rpcProps`. A single
+nested object reassigned wholesale made every setter wake every reader.
 Persists for free via the preferences mixin → localStorage; embedded products
 without that mixin resolve admin-only. Both are **optional** methods on
 `AbstractSessionModel` (`getDisplayTypeDefault?`) so a session that lacks them
@@ -291,6 +321,7 @@ boundary means *calling* one — not writing bespoke resolution:
 | --- | --- | --- |
 | Worker RPC payload | `resolvePromotableConfigSnapshot(display)` | worker has no session/`preferencesOverrides` to resolve against |
 | Session share / desktop→web export | `bakePromotedDefaultsIntoSnapshot(session, snapshot)` | recipient lacks the sender's local defaults |
+| "Export session" → `session.json` (web, react-app) | `bakePromotedDefaultsIntoSnapshot(session, snapshot)` | same: a file handed to someone else |
 
 `bakePromotedDefaultsIntoSnapshot` (`shareableSnapshot.ts`, wired into
 jbrowse-web `ShareDialog` and jbrowse-desktop `ExportToWebDialog`) returns a deep
@@ -376,9 +407,10 @@ but `disabled` with a `disabledHelpText`, rather than vanishing — so they're
 discoverable. `CascadingMenu` greys a disabled submenu and blocks it from
 opening.
 
-**Badge** (`OverrideBadge.tsx`, track selector): a distinct `SettingsSuggestIcon`
-(vs. the per-track-edit pencil) shows when the display's
-`displayTypeDefaultChanges()` is non-empty; click opens
+**Badge** (`OverrideBadge.tsx`, track selector): the same pencil that marks a
+per-track config edit also shows when the display's
+`displayTypeDefaultChanges()` is non-empty — one badge, two reasons, with the
+tooltip and the dialog naming the actual source; click opens
 `TrackSettingsChangesDialog` with a "clear default" action. Both hooks — the
 `displayTypeDefaultChanges()` view (→ `getDisplayTypeDefaultChanges`) and the
 `clearDisplayTypeDefaults()` action (→ `clearPromotedDefaults`) — come from
@@ -414,8 +446,12 @@ for free (no per-display passthroughs).
    `getConf` there would recurse), as does any consumer holding a bare config
    with no session to resolve against. So: `getConf` = resolution-aware entry
    point on a state model; `readConfObject` = raw read.
-3. If the display isn't already an adopter, `.compose(PromotableDefaultsMixin())`
-   so the badge hooks exist.
+3. `.compose(PromotableDefaultsMixin(configSchema))` if the display doesn't
+   already, so the badge hooks exist. **Every display with a promotable slot
+   needs it** — the badge probes the two hooks optionally, so a display that
+   skips it silently never badges and offers no "clear default". Current
+   composers: canvas base, alignments, wiggle, multi-wiggle, paired-arc,
+   Manhattan.
 4. Track menu: expose a `DisplayTypeDefaultControl` getter from the model built
    with the fitting `make*Control` builder, and pass it as `displayTypeDefault`
    to `promotableToggleItem` / `promotableRadioItem`. Group slots that move

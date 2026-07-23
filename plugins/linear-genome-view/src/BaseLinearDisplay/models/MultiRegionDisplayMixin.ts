@@ -188,6 +188,26 @@ export default function MultiRegionDisplayMixin() {
             self.fetchCanceled,
         )
       },
+
+      /**
+       * #getter
+       * The RPC cache key: the subclass's `rpcProps()` payload serialized to a
+       * string, so this getter's value is a primitive and MobX invalidates its
+       * observers only when the payload actually changed. Building the payload
+       * touches far more observables than it returns — canvas builds it from a
+       * whole config snapshot (`resolvePromotableConfigSnapshot`), which reads
+       * every slot on the display config — so an observer of the raw call would
+       * refetch on purely main-thread settings (showLabels, heightMode, a
+       * compact/normal displayMode flip) that the payload deliberately excludes.
+       * A fresh object would also never compare equal. `''` for a display with
+       * no `rpcProps` (the SettingsInvalidate autorun isn't installed there).
+       */
+      get rpcPropsCacheKey(): string {
+        // looked up dynamically: the mixin doesn't declare rpcProps on its
+        // public interface, so subclasses keep their narrow return types
+        const rpcProps = (self as { rpcProps?: () => unknown }).rpcProps
+        return rpcProps ? JSON.stringify(rpcProps.call(self)) : ''
+      },
     }))
     .actions(self => ({
       /**
@@ -446,18 +466,15 @@ export default function MultiRegionDisplayMixin() {
           },
         )
 
-        // Re-fetch when track config changes. Each subclass defines its own
-        // typed rpcProps() — reading it once tracks every param as a cache
-        // key. Looked up dynamically because the mixin doesn't declare the
-        // method on its public interface (subclasses keep their narrow
-        // return types unwidened by a base default).
-        const rpcProps = (self as { rpcProps?: () => unknown }).rpcProps
-        if (rpcProps) {
+        // Re-fetch when the RPC payload changes. The cache key is what
+        // rpcProps() *returns*, not what building it reads — see the
+        // `rpcPropsCacheKey` getter.
+        if ((self as { rpcProps?: () => unknown }).rpcProps) {
           const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
           autorunOnReadyView(
             self,
             () => {
-              void rpcProps.call(self)
+              void self.rpcPropsCacheKey
               loopGuard()
               self.clearAllRpcData()
             },

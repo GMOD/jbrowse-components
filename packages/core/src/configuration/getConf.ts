@@ -47,10 +47,12 @@ export function getConf<
     // a promotable slot resolves through the cascade. `model` is the display
     // state node the resolver needs (type + session + ignorePromotedDefaults);
     // only display state models carry a schema with promotable slots, so this
-    // branch is reached for exactly those. The cast matches the declared return
-    // (this is the `SLOT extends string` case); `resolveSlot(...).value` is
-    // `unknown`, which the conditional return type can't infer on its own.
-    return resolveSlot(model as unknown as PromotableDisplay, slotPath)
+    // branch is reached for exactly those. `args` are forwarded so a promotable
+    // slot holding a jexl callback evaluates with the caller's context, exactly
+    // as a plain slot read would. The cast matches the declared return (this is
+    // the `SLOT extends string` case); `resolveSlot(...).value` is `unknown`,
+    // which the conditional return type can't infer on its own.
+    return resolveSlot(model as unknown as PromotableDisplay, slotPath, args)
       .value as SLOT extends string
       ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
       : any

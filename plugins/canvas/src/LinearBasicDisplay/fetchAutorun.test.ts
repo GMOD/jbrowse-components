@@ -1233,3 +1233,71 @@ describe('regionKeys/reversedRegions derive from rpcDataMap', () => {
     expect([...display.reversedRegions]).toEqual([1])
   })
 })
+
+// The SettingsInvalidate cache key is what rpcProps() *returns*, not what it
+// reads. rpcProps builds its payload from a whole config snapshot
+// (resolvePromotableConfigSnapshot), which touches every slot on the display
+// config — so a read-tracked invalidation refetched the track whenever a purely
+// main-thread setting changed, despite those slots being deliberately excluded
+// from the payload.
+describe('SettingsInvalidate keys on the payload, not the reads', () => {
+  async function loadedDisplay() {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeFeatureData())
+    const { display } = createDisplay()
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    return { display, mockRpcCall }
+  }
+
+  it.each([
+    ['showLabels', 'off'],
+    ['showDescriptions', false],
+    ['heightMode', 'grow'],
+    ['displayMode', 'compact'],
+  ])('a main-thread-only %s change does not refetch', async (slot, value) => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.configuration.setSlot(slot, value)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    expect(display.loadedRegions.size).toBe(1)
+  })
+
+  it('a worker-visible change still refetches', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.setShowOnlyGenes(true)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
+      showOnlyGenes: true,
+    })
+  })
+
+  it('collapsed displayMode refetches, because it forces subfeatureLabels off', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    // subfeatureLabels resolves to 'none' by default, where the collapsed
+    // substitution is a no-op; make it visible so collapsing actually changes
+    // the payload
+    display.configuration.setSlot('subfeatureLabels', 'below')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.configuration.setSlot('displayMode', 'collapsed')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+  })
+})
