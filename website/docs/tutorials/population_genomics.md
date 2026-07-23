@@ -1,7 +1,8 @@
 ---
 title: Population genomics
 description:
-  Fst, diversity, and Tajima's D scans plus a genotype matrix from one VCF
+  Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from
+  one VCF
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
@@ -51,11 +52,16 @@ the [JBrowse CLI](/docs/cli):
   a VCF
 - [bcftools](https://samtools.github.io/bcftools/) - reading the VCF header and
   sample list
+- [htslib](https://www.htslib.org/) (`bgzip`, `tabix`) - compressing and
+  indexing the VCF built in the per-sample section
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) - UCSC
   utility that packs a bedGraph into an indexed bigWig
 
-All are on [bioconda](https://bioconda.github.io/):
-`conda install -c bioconda vcftools bcftools ucsc-bedgraphtobigwig`.
+On Debian/Ubuntu, `apt install vcftools bcftools tabix curl` covers everything
+but `bedGraphToBigWig`, which is a
+[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/).
+Homebrew has the same four (`brew install vcftools bcftools htslib`), and all
+five are on [bioconda](https://bioconda.github.io/) if you already run conda.
 
 ## Get the data
 
@@ -122,12 +128,13 @@ vcftools --gzvcf "$VCF" \
 #    CHROM  BIN_START  BIN_END  N_VARIANTS  WEIGHTED_FST  MEAN_FST
 ```
 
-Convert to bigWig. Take `WEIGHTED_FST` (column 5), skip `-nan` windows, floor
-slightly-negative estimates at 0, and shift `BIN_START` from 1-based to the
-0-based half-open coordinates bedGraph expects:
+Convert to bigWig. Take `WEIGHTED_FST` (column 5), skip the windows vcftools
+could not estimate (it writes these as `nan` or `-nan`, either of which
+`bedGraphToBigWig` rejects), floor slightly-negative estimates at 0, and shift
+`BIN_START` from 1-based to the 0-based half-open coordinates bedGraph expects:
 
 ```bash
-awk 'NR>1 && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
+awk 'NR>1 && $5!="nan" && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
   fst_In2Lt.windowed.weir.fst \
   | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
@@ -173,29 +180,40 @@ points to a selective sweep, not just a region that happens to be low-diversity.
 split needed since it is a whole-panel statistic:
 
 ```bash
-vcftools --gzvcf "$VCF" --TajimaD 2000 --out tajd_all
-# -> tajd_all.Tajima.D   CHROM  BIN_START  N_SNPS  TajimaD
+vcftools --gzvcf "$VCF" --TajimaD 2000 --out tajimad_all
+# -> tajimad_all.Tajima.D   CHROM  BIN_START  N_SNPS  TajimaD
 ```
 
 Convert to bigWig. Take `TajimaD` (column 4), skip `nan` windows, and keep
 negative values (unlike Fst, Tajima's D is meaningfully signed, and the negative
-excursions are the signal):
+excursions are the signal). This output reports only a window _start_, so unlike
+the other two scans you have to construct the end yourself, clamping it to the
+contig length so the final window of a chromosome cannot run off the end:
 
 ```bash
-awk 'NR>1 && $4!="nan" && $4!="-nan" {print $1"\t"$2"\t"($2+2000)"\t"$4}' \
-  tajd_all.Tajima.D \
-  | sort -k1,1 -k2,2n > tajd_all.bedgraph
-bedGraphToBigWig tajd_all.bedgraph dm6.chrom.sizes tajd_all.bw
+awk -F'\t' 'NR==FNR{len[$1]=$2; next}
+     FNR>1 && $4!="nan" && $4!="-nan" {
+       end=$2+2000; if (end>len[$1]) end=len[$1]
+       if (end>$2) print $1"\t"$2"\t"end"\t"$4
+     }' dm6.chrom.sizes tajimad_all.Tajima.D \
+  | sort -k1,1 -k2,2n > tajimad_all.bedgraph
+bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
 ```
 
-`vcftools --TajimaD` reports `BIN_START` 0-based, so it maps directly to the
-0-based half-open bedGraph coordinate, with no `-1` shift, unlike the 1-based
-`--window-pi` output above.
+Two coordinate details are worth keeping straight, because getting either wrong
+produces a track that is silently shifted rather than an error:
+
+- `vcftools --TajimaD` reports `BIN_START` 0-based, so it maps directly to the
+  0-based half-open bedGraph coordinate with no `-1` shift, unlike the 1-based
+  `--window-pi` and `--fst-window-size` output above.
+- `--window-pi` and windowed Fst emit a `BIN_END` already clamped to the contig,
+  so they need no clamp. `--TajimaD` does not, and `bedGraphToBigWig` fails hard
+  on an interval that ends past its chromosome.
 
 ## Reproduce it end to end
 
-Every step above (the downloads, the group split, and all three scans) is
-wrapped in one script,
+Every step on this page (the downloads, the group split, all three scans, and
+the per-sample inversion genotypes below) is wrapped in one script,
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh),
 which also downloads JBrowse and writes a ready-to-serve config:
 
@@ -205,22 +223,23 @@ npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 
 It writes a `config.json` with the dm6 assembly (from UCSC) plus the Fst, π, and
-Tajima's D scan tracks, opening on the In(2L)t inversion across arm 2L. It
-requires:
+Tajima's D scan tracks and the inversion genotypes, opening on the In(2L)t
+inversion across arm 2L. It requires:
 
 - `vcftools`
 - `bcftools`
+- htslib (`bgzip`, `tabix`)
 - UCSC `bedGraphToBigWig`
 - `curl`
 - `node`
 
-On Debian/Ubuntu, `apt install vcftools bcftools curl` covers three of these;
-`bedGraphToBigWig` is a
+On Debian/Ubuntu, `apt install vcftools bcftools tabix curl` covers four of
+these; `bedGraphToBigWig` is a
 [UCSC binary download](https://hgdownload.soe.ucsc.edu/admin/exe/), and `node`
 comes from [nodejs.org](https://nodejs.org/).
 
-The `.bw` files are written next to the config, so you can host them elsewhere
-or
+The `.bw` and `.vcf.gz` files are written next to the config, so you can host
+them elsewhere or
 [open them as local track files](/docs/user_guides/basic_usage#opening-tracks)
 in JBrowse Desktop.
 
@@ -287,6 +306,11 @@ On the shared axis, inverted-arrangement π runs mildly below standard across th
 inverted region on `2L`, and roughly equal to it outside. The contrast between
 arrangements is stronger in the Fst scan than in within-group π.
 
+Read that difference with the group sizes in mind: 19 inverted lines against 161
+standard ones. π itself corrects for sample size, so the two rows are on a
+comparable scale, but the 19-line row is much noisier window to window. Trust
+the trend across the region, not any single window.
+
 ## Reading the signals
 
 We zoom out to the whole genome (all six arms). The `In(2L)t` Fst track rises
@@ -334,24 +358,26 @@ The windowed Fst scan _summarizes_ the inversion into one number per window. To
 see which lines actually carry it, represent the whole arrangement as a single
 structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
 (`2L:2,225,744–13,154,180`), genotyped across every karyotyped line, and load it
-as a [multi-sample variant matrix](/docs/user_guides/multivariant_track). A
-per-SNP matrix can't hold a ~11 Mb inversion on screen: zoom out far enough to
-see both breakpoints and the individual marker columns shrink to nothing. One SV
-call sidesteps that: the inversion is a single feature no matter how wide it is.
+in the [multi-sample variant display](/docs/user_guides/multivariant_track). A
+per-SNP view can't hold a ~11 Mb inversion on screen: zoom out far enough to see
+both breakpoints and the individual markers shrink to nothing. One SV call
+sidesteps that, because the inversion is a single feature no matter how wide it
+is.
 
-First subset the panel to the karyotyped lines over `2L` and write a
-`samples.tsv` so the matrix can color rows by arrangement:
+Use the regular multi-sample display here, not its matrix mode. Matrix mode
+spaces one evenly-sized column per variant, which is what you want for many
+SNPs; for a single call it would throw away the one thing that matters here, the
+call's genomic extent. The regular display draws each genotype at the call's
+true span, so the carriers line up under the Fst plateau.
+
+First write a `samples.tsv` mapping each line to its arrangement. This is the
+per-sample metadata file the display reads: its first column is the sample name
+and every other column is an attribute the display can order and color rows by.
 
 ```bash
-# subset to the 180 karyotyped lines, 2L, biallelic SNPs
-vcftools --gzvcf "$VCF" --chr 2L --keep In2Lt_STD.txt --keep In2Lt_INV.txt \
-  --min-alleles 2 --max-alleles 2 --remove-indels --mac 10 \
-  --recode --stdout | bgzip > dgrp_In2Lt_2L.vcf.gz
-tabix -p vcf dgrp_In2Lt_2L.vcf.gz
-
-# samples.tsv (name<TAB>karyotype) so the matrix can group/color by arrangement
-{ echo -e "name\tkaryotype";
-  awk '{print $1"\tIn(2L)t"}' In2Lt_INV.txt;
+# samples.tsv (name<TAB>karyotype) so the display can group/color by arrangement
+{ printf 'name\tkaryotype\n'
+  awk '{print $1"\tIn(2L)t"}' In2Lt_INV.txt
   awk '{print $1"\tStandard"}' In2Lt_STD.txt; } > dgrp_In2Lt_samples.tsv
 ```
 
@@ -375,42 +401,41 @@ tabix -p vcf dgrp_In2Lt_sv.vcf.gz
 ```
 
 Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
-`LinearMultiSampleVariantMatrixDisplay` colored by the `karyotype` column:
+`LinearMultiSampleVariantDisplay` that both orders (`groupBy`) and colors
+(`colorBy`) its rows by the `karyotype` column:
 
 ```json
 {
   "type": "VariantTrack",
-  "trackId": "dgrp_In2Lt_matrix",
+  "trackId": "dgrp_In2Lt_sv",
   "name": "In(2L)t inversion genotyped across DGRP lines",
   "assemblyNames": ["dm6"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz.tbi"
-      }
-    },
+    "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz",
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv"
     }
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "type": "LinearMultiSampleVariantDisplay",
+      "groupBy": "karyotype",
       "colorBy": "karyotype"
     }
   ]
 }
 ```
 
-Viewed across the inversion, the single call resolves the whole ~11 Mb
-arrangement at once: each row is a line, colored by its genotype at the
-inversion, so the 19 In(2L)t carriers (~10% of the panel) form the
-homozygous-alt block at top and the 161 standard lines the homozygous-reference
-block below, with the karyotype strip down the sidebar.
+Viewed across the whole arm, the single call resolves the ~11 Mb arrangement at
+once: each row is a line, colored by its genotype at the inversion, so the 161
+standard lines form the pale homozygous-reference field and the 19 In(2L)t
+carriers (~10% of the panel) the darker block beneath it, with the karyotype
+strip down the sidebar. `groupBy` is what makes those two blocks contiguous.
+Without it the rows keep the VCF's column order, and the split only reads as two
+blocks by luck.
+
+<Figure src="/img/popgen/in2lt_per_sample.png" caption="Whole chr2L. Top: the In(2L)t extent. Middle: Fst between arrangements. Bottom: one row per DGRP line, genotyped for the inversion as a single SV call and grouped by karyotype. The carrier block spans breakpoint to breakpoint, directly under the Fst plateau. Inversions draw as a tapered glyph, so each carrier row thins toward its left breakpoint."/>
 
 The genotypes here are the arrangement karyotypes themselves, so this is the
 cleanest per-line view of _who_ carries the inversion. The independent evidence
@@ -441,7 +466,9 @@ The window columns are `chromosome, window_pos_1, window_pos_2`. The value is
 `avg_pi` (π file, column 5), `avg_dxy` (dxy file, column 6), or `avg_wc_fst`
 (Fst file, column 6). Convert each to its own bigWig with the same
 awk-to-`bedGraphToBigWig` pattern used above and load them as more multi-wiggle
-rows.
+rows. `window_pos_1` is 1-based and `window_pos_2` is clamped to the contig, so
+these behave like the `--window-pi` output: subtract 1 from the start, and add
+no clamp.
 
 ## Notes
 

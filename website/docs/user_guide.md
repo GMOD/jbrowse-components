@@ -57,7 +57,7 @@ sidebar_label: Overview
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
 - [Pangenome graphs](/docs/tutorials/pangenome) - Visualize a pggb / Minigraph-Cactus pangenome graph in JBrowse
 - [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
-- [Population genomics](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus a genotype matrix from one VCF
+- [Population genomics](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from one VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
 - [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs

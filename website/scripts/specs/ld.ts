@@ -2,19 +2,22 @@ import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The LD heatmap display's home-run result: the 17q21.31 MAPT inversion, a
-// common ~900 kb polymorphic inversion in humans. Because the inverted (H2) and
-// standard (H1) arrangements can't recombine in heterozygotes, the whole segment
-// is inherited as one unit, so SNPs across it are in strong long-range LD — a
-// solid triangle of high r². Computed live from phased 1000 Genomes genotypes
-// (exact haplotypic r², not the composite estimate), so no precomputed LD file
-// is needed. hg19 (the phase3 20130502 release coordinates).
+// The LD heatmap display's home-run result: the lactase-persistence sweep at
+// LCT/MCM6, computed live from phased 1000 Genomes genotypes (exact haplotypic
+// r², not the composite estimate), so no precomputed LD file is needed. hg19
+// (the phase3 20130502 release coordinates).
+//
+// A companion MAPT 17q21.31 inversion figure was dropped in 969c44cc21: no
+// accessible callset has usable per-sample genotypes for that inversion, so it
+// could only have been shown with a proxy. The inversion case is covered in
+// prose in the linkage_disequilibrium tutorial, with no figure — don't
+// reintroduce one without real genotypes behind it.
 //
 // Data is a region slice of the phase3 1000 Genomes VCF (all 2504 samples,
-// chr17:43.4–44.6 Mb) re-hosted on jbrowse.org S3 so the figure and its live
+// chr2:135.8–137.4 Mb) re-hosted on jbrowse.org S3 so the figure and its live
 // "Open in JBrowse" link load fast and don't depend on the EBI FTP being up.
-// The VCF names the contig "17"; the hosted UCSC hg19 hub's chromAlias
-// reconciles "chr17" at query time.
+// The VCF names the contig "2"; the hosted UCSC hg19 hub's chromAlias
+// reconciles "chr2" at query time.
 const HG19_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg19/config.json')}`
 
 const KGP_CHR2 = 'https://jbrowse.org/demos/popgen/lct_1kg_chr2.vcf.gz'

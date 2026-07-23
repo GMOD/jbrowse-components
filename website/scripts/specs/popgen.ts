@@ -6,7 +6,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // diversity (pi) scans from the DGRP2 Drosophila panel, loaded as the exact
 // multi-wiggle track the tutorial documents. Data is the real pipeline output
 // hosted at jbrowse.org/demos/popgen (Fst of In(2L)t-inverted vs
-// standard-arrangement lines, and whole-panel pi, both 10 kb windows).
+// standard-arrangement lines, and whole-panel pi, both 2 kb windows, matching
+// the window size scripts/build_dgrp_popgen.sh uses).
 //
 // Loaded against the hosted UCSC dm6 hub config (jbrowse.org/ucsc/dm6) so the
 // figure carries a real gene track for context and gene-name search — the setup
@@ -67,7 +68,7 @@ const IN2LT_INVERSION_TRACK = {
   },
 }
 
-// Genome-wide Tajima's D (10 kb windows, whole panel) from the same pipeline.
+// Genome-wide Tajima's D (2 kb windows, whole panel) from the same pipeline.
 // Pairs with π: a hard sweep drives BOTH down — π (fewer segregating sites) and
 // Tajima's D (an excess of rare alleles as new mutations accumulate on the swept
 // background), so the Cyp6g1 window shows a joint dip.
@@ -80,6 +81,44 @@ const TAJD_TRACK = {
     type: 'BigWigAdapter',
     uri: 'https://jbrowse.org/demos/popgen/tajimad_all.bw',
   },
+}
+
+// The same inversion as per-sample SV calls: one <INV> record spanning the
+// published breakpoints, genotyped across every karyotyped DGRP line. This is the
+// per-sample counterpart to the Fst scan — the scan says the arrangement is
+// differentiated, this says WHO carries it.
+//
+// LinearMultiSampleVariantDisplay, NOT the matrix display. Matrix mode evenly
+// spaces one column per variant, which is what you want for many SNPs and wrong
+// for a single call with real genomic extent: the column would carry no
+// positional meaning. This display draws each genotype at the call's true span,
+// so the carrier block starts and ends at the breakpoints and lines up under
+// the Fst plateau and the inversion-extent bar.
+//
+// groupBy orders the rows so carriers and standard lines are contiguous (without
+// it the rows keep VCF column order); colorBy paints the sidebar strip. Both live
+// on the track's own displays array, not the view's tracks entry, or they'd be
+// dropped and the display would fall back to schema defaults.
+const IN2LT_SV_TRACK = {
+  type: 'VariantTrack',
+  trackId: 'dgrp_In2Lt_sv',
+  name: 'In(2L)t genotyped across DGRP lines',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz',
+    samplesTsvLocation: {
+      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv',
+    },
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantDisplay',
+      groupBy: 'karyotype',
+      colorBy: 'karyotype',
+      height: 300,
+    },
+  ],
 }
 
 export const popgenSpecs: ScreenshotSpec[] = [
@@ -203,6 +242,53 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     // tajd(200) + pi(180) + grow gene track + 3 headers + ruler/overview
     viewportHeight: 960,
+    settleMs: 12000,
+  },
+
+  // Whole 2L arm: the windowed Fst scan and the per-line genotypes of the same
+  // inversion, stacked. Top is the arrangement's extent, then Fst (the summary:
+  // one number per 2 kb window), then one row per DGRP line (who actually
+  // carries it). The two blocks are the 161 standard lines over the 19 In(2L)t
+  // carriers, and the Fst plateau above them spans exactly the region those 19
+  // carry. Whole arm rather than just the inversion so the plateau has flanking
+  // background to read against.
+  {
+    mode: 'url',
+    name: 'popgen/in2lt_per_sample',
+    url: `${DM6_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK, IN2LT_SV_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          loc: 'chr2L',
+          tracks: [
+            {
+              trackId: 'in2lt_inversion',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'fst_in2lt',
+              type: 'LinearWiggleDisplay',
+              height: 160,
+            },
+            {
+              trackId: 'dgrp_In2Lt_sv',
+              type: 'LinearMultiSampleVariantDisplay',
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: '[data-testid="variant-display-done"]',
+    readyText: 'In(2L)t genotyped',
+    readyTimeout: 120000,
+    // inversion(40) + fst(160) + genotypes(300) + 3 track headers + ruler and
+    // overview + app bar. Undersize this and the rows below the fold are simply
+    // cropped away, silently: the genotype canvas still reports first paint, so
+    // the capture succeeds with the informative rows missing.
+    viewportHeight: 860,
     settleMs: 12000,
   },
 ]

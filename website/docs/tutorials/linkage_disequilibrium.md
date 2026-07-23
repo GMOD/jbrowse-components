@@ -11,14 +11,15 @@ together. JBrowse draws it as a triangular heatmap of pairwise r² between SNPs:
 they are independent.** The triangle shows you where a chunk of chromosome moves
 as a unit.
 
-This tutorial reads two real examples from the 1000 Genomes Project, both
-computed live in the browser from phased genotypes (no precomputed LD file),
-then covers the one thing people most often get wrong about LD: its scale.
+This tutorial reads a real example from the 1000 Genomes Project, computed live
+in the browser from phased genotypes (no precomputed LD file), covers the second
+way a block arises, and then covers the one thing people most often get wrong
+about LD: its scale.
 
 ## What you need
 
-Nothing to install. Both examples are computed live in the browser from hosted
-1000 Genomes genotypes, and every figure has a live link that opens the view.
+Nothing to install. The example is computed live in the browser from hosted 1000
+Genomes genotypes, and the figure below has a live link that opens the view.
 
 ## A selective sweep leaves a long haplotype
 
@@ -54,9 +55,20 @@ region. The common 17q21.31 inversion (around the _MAPT_ gene) is the textbook
 example: short-read SV callers miss the inversion itself, because segmental
 duplications flank it, so the LD block is how you see it at all.
 
+Read off the triangle alone, the two causes look the same. Telling them apart
+takes something outside the r² matrix: an annotated causal variant (the ClinVar
+lane above), a breakpoint call, or the karyotype of each sample. The
+[population genomics tutorial](/docs/tutorials/population_genomics) does the
+last of these for a fly inversion, genotyping the arrangement itself across the
+panel.
+
+## Marking where a block ends
+
 Turn on the LD display's recombination track (`showRecombination`) to make block
 boundaries explicit: the 1 − r² curve between adjacent SNPs peaks in the white
 gaps (LD breaking down) and dips inside the red blocks (SNPs locked together).
+Open the figure above live and turn on **Show recombination track** in the track
+menu to see the curve step down over the LCT block.
 
 ## LD is a local tool, so mind the scale
 
@@ -88,15 +100,15 @@ Two ways to supply the data, covered in full in the
 - **Computed live from a VCF**: attach an `LDDisplay` to a normal
   `VariantTrack`. r² is computed from the genotypes in the visible region, so no
   extra files are needed, and phased genotypes give exact haplotypic r². This is
-  what both figures above use.
+  what the figure above uses.
 - **Precomputed with PLINK**: for large cohorts, or to publish a fixed matrix,
   point an `LDTrack` at PLINK `--r2` output. This is the authoritative route
   when you want LD numbers that match a published analysis.
 
-Two display settings did most of the work in the figures above: the minor allele
-frequency filter (raised to thin the dense 1000 Genomes SNPs to the common,
+One display setting did most of the work in the figure above: the minor allele
+frequency filter, raised to thin the dense 1000 Genomes SNPs to the common,
 block-tagging ones, which also removes the noisy r² speckle from rare-allele
-pairs) and the recombination track toggle used on the inversion figure.
+pairs.
 
 ## See also
 
