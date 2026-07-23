@@ -3,7 +3,6 @@ import { Font } from 'astro:assets'
 
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
-import { formatStars, getStarCount } from '../lib/github-stars.ts'
 import { navLinks } from '../lib/nav.ts'
 
 interface Props {
@@ -31,7 +30,6 @@ function isActive(href: string) {
 // CSS module access is always defined; ! silences noUncheckedIndexedAccess
 const navActive = styles.navActive!
 const year = new Date().getFullYear()
-const stars = await getStarCount()
 ---
 
 <!doctype html>
@@ -196,19 +194,11 @@ const stars = await getStarCount()
         </a>
         <a
           href="https://github.com/GMOD/jbrowse-components"
-          class={styles.starButton}
+          class:list={[styles.socialIcon, styles.githubIcon]}
           target="_blank"
           rel="noopener noreferrer"
-          title="Star JBrowse on GitHub"
-        >
-          <span class:list={[styles.starIcon, styles.githubIcon]}></span>
-          Star
-          {
-            stars !== undefined && (
-              <span class={styles.starCount}>{formatStars(stars)}</span>
-            )
-          }
-        </a>
+          aria-label="JBrowse on GitHub"
+          title="JBrowse on GitHub"></a>
       </div>
 
       <button
