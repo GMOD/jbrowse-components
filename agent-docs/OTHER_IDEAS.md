@@ -1568,25 +1568,11 @@ quickstart. A also gives free offline sharing without a server.
 Audit startup/runtime net calls that degrade offline: plugin-store fetch,
 autoUpdater check (`electron/autoUpdater.ts`), internet-account probing. These
 should fail fast/silent offline instead of hanging or erroring noisily.
-# Other ideas
-
-Scratch list of not-yet-committed ideas. Each links to a fuller plan doc where
-one exists.
-
-## Display-type config defaults ("all alignments compact by default") — SHIPPED
-
-Session-wide per-display-type slot defaults (the missing third config axis
-alongside per-track `trackConfigDeltas` and app-scope `preferences`). **Shipped**
-as promotable config slots that resolve at read-time on the display — NOT the
-`mergeTrackConfig`-layers-in-the-tracks-getter design originally sketched here.
-See **`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`** for the master doc.
-
-
-
 ## Promotable-slot UI (config editor + track menus)
 
-Follow-on to the SHIPPED display-type defaults above: how far the single
-promotable flag can drive UI generation, and where it can't.
+Follow-on to the shipped display-type defaults (promotable config slots that
+resolve at read time — master doc `reference/DISPLAY_TYPE_DEFAULTS.md`): how far
+the single promotable flag can drive UI generation, and where it can't.
 
 **What the earlier sketch got wrong.** `ConfigurationEditorWidget.target` is not
 the live display model — it's either `track.configuration` or a temporary MST
@@ -1992,18 +1978,11 @@ gap from the same pass is tracked in TODO.md.
   Threading height through `TooLargeMessage`→`BlockMsg` could churn many
   displays' too-large snapshots and the intrinsic height may be intentional —
   needs a product call.
-- **The early-return-vs-ternary jsdom rule.** A house-style override rests on a
-  mechanism nobody has isolated (all evidence is jsdom + `act()`). Get a
-  Puppeteer `--backend=canvas2d` repro or refutation; if it doesn't repro
-  in-browser the fix belongs in the test harness, not production JSX. Keep the
-  tests regardless.
 - **Migrate imperative `regionTooLarge`** (wiggle/alignments/LD) to the derived
   shape, or document why they can't hit the stuck-banner bug. Bigger refactor.
 - **Make `dataLoaded` a required member** (omission = compile error, not a
   runtime export hang). MST mixin composition doesn't enforce "must override a
   getter" cleanly; riskier, deferred.
-# Other ideas
-
 ## Vertical real estate & the "scrolls within scrolls" problem
 
 The app nests scroll surfaces (page scroll, per-track synthetic scroll, horizontal
