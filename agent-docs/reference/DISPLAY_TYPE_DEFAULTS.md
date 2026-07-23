@@ -14,6 +14,27 @@ that hasn't customized its own value follows.
 The whole thing is a **small CSS cascade for a single config slot**. If you only
 read one section, read [The cascade](#the-cascade).
 
+## TL;DR
+
+- Three tiers, resolved at read time by `getConf`: **customized track value >
+  session-wide promoted default for the display type > the slot's base value**.
+- **No stored is-customized flag.** `stripDefault` collapses an at-default slot
+  out of the snapshot, so "at default" *is* "follows the default".
+- The promoted value lives in the **session**, not the track, so setting a
+  default rewrites nothing. Objects compare with `deepEqual`, not `!==`.
+- Every production slot is **sentinel**: `defaultValue` is a dedicated inherit
+  signal (an `'inherit'` enum member, or a `maybeNumber`/`maybeBoolean`
+  `undefined`), and `promotedBase` holds what it resolves to. This keeps every
+  real value customizable over an opposite default.
+- **Standing rule at every serialization boundary:** flatten the cascade like
+  `getComputedStyle`. Worker RPC → `resolvePromotableConfigSnapshot`;
+  share/export → `bakePromotedDefaultsIntoSnapshot`. Never emit a raw promotable
+  slot.
+- Received sessions carry `ignorePromotedDefaults`: baking alone can't neutralize
+  a recipient's default when the sender saw the base value.
+- UI is **one row per value**, each with a trailing `PushPin`. Filled = default
+  for all tracks of this type. No separate "make default" row.
+
 ## Vocabulary (the two words that matter)
 
 - **customized** — the track holds its own value, differing from the slot

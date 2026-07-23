@@ -13,6 +13,26 @@ semver/`api-extractor` discipline as premature for an experimental phase; this
 doc captures the thinking so it's ready when there are stable surfaces to
 protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
+## TL;DR
+
+- **Analysis, not committed policy.** RFC-001 deferred formal
+  semver/`api-extractor` discipline as premature.
+- The cause is **not** runtime imports — plugins must share the host's
+  singletons. It's that the shared surface is **invisible, unbounded, and
+  unversioned**, so you can never prove a symbol is safe to remove.
+- **In-tree is already solved**: the compiler is the contract test. External
+  plugins are the whole problem.
+- Fixes by leverage: a curated `@public` set behind a checked-in snapshot;
+  a versioned contract that fails **loud** at load time; runtime deprecation
+  warnings to remove with evidence (never gated on telemetry — self-hosted
+  instances don't report); and closing the extension-point gaps that make people
+  reach for internals.
+- `BaseLinearDisplay` is the poster child: public by accident of history.
+- The goal is **not lockdown** — deep reach stays an explicit, marked, may-break
+  opt-in rather than an accidental forever-contract.
+- Docs ossify identically. **State invariants, not enumerations**; generate any
+  list you must enumerate, and put a machine between contract and drift.
+
 ---
 
 ## The symptom

@@ -8,10 +8,25 @@ description: How display config reaches the renderer, from config to MST snapsho
 How display settings flow from MST model → rendering code (GPU/Canvas2D/worker).
 MST confined to main thread; renderers work on plain objects.
 
-## Overview
+## TL;DR
 
-Pipeline: MST config model → plain snapshot → rendering code. No MST at render
-layer.
+- Pipeline: **MST config model → plain snapshot → rendering code.** No MST at
+  the render layer.
+- The snapshot is built inline in `rpcProps()`, the single RPC payload extension
+  hook. Subclasses extend it by super-capture and spread.
+- `getConfSnapshot()` keeps defaults **and** raw `"jexl:…"` strings;
+  `readConfigValue(plainObj, key, feature)` evaluates them on the worker. No
+  re-hydration, no MST model needed.
+- Visual settings live **directly on the display config schema**, not nested in a
+  renderer sub-config. `contextVariable: ['feature']` enables jexl.
+- A runtime UI change writes the **config slot itself** (`setSlot`) and reads
+  back via `getConf`. There is no override map; `ConfigOverrideMixin` is gone.
+- **Every config schema must be `explicitlyTyped`.** The pluggable unions have no
+  dispatcher and rely on the literal `type` discriminator; without it one bad
+  field produces the multi-page "No type is applicable" wall.
+- Wholesale `{...getConfSnapshot}` ships every slot to the worker (canvas,
+  wiggle); alignments curates a narrow `rpcProps()` so visual-only changes don't
+  refetch.
 
 ## The pattern
 

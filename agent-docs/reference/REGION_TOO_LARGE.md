@@ -5,14 +5,42 @@ description: The byte/density gate that raises the "region too large" banner and
 
 # The region-too-large gate
 
-`regionTooLarge` raises the banner and holds off the fetch. It is a derived
-getter on `RegionTooLargeMixin`, computed fresh from the cached byte estimate
-scaled to the current viewport. Because it is derived rather than a flag, it
-releases itself when you zoom in, and it doesn't flicker while you pan.
+## TL;DR
+
+- `regionTooLarge` is a **derived getter**, not a flag: it rescales the cached
+  byte estimate to the current viewport, so it releases itself on zoom-in and
+  doesn't flicker while panning.
+- Gate on `estimatedVisibleBytes`, never raw `bytes` — raw bytes don't shrink on
+  zoom, so the banner never clears.
+- Gating is **opt-in**. `derivedRegionTooLargeEnabled` defaults to false;
+  `MultiRegionDisplayMixin` derives it from `getByteEstimateConfig() !== null`,
+  and LD/arc/canvas set it explicitly.
+- Canvas skips the pre-flight RPC and short-circuits **inside** its feature RPC
+  via the adapter's `getRegionByteSize`, downloading no features.
+- **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
+  Both define `derivedRegionTooLargeEnabled` and the later wins; swap them and
+  the whole gate silently switches off, with no error and no type failure.
+- Force-load limits are volatile, never persisted; `resolveForceLoadLimits`
+  picks the axis that actually tripped. The durable hatch is the `forceLoad`
+  config slot.
+- `alwaysRender` exempts adapters that self-summarize at screen resolution
+  (BigWig, MultiWiggle, HiC, sequence).
+
+| Code | Path |
+| --- | --- |
+| `RegionTooLargeMixin` (derived gate) | `plugins/linear-genome-view/src/shared/RegionTooLargeMixin.tsx` |
+| Shared verdict primitives | `plugins/linear-genome-view/src/shared/featureDensityUtils.ts` |
+| `CanvasFeatureGateMixin` (density axis) | `plugins/canvas/src/shared/CanvasFeatureGateMixin.ts` |
+
+Both footguns above are covered by tests: `featureDensityUtils.test.ts`, and a
+"composition order keeps the derived gate enabled" test in
+`plugins/canvas/src/LinearBasicDisplay/fetchAutorun.test.ts` +
+`plugins/canvas/src/LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
 For the wider picture and the five fetch autoruns that consult it, see
 [ARCHITECTURE.md § Data fetching pipeline](../ARCHITECTURE.md#data-fetching-pipeline).
-`DisplayChrome` turns this one signal into the banner UI; see DISPLAYCHROME.md.
+`DisplayChrome` turns this one signal into the banner UI; see
+[DISPLAYCHROME.md](DISPLAYCHROME.md).
 
 ## How the verdict is built
 
@@ -104,15 +132,11 @@ and `maxFeatureDensity`), and the dual-axis `setFeatureDensityStatsLimit`. Setti
 `densityGateDisabled` turns the density axis off for a display that paints into
 fixed lanes, such as multi-row, leaving byte-only gating.
 
-**Composition order matters and nothing type-checks it.**
-`CanvasFeatureGateMixin()` must come after `MultiRegionDisplayMixin()`. Both
-define `derivedRegionTooLargeEnabled`; the base computes it from
-`getByteEstimateConfig()`, which canvas never overrides and which therefore
-returns null, so the base version evaluates to false. The gate works only because
-the mixin's hardcoded `true` wins by being composed later. Swap the two lines and
-the entire byte and density gate silently switches off, with no error and no type
-failure. Both canvas test suites carry a "composition order keeps the derived
-gate enabled" test to catch that.
+**Composition order matters and nothing type-checks it.** The base computes
+`derivedRegionTooLargeEnabled` from `getByteEstimateConfig()`, which canvas never
+overrides and which therefore returns null, so the base version evaluates to
+false. The gate works only because the mixin's hardcoded `true` wins by being
+composed later.
 
 A display opts in by composing the mixin, calling `commitFeatureGateStats` from
 its fetch, and overriding `isCacheValid` to require committed data. That last

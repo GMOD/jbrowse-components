@@ -5,6 +5,30 @@ description: SVG export pipeline covering the renderSvg shape, the svgReady/sett
 
 # SVG export pipeline
 
+## TL;DR
+
+- **The GPU shader path is an accelerator; the Canvas2D draw function is the
+  source of truth, and SVG export runs it.** So a shader-only tweak can't
+  silently diverge the export.
+- Every `renderSvg.tsx` is one shape: `await awaitSvgReady(model)`, mount
+  `SvgChrome` with `error` **and** `regionTooLarge`, then a sync body calling
+  `paintLayer(width, height, opts, ctx => drawXxxBlocks(ctx, …))`.
+- **Never** inline `when(() => …)`, hand-roll `if (model.error) return`, or gate
+  a body on data size. Those belong to `awaitSvgReady`, `SvgChrome`, and "render
+  empty naturally".
+- `svgReady` deliberately excludes `canvasDrawn` (a headless export's canvas may
+  never paint) and always carries a **freshness** axis, so an export fired right
+  after a pan captures fresh data.
+- `settled` is the separate **on-screen** capture gate: `canvasDrawn` plus that
+  same freshness axis.
+- Anything draw-shaped goes through `paintLayer`. Hand-rolled
+  `<rect>`/`<path>`/`<line>` is a red flag, with three permitted exceptions
+  (trivial chrome, bezier-arc overlays, shared React-SVG overlays).
+- **Clip-path ids must be scoped by the owning model's `.id`.** SVG ids are
+  document-global; a duplicate renders the second group unclipped.
+
+## Detail
+
 SVG export and on-screen rendering share the same pure Canvas2D draw functions,
 so a shader-only tweak can't silently diverge the export. Read this when
 touching a display's `renderSvg.tsx`, the `svgReady` gate, or the on-screen

@@ -5,6 +5,31 @@ description: The shared display status chrome that owns loading, error, and retr
 
 # DisplayChrome — the shared display status chrome
 
+## TL;DR
+
+- The single wrapper every GPU/Canvas2D-backed LGV display renders. It owns
+  `useRenderingBackend` **and** all terminal-state UI, so a display can't paint a
+  canvas while skipping a terminal state.
+- It branches on **one** getter, `model.displayPhase`, precedence
+  (`renderError > tooLarge > error > loading > ready`) single-sourced in
+  `computeDisplayPhase`. Never re-encode it as `&& !error && !regionTooLarge`.
+- `renderError`/`tooLarge` **replace** the subtree (canvas unmounts,
+  `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
+- Always: thin outer owns the chrome, a **named observer** body owns the canvas
+  and overlays, joined by a render-prop child.
+- Terminal states must be literal **early returns**, and `displayPhase`'s loading
+  term a **thunk**. Both load-bearing under React 19 + mobx-react.
+- 15 LGV displays use it. Off it **by design**: arc/paired-arc (main-thread SVG),
+  dotplot and synteny (non-LGV, drop to `useRenderingBackend`), circular-view
+  (radial, own banners).
+- The three `-done` testid shapes are redundant but **frozen** — a contract
+  across four test systems.
+
+Banner content for `tooLarge` comes from
+[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md).
+
+## Detail
+
 "What it is" + the adoption map. For **why the layering stays** (rejected
 refactors — don't re-litigate them) see
 [ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md);

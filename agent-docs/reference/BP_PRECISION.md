@@ -11,6 +11,24 @@ can't represent every integer past 2²⁴ ≈ 16.7 Mbp, so a naive float upload 
 is how we keep positions exact anyway. Read it when writing a `.slang` shader or
 a CPU instance packer.
 
+## TL;DR
+
+- **Every position array crossing the worker boundary is absolute genomic
+  uint32.** No pixel coordinates, no `regionStart`-relative offsets, no
+  `regionStart +` arithmetic downstream.
+- Intervals are **0-based half-open** `[start, end)`, matching BED/BAM.
+- Storage is uint32 (exact to 4.29 Gbp); the float32 conversion happens in the
+  shader as a **hi/lo split** (bits 12..31, 0..11), so every subtraction is
+  large-minus-large or small-minus-small.
+- **Read `hpmath.slang`; don't retype the split.** Its `max()`/`dot()` structure
+  stops the compiler collapsing the halves back into one large subtraction.
+- Reversal is orthogonal — `bpToX` on Canvas2D, `flipX` on GPU.
+- **Synteny and dotplot are the exception**: cumulative-bp stored
+  **window-relative** as a single Float32 against a per-axis fetch-time base.
+  Half the position bytes, no hi/lo pair, no `MAX_REGIONS` cap.
+- Limits: one chromosome must be `< 2³²` (the one hard assumption);
+  whole-assembly cumulative bp has **no** GPU ceiling.
+
 ## The absolute-uint32 rule
 
 **Every position array that crosses the worker boundary is absolute genomic

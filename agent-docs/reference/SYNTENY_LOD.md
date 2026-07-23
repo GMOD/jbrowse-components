@@ -1,8 +1,29 @@
+---
+name: synteny-lod
+description: The two PIF tiers (fine/coarse), the profiled cost model, and why read-time binning is capped at ~1.5x. Read before touching make-pif, the indexed PIF adapters, or the synteny fetch RPC.
+---
+
 # Synteny level-of-detail (PIF tiers) and the density problem
 
 Reference for the linear-comparative-view / dotplot LOD system and where its
 remaining scaling limit is. Read before touching `make-pif`, the indexed PIF
 adapters, or the synteny fetch RPC.
+
+## TL;DR
+
+- Two tiers in one tabix-indexed PIF, keyed by seqid case: fine `t`/`q` (per-row
+  CIGAR), coarse `T`/`Q` (no CIGAR, split at indels `>= --coarse`).
+- Coarse cuts **per-alignment** cost, not alignment **count**. It's the tool for
+  few-huge-CIGARs, marginal for many-short-alignments.
+- Coarse identity must reuse the fine `de:f:` tag, never recompute from CIGAR —
+  `M` folds in mismatches, giving spurious 100% identity across the LOD switch.
+- Profiled, not guessed: ~66% of cost is fetch + parse (unavoidable at read
+  time), ~34% construct + downstream. So read-time binning caps at ~1.5×.
+- The only lever on the dominant cost is a **precomputed binned tier in
+  `make-pif`** (fewer lines read), at the price of regenerating files.
+- The visual hairball is already solved by `fillCoverage` + auto fade-thin.
+  Binning would be a compute optimization, not a rendering fix.
+- Don't reintroduce runtime collinear chaining; it was tried and removed.
 
 ## The two PIF tiers
 
