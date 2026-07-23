@@ -50,7 +50,7 @@ sidebar_label: Overview
 - [CLI config for Desktop](/docs/tutorials/cli_desktop) - Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 - [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
-- [Using genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
 - [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle across a selective sweep and an inversion
 - [Long-read methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file

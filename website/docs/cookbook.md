@@ -604,7 +604,7 @@ from one PAF, [ortholog tables](/docs/tutorials/multiway_synteny) from a jcvi
 - [Dotplot view](/docs/user_guides/dotplot_view) and
   [linear synteny view](/docs/user_guides/linear_synteny_view) for what each
   view does with the track
-- [Using genomes.jbrowse.org](/docs/tutorials/genomes_synteny) to launch a
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) to launch a
   synteny view from a liftOver track in a linear genome view
 - [Pangenome graphs](/docs/tutorials/pangenome) for graph-derived alignments
 
