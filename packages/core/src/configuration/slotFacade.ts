@@ -1,7 +1,8 @@
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, getType } from '@jbrowse/mobx-state-tree'
 
 import { getEnv } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
+import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
@@ -32,6 +33,27 @@ export function isConfigurationSlot(
   slotName: string,
 ): boolean {
   return !!slotDefinition(node, slotName)
+}
+
+/**
+ * Run `node`'s own schema `preProcessSnapshot` over a partial bag of slot
+ * values headed for that config.
+ *
+ * A config.json snapshot gets this for free on `create`, but the session/URL
+ * path writes slots one `setSlot` at a time onto an already-created config, so
+ * without this a schema's shorthand expansions and legacy-key migrations apply
+ * to `config.json` and silently no-op in a session spec, share link, or embed —
+ * the surfaces that are supposed to speak the same vocabulary. The hooks are
+ * written to normalize whatever subset of keys they're handed, so a partial bag
+ * is the same shape they already tolerate.
+ */
+export function preProcessSlotValues(
+  node: AnyConfigurationModel,
+  values: Record<string, unknown>,
+): Record<string, unknown> {
+  const preProcess = getConfigurationSchemaMetadata(getType(node))?.options
+    .preProcessSnapshot
+  return preProcess ? preProcess(values) : values
 }
 
 /**

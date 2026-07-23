@@ -39,7 +39,7 @@ works out which display they belong to and applies them for you (here, the
     type: 'BigWigAdapter',
     uri: 'https://example.com/coverage.bw',
   },
-  displayDefaults: { scaleType: 'log', color: 'darkgreen', useBicolor: false },
+  displayDefaults: { scaleType: 'log', color: 'darkgreen' },
 }
 ```
 

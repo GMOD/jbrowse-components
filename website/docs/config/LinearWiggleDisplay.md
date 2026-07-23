@@ -38,7 +38,6 @@ Taller track, log scale, custom color:
     height: 200,
     scaleType: 'log',
     color: 'darkgreen',
-    useBicolor: false,
   },
 }
 ```
@@ -68,13 +67,13 @@ array form — see
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                       | Type                                   | Description                                                                                        |
-| ------------------------------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| [defaultRendering](#slot-defaultrendering) | `stringEnum`                           | Default rendering type: `xyplot`, `density`, `line`, or `scatter`.                                 |
-| [height](#slot-height)                     | `number`                               | Default height of the track                                                                        |
-| [useBicolor](#slot-usebicolor)             | `boolean`                              | When true (the default), positive scores use posColor and negative scores use negColor.            |
-| [color](#slot-color)                       | `color`                                | Single fill color for the wiggle bars.                                                             |
-| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering |
+| Slot                                       | Type                                   | Description                                                                                                                      |
+| ------------------------------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| [defaultRendering](#slot-defaultrendering) | `stringEnum`                           | Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.                                                 |
+| [height](#slot-height)                     | `number`                               | Default height of the track                                                                                                      |
+| [useBicolor](#slot-usebicolor)             | `boolean`                              | When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. |
+| [color](#slot-color)                       | `color`                                | Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply.          |
+| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering                               |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -90,7 +89,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: defaultRendering
 
-Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
+Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
 **Default:** `'xyplot'`
@@ -121,16 +120,19 @@ Default height of the track
 
 #### slot: useBicolor
 
-When true (the default), positive scores use posColor and negative scores use
-negColor. When false, all bars use the single color slot.
+When true (the default), positive scores use posColor and negative use negColor;
+when false, all bars use the single color slot. Setting color alone, with no
+posColor/negColor/useBicolor, turns this off for you.
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`
 
 #### slot: color
 
-Single fill color for the wiggle bars. Only used when useBicolor is false
-(useBicolor defaults to true, in which case posColor/negColor are used instead).
+Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per
+feature, so jexl callbacks do not apply. Set alone it implies useBicolor false;
+alongside posColor/negColor it goes unused. Density rendering always draws from
+posColor.
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
 `WIGGLE_POS_COLOR_DEFAULT`

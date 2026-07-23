@@ -126,7 +126,7 @@ shown once, at its most specific definition.
 
 #### slot: defaultRendering
 
-Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
+Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
 **Default:** `'xyplot'`
@@ -157,8 +157,9 @@ Default height of the track
 
 #### slot: useBicolor
 
-When true (the default), positive scores use posColor and negative scores use
-negColor. When false, all bars use the single color slot.
+When true (the default), positive scores use posColor and negative use negColor;
+when false, all bars use the single color slot. Setting color alone, with no
+posColor/negColor/useBicolor, turns this off for you.
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`

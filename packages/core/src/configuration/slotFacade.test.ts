@@ -2,7 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import { makeSlotFacade } from './slotFacade.ts'
+import { makeSlotFacade, preProcessSlotValues } from './slotFacade.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
@@ -71,4 +71,37 @@ test('facade set replaces an array slot value wholesale', () => {
   expect([...(facade.value as string[])]).toEqual(['a', 'b'])
   facade.set(['z', 'c'])
   expect([...node.list]).toEqual(['z', 'c'])
+})
+
+test('preProcessSlotValues runs the schema hook over a partial slot bag', () => {
+  const schema = ConfigurationSchema(
+    'Preprocessed',
+    {
+      color: { type: 'color', defaultValue: 'red' },
+      useBicolor: { type: 'boolean', defaultValue: true },
+    },
+    {
+      preProcessSnapshot: (snap: Record<string, unknown>) =>
+        snap.color !== undefined && snap.useBicolor === undefined
+          ? { ...snap, useBicolor: false }
+          : snap,
+    },
+  )
+  const node = create(schema)
+
+  expect(preProcessSlotValues(node, { color: 'green' })).toEqual({
+    color: 'green',
+    useBicolor: false,
+  })
+  expect(
+    preProcessSlotValues(node, { color: 'green', useBicolor: true }),
+  ).toEqual({ color: 'green', useBicolor: true })
+})
+
+test('preProcessSlotValues passes values through a schema with no hook', () => {
+  const schema = ConfigurationSchema('Plain', {
+    height: { type: 'number', defaultValue: 100 },
+  })
+  const values = { height: 250 }
+  expect(preProcessSlotValues(create(schema), values)).toBe(values)
 })

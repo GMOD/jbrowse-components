@@ -37,7 +37,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     type: 'BigWigAdapter',
  *     uri: 'https://example.com/coverage.bw',
  *   },
- *   displayDefaults: { scaleType: 'log', color: 'darkgreen', useBicolor: false },
+ *   displayDefaults: { scaleType: 'log', color: 'darkgreen' },
  * }
  * ```
  */

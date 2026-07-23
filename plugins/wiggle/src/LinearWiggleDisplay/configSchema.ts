@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
 import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
@@ -44,7 +45,6 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
  *     height: 200,
  *     scaleType: 'log',
  *     color: 'darkgreen',
- *     useBicolor: false,
  *   },
  * }
  * ```
@@ -54,7 +54,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot
-     * Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
+     * Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or
+     * `scatter`.
      * #example
      * ```json
      * {
@@ -84,7 +85,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
       description:
-        'When true (the default), positive scores use posColor and negative scores use negColor. When false, all bars use the single color slot.',
+        'When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.',
     },
     /**
      * #slot
@@ -93,7 +94,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       type: 'color',
       defaultValue: WIGGLE_POS_COLOR_DEFAULT,
       description:
-        'Single fill color for the wiggle bars. Only used when useBicolor is false (useBicolor defaults to true, in which case posColor/negColor are used instead).',
+        'Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.',
     },
     ...wiggleConfigSchemaFields,
     /**
@@ -120,9 +121,10 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
     // Map retired global/globalsd autoscale onto local/localsd so old configs
-    // don't trip the narrowed enum.
+    // don't trip the narrowed enum, and read a bare `color` as solid-color
+    // shorthand.
     preProcessSnapshot: (snap: Record<string, unknown>) =>
-      remapRetiredAutoscale(snap),
+      colorImpliesSolid(remapRetiredAutoscale(snap)),
   },
 )
 
