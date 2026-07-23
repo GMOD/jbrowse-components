@@ -3,6 +3,7 @@ import { Font } from 'astro:assets'
 
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
+import { formatStars, getStarCount } from '../lib/github-stars.ts'
 import { navLinks } from '../lib/nav.ts'
 
 interface Props {
@@ -30,6 +31,7 @@ function isActive(href: string) {
 // CSS module access is always defined; ! silences noUncheckedIndexedAccess
 const navActive = styles.navActive!
 const year = new Date().getFullYear()
+const stars = await getStarCount()
 ---
 
 <!doctype html>
@@ -126,7 +128,7 @@ const year = new Date().getFullYear()
     </style>
   </head>
   <body>
-    <nav class={styles.nav}>
+    <nav class={styles.nav} aria-label="Main">
       <a class={styles.brand} href={`${baseUrl}/`}>
         <img src={`${baseUrl}/img/logo.svg`} alt="" />
         JBrowse
@@ -137,6 +139,7 @@ const year = new Date().getFullYear()
           navLinks.map(({ path, label }) => (
             <a
               href={`${baseUrl}/${path}/`}
+              aria-current={isActive(`${baseUrl}/${path}/`) ? 'page' : undefined}
               class:list={[{ [navActive]: isActive(`${baseUrl}/${path}/`) }]}
             >
               {label}
@@ -193,8 +196,19 @@ const year = new Date().getFullYear()
         </a>
         <a
           href="https://github.com/GMOD/jbrowse-components"
-          class:list={[styles.socialIcon, styles.githubIcon]}
-          aria-label="GitHub"></a>
+          class={styles.starButton}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Star JBrowse on GitHub"
+        >
+          <span class:list={[styles.starIcon, styles.githubIcon]}></span>
+          Star
+          {
+            stars !== undefined && (
+              <span class={styles.starCount}>{formatStars(stars)}</span>
+            )
+          }
+        </a>
       </div>
 
       <button
@@ -257,13 +271,15 @@ const year = new Date().getFullYear()
                 rel="noopener noreferrer">YouTube ↗</a
               >
             </li>
+            <li><a href={`${baseUrl}/contact/`}>Contact</a></li>
+            <li><a href={`${baseUrl}/contact/#newsletter`}>Newsletter</a></li>
           </ul>
         </div>
         <div class={styles.footerCol}>
           <h4>More</h4>
           <ul>
             <li><a href={`${baseUrl}/blog/`}>Blog</a></li>
-            <li><a href={`${baseUrl}/contact/`}>Contact</a></li>
+            <li><a href={`${baseUrl}/rss.xml`}>Blog RSS feed</a></li>
             <li>
               <a
                 href="https://github.com/GMOD/jbrowse-components"
@@ -287,12 +303,25 @@ const year = new Date().getFullYear()
     </footer>
 
     <script>
-      document
-        .getElementById('nav-toggle')
-        ?.addEventListener('click', function () {
-          const expanded = this.getAttribute('aria-expanded') === 'true'
-          this.setAttribute('aria-expanded', String(!expanded))
-        })
+      const toggle = document.getElementById('nav-toggle')
+      function setExpanded(expanded: boolean) {
+        toggle?.setAttribute('aria-expanded', String(expanded))
+      }
+      toggle?.addEventListener('click', () => {
+        setExpanded(toggle.getAttribute('aria-expanded') !== 'true')
+      })
+      // Following a link inside the panel leaves it open over the new page on
+      // same-document navigations, so close it on click and on Escape.
+      document.getElementById('nav-links')?.addEventListener('click', e => {
+        if (e.target instanceof HTMLAnchorElement) {
+          setExpanded(false)
+        }
+      })
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          setExpanded(false)
+        }
+      })
     </script>
   </body>
 </html>
