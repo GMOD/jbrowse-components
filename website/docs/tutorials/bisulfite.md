@@ -214,11 +214,13 @@ below (chromosome 1). It places two methylation regimes side by side: a gene
 body methylated only in the CpG context (left), and a silenced element
 methylated in all three contexts (right).
 
+<Figure caption="TAIR10 genes, the aggregate MethylDackel track (one 0-100% row per context), and three copies of the same WGBS pileup colored by CpG, CHG, and CHH. The gene body AT1G12930 is red in the CpG row only, while the silenced element to its right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
+
 Each per-read copy is the same alignment track re-colored for one context.
 Because the call is made per read, zooming in to the gene→element boundary lets
-you follow the methylation on individual molecules: in the CHG/CHH copies each
-read stays blank over the gene body and picks up red marks as it crosses into
-the silenced element.
+you follow the methylation on individual molecules.
+
+<Figure caption="The same three pileups zoomed to the boundary between AT1G12930 and the silenced element, with taller reads. In the CHG and CHH copies a read stays blank while it covers the gene body and picks up red marks where it crosses into the element." src="/img/methylation/arabidopsis_wgbs_boundary.png" />
 
 ## Reproduce it end to end
 

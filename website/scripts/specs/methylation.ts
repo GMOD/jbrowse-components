@@ -17,7 +17,10 @@ const WGBS_CRAM_ADAPTER = {
   type: 'CramAdapter',
   uri: 'https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_bisulfite.cram',
 }
-function wgbsContextTrack(context: 'CG' | 'CHG' | 'CHH') {
+function wgbsContextTrack(
+  context: 'CG' | 'CHG' | 'CHH',
+  displayOverrides: Record<string, unknown> = {},
+) {
   const label = context === 'CG' ? 'CpG' : context
   return {
     track: {
@@ -43,11 +46,17 @@ function wgbsContextTrack(context: 'CG' | 'CHG' | 'CHH') {
       featureHeight: 3,
       featureSpacing: 0,
       height: 90,
+      ...displayOverrides,
     },
   }
 }
-const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(
-  wgbsContextTrack,
+const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
+  wgbsContextTrack(c),
+)
+// zoomed-in variant: taller reads so one molecule can be followed across the
+// gene body -> silenced element boundary
+const WGBS_BOUNDARY_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
+  wgbsContextTrack(c, { featureHeight: 6, featureSpacing: 1, height: 175 }),
 )
 
 // Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
@@ -135,6 +144,47 @@ export const methylationSpecs: ScreenshotSpec[] = [
         text,
       })),
     ],
+  },
+  // The same three per-read copies zoomed to the gene body -> silenced element
+  // boundary (~4,404,800-4,407,200), with reads tall enough to follow one
+  // molecule at a time: a read crossing the boundary stays blank on the left in
+  // the CHG/CHH copies and picks up red as it enters the element.
+  {
+    mode: 'url',
+    name: 'methylation/arabidopsis_wgbs_boundary',
+    url: sessionSpec(ARABIDOPSIS_WGBS_CONFIG, {
+      sessionTracks: WGBS_BOUNDARY_COPIES.map(c => c.track),
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'arabidopsis',
+          loc: 'NC_003070.9:4,404,800-4,407,200',
+          tracks: [
+            { trackId: 'arabidopsis_genes' },
+            ...WGBS_BOUNDARY_COPIES.map(c => c.display),
+          ],
+        },
+      ],
+    }),
+    readyText: 'Per-read WGBS',
+    readyTimeout: 90000,
+    settleMs: 20000,
+    viewportHeight: 975,
+    annotations: (
+      [
+        ['cg', 'CpG'],
+        ['chg', 'CHG'],
+        ['chh', 'CHH'],
+      ] as const
+    ).map(([ctx, text]) => ({
+      type: 'text' as const,
+      anchor: {
+        selector: `[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_wgbs_${ctx}"]`,
+      },
+      dx: -690,
+      fontSize: 22,
+      text,
+    })),
   },
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The
   // enzyme-treated sample (PAY22766, top) carries 6mA (A+a) calls that the
