@@ -241,7 +241,10 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
 
     const zoomedOut = evaluateRegionTooLarge({
       visibleBp: AUTO_FORCE_LOAD_BP * 2,
-      bytes: rescaleByteEstimateToVisibleSpan({ ...measured, visibleBp: 200 }),
+      estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
+        ...measured,
+        visibleBp: 200,
+      }),
       byteLimit,
     })
     expect(zoomedOut.tooLarge).toBe(true)
@@ -249,7 +252,10 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     // zoom in 5× (span 200 → 40): scaled estimate 400_000 < 500_000 limit
     const zoomedIn = evaluateRegionTooLarge({
       visibleBp: AUTO_FORCE_LOAD_BP * 2,
-      bytes: rescaleByteEstimateToVisibleSpan({ ...measured, visibleBp: 40 }),
+      estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
+        ...measured,
+        visibleBp: 40,
+      }),
       byteLimit,
     })
     expect(zoomedIn.tooLarge).toBe(false)
@@ -271,7 +277,7 @@ describe('evaluateRegionTooLarge', () => {
     expect(
       evaluateRegionTooLarge({
         visibleBp: AUTO_FORCE_LOAD_BP - 1,
-        bytes: 1e9,
+        estimatedBytesForVisibleSpan: 1e9,
         byteLimit: 1,
         densityTooLarge: true,
       }),
@@ -282,7 +288,7 @@ describe('evaluateRegionTooLarge', () => {
     expect(
       evaluateRegionTooLarge({
         visibleBp: big,
-        bytes: 2_000_000,
+        estimatedBytesForVisibleSpan: 2_000_000,
         byteLimit: 1_000_000,
       }),
     ).toEqual({
@@ -295,7 +301,7 @@ describe('evaluateRegionTooLarge', () => {
     expect(
       evaluateRegionTooLarge({
         visibleBp: big,
-        bytes: 500_000,
+        estimatedBytesForVisibleSpan: 500_000,
         byteLimit: 1_000_000,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
@@ -307,7 +313,7 @@ describe('evaluateRegionTooLarge', () => {
     expect(
       evaluateRegionTooLarge({
         visibleBp: big,
-        bytes: 500_000,
+        estimatedBytesForVisibleSpan: 500_000,
         byteLimit: 1_000_000,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
@@ -326,7 +332,7 @@ describe('evaluateRegionTooLarge', () => {
     expect(
       evaluateRegionTooLarge({
         visibleBp: big,
-        bytes: 2_000_000,
+        estimatedBytesForVisibleSpan: 2_000_000,
         byteLimit: 1_000_000,
         densityTooLarge: true,
       }),
@@ -337,7 +343,7 @@ describe('evaluateRegionTooLarge', () => {
     expect(
       evaluateRegionTooLarge({
         visibleBp: big,
-        bytes: 2_000_000,
+        estimatedBytesForVisibleSpan: 2_000_000,
         densityTooLarge: false,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
@@ -349,7 +355,7 @@ describe('evaluateRegionTooLarge', () => {
     expect(
       evaluateRegionTooLarge({
         visibleBp: big,
-        bytes: 1e9,
+        estimatedBytesForVisibleSpan: 1e9,
         byteLimit: 1,
         densityTooLarge: true,
         alwaysRender: true,

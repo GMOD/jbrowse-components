@@ -196,13 +196,13 @@ const NOT_TOO_LARGE: RegionTooLargeStatus = { tooLarge: false, reason: '' }
  */
 export function evaluateRegionTooLarge({
   visibleBp,
-  bytes,
+  estimatedBytesForVisibleSpan,
   byteLimit,
   densityTooLarge,
   alwaysRender,
 }: {
   visibleBp: number
-  bytes?: number
+  estimatedBytesForVisibleSpan?: number
   byteLimit?: number
   densityTooLarge?: boolean
   alwaysRender?: boolean
@@ -212,8 +212,15 @@ export function evaluateRegionTooLarge({
   if (alwaysRender || visibleBp < AUTO_FORCE_LOAD_BP) {
     return NOT_TOO_LARGE
   }
-  if (bytes !== undefined && byteLimit !== undefined && bytes > byteLimit) {
-    return { tooLarge: true, reason: bytesTooLargeReason(bytes) }
+  if (
+    estimatedBytesForVisibleSpan !== undefined &&
+    byteLimit !== undefined &&
+    estimatedBytesForVisibleSpan > byteLimit
+  ) {
+    return {
+      tooLarge: true,
+      reason: bytesTooLargeReason(estimatedBytesForVisibleSpan),
+    }
   }
   if (densityTooLarge) {
     return { tooLarge: true, reason: TOO_MANY_FEATURES_REASON }

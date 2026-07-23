@@ -72,6 +72,11 @@ export default function RegionTooLargeMixin() {
       userByteSizeLimit: undefined as number | undefined,
       /**
        * #volatile
+       * Last byte/density estimate reported for this display, together with the
+       * adapter's own `fetchSizeLimit` and `alwaysRender` flag. Its `bytes` is
+       * the measured-span estimate; `visibleBpWhenBytesMeasured` records the
+       * span it covers. Survives `clearAllRpcData` so an ordinary viewport
+       * change doesn't flicker the banner; only chromosome navigation drops it.
        */
       featureDensityStats: undefined as FeatureDensityStats | undefined,
       /**
@@ -169,7 +174,7 @@ export default function RegionTooLargeMixin() {
         return view.initialized
           ? evaluateRegionTooLarge({
               visibleBp: view.visibleBp,
-              bytes: self.estimatedBytesForVisibleSpan,
+              estimatedBytesForVisibleSpan: self.estimatedBytesForVisibleSpan,
               byteLimit: resolveByteLimit({
                 userByteSizeLimit: self.userByteSizeLimit,
                 adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
@@ -192,6 +197,12 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
+       * The verdict the whole mixin exists to produce: true when the estimated
+       * download for the span on screen exceeds the resolved byte budget, or
+       * when the display's own density axis trips. Derived, so it releases
+       * itself on zoom-in. Always false for a display that hasn't opted in via
+       * `derivedRegionTooLargeEnabled`. The fetch autoruns hold off while it is
+       * true, and `DisplayChrome` renders the banner from it.
        */
       get regionTooLarge() {
         return self.derivedRegionTooLargeEnabled
@@ -201,6 +212,8 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #getter
+       * Which axis tripped, as banner text: the estimated download size, or
+       * "Too many features". Empty string when the region isn't too large.
        */
       get regionTooLargeReason() {
         return self.derivedRegionTooLargeEnabled
