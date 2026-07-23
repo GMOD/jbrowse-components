@@ -217,7 +217,8 @@ GUT=$(( $(identify -format '%w' ecoli_cactus_graph.png) - VIZ_X ))
 H=$(identify -format '%h' ecoli_cactus_graph.png)
 set -- '#1f77b4' '#ff7f0e' '#2ca02c'
 ARGS=()
-while read -r ks ke ps pe x1 x2; do
+# columns: kstart kend pstart pend x1 x2; only the key and pixel span are used
+while read -r ks _ _ _ x1 x2; do
   case "$ks" in \#*) continue;; esac
   ARGS+=(-stroke "$1" -strokewidth 5 -fill none
          -draw "rectangle $((GUT + x1)),1 $((GUT + x2)),$((H - 2))")

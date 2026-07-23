@@ -4,6 +4,7 @@ import { Font } from 'astro:assets'
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
 import { navLinks } from '../lib/nav.ts'
+import { newsletterApiUrl } from '../lib/newsletter.ts'
 
 interface Props {
   title?: string
@@ -275,7 +276,13 @@ const year = new Date().getFullYear()
               >
             </li>
             <li><a href={`${baseUrl}/contact/`}>Contact</a></li>
-            <li><a href={`${baseUrl}/contact/#newsletter`}>Newsletter</a></li>
+            {
+              newsletterApiUrl && (
+                <li>
+                  <a href={`${baseUrl}/contact/#newsletter`}>Newsletter</a>
+                </li>
+              )
+            }
           </ul>
         </div>
         <div class={styles.footerCol}>

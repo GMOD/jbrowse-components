@@ -71,9 +71,9 @@ Both live on the synteny view's **View options** button:
 - **Show...** > **Show curved lines** draws each ribbon as a curve instead of a
   straight shear, so a block that lands far from where it started is easier to
   follow across the gap.
-- **CIGAR display mode** > **Transparent indels** stops painting the
-  insertions and deletions inside each block, leaving them as see-through gaps.
-  With strand coloring on, that keeps color meaning only one thing.
+- **CIGAR display mode** > **Transparent indels** stops painting the insertions
+  and deletions inside each block, leaving them as see-through gaps. With strand
+  coloring on, that keeps color meaning only one thing.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels, where the indels drop out to white and the reverse-strand segment is a single blue sweep crossing the forward-strand pink." />
 
