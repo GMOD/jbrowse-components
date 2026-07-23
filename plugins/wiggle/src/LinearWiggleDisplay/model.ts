@@ -22,6 +22,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
+import { wiggleColorAdornment } from '../shared/wiggleColorAdornment.tsx'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
   makeLineWidthMenuItems,
@@ -315,6 +316,9 @@ export default function stateModelFactory(
           {
             label: 'Edit color...',
             icon: PaletteIcon,
+            // current color shown inline so the menu reads out the state
+            // without opening the dialog
+            endAdornment: wiggleColorAdornment(self),
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SetColorDialog,

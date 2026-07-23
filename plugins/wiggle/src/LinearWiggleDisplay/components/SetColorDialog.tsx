@@ -1,7 +1,31 @@
 import { SubmitDialog } from '@jbrowse/core/ui'
-import ColorPicker from '@jbrowse/core/ui/ColorPicker'
-import { FormControlLabel, Radio, TextField, Typography } from '@mui/material'
+import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import {
+  Alert,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
+
+const useStyles = makeStyles()({
+  fields: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 24,
+    marginTop: 12,
+  },
+  field: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+  pivot: {
+    width: 200,
+  },
+})
 
 const SetColorDialog = observer(function SetColorDialog({
   model,
@@ -13,6 +37,7 @@ const SetColorDialog = observer(function SetColorDialog({
     negColor: string
     useBicolor: boolean
     bicolorPivot: number
+    isDensityMode: boolean
     setColor: (arg?: string) => void
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
@@ -21,13 +46,18 @@ const SetColorDialog = observer(function SetColorDialog({
   }
   handleClose: () => void
 }) {
+  const { classes } = useStyles()
   return (
     <SubmitDialog
       open
       title="Set color"
       submitText="Close"
-      onCancel={handleClose}
-      onSubmit={handleClose}
+      onCancel={() => {
+        handleClose()
+      }}
+      onSubmit={() => {
+        handleClose()
+      }}
       onReset={() => {
         model.setPosColor(undefined)
         model.setNegColor(undefined)
@@ -36,67 +66,78 @@ const SetColorDialog = observer(function SetColorDialog({
         model.setBicolorPivot(undefined)
       }}
     >
-      <Typography>
-        Select either an overall color, or the positive/negative colors. Note
-        that density renderers only work properly with positive/negative colors
-      </Typography>
-      <FormControlLabel
-        checked={!model.useBicolor}
-        onClick={() => {
-          model.setUseBicolor(false)
+      <ToggleButtonGroup
+        exclusive
+        size="small"
+        value={model.useBicolor ? 'bicolor' : 'single'}
+        onChange={(_event, value) => {
+          if (value) {
+            model.setUseBicolor(value === 'bicolor')
+          }
         }}
-        control={<Radio />}
-        label="Overall color"
-      />
-      <FormControlLabel
-        checked={model.useBicolor}
-        onClick={() => {
-          model.setUseBicolor(true)
-        }}
-        control={<Radio />}
-        label="Positive/negative color"
-      />
+      >
+        <ToggleButton value="single">Single color</ToggleButton>
+        <ToggleButton value="bicolor">Positive/negative</ToggleButton>
+      </ToggleButtonGroup>
+
+      {model.isDensityMode && !model.useBicolor ? (
+        <Alert severity="info">
+          Density rendering maps scores onto the positive/negative colors, so a
+          single color has no effect
+        </Alert>
+      ) : null}
 
       {model.useBicolor ? (
-        <>
-          <Typography>Positive color</Typography>
-          <ColorPicker
-            color={model.posColor}
-            onChange={event => {
-              model.setPosColor(event)
-            }}
-          />
-          <Typography>Negative color</Typography>
-
-          <ColorPicker
-            color={model.negColor}
-            onChange={event => {
-              model.setNegColor(event)
-            }}
-          />
-          <Typography>
-            Pivot value (scores above use the positive color and grow upward,
-            scores below use the negative color and grow downward)
-          </Typography>
+        <div className={classes.fields}>
+          <div className={classes.field}>
+            <div data-testid="wiggle-pos-color">
+              <PopoverPicker
+                color={model.posColor}
+                onChange={color => {
+                  model.setPosColor(color)
+                }}
+              />
+            </div>
+            <Typography>Positive</Typography>
+          </div>
+          <div className={classes.field}>
+            <div data-testid="wiggle-neg-color">
+              <PopoverPicker
+                color={model.negColor}
+                onChange={color => {
+                  model.setNegColor(color)
+                }}
+              />
+            </div>
+            <Typography>Negative</Typography>
+          </div>
           <TextField
+            className={classes.pivot}
+            label="Pivot"
             type="number"
+            size="small"
+            helperText="Scores above the pivot grow upward, below grow downward"
             value={model.bicolorPivot}
             onChange={event => {
               const val = event.target.value
               model.setBicolorPivot(val === '' ? undefined : Number(val))
             }}
           />
-        </>
+        </div>
       ) : (
-        <>
-          <Typography>Overall color</Typography>
-          <ColorPicker
-            color={model.color}
-            onChange={event => {
-              model.setColor(event)
-            }}
-          />
-        </>
+        <div className={classes.fields}>
+          <div className={classes.field}>
+            <div data-testid="wiggle-overall-color">
+              <PopoverPicker
+                color={model.color}
+                onChange={color => {
+                  model.setColor(color)
+                }}
+              />
+            </div>
+            <Typography>Overall color</Typography>
+          </div>
+        </div>
       )}
     </SubmitDialog>
   )

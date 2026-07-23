@@ -38,13 +38,24 @@ const suite: TestSuite = {
         await colorItem?.click()
         await delay(500)
 
+        // the dialog shows compact swatches; the hex field lives in the
+        // popover each swatch opens (default mode is bicolor, so this is the
+        // positive color)
+        const swatch = await findByTestId(page, 'wiggle-pos-color', 10000)
+        await swatch?.click()
+        await delay(300)
+
         const colorInput = await page.waitForSelector(
-          'input[aria-describedby]',
+          '.MuiPopover-root input[aria-describedby]',
           { timeout: 10000 },
         )
         await colorInput?.click({ count: 3 })
         await colorInput?.type('red')
         await delay(1500)
+
+        // dismiss the popover so its backdrop doesn't swallow the submit click
+        await page.keyboard.press('Escape')
+        await delay(300)
 
         const submitBtn = await page.waitForSelector('button[type="submit"]', {
           timeout: 10000,
