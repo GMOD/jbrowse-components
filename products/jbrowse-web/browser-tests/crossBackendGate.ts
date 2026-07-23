@@ -86,34 +86,25 @@ function thresholdFor(name: string) {
   return override ? override.threshold : DEFAULT_THRESHOLD
 }
 
-// Alignment PILEUP views intermittently disagree across the two independent
-// browser processes — a *rare* (~1-2 of 155 pairs per run) race, a different
-// pileup each run (across three runs: inversion-indels 8%, multiregion-strand-
-// sorted 27%, inversion-simple-cram 25%, session-spec cram-pileup 7%; NO
-// non-pileup view ever drifted). It is NOT gross nondeterminism: same-backend
-// re-renders reproduce byte-for-byte (verified: canvas2d and webgl each rendered
-// the inversion suite twice with 0 drift), so the sort/layout is stable when the
-// input is. Pileup row assignment (placeRect, lowest-free-row) is arrival-order-
-// sensitive, so whatever rarely perturbs read order between the two processes —
-// unisolated; likely worker block-fetch completion order or a progressive-render
-// settle race — reshuffles the whole stack into a big pixel diff. Rare, but a
-// ~1% false-positive rate still can't be a differential oracle. The gate is clean
-// for the deterministic view types (synteny/wiggle/dotplot/bigwig/variants/gwas/
-// hic/genes), which held 0 false positives across all runs. Listed views are the
-// ones observed; treat as representative, not exhaustive — the class is "pileup".
-// Emptied after the morph-idle capture wait (snapshot.ts waitForMorphIdle) was
-// believed to address the root cause. It does not, for the views in this class:
-// waitForMorphIdle only waits on `morphFromTops`, which lives on
-// LinearBasicDisplay (canvas feature tracks). LinearAlignmentsDisplay has no
-// such property, so the wait is vacuous for exactly the pileups that drift.
+// Alignment PILEUP views used to intermittently disagree across the two browser
+// processes — a *rare* (~1-2 of 155 pairs per run) race hitting a different
+// pileup each run (inversion-indels 8%, multiregion-strand-sorted 27%,
+// inversion-simple-cram 25%, session-spec cram-pileup 7%; NO non-pileup view
+// ever drifted). It was never gross nondeterminism: same-backend re-renders
+// reproduced byte-for-byte, so the layout was stable when the input order was.
 //
-// Still reproducible on 2026-07-16 against committed goldens: the same build
-// re-run back to back failed a *different* subset each time (3 pileups at
-// 10.29/21.55/11.04%, then 2 at 20.76/11.04%). Different subset + different
-// percentages + identical inputs is the arrival-order race described above, so
-// regenerating these goldens does not help — the next run re-drifts a different
-// pileup. Anyone reviving a blocking gate (or trusting a pileup golden) has to
-// isolate that race first, or re-populate this list with 'pileup'-class names.
+// ISOLATED and fixed 2026-07-22 in sortLayout.ts. Pileup placement is
+// first-fit-lowest-row, which is arrival-order-sensitive, and JS sort is stable,
+// so any comparator tie fell through to array position — the order the worker
+// emitted reads in, which is not stable across processes. `strand` has two
+// distinct keys, which is why the strand-sorted view drifted worst. Every
+// placement order now ends in a total tiebreak on genomic span + read id
+// (compareReadsCanonically), so layout is a pure function of the read set. The
+// invariant is pinned by "layout is independent of read arrival order" in
+// sortLayout.test.ts, not by this gate.
+//
+// The gate was clean for the deterministic view types (synteny/wiggle/dotplot/
+// bigwig/variants/gwas/hic/genes) throughout — 0 false positives across all runs.
 const EXCLUDED_SUBSTRINGS: string[] = []
 
 function isExcluded(name: string) {
