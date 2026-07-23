@@ -24,6 +24,7 @@ interface GetConsensusSequenceArgs {
   filterBy?: FilterBy
   minDepth?: number
   callFract?: number
+  hetFract?: number
   includeInsertions?: boolean
   stopToken?: StopToken
   rpcDriverName?: string
@@ -56,6 +57,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       filterBy,
       minDepth,
       callFract,
+      hetFract,
       includeInsertions,
       stopToken,
     } = args
@@ -103,7 +105,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
     // keep (e.g. secondary alignments). Falls back to the samtools-parity
     // default when called without a filterBy.
     const tally = buildConsensusTally(features, region, filterBy?.flagExclude)
-    const consensusOpts = { minDepth, callFract, includeInsertions }
+    const consensusOpts = { minDepth, callFract, hetFract, includeInsertions }
     const consensus = computeConsensus(reference, tally, consensusOpts)
     const variants = computeConsensusVariants(reference, tally, consensusOpts)
 

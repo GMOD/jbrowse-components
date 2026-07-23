@@ -28,6 +28,7 @@ import {
   DialogContent,
   FormControlLabel,
   TextField,
+  Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -62,6 +63,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
 }) {
   const [minDepth, setMinDepth] = useState(1)
   const [callFract, setCallFract] = useState(0.75)
+  const [hetFract, setHetFract] = useState(0.5)
   const [includeInsertions, setIncludeInsertions] = useState(true)
   const [excludeSecondary, setExcludeSecondary] = useState(true)
 
@@ -92,6 +94,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           filterBy,
           minDepth,
           callFract,
+          hetFract,
           includeInsertions,
         ],
     async () => {
@@ -114,6 +117,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               filterBy,
               minDepth,
               callFract,
+              hetFract,
               includeInsertions,
             },
           )) as { consensus: string; variants: ConsensusVariant[] }
@@ -166,9 +170,19 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
         ) : loading ? (
           <LoadingEllipses message="Computing consensus" />
         ) : null}
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          At each position, the reads &quot;vote&quot; for a base. This works
+          like the widely-used samtools tool, with one difference: if your
+          reads disagree, it can report a standard IUPAC ambiguity code (e.g.
+          R for A-or-G) covering more than just two bases. That means samples
+          with more than two chromosome copies, or mixed/pooled samples, can
+          show a real 3- or 4-way split instead of being forced into a
+          two-allele result.
+        </Typography>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <TextField
             label="Min read depth"
+            helperText="positions covered by fewer reads than this are N, regardless of agreement"
             type="number"
             size="small"
             value={minDepth}
@@ -180,7 +194,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           />
           <TextField
             label="Min call fraction"
-            helperText="below this a position is N"
+            helperText="the called base(s) must together account for at least this fraction of the reads, or it's N"
             type="number"
             size="small"
             value={callFract}
@@ -188,6 +202,18 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             onChange={event => {
               const v = Number.parseFloat(event.target.value)
               setCallFract(Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)
+            }}
+          />
+          <TextField
+            label="Min het fraction"
+            helperText="a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
+            type="number"
+            size="small"
+            value={hetFract}
+            slotProps={{ htmlInput: { min: 0, max: 1, step: 0.05 } }}
+            onChange={event => {
+              const v = Number.parseFloat(event.target.value)
+              setHetFract(Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)
             }}
           />
           <FormControlLabel

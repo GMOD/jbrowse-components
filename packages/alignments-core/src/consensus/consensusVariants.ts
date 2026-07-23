@@ -15,12 +15,15 @@ function upper(code: number) {
   return code ? String.fromCharCode(code).toUpperCase() : ''
 }
 
+const SIMPLE_BASES = new Set(['A', 'C', 'G', 'T'])
+
 // Second projection over the same per-column pass as computeConsensus: every
 // position where the consensus call differs from the reference becomes a
 // variant. SNVs are single-base; deletion runs coalesce into one left-anchored
-// record; insertions anchor on the preceding reference base. N (no-call)
-// positions are not variants. This is a consensus-vs-reference diff with DP/AF,
-// not genotype-likelihood variant calling.
+// record; insertions anchor on the preceding reference base. N and IUPAC
+// ambiguity-code (no confident single-base call) positions are not variants —
+// a VCF ALT must be a definite base. This is a consensus-vs-reference diff with
+// DP/AF, not genotype-likelihood variant calling.
 //
 // AF differs by kind on purpose. SNVs and deletions report the samtools
 // weighted call-fraction (callScore/tscore) — the same ratio that had to clear
@@ -80,7 +83,7 @@ export function computeConsensusVariants(
         }
       } else {
         closeDel()
-        if (call !== 'N' && refBase && call !== refBase) {
+        if (SIMPLE_BASES.has(call) && refBase && call !== refBase) {
           variants.push({
             pos: refPos,
             ref: refBase,
