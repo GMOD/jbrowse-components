@@ -24,17 +24,22 @@ but plants also methylate cytosines in three sequence contexts: CpG, CHG, and
 CHH (where H is A, C, or T). JBrowse can restrict the coloring to any one
 context, so you can see all three on the same reads.
 
-## The pipeline
+## What you need
 
-This is a full command-line pipeline. You'll need these tools installed: the
-NCBI
-[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-CLI,
-[Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
-(with cutadapt), [bwameth](https://github.com/brentp/bwa-meth),
-[samtools](http://www.htslib.org/), and, for the optional aggregate track,
-[MethylDackel](https://github.com/dpryan79/MethylDackel) and UCSC's
-`bedGraphToBigWig`.
+This is a full command-line pipeline:
+
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI, and `wget`
+- [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
+  (with cutadapt)
+- [bwameth](https://github.com/brentp/bwa-meth) and
+  [samtools](http://www.htslib.org/)
+- htslib (`bgzip`, `tabix`), and `node` for the [JBrowse CLI](/docs/cli)
+- [MethylDackel](https://github.com/dpryan79/MethylDackel) and UCSC's
+  `bedGraphToBigWig`, for the optional aggregate track only
+
+## The pipeline
 
 ### Get the reference and reads
 

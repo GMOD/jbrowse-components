@@ -21,6 +21,11 @@ The [Jupyter multi-sample variants example](/docs/jbrowse_jupyter) shows the
 same per-sample band and genotype-matrix displays from a VCF, and is available
 as a Colab notebook.
 
+## What you need
+
+Nothing to install. The dataset is hosted, and every figure has a live link that
+opens the same view in JBrowse.
+
 ## Dataset
 
 The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced

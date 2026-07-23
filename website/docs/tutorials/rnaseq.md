@@ -16,6 +16,11 @@ The [Jupyter differential-expression example](/docs/jbrowse_jupyter) takes a DE
 table straight to a gene track colored by call, and is available as a Colab
 notebook.
 
+## What you need
+
+Nothing to install. Every figure has a live link that opens the same view on
+hosted data, so you can follow the whole tutorial in a browser.
+
 ## What RNA-seq looks like in the genome browser
 
 The example gene is ACTB, chosen for a clean first look at RNA-seq: deep, even

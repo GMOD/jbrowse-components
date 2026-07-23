@@ -36,6 +36,17 @@ The synteny projection alone also builds in a notebook: a `synteny_view` in
 Python ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or R
 ([JBrowseR](/docs/jbrowser)) stacks these same strains from the all-vs-all PAF.
 
+## What you need
+
+- `docker`, for the pggb image (which also carries odgi)
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- `samtools`, [`taffy`](https://github.com/ComparativeGenomicsToolkit/taffy),
+  `bedGraphToBigWig` (UCSC kentUtils)
+- `python3`, htslib (`bgzip`, `tabix`), `unzip`
+- `node`, for the [JBrowse CLI](/docs/cli)
+
 ## Building the graph with pggb
 
 pggb takes one FASTA of all the genomes,

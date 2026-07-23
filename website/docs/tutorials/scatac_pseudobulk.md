@@ -24,6 +24,13 @@ BigWigs and view them inline in the same session through the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser)).
 
+## What you need
+
+Nothing to install to read along: the figures come from hosted CATlas data. To
+build the tracks from your own experiment you need cells already clustered and
+labeled in SnapATAC2 (Python), ArchR or Signac (R), plus one BigWig per cell
+type, which the sections below cover producing.
+
 ## What a genome browser adds for single cell
 
 Clustering and cell-type labeling happen upstream, in your single-cell analysis.

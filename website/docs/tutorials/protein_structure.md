@@ -32,6 +32,13 @@ The approach is described in our
 [_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
 (_Journal of Molecular Biology_, 2026).
 
+## What you need
+
+Nothing, to start: the next section opens a preconfigured instance with both
+plugins already loaded. To use them on your own data you add the two plugins to
+a JBrowse instance, covered under
+[Installing the plugins](#installing-the-plugins).
+
 ## Try it without installing anything
 
 The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) shows

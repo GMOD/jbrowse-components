@@ -15,16 +15,27 @@ Kinh-Vietnamese trio HG02024, chr1 only:
 - [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
-The phased multi-sample variant display below renders inline through the
-[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
-[JBrowseR](/docs/jbrowser) in R), and the hap-ibd and ancestry paintings are the
-DataFrame-to-track pattern (compute a per-segment call, color a BED by it, no
-file written), so the whole analysis and its view fit in one Python or R
-session.
+## What you need
 
-Everything here is on `hg38`, so set that assembly up first if you haven't (see
-the [assemblies guide](/docs/config_guides/assemblies)). Then add the VCF with
-`jbrowse add-track` or the in-app "Add track" workflow. The
+To follow the viewing sections you need only a browser: every figure below has
+an "Open this view in JBrowse ↗" link that loads the finished tracks live, so
+you can read the whole tutorial without installing anything.
+
+To build the tracks yourself:
+
+- the `hg38` assembly set up in JBrowse
+  ([assemblies guide](/docs/config_guides/assemblies))
+- Java 8+, for hap-ibd and FLARE
+- `python3`, `node`, and htslib (`bgzip`, `tabix`)
+- `bcftools`, `curl`, and `unzip`, for the local-ancestry section only
+
+The finished tracks also render inline in a notebook through the
+[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter), or
+[JBrowseR](/docs/jbrowser) in R. This tutorial builds its tracks on the command
+line, not in a notebook.
+
+Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
+"Add track" workflow. The
 [variant track guide](/docs/config_guides/variant_track) covers both. You'll get
 this:
 
@@ -71,7 +82,7 @@ VCF. It needs two things:
 
 Grab `hap-ibd.jar` from the
 [releases page](https://github.com/browning-lab/hap-ibd/releases) along with
-those maps. It needs Java 8+, as does FLARE later on.
+those maps.
 
 ## Running hap-ibd
 
@@ -130,9 +141,6 @@ sort -k1,1 -k2,2n trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
 tabix -p bed trio.hapibd.bed.gz
 ```
 
-Don't want to run any of this? Every figure below has an "Open this view in
-JBrowse ↗" link that loads the finished track live.
-
 Load the result as a `FeatureTrack` using a `LinearMultiRowFeatureDisplay`. That
 display draws one row per distinct value of `partitionField`, so pointing it at
 `parenthap` gives you the four parental-haplotype rows, and `rowOrder` sets
@@ -190,12 +198,14 @@ red rows work the same way for the maternal chromosome.
 
 ## Painting the same trio by local ancestry
 
-The same display paints rows by whatever category is in the BED. Here that
-category is **inferred local ancestry**, a per-segment statistical estimate of
-which reference panel a stretch of chromosome most resembles, not a label on the
-person. That mosaic only has structure to show for a recently admixed
-individual, so we switch to a 1000 Genomes African-American (ASW) trio: child
-NA19828, parents NA19818 and NA19819.
+The same display paints rows by whatever category is in the BED, such as the
+strain painting in the [BXD QTL tutorial](/docs/tutorials/bxd_qtl). For your own
+data, write a BED9 with one column holding that category and point
+`partitionField` at it. Here that category is **inferred local ancestry**, a
+per-segment statistical estimate of which reference panel a stretch of
+chromosome most resembles, not a label on the person. That mosaic only has
+structure to show for a recently admixed individual, so we switch to a 1000
+Genomes African-American (ASW) trio: child NA19828, parents NA19818 and NA19819.
 
 [FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
 ancestry by comparing each target haplotype to labeled reference samples. It
@@ -350,6 +360,7 @@ you load with the track JSON from the
 
 ## See also
 
+- [BXD QTL mapping (strain painting)](/docs/tutorials/bxd_qtl)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
 - [Multi-sample variant display](/docs/user_guides/multivariant_track)
 - [Variant track config](/docs/config_guides/variant_track)

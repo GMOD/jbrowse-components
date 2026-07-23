@@ -31,6 +31,15 @@ one Python or R session.
 
 <Figure src="/img/qtl/bxd_overview.png" caption="Whole chr4. Top: the BXD coat-color QTL scan, peaking at ~80 Mb. Bottom: the 198-strain painting (blue = B, red = D, grey = het, blank = unknown), rows sorted by each strain's genotype at the peak. Directly under the peak the strains split into a red block over a blue block, the B/D contrast the scan is scoring."/>
 
+## What you need
+
+- `python3` with `pandas`, `numpy`, and `scipy`
+- htslib (`bgzip`, `tabix`)
+- A JBrowse instance to add the tracks to (see the
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop) to add the built files with no
+  hosting step)
+
 ## The data: BXD consensus genotypes
 
 GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`

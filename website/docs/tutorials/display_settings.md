@@ -19,6 +19,13 @@ Both use the same setting names. The per-session settings are a per-session
 override of the fields you can bake in as defaults with `displays`. This
 tutorial shows the three places you set them.
 
+## What you need
+
+A JBrowse instance with a track already loaded (see the
+[web quickstart](/docs/quickstart_web) or
+[desktop quickstart](/docs/quickstart_desktop)). Everything here is config and
+URL editing, so there is nothing else to install.
+
 ## Finding a setting's name
 
 The per-session setting keys match the display model's own settings (the same

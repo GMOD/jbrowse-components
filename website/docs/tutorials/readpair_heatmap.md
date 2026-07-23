@@ -25,6 +25,12 @@ This tutorial builds two such heatmaps from the HG008-T
 Illumina WGS. Questions of any kind are welcome on the
 [GitHub discussions board](https://github.com/GMOD/jbrowse-components/discussions).
 
+## What you need
+
+- `samtools`
+- `java`, for `juicer_tools` (fetched automatically if absent)
+- `node`, for the [JBrowse CLI](/docs/cli)
+
 ## From read pairs to a contact matrix
 
 The whole pipeline is `samtools` → a one-line-per-pair contact list →

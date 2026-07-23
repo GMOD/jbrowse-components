@@ -42,9 +42,10 @@ panel of 205 inbred lines from a single Raleigh, North Carolina population
 The same workflow applies to any species and any grouping. Swap in your own
 populations or your own VCF and the JBrowse side is identical.
 
-## Tools
+## What you need
 
-The pipeline uses these standard command-line tools:
+The pipeline uses these standard command-line tools, plus `curl` and `node` for
+the [JBrowse CLI](/docs/cli):
 
 - [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
   a VCF

@@ -15,6 +15,13 @@ For closely related genomes (strains or accessions of one species), a
 whole-genome all-vs-all PAF is usually a better source. See
 [Synteny all-vs-all](/docs/tutorials/allvsall_synteny).
 
+## What you need
+
+- [jcvi](https://github.com/tanghaibao/jcvi) with the
+  [LAST](https://gitlab.com/mcfrith/last) aligner
+- `samtools`, htslib (`bgzip`, `tabix`), `wget`
+- `node`, for the [JBrowse CLI](/docs/cli)
+
 ## What a `.blocks` file is
 
 A `.blocks` file is a wide, tab-delimited table, reference-anchored on one

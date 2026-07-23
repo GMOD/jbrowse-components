@@ -34,6 +34,17 @@ Every projection lands on a JBrowse track type you already have. The four are
 laid out in the [pggb tutorial's projection table](/docs/tutorials/pangenome);
 the sections below build each from the Cactus outputs.
 
+## What you need
+
+- `docker`, for the cactus image (which carries odgi, halSynteny, hal2maf,
+  taffy, and `samtools`)
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
+  `wget`
+- `node`, for the [JBrowse CLI](/docs/cli)
+
 ## Building the graph with cactus-pangenome
 
 Minigraph-Cactus takes a **seqFile**: one `name<TAB>path` line per sample. Input

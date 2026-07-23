@@ -22,6 +22,14 @@ all-vs-all PAF, using the same hosted data as this tutorial.
 For cross-species comparisons built from gene-level ortholog tables instead, see
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny).
 
+## What you need
+
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- `minimap2`, `samtools`, htslib (`bgzip`, `tabix`), `unzip`
+- `node`, for the [JBrowse CLI](/docs/cli)
+
 ## Producing an all-vs-all PAF
 
 An all-vs-all PAF is what the [PGGB](https://github.com/pangenome/pggb) mapping

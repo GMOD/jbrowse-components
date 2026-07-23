@@ -24,6 +24,14 @@ pipeline. The configs below use `https://yourhost/...` placeholders, and the
 figures come from public datasets (linked where shown) that JBrowse reads by
 URL. To reproduce any view, just swap in your own modBAM/CRAM or bedMethyl file.
 
+## What you need
+
+Nothing to install to read along: the figures come from public datasets that
+JBrowse reads over HTTP. For your own data you need long reads with `MM`/`ML`
+modification tags already in the BAM/CRAM, which modern ONT and PacBio
+basecallers write by default. The configs below use `https://yourhost/...`
+placeholders for those files.
+
 ## Per-read methylation with BAM/CRAM
 
 When a BAM or CRAM file carries base modification tags (MM/ML as specified in

@@ -24,6 +24,15 @@ with no file written.
 
 <Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type, each feature colored by its chromatin state via the BED itemRgb field. White regions are the Quiescent/Low state, which is white in the standard 15-state palette."/>
 
+## What you need
+
+- `bash` 4+ (for the `declare -A` map)
+- `wget` and htslib (`bgzip`, `tabix`)
+- `node`, for the [JBrowse CLI](/docs/cli)
+
+On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
+comes from [nodejs.org](https://nodejs.org/).
+
 ## The idea: one file, one row per cell type
 
 ChromHMM's per-cell-type output is a stack of separate BED files (`Gm12878.bed`,

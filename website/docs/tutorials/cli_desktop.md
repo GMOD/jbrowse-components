@@ -17,6 +17,11 @@ to `config.json`: Desktop resolves those paths against the folder on disk, and a
 web server resolves them against the served config's URL. So one scriptable,
 reproducible setup is portable across both apps.
 
+## What you need
+
+- [Node.js](https://nodejs.org/) 18 or newer
+- JBrowse Desktop, or a web server if you want to serve the same folder
+
 ## Install the CLI
 
 The CLI needs [Node.js](https://nodejs.org/) 18 or newer. Install it from

@@ -17,6 +17,11 @@ This tutorial reads two real examples from the 1000 Genomes Project, both
 computed live in the browser from phased genotypes (no precomputed LD file),
 then covers the one thing people most often get wrong about LD: its scale.
 
+## What you need
+
+Nothing to install. Both examples are computed live in the browser from hosted
+1000 Genomes genotypes, and every figure has a live link that opens the view.
+
 ## A selective sweep leaves a long haplotype
 
 When positive selection drives one haplotype to high frequency quickly, every
