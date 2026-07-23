@@ -2,6 +2,8 @@ import { getFillProps, getStrokeProps, maxFinite } from '@jbrowse/core/util'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
+import { bpOffsetInRegion } from '../../RenderLDDataRPC/reversedRegions.ts'
+
 const FILL_COLOR = 'rgba(59, 130, 246, 0.2)'
 const STROKE_COLOR = 'rgb(59, 130, 246)'
 
@@ -27,7 +29,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
   height,
   exportSVG,
   useGenomicPositions,
-  regionStart,
+  region,
   bpPerPx,
 }: {
   model?: RecombinationTrackModel
@@ -36,7 +38,9 @@ const RecombinationTrack = observer(function RecombinationTrack({
   height?: number
   exportSVG?: boolean
   useGenomicPositions?: boolean
-  regionStart?: number
+  // The displayed block the values are plotted against; reversed blocks measure
+  // from their end, so the plot tracks the ruler on a flipped view.
+  region?: { start: number; end: number; reversed?: boolean }
   bpPerPx?: number
 }) {
   const recombination = recombinationProp ?? model?.recombination
@@ -68,9 +72,9 @@ const RecombinationTrack = observer(function RecombinationTrack({
       continue
     }
     let x: number
-    if (useGenomicPositions && regionStart !== undefined && bpPerPx) {
+    if (useGenomicPositions && region && bpPerPx) {
       // positions[i] is already the midpoint between SNP i and SNP i+1
-      x = (recombination.positions[i]! - regionStart) / bpPerPx
+      x = bpOffsetInRegion(region, recombination.positions[i]!) / bpPerPx
     } else {
       // Uniform positioning: midpoint at (i + 1) / numSnps
       x = ((i + 1) * width) / numSnps

@@ -9,6 +9,7 @@ import {
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
+import { bpOffsetInRegion } from '../../RenderLDDataRPC/reversedRegions.ts'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 import Crosshairs from './Crosshairs.tsx'
@@ -84,7 +85,7 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
   recombHeight,
   top,
   useGenomicPositions,
-  regionStart,
+  region,
   bpPerPx,
 }: {
   model: SharedLDModel
@@ -92,7 +93,7 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
   recombHeight: number
   top: number
   useGenomicPositions: boolean
-  regionStart?: number
+  region?: { start: number; end: number; reversed?: boolean }
   bpPerPx: number
 }) {
   return (
@@ -111,7 +112,7 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
         width={width}
         height={recombHeight}
         useGenomicPositions={useGenomicPositions}
-        regionStart={regionStart}
+        region={region}
         bpPerPx={bpPerPx}
       />
       <RecombinationYScaleBar
@@ -158,11 +159,11 @@ const LDCanvas = observer(function LDCanvas({
   const bpPerPx = view.bpPerPx
   const genomicX1 =
     hoveredItem && region
-      ? (hoveredItem.snp2.start - region.start) / bpPerPx
+      ? bpOffsetInRegion(region, hoveredItem.snp2.start) / bpPerPx
       : undefined
   const genomicX2 =
     hoveredItem && region
-      ? (hoveredItem.snp1.start - region.start) / bpPerPx
+      ? bpOffsetInRegion(region, hoveredItem.snp1.start) / bpPerPx
       : undefined
 
   const { viewOffsetX } = model.renderTransform
@@ -288,7 +289,7 @@ const LDCanvas = observer(function LDCanvas({
           }
           top={useGenomicPositions ? 0 : lineZoneHeight / 2}
           useGenomicPositions={useGenomicPositions}
-          regionStart={region?.start}
+          region={region}
           bpPerPx={bpPerPx}
         />
       ) : null}

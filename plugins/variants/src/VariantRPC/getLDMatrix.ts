@@ -171,6 +171,18 @@ export interface LDSnp {
   maf?: number
 }
 
+/**
+ * Slot holding the pair (i, j) in `ldValues`, which is packed strictly
+ * lower-triangular: row i (i > 0) starts at i*(i-1)/2 and holds its j < i
+ * entries. LD is symmetric, so the argument order doesn't matter — callers with
+ * a canonical i > j and callers reading a transposed pair share this.
+ */
+export function ldPairIndex(i: number, j: number) {
+  const hi = i > j ? i : j
+  const lo = i > j ? j : i
+  return (hi * (hi - 1)) / 2 + lo
+}
+
 export interface LDMatrixResult {
   snps: LDSnp[]
   ldValues: Float32Array
@@ -251,8 +263,8 @@ function computeLDMatrixCPU(
 }
 
 // Recombination evidence (1 - r²) between adjacent SNPs. When ldMetric is 'r2'
-// the values already live in ldValues (lower-triangular pair (i+1, i) at index
-// (i+1)*i/2 + i), so they're reused rather than recomputed.
+// the values already live in ldValues (the pair (i+1, i)), so they're reused
+// rather than recomputed.
 function computeRecombination(
   snps: LDSnp[],
   ldValues: Float32Array,
@@ -268,7 +280,7 @@ function computeRecombination(
   for (let i = 0; i < n - 1; i++) {
     let r2: number
     if (ldMetric === 'r2') {
-      const v = ldValues[((i + 1) * i) / 2 + i]!
+      const v = ldValues[ldPairIndex(i + 1, i)]!
       r2 = signedLD ? v * v : v
     } else if (dataIsPhased) {
       r2 = calculateLDStatsPhasedBits(

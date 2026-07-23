@@ -30,16 +30,3 @@ labels will overflow the boxes laid out for them.
 
 No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
 per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
-
-## LD reversed regions
-
-The LD triangle renders **unflipped** on a reversed displayed region — it lays
-out by forward genomic position while the ruler runs right-to-left. Architectural,
-not the 1bp-cell class. Purely visual (hover inverts the same forward transform)
-and niche: needs a flipped region over an LD track.
-
-Copy hic: it mirrors each contact within its own region's span when the worker
-builds `positions[]` (`hic/regionOffsets.ts` `mirrorUInRegion`), so every
-renderer stays orientation-agnostic and `computeRenderTransform` stays
-forward-only. Don't mirror via a negative ctx scale — `SvgCanvas` gets that wrong
-under rotation, and the SVG export shares the draw.

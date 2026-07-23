@@ -142,7 +142,7 @@ function LdSvgBody({
               height={recombTrackHeight}
               exportSVG
               useGenomicPositions={useGenomicPositions}
-              regionStart={view.dynamicBlocks.contentBlocks[0]?.start}
+              region={view.dynamicBlocks.contentBlocks[0]}
               bpPerPx={view.bpPerPx}
             />
             <RecombinationYScaleBar

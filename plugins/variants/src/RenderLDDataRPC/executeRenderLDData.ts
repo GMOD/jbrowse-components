@@ -2,6 +2,8 @@ import { updateStatus } from '@jbrowse/core/util'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
+import { buildGenomicCellBuffers, computeBoundaries } from './ldLayout.ts'
+import { applyDisplayOrder, getDisplayOrder } from './reversedRegions.ts'
 import { PRECOMPUTED_LD_ADAPTERS } from './types.ts'
 
 import type { LDMethod, LDMetric } from '../VariantRPC/getLDMatrix.ts'
@@ -96,12 +98,20 @@ export async function executeRenderLDData({
     }
   }
 
-  const { snps, ldValues } = ldData
-  const n = snps.length
   const region = regions[0]
   if (!region) {
     return emptyResult(signedLD, ldMetric, ldData.method)
   }
+
+  // LD values themselves are orientation-free; only the axis is. A reversed
+  // displayed region is folded in once here, on the layout side of the worker,
+  // so every consumer of `snps`/`boundaries` (both renderers, hitTest,
+  // connector lines, labels, SVG export) stays forward-only.
+  const displayOrder = getDisplayOrder(ldData.snps, regions)
+  const { snps, ldValues, recombination } = displayOrder
+    ? applyDisplayOrder(ldData, displayOrder)
+    : ldData
+  const n = snps.length
 
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const width = totalWidthBp / bpPerPx
@@ -109,55 +119,22 @@ export async function executeRenderLDData({
   const numCells = (n * (n - 1)) / 2
 
   // Genomic-positions mode maps each SNP onto a single continuous bp axis
-  // (offset from `region.start`), which is only meaningful for one contiguous
-  // region. With multiple regions (e.g. a split/multi-region view) SNPs from
-  // later regions would collapse onto the first region's coordinates, so fall
-  // back to uniform cells there.
+  // (offset from the region's left screen edge), which is only meaningful for
+  // one contiguous region. With multiple regions (e.g. a split/multi-region
+  // view) SNPs from later regions would collapse onto the first region's
+  // coordinates, so fall back to uniform cells there.
   const genomicMode = useGenomicPositions && regions.length === 1
 
-  // Compute n+1 boundary positions.
-  // For uniform mode: boundaries[k] = k * uniformW (trivially computed).
-  // For genomic mode: midpoints between adjacent SNP positions (pre-rotation).
-  const boundaries = new Float32Array(n + 1)
-  if (genomicMode) {
-    for (let i = 0; i < n; i++) {
-      const snpPos = snps[i]!.start
-      const prevPos = i > 0 ? snps[i - 1]!.start : region.start
-      const boundaryPos = (prevPos + snpPos) / 2
-      boundaries[i] = (boundaryPos - region.start) / bpPerPx / Math.SQRT2
-    }
-    const lastSnpPos = snps[n - 1]!.start
-    boundaries[n] =
-      (lastSnpPos + 50 * bpPerPx - region.start) / bpPerPx / Math.SQRT2
-  } else {
-    for (let i = 0; i <= n; i++) {
-      boundaries[i] = i * uniformW
-    }
-  }
-
-  // For genomic positions mode, also build the interleaved per-cell buffer
-  // used by GpuLDRenderer (positions + cellSizes for the GENOMIC pass).
-  // Uniform mode skips this O(N²) loop entirely.
-  let positions: Float32Array | undefined
-  let cellSizes: Float32Array | undefined
-  if (genomicMode) {
-    positions = new Float32Array(numCells * 2)
-    cellSizes = new Float32Array(numCells * 2)
-    let cellIdx = 0
-    for (let i = 1; i < n; i++) {
-      const y = boundaries[i]!
-      const ch = boundaries[i + 1]! - y
-      for (let j = 0; j < i; j++) {
-        const x = boundaries[j]!
-        const cw = boundaries[j + 1]! - x
-        positions[cellIdx * 2] = x
-        positions[cellIdx * 2 + 1] = y
-        cellSizes[cellIdx * 2] = cw
-        cellSizes[cellIdx * 2 + 1] = ch
-        cellIdx++
-      }
-    }
-  }
+  const boundaries = computeBoundaries({
+    snps,
+    region,
+    bpPerPx,
+    uniformW,
+    genomicMode,
+  })
+  const cellBuffers = genomicMode
+    ? buildGenomicCellBuffers(boundaries)
+    : undefined
 
   return {
     ldValues,
@@ -168,12 +145,12 @@ export async function executeRenderLDData({
     hasDprime: ldData.hasDprime,
     method: ldData.method,
     signedLD,
-    snps: ldData.snps,
+    snps,
     filterStats: ldData.filterStats,
     recombination: {
-      values: ldData.recombination.values,
-      positions: ldData.recombination.positions,
+      values: recombination.values,
+      positions: recombination.positions,
     },
-    ...(positions && cellSizes && { positions, cellSizes }),
+    ...cellBuffers,
   }
 }
