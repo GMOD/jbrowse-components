@@ -224,10 +224,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     })
   }
 
-  async getMultiRegionByteEstimate(
-    regions: Region[],
-    opts?: BaseOptions,
-  ) {
+  async getMultiRegionByteEstimate(regions: Region[], opts?: BaseOptions) {
     const { bam } = this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {

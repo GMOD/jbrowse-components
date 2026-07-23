@@ -148,7 +148,9 @@ const year = new Date().getFullYear()
           navLinks.map(({ path, label }) => (
             <a
               href={`${baseUrl}/${path}/`}
-              aria-current={isActive(`${baseUrl}/${path}/`) ? 'page' : undefined}
+              aria-current={
+                isActive(`${baseUrl}/${path}/`) ? 'page' : undefined
+              }
               class:list={[{ [navActive]: isActive(`${baseUrl}/${path}/`) }]}
             >
               {label}

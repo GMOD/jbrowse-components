@@ -195,24 +195,9 @@ promotable_
 ```js
 {
   type: 'frozen',
-
-
-
-
-
-
-
-
-
-
   defaultValue: { type: 'inherit' },
   promotedBase: { type: 'normal' },
   promotable: true,
-
-
-
-
-
   validate: isRegisteredColorScheme,
   advanced: true,
 }

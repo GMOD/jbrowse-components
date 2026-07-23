@@ -96,10 +96,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
   // Byte budget for the fetch gate comes straight from the tabix index (the
   // .bed.gz already contains every species' sequence, so the compressed block
   // size is a faithful download estimate). No feature download.
-  async getMultiRegionByteEstimate(
-    regions: Region[],
-    opts?: BaseOptions,
-  ) {
+  async getMultiRegionByteEstimate(regions: Region[], opts?: BaseOptions) {
     const { adapter } = await this.setupPre(opts)
     return { bytes: await adapter.getRegionByteSize(regions, opts) }
   }

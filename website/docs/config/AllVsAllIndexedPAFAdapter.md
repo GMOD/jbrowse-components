@@ -116,7 +116,6 @@ ConfigurationSchema('TabixIndex', {
     type: 'stringEnum',
     defaultValue: 'TBI',
   },
-
   location: {
     type: 'fileLocation',
     defaultValue: {

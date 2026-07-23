@@ -98,6 +98,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
   type: 'fileLocation',
   defaultValue: {
     uri: '/path/to/samples.tsv',
+    description:
+      'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
     locationType: 'UriLocation',
   },
 }

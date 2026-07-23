@@ -87,7 +87,7 @@ differential canvas2d-vs-webgl oracle and it does not need goldens.
 
 Bringing it back as a real CI gate needs, in order: the pileup drift explained
 (one contributing cause was fixed 2026-07-22 — see "Pileup goldens" below — but
-it was never confirmed to be *the* cause), a few consecutive clean runs on an
+it was never confirmed to be _the_ cause), a few consecutive clean runs on an
 idle machine to prove the false-positive rate is 0, and then `continue-on-error`
 dropped. Re-adding it non-blocking just recreates the decoration.
 
@@ -129,7 +129,7 @@ diff.
 
 One input to that was fixed on 2026-07-22: every placement order in
 `sortLayout.ts` now ends in a total tiebreak on genomic span + read id, so
-layout is a pure function of the read *set* rather than of array position. That
+layout is a pure function of the read _set_ rather than of array position. That
 was a real defect — an unrecognized `sortedBy.type` also used to leave reads
 entirely unsorted — and the invariant is pinned by "layout is independent of
 read arrival order" in `sortLayout.test.ts`, a unit test that can't rot the way
@@ -139,7 +139,7 @@ an unrun browser suite does.
 shown to reorder reads between two runs: `@gmod/bam` walks chunks in a
 sequential loop and CRAM record order is likewise deterministic, so the
 arrival-order hypothesis is unsupported by anything but the symptom. Causes
-still unexplored: the read *set* differing between runs (block boundaries,
+still unexplored: the read _set_ differing between runs (block boundaries,
 `maxRows` truncation) and capture timing — note `waitForMorphIdle` is vacuous
 here, since it waits on `morphFromTops`, which exists on `LinearBasicDisplay`
 and not `LinearAlignmentsDisplay`.

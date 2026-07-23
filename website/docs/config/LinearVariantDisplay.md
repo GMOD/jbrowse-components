@@ -198,13 +198,6 @@ on over an off session default)
 ```js
 {
   type: 'stringArray',
-
-
-
-
-
-
-
   defaultValue: [
     'mRNA',
     'transcript',
@@ -242,12 +235,13 @@ UTR subfeatures
 ConfigurationSchema('CanvasFeatureLabels', {
   name: {
     type: 'string',
+    description: 'the primary name of the feature to show',
     defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
     contextVariable: ['feature'],
   },
-
   description: {
     type: 'string',
+    description: 'the text description to show',
     defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
     contextVariable: ['feature'],
   },

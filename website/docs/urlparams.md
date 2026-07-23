@@ -222,8 +222,8 @@ Loads one or more UCSC track hubs as a session (multiple hubs as a
 comma-separated list), typically combined with `?config=none` since the hub
 supplies its own assemblies and tracks.
 
-See [Opening track hubs by URL](/docs/user_guides/hub_url) for the full workflow,
-including combining a hub with a config and loading several at once.
+See [Opening track hubs by URL](/docs/user_guides/hub_url) for the full
+workflow, including combining a hub with a config and loading several at once.
 
 ### Navigating within the default session
 
