@@ -28,6 +28,7 @@ import {
   DialogContent,
   FormControlLabel,
   TextField,
+  Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -62,6 +63,8 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
 }) {
   const [minDepth, setMinDepth] = useState(1)
   const [callFract, setCallFract] = useState(0.75)
+  const [ambiguityCodes, setAmbiguityCodes] = useState(false)
+  const [hetFract, setHetFract] = useState(0.5)
   const [includeInsertions, setIncludeInsertions] = useState(true)
   const [excludeSecondary, setExcludeSecondary] = useState(true)
 
@@ -82,6 +85,9 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_CONSENSUS_BP
 
+  // undefined hetFract is what turns ambiguity off in computeConsensus
+  const effectiveHetFract = ambiguityCodes ? hetFract : undefined
+
   const { data, error } = useFetch(
     tooLargeToFetch
       ? false
@@ -92,6 +98,8 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           filterBy,
           minDepth,
           callFract,
+          ambiguityCodes,
+          hetFract,
           includeInsertions,
         ],
     async () => {
@@ -114,6 +122,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               filterBy,
               minDepth,
               callFract,
+              hetFract: effectiveHetFract,
               includeInsertions,
             },
           )) as { consensus: string; variants: ConsensusVariant[] }
@@ -166,9 +175,17 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
         ) : loading ? (
           <LoadingEllipses message="Computing consensus" />
         ) : null}
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          At each position the reads &quot;vote&quot; for a base, matching
+          samtools consensus. With ambiguity codes on, a position where the
+          reads disagree reports an IUPAC code (e.g. R for A-or-G) instead of N,
+          and unlike samtools it is not capped at two alleles, so pooled or
+          higher-ploidy samples can show a real 3- or 4-way split.
+        </Typography>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <TextField
             label="Min read depth"
+            helperText="positions covered by fewer reads than this are N, regardless of agreement"
             type="number"
             size="small"
             value={minDepth}
@@ -180,7 +197,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           />
           <TextField
             label="Min call fraction"
-            helperText="below this a position is N"
+            helperText="the called base(s) must together account for at least this fraction of the reads, or it's N"
             type="number"
             size="small"
             value={callFract}
@@ -189,6 +206,29 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               const v = Number.parseFloat(event.target.value)
               setCallFract(Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)
             }}
+          />
+          <TextField
+            label="Min het fraction"
+            helperText="with ambiguity codes on, a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
+            type="number"
+            size="small"
+            value={hetFract}
+            slotProps={{ htmlInput: { min: 0, max: 1, step: 0.05 } }}
+            onChange={event => {
+              const v = Number.parseFloat(event.target.value)
+              setHetFract(Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)
+            }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={ambiguityCodes}
+                onChange={event => {
+                  setAmbiguityCodes(event.target.checked)
+                }}
+              />
+            }
+            label="IUPAC ambiguity codes"
           />
           <FormControlLabel
             control={

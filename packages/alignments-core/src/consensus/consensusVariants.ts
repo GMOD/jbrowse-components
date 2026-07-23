@@ -15,17 +15,29 @@ function upper(code: number) {
   return code ? String.fromCharCode(code).toUpperCase() : ''
 }
 
+const SIMPLE_BASES = new Set(['A', 'C', 'G', 'T'])
+
+function isSimpleSequence(seq: string) {
+  for (const base of seq) {
+    if (!SIMPLE_BASES.has(base)) {
+      return false
+    }
+  }
+  return true
+}
+
 // Second projection over the same per-column pass as computeConsensus: every
 // position where the consensus call differs from the reference becomes a
 // variant. SNVs are single-base; deletion runs coalesce into one left-anchored
-// record; insertions anchor on the preceding reference base. N (no-call)
-// positions are not variants. This is a consensus-vs-reference diff with DP/AF,
-// not genotype-likelihood variant calling.
+// record; insertions anchor on the preceding reference base. N, IUPAC, and
+// base/gap ambiguity calls are not variants — every base in a literal VCF ALT
+// must be definite. This is a consensus-vs-reference diff with DP/AF, not
+// genotype-likelihood variant calling.
 //
 // AF differs by kind on purpose. SNVs and deletions report the samtools
-// weighted call-fraction (callScore/tscore) — the same ratio that had to clear
-// callFract for the call, so it comes straight from the shared pass and is
-// always >= callFract. A multi-base insertion has no single column score, so
+// weighted winning-call fraction (callScore/tscore). A winning gap can survive
+// a failed callFract gate under samtools's deletion asymmetry, so deletion AF
+// may be below callFract. A multi-base insertion has no single column score, so
 // its AF is the supporting-read fraction (reads inserting here / depth).
 export function computeConsensusVariants(
   reference: string,
@@ -80,7 +92,7 @@ export function computeConsensusVariants(
         }
       } else {
         closeDel()
-        if (call !== 'N' && refBase && call !== refBase) {
+        if (SIMPLE_BASES.has(call) && refBase && call !== refBase) {
           variants.push({
             pos: refPos,
             ref: refBase,
@@ -92,7 +104,7 @@ export function computeConsensusVariants(
         }
       }
 
-      if (ins && refBase) {
+      if (ins && refBase && isSimpleSequence(ins)) {
         const insReads = tally.insertionAfter.get(refPos)?.length ?? 0
         variants.push({
           pos: refPos,

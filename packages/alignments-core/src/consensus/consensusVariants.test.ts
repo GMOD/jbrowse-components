@@ -7,7 +7,7 @@ import {
 import { buildConsensusTally } from './computeConsensus.ts'
 import { computeConsensusVariants, variantsToVcf } from './consensusVariants.ts'
 
-import type { ConsensusFeature } from './computeConsensus.ts'
+import type { ConsensusFeature, ConsensusOptions } from './computeConsensus.ts'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
 
 interface ReadSpec {
@@ -51,10 +51,19 @@ function mockFeature(r: ReadSpec): ConsensusFeature {
   }
 }
 
-function variants(reference: string, reads: ReadSpec[]) {
+function variants(
+  reference: string,
+  reads: ReadSpec[],
+  opts: ConsensusOptions = {},
+) {
   const region = { start: 0, end: reference.length }
   const tally = buildConsensusTally(reads.map(mockFeature), region)
-  return computeConsensusVariants(reference, tally)
+  return computeConsensusVariants(reference, tally, opts)
+}
+
+// See computeConsensus.test.ts: hetFract opts into IUPAC ambiguity.
+function variantsAmbig(reference: string, reads: ReadSpec[]) {
+  return variants(reference, reads, { hetFract: 0.5 })
 }
 
 function times(count: number, r: ReadSpec) {
@@ -102,6 +111,86 @@ describe('computeConsensusVariants', () => {
       ...times(5, { start: 0, end: 1, mismatches: [{ pos: 0, base: 'C' }] }),
     ]
     expect(variants('A', reads)).toEqual([])
+  })
+
+  test('a sub-threshold deletion is still emitted (samtools asymmetry)', () => {
+    // 3 del : 2 ref at pos 1 -> gap wins but at 60% < callFract, and samtools
+    // calls it anyway, so the deletion record is real and its AF is below
+    // callFract. With hetFract this same column becomes a base/gap ambiguity
+    // and is dropped instead (below).
+    const reads = [
+      ...times(3, { start: 0, end: 3, dels: [{ pos: 1, len: 1 }] }),
+      ...times(2, { start: 0, end: 3 }),
+    ]
+    expect(variants('ACG', reads)).toEqual([
+      { pos: 0, ref: 'AC', alt: 'A', depth: 5, af: 0.6, type: 'del' },
+    ])
+  })
+})
+
+describe('computeConsensusVariants with IUPAC ambiguity', () => {
+  test('IUPAC ambiguity positions are not variants', () => {
+    const reads = [
+      ...times(5, { start: 0, end: 1, mismatches: [{ pos: 0, base: 'G' }] }),
+      ...times(5, { start: 0, end: 1, mismatches: [{ pos: 0, base: 'C' }] }),
+    ]
+    expect(variantsAmbig('A', reads)).toEqual([])
+  })
+
+  test('base/gap ambiguity is not emitted as a hard deletion', () => {
+    const reads = [
+      ...times(3, {
+        start: 0,
+        end: 3,
+        dels: [{ pos: 1, len: 1 }],
+      }),
+      ...times(2, { start: 0, end: 3 }),
+    ]
+    expect(variantsAmbig('ACG', reads)).toEqual([])
+  })
+
+  test('IUPAC insertion sequences are not emitted as VCF alleles', () => {
+    const reads = [
+      ...times(6, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'A' }],
+      }),
+      ...times(4, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'G' }],
+      }),
+    ]
+    expect(variantsAmbig('A', reads)).toEqual([])
+  })
+
+  test('an insertion with any ambiguous column is omitted in full', () => {
+    const reads = [
+      ...times(6, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'AA' }],
+      }),
+      ...times(4, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'AG' }],
+      }),
+    ]
+    expect(variantsAmbig('A', reads)).toEqual([])
+  })
+
+  test('base/gap ambiguous insertions are not emitted as VCF alleles', () => {
+    const reads = [
+      ...times(3, {
+        start: 0,
+        end: 1,
+        ins: [{ afterPos: 0, bases: 'T' }],
+      }),
+      ...times(2, { start: 0, end: 1 }),
+    ]
+    expect(variantsAmbig('A', reads)).toEqual([])
   })
 })
 
