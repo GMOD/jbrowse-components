@@ -86,25 +86,30 @@ function thresholdFor(name: string) {
   return override ? override.threshold : DEFAULT_THRESHOLD
 }
 
-// Alignment PILEUP views used to intermittently disagree across the two browser
-// processes — a *rare* (~1-2 of 155 pairs per run) race hitting a different
-// pileup each run (inversion-indels 8%, multiregion-strand-sorted 27%,
-// inversion-simple-cram 25%, session-spec cram-pileup 7%; NO non-pileup view
-// ever drifted). It was never gross nondeterminism: same-backend re-renders
-// reproduced byte-for-byte, so the layout was stable when the input order was.
+// Alignment PILEUP views intermittently disagree across the two independent
+// browser processes — a *rare* (~1-2 of 155 pairs per run) race, a different
+// pileup each run (across three runs: inversion-indels 8%, multiregion-strand-
+// sorted 27%, inversion-simple-cram 25%, session-spec cram-pileup 7%; NO
+// non-pileup view ever drifted). It is NOT gross nondeterminism: same-backend
+// re-renders reproduce byte-for-byte (verified: canvas2d and webgl each rendered
+// the inversion suite twice with 0 drift), so the layout is stable when the
+// input is. Still reproducible on 2026-07-16 against committed goldens: the same
+// build re-run back to back failed a *different* subset each time. Rare, but a
+// ~1% false-positive rate still can't be a differential oracle.
 //
-// ISOLATED and fixed 2026-07-22 in sortLayout.ts. Pileup placement is
-// first-fit-lowest-row, which is arrival-order-sensitive, and JS sort is stable,
-// so any comparator tie fell through to array position — the order the worker
-// emitted reads in, which is not stable across processes. `strand` has two
-// distinct keys, which is why the strand-sorted view drifted worst. Every
-// placement order now ends in a total tiebreak on genomic span + read id
-// (compareReadsCanonically), so layout is a pure function of the read set. The
-// invariant is pinned by "layout is independent of read arrival order" in
-// sortLayout.test.ts, not by this gate.
+// Pileup row assignment (placeRect, lowest-free-row) is order-sensitive, so
+// anything perturbing read placement order reshuffles the whole stack. One such
+// input was closed on 2026-07-22 — sortLayout.ts comparators left ties to array
+// position, and every placement order now ends in a total tiebreak
+// (compareReadsCanonically). That was a real defect, but do NOT assume it
+// explains this drift: nothing was ever shown to reorder reads between runs
+// (@gmod/bam walks chunks sequentially, CRAM record order is deterministic).
+// Unexplored: the read SET differing between runs, and capture timing — note
+// snapshot.ts waitForMorphIdle is vacuous here, since morphFromTops lives on
+// LinearBasicDisplay, not LinearAlignmentsDisplay.
 //
-// The gate was clean for the deterministic view types (synteny/wiggle/dotplot/
-// bigwig/variants/gwas/hic/genes) throughout — 0 false positives across all runs.
+// The gate is clean for the deterministic view types (synteny/wiggle/dotplot/
+// bigwig/variants/gwas/hic/genes) — 0 false positives across all runs.
 const EXCLUDED_SUBSTRINGS: string[] = []
 
 function isExcluded(name: string) {

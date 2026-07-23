@@ -85,11 +85,11 @@ nobody reads is decoration, so it was removed. `pnpm test:browser:gate` is still
 the right tool to run **by hand** when touching shaders or a backend — that is a
 differential canvas2d-vs-webgl oracle and it does not need goldens.
 
-Bringing it back as a real CI gate needs, in order: ~~the pileup arrival-order
-race isolated~~ (done 2026-07-22, see "Pileup goldens" below), a few consecutive
-clean runs on an idle machine to prove the false-positive rate is 0, and then
-`continue-on-error` dropped. Re-adding it non-blocking just recreates the
-decoration.
+Bringing it back as a real CI gate needs, in order: the pileup drift explained
+(one contributing cause was fixed 2026-07-22 — see "Pileup goldens" below — but
+it was never confirmed to be *the* cause), a few consecutive clean runs on an
+idle machine to prove the false-positive rate is 0, and then `continue-on-error`
+dropped. Re-adding it non-blocking just recreates the decoration.
 
 Note the gate needs a GPU backend, and GitHub runners have none — swiftshader is
 the only GPU-less option and it leaks ~29 MB per WebGL context (ADR-024), which
@@ -118,23 +118,35 @@ Because a golden encodes one machine's rendering, treat a fresh one as evidence
 about _this_ machine, not a cross-platform contract — that is what the
 cross-backend gate is for, run by hand.
 
-### Pileup goldens used to re-drift on every run — fixed 2026-07-22
+### Pileup goldens re-drift on every run — don't chase them
 
-Alignment **pileup** captures were not reproducible run to run. The same build
+Alignment **pileup** captures are not reproducible run to run. The same build
 re-run back to back against the same goldens failed a _different_ subset each
 time (measured 2026-07-16: three pileups at 10.29/21.55/11.04%, then two at
-20.76/11.04%), because pileup row assignment is arrival-order sensitive and
-nothing pinned the order of reads the comparators considered equal.
+20.76/11.04%). Pileup row assignment is first-fit-lowest-row, so anything that
+perturbs the order reads are placed in reshuffles the stack into a large pixel
+diff.
 
-That race is now isolated and fixed in `sortLayout.ts`: every placement order
-ends in a total tiebreak on genomic span + read id, so layout is a pure function
-of the read set. The invariant is pinned by "layout is independent of read
-arrival order" in `sortLayout.test.ts` — a unit test, so it can't rot the way an
-unrun browser suite does.
+One input to that was fixed on 2026-07-22: every placement order in
+`sortLayout.ts` now ends in a total tiebreak on genomic span + read id, so
+layout is a pure function of the read *set* rather than of array position. That
+was a real defect — an unrecognized `sortedBy.type` also used to leave reads
+entirely unsorted — and the invariant is pinned by "layout is independent of
+read arrival order" in `sortLayout.test.ts`, a unit test that can't rot the way
+an unrun browser suite does.
 
-Pileup goldens predating the fix still encode an arbitrary arrival order and
-will be red once; regenerate with `-u` and they should stay put. If a pileup
-drifts again, that is a real regression, not the old race.
+**It was not confirmed to be the cause of the golden drift.** Nothing was ever
+shown to reorder reads between two runs: `@gmod/bam` walks chunks in a
+sequential loop and CRAM record order is likewise deterministic, so the
+arrival-order hypothesis is unsupported by anything but the symptom. Causes
+still unexplored: the read *set* differing between runs (block boundaries,
+`maxRows` truncation) and capture timing — note `waitForMorphIdle` is vacuous
+here, since it waits on `morphFromTops`, which exists on `LinearBasicDisplay`
+and not `LinearAlignmentsDisplay`.
+
+So: regenerate with `-u` if you like, but expect pileups red again, and don't
+read those failures as a regression until the drift is actually explained. See
+`crossBackendGate.ts`.
 
 ## Reviewing Snapshots
 
