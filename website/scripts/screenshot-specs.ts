@@ -10,6 +10,7 @@ import { cookbookSpecs } from './specs/cookbook.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
+import { graphSpecs } from './specs/graph.ts'
 import { gwasSpecs } from './specs/gwas.ts'
 import { hprc2Specs } from './specs/hprc2.ts'
 import { ldSpecs } from './specs/ld.ts'
@@ -50,6 +51,7 @@ export const specs: ScreenshotSpec[] = [
   ...mafSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,
+  ...graphSpecs,
   ...hprc2Specs,
   ...cookbookSpecs,
   ...embeddedSpecs,

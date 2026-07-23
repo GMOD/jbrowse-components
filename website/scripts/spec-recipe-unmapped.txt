@@ -13,6 +13,7 @@ cigarMode
 color
 colorBy
 colorByChromosome
+colorScheme
 connectedView
 conservationMode
 displayCrossHatches
@@ -23,6 +24,7 @@ drawLongRange
 featureColor
 featureHighlights
 featureSpacing
+gfaLocation
 height
 heightOverride
 jexlFiltersSetting

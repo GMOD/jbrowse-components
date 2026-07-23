@@ -119,11 +119,13 @@ The **Graph genome view** used in this section is a separate plugin,
 not bundled in JBrowse Web. Its force-directed layout is computed by the
 [Bandage](https://github.com/rrwick/Bandage) engine (its
 [OGDF](https://ogdf.github.io/) FMMM layout, both GPL-licensed), loaded at
-runtime, which is why it ships on its own. Install it from the
-[plugin store](/docs/user_guides/plugin_store) (Tools menu), or add it to your
-`config.json` (see [configuring plugins](/docs/config_guides/plugins)), to get
-the **Add, then Graph genome view** menu item. The projection tracks below need
-none of this.
+runtime, which is why it ships on its own.
+
+The plugin is still in **beta and not published yet**, so it is not in the
+[plugin store](/docs/user_guides/plugin_store) or installable from a
+`config.json` (see [configuring plugins](/docs/config_guides/plugins)); look for
+it in both soon. Once it is installed you get the **Add, then Graph genome
+view** menu item. The projection tracks below need none of this.
 
 :::
 
@@ -186,7 +188,7 @@ minigraph graph is also far less fragmented than a pggb one, since it records
 structural variation rather than every SNP, so a legible window is hundreds of
 kb rather than hundreds of bp.
 
-<Figure caption="A 300 kb K12 window of the same four strains built with minigraph, colored by stable rank. The straight blue line is rank 0, the K12 reference backbone, drawn at the offsets the segments declare; each row below is one rank of non-reference sequence, and the long bars are multi-kb insertions carried by one strain. Compare the pggb figure above, where the backbone has to be inferred by a force layout." src="/img/pangenome/rgfa_backbone.png" />
+<Figure caption="The same four-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout." src="/img/pangenome/graph_rgfa.png" link="" />
 
 The rank-ladder layout above is anchored to K12, so it lines up with a linear
 view of the same window. The toolbar's **Layout** dropdown trades that

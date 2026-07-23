@@ -276,9 +276,9 @@ chromosome.
 The graph genome view is a separate plugin,
 [jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
 not bundled in JBrowse Web (its force-directed layout uses the GPL-licensed
-[Bandage](https://github.com/rrwick/Bandage) engine). Install it from the
-[plugin store](/docs/user_guides/plugin_store) or your `config.json`, as
-described in the
+[Bandage](https://github.com/rrwick/Bandage) engine). It is still in **beta and
+not published yet**; look for it in the
+[plugin store](/docs/user_guides/plugin_store) soon, as described in the
 [E. coli tutorial](/docs/tutorials/pangenome_ecoli#the-graph-itself-a-local-subgraph).
 The bubble and segment feature tracks below need it too only for the launch menu
 item.

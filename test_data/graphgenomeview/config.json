@@ -1,0 +1,34 @@
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "umdUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.umd.production.min.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "K12",
+      "displayName": "E. coli K12",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "K12-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": []
+}

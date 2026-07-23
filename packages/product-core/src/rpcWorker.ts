@@ -46,12 +46,19 @@ async function getPluginManager(
     config.plugins,
     opts,
   ).installGlobalReExports(self)
-  return new PluginManager(
-    [
-      ...corePlugins.map(p => ({ plugin: p })),
-      ...(await pluginLoader.load(config.windowHref)),
-    ].map(P => new P.plugin()),
-  )
+  // Keep each runtime plugin's `definition` on its load record (mirroring the
+  // main thread's createPluginManager) so PluginManager populates
+  // runtimePluginDefinitions. A plugin that resolves a sibling asset from its
+  // own bundle url in the worker — e.g. GraphGenomeView's Bandage layout
+  // engine — needs its definition here, not just its instance.
+  const runtimePlugins = await pluginLoader.load(config.windowHref)
+  return new PluginManager([
+    ...corePlugins.map(P => ({ plugin: new P() })),
+    ...runtimePlugins.map(({ plugin: P, definition }) => ({
+      plugin: new P(),
+      definition,
+    })),
+  ])
     .createPluggableElements()
     .configure()
 }
