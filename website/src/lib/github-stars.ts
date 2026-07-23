@@ -25,6 +25,9 @@ async function fetchStarCount() {
       }
       return typeof stars === 'number' ? stars : undefined
     }
+    // 403 here is the rate limit; logging the status is what distinguishes it
+    // from a network failure when the button builds without a count.
+    console.warn(`star count unavailable: HTTP ${res.status}`)
   } catch (e) {
     console.warn(`star count unavailable: ${e}`)
   }
