@@ -11,8 +11,12 @@ import type { PileupDataResult } from './types.ts'
 interface Read {
   start: number
   end: number
+  // Stable identity, so a test can present the same reads in a different array
+  // order and still compare per-read results. Defaults to the slot index.
+  id?: string
   baseAtSortPos?: string
   tagValue?: string
+  strand?: number
   // A soft clip at genomic `pos` of `length` bp (left clip when pos <= start).
   softclip?: { pos: number; length: number }
 }
@@ -38,8 +42,8 @@ function makePileupData(opts: {
   for (const [i, r] of reads.entries()) {
     readPositions[i * 2] = r.start
     readPositions[i * 2 + 1] = r.end
-    readIds.push(`${idPrefix}${i}`)
-    readNames.push(`${idPrefix}${i}`)
+    readIds.push(r.id ?? `${idPrefix}${i}`)
+    readNames.push(r.id ?? `${idPrefix}${i}`)
   }
 
   const mismatchEntries: { readIdx: number; pos: number; base: number }[] = []
@@ -91,7 +95,7 @@ function makePileupData(opts: {
     readMapqs: new Uint8Array(numReads),
     readInsertSizes: new Float32Array(numReads),
     readPairOrientations: new Uint8Array(numReads),
-    readStrands: new Int8Array(numReads),
+    readStrands: Int8Array.from(reads.map(r => r.strand ?? 0)),
     readInterchrom: new Uint8Array(numReads),
     readTagColors: new Uint32Array(0),
     segmentPositions: new Uint32Array(0),
@@ -475,13 +479,25 @@ describe('computeLayout fast path (interval partitioning)', () => {
   // Independent first-fit-lowest-row reference over padded (end+2) intervals in
   // monotone start order. Deliberately does NOT use placeRect, so a shared bug
   // can't hide the divergence — this is the spec the heap path must match.
+  // Placement order is part of the spec: a plain pileup places reads by genomic
+  // span then read id, never by array position (see compareReadsCanonically).
+  function canonicalOrder(data: PileupDataResult) {
+    const { readPositions, readIds } = data
+    return Array.from({ length: readIds.length }, (_, i) => i).sort(
+      (a, b) =>
+        readPositions[a * 2]! - readPositions[b * 2]! ||
+        readPositions[a * 2 + 1]! - readPositions[b * 2 + 1]! ||
+        (readIds[a]! < readIds[b]! ? -1 : readIds[a]! > readIds[b]! ? 1 : 0),
+    )
+  }
+
   function refFirstFit(data: PileupDataResult, maxRows: number) {
     const { readPositions } = data
     const n = data.readIds.length
     const rowEnds: number[] = [] // rowEnds[r] = last padded end placed in row r
     const ys = new Uint16Array(n)
     let truncated = false
-    for (let i = 0; i < n; i++) {
+    for (const i of canonicalOrder(data)) {
       const start = readPositions[i * 2]!
       const paddedEnd = readPositions[i * 2 + 1]! + 2
       let placed = -1
@@ -1038,4 +1054,164 @@ describe('computeMultiRegionLayout', () => {
     expect(rowMap.get('b0')).toBe(0)
     expect(maxY).toBe(3)
   })
+})
+
+// Pileup layout must be a pure function of the read SET, not of the order the
+// reads arrive in. First-fit-lowest-row placement is arrival-order-sensitive by
+// construction, and JS sort is stable, so any comparator with a tie class hands
+// the tie to input-array position. That made the cross-backend browser gate
+// flaky: two independent browser processes that ordered equal-keyed reads
+// differently laid out the same pileup differently (crossBackendGate.ts records
+// multiregion-strand-sorted drifting 27%, and `strand` has only two keys, so its
+// tie classes are half the pileup). These tests pin the invariant directly, so
+// the failure is a deterministic unit test rather than a rare browser diff.
+describe('layout is independent of read arrival order', () => {
+  // Reads with heavily-tied sort keys: many share a start, and strand/tag take
+  // few distinct values, so ordering among equals is decided by array position.
+  // Ids are explicit and stable so permuting the array moves each read's
+  // identity with it — mirroring real reads, whose ids don't depend on the order
+  // the worker emitted them. Two reads share a full span (r4/r5) so the
+  // id tiebreak itself is exercised.
+  const tiedReads: Read[] = [
+    {
+      id: 'r0',
+      start: 100,
+      end: 200,
+      strand: 1,
+      tagValue: 'x',
+      baseAtSortPos: 'A',
+    },
+    {
+      id: 'r1',
+      start: 100,
+      end: 250,
+      strand: -1,
+      tagValue: 'y',
+      baseAtSortPos: 'C',
+    },
+    {
+      id: 'r2',
+      start: 100,
+      end: 180,
+      strand: 1,
+      tagValue: 'x',
+      baseAtSortPos: 'A',
+    },
+    {
+      id: 'r3',
+      start: 150,
+      end: 400,
+      strand: -1,
+      tagValue: 'y',
+      baseAtSortPos: 'C',
+    },
+    {
+      id: 'r4',
+      start: 150,
+      end: 300,
+      strand: 1,
+      tagValue: 'x',
+      baseAtSortPos: 'G',
+    },
+    {
+      id: 'r5',
+      start: 150,
+      end: 300,
+      strand: -1,
+      tagValue: 'y',
+      baseAtSortPos: 'G',
+    },
+    {
+      id: 'r6',
+      start: 220,
+      end: 500,
+      strand: 1,
+      tagValue: 'x',
+      baseAtSortPos: 'T',
+    },
+    {
+      id: 'r7',
+      start: 220,
+      end: 320,
+      strand: -1,
+      tagValue: 'y',
+      baseAtSortPos: 'T',
+    },
+  ]
+
+  // Layout `reads` presented in `order`, returned keyed by each read's identity
+  // in the ORIGINAL array so two different presentation orders are comparable.
+  function rowsByOriginalIndex(
+    order: number[],
+    layout: (data: PileupDataResult) => Uint16Array,
+    sortPos?: number,
+  ) {
+    const data = makePileupData({
+      regionStart: 0,
+      reads: order.map(i => tiedReads[i]!),
+      sortPos,
+    })
+    const readYs = layout(data)
+    return new Map(order.map((original, slot) => [original, readYs[slot]!]))
+  }
+
+  // Reversal is the harshest permutation for a stable sort: it flips the
+  // relative order of every tied pair at once.
+  const reversed = [...tiedReads.keys()].reverse()
+  const identity = [...tiedReads.keys()]
+
+  it('plain pileup places tied-start reads the same either way', () => {
+    const layout = (d: PileupDataResult) => computeLayout(d).readYs
+    expect(rowsByOriginalIndex(reversed, layout)).toEqual(
+      rowsByOriginalIndex(identity, layout),
+    )
+  })
+
+  it('largest-features-first is order-independent', () => {
+    const layout = (d: PileupDataResult) =>
+      computeLayout(d, false, Number.POSITIVE_INFINITY, true).readYs
+    expect(rowsByOriginalIndex(reversed, layout)).toEqual(
+      rowsByOriginalIndex(identity, layout),
+    )
+  })
+
+  it('multi-region layout is order-independent', () => {
+    // Same reads, presented to computeMultiRegionLayout in two different array
+    // orders. Row assignment keys on the read id, so the two must agree.
+    const rowsFor = (order: number[]) =>
+      computeMultiRegionLayout({
+        entries: [
+          [
+            0,
+            makePileupData({
+              regionStart: 0,
+              reads: order.map(i => tiedReads[i]!),
+            }),
+          ],
+        ],
+      }).rowMap
+
+    expect(rowsFor([...tiedReads.keys()].reverse())).toEqual(
+      rowsFor([...tiedReads.keys()]),
+    )
+  })
+
+  it.each([
+    ['strand', { type: 'strand', pos: 160 }],
+    ['position', { type: 'position', pos: 160 }],
+    ['basePair', { type: 'basePair', pos: 160 }],
+    ['tag', { type: 'tag', pos: 160, tag: 'HP' }],
+    // `sortedBy.type` is a bare string, so an unknown value must still lay out
+    // deterministically rather than falling back to arrival order.
+    ['an unrecognized type', { type: 'not-a-sort-type', pos: 160 }],
+  ] as [string, SortedBy][])(
+    'sort by %s is order-independent',
+    (_name, sortedBy) => {
+      const layout = (d: PileupDataResult) =>
+        computeSortedLayout(d, sortedBy).readYs
+      expect(rowsByOriginalIndex(reversed, layout, sortedBy.pos)).toEqual(
+        rowsByOriginalIndex(identity, layout, sortedBy.pos),
+      )
+    },
+  )
 })

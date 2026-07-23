@@ -12,11 +12,47 @@ import type { PileupDataResult } from './types'
 
 const DELETION_CHAR = 42 // '*'
 
+/**
+ * Total order over read indices, used as the final tiebreak of every placement
+ * order in this file: genomic span first, then the read's unique id.
+ *
+ * The id matters. First-fit-lowest-row placement is arrival-order-sensitive by
+ * construction and JS sort is stable, so a comparator that leaves ties hands
+ * them to array position — i.e. to whatever order the worker happened to emit
+ * reads in. That order is not guaranteed stable across processes, which is what
+ * made the cross-backend browser gate drift on pileups (a different pileup each
+ * run, same input; see browser-tests/crossBackendGate.ts). Comparators here must
+ * be total so layout is a pure function of the read set.
+ *
+ * Span is compared first so the common case stays numeric; the string compare
+ * only runs for reads sharing both endpoints.
+ */
+function compareReadsCanonically(
+  readPositions: Uint32Array,
+  readIds: string[],
+  a: number,
+  b: number,
+) {
+  const startDiff = readPositions[a * 2]! - readPositions[b * 2]!
+  if (startDiff !== 0) {
+    return startDiff
+  }
+  const endDiff = readPositions[a * 2 + 1]! - readPositions[b * 2 + 1]!
+  if (endDiff !== 0) {
+    return endDiff
+  }
+  const ia = readIds[a]!
+  const ib = readIds[b]!
+  return ia < ib ? -1 : ia > ib ? 1 : 0
+}
+
 function sortByMapWithUnknownsLast(
   arr: number[],
   map: Map<number, number>,
   desc: boolean,
+  data: PileupDataResult,
 ) {
+  const { readPositions, readIds } = data
   arr.sort((a, b) => {
     const aVal = map.get(a) ?? 0
     const bVal = map.get(b) ?? 0
@@ -26,7 +62,10 @@ function sortByMapWithUnknownsLast(
     if (aVal === 0 && bVal !== 0) {
       return 1
     }
-    return desc ? bVal - aVal : aVal - bVal
+    const byVal = desc ? bVal - aVal : aVal - bVal
+    return byVal !== 0
+      ? byVal
+      : compareReadsCanonically(readPositions, readIds, a, b)
   })
 }
 
@@ -196,15 +235,19 @@ function sortOverlappingByIndex(
   sortTagValues: string[] | undefined,
 ) {
   const { type, pos: sortPos } = sortedBy
+  const { readPositions, readIds } = data
+  const canonical = (a: number, b: number) =>
+    compareReadsCanonically(readPositions, readIds, a, b)
   const keyMap = buildSortKeyMap(data, type, sortPos)
   if (keyMap) {
-    sortByMapWithUnknownsLast(overlapping, keyMap.map, keyMap.desc)
+    sortByMapWithUnknownsLast(overlapping, keyMap.map, keyMap.desc, data)
   } else if (type === 'position') {
-    const { readPositions } = data
-    overlapping.sort((a, b) => readPositions[a * 2]! - readPositions[b * 2]!)
+    overlapping.sort(canonical)
   } else if (type === 'strand') {
     const { readStrands } = data
-    overlapping.sort((a, b) => readStrands[b]! - readStrands[a]!)
+    overlapping.sort(
+      (a, b) => readStrands[b]! - readStrands[a]! || canonical(a, b),
+    )
   } else if (type === 'tag' && sortTagValues) {
     // Numeric sort only when every present value parses as a number (empty/
     // missing values coerce to 0 and don't force string mode). A single
@@ -216,13 +259,23 @@ function sortOverlappingByIndex(
     })
     if (allNumeric) {
       overlapping.sort(
-        (a, b) => Number(sortTagValues[b] ?? 0) - Number(sortTagValues[a] ?? 0),
+        (a, b) =>
+          Number(sortTagValues[b] ?? 0) - Number(sortTagValues[a] ?? 0) ||
+          canonical(a, b),
       )
     } else {
-      overlapping.sort((a, b) =>
-        (sortTagValues[b] ?? '').localeCompare(sortTagValues[a] ?? ''),
+      overlapping.sort(
+        (a, b) =>
+          (sortTagValues[b] ?? '').localeCompare(sortTagValues[a] ?? '') ||
+          canonical(a, b),
       )
     }
+  } else {
+    // Unrecognized sort type (a legacy or misspelled `sortedBy.type`, which is
+    // a bare string). Falling through used to leave the reads in arrival order;
+    // sort canonically so an unknown type degrades to a deterministic layout
+    // rather than an unstable one.
+    overlapping.sort(canonical)
   }
 }
 
@@ -328,15 +381,33 @@ class MinHeap {
 // Build the soft-clip iteration order: read indices sorted by expanded left
 // edge (soft-clip-aware), genomic start as tiebreak. The placeRect algorithm
 // (and the fast path below) need left-to-right ordering.
+/**
+ * Placement order for a plain pileup: genomic span, then read id.
+ *
+ * Worker output is already start-sorted, so this only ever reorders reads that
+ * share a start — but it is a full sort because that measured faster than
+ * scanning for equal-start runs and sorting each (one optimized sort beats many
+ * small ones plus the slicing: ~23ms vs ~30ms at 300k reads). Cost is paid on a
+ * layout MobX recomputes on sort toggles and resize, so it is worth knowing;
+ * typical pileups are a few thousand reads and sub-millisecond.
+ */
+function buildCanonicalOrder(data: PileupDataResult, numReads: number) {
+  const { readPositions, readIds } = data
+  return Array.from({ length: numReads }, (_, i) => i).sort((a, b) =>
+    compareReadsCanonically(readPositions, readIds, a, b),
+  )
+}
+
 function buildSoftclipOrder(
   data: PileupDataResult,
   ext: ReadExtents,
   numReads: number,
 ) {
-  return Array.from({ length: numReads }, (_, i) => i).sort((a, b) =>
-    ext.starts[a] !== ext.starts[b]
-      ? ext.starts[a]! - ext.starts[b]!
-      : (data.readPositions[a * 2] ?? 0) - (data.readPositions[b * 2] ?? 0),
+  const { readPositions, readIds } = data
+  return Array.from({ length: numReads }, (_, i) => i).sort(
+    (a, b) =>
+      ext.starts[a]! - ext.starts[b]! ||
+      compareReadsCanonically(readPositions, readIds, a, b),
   )
 }
 
@@ -346,29 +417,35 @@ function buildSoftclipOrder(
 // alignments cluster at the top instead of interleaving with small ones (the
 // LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
 // row-scan rather than the interval-partitioning fast path.
-function buildLargeFirstOrder(ext: ReadExtents, numReads: number) {
-  return Array.from({ length: numReads }, (_, i) => i).sort((a, b) =>
-    compareByExtentDesc(
-      ext.starts[a]!,
-      ext.ends[a]!,
-      ext.starts[b]!,
-      ext.ends[b]!,
-    ),
+function buildLargeFirstOrder(
+  data: PileupDataResult,
+  ext: ReadExtents,
+  numReads: number,
+) {
+  const { readPositions, readIds } = data
+  return Array.from({ length: numReads }, (_, i) => i).sort(
+    (a, b) =>
+      compareByExtentDesc(
+        ext.starts[a]!,
+        ext.ends[a]!,
+        ext.starts[b]!,
+        ext.ends[b]!,
+      ) || compareReadsCanonically(readPositions, readIds, a, b),
   )
 }
 
 /**
  * First-fit-lowest-row pileup layout via interval-partitioning min-heaps:
  * O(reads * log depth) instead of the placeRect row-scan's O(reads * depth).
- * Reads must be visited in non-decreasing start order (`order` = soft-clip sort,
- * or genomic order when `order` is undefined). Returns null if a start ever goes
+ * Reads must be visited in non-decreasing start order (`order` = the soft-clip
+ * or canonical placement order). Returns null if a start ever goes
  * backwards, so the caller falls back to the row-scan. Output is identical to
  * repeated `placeRectCapped` for monotone input — same lowest-free-row choice
  * and the same `maxRows` overflow sentinel — verified in sortLayout.test.ts.
  */
 function partitionStartSorted(
   data: PileupDataResult,
-  order: number[] | undefined,
+  order: number[],
   expansions: Map<number, { start: number; end: number }> | undefined,
   maxRows: number,
   readYs: Uint16Array,
@@ -383,7 +460,7 @@ function partitionStartSorted(
   // start, and -1 would spuriously bail the whole region to the row-scan.
   let prevStart = Number.NEGATIVE_INFINITY
   for (let k = 0; k < n; k++) {
-    const i = order ? order[k]! : k
+    const i = order[k]!
     const exp = expansions?.get(i)
     const rs = readPositions[i * 2]!
     const start = exp ? Math.min(rs, exp.start) : rs
@@ -444,11 +521,16 @@ export function computeLayout(
   const ext = needsExtents
     ? buildReadExtents(data, expansions, numReads)
     : undefined
+  // The plain path gets a canonical order too. Worker output is start-sorted, so
+  // array position already decides only among reads sharing a start — but that
+  // is exactly the tie that made layout depend on arrival order, so it has to be
+  // resolved by read identity rather than left to the emit order. Still
+  // start-monotone, so the interval-partitioning fast path below applies.
   const order = largeFeaturesFirst
-    ? buildLargeFirstOrder(ext!, numReads)
+    ? buildLargeFirstOrder(data, ext!, numReads)
     : showSoftClipping
       ? buildSoftclipOrder(data, ext!, numReads)
-      : undefined
+      : buildCanonicalOrder(data, numReads)
 
   if (!largeFeaturesFirst && numReads >= LAYOUT_HEAP_MIN_READS) {
     const fast = partitionStartSorted(data, order, expansions, maxRows, readYs)
@@ -462,7 +544,7 @@ export function computeLayout(
   const rows: number[][] = []
   let truncated = false
   for (let k = 0; k < numReads; k++) {
-    const i = order ? order[k]! : k
+    const i = order[k]!
     // ext holds soft-clip-expanded extents; without it (plain pileup) the read's
     // raw genomic span is its extent.
     const start = ext ? ext.starts[i]! : data.readPositions[i * 2]!
@@ -507,6 +589,11 @@ export function computeSortedLayout(
   }
 
   sortOverlappingByIndex(overlapping, data, sortedBy, data.sortTagValues)
+  // The gap-filling reads are placed after the sorted ones, and first-fit is
+  // order-sensitive, so they need a canonical order for the same reason.
+  nonOverlapping.sort((a, b) =>
+    compareReadsCanonically(readPositions, data.readIds, a, b),
+  )
 
   // Soft-clip-expanded extents only when clips are shown; otherwise the read's
   // raw genomic span is its extent, read straight from readPositions (mirrors
@@ -623,8 +710,8 @@ export function computeMultiRegionLayout({
 }) {
   // Union extent per read (keyed by featureId) across every region it appears
   // in, including soft-clip expansion — a read spanning a boundary gets one
-  // extent, so it lands on one row. `orderedIds` keeps first-seen (≈ genomic)
-  // order for the default placement.
+  // extent, so it lands on one row. `orderedIds` collects them in first-seen
+  // order and is canonicalized below.
   const extents = new Map<string, ReadExtent>()
   const orderedIds: string[] = []
   for (const [idx, data] of entries) {
@@ -648,6 +735,18 @@ export function computeMultiRegionLayout({
     }
   }
   segmentExtentsByRefName(extents)
+
+  // First-seen order is arrival order, which first-fit placement would bake into
+  // the row assignment. Canonicalize on the unioned extent, then the id, so this
+  // layout is a pure function of the read set like the single-region paths.
+  const compareIdsCanonically = (a: string, b: string) => {
+    const ea = extents.get(a)!
+    const eb = extents.get(b)!
+    return (
+      ea.start - eb.start || ea.end - eb.end || (a < b ? -1 : a > b ? 1 : 0)
+    )
+  }
+  orderedIds.sort(compareIdsCanonically)
 
   const refNames = regions
     ? [...new Set(entries.map(([idx]) => regions.get(idx)?.refName))]
@@ -692,7 +791,10 @@ export function computeMultiRegionLayout({
     placementOrder = [...orderedIds].sort((a, b) => {
       const ea = extents.get(a)!
       const eb = extents.get(b)!
-      return compareByExtentDesc(ea.start, ea.end, eb.start, eb.end)
+      return (
+        compareByExtentDesc(ea.start, ea.end, eb.start, eb.end) ||
+        compareIdsCanonically(a, b)
+      )
     })
   }
 
