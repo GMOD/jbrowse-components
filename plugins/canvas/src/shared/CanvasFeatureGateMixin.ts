@@ -28,7 +28,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 interface GateHost {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
-  userByteSizeLimit?: number
+  userByteLimit?: number
   estimatedBytesForVisibleSpan?: number
   configuredFetchSizeLimit: number
   configForceLoad: boolean
@@ -44,12 +44,12 @@ function gateView(self: object) {
 }
 
 /**
- * One per-region fetch outcome the gate needs to update its estimates: the byte
- * index size (`bytes`, absent when the adapter has no index estimate) and the
- * feature count (`featureCount`, absent on a byte short-circuit). `regionWidthBp`
- * anchors the density measurement to the region's span.
+ * What one region's fetch measured, feeding both gate axes: the byte index size
+ * (`bytes`, absent when the adapter has no index estimate) and the feature count
+ * (`featureCount`, absent on a byte short-circuit). `regionWidthBp` anchors the
+ * density measurement to the region's span.
  */
-export interface FeatureGateRegionResult {
+export interface RegionGateMeasurement {
   displayedRegionIndex: number
   regionWidthBp: number
   bytes?: number
@@ -62,7 +62,7 @@ export interface FeatureGateRegionResult {
  * Composes on top of `RegionTooLargeMixin` (via `MultiRegionDisplayMixin`) to add
  * the *density* axis and the worker-facing budgets, so a display that folds the
  * byte/density check into its own fetch RPC (canvas-style, no pre-flight) opts in
- * by composing this mixin and calling `commitFeatureGateStats` from its fetch. The
+ * by composing this mixin and calling `commitGateMeasurements` from its fetch. The
  * mixin clears its own stale per-region stats on chromosome nav (its `afterAttach`,
  * so a composing display can't forget the cleanup and silently mis-gate a reused
  * `displayedRegionIndex`). Every gating decision routes through the shared pure
@@ -90,13 +90,13 @@ export default function CanvasFeatureGateMixin() {
        * per-region feature counts (keyed by displayedRegionIndex), so the density
        * verdict is a live max over the visible regions at the current bpPerPx —
        * never a stale fetch-time snapshot. Survives viewport-change clears; dropped
-       * on chromosome nav by `clearFeatureGateStats`.
+       * on chromosome nav by `clearGateMeasurements`.
        */
       densityStatsPerRegion: observable.map<number, RegionDensityStats>(),
       /**
        * #volatile
        * density force-load ceiling; the density-axis counterpart to
-       * `RegionTooLargeMixin.userByteSizeLimit`, volatile for the same reason (a
+       * `RegionTooLargeMixin.userByteLimit`, volatile for the same reason (a
        * force-load must not leak into a saved session).
        */
       userFeatureDensityLimit: undefined as number | undefined,
@@ -159,7 +159,7 @@ export default function CanvasFeatureGateMixin() {
       get maxFeatureDensity(): number | undefined {
         return !self.densityGateEnabled ||
           host(self).configForceLoad ||
-          host(self).userByteSizeLimit !== undefined ||
+          host(self).userByteLimit !== undefined ||
           gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
           ? undefined
           : (self.userFeatureDensityLimit ??
@@ -185,17 +185,18 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #method
-       * Compressed-byte budget for the fetch RPC, which short-circuits an
-       * over-budget region before downloading features. Undefined (unlimited)
-       * under force-load or below the gate floor; else `resolveByteLimit`
-       * (user force-load → adapter limit → display config).
+       * The byte budget the fetch RPC enforces, short-circuiting an over-budget
+       * region before downloading features. Undefined (unlimited) under
+       * force-load or below the gate floor; otherwise whatever
+       * `resolveByteLimit` picks from the three tiers (user force-load →
+       * adapter limit → display config).
        */
-      byteSizeLimit(): number | undefined {
+      resolvedByteLimit(): number | undefined {
         return host(self).configForceLoad ||
           gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
           ? undefined
           : resolveByteLimit({
-              userByteSizeLimit: host(self).userByteSizeLimit,
+              userByteLimit: host(self).userByteLimit,
               adapterFetchSizeLimit: self.adapterFetchSizeLimit,
               configFetchSizeLimit: host(self).configuredFetchSizeLimit,
             })
@@ -215,7 +216,7 @@ export default function CanvasFeatureGateMixin() {
        * wrong stats). Driven by the mixin's own `afterAttach` below — no composing
        * display has to wire it up.
        */
-      clearFeatureGateStats() {
+      clearGateMeasurements() {
         self.densityStatsPerRegion.clear()
         host(self).setByteEstimate(undefined)
       },
@@ -230,14 +231,14 @@ export default function CanvasFeatureGateMixin() {
        * publish the byte estimate + adapter limit to `RegionTooLargeMixin` so the
        * banner's `resolveByteLimit` picks the same budget the worker gated on.
        */
-      commitFeatureGateStats(results: FeatureGateRegionResult[]) {
+      commitGateMeasurements(measurements: RegionGateMeasurement[]) {
         let maxBytes = 0
         for (const {
           displayedRegionIndex,
           regionWidthBp,
           bytes,
           featureCount,
-        } of results) {
+        } of measurements) {
           maxBytes = Math.max(maxBytes, bytes ?? 0)
           if (featureCount !== undefined) {
             self.setDensityStats(displayedRegionIndex, {
@@ -258,15 +259,15 @@ export default function CanvasFeatureGateMixin() {
        * lifts the baseline, else density).
        */
       raiseForceLoadLimits(estimate?: { bytes?: number }) {
-        // Clear first so maxFeatureDensity (undefined while userByteSizeLimit is
+        // Clear first so maxFeatureDensity (undefined while userByteLimit is
         // set) re-evaluates for the density branch.
-        host(self).userByteSizeLimit = undefined
+        host(self).userByteLimit = undefined
         self.userFeatureDensityLimit = undefined
         const limits = resolveForceLoadLimits({
           estimatedBytesForVisibleSpan: host(self).estimatedBytesForVisibleSpan,
           estimatedBytesForMeasuredSpan: estimate?.bytes,
           baselineByteLimit: resolveByteLimit({
-            userByteSizeLimit: undefined,
+            userByteLimit: undefined,
             adapterFetchSizeLimit: self.adapterFetchSizeLimit,
             configFetchSizeLimit: host(self).configuredFetchSizeLimit,
           }),
@@ -274,7 +275,7 @@ export default function CanvasFeatureGateMixin() {
           observedMaxDensity: self.observedMaxDensity(gateView(self).bpPerPx),
           configuredMaxDensity: getConf(host(self), 'maxFeatureScreenDensity'),
         })
-        host(self).userByteSizeLimit = limits.userByteSizeLimit
+        host(self).userByteLimit = limits.userByteLimit
         self.userFeatureDensityLimit = limits.userFeatureDensityLimit
       },
     }))
@@ -289,7 +290,7 @@ export default function CanvasFeatureGateMixin() {
         onDisplayedRegionsChange(
           self,
           () => {
-            self.clearFeatureGateStats()
+            self.clearGateMeasurements()
           },
           'CanvasFeatureGateClearOnNav',
         )

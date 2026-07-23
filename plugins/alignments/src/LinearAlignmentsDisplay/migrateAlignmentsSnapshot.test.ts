@@ -9,7 +9,7 @@ describe('migrateAlignmentsSnapshot', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       configuration: 'track-1',
-      userByteSizeLimit: 5000000,
+      userByteLimit: 5000000,
     }
     expect(migrateAlignmentsSnapshot(snap)).toEqual(snap)
   })
@@ -32,10 +32,10 @@ describe('migrateAlignmentsSnapshot', () => {
     const result = migrateAlignmentsSnapshot({
       type: 'LinearPileupDisplay',
       configuration: 'track-1',
-      userByteSizeLimit: 15284906,
+      userByteLimit: 15284906,
     })
     expect(result?.type).toBe('LinearAlignmentsDisplay')
     expect(result?.configuration).toBe('track-1')
-    expect(result?.userByteSizeLimit).toBe(15284906)
+    expect(result?.userByteLimit).toBe(15284906)
   })
 })

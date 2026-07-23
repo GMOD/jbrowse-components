@@ -197,7 +197,7 @@ getByteEstimateConfig(): ByteEstimateConfig | null {
   return {
     adapterConfig: self.adapterConfig,
     fetchSizeLimit: 1_000_000,             // default limit in bytes
-    userByteSizeLimit: self.userByteSizeLimit,  // set by force-load dialog
+    userByteLimit: self.userByteLimit,  // set by force-load dialog
     visibleBp: view.visibleBp,
   }
 }
@@ -207,7 +207,7 @@ When configured, `fetchRegions` calls `CoreGetRegionByteEstimate` before
 invoking your work callback. If the estimate exceeds the limit, it sets
 `regionTooLarge = true` and the UI shows a "zoom in" message. The user can
 override by clicking "Force load", which calls `raiseForceLoadLimits()` to set
-`userByteSizeLimit` to the observed byte count.
+`userByteLimit` to the observed byte count.
 
 `regionTooLarge` is automatically cleared when the user pans or zooms to a
 different region, allowing a retry.

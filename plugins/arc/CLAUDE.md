@@ -61,5 +61,5 @@ freshness predicate — dotplot + synteny gate on the same rule.
 
 Byte-only, like `LinearAlignmentsDisplay`: `CoreGetRegionByteEstimate` byte
 estimate short-circuits an over-budget region before the feature download;
-force-load raises `userByteSizeLimit` (`RegionTooLargeMixin`) so a forced fetch
+force-load raises `userByteLimit` (`RegionTooLargeMixin`) so a forced fetch
 isn't re-blocked; `alwaysRender` adapters never gate.

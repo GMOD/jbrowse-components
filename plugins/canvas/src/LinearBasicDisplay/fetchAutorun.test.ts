@@ -7,17 +7,17 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // RenderFeatureData responder that mimics executeRenderFeatureData's byte gate:
 // the index estimate scales with the queried span, and a region over
-// `byteSizeLimit` short-circuits before any features are "downloaded". Canvas
+// `byteLimit` short-circuits before any features are "downloaded". Canvas
 // makes no other RPC call, so this is the whole mock.
 function makeByteGatedRender(bytesPerBp: number) {
   return (
     _sessionId: string,
     _method: string,
-    args: { region: { start: number; end: number }; byteSizeLimit?: number },
+    args: { region: { start: number; end: number }; byteLimit?: number },
   ) => {
     const bytes = Math.round((args.region.end - args.region.start) * bytesPerBp)
     return Promise.resolve(
-      args.byteSizeLimit !== undefined && bytes > args.byteSizeLimit
+      args.byteLimit !== undefined && bytes > args.byteLimit
         ? { regionTooLarge: true as const, bytes }
         : { ...makeFeatureData(), bytes },
     )
@@ -561,7 +561,7 @@ describe('byte estimate pre-check', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // Force load raises userByteSizeLimit past the estimate, so the next fetch
+    // Force load raises userByteLimit past the estimate, so the next fetch
     // passes a higher budget and the region is no longer short-circuited.
     display.forceLoad()
     display.reload()
@@ -609,7 +609,7 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
     )
 
     expect(display.adapterFetchSizeLimit).toBe(50_000_000)
-    expect(display.byteSizeLimit()).toBe(50_000_000)
+    expect(display.resolvedByteLimit()).toBe(50_000_000)
 
     mockRpcCall.mockImplementation(makeByteGatedRender(200))
     jest.advanceTimersByTime(800)
@@ -630,7 +630,7 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
     expect(display.adapterFetchSizeLimit).toBeUndefined()
-    expect(display.byteSizeLimit()).toBe(display.configuredFetchSizeLimit)
+    expect(display.resolvedByteLimit()).toBe(display.configuredFetchSizeLimit)
 
     mockRpcCall.mockImplementation(makeByteGatedRender(200))
     jest.advanceTimersByTime(800)
@@ -783,7 +783,7 @@ describe('derived regionTooLarge', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // Force-load raises userByteSizeLimit past the current scaled estimate, so
+    // Force-load raises userByteLimit past the current scaled estimate, so
     // the derived banner recomputes false and the gated fetch proceeds.
     display.forceLoad()
     expect(display.regionTooLarge).toBe(false)
@@ -943,16 +943,16 @@ describe('derived regionTooLarge', () => {
   })
 })
 
-// Regression: raiseForceLoadLimits used to set EITHER userByteSizeLimit
+// Regression: raiseForceLoadLimits used to set EITHER userByteLimit
 // OR userFeatureDensityLimit but never clear the other one. A stale value left
 // behind silently disables the path that didn't get re-set:
-//   - userByteSizeLimit !== undefined makes maxFeatureDensity return undefined,
+//   - userByteLimit !== undefined makes maxFeatureDensity return undefined,
 //     which makes the density branch a no-op AND makes densityTooLarge always
 //     return false even when feature counts are huge.
 //   - A leftover userFeatureDensityLimit keeps relaxing density gating after
 //     the user has switched to a byte-driven force-load.
 describe('raiseForceLoadLimits gate toggling', () => {
-  it('byte → density toggle clears stale userByteSizeLimit', async () => {
+  it('byte → density toggle clears stale userByteLimit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
     // Seed density stats so the density branch has an observedMax to base on.
@@ -971,15 +971,15 @@ describe('raiseForceLoadLimits gate toggling', () => {
     // raising the ceiling past it actually lift the limit; a value under the
     // baseline is a density trip in disguise and stays on the density branch.
     display.raiseForceLoadLimits({ bytes: 10_000_000 })
-    expect(display.userByteSizeLimit).toBeDefined()
+    expect(display.userByteLimit).toBeDefined()
 
-    // Then: density force-load. The pre-fix bug was that userByteSizeLimit
+    // Then: density force-load. The pre-fix bug was that userByteLimit
     // still being set made maxFeatureDensity return undefined, so the density
     // branch silently no-op'd. After the fix both gates are cleared first,
     // letting the density branch see the real maxFeatureDensity and set a
     // fresh userFeatureDensityLimit.
     display.raiseForceLoadLimits()
-    expect(display.userByteSizeLimit).toBeUndefined()
+    expect(display.userByteLimit).toBeUndefined()
     expect(display.userFeatureDensityLimit).toBeDefined()
   })
 
@@ -1003,7 +1003,7 @@ describe('raiseForceLoadLimits gate toggling', () => {
     // raises the byte ceiling and clears the stale density limit.
     display.raiseForceLoadLimits({ bytes: 10_000_000 })
     expect(display.userFeatureDensityLimit).toBeUndefined()
-    expect(display.userByteSizeLimit).toBeDefined()
+    expect(display.userByteLimit).toBeDefined()
   })
 })
 
@@ -1012,7 +1012,7 @@ describe('raiseForceLoadLimits gate toggling', () => {
 // density rejection (VCF/BAM/CRAM always report one), and production forceLoad()
 // passes the stored byteEstimate — bytes included — to the override. The
 // pre-fix code adopted `forceLoadByteLimit` whenever `bytes` was truthy,
-// installing a userByteSizeLimit BELOW the config default (a dense-but-byte-small
+// installing a userByteLimit BELOW the config default (a dense-but-byte-small
 // region), which then wrongly gated later, larger-byte regions. Earlier tests
 // missed this because they seeded a density result with no `bytes` and called
 // raiseForceLoadLimits() bare rather than driving forceLoad().
@@ -1043,20 +1043,20 @@ describe('density force-load with a byte estimate present', () => {
 
     // Density axis was raised; the byte ceiling stays at the config default so
     // a later, larger-byte region still gates correctly.
-    expect(display.userByteSizeLimit).toBeUndefined()
+    expect(display.userByteLimit).toBeUndefined()
     expect(display.userFeatureDensityLimit).toBeDefined()
-    expect(display.byteSizeLimit()).toBe(configLimit)
+    expect(display.resolvedByteLimit()).toBe(configLimit)
     expect(display.regionTooLarge).toBe(false)
   })
 
   // The production VcfTabix case: adapter declares a 50MB fetchSizeLimit, a
   // dense region (small on disk) trips density. Force-load must keep the 50MB
-  // adapter ceiling, never replace it with a small userByteSizeLimit.
+  // adapter ceiling, never replace it with a small userByteLimit.
   it('keeps the adapter ceiling, not the small byte estimate', async () => {
     const { display, mockRpcCall } = createLargeDisplay(
       createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 }),
     )
-    expect(display.byteSizeLimit()).toBe(50_000_000)
+    expect(display.resolvedByteLimit()).toBe(50_000_000)
 
     mockRpcCall.mockResolvedValue({
       regionTooLarge: true,
@@ -1072,10 +1072,10 @@ describe('density force-load with a byte estimate present', () => {
 
     display.forceLoad()
 
-    expect(display.userByteSizeLimit).toBeUndefined()
+    expect(display.userByteLimit).toBeUndefined()
     expect(display.userFeatureDensityLimit).toBeDefined()
     // ceiling still the adapter's 50MB — a later 40MB region would still load
-    expect(display.byteSizeLimit()).toBe(50_000_000)
+    expect(display.resolvedByteLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
   })
 })

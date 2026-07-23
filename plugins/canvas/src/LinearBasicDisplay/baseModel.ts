@@ -303,7 +303,7 @@ export default function baseStateModelFactory(
         MultiRegionDisplayMixin(),
         // The whole byte + feature-density region-too-large gate: the model-side
         // sibling of DisplayChrome. Supplies densityStatsPerRegion,
-        // userFeatureDensityLimit, byteSizeLimit(), maxFeatureDensity,
+        // userFeatureDensityLimit, resolvedByteLimit(), maxFeatureDensity,
         // observedMaxDensity/visibleFeatureDensityPerPx, the dual-axis
         // raiseForceLoadLimits, and commit/clear helpers — folded into the
         // feature fetch below. Same instance the multi-row display composes.
@@ -2088,7 +2088,7 @@ export default function baseStateModelFactory(
           region: Region,
           displayedRegionIndex: number,
           bpPerPx: number,
-          byteSizeLimit: number | undefined,
+          byteLimit: number | undefined,
           stopToken: StopToken,
         ): Promise<RegionFetch> {
           const sessionId = getRpcSessionId(self)
@@ -2107,7 +2107,7 @@ export default function baseStateModelFactory(
               ...self.rpcProps(),
               region,
               bpPerPx,
-              byteSizeLimit,
+              byteLimit,
               stopToken,
               // keyed by region so concurrent per-region fetches aggregate
               // into one bar (FetchMixin.setRegionStatus) instead of each
@@ -2134,7 +2134,7 @@ export default function baseStateModelFactory(
           // **max**, not sum, so a multi-region view where each region fits isn't
           // blanked by the cross-region total). Same helper the multi-row display
           // uses, so the two canvas gates can't drift.
-          self.commitFeatureGateStats(
+          self.commitGateMeasurements(
             fetches.map(({ displayedRegionIndex, region, result }) => ({
               displayedRegionIndex,
               regionWidthBp: region.end - region.start,
@@ -2165,7 +2165,7 @@ export default function baseStateModelFactory(
           ) {
             const view = getView(self)
             const bpPerPx = view.bpPerPx
-            const byteSizeLimit = self.byteSizeLimit()
+            const byteLimit = self.resolvedByteLimit()
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly
@@ -2181,7 +2181,7 @@ export default function baseStateModelFactory(
                   region,
                   displayedRegionIndex,
                   bpPerPx,
-                  byteSizeLimit,
+                  byteLimit,
                   ctx.stopToken,
                 ),
               )

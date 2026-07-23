@@ -47,11 +47,11 @@ export function bytesTooLargeReason(bytes: number) {
  * all three paths.
  */
 export function resolveByteLimit({
-  userByteSizeLimit,
+  userByteLimit,
   adapterFetchSizeLimit,
   configFetchSizeLimit,
 }: {
-  userByteSizeLimit?: number
+  userByteLimit?: number
   adapterFetchSizeLimit?: number
   configFetchSizeLimit: number
 }) {
@@ -59,7 +59,7 @@ export function resolveByteLimit({
     adapterFetchSizeLimit !== undefined && adapterFetchSizeLimit > 0
       ? adapterFetchSizeLimit
       : undefined
-  return userByteSizeLimit ?? adapterLimit ?? configFetchSizeLimit
+  return userByteLimit ?? adapterLimit ?? configFetchSizeLimit
 }
 
 /**
@@ -134,7 +134,7 @@ export function rescaleByteEstimateToVisibleSpan({
  * - Raise the BYTE ceiling only when doing so actually LIFTS the baseline
  *   (`raisedByteLimit > baselineByteLimit`). A tabix adapter reports an index-byte
  *   estimate alongside a *density* rejection, so a dense-but-byte-small region
- *   carries a small `bytes`; adopting it as `userByteSizeLimit` would install a
+ *   carries a small `bytes`; adopting it as `userByteLimit` would install a
  *   ceiling BELOW the config/adapter default and wrongly gate later, larger-byte
  *   regions. When the byte gate wasn't the blocker, fall through to density.
  * - Otherwise, if a density gate is active, raise past the highest observed
@@ -158,13 +158,13 @@ export function resolveForceLoadLimits({
   densityGateActive: boolean
   observedMaxDensity: number
   configuredMaxDensity: number
-}): { userByteSizeLimit?: number; userFeatureDensityLimit?: number } {
+}): { userByteLimit?: number; userFeatureDensityLimit?: number } {
   const raisedByteLimit = forceLoadByteLimit({
     estimatedBytesForVisibleSpan,
     estimatedBytesForMeasuredSpan,
   })
   if (raisedByteLimit !== undefined && raisedByteLimit > baselineByteLimit) {
-    return { userByteSizeLimit: raisedByteLimit }
+    return { userByteLimit: raisedByteLimit }
   }
   if (densityGateActive) {
     return {

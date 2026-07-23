@@ -18,7 +18,7 @@ export interface MultiRowGetFeaturesArgs {
   // compressed-byte budget; a region whose index-only estimate exceeds it
   // short-circuits before any feature download. Undefined = no byte gate (below
   // the force-load zone, or force-loaded).
-  byteSizeLimit?: number
+  byteLimit?: number
   // max features-per-pixel; over it the region is too dense to render. Undefined
   // = no density gate (below the force-load zone, or force-loaded).
   maxFeatureDensity?: number

@@ -74,13 +74,12 @@ describe('resolveForceLoadLimits', () => {
   }
 
   it('raises the byte axis when the estimate genuinely exceeds the baseline', () => {
-    const { userByteSizeLimit, userFeatureDensityLimit } =
-      resolveForceLoadLimits({
-        ...base,
-        estimatedBytesForVisibleSpan: 8_000_000,
-        estimatedBytesForMeasuredSpan: 8_000_000,
-      })
-    expect(userByteSizeLimit).toBe(raiseLimitPast(8_000_000))
+    const { userByteLimit, userFeatureDensityLimit } = resolveForceLoadLimits({
+      ...base,
+      estimatedBytesForVisibleSpan: 8_000_000,
+      estimatedBytesForMeasuredSpan: 8_000_000,
+    })
+    expect(userByteLimit).toBe(raiseLimitPast(8_000_000))
     expect(userFeatureDensityLimit).toBeUndefined()
   })
 
@@ -89,13 +88,12 @@ describe('resolveForceLoadLimits', () => {
   // to 1.5× that would install a limit BELOW the baseline and gate later,
   // larger-byte regions — so the byte axis is skipped and density is raised.
   it('raises density (not bytes) when the byte estimate is under the baseline', () => {
-    const { userByteSizeLimit, userFeatureDensityLimit } =
-      resolveForceLoadLimits({
-        ...base,
-        estimatedBytesForVisibleSpan: 100_000,
-        estimatedBytesForMeasuredSpan: 100_000,
-      })
-    expect(userByteSizeLimit).toBeUndefined()
+    const { userByteLimit, userFeatureDensityLimit } = resolveForceLoadLimits({
+      ...base,
+      estimatedBytesForVisibleSpan: 100_000,
+      estimatedBytesForMeasuredSpan: 100_000,
+    })
+    expect(userByteLimit).toBeUndefined()
     expect(userFeatureDensityLimit).toBe(raiseLimitPast(4)) // past observedMax
   })
 
@@ -125,7 +123,7 @@ describe('resolveByteLimit', () => {
   it('prefers the user force-load override over everything', () => {
     expect(
       resolveByteLimit({
-        userByteSizeLimit: 10,
+        userByteLimit: 10,
         adapterFetchSizeLimit: 20,
         configFetchSizeLimit: 30,
       }),
@@ -170,11 +168,11 @@ describe('resolveByteLimit', () => {
   })
 
   it('does not special-case a user override of 0', () => {
-    // userByteSizeLimit is only ever set by force-load (always > 0 with
+    // userByteLimit is only ever set by force-load (always > 0 with
     // headroom), but document that ?? only skips null/undefined here
     expect(
       resolveByteLimit({
-        userByteSizeLimit: 0,
+        userByteLimit: 0,
         configFetchSizeLimit: 30,
       }),
     ).toBe(0)

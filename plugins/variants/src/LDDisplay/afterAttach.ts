@@ -17,7 +17,7 @@ interface LDModel extends IAnyStateTreeNode {
 }
 
 export function doAfterAttach(self: LDModel) {
-  // A force-load (raising userByteSizeLimit) also clears regionTooLarge and
+  // A force-load (raising userByteLimit) also clears regionTooLarge and
   // bumps reloadCounter, so the byte limit needs no tracker of its own — either
   // of those (already tracked) refires the fetch. regionTooLarge is a derived
   // getter (see shared.ts), so it self-releases on zoom-in with no imperative

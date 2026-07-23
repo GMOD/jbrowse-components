@@ -72,4 +72,4 @@ export type {
   FlatbushItem,
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
-export type { FeatureGateRegionResult } from './shared/CanvasFeatureGateMixin.ts'
+export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'

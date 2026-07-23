@@ -206,7 +206,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
       bytes: 8_000_000,
       fetchSizeLimit: 50_000_000,
     })
-    expect(display.byteSizeLimit()).toBe(50_000_000)
+    expect(display.resolvedByteLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -217,7 +217,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(true)
 
     display.forceLoad()
-    expect(display.userByteSizeLimit).toBeDefined()
+    expect(display.userByteLimit).toBeDefined()
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -231,7 +231,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.configForceLoad).toBe(true)
     expect(display.regionTooLarge).toBe(false)
     // and the worker gate goes unlimited so the forced fetch isn't re-blocked
-    expect(display.byteSizeLimit()).toBeUndefined()
+    expect(display.resolvedByteLimit()).toBeUndefined()
   })
 
   it('clears the cached estimate on region navigation', () => {
@@ -240,7 +240,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     display.setByteEstimate({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
-    display.clearFeatureGateStats()
+    display.clearGateMeasurements()
     expect(display.byteEstimate).toBeUndefined()
     expect(display.regionTooLarge).toBe(false)
   })

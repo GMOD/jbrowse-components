@@ -43,7 +43,7 @@ export async function executeRenderFeatureData({
     soloFeatureIds,
     hiddenFeatureIds,
     maxFeatureDensity,
-    byteSizeLimit,
+    byteLimit,
     theme: themeOptions,
     stopToken,
     statusCallback = () => {},
@@ -69,13 +69,13 @@ export async function executeRenderFeatureData({
   // pulls every chromosome's features just to reject them after. Adapters with
   // no index estimate return undefined and fall through to the density gate.
   let bytes: number | undefined
-  if (byteSizeLimit !== undefined) {
+  if (byteLimit !== undefined) {
     bytes = await dataAdapter.getRegionByteSize([region], {
       stopToken,
       statusCallback,
     })
     checkStopToken2(stopTokenCheck)
-    if (bytes !== undefined && bytes > byteSizeLimit) {
+    if (bytes !== undefined && bytes > byteLimit) {
       return { regionTooLarge: true, bytes }
     }
   }

@@ -14,7 +14,7 @@ export function doAfterAttach(self: ArcDisplayModel) {
   // banner self-releases on zoom-in; `dataLoaded` tracks the static-block region
   // signature so panning past a block boundary refetches while a redundant pan
   // within the loaded blocks does not. A force-load or reload refires it via
-  // userByteSizeLimit / reloadCounter, both already tracked by the skeleton.
+  // userByteLimit / reloadCounter, both already tracked by the skeleton.
   installGlobalFetchAutorun(self, {
     shouldFetch: () => !self.regionTooLarge && !self.dataLoaded,
     fetch: () => {

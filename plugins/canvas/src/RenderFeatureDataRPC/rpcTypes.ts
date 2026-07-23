@@ -52,7 +52,7 @@ export interface RenderFeatureDataArgs {
   // cheap index estimate (getRegionByteSize), the fetch short-circuits before
   // downloading features if the estimate exceeds it. Undefined disables the
   // byte gate (e.g. zoomed in past AUTO_FORCE_LOAD_BP, or after force-load).
-  byteSizeLimit?: number
+  byteLimit?: number
   theme?: SerializableThemeArgs
   stopToken?: StopToken
   statusCallback?: StatusCallback

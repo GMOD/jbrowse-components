@@ -2,7 +2,7 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
-import type { FeatureGateRegionResult } from '../shared/CanvasFeatureGateMixin.ts'
+import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -18,14 +18,14 @@ interface FetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
   partitionField: string
   colorConfig: string | undefined
-  byteSizeLimit: () => number | undefined
+  resolvedByteLimit: () => number | undefined
   maxFeatureDensity: number | undefined
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
-  commitFeatureGateStats: (results: FeatureGateRegionResult[]) => void
+  commitGateMeasurements: (measurements: RegionGateMeasurement[]) => void
 }
 
 // Delegates to the shared fetchEachRegion primitive (per-region stale guards +
@@ -37,26 +37,26 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   const bpPerPx = (getContainingView(self) as LinearGenomeViewModel).bpPerPx
-  const byteSizeLimit = self.byteSizeLimit()
+  const byteLimit = self.resolvedByteLimit()
   const maxFeatureDensity = self.maxFeatureDensity
   const widthByIndex = new Map(
     needed.map(n => [n.displayedRegionIndex, n.region.end - n.region.start]),
   )
-  const gateResults: FeatureGateRegionResult[] = []
+  const gateMeasurements: RegionGateMeasurement[] = []
   return fetchEachRegion(self, needed, {
     call: (region, ctx) =>
       rpcManager.call(sessionId, 'MultiRowGetFeatures', {
         adapterConfig: self.adapterConfig,
         region,
         bpPerPx,
-        byteSizeLimit,
+        byteLimit,
         maxFeatureDensity,
         partitionField: self.partitionField,
         colorConfig: self.colorConfig,
         stopToken: ctx.stopToken,
       }),
     onResult: (idx, result) => {
-      gateResults.push({
+      gateMeasurements.push({
         displayedRegionIndex: idx,
         regionWidthBp: widthByIndex.get(idx) ?? 0,
         bytes: result.bytes,
@@ -67,7 +67,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
       }
     },
     onComplete: () => {
-      self.commitFeatureGateStats(gateResults)
+      self.commitGateMeasurements(gateMeasurements)
     },
   })
 }

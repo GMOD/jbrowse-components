@@ -15,8 +15,9 @@ const OLD_DISPLAY_TYPES = new Set([
  * `type`. Every old per-display track-menu setting became a config slot (stored
  * under `configuration`, not on the display node), so its legacy top-level
  * snapshot key is silently ignored by MST — old display-instance values revert
- * to the config default. Real display props (`configuration`,
- * `userByteSizeLimit`, `displayId`) pass through untouched.
+ * to the config default. Everything else is spread through untouched; MST is
+ * what decides which keys survive, keeping real display props (`configuration`,
+ * `displayId`) and dropping the rest.
  */
 export function migrateAlignmentsSnapshot(
   snap: Record<string, unknown> | undefined,

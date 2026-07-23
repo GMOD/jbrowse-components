@@ -29,7 +29,7 @@ export async function executeMultiRowGetFeatures({
     adapterConfig,
     region,
     bpPerPx,
-    byteSizeLimit,
+    byteLimit,
     maxFeatureDensity,
     partitionField,
     colorConfig,
@@ -49,13 +49,13 @@ export async function executeMultiRowGetFeatures({
   // feature-render RPC uses (executeRenderFeatureData). Adapters with no index
   // estimate return undefined and fall through to the density gate.
   let bytes: number | undefined
-  if (byteSizeLimit !== undefined) {
+  if (byteLimit !== undefined) {
     bytes = await dataAdapter.getRegionByteSize([region], {
       stopToken,
       statusCallback,
     })
     checkStopToken2(stopTokenCheck)
-    if (bytes !== undefined && bytes > byteSizeLimit) {
+    if (bytes !== undefined && bytes > byteLimit) {
       return { regionTooLarge: true as const, bytes }
     }
   }

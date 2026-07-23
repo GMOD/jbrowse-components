@@ -69,7 +69,7 @@ export default function RegionTooLargeMixin() {
        * the `forceLoad` config slot (set per-session via a session spec, or baked
        * into a track config for embedded/notebook views).
        */
-      userByteSizeLimit: undefined as number | undefined,
+      userByteLimit: undefined as number | undefined,
       /**
        * #volatile
        * Last byte estimate reported for this display, with the adapter's own
@@ -175,7 +175,7 @@ export default function RegionTooLargeMixin() {
               visibleBp: view.visibleBp,
               estimatedBytesForVisibleSpan: self.estimatedBytesForVisibleSpan,
               byteLimit: resolveByteLimit({
-                userByteSizeLimit: self.userByteSizeLimit,
+                userByteLimit: self.userByteLimit,
                 adapterFetchSizeLimit: self.byteEstimate?.fetchSizeLimit,
                 configFetchSizeLimit: self.configuredFetchSizeLimit,
               }),
@@ -261,7 +261,7 @@ export default function RegionTooLargeMixin() {
           estimatedBytesForMeasuredSpan: estimate?.bytes,
         })
         if (limit !== undefined) {
-          self.userByteSizeLimit = limit
+          self.userByteLimit = limit
         }
       },
 

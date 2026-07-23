@@ -17,9 +17,9 @@ import type { Page } from 'puppeteer'
 // reason), so this lives in browser-tests.
 //
 // volvox.sv.vcf.gz is tiny so the byte-estimate gate never trips on its own;
-// presetting `userByteSizeLimit: 1` (first in the effective-limit precedence,
+// presetting `userByteLimit: 1` (first in the effective-limit precedence,
 // ahead of the adapter's own limit) forces the too-large state deterministically
-// — the estimate (~66Kb) exceeds 1. forceLoad then raises `userByteSizeLimit` to
+// — the estimate (~66Kb) exceeds 1. forceLoad then raises `userByteLimit` to
 // ~1.5× the estimated bytes, clearing the gate.
 async function waitForForceLoadButton(page: Page) {
   await page.waitForFunction(
@@ -63,7 +63,7 @@ function forceLoadTest({
             tracks: [
               {
                 trackId: 'volvox multi-sample sv',
-                displaySnapshot: { type: displayType, userByteSizeLimit: 1 },
+                displaySnapshot: { type: displayType, userByteLimit: 1 },
               },
             ],
           },

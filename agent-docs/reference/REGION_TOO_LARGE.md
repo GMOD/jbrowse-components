@@ -121,7 +121,7 @@ short-circuits inside the RPC and returns `{ regionTooLarge, featureCount }`.
 The payoff shows on a whole-genome fan-out: one cheap index read per chromosome
 instead of downloading every chromosome's features.
 
-`commitFeatureGateStats` records the maximum per-region byte count, not the sum,
+`commitGateMeasurements` records the maximum per-region byte count, not the sum,
 because every region is gated against the same per-region budget — a
 multi-region view where each region individually fits should never be blanked
 just because the regions add up. It publishes the adapter's `fetchSizeLimit`
@@ -134,17 +134,18 @@ Composed on top of `RegionTooLargeMixin` by both canvas feature displays:
 `LinearBasicDisplay` and `LinearVariantDisplay` through `baseModel`, plus
 `LinearMultiRowFeatureDisplay`. It contributes the density axis
 (`densityStatsPerRegion`, `observedMaxDensity`, `densityTooLarge` feeding
-`densityTooLargeForDerivedGate`), the budgets the worker needs (`byteSizeLimit()`
-and `maxFeatureDensity`), and the dual-axis `raiseForceLoadLimits`.
-Overriding `densityGateEnabled` to false drops the density axis for a display
-that paints into fixed lanes, such as multi-row, leaving byte-only gating.
+`densityTooLargeForDerivedGate`), the budgets the worker needs
+(`resolvedByteLimit()` and `maxFeatureDensity`), and the dual-axis
+`raiseForceLoadLimits`. Overriding `densityGateEnabled` to false drops the
+density axis for a display that paints into fixed lanes, such as multi-row,
+leaving byte-only gating.
 
 **Composition order matters and nothing type-checks it.** The base computes
 `derivedRegionTooLargeEnabled` from `getByteEstimateConfig()`, which canvas never
 overrides and which therefore returns null, so the base version is false. The
 gate works only because the mixin's hardcoded `true` wins by composing later.
 
-A display opts in by composing the mixin, calling `commitFeatureGateStats` from
+A display opts in by composing the mixin, calling `commitGateMeasurements` from
 its fetch, and overriding `isCacheValid` to require committed data. That last
 part matters because a too-large region is marked loaded but stores nothing, so
 without the override it would never refetch once the gate released. The mixin's
@@ -160,7 +161,7 @@ pushes nothing and there's no stale-feature flash.
 
 ## Force-load
 
-`userByteSizeLimit` and `userFeatureDensityLimit` are both volatile, never
+`userByteLimit` and `userFeatureDensityLimit` are both volatile, never
 persisted: clicking force-load is a transient "show me this now" action that must
 not leak a raised gate into a saved or shared session. The durable escape hatch
 is the declarative `forceLoad` config slot.
@@ -169,7 +170,7 @@ A dual-axis display has to pick which axis to raise, and it has to pick by which
 gate actually tripped, not by whether a byte estimate happens to exist. Tabix
 adapters report an index-byte estimate even when the rejection was about
 density, so a region that is dense but small in bytes still carries a small
-`bytes` value; adopting it as `userByteSizeLimit` would install a ceiling below
+`bytes` value; adopting it as `userByteLimit` would install a ceiling below
 the config or adapter default and then wrongly gate later regions that really are
 large. `raiseForceLoadLimits` (the action behind the button, overridden by
 `CanvasFeatureGateMixin`) defers to `resolveForceLoadLimits`, the single place
@@ -186,8 +187,11 @@ The derived gate and canvas's in-RPC short-circuit differ only in how they
 measure. The verdict, the threshold, and the banner text live here so the two
 paths can't drift apart.
 
-- `resolveByteLimit({ userByteSizeLimit, adapterFetchSizeLimit, configFetchSizeLimit })`
-  is the one place a byte budget gets resolved. A non-positive adapter limit
+- `resolveByteLimit({ userByteLimit, adapterFetchSizeLimit, configFetchSizeLimit })`
+  is the one place a byte budget gets resolved, highest-priority first. Those
+  three arguments are the only byte-budget *inputs* in the system; the resolved
+  *output* is `resolvedByteLimit()` on the canvas gate, and the same value
+  travels to the worker as the `byteLimit` RPC arg. A non-positive adapter limit
   means "no opinion" and is skipped, guarding both a `0` and a negative
   sentinel.
 - `rescaleByteEstimateToVisibleSpan`, `forceLoadByteLimit` and `raiseLimitPast`
