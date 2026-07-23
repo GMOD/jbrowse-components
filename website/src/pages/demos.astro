@@ -66,7 +66,7 @@ import page from '../styles/page.module.css'
           ))
         }
 
-        <section class="breakable">
+        <section>
           <h2 id="guided">Conference and other guided demos</h2>
           <ul>
             {
@@ -100,11 +100,15 @@ import page from '../styles/page.module.css'
   .full {
     max-width: none;
   }
+  /* Fixed-width balanced columns: sections flow top-to-bottom and pack multiple
+     short ones (Hi-C, copy number, epigenomics, hubs) into a shared column,
+     then start a new column. Labels are kept short enough to fit 20rem, so
+     nothing word-wraps; a narrower viewport just drops to fewer columns. */
   .cols {
-    columns: 18rem;
+    columns: 20rem;
     column-gap: 2.5rem;
   }
-  .cols a.demo {
+  .cols li {
     white-space: nowrap;
   }
   .cols a.guide {
@@ -112,7 +116,6 @@ import page from '../styles/page.module.css'
     font-size: 0.75rem;
     color: var(--color-text-muted);
     text-decoration: none;
-    white-space: nowrap;
   }
   .cols a.guide::before {
     content: '· ';
@@ -124,14 +127,6 @@ import page from '../styles/page.module.css'
   section {
     break-inside: avoid;
     margin-bottom: 1.5rem;
-  }
-  /* the guided-demos list is long enough that keeping it whole leaves a gap;
-     let it flow across a column boundary while its heading stays with content */
-  section.breakable {
-    break-inside: auto;
-  }
-  section.breakable h2 {
-    break-after: avoid;
   }
   h2 {
     font-size: 1.3rem;

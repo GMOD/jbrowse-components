@@ -7,6 +7,7 @@ sidebar_label: Overview
 
 - [Basic usage](/docs/user_guides/basic_usage) - Navigation, searching, opening files, and common UI controls
 - [Connections](/docs/user_guides/connections) - UCSC track hubs, JB2 track hubs, and JBrowse 1 data directories
+- [Opening track hubs by URL](/docs/user_guides/hub_url) - Hand someone a link that loads one or more UCSC track hubs with the &hubURL= parameter
 
 ## Track types
 
@@ -48,6 +49,7 @@ sidebar_label: Overview
 - [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop) - Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 - [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
+- [Browsing synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
 - [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle, see a selective sweep and an inversion, and know when LD is the wrong tool
 - [DNA methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file

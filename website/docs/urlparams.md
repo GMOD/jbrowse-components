@@ -218,12 +218,12 @@ Example
 
 `&hubURL=https://example.com/hub.txt&config=none`
 
-Intended to load one or more UCSC track hubs as a session (multiple hubs as a
+Loads one or more UCSC track hubs as a session (multiple hubs as a
 comma-separated list), typically combined with `?config=none` since the hub
 supplies its own assemblies and tracks.
 
-This parameter is experimental and may not be fully functional. Verify it works
-for your use case before relying on it.
+See [Opening track hubs by URL](/docs/user_guides/hub_url) for the full workflow,
+including combining a hub with a config and loading several at once.
 
 ### Navigating within the default session
 

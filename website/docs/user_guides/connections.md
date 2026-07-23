@@ -102,8 +102,9 @@ See `jbrowse add-connection --help` or the
 
 ## See also
 
+- [Opening track hubs by URL](/docs/user_guides/hub_url)
 - [Configuring connections](/docs/config_guides/connections)
 - [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks)
 - [Plugin store](/docs/user_guides/plugin_store)
 - [Text searching configuration](/docs/config_guides/text_searching)
-- [Live demos: full instances and hubs](/demos/#instances)
+- [Live demos: track hubs](/demos/#instances)

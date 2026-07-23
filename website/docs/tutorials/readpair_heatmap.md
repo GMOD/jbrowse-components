@@ -159,4 +159,4 @@ absent), and node for the JBrowse CLI.
 - [Hi-C track](/docs/user_guides/hic_track)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
-- [Gallery: coverage, copy number, and epigenomics](/gallery/#copynumber)
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#coverage)

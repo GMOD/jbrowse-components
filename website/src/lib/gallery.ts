@@ -444,20 +444,6 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Multiple alignment and conservation',
     items: [
       {
-        label: '470-way multiz (identity heatmap)',
-        spec: 'maf_470way',
-        guide: 'user_guides/maf_track',
-        description:
-          'The UCSC hg38 470-way multiz over GAPDH in fit-to-height mode: all ~470 species squeezed into a 600px display with the guide tree down the left, each base colored by whether it matches the reference row, so conserved coding columns run blue top-to-bottom across the whole phylogeny.',
-      },
-      {
-        label: '470-way codon view',
-        spec: 'maf_470way_codon',
-        guide: 'user_guides/maf_track',
-        description:
-          'The same 470-way narrowed to ~30 representative mammals in codon view at a conserved GAPDH exon: each species is translated in the human reading frame, so conserved residues line up and the few amino-acid changes in the distant lineages stand out.',
-      },
-      {
         label: 'phyloP conservation (TP53)',
         spec: 'phylop_ncbi_refseq_tp53',
         guide: 'user_guides/quantitative_track',
@@ -468,16 +454,8 @@ export const gallerySections: readonly GallerySection[] = [
   },
   {
     id: 'instances',
-    title: 'Full example instances and hubs',
+    title: 'Track hubs',
     items: [
-      {
-        label: 'GIAB insertion',
-        session:
-          '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
-        demoOnly: true,
-        description:
-          'A GIAB insertion across Nanopore, PacBio, and Illumina reads, opened in the full hg19/hg38 demo config.',
-      },
       {
         label: 'UCSC GenArk hub import',
         session:
