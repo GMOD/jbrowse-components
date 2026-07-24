@@ -39,9 +39,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   genomes_synteny: {
-    src: 'synteny_hg38_hs1_tnnt3.png',
-    // the two gene panels and the strand-colored ribbons between them, without
-    // the app header
+    // curved ribbons with transparent indels: the blue reverse-strand sweep
+    // crossing the pink forward-strand, indels dropped to white
+    src: 'genomes_synteny/ribbons_curved.png',
+    // the two gene panels and the ribbons between them; the [0, 0.95] band drops
+    // the app header, which also carries the figure's baked-in callout text
     band: [0.28, 0.95],
   },
   // The 464-haplotype clustered genotype matrix with its dendrogram: the
