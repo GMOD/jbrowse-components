@@ -47,8 +47,8 @@ The `formatDetails` slots are:
 - [`depth`](/docs/config/formatdetails/#slot-configurationformatdetailsdepth) -
   depth to customize the subfeatures to
 
-Use a jexl callback for `feature`, `subfeatures`, or both. Each returns an object
-with the fields to replace.
+Use a jexl callback for `feature`, `subfeatures`, or both. Each returns an
+object with the fields to replace.
 
 ## How the returned object is applied
 

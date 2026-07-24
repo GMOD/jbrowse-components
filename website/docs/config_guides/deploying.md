@@ -87,9 +87,9 @@ repeated track shapes.
 When a shared session is restored, JBrowse looks up each track by its `trackId`.
 If your pipeline regenerates `config.json` with **different** `trackId`s each
 build (an ID embedding a timestamp or random suffix), previously shared links
-fail to restore those tracks. Derive each `trackId` deterministically from stable
-inputs, as in the script above, where the ID comes from the assembly and sample
-name rather than anything that changes per build. See
+fail to restore those tracks. Derive each `trackId` deterministically from
+stable inputs, as in the script above, where the ID comes from the assembly and
+sample name rather than anything that changes per build. See
 [why a saved session fails to load](/docs/faq/#why-does-my-saved-session-fail-to-load).
 
 ## The one thing that lives in index.html: cache-busting

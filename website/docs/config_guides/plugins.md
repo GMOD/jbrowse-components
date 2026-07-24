@@ -23,10 +23,10 @@ Embedded components use a different approach. See the
 ```
 
 The `name` must match the name the plugin registers itself under in its source
-(e.g. `name = 'GDC'` in the plugin class), or the plugin fails to load. The `url`
-(or one of the location fields below) points at the built plugin bundle. The
-[plugin store](/plugin_store/) lists unpkg URLs for published plugins, which you
-can also download to your own server.
+(e.g. `name = 'GDC'` in the plugin class), or the plugin fails to load. The
+`url` (or one of the location fields below) points at the built plugin bundle.
+The [plugin store](/plugin_store/) lists unpkg URLs for published plugins, which
+you can also download to your own server.
 
 `url` is the simplest option and is equivalent to `umdUrl`. Other fields cover
 different situations:

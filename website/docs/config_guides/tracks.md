@@ -178,8 +178,8 @@ you can paste into `config.json` or into a
 ## Finding every option for a track or adapter type
 
 The config guides cover common settings. Every slot for every track, display,
-and adapter type is in the auto-generated **config reference**, built from source
-so it never drifts. For example:
+and adapter type is in the auto-generated **config reference**, built from
+source so it never drifts. For example:
 
 - [BamAdapter](/docs/config/bamadapter),
   [VcfTabixAdapter](/docs/config/vcftabixadapter),

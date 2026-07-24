@@ -5,10 +5,11 @@ description:
 guide_category: Core configuration
 ---
 
-**TL;DR:** at its flattest an assembly is just `{ "name": "hg19", "uri":
-"hg19.fa.gz" }`. JBrowse infers the adapter from the file extension and fills in
-the rest. Reach for the full form only to name the adapter or set slots on it.
-`jbrowse add-assembly` generates all of this for you.
+**TL;DR:** at its flattest an assembly is just
+`{ "name": "hg19", "uri": "hg19.fa.gz" }`. JBrowse infers the adapter from the
+file extension and fills in the rest. Reach for the full form only to name the
+adapter or set slots on it. `jbrowse add-assembly` generates all of this for
+you.
 
 An assembly configuration has a `name`, optional `aliases` (e.g. GRCh37/hg19),
 and a `sequence` containing a reference sequence track config.

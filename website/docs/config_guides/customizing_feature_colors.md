@@ -6,7 +6,8 @@ guide_category: Callbacks and customization
 
 **TL;DR:** set a track's `color` in `displayDefaults`, either as a plain CSS
 color or a `jexl:` expression. When the logic outgrows one jexl line, add a
-function to the jexl language with a small plugin and call it from your callback.
+function to the jexl language with a small plugin and call it from your
+callback.
 
 For example, create a file named `myplugin.js`:
 
