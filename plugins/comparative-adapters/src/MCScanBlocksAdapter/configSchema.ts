@@ -2,6 +2,17 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+// `uri` is the shorthand for the anchor `.blocks` file only; the per-column
+// `bedLocations` array has no default naming convention, so it stays explicit.
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        mcscanBlocksLocation: { uri: snap.uri, baseUri: snap.baseUri },
+      }
+    : snap
+}
+
 /**
  * #config MCScanBlocksAdapter
  * #trackType SyntenyTrack
@@ -19,10 +30,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * direct alignment. Listing just two assemblies pins the track to that pair.
  *
  * #example
+ * `uri` is the shorthand for the anchor `.blocks` file:
  * ```js
  * {
  *   type: 'MCScanBlocksAdapter',
- *   mcscanBlocksLocation: { uri: 'grape.blocks' },
+ *   uri: 'grape.blocks',
  *   blockAssemblies: ['grape', 'peach', 'cacao'],
  *   bedLocations: [
  *     { uri: 'grape.bed' },
@@ -76,7 +88,7 @@ const MCScanBlocksAdapter = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, preProcessSnapshot: normalizeSnapshot },
 )
 
 export type MCScanBlocksAdapterConfig = Instance<typeof MCScanBlocksAdapter>

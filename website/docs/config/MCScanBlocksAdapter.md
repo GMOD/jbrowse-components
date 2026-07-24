@@ -11,6 +11,8 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Example usage
 
+`uri` is the shorthand for the anchor `.blocks` file:
+
 ```js
 {
   type: 'SyntenyTrack',
@@ -19,7 +21,7 @@ Auto-generated config schema for the current JBrowse release — see the
   assemblyNames: ['grape', 'peach', 'cacao'],
   adapter: {
     type: 'MCScanBlocksAdapter',
-    mcscanBlocksLocation: { uri: 'grape.blocks' },
+    uri: 'grape.blocks',
     blockAssemblies: ['grape', 'peach', 'cacao'],
     bedLocations: [
       { uri: 'grape.bed' },

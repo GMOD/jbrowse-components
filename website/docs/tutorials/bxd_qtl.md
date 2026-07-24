@@ -194,14 +194,7 @@ differently-named or raw-p-value column, set `scoreColumn` and
   "assemblyNames": ["mm10"],
   "adapter": {
     "type": "GWASAdapter",
-    "bedGzLocation": {
-      "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz.tbi"
-      }
-    }
+    "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz"
   },
   "displays": [
     {

@@ -310,8 +310,7 @@ taffy index -i ecoli_pggb.taf.gz                        # -> .taf.gz.tai
   "adapter": {
     "type": "BgzipTaffyAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "tafGzLocation": { "uri": "ecoli_pggb.taf.gz" },
-    "taiLocation": { "uri": "ecoli_pggb.taf.gz.tai" }
+    "uri": "ecoli_pggb.taf.gz"
   }
 }
 ```

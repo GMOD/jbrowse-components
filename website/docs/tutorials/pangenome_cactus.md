@@ -204,8 +204,7 @@ Load the bgzipped-TAF with a
   "adapter": {
     "type": "BgzipTaffyAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "tafGzLocation": { "uri": "ecoli_cactus.taf.gz" },
-    "taiLocation": { "uri": "ecoli_cactus.taf.gz.tai" }
+    "uri": "ecoli_cactus.taf.gz"
   }
 }
 ```

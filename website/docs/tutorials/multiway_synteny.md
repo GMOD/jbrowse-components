@@ -84,7 +84,7 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
   "assemblyNames": ["grape", "peach", "cacao"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "mcscanBlocksLocation": { "uri": "grape.blocks.gz" },
+    "uri": "grape.blocks.gz",
     "blockAssemblies": ["grape", "peach", "cacao"],
     "bedLocations": [
       { "uri": "grape.bed.gz" },

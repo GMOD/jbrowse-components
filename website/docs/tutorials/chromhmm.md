@@ -157,8 +157,8 @@ file. Set the [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)
 slot only to override that.
 
 **Using JBrowse Desktop?** These steps work unchanged. Desktop opens
-`wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point
-`uri` at the local path), no web server needed. See the
+`wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point `uri` at
+the local path), no web server needed. See the
 [desktop quickstart](/docs/quickstart_desktop). (A bigBed loaded with a
 `BigBedAdapter` works too, and is what the hosted demo below uses, while the
 tabix-indexed BED just skips the conversion and chrom.sizes step.)

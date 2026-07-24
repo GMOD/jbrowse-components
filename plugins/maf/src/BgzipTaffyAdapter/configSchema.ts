@@ -1,10 +1,29 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        tafGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
+        taiLocation: { uri: `${snap.uri}.tai`, baseUri: snap.baseUri },
+      }
+    : snap
+}
+
 /**
  * #config BgzipTaffyAdapter
  * #trackType MafTrack
  * #fileFormat maf | TAF (bgzipped Taffy)
  * used to configure BgzipTaffy adapter
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the sibling `.tai` index:
+ * ```js
+ * {
+ *   type: 'BgzipTaffyAdapter',
+ *   uri: 'https://example.com/aln.taf.gz',
+ * }
+ * ```
  */
 
 const configSchema = ConfigurationSchema(
@@ -63,6 +82,7 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 
