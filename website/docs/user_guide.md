@@ -45,7 +45,7 @@ sidebar_label: Overview
 
 - [Synteny visualization (all-vs-all minimap2)](/docs/tutorials/allvsall_synteny) - Stack strains in a linear synteny view from one all-vs-all PAF
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
-- [Bisulfite methylation](/docs/tutorials/bisulfite) - A WGBS/EM-seq pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
+- [Methylation (bisulfite)](/docs/tutorials/bisulfite) - A WGBS/EM-seq pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
 - [BXD QTL mapping](/docs/tutorials/bxd_qtl) - Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Paint many-cell-type ChromHMM states in one multi-row track
 - [CLI config for Desktop](/docs/tutorials/cli_desktop) - Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
@@ -53,7 +53,7 @@ sidebar_label: Overview
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
 - [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
 - [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle across a selective sweep and an inversion
-- [Long-read methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
+- [Methylation (long-read)](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
 - [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
 - [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
 - [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli) - Build a four-strain pggb pangenome graph and load its linear projections plus the graph itself in JBrowse

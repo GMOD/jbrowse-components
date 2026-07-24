@@ -1,5 +1,5 @@
 ---
-title: Bisulfite methylation
+title: Methylation (bisulfite)
 description:
   A WGBS/EM-seq pipeline from SRA reads to per-read CpG/CHG/CHH methylation
   coloring
