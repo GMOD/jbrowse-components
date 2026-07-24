@@ -9,12 +9,12 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // GFA slice is the same four-strain E. coli minigraph data the pangenome_ecoli
 // tutorial builds its rGFA graph figures from.
 //
-// Only the anchored (rGFA) layout is committed: it is computed locally from the
-// SR:i:0 rank tags and is deterministic. The force-directed (Bandage FMMM)
-// layout also renders through this pipeline — the worker resolves its WASM
-// engine from the plugin's own bundle url — but an FMMM layout is
-// nondeterministic (~3% run-to-run drift), so it can't be a content-stable
-// committed figure and is left to the tutorial's hand-curated force figures.
+// The anchored (rGFA) layout is computed locally from the SR:i:0 rank tags and
+// is deterministic. The force-directed (Bandage FMMM) layout renders through the
+// same pipeline — the worker resolves its WASM engine from the plugin's own
+// bundle url — but is nondeterministic (~3% run-to-run drift from the OGDF force
+// simulation), so its spec carries a raised diffThreshold: the committed PNG is
+// only rewritten when a regen drifts past that, not on every ordinary jitter.
 const CONFIG = 'test_data/graphgenomeview/config.json'
 const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
 
@@ -41,6 +41,35 @@ export const graphSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="graph-genome-canvas"]',
     readyTimeout: 60000,
     settleMs: 4000,
+    viewportWidth: 1000,
+    viewportHeight: 640,
+    hideTooltip: true,
+  },
+  // The same minigraph slice in the force-directed (Bandage FMMM) layout: the
+  // backbone is inferred by the force simulation rather than drawn on the rank
+  // axis, so the alternate alleles fall out as bubbles instead of ranked rows.
+  // graph-perf-stats appears once the remote FMMM layout returns, so it is the
+  // ready signal; the view then auto-fits the settled graph. The FMMM run drifts
+  // ~3% between runs, so diffThreshold is raised well above it to keep the
+  // committed PNG stable across regens.
+  {
+    mode: 'url',
+    name: 'pangenome/graph_force',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'GraphGenomeView',
+          gfaLocation: { uri: `${DATA}/ecoli_rgfa_slice.gfa` },
+          layoutMode: 'force',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: '[data-testid="graph-perf-stats"]',
+    readyTimeout: 60000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    diffThreshold: 0.1,
     viewportWidth: 1000,
     viewportHeight: 640,
     hideTooltip: true,

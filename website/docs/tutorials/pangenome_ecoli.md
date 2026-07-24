@@ -195,7 +195,7 @@ view of the same window. The toolbar's **Layout** dropdown trades that
 correspondence for the classic Bandage picture of the same subgraph
 (**Force-directed layout**):
 
-<Figure caption="A 50 kb K12 window of the minigraph graph in force-directed layout, over the segments track for the same window. The rank-ladder view above says where each alternate allele sits on K12; this one says what the graph looks like, with the alleles as bubbles off the backbone rather than bars on parallel rows." src="/img/pangenome/rgfa_bandage_ecoli.png" />
+<Figure caption="The same minigraph window in the Graph genome view's force-directed (Bandage) layout, colored by stable rank. The blue rank-0 K12 backbone is placed by the force simulation rather than on the reference axis, so the higher-rank alternate alleles fall out as bubbles off it rather than rows beneath it. It is the same graph as the anchored view above, laid out by its own structure instead of by K12 coordinate." src="/img/pangenome/graph_force.png" link="" />
 
 ## All-vs-all synteny projection
 
