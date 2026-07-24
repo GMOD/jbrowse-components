@@ -5,64 +5,64 @@ sidebar_label: Overview
 
 ## General usage
 
-- [Basic usage](/docs/user_guides/basic_usage) - Navigation, searching, opening files, and common UI controls
-- [Connections](/docs/user_guides/connections) - UCSC track hubs, JB2 track hubs, and JBrowse 1 data directories
-- [Opening track hubs by URL](/docs/user_guides/hub_url) - Hand someone a link that loads one or more UCSC track hubs with the &hubURL= parameter
+- [Basic usage](/docs/user_guides/basic_usage)
+- [Connections](/docs/user_guides/connections)
+- [Opening track hubs by URL](/docs/user_guides/hub_url)
 
 ## Track types
 
-- [Alignments track](/docs/user_guides/alignments_track) - Learn how to show BAM and CRAM files
-- [Feature sequence panel](/docs/user_guides/feature_sequence) - Sequence extraction for selected features
-- [GC content track](/docs/user_guides/gc_content_track) - Compute GC content or GC skew directly from a reference sequence
-- [Gene track](/docs/user_guides/gene_track) - Transcript display modes, collapsing introns, color by CDS reading frame, peptide lettering, and mature peptides on gene/transcript tracks
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - Visualize genome-wide association study results as an interactive Manhattan plot
-- [Hi-C track](/docs/user_guides/hic_track) - Contact matrix display
-- [MAF track](/docs/user_guides/maf_track) - Viewing multiple alignment format (MAF) data
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) - Multiple signal tracks displayed together
-- [Multi-sample variant display](/docs/user_guides/multivariant_track) - Population-level variant views
-- [Quantitative track](/docs/user_guides/quantitative_track) - BigWig/BedGraph signal tracks
-- [Sequence track](/docs/user_guides/sequence_track) - Reference sequence display
-- [Variant track](/docs/user_guides/variant_track) - VCF variant display
+- [Alignments track](/docs/user_guides/alignments_track)
+- [Feature sequence panel](/docs/user_guides/feature_sequence)
+- [GC content track](/docs/user_guides/gc_content_track)
+- [Gene track](/docs/user_guides/gene_track)
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [Hi-C track](/docs/user_guides/hic_track)
+- [MAF track](/docs/user_guides/maf_track)
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
+- [Multi-sample variant display](/docs/user_guides/multivariant_track)
+- [Quantitative track](/docs/user_guides/quantitative_track)
+- [Sequence track](/docs/user_guides/sequence_track)
+- [Variant track](/docs/user_guides/variant_track)
 
 ## Views
 
-- [Circular genome view](/docs/user_guides/circular_view) - Whole-genome chord plot of structural variants
-- [Dotplot view](/docs/user_guides/dotplot_view) - Whole-genome synteny dotplot
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) - Side-by-side alignment of two genomes
-- [Spreadsheet view](/docs/user_guides/spreadsheet_view) - Import tabular data as a searchable feature table
-- [SV inspector view](/docs/user_guides/sv_inspector_view) - Structural variant spreadsheet and circular view
-- [SV visualization](/docs/user_guides/sv_visualization) - Interpreting SV signals across display types
+- [Circular genome view](/docs/user_guides/circular_view)
+- [Dotplot view](/docs/user_guides/dotplot_view)
+- [Linear synteny view](/docs/user_guides/linear_synteny_view)
+- [Spreadsheet view](/docs/user_guides/spreadsheet_view)
+- [SV inspector view](/docs/user_guides/sv_inspector_view)
+- [SV visualization](/docs/user_guides/sv_visualization)
 
 ## Other features
 
-- [BLAT and in-silico PCR](/docs/user_guides/blat) - Search a sequence against a genome and find primer amplicons
-- [Bookmark widget](/docs/user_guides/bookmark_widget) - Saving and sharing genomic locations
-- [Consensus sequence](/docs/user_guides/consensus_sequence) - Call a consensus sequence from aligned reads, and export it as FASTA or VCF
-- [Plugin store](/docs/user_guides/plugin_store) - Installing community plugins
-- [Sequence search](/docs/user_guides/sequence_search) - Search the reference sequence for a pattern, CRISPR guide, or named motif list
+- [BLAT and in-silico PCR](/docs/user_guides/blat)
+- [Bookmark widget](/docs/user_guides/bookmark_widget)
+- [Consensus sequence](/docs/user_guides/consensus_sequence)
+- [Plugin store](/docs/user_guides/plugin_store)
+- [Sequence search](/docs/user_guides/sequence_search)
 
 ## Tutorials
 
-- [Synteny visualization (all-vs-all minimap2)](/docs/tutorials/allvsall_synteny) - Stack strains in a linear synteny view from one all-vs-all PAF
-- [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
-- [Methylation (bisulfite)](/docs/tutorials/bisulfite) - A WGBS/EM-seq pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
-- [BXD QTL mapping](/docs/tutorials/bxd_qtl) - Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Paint many-cell-type ChromHMM states in one multi-row track
-- [CLI config for Desktop](/docs/tutorials/cli_desktop) - Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
-- [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
-- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
-- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle across a selective sweep and an inversion
-- [Methylation (long-read)](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
-- [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
-- [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
-- [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli) - Build a four-strain pggb pangenome graph and load its linear projections plus the graph itself in JBrowse
-- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc) - Open HPRC release 2's Minigraph-Cactus graph as a graph in the browser, then its 464-haplotype variant callset and per-haplotype ancestry painting, all with no preprocessing
-- [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from one VCF
-- [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
-- [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
-- [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs
-- [Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples) - Population SVs, a family trio, and a large chromosomal inversion
-- [Structural variants (Cancer GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
-- [Synteny visualization (pairwise minimap2)](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views
-- [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv) - Plot somatic copy number across a thousand tumors, one row per sample
+- [Synteny visualization (all-vs-all minimap2)](/docs/tutorials/allvsall_synteny)
+- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [Methylation (bisulfite)](/docs/tutorials/bisulfite)
+- [BXD QTL mapping](/docs/tutorials/bxd_qtl)
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm)
+- [CLI config for Desktop](/docs/tutorials/cli_desktop)
+- [Display settings](/docs/tutorials/display_settings)
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny)
+- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium)
+- [Methylation (long-read)](/docs/tutorials/methylation)
+- [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny)
+- [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus)
+- [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli)
+- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc)
+- [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics)
+- [Protein structures](/docs/tutorials/protein_structure)
+- [RNA-seq visualization](/docs/tutorials/rnaseq)
+- [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk)
+- [Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples)
+- [Structural variants (Cancer GIAB)](/docs/tutorials/sv_visualization_cgiab)
+- [Synteny visualization (pairwise minimap2)](/docs/tutorials/synteny_visualization)
+- [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv)
