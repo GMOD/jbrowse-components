@@ -10,39 +10,215 @@ import type { GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
 
 export { unzip } from '@gmod/bgzf-filehandle'
 
-export * from './stringUtils.ts'
-export * from './svgColorProps.ts'
-export * from './fetchAndMaybeUnzip.ts'
+export { shorten, shorten2, truncateMiddle } from './stringUtils.ts'
+export { getFillProps, getStrokeProps, stripAlpha } from './svgColorProps.ts'
+export {
+  fetchAndMaybeUnzip,
+  fetchAndMaybeUnzipText,
+  isGzip,
+} from './fetchAndMaybeUnzip.ts'
 
-export * from './types/index.ts'
-export * from './pluginStore.ts'
-export * from './progress.ts'
-export * from './when.ts'
-export * from './range.ts'
-export * from './dedupe.ts'
-export * from './selectNamedRegions.ts'
-export * from './tags.ts'
-export * from './formatRelativeTime.ts'
-export * from './fetchJson.ts'
-export * from './sessionSharing.ts'
-export * from './coarseStripHTML.ts'
-export * from './measureText.ts'
-export * from './scrollLatch.ts'
-export * from './wheelZoom.ts'
-export * from './numericUtils.ts'
-export * from './bpUtils.ts'
-export * from './intervals.ts'
-export * from './springAnimate.ts'
-export * from './localStorage.ts'
-export * from './renameRegions.ts'
-export * from './addAndShowTrack.ts'
-export * from './makeTrackId.ts'
-export * from './matchTrackId.ts'
+export {
+  type AbstractDisplayModel,
+  type AbstractMenuManager,
+  type AbstractRootModel,
+  type AbstractSessionModel,
+  type AbstractTrackModel,
+  type AbstractViewContainer,
+  type AbstractViewModel,
+  type AnimationMode,
+  type AnyReactComponentType,
+  type AppRootModel,
+  type AssemblyManager,
+  type AugmentedRegion,
+  AuthNeededError,
+  type BasePlugin,
+  type BlobLocation,
+  type ClassReturnedBy,
+  type ConnectionInstance,
+  type DialogComponentType,
+  type FileHandleLocation,
+  type FileLocation,
+  type InstanceTypeRestrictive,
+  type JBrowsePlugin,
+  type JBrowsePluginVersion,
+  type LocalPathLocation,
+  type NoAssemblyRegion,
+  type NotificationLevel,
+  type PreBlobLocation,
+  type PreFileHandleLocation,
+  type PreFileLocation,
+  type PreLocalPathLocation,
+  type PreUriLocation,
+  type Region,
+  type RootModelWithInternetAccounts,
+  type SelectionContainer,
+  type SessionWithAddAssembly,
+  type SessionWithAddTracks,
+  type SessionWithConfigEditing,
+  type SessionWithConnectionEditing,
+  type SessionWithConnections,
+  type SessionWithDeleteTrackConf,
+  type SessionWithDrawerWidgets,
+  type SessionWithFocusedViewAndDrawerWidgets,
+  type SessionWithSessionPlugins,
+  type SessionWithShareURL,
+  type SessionWithWidgets,
+  type SnackAction,
+  type TrackActionView,
+  type TrackViewModel,
+  type TypeTestedByPredicate,
+  type UriLocation,
+  type Widget,
+  type WidgetMap,
+  isAbstractMenuManager,
+  isAppRootModel,
+  isAuthNeededException,
+  isBlobLocation,
+  isDisplayModel,
+  isFileHandleLocation,
+  isLocalPathLocation,
+  isRootModelWithInternetAccounts,
+  isSelectionContainer,
+  isSessionModel,
+  isSessionModelWithConfigEditing,
+  isSessionModelWithConnectionEditing,
+  isSessionModelWithConnections,
+  isSessionModelWithWidgets,
+  isSessionWithAddAssembly,
+  isSessionWithAddTracks,
+  isSessionWithDeleteTrackConf,
+  isSessionWithSessionPlugins,
+  isSessionWithShareURL,
+  isTrackModel,
+  isTrackViewModel,
+  isUriLocation,
+  isViewContainer,
+  isViewModel,
+} from './types/index.ts'
+export {
+  type PluginUpdate,
+  type ResolvedPlugin,
+  getPluginUpdate,
+  installedVersionFromUrl,
+  resolvePlugin,
+} from './pluginStore.ts'
+export {
+  type ProgressReporter,
+  type RpcStatus,
+  type StatusCallback,
+  type StatusWithProgress,
+  aggregateStatus,
+  createProgressReporter,
+  downloadStatus,
+  progressLabel,
+  statusFraction,
+  statusMessageText,
+  statusProgressLabel,
+  updateStatus,
+  withProgress,
+} from './progress.ts'
+export { when } from './when.ts'
+export {
+  calculateRedispatchRange,
+  doesIntersect2,
+  intersection2,
+  isContainedWithin,
+} from './range.ts'
+export { dedupe } from './dedupe.ts'
+export { selectNamedRegions } from './selectNamedRegions.ts'
+export { isValidTag, tagRegex } from './tags.ts'
+export { formatRelativeTime } from './formatRelativeTime.ts'
+export { fetchJson } from './fetchJson.ts'
+export {
+  type EncodedSessionParam,
+  type SessionShareMode,
+  b64PadSuffix,
+  encodeSessionParam,
+  fromUrlSafeB64,
+  readSessionFromDynamo,
+  shareSessionToDynamo,
+  toUrlSafeB64,
+} from './sessionSharing.ts'
+export { coarseStripHTML } from './coarseStripHTML.ts'
+export { measureText } from './measureText.ts'
+export { createScrollLatch } from './scrollLatch.ts'
+export {
+  MAX_ZOOM_RATE_PER_MS,
+  SCROLL_ZOOM_FACTOR_DIVISOR,
+  ZOOM_ACTIVE_WINDOW_MS,
+  applyZoomAccum,
+  getZoomNormalizer,
+  isActivelyZooming,
+  normalizeWheelDelta,
+  wheelFrameElapsedMs,
+  wheelZoomAccum,
+} from './wheelZoom.ts'
+export {
+  avg,
+  clamp,
+  max,
+  maxFinite,
+  min,
+  minmax,
+  polarToCartesian,
+  radToDeg,
+  reducePrecision,
+  sum,
+  toLocale,
+} from './numericUtils.ts'
+export {
+  type MinimalRegion,
+  bpSpanPx,
+  bpToPx,
+  bytesForRegions,
+  featureSpanPx,
+  getBpDisplayStr,
+  getTickDisplayStr,
+} from './bpUtils.ts'
+export {
+  type BasicFeature,
+  gatherOverlaps,
+  mergeIntervals,
+} from './intervals.ts'
+export { springAnimate } from './springAnimate.ts'
+export {
+  localStorageGetBoolean,
+  localStorageGetItem,
+  localStorageGetJSON,
+  localStorageGetNumber,
+  localStorageSetBoolean,
+  localStorageSetItem,
+  localStorageSetJSON,
+  localStorageSetNumber,
+} from './localStorage.ts'
+export { renameRegionIfNeeded, renameRegionsIfNeeded } from './renameRegions.ts'
+export { addAndShowTrack } from './addAndShowTrack.ts'
+export { makeTrackId } from './makeTrackId.ts'
+export { matchTrackId } from './matchTrackId.ts'
 
-export * from './offscreenCanvasPonyfill.ts'
-export * from './rpc.ts'
-export * from './crypto.ts'
-export * from './openFeatureWidget.ts'
+export {
+  collectTransferables,
+  createCanvas,
+  createImageBitmap,
+  drawImageOntoCanvasContext,
+  isDetachedBuffer,
+  isImageBitmap,
+} from './offscreenCanvasPonyfill.ts'
+export { isRpcResult } from './rpc.ts'
+export {
+  aesDecrypt,
+  aesEncrypt,
+  sha256,
+  sha256Base64,
+  sha256Base64Url,
+  toBase64,
+  toBase64Url,
+} from './crypto.ts'
+export {
+  type FeatureWidgetTypeRef,
+  openFeatureWidget,
+} from './openFeatureWidget.ts'
 export {
   findParentThat,
   findParentThatIs,
@@ -133,9 +309,33 @@ export function fileToLocation(file: File): FileLocation {
   }
 }
 
-export * from './seqUtils.ts'
-export * from './iupac.ts'
-export * from './parseMotifList.ts'
+export {
+  type Frame,
+  codonTable,
+  complement,
+  complementTable,
+  defaultCodonTable,
+  defaultStarts,
+  defaultStops,
+  generateCodonTable,
+  getFrame,
+  revcom,
+  reverse,
+  revlist,
+  stitch,
+} from './seqUtils.ts'
+export {
+  IUPAC_MOTIF_REGEX,
+  isPalindromic,
+  iupacToRegex,
+  reverseComplementIupac,
+} from './iupac.ts'
+export {
+  type MotifListParse,
+  type MotifParseError,
+  type ParsedMotif,
+  parseMotifList,
+} from './parseMotifList.ts'
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
@@ -320,12 +520,79 @@ export {
   createStopTokenRotation,
 } from './createStopTokenRotation.ts'
 export { isDataCurrent } from './isDataCurrent.ts'
-export * from './aborting.ts'
-export * from './linkify.ts'
-export * from './locString.ts'
-export * from './stopToken.ts'
-export * from './tracks.ts'
-export * from './fileHandleStore.ts'
+export {
+  abortBreakPoint,
+  checkAbortSignal,
+  isAbortException,
+  makeAbortError,
+  observeAbortSignal,
+} from './aborting.ts'
+export { linkify } from './linkify.ts'
+export {
+  type ParsedLocString,
+  UnknownRefNameError,
+  assembleLocString,
+  assembleLocStringFast,
+  compareLocStrings,
+  compareLocs,
+  parseLocString,
+  parseLocStringOneBased,
+} from './locString.ts'
+export {
+  type LastStopTokenCheck,
+  type StopToken,
+  type StopTokenChecker,
+  checkStopToken,
+  checkStopToken2,
+  createStopToken,
+  createStopTokenChecker,
+  hasSharedArrayBuffer,
+  stopStopToken,
+} from './stopToken.ts'
+export {
+  type AdapterConfig,
+  type AdapterGuesser,
+  type LooseTrackInput,
+  type TrackTypeGuesser,
+  UNKNOWN,
+  UNSUPPORTED,
+  clearFileFromCache,
+  ensureFileHandleReady,
+  findFileHandleIds,
+  generateUnknownTrackConf,
+  generateUnsupportedTrackConf,
+  getBlob,
+  getBlobMap,
+  getConfAssemblyNames,
+  getFileFromCache,
+  getFileName,
+  getRpcSessionId,
+  getTrackAssemblyNames,
+  getTrackName,
+  guessAdapter,
+  guessTrackConf,
+  guessTrackType,
+  hasFileHandlesInCache,
+  hideTrackGeneric,
+  makeIndex,
+  makeIndexType,
+  restoreFileHandles,
+  restoreFileHandlesFromSnapshot,
+  setBlobMap,
+  setFileInCache,
+  showTrackGeneric,
+  storeBlobLocation,
+  storeFileHandleLocation,
+  stripFileExtension,
+  stripTrackIds,
+  toggleTrackGeneric,
+} from './tracks.ts'
+export {
+  getFileHandle,
+  isFileSystemAccessSupported,
+  storeFileHandle,
+  verifyPermission,
+} from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
 export { cmpStr } from './cmpStr.ts'
