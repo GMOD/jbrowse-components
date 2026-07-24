@@ -22,6 +22,10 @@ interface ThumbSpec {
   // height (full width kept). Omit to cover-crop the whole figure. Fractions,
   // not pixels, so a re-rendered figure of the same layout stays framed.
   band?: [number, number]
+  // Horizontal slice, as [left, right] fractions of width (full height kept).
+  // Use to frame a clean column of a wide figure, e.g. past a label gutter or a
+  // baked-in region marker. Composes with `band`.
+  xband?: [number, number]
   // Cover-crop anchor when the framed region isn't already 5:3. 'top' keeps the
   // header, 'left' keeps row labels. Default 'top'.
   position?: 'top' | 'left' | 'center'
@@ -40,6 +44,36 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // the app header
     band: [0.28, 0.95],
   },
+  // The 464-haplotype clustered genotype matrix with its dendrogram: the
+  // population-scale figure that best reads as "pangenome" on a card. Skip the
+  // app header; keep the left edge so the dendrogram stays in frame.
+  pangenome_hprc: {
+    src: 'hprc2/mhc_clustered.png',
+    band: [0.24, 1],
+    position: 'left',
+  },
+  // The Minigraph-Cactus pangenome-variant matrix on K12 (teal/red/yellow
+  // genotype blocks). A clean render, unlike the odgi viz raster's baked-in
+  // region markers; it echoes the ecoli card on purpose, since the two
+  // tutorials build the same four-strain demo two ways. Frame the matrix,
+  // dropping the app header and gene lane.
+  pangenome_cactus: {
+    src: 'pangenome_cactus/variant_matrix.png',
+    band: [0.48, 0.66],
+  },
+  // The genome-wide TCGA-BRCA CNV cohort matrix. The lower half carries
+  // hand-added gene callouts, so frame the clean heatmap band above them.
+  tcga_cohort_cnv: {
+    src: 'tcga/cohort_cnv_genome.png',
+    band: [0.14, 0.56],
+    position: 'center',
+  },
+  // Overlaid multi-wiggle coverage, the most figure-like of the cookbook
+  // recipes. Skip the app header and its navigation row.
+  cookbook: {
+    src: 'cookbook_multiwig.png',
+    band: [0.24, 1],
+  },
 }
 
 const WIDTH = 600
@@ -52,14 +86,22 @@ const thumbDir = join(imgDir, 'tutorial-thumbs')
 
 async function render(spec: ThumbSpec) {
   const input = sharp(join(imgDir, spec.src))
-  const pipeline = spec.band
-    ? await (async () => {
-        const { height, width } = await input.metadata()
-        const top = Math.round(spec.band![0] * height)
-        const bottom = Math.round(spec.band![1] * height)
-        return input.extract({ left: 0, top, width, height: bottom - top })
-      })()
-    : input
+  const pipeline =
+    spec.band || spec.xband
+      ? await (async () => {
+          const { height, width } = await input.metadata()
+          const [t, b] = spec.band ?? [0, 1]
+          const [l, r] = spec.xband ?? [0, 1]
+          const top = Math.round(t * height)
+          const left = Math.round(l * width)
+          return input.extract({
+            left,
+            top,
+            width: Math.round(r * width) - left,
+            height: Math.round(b * height) - top,
+          })
+        })()
+      : input
   return pipeline
     .resize(WIDTH, HEIGHT, { fit: 'cover', position: spec.position ?? 'top' })
     .webp({ quality: spec.quality ?? DEFAULT_QUALITY })

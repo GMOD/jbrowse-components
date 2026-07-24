@@ -110,8 +110,9 @@ The graph genome view is a separate plugin,
 [jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
 not bundled in JBrowse Web (its force-directed layout uses the GPL-licensed
 [Bandage](https://github.com/rrwick/Bandage) engine). It is in **beta and not
-published yet**; look for it in the [plugin store](/docs/user_guides/plugin_store)
-soon. The tracks above need it only for the launch menu item.
+published yet**; look for it in the
+[plugin store](/docs/user_guides/plugin_store) soon. The tracks above need it
+only for the launch menu item.
 
 :::
 
@@ -212,10 +213,10 @@ variant regardless of spacing, so the density stays legible:
 
 <Figure caption="The HPRC2 pangenome VCF as a genotype matrix across chr6:32,450,000-32,650,000. 464 haplotype rows against ~13,000 variant columns: blue non-reference, grey reference, yellow no-call. The vertical yellow band is a region many haplotypes could not be called against the reference; the fainter texture is shared haplotype allele state, which clustering (next) sharpens into blocks." src="/img/hprc2/mhc_matrix.png" />
 
-The banding is suggestive; clustering confirms it. From the track menu, **Cluster
-by genotype... > Run clustering** reorders the rows by genotype similarity and
-draws a dendrogram beside them. It runs in the worker, so the view stays
-responsive:
+The banding is suggestive; clustering confirms it. From the track menu,
+**Cluster by genotype... > Run clustering** reorders the rows by genotype
+similarity and draws a dendrogram beside them. It runs in the worker, so the
+view stays responsive:
 
 <Figure caption="The same window with the 464 haplotype rows clustered by genotype and a dendrogram in the sidebar. The diffuse banding resolves into discrete blocks, including one all-yellow group with no calls at all: haplotypes divergent enough that the graph build declined to align them to the reference here, so 'no call' is itself the finding." src="/img/hprc2/mhc_clustered.png" />
 
@@ -255,9 +256,9 @@ can load it directly:
 auto-fit, so adding haplotypes shrinks the rows instead of overflowing the
 track.
 [`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)
-builds your own for a chromosome and sample count you pick (`bash
-build_hprc2_pclai.sh out chr1 64`); it fetches the per-haplotype BEDs, keeps the
-columns the painting needs, and writes one bgzipped, tabixed file.
+builds your own for a chromosome and sample count you pick
+(`bash build_hprc2_pclai.sh out chr1 64`); it fetches the per-haplotype BEDs,
+keeps the columns the painting needs, and writes one bgzipped, tabixed file.
 
 <Figure caption="64 HPRC2 haplotypes painted along chr1 by PCLAI local ancestry, one row per haplotype, colored by the published per-window PCA color. Most rows hold a single color end to end; a few switch color repeatedly along the chromosome, each change a recombination breakpoint between differently-inferred segments. There is no color key: the palette is a continuous interpolation of PCA position, not labeled categories." src="/img/hprc2/local_ancestry.png" />
 

@@ -141,16 +141,10 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
   .filter(group => group.items.length > 0)
 
 // Pages with no generated thumbnail render a compact chromeless card instead of
-// a broken image. Keep in sync with static/img/tutorial-thumbs/: the text-only
-// CLI walkthrough and cookbook have none, and the cactus and TCGA cohort
-// tutorials are pending a figure capture.
-const NO_THUMB = new Set([
-  'cli_desktop',
-  'cookbook',
-  'pangenome_cactus',
-  'pangenome_hprc',
-  'tcga_cohort_cnv',
-])
+// a broken image. Only the text-only CLI walkthrough has none; every other
+// tutorial has a thumb under static/img/tutorial-thumbs/ (managed ones in
+// gen-tutorial-thumbs.ts).
+const NO_THUMB = new Set(['cli_desktop'])
 const HAS_THUMB = new Set(
   tutorials.map(t => t.key).filter(k => !NO_THUMB.has(k)),
 )
