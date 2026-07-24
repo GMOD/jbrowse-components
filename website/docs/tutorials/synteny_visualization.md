@@ -6,8 +6,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-This tutorial covers the dotplot view (chromosome-scale alignment overview) and
-linear synteny view (base-level inspection) using whole-genome alignment data.
+**TL;DR:** load a whole-genome alignment (PAF, MUMmer `.delta`, or UCSC
+`.chain`) as a synteny track to compare two assemblies in both the dotplot
+(chromosome-scale overview) and linear synteny (base-level) views. Generate the
+PAF with `minimap2 -c --eqx`, and note `add-track -a` takes `query,target`, the
+reverse of the minimap2 argument order.
 
 For general background on synteny views and a worked example with tumor and
 normal genome comparison, see the

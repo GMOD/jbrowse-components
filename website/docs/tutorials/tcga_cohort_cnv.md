@@ -6,6 +6,11 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
+**TL;DR:** stack every tumor in a TCGA cohort as its own row of a
+`LinearMultiRowFeatureDisplay`, partitioned by sample and colored by a jexl
+expression on the segment log2 ratio, so recurrent copy-number events read as
+vertical stripes down the stack.
+
 Most copy-number views show one tumor at a time. This tutorial builds the other
 kind: every primary tumor in a TCGA project stacked as its own row, so a
 copy-number change shared across the cohort reads as a vertical stripe running
@@ -177,10 +182,10 @@ leaves three settings to write:
 
 ## Read it
 
-Open the track at whole-genome zoom, then run **Track menu > Cluster rows by
-similarity**. Clustering reorders the rows so tumors with similar profiles sit
-together, which turns a noisy stack into blocks, and draws the dendrogram in the
-sidebar (**Sidebar with tree and labels**, on by default).
+Open the track at whole-genome zoom, then run the "Cluster rows by similarity"
+action in the track menu. Clustering reorders the rows so tumors with similar
+profiles sit together, which turns a noisy stack into blocks, and draws the
+dendrogram in the sidebar (**Sidebar with tree and labels**, on by default).
 
 - **Vertical blue stripes** are recurrent deletions, clearest at 9p21 (CDKN2A);
   10q23 (PTEN) is present but faint in this cohort.
@@ -234,10 +239,9 @@ Counts below are open files for TCGA-BRCA, checked against the API:
 - **Methylation** (Beta Value arrays, 1238 files) is probe-level with genomic
   coordinates, and loads the same way with beta as the color field.
 
-Note that **splice junction quantification is not open access** at the GDC, so a
-cohort splicing view needs controlled-access RNA-seq and a dbGaP application.
-For open splicing data, look outside TCGA (GTEx and recount3 publish junction
-summaries).
+**Splice junction quantification is not open access** at the GDC, so a cohort
+splicing view needs controlled-access RNA-seq and a dbGaP application. For open
+splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
 
 ## See also
 

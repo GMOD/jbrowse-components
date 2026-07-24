@@ -5,10 +5,11 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-This tutorial shows how RNA-seq data appears in JBrowse 2. It covers what the
-reads look like, how spliced alignments and splice arcs come from CIGAR strings,
-how the arcs reveal alternative splicing, and how strand-specific and long-read
-RNA-seq differ. Every screenshot has a live link, built from JBrowse's
+**TL;DR:** JBrowse derives splice arcs and per-read spliced alignments from
+BAM/CRAM CIGAR `N` skips automatically, with no extra configuration, and can
+color reads by fragment strand for strand-specific libraries.
+
+Every screenshot has a live link, built from JBrowse's
 [session-spec URL format](/docs/urlparams#session-spec), so you can open the
 same view yourself.
 

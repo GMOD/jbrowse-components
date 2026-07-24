@@ -6,14 +6,19 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
+**TL;DR:** stack N genome rows in one linear synteny view from a single
+all-vs-all PAF, using `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for
+large files). The PanSN `sample#haplotype#contig` prefix is what tells the
+adapter which genome each record belongs to, so each assembly's refNames must be
+the bare contig name.
+
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
 related (strains or accessions of one species), the most convenient source is a
 single all-vs-all PAF, with every genome aligned to every other. This tutorial
 builds a four-strain _E. coli_ pangenome view from one such file.
 
-Every figure below links to the live session that produced it. Open the finished
-stacked view from its caption to explore it yourself.
+Every figure below links to the live session that produced it.
 
 This same four-strain view also builds in Python or R: a `synteny_view` inside
 `JBrowseApp` ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or

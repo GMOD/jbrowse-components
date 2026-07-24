@@ -6,6 +6,10 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
+**TL;DR:** the same track display settings (height, color, display type) live as
+persistent defaults in `config.json` and as per-session overrides in a URL
+session spec or embedded view. When both are set, the per-session value wins.
+
 Track display settings (height, color scheme, display type, score range, and so
 on) live in two places:
 
@@ -16,8 +20,7 @@ on) live in two places:
   override the `config.json` defaults.
 
 Both use the same setting names. The per-session settings are a per-session
-override of the fields you can bake in as defaults with `displays`. This
-tutorial shows the three places you set them.
+override of the fields you can bake in as defaults with `displays`.
 
 ## What you need
 

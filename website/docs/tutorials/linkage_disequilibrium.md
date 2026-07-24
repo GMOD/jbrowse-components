@@ -5,6 +5,10 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
+**TL;DR:** JBrowse computes an LD triangle live from phased genotypes and draws
+pairwise r² as a heatmap. The one thing to get right is scale: the triangle is a
+kb-scale local tool, not a way to see megabase structural variants.
+
 Linkage disequilibrium (LD) is the tendency for nearby variants to be inherited
 together. JBrowse draws it as a triangular heatmap of pairwise r² between SNPs:
 **each red cell means two SNPs are almost always inherited together, white means

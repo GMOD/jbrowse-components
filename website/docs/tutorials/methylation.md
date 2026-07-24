@@ -6,6 +6,11 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
+**TL;DR:** JBrowse renders long-read methylation straight from BAM/CRAM MM/ML
+tags with no extra processing: per-read modification coloring, aggregate
+bedMethyl as a MultiQuantitativeTrack, and allele-specific methylation by
+grouping reads on their HP haplotype tag.
+
 You can read DNA methylation (5mC at CpG sites, plus other base modifications)
 straight off long reads. ONT and PacBio basecallers write per-base modification
 calls into the BAM/CRAM `MM`/`ML` tags, and JBrowse renders them with no extra
@@ -58,9 +63,9 @@ match an assembly already configured in JBrowse (see the
 }
 ```
 
-From the track menu, choose **Color by → Modifications**. You then have two
-options. **One color per modification type** paints just the calls listed in the
-MM tag, each modification in its own color, with the intensity reflecting the
+Color the track by Modifications from its track menu. You then have two options.
+**One color per modification type** paints just the calls listed in the MM tag,
+each modification in its own color, with the intensity reflecting the
 modification probability (the ML tag value). **One color per type, plus
 low-probability & unmodified in blue** (IGV's "2-color" scheme) also scans the
 read sequence for CpG dinucleotides and paints any CpG the MM tag left uncalled.

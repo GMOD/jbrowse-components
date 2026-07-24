@@ -5,6 +5,11 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
+**TL;DR:** the protein3d and msaview plugins add 3D-structure (Mol\*, from
+AlphaFold and UniProt) and MSA views that launch from a gene and stay linked to
+the genome, so hovering a variant highlights the matching residue. Launching
+needs a gene feature carrying a recognizable protein or transcript ID.
+
 JBrowse 2 can link genomic data to protein-level views: interactive 3D
 structures from [AlphaFold DB](https://alphafold.ebi.ac.uk/) and
 [UniProt](https://www.uniprot.org/), and multiple sequence alignments (MSAs)

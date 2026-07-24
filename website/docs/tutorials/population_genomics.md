@@ -8,6 +8,12 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
+**TL;DR:** compute per-window Fst, nucleotide diversity (π), and Tajima's D from
+a multi-sample VCF, load them as bigWig quantitative tracks stacked on a shared
+axis, and read where the signals line up against genes. JBrowse draws the
+windowed statistic your tool produced; it runs no population-genetic inference
+of its own.
+
 Population-genetic scans are per-window statistics running along the genome: Fst
 (differentiation between groups), nucleotide diversity (π) within a group, dxy
 (divergence between groups). Each has the same shape as a wiggle track, so once

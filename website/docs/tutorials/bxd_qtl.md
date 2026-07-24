@@ -6,6 +6,11 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
+**TL;DR:** build two mm10 tracks from one BXD genotype matrix, a strain
+chromosome-painting `LinearMultiRowFeatureDisplay` and a QTL Manhattan
+`GWASTrack`, then stack them so a trait peak sits directly over the B/D
+haplotype blocks that drive it.
+
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
 and DBA/2J (the "D" parent). Each strain's genome is a fixed pattern of B and D

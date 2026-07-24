@@ -5,6 +5,9 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
+**TL;DR:** embed a single linear genome view in a plain web page with one
+`<script>` tag and no build step, then feed it `assembly`, `tracks`, and `init`.
+
 This tutorial embeds a single JBrowse linear genome view into a web page using a
 `<script>` tag, no build step or React project required. For the full JBrowse
 app, see the [web quickstart](/docs/quickstart_web) instead.

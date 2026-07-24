@@ -7,6 +7,10 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
+**TL;DR:** align WGBS/EM-seq short reads with bwameth, load the plain BAM, and
+JBrowse colors per-read methylation straight from the C→T conversion (no MM/ML
+tags and no methylation caller), with CpG, CHG, and CHH each selectable.
+
 Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation
 without any long-read basecaller. A chemical (sodium bisulfite) or enzymatic
 (APOBEC) step converts every unmethylated cytosine to uracil, which reads as T,
@@ -200,12 +204,11 @@ no web server. See the [desktop quickstart](/docs/quickstart_desktop).
 
 ## Coloring reads in JBrowse
 
-Open the alignments track and, from the track menu, choose **Color by →
-Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
-cytosines). Methylated cytosines paint red, and the same submenu's **Show
-unmethylated (blue)** toggle adds the converted sites in blue. It's
-reference-based and only makes sense for bisulfite/EM-seq libraries. No MM/ML
-tags are involved.
+Color the alignments track by Bisulfite / EM-seq from its track menu, then pick
+a cytosine context (CpG, CHG, CHH, or all cytosines). Methylated cytosines paint
+red, and the "Show unmethylated (blue)" toggle adds the converted sites in blue.
+It's reference-based and only makes sense for bisulfite/EM-seq libraries. No
+MM/ML tags are involved.
 
 The figures below leave **Show unmethylated** off, so methylation reads directly
 as the presence of red and the three contexts contrast cleanly without the blue.

@@ -6,6 +6,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
+**TL;DR:** stack N genomes in one linear synteny view from a single jcvi MCScan
+`.blocks` ortholog table, using `MCScanBlocksAdapter` with one BED per column.
+The table is reference-anchored on column 0, so only pairs that include that
+reference are direct alignments and row order is a real choice.
+
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. This tutorial builds a
 three-way grape / peach / cacao view from a single

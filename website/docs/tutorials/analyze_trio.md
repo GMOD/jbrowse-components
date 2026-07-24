@@ -5,6 +5,11 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
+**TL;DR:** turn a phased trio's hap-ibd IBD blocks (and FLARE local-ancestry
+calls) into a BED9 with `itemRgb` and a category column, then point a
+`LinearMultiRowFeatureDisplay`'s `partitionField` at that column to paint one
+colored row per parental haplotype and read crossovers straight off the track.
+
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
 variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which
 copy of the genome it came from.
@@ -272,9 +277,9 @@ haplotype gets a row:
 
 Each of the six rows is one haplotype, its segments colored by the reference
 panel the inference assigned, orange or blue for the two FLARE distinguishes
-here. Note that nothing changed but `partitionField` (`sample` instead of
-`parenthap`), and the same display gives six rows instead of four. The row
-structure comes entirely from the BED column you point it at.
+here. Nothing changed but `partitionField` (`sample` instead of `parenthap`),
+and the same display gives six rows instead of four. The row structure comes
+entirely from the BED column you point it at.
 
 <Figure caption="FLARE local-ancestry calls for a 1000 Genomes ASW trio on chr1. Each of the six rows is one haplotype; the child's two are mosaics recombined from the parents, and every block boundary is a crossover. Orange and blue mark the two reference panels the inference distinguishes." src="/img/trio-ancestry.png"/>
 

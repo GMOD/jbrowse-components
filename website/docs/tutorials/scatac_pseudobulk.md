@@ -5,6 +5,10 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
+**TL;DR:** pseudobulk single-cell ATAC into one coverage BigWig per cell type
+outside JBrowse, then load them all as a single MultiWiggle track that stacks
+one row per file.
+
 JBrowse doesn't process single-cell data itself. To get the look of the
 gallery's "Single-cell ATAC by cell type (CATlas)" card (one coverage row per
 cell type), you first pseudobulk the data outside JBrowse: group cells by
@@ -14,8 +18,7 @@ track, which stacks one row per file.
 
 <Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) across the INS/IGF2 region on 11p15.5, where the Beta cell row shows accessibility over INS. Source data: CATlas (Zhang et al. 2021), catlas.org." src="/img/gallery/scatac_catlas.png" />
 
-This guide covers producing the per-group BigWigs and configuring the JBrowse
-track. It assumes you already have clustered scATAC data (a fragments file or a
+This guide assumes you already have clustered scATAC data (a fragments file or a
 BAM plus a per-barcode cell-type label) from a tool like 10x Cell Ranger ATAC,
 ArchR, Signac, or SnapATAC2.
 
@@ -179,12 +182,12 @@ and an optional `group` (which seeds the sidebar clustering tree).
 
 ### Via the UI
 
-Track menu → **Add track**, switch the workflow to **Add multi-wiggle track**,
-and paste your BigWig URLs one per line (or a JSON array of subadapter objects).
-JBrowse builds the `MultiQuantitativeTrack` for you. This is the fastest way to
-try a set of files. Export the session to get the JSON config. On JBrowse
-Desktop the same workflow loads the `.bw` files straight from local disk with no
-web server ([desktop quickstart](/docs/quickstart_desktop)).
+From the "Add track" workflow, switch to "Add multi-wiggle track" and paste your
+BigWig URLs one per line (or a JSON array of subadapter objects). JBrowse builds
+the `MultiQuantitativeTrack` for you. This is the fastest way to try a set of
+files. Export the session to get the JSON config. On JBrowse Desktop the same
+workflow loads the `.bw` files straight from local disk with no web server
+([desktop quickstart](/docs/quickstart_desktop)).
 
 ### Via config JSON
 
@@ -289,10 +292,10 @@ Other useful controls:
 - `summaryScoreMode` - `avg`, `min`, `max`, or `whiskers` (the
   [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
   slot) for how each bin's summary is drawn when zoomed out.
-- The **Clustering → "Cluster rows by score..."** track-menu action reorders the
-  rows by hierarchical clustering of the score matrix over the region in view,
-  drawing a dendrogram in the sidebar. Cell types with similar accessibility
-  profiles at that locus sort next to each other. See the
+- The "Cluster rows by score..." clustering action in the track menu reorders
+  the rows by hierarchical clustering of the score matrix over the region in
+  view, drawing a dendrogram in the sidebar. Cell types with similar
+  accessibility profiles at that locus sort next to each other. See the
   [multi-quantitative track guide](/docs/config_guides/multiquantitative_track)
   for the clustering workflow.
 

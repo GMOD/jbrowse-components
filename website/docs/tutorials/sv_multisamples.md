@@ -6,9 +6,13 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-This tutorial explores structural variants (SVs) from the 1000 Genomes Project
-using JBrowse's multi-sample visualization tools. We cover three connected
-analyses:
+**TL;DR:** browse 1000 Genomes structural variants with the SV inspector and the
+multi-sample variant display, check inheritance against trio alignments, and
+read read-orientation evidence for a large chr19 inversion. Everything runs on a
+hosted demo, so no data download is needed.
+
+We cover three connected analyses of structural variants (SVs) from the 1000
+Genomes Project, using JBrowse's multi-sample visualization tools:
 
 - Browsing population-level SV calls and their genotype distribution
 - Examining SV inheritance in a parent–child trio

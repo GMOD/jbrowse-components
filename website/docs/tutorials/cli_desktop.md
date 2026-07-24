@@ -6,6 +6,10 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
+**TL;DR:** build a `config.json` from the command line with `@jbrowse/cli`.
+Because it records each data file by a path relative to the config, the same
+folder opens unchanged in JBrowse Desktop or served on the web.
+
 The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
 command line instead of clicking through the **Add track** form. You run a few
 commands and end up with one folder (a `config.json` sitting next to your data
@@ -24,8 +28,7 @@ reproducible setup is portable across both apps.
 
 ## Install the CLI
 
-The CLI needs [Node.js](https://nodejs.org/) 18 or newer. Install it from
-[NodeSource](https://github.com/nodesource) or
+Install Node.js from [NodeSource](https://github.com/nodesource) or
 [NVM](https://github.com/nvm-sh/nvm) rather than `apt`, which tends to ship old
 versions.
 

@@ -7,9 +7,15 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-This tutorial walks through loading data from the
+**TL;DR:** load HG008 cancer tumor/normal PacBio HiFi data and its benchmark
+SV/CNV calls into JBrowse, then inspect them with the SV inspector, the linear
+genome view, and dotplot/synteny views of the T2T tumor assembly. Read the
+HiFiCNV depth track alongside unfolded B-allele frequency, since only the BAF
+reveals copy-neutral loss-of-heterozygosity.
+
+This tutorial loads data from the
 [Cancer Genome in a Bottle (C-GIAB)](https://www.nist.gov/programs-projects/cancer-genome-bottle)
-project into JBrowse 2 and using several view types to inspect the supplied
+project into JBrowse 2 and uses several view types to inspect the supplied
 benchmark structural variant (SV) and copy-number variant (CNV) calls. The
 dataset is HG008, a pancreatic ductal adenocarcinoma (PDAC) cell line with
 matched tumor (HG008-T) and normal pancreatic tissue (HG008-N-P), sequenced with

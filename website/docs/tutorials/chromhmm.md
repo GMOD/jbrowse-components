@@ -5,6 +5,10 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
+**TL;DR:** merge many per-cell-type ChromHMM segmentation BEDs into one file
+with a `cellType` column, then a `LinearMultiRowFeatureDisplay` partitions it
+into one color-coded row per cell type from a single track, adapter, and fetch.
+
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into chromatin
 states (active promoter, strong enhancer, heterochromatin, …) from combinations
 of histone-mark ChIP-seq. A segmentation is produced _per cell type_, so a
@@ -151,7 +155,7 @@ The fields that drive the display:
 - `rowOrder` - pins the sub-rows to a chosen order. Omit it and rows fall back
   to the order the partition values are first seen.
 
-Note there's no color setting: a BED carrying `itemRgb` is painted with it
+There's no color setting: a BED carrying `itemRgb` is painted with it
 automatically, so each feature gets its ChromHMM state color straight from the
 file. Set the [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)
 slot only to override that.
