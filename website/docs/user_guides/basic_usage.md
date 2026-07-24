@@ -4,6 +4,11 @@ description: Navigation, searching, opening files, and common UI controls
 guide_category: General usage
 ---
 
+**TL;DR:** navigate with the location search box (a gene name or
+`chr:start-end`) plus drag-to-pan and scroll-to-zoom. Add your own data through
+the open-track form, or preconfigure it in `config.json`. The controls below are
+shared by JBrowse Web and Desktop.
+
 ## Linear genome view
 
 To open a linear genome view (LGV), use the menu bar: `Add` →
