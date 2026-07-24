@@ -67,15 +67,15 @@
     "@types/file-saver-es": "^2.0.3",
     "body-parser": "^2.3.0",
     "date-fns": "^4.4.0",
-    "dockview-react": "^7.0.2",
+    "dockview-react": "^7.0.4",
     "generic-filehandle2": "^2.2.0",
     "idb": "^8.0.3",
     "mobx": "^6.16.1",
     "mobx-react": "^9.2.2",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "browserslist": {
     "production": [
