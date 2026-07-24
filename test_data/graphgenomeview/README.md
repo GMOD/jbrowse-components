@@ -17,15 +17,21 @@ dialog when the _config_ origin differs from the app's (`SessionLoader.ts`), so
 a same-origin config loads the plugin with no dialog to click in a headless
 capture. The plugin url itself may be anywhere.
 
-Two things the hosted bundle depends on:
+The plugin is a native ES module, loaded via `esmUrl`. Two things it depends on:
 
-- its UMD global is `JBrowsePlugin<config name>`, i.e.
-  `JBrowsePluginGraphGenomeView` — it must match `plugins[].name` here, or the
-  plugin loads but never registers;
+- its default export is the Plugin class (ESM has no `JBrowsePlugin<name>`
+  global to match), but `plugins[].name` here must still equal the view type
+  `GraphGenomeView` so the config's session spec resolves the view;
 - it externalizes `@mui/material/SvgIcon` and reads `createSvgIcon` off it,
   which the host only provides as of GMOD/jbrowse-components#5606.
 
-The RPC worker resolves the sibling Bandage WASM layout chunk relative to the
-bundle url, so it must be uploaded alongside it. Re-upload both with `aws s3 cp`
-after rebuilding the plugin; once it is published to npm, point `umdUrl` at a
-pinned version there instead.
+The entry loads its code-split chunks (including the Bandage WASM layout engine)
+relative to its own url via `import.meta.url`, so the whole `dist/` tree must be
+uploaded together, preserving the `chunks/` subdirectory:
+
+```
+aws s3 cp --recursive dist/ s3://jbrowse.org/demos/graphgenomeviewer/
+```
+
+Re-upload after rebuilding the plugin; once it is published to npm, point
+`esmUrl` at a pinned version there instead.
