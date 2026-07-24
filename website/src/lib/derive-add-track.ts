@@ -53,7 +53,7 @@ function inferredTrackType(adapterType: string) {
 
 function asStringArray(value: unknown) {
   return Array.isArray(value) && value.every(v => typeof v === 'string')
-    ? (value as string[])
+    ? value
     : undefined
 }
 
@@ -111,25 +111,25 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
   return isClean
     ? [
         'add-track',
-        uri as string,
+        uri,
         '--trackId',
-        trackId as string,
+        trackId,
         '--name',
-        name as string,
+        name,
         '--assemblyNames',
-        (asm as string[]).join(','),
-        ...(inferredAdapterType(uri as string) === adapterType
+        asm.join(','),
+        ...(inferredAdapterType(uri) === adapterType
           ? []
-          : ['--adapterType', adapterType as string]),
-        ...(inferredTrackType(adapterType as string) === trackType
+          : ['--adapterType', adapterType]),
+        ...(inferredTrackType(adapterType) === trackType
           ? []
-          : ['--trackType', trackType as string]),
+          : ['--trackType', trackType]),
         ...(cats?.length ? ['--category', cats.join(',')] : []),
         ...(hasDisplayDefaults
           ? ['--displayDefaults', JSON.stringify(displayDefaults)]
           : []),
         // local paths need --load; URLs are referenced in place
-        ...(/^\w+:\/\//.test(uri as string) ? [] : ['--load', 'copy']),
+        ...(/^\w+:\/\//.test(uri) ? [] : ['--load', 'copy']),
       ]
     : null
 }

@@ -123,7 +123,7 @@ test('throws a clear error when a column has no BED', async () => {
     start: 0,
     end: 1000,
     assemblyName: 'grape',
-  } as never)
+  })
   await expect(firstValueFrom(obs.pipe(toArray()))).rejects.toThrow(
     /one BED per column/,
   )
