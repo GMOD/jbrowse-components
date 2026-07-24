@@ -4,15 +4,15 @@ description: Add entirely new view panels such as DotplotView or CircularView
 guide_category: Creating pluggable elements
 ---
 
-View types are top-level "panels" that the session can contain alongside the
-built-in `LinearGenomeView`, `DotplotView`, `CircularView`, `SpreadsheetView`,
-and others. A view defines its own state model and React component, and it does
-not have to display genomic tracks, though most do.
+**TL;DR:** View types are top-level "panels" the session can contain alongside
+built-ins like `LinearGenomeView`, `DotplotView`, and `CircularView`. A view
+defines its own state model and React component, and need not display genomic
+tracks (though most do).
 
 ## When to add a custom view type
 
 Add a view type when you need a panel with its own layout, state, and toolbar
-that does not fit inside an existing view. Examples in the wild:
+that does not fit inside an existing view. Examples:
 
 - `jbrowse-plugin-msaview` adds a multiple sequence alignment view that has no
   underlying tracks at all
@@ -25,11 +25,9 @@ abstraction instead.
 
 ## Minimal walkthrough
 
-The [plugin templates](/docs/developer_guides/simple_plugin) give you a complete
-scaffold and build setup to register a view via
-`pluginManager.addViewType(...)`. Start there.
-
-A view registration looks roughly like:
+The [plugin templates](/docs/developer_guides/simple_plugin) scaffold the build
+setup to register a view via `pluginManager.addViewType(...)`. A registration
+looks roughly like:
 
 ```ts
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -60,8 +58,6 @@ component receives `{ model }` as a prop.
   tracks
 - `plugins/spreadsheet-view/src/SpreadsheetView` - non-genomic tabular view
 - `plugins/circular-view/src/CircularView` - radial layout with chord tracks
-
-Read these alongside the simple plugin tutorial when designing your own.
 
 ## See also
 

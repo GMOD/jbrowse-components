@@ -6,9 +6,11 @@ description:
 guide_category: Core concepts
 ---
 
-JBrowse configuration is built with `ConfigurationSchema`, a thin wrapper around
-MST models. Every adapter, track, and display declares a schema; instances are
-created from config JSON and observed reactively.
+**TL;DR:** JBrowse configuration is built with `ConfigurationSchema`, a thin
+wrapper around MST models. Every adapter, track, and display declares a schema
+of typed slots; instances are created from config JSON and observed reactively.
+Read slots with `getConf` (from a state model) or `readConfObject` (from a raw
+config node).
 
 ## Defining a schema
 
@@ -43,9 +45,9 @@ const MyAdapterConfigSchema = ConfigurationSchema(
 
 ## Slot types
 
-This is the canonical list of slot types. The configuration system is typed so
-each slot can be edited graphically; see [Graphical editing](#graphical-editing)
-below for how each type renders in the config editor.
+The canonical list of slot types. Because the system is typed, each slot can be
+edited graphically; [Graphical editing](#graphical-editing) below shows how each
+type renders.
 
 | Type             | JS type                    | Notes                                               |
 | ---------------- | -------------------------- | --------------------------------------------------- |
@@ -177,10 +179,8 @@ const maxHeight = readConfObject(config, 'maxHeight')
 const displayMode = readConfObject(config, 'displayMode')
 ```
 
-Keep them separate. `getConf` requires the model to have a `.configuration`
-wrapper; `readConfObject` takes the raw config node. A TypeScript error
-"Property 'configuration' is missing" is the signal that you have the raw config
-and should be calling `readConfObject`.
+A TypeScript error "Property 'configuration' is missing" is the signal that you
+have a raw config and should call `readConfObject` instead of `getConf`.
 
 Both accept a path array for nested access:
 
@@ -313,7 +313,5 @@ resolution.
 
 ## See also
 
-- [Configuration API reference](/docs/api/core-configuration)
-- [jexl config callbacks](/docs/config_guides/jexl)
 - [MST patterns](/docs/developer_guides/mst_patterns)
 - [Custom track and display types](/docs/developer_guides/creating_display)

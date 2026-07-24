@@ -6,9 +6,11 @@ description:
 guide_category: Creating pluggable elements
 ---
 
-A **track** owns the high-level identity (an ID, a name, a default set of
-displays), while **display types** do the work of showing that track inside a
-particular view. The display owns the drawing.
+**TL;DR:** to add a new way to visualize data in an existing view, write a
+display type, not a track type.
+
+A track owns the high-level identity (an ID, a name, a default set of displays);
+a display shows that track inside a particular view and owns the drawing.
 
 ```
 Track  ─owns→  Display(s)  ─draw→  canvas
@@ -27,10 +29,8 @@ Tracks are deliberately thin. For example:
   same underlying PIF/PAF data render in either a `DotplotView` or a
   `LinearSyntenyView`.
 
-This factoring means: **if you're adding a new way to visualize data in an
-existing view, you almost always want a display type, not a track type.** Add a
-track type only when you need a new conceptual track category, a custom config
-schema for that category, or behavior shared across multiple displays.
+Add a track type only when you need a new conceptual track category, a custom
+config schema for that category, or behavior shared across multiple displays.
 
 ## Registering a track type
 
@@ -114,7 +114,5 @@ In-tree references:
 
 ## See also
 
-- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Data fetching pipeline](/docs/developer_guides/data_fetching)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)

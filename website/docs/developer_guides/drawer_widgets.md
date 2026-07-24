@@ -6,13 +6,15 @@ guide_category: Creating pluggable elements
 
 ## Overview
 
-In the embedded `@jbrowse/react-linear-genome-view2` component, widgets can be
-shown as resizable side panels (drawers) instead of modal dialogs. A drawer is a
-persistent panel suited to layouts with room for one alongside the genome view.
+In the embedded `@jbrowse/react-linear-genome-view2` component, widgets can show
+as resizable side panels (drawers) instead of modal dialogs.
 
-Drawers can be resized by dragging the edge, placed on the left or right,
-minimized while keeping widget state, and switched between when several widgets
-are open.
+**TL;DR:** Set `tracklist: true` in the view `init` for the track selector, or
+call `session.addWidget(...)` + `session.showWidget(...)` for any widget. Drawer
+position and width are controlled via session actions.
+
+Drawers resize by dragging the edge, sit on the left or right, minimize while
+keeping widget state, and switch between open widgets.
 
 ## Showing the track selector
 
@@ -89,23 +91,11 @@ interface InitState {
 
 ## Drawer position and width
 
-Control the drawer through session actions:
-
-```javascript
-// drawer width (CSS pixels, default: 384, clamped to a min/max)
-state.session.updateDrawerWidth(500)
-
-// drawer position (default: 'right')
-state.session.setDrawerPosition('left') // or 'right'
-
-// drawer visibility
-state.session.showWidgetDrawer()
-state.session.minimizeWidgetDrawer()
-```
-
-`drawerPosition` is persisted to localStorage and restored on the next page
-load. Width is clamped so the drawer cannot take the entire viewport (minimum
-drawer width 128px, minimum main view width 150px).
+Width (CSS pixels, default 384) is set with `updateDrawerWidth(500)`, clamped so
+the drawer cannot take the whole viewport (minimum drawer width 128px, minimum
+main view width 150px). `drawerPosition` (default `'right'`, set with
+`setDrawerPosition`) persists to localStorage and restores on the next page
+load.
 
 ## Showing a custom widget
 
@@ -123,8 +113,7 @@ fetched when it first opens.
 
 ## Storybook example
 
-See the `WithDrawerWidget` example in the JBrowse examples site:
-
+See the `WithDrawerWidget` example:
 https://jbrowse.org/storybook/lgv/with-drawer-widget/
 
 ## See also

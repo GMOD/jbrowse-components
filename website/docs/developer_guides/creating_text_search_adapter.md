@@ -4,16 +4,21 @@ description: Implement a custom backend for the search box
 guide_category: Creating pluggable elements
 ---
 
-The search box in JBrowse queries one or more **text search adapters**. Each
-adapter implements a `searchIndex()` method and returns a list of results. The
-framework handles fuzzy matching, ranking, and navigation.
+The search box queries one or more **text search adapters**. Each adapter
+implements `searchIndex()` and returns a list of results; the framework handles
+fuzzy matching, ranking, and navigation.
+
+**TL;DR:** extend `BaseAdapter`, implement `searchIndex()` returning
+`BaseResult[]`, give the config an `assemblyNames` slot, and register the type
+in your plugin.
 
 The built-in adapters are `TrixTextSearchAdapter` (pre-built trix indexes) and
-`JBrowse1TextSearchAdapter` (JBrowse 1 `names/` indexes). You can add your own
-to search against any data source, such as an API, a local file, or a SQLite
-database.
+`JBrowse1TextSearchAdapter` (JBrowse 1 `names/` indexes). Add your own to search
+any data source: an API, a local file, or a SQLite database.
 
 ## The interface
+
+Your adapter extends `BaseAdapter` and implements one method.
 
 ```ts
 interface BaseTextSearchAdapter extends BaseAdapter {
@@ -28,8 +33,6 @@ interface BaseTextSearchArgs {
   pageNumber?: number
 }
 ```
-
-Your adapter extends `BaseAdapter` and implements one method.
 
 ## Implementing the adapter
 
@@ -57,7 +60,6 @@ export default class MyTextSearchAdapter
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    // Read config values and set up any connections/indexes here
     const endpoint = readConfObject(config, 'endpoint')
     this.endpoint = endpoint as string
   }
@@ -130,7 +132,7 @@ const MyTextSearchAdapter = ConfigurationSchema(
 export default MyTextSearchAdapter
 ```
 
-`assemblyNames` is required. The TextSearchManager uses it to decide which
+`assemblyNames` is required; the TextSearchManager uses it to pick which
 adapters to query for a given assembly.
 
 ## Plugin registration
@@ -165,9 +167,9 @@ export default class MyPlugin extends Plugin {
 
 ## Config.json wiring
 
-Add the adapter under `aggregateTextSearchAdapters` at the root of your config
-to make it available globally, or under a track's `textSearching` field for
-track-scoped search:
+Add the adapter under `aggregateTextSearchAdapters` at the config root for
+global search, or under a track's `textSearching` field for track-scoped
+search:
 
 ```json
 {

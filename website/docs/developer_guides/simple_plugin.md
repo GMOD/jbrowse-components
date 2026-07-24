@@ -4,15 +4,14 @@ description: Scaffold a plugin from an official template
 guide_category: Getting started
 ---
 
-Plugins add new pluggable elements (views, tracks, displays, adapters, widgets,
-etc.) and can modify application behavior by watching state. See the
-[pluggable elements](/docs/developer_guides/pluggable_elements) page for the
-full list of element types you can register.
+**TL;DR:** Clone an official template, follow its README, and copy from its
+worked example. Templates ship a working build and a local JBrowse instance to
+test against.
 
-The fastest way to start is to clone one of the official templates. Each ships
-with a working build, a local JBrowse instance to test against, and an example
-pluggable element you can copy from. Follow the README in the template repo for
-step-by-step setup.
+Plugins add new pluggable elements (views, tracks, displays, adapters, widgets,
+etc.) and can modify application behavior by watching state. See
+[pluggable elements](/docs/developer_guides/pluggable_elements) for the full
+list of element types you can register.
 
 ## Official templates
 
@@ -35,8 +34,8 @@ block in that guide is generated from that source.
 ## What's in a plugin
 
 A plugin is a class extending `Plugin` with `install()` and `configure()`
-methods, where you register your pluggable elements against the `pluginManager`.
-The element-specific guides walk through each type:
+methods that register pluggable elements against the `pluginManager`. The
+element-specific guides walk through each type:
 
 - [Creating custom view types](/docs/developer_guides/creating_view)
 - [Custom track and display types](/docs/developer_guides/creating_display)

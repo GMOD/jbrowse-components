@@ -4,33 +4,30 @@ description: Overview of all element types a plugin can register
 guide_category: Getting started
 ---
 
-A plugin is an independently distributed package of code that plugs into a
-JBrowse application. It's implemented as a class that extends
-`@jbrowse/core/Plugin`, and has `install` and `configure` methods the
-application calls.
+A plugin is an independently distributed package that plugs into a JBrowse
+application. It's a class extending `@jbrowse/core/Plugin` with `install` and
+`configure` methods the application calls.
 
-This class is distributed as an ESM module (or UMD bundle for legacy
-compatibility) that gets loaded by the JBrowse application at runtime. **This
-means it is only possible to have one version of a particular plugin loaded on
-any given webpage, even if multiple products are loaded and using it on the same
-page.**
+The class is distributed as an ESM module (or UMD bundle for legacy
+compatibility) loaded at runtime. **Only one version of a given plugin can be
+loaded on a page, even if multiple products use it.**
 
-It's common for a plugin to use its `configure` method to set up
-[mobx autoruns](https://mobx.js.org/refguide/autorun.html) that react to changes
-in the application's state to modify its behavior.
+`configure` typically sets up
+[mobx autoruns](https://mobx.js.org/refguide/autorun.html) that react to
+application state. `install` adds "pluggable elements" (new views, tracks,
+displays, and so on) to the host application.
 
-Plugins often also have their `install` method add "pluggable elements" into the
-host JBrowse application. This is how plugins can add new kinds of views,
-tracks, displays, and so forth.
+**TL;DR:** A tour of every pluggable element type a plugin can register:
+adapters, tracks, views, displays, widgets, RPC methods, add-track workflows,
+and extension points.
 
-Many plugins referenced below are in the
-[JBrowse Github repo](https://github.com/gmod/jbrowse-components) and serve as
-up-to-date examples.
+Many plugins referenced below live in the
+[JBrowse Github repo](https://github.com/gmod/jbrowse-components) as up-to-date
+examples.
 
 ## Pluggable elements
 
-Pluggable elements are pieces of functionality that plugins can add to JBrowse.
-Examples of pluggable types include:
+Pluggable elements are pieces of functionality a plugin can add to JBrowse:
 
 - Adapter types
 - Track types
@@ -49,8 +46,8 @@ sub-views, and tracks can contain other tracks.
 
 ## View types
 
-View types allow entirely different visualizations alongside the standard linear
-genome view. Examples include:
+View types allow entirely different visualizations alongside the linear genome
+view. Examples:
 
 - `LinearGenomeView` - the classic linear view of a genome
 - `CircularView` - a Circos-like circular whole genome view
@@ -60,27 +57,24 @@ genome view. Examples include:
 
 ## Adapters
 
-Adapters parse a given data format. To write your own, see
+Adapters parse a data format. To write your own, see
 [creating adapters](/docs/developer_guides/creating_adapter/). The
 `@jbrowse/plugin-alignments` plugin creates:
 
-- `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it for
-  use by the browser.
-- `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. The sequence
-  adapter is automatically injected at runtime from the enclosing assembly
+- `BamAdapter` - wraps the `@gmod/bam` NPM module for the browser
+- `CramAdapter` - wraps the `@gmod/cram` NPM module; the sequence adapter is
+  injected at runtime from the enclosing assembly
 
 ## Track types
 
-Track types are a high level type that controls how features are drawn. In most
-cases, a track combines an adapter with one or more displays, and can do
-additional things like:
+A track combines an adapter with one or more displays, and can also:
 
 - Control what widget pops up on feature click
 - Add extra menu items to the track menu
-- Create sub-tracks (See `AlignmentsTrack`, a composition of the pileup and
-  coverage display)
-- Choose "static-blocks" rendering styles, which keeps contents stable while the
-  user scrolls, or "dynamic-blocks" that update on each scroll
+- Create sub-tracks (see `AlignmentsTrack`, a composition of the pileup and
+  coverage displays)
+- Choose "static-blocks" rendering (contents stay stable while scrolling) or
+  "dynamic-blocks" (update on each scroll)
 
 Example tracks:
 
@@ -92,20 +86,18 @@ Example tracks:
 
 ## Displays
 
-A _display_ is a method for displaying a particular track in a particular view.
+A _display_ is a method for showing a track in a particular view. This lets one
+track entry work across view types.
 
-For example, the synteny track type has two display models:
+The synteny track type has two displays:
 
-- `DotplotDisplay`, which is used in the dotplot view
-- `LinearSyntenyDisplay`, which is used in the linear synteny view
+- `DotplotDisplay` - used in the dotplot view
+- `LinearSyntenyDisplay` - used in the linear synteny view
 
-This enables a single track entry to be used in multiple view types, e.g. if you
-run `jbrowse add-track myfile.paf`, this automatically creates a `SyntenyTrack`
-entry in the tracklist, and when this track is opened in the dotplot view, the
-`DotplotDisplay` is used for rendering.
+So `jbrowse add-track myfile.paf` creates one `SyntenyTrack` entry, and opening
+it in the dotplot view renders via `DotplotDisplay`.
 
-Another example of a track type with multiple display types is `VariantTrack`,
-which has two display methods
+`VariantTrack` similarly has two displays:
 
 - `LinearVariantDisplay` - used in linear genome view
 - `ChordVariantDisplay` - used in the circular view to draw breakends and
@@ -113,8 +105,7 @@ which has two display methods
 
 ## Rendering
 
-Drawing is owned by the **display**; it is not a pluggable element of its own.
-The split is:
+Drawing is owned by the **display**; it is not a pluggable element of its own:
 
 - The worker fetches feature data via RPC and returns compact typed arrays
   (absolute genomic uint32 coordinates). No drawing happens in the worker.
@@ -131,56 +122,46 @@ for the mixins this is built from, and
 How views, tracks, and displays relate:
 
 - A view is a container that typically _has tracks_
-- A track controls _what_ data (adapter) and _how_ it's displayed (display)
-- A display is a specific way to draw a track's data and owns the drawing. A
-  track may have multiple displays for different view types
+- A track controls _what_ data (adapter) and _how_ it's shown (display)
+- A display owns the drawing of a track's data; a track may have multiple
+  displays for different view types
 
 ## Widgets
 
-Widgets are custom info panels that can show up in side panels, modals, or other
-places in an app.
-
-Widgets can do multiple types of things, including:
+Widgets are custom info panels shown in side panels, modals, or elsewhere. Types
+include:
 
 - Configuration widget
 - Feature detail widget
 - Add track widget
 - Add connection widget
-- etc.
 
-These widgets can be extended via plugins, so for example, the
-`@jbrowse/plugin-alignments` extends the `BaseFeatureWidget` to have custom
-display of the alignments.
+Plugins can extend widgets. For example, `@jbrowse/plugin-alignments` extends
+`BaseFeatureWidget`:
 
-- `AlignmentsFeatureWidget` - this provides a custom widget for viewing the
-  feature details of alignments features that customizes the basic feature
-  detail widget
+- `AlignmentsFeatureWidget` - customizes the basic feature detail widget for
+  alignments features
 
 ## RPC methods
 
-Plugins can register their own RPC methods, which can allow them to offload
-custom behaviors to a web-worker or server side process.
-
-The wiggle plugin, for example, registers custom RPC method types including:
+Plugins can register RPC methods to offload custom behavior to a web worker or
+server-side process. The wiggle plugin registers, for example:
 
 - `MultiWiggleGetScoreMatrix`
 - `MultiWiggleClusterScoreMatrix`
 
-These methods can run in the web worker when available.
+These run in the web worker when available.
 
 ## Add track workflows
 
-Add track workflows allow users to specify a custom react component for loading
-tracks into a jbrowse session.
-
-Check out the
-[add-track workflow guide](/docs/developer_guides/creating_addtrack_workflow)
-for details.
+Add track workflows let a plugin supply a custom React component for loading
+tracks into a session. See the
+[add-track workflow guide](/docs/developer_guides/creating_addtrack_workflow).
 
 ## Extension points
 
-Extension points are a pluggable element type which allows users to add a
-callback that is called at an appropriate time.
+Extension points let a plugin register a callback that runs at an appropriate
+time.
 
 See the [full extension point API](/docs/developer_guides/extension_points) or
 the [menus guide](/docs/developer_guides/menus) for an example of adding context

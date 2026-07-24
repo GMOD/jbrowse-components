@@ -5,15 +5,18 @@ description:
 guide_category: Creating pluggable elements
 ---
 
+**TL;DR:** Build a display that renders via WebGPU/WebGL2 with a required
+Canvas2D fallback: define data types, write a `.slang` shader, implement a GPU
+and a Canvas2D renderer behind one factory, wire an MST model with
+`installPerRegionLifecycle`, and render through `DisplayChrome`.
+
 :::note
 
-This guide covers the GPU rendering path introduced in the WebGL/WebGPU
-migration, the scale-up path for large or dense datasets (roughly ≳100K features
+This is the scale-up path for large or dense datasets (roughly ≳100K features
 per frame). For typical annotation tracks, start with
 [Plotting features in a custom display](/docs/developer_guides/plotting_features),
-which uses the shader-free Canvas2D path. The two share the same model, fetch
-chain, and lifecycle; only the renderer differs, so moving up later is a small
-change.
+the shader-free Canvas2D path. The two share the same model, fetch chain, and
+lifecycle; only the renderer differs, so moving up later is a small change.
 
 The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
@@ -23,11 +26,10 @@ and
 [Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#adding-a-new-gpu-display-type)
 sections mirror the steps below.
 
-`@jbrowse/render-core` is published but marked `@experimental`: names and
-signatures may still change before it is frozen under semver, so pin an exact
-version and expect to rebuild on upgrade. Its GPU surface is also
-static-import-only (it is not exposed through JBrowse's runtime `ReExports`
-registry), so a GPU display must be a
+`@jbrowse/render-core` is published but `@experimental`: names and signatures may
+still change before it's frozen under semver, so pin an exact version and expect
+to rebuild on upgrade. Its GPU surface is static-import-only (not exposed through
+JBrowse's runtime `ReExports` registry), so a GPU display must be a
 [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build plugin](/docs/developer_guides/no_build_plugin).
 
@@ -56,26 +58,19 @@ The model keeps two autoruns running at all times (owned by
   `backend.renderBlocks()`.
 
 The backend is a HAL (Hardware Abstraction Layer) that dispatches to WebGPU,
-WebGL2, or Canvas2D at runtime. Your renderer code talks to the HAL. It never
-calls WebGPU or WebGL2 directly.
-
-See the
+WebGL2, or Canvas2D at runtime. Your renderer talks to the HAL, never to WebGPU
+or WebGL2 directly. See the
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
-for the full lifecycle spec and `packages/render-core/CLAUDE.md` for HAL
-invariants.
+for the full lifecycle and `packages/render-core/CLAUDE.md` for HAL invariants.
 
-`example-plugins/score-example/` is the plugin this guide builds, as a
-standalone package: one `.slang` shader, a GPU renderer, and a Canvas2D
-fallback. CI installs it from a packed tarball and asserts it renders, so it
-stays buildable against the published packages.
-
-The simplest per-region streamed reference is
-`plugins/gwas/src/LinearManhattanDisplay/` (a scored scatter with both a GPU and
-a Canvas2D renderer behind one model). `plugins/canvas/src/LinearBasicDisplay/`
-is the fullest example: a generic feature display with four shader passes
-(rectangles, lines, chevrons, arrows), but it uses the whole-map
-`laidOutDataMap` form for cross-region layout, so start from Manhattan when your
-regions are independent.
+This guide builds `example-plugins/score-example/`, a standalone package (one
+`.slang` shader, a GPU renderer, a Canvas2D fallback) that CI installs from a
+packed tarball and asserts renders, so it stays buildable against the published
+packages. For real references: `plugins/gwas/src/LinearManhattanDisplay/` is the
+simplest per-region streamed case (a scored scatter, GPU + Canvas2D behind one
+model); `plugins/canvas/src/LinearBasicDisplay/` is the fullest (four shader
+passes) but uses the whole-map `laidOutDataMap` form for cross-region layout, so
+start from Manhattan when your regions are independent.
 
 ## Files to create
 
@@ -123,14 +118,13 @@ export type ScoreRenderingBackend = PerRegionRenderingBackend<
 ## Step 2: Write the shaders
 
 Create a `.slang` file. JBrowse uses a Slang-derived shader language that
-compiles to both WGSL (WebGPU) and GLSL (WebGL2):
-
-Modules are referenced by bare name (`import hpmath;`), not by file path. The
-shared helpers live in `packages/render-core/src/shaders/` (`hpmath` for the
-high-precision genomic→pixel transform, `colorPack` for unpacking packed
-colors). The example below declares its uniforms inline; if several passes share
-a struct, put it in a sibling module (`scoreUniforms.slang`, starting with
-`module scoreUniforms;` and declaring a `public struct`).
+compiles to both WGSL (WebGPU) and GLSL (WebGL2). Modules are referenced by bare
+name (`import hpmath;`), not file path; the shared helpers live in
+`packages/render-core/src/shaders/` (`hpmath` for the high-precision
+genomic→pixel transform, `colorPack` for unpacking packed colors). The example
+declares its uniforms inline; if several passes share a struct, put it in a
+sibling module (`scoreUniforms.slang`, starting `module scoreUniforms;` with a
+`public struct`).
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/shaders/score.slang -->
 
@@ -217,11 +211,10 @@ pnpm add -D @jbrowse/shader-tools
 npx jbrowse-build-shaders        # or: ... build-shaders src/.../score.slang
 ```
 
-Run it from your project root. It scans for `*.slang`, fetches a pinned `slangc`
-on first use, and writes each `*.generated.ts` next to its source. The shared
-modules (`hpmath`, `colorPack`) resolve from your installed
-`@jbrowse/render-core`. Inside this repo the same tool runs as
-`pnpm gen:shaders`.
+Run it from your project root: it scans for `*.slang`, fetches a pinned `slangc`
+on first use, and writes each `*.generated.ts` next to its source (`hpmath` /
+`colorPack` resolve from your installed `@jbrowse/render-core`). Inside this repo
+the same tool runs as `pnpm gen:shaders`.
 
 :::note
 
@@ -233,11 +226,11 @@ checkout and copy the emitted `*.generated.ts` into your plugin.
 
 Genomic positions travel as absolute `uint` attributes; convert them with the
 `bpToClipX` wrapper above and nothing else. The `bpHi`/`bpLo` split it hides
-exists because float32 can't represent every base past ~16.7 Mbp, and it is
-confined to that one line — in TypeScript outside uniform writes, use plain
+exists because float32 can't represent every base past ~16.7 Mbp, and it stays
+confined to that one line; in TypeScript outside uniform writes, use plain
 `bp - bpStart`.
 
-The `canvas_width` / `canvas_height` uniforms are CSS pixels, so do not scale by
+The `canvas_width` / `canvas_height` uniforms are CSS pixels, so don't scale by
 `devicePixelRatio` in your uniform writes.
 
 ## Step 3: GPU renderer
@@ -523,13 +516,11 @@ export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
 contract (one upload autorun, one render autorun), giving each region key its
 own upload autorun to avoid O(N²) re-uploads as regions stream in. Only displays
 that lay features into Y-rows _across_ regions (`LinearBasicDisplay`,
-alignments) need the whole-map `laidOutDataMap` form instead.
-
-The model omits `fetchNeeded` for brevity; add it exactly as on the Canvas2D
-path
-([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model)):
-it calls `fetchEachRegion` and writes each region through `setRpcData`. Full
-detail: [the data fetching pipeline](/docs/developer_guides/data_fetching).
+alignments) need the whole-map `laidOutDataMap` form instead. `fetchNeeded`
+calls `fetchEachRegion` and writes each region through `setRpcData`, exactly as
+on the Canvas2D path
+([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model));
+full detail in [the data fetching pipeline](/docs/developer_guides/data_fetching).
 
 Any change to `rpcProps()` triggers a full worker re-fetch (via
 `SettingsInvalidate`), so keep frequently-changing values (scroll, zoom) in
@@ -540,13 +531,12 @@ with no refetch (a color or scale change) go in a separate `gpuProps()` method
 
 ## Step 7: React component
 
-Render the canvas through the shared `DisplayChrome` (the wrapper that supplies
-a display's _chrome_: the UI framing around your canvas (loading scrim, error
-bar, "region too large" banner, in the sense of "browser chrome") plus
-WebGL/WebGPU context-loss recovery). It is the **only** place
-`useRenderingBackend` is called. A display must not call the hook itself
+Render the canvas through the shared `DisplayChrome`. It frames your canvas
+(loading scrim, error bar, "region too large" banner) and handles WebGL/WebGPU
+context-loss recovery, and is the **only** place `useRenderingBackend` is called
+— a display must not call the hook itself
 ([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-api)).
-Its render-prop child makes it agnostic to how many canvases a display draws.
+Its render-prop child keeps it agnostic to how many canvases a display draws.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
 
@@ -608,8 +598,8 @@ full registration pattern).
   the worker boundary.
 - `rpcProps` must not contain fetch results. `SettingsInvalidate` watches
   `rpcProps()`; putting derived cell data there creates an infinite fetch loop.
-- Shader uniforms use CSS pixels. `canvas_width`/`canvas_height` are CSS pixels;
-  do not scale by `devicePixelRatio` before writing them.
+- Shader uniforms use CSS pixels: don't scale `canvas_width`/`canvas_height` by
+  `devicePixelRatio` before writing them.
 - Never edit `*.generated.ts`. Always edit `.slang` and run `pnpm gen:shaders`;
   CI enforces this with `git diff --exit-code`.
 - Renderers stay stateless. Don't cache per-region data on the renderer class

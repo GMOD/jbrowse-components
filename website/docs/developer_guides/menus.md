@@ -4,21 +4,22 @@ description: Add items to the top-level application menu bar
 guide_category: Creating pluggable elements
 ---
 
+**TL;DR:** Add top-level menus from your plugin's `configure()` (guarded by
+`isAbstractMenuManager`), and extend track/context menus by redefining
+`trackMenuItems`/`contextMenuItems` on the display model.
+
 ## Adding a top-level menu
 
-These are the menus that appear in the top bar of JBrowse Web and JBrowse
-Desktop. By default, there are `File`, `Add`, `Tools`, and `Help` menus.
-
-You can add your own menu, or you can add menu items or sub-menus to the
-existing menus and sub-menus. Sub-menus can be arbitrarily deep.
+The top bar of JBrowse Web and Desktop has `File`, `Add`, `Tools`, and `Help`
+menus by default. You can add your own menu, add items or sub-menus to existing
+ones, and nest sub-menus arbitrarily deep.
 
 <Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
 
-You add menus in the `configure` method of your plugin. Not all JBrowse products
-have top-level menus. Web and Desktop do, embeddable views like JBrowse Linear
-View don't. Check support with `isAbstractMenuManager` in the `configure`
-method, so the rest of the plugin still works if there is no menu. Here's an
-example that adds an "Open My View" item to the `Add` menu.
+Add menus in your plugin's `configure` method. Only Web and Desktop have
+top-level menus; embeddable products like JBrowse Linear View don't. Guard with
+`isAbstractMenuManager` so the rest of the plugin still works when there is no
+menu. This example adds an "Open My View" item to the `Add` menu.
 
 ```js
 import Plugin from '@jbrowse/core/Plugin'
@@ -48,9 +49,9 @@ class MyPlugin extends Plugin {
 
 ## Adding track menu items
 
-If you create a custom track, you can populate the track menu items using the
-`trackMenuItems` view on the track model. To append items to menu items from the
-base display, grab `trackMenuItems` from the extended model and redefine it:
+A custom track populates its track menu via the `trackMenuItems` view on the
+track model. To append to the base display's items, capture the super
+`trackMenuItems` and redefine the getter:
 
 ```js
 types
@@ -78,16 +79,14 @@ types
 
 ## Adding track context-menu items
 
-When you right-click in a linear track, a context menu will appear if there are
-any menu items defined for it.
+Right-clicking a linear track shows a context menu when items are defined for
+it. Items can vary by whether the click hit a feature and by which feature.
 
 <Figure src="/img/linear_align_ctx_menu.png" caption="A screenshot of a context menu available on a linear genome view track. Here, we see the context menu of a feature right-clicked on a LinearAlignmentsDisplay."/>
 
-It's possible to add items to that menu, and items can vary by whether the click
-hit a feature, and by which feature. This is done by extending the
-`contextMenuItems` view of the display model via the
+Extend the display model's `contextMenuItems` view via the
 `Core-extendPluggableElement`
-[extension point](/docs/developer_guides/extension_points). Here is an example:
+[extension point](/docs/developer_guides/extension_points):
 
 ```js
 class SomePlugin extends Plugin {
@@ -106,8 +105,6 @@ class SomePlugin extends Plugin {
                 contextMenuItems() {
                   const feature = self.contextMenuFeature
                   if (!feature) {
-                    // we're not adding any menu items since the click was not
-                    // on a feature
                     return superContextMenuItems()
                   }
                   return [
@@ -136,12 +133,8 @@ class SomePlugin extends Plugin {
 
 ## MenuItems objects
 
-You can add menus or add items to existing menus in several places.
-
-In these different places, a `MenuItem` object defines the menu item's text,
-icon, action, and other attributes.
-
-Types of `MenuItem`s:
+A `MenuItem` object defines a menu item's text, icon, action, and other
+attributes. Types of `MenuItem`s:
 
 - Normal - a standard menu item that performs an action when clicked
 - Checkbox - a menu item that has a checkbox
@@ -228,14 +221,13 @@ Here is an example array of MenuItems and the resulting menu:
 
 ## Root model Menu API
 
-The root model exposes actions for customizing the top-level menus at runtime,
-typically called from a plugin's `configure()`, guarded by
-`isAbstractMenuManager` as shown above. Each takes a `menuName`/`menuPath` and
-(for the `insert*` variants) a `position` that counts from the end when
-negative, and returns the new length of the affected menu. Their signatures and
-descriptions are auto-generated from the model, so see the
-[`RootAppMenuMixin` state model](/docs/models/rootappmenumixin) for the
-authoritative reference:
+The root model exposes actions for customizing top-level menus at runtime,
+called from a plugin's `configure()` and guarded by `isAbstractMenuManager` as
+shown above. Each takes a `menuName`/`menuPath`, and the `insert*` variants take
+a `position` that counts from the end when negative; all return the new length
+of the affected menu. See the
+[`RootAppMenuMixin` state model](/docs/models/rootappmenumixin) for
+auto-generated signatures:
 
 - [`appendMenu`](/docs/models/rootappmenumixin/#action-appendmenu) - add a
   top-level menu

@@ -6,26 +6,20 @@ description:
 guide_category: Creating pluggable elements
 ---
 
-This guide walks through a custom display that draws your own features into a
-linear genome view, the common case where you have a data file and want to plot
-each feature as a box, point, line, or any other mark. It uses the **Canvas2D
-path**, which needs no shader authoring and is the right choice for gene-scale
-annotation tracks (hundreds to thousands of features per frame).
-
-If you profile your display and Canvas2D can't hold 60fps at your real feature
-counts (roughly ≳100K features per frame, e.g. whole-genome GWAS, dense
-methylation, million-point scatters), move to the GPU path in
-[GPU displays](/docs/developer_guides/creating_gpu_display). The two paths share
-the same model shape, the same fetch chain, and the same lifecycle (only the
-renderer differs), so starting on Canvas2D never boxes you in.
+**TL;DR:** A custom display that fetches features in a worker and draws them
+with Canvas2D, no shaders required. Right for gene-scale tracks (hundreds to
+thousands of features per frame); move to
+[GPU displays](/docs/developer_guides/creating_gpu_display) only when a profile
+shows Canvas2D can't hold 60fps (roughly ≳100K features per frame). Both paths
+share the same model, fetch chain, and lifecycle, so starting here never boxes
+you in.
 
 This is a **build-step plugin** path: it bundles `@jbrowse/render-core` and
 composes mixins from `@jbrowse/plugin-linear-genome-view`, neither of which a
-[no-build plugin](/docs/developer_guides/no_build_plugin) can pull in. You're
-building against those two packages' exported APIs — a larger, faster-moving
-surface than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports) —
-so pin the versions you develop against and expect the occasional rename across
-minor releases.
+[no-build plugin](/docs/developer_guides/no_build_plugin) can pull in. You build
+against those packages' exported APIs, a larger and faster-moving surface than
+[`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
+versions you develop against.
 
 <Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
@@ -41,34 +35,28 @@ pack into plain/typed data       compute renderState each frame (no fetch)
 return (absolute uint32 bp)  →   draw the visible blocks into a <canvas>
 ```
 
-- The worker fetches and returns compact data, never pixels. All genomic
-  positions crossing the worker boundary are absolute (not region-relative).
-- The model owns the fetched data (`rpcDataMap`), a cheap per-frame
-  `renderState`, and the fetch/draw wiring. Mixins supply the fetch lifecycle
-  and the draw lifecycle; you don't write autoruns by hand.
-- The renderer is a small class that paints the visible blocks with an ordinary
-  `CanvasRenderingContext2D`. The same pure draw function backs SVG export.
+The worker returns compact data, never pixels, with all genomic positions
+absolute (not region-relative). The model owns the fetched data (`rpcDataMap`),
+a cheap per-frame `renderState`, and the fetch/draw wiring; mixins supply the
+fetch and draw lifecycles. The renderer paints the visible blocks with an
+ordinary `CanvasRenderingContext2D`, and the same pure draw function backs SVG
+export.
 
-A few terms recur throughout the code below (the
+Three terms recur below (the
 [architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
-is the fuller list):
+is fuller):
 
-- **region** — one entry of `view.displayedRegions` (a chromosome or a
-  sub-interval of one). Your worker fetches, and your model stores, data one
-  region at a time.
-- **block** — a visible slice of a region with its on-screen pixel span. One
-  region can produce several blocks; you draw per block.
-- **`displayedRegionIndex`** — the zero-based index of a region in
-  `view.displayedRegions`. It's the join key between the model's `rpcDataMap`
-  and the blocks: `rpcDataMap.get(block.displayedRegionIndex)` fetches the data
-  for the region a block belongs to.
+- **region** — one entry of `view.displayedRegions`. Your worker fetches and
+  stores data one region at a time.
+- **block** — a visible slice of a region with its on-screen pixel span. You
+  draw per block.
+- **`displayedRegionIndex`** — a region's index in `view.displayedRegions`, the
+  join key between `rpcDataMap` and the blocks:
+  `rpcDataMap.get(block.displayedRegionIndex)`.
 
 The simplest complete in-tree reference is
 `plugins/sequence/src/LinearReferenceSequenceDisplay/`, a Canvas2D-only display
-whose renderer is ~30 lines; this guide mirrors its shape. The
-[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-is the canonical reference for the lifecycle below (see
-[Canvas2D is the floor, GPU is the optional accelerator](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator)).
+whose renderer is ~30 lines; this guide mirrors its shape.
 
 ## Files to create
 
@@ -405,13 +393,10 @@ export interface ScoreRenderState {
 
 ## Step 5: The React component
 
-`DisplayChrome` is the shared wrapper that supplies a display's _chrome_: the UI
-framing around your canvas (the loading scrim, the error bar, the "region too
-large" banner), the same sense as "browser chrome." It also wires the
-rendering-backend factory and WebGL/WebGPU context-loss recovery, so every
-display gets identical status behavior. You give it your factory and render the
-`<canvas>` from the `canvasRef` it hands back; the canvas is the only part your
-display draws itself.
+`DisplayChrome` wraps your canvas with shared status chrome (loading scrim,
+error bar, "region too large" banner) and wires the rendering-backend factory
+and WebGL/WebGPU context-loss recovery. You give it your factory and render the
+`<canvas>` from the `canvasRef` it hands back.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
 
@@ -509,11 +494,10 @@ implementation. Add a `renderSvg` action per
 ## When to move to the GPU path
 
 Stay on Canvas2D until a profile shows it can't keep up. The GPU path (WebGPU
-with WebGL2/Canvas2D fallback) becomes worth its extra cost (a `.slang` shader,
-an instance packer, a GPU backend class) only at high feature counts. The model,
-fetch chain, `renderState`, and hit-testing you wrote here carry over unchanged;
-you add a GPU renderer and swap `createCanvas2DBackend` for
-`createRenderingBackend`. See
+with WebGL2/Canvas2D fallback) is worth its extra cost (a `.slang` shader, an
+instance packer, a GPU backend class) only at high feature counts. The model,
+fetch chain, `renderState`, and hit-testing carry over unchanged; you add a GPU
+renderer and swap `createCanvas2DBackend` for `createRenderingBackend`. See
 [GPU displays](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
@@ -528,11 +512,3 @@ you add a GPU renderer and swap `createCanvas2DBackend` for
   one model, plus hit-testing and LD coloring
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
   feature display with the dual GPU + Canvas2D path
-
-## See also
-
-- [Custom track and display types](/docs/developer_guides/creating_display)
-- [Data fetching pipeline](/docs/developer_guides/data_fetching)
-- [RPC and worker system](/docs/developer_guides/rpc_workers)
-- [GPU displays](/docs/developer_guides/creating_gpu_display)
-- [Adding SVG export to a display](/docs/developer_guides/svg_export)

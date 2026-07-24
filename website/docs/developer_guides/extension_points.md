@@ -4,14 +4,13 @@ description: Callbacks registered by producers and consumed across the app
 guide_category: Core concepts
 ---
 
-## What are extension points?
-
-Extension points let plugin developers register callbacks that are invoked at
-specific places in the application.
+**TL;DR:** Extension points are named callback chains. A producer fires one with
+`evaluateExtensionPoint`; plugins register callbacks with `addToExtensionPoint`,
+each receiving the previous callback's return value.
 
 ## Using extension points
 
-The basic API is that producers can say:
+A producer fires a point:
 
 ```typescript
 const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
@@ -19,19 +18,10 @@ const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
 })
 ```
 
-And consumers can say (here two separate callbacks register against the same
-point, e.g. from two different plugins):
+Consumers register callbacks against the same point (multiple plugins can each
+register one):
 
 ```typescript
-// first consumer
-pluginManager.addToExtensionPoint(
-  'ExtensionPointName',
-  (arg: { value: number }) => {
-    return { value: arg.value + 1 }
-  },
-)
-
-// second consumer
 pluginManager.addToExtensionPoint(
   'ExtensionPointName',
   (arg: { value: number }) => {
@@ -40,21 +30,19 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-Each registered callback receives the return value of the previous one as its
-argument (chained). In the example above, the producer passes `{value:1}`, the
-first consumer returns `{value:2}`, the second returns `{value:3}`, so `ret`
-would be `{value:3}`.
+Callbacks are chained: each receives the previous one's return value. If the
+producer passes `{value:1}` and two such callbacks are registered, `ret` is
+`{value:3}`.
 
 ## TypeScript types for extension points
 
-All built-in extension points are registered in the `ExtensionPointRegistry`
-interface in `@jbrowse/core/PluginManager`. The overloads of
-`addToExtensionPoint` / `evaluateExtensionPoint` / `evaluateAsyncExtensionPoint`
-automatically narrow to the registered types when you pass a known name, so
-callbacks get typed `args` and evaluate calls return the correct type without a
-cast.
+Built-in points are registered in the `ExtensionPointRegistry` interface in
+`@jbrowse/core/PluginManager`. `addToExtensionPoint` /
+`evaluateExtensionPoint` / `evaluateAsyncExtensionPoint` narrow to the
+registered types when you pass a known name, so callbacks get typed `args` and
+evaluate calls return the correct type without a cast.
 
-If you create your own extension point, register it the same way:
+Register your own point the same way:
 
 ```typescript
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -74,48 +62,28 @@ declare module '@jbrowse/core/PluginManager' {
 ```
 
 Put the `declare module` block in any file that is part of your plugin's
-compilation. Plugins that register a callback get typed `args`; callers of
-`evaluateExtensionPoint` get the typed result without a cast.
+compilation.
 
-## API description of extension points
-
-### Evaluation API
+## API
 
 ```typescript
-// extra props are optional, can pass an extra context object your extension
-// point receives
+// props is optional: an extra context object your callbacks receive
 pluginManager.evaluateExtensionPoint(extensionPointName, args, props)
-```
-
-`args` are accumulated (each callback's return value becomes the next callback's
-`args`), while `props` is passed through unchanged.
-
-There is also an async version:
-
-```typescript
-// extra props are optional, can pass an extra context object your extension
-// point receives
 pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
-```
 
-### Registration API
-
-```typescript
 pluginManager.addToExtensionPoint(extensionPointName, args => {
-  /* do something */
-  return newArgs // returned value is passed as args to the next registered callback
+  return newArgs // passed as args to the next callback in the chain
 })
 ```
 
-`addToExtensionPoint` creates the extension point if it doesn't exist yet. The
-returned value becomes the `args` for the next callback in the chain.
+`args` are accumulated (each callback's return value becomes the next callback's
+`args`); `props` is passed through unchanged. `addToExtensionPoint` creates the
+point if it doesn't exist yet.
 
-## Current listing of extension points used in codebase
+## Extension point listing
 
-The table below is an at-a-glance index of every extension point registered in
-the codebase. It is generated from the `#extensionPoint` tags at each point's
-fire/registration site, so it lists every tagged point; the detailed sections
-that follow are hand-written.
+Generated from the `#extensionPoint` tags at each point's fire/registration
+site. The detailed sections that follow are hand-written.
 
 <!-- EXTENSION_POINTS_INDEX START -->
 
@@ -160,8 +128,6 @@ that follow are hand-written.
 
 <!-- EXTENSION_POINTS_INDEX END -->
 
-The detailed reference for the core extension points follows.
-
 ### Core-extendPluggableElement
 
 type: synchronous
@@ -169,10 +135,10 @@ type: synchronous
 - `args` - `PluggableElementType` - the pluggable element being installed
 - `props` - none
 
-Used to add extra functionality to e.g. state tree models, for example extra
-right-click context menus. Your callback receives every pluggable element
-registered to the system. See [Adding menus](/docs/developer_guides/menus) for a
-worked example that uses this point to add track context-menu items.
+Add functionality to pluggable elements, e.g. extra right-click context menus.
+Your callback receives every pluggable element registered to the system. See
+[Adding menus](/docs/developer_guides/menus) for a worked example adding track
+context-menu items.
 
 https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotReadVsRef/index.ts#L12-L45
 
@@ -182,11 +148,9 @@ type: synchronous
 
 - `args` - adapter config
 
-Used to infer an adapter type given a location type from the "Add track"
-workflow. You will receive a callback asking if you can provide an adapter
-config given a location object. See the
-[add track workflow guide](/docs/developer_guides/creating_addtrack_workflow)
-for how this fits into adding tracks.
+Infer an adapter type from a location in the "Add track" workflow: your callback
+is asked whether it can provide an adapter config for a given location. See the
+[add track workflow guide](/docs/developer_guides/creating_addtrack_workflow).
 
 https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/index.ts#L27-L53
 
@@ -196,7 +160,7 @@ type: synchronous
 
 - `args` - `FileLocation` object
 
-Used to infer a track type given a location type from the "Add track" workflow.
+Infer a track type from a location in the "Add track" workflow.
 
 Example:
 https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/index.ts#L108-L118
@@ -205,7 +169,7 @@ https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/inde
 
 type: synchronous
 
-Used to extend the session model itself with new features.
+Extend the session model itself with new features.
 
 - `args` - `AbstractSessionModel` - instance of the session model
 
@@ -213,11 +177,10 @@ Used to extend the session model itself with new features.
 
 type: synchronous
 
-Adds an option to provide a different component for the "About this track"
-dialog.
+Provide a different component for the "About this track" dialog.
 
 - `args` - a `ReactComponent`, by default the AboutTrack dialog
-- `props` - an argument of the format below
+- `props` - an object of the format below
 
 ```typescript
 interface props {
@@ -243,10 +206,9 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-Adds an extra panel to the "About this track" dialog. Return a React component
-that renders its own card chrome (use `BaseCard` for a titled section); it is
-rendered below the built-in Configuration/Metadata cards. The default renders
-nothing.
+Adds an extra panel to the "About this track" dialog, rendered below the
+built-in Configuration/Metadata cards. Return a React component that renders its
+own card chrome (use `BaseCard` for a titled section).
 
 - `args` - a `ReactComponent`, by default a no-op that renders nothing
 - `props` - the object below, also passed to your component
@@ -277,21 +239,12 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-:::note
-
-This extension point previously returned a `{ name, Component }` descriptor and
-the dialog supplied the titled card. It now returns a bare React component that
-renders its own chrome (matching `Core-replaceAbout` / `Core-replaceWidget`).
-Wrap your content in `BaseCard` to keep the old titled-section look.
-
-:::
-
 ### Core-customizeAbout
 
 type: synchronous
 
-Lets you transform the config snapshot shown in the "About this track" dialog,
-after any `formatAbout` config has already been applied.
+Transform the config snapshot shown in the "About this track" dialog, after any
+`formatAbout` config has been applied.
 
 - `args` - an object of the form `{ config: Record<string, unknown> }`, the
   track config snapshot with `formatAbout` already merged in
@@ -320,8 +273,10 @@ pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) => {
 
 type: synchronous
 
-Adds an option to provide a different component for a given widget, drawer, or
-modal.
+Provide a different component for a given widget, drawer, or modal. Singular
+(one widget renders): return your own component to replace/wrap the default, or
+return the default unchanged to opt out. Contrast `Core-extraFeaturePanel`,
+which accumulates additive panels.
 
 - `args` - a `ReactComponent`
 - `props` - an object of the type below
@@ -335,20 +290,14 @@ interface props {
 }
 ```
 
-See also: `Core-extraFeaturePanel`. Unlike that point (which accumulates an
-array of additive panels), `Core-replaceWidget` is singular (one widget
-renders), so it stays a single-component fold: return your own component to
-replace/wrap the default, or return the default unchanged to opt out.
+Return value: the new React component.
 
-Return value: The new React component you want to use
-
-Note: Core-replaceWidget is called any time any widget opens, so if you are
-trying to only customize e.g. the feature details widget, you can filter on
-`model.trackId` because only feature detail widgets have a `trackId` field. You
+This point fires whenever any widget opens. To target only the feature details
+widget, filter on `model.trackId` (only feature detail widgets have one). You
 can also filter on `model.type` (e.g. `'AlignmentsFeatureWidget'`), but the type
-string varies depending on track type. To match a track id robustly (including
-"user copies" of a track, which get a timestamp and `-sessionTrack` suffix
-appended), use the `matchTrackId` helper with a `RegExp`:
+string varies by track type. Match a track id robustly with the `matchTrackId`
+helper and a `RegExp` — this also matches "user copies" of a track, which get a
+timestamp and `-sessionTrack` suffix appended to their id:
 
 ```tsx
 import { matchTrackId } from '@jbrowse/core/util'
@@ -385,25 +334,19 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-**Why trackId, not config:** it is not always possible to retrieve the
-configuration associated with a track that produced the feature details.
-Therefore, we check `model.trackId` that produced the popup instead.
-
-**Matching "user copy" tracks:** if you want e.g. a "User copy" of your track to
-get the same treatment, match the trackId with a `RegExp` via `matchTrackId`
-(shown above) rather than an exact compare. The copy of a track has a timestamp
-and `-sessionTrack` appended to its id.
+We match on `model.trackId` rather than the config because the config that
+produced the feature details isn't always retrievable.
 
 ### Core-extraFeaturePanel
 
 type: synchronous
 
-Adds extra panels to the feature details widget. This point **accumulates an
-array of React components**: each callback appends its own panel and returns the
-array, so panels from multiple plugins compose instead of overwriting one
-another. Each component renders its own card chrome (use `BaseCard` for a titled
-section) and is rendered after the built-in Attributes/Sequence sections. The
-default is an empty array.
+Adds extra panels to the feature details widget. **Accumulates an array of React
+components**: each callback appends its own panel and returns the array, so
+panels from multiple plugins compose instead of overwriting one another. Each
+component renders its own card chrome (use `BaseCard` for a titled section) and
+is rendered after the built-in Attributes/Sequence sections. Defaults to an
+empty array.
 
 - `args` - `React.ComponentType<FeaturePanelProps>[]` - the accumulated panels,
   empty by default. Append yours and return the array.
@@ -418,13 +361,11 @@ interface props {
 }
 ```
 
-The `model` has `model.trackId`, `model.trackType`, and `model.track`, though
-`model.track` may be undefined if the user closed the track (trackId/trackType
-remain defined either way). Derive the session with `getSession(model)` if you
-need it.
+`model` has `trackId`, `trackType`, and `track` (which may be undefined if the
+user closed the track; trackId/trackType remain defined either way). Derive the
+session with `getSession(model)` if needed.
 
-A panel decides for itself whether it applies by returning `null`. This is
-idiomatic React and keeps the registration trivial:
+A panel can decide for itself whether it applies by returning `null`:
 
 ```tsx
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
@@ -442,9 +383,8 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-Or scope at registration so you only append when the track matches. Use
-`matchTrackId` (accepts a `RegExp`) so a "user copy" of the track, which gets a
-timestamp and `-sessionTrack` suffix appended to its id, still matches:
+Or scope at registration so you only append when the track matches, using
+`matchTrackId` (see `Core-replaceWidget` above):
 
 ```tsx
 import { matchTrackId } from '@jbrowse/core/util'
@@ -457,16 +397,6 @@ pluginManager.addToExtensionPoint(
       : panels,
 )
 ```
-
-:::note
-
-This extension point previously folded to a **single** component. It now
-accumulates an **array**. Append your component (`[...panels, MyPanel]`) and
-return the array. A legacy callback that returns a bare component is still
-tolerated (it's normalized into the array), but to compose with other plugins'
-panels you must append rather than replace.
-
-:::
 
 ### Core-preProcessTrackConfig
 
@@ -504,8 +434,8 @@ interface props {
 }
 ```
 
-Used to add new menu items to the "shopping cart" in the header of the
-hierarchical track menu when tracks are added to the selection.
+Add menu items to the "shopping cart" in the header of the hierarchical track
+menu when tracks are added to the selection.
 
 Example:
 https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
@@ -515,9 +445,9 @@ https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/CreateMu
 type: synchronous
 
 Replaces the dialog that opens when a user clicks a folder category (supertrack)
-in the hierarchical track selector. The default dialog shows a faceted track
-selector scoped to the tracks in that category. Use this extension point to
-provide a custom UI for a specific category.
+in the hierarchical track selector. The default shows a faceted track selector
+scoped to that category; use this point to provide custom UI for a specific
+category.
 
 - `args` - a React component (the default `DefaultFolderDialog`)
 - `props` - an object of the type below
@@ -543,72 +473,12 @@ interface DialogProps {
 ```
 
 The `categoryId` format is `Tracks-{categoryPath}`, where `categoryPath` is the
-comma-joined path of category names matching the track's `category` config
-field. For example, a track with `"category": ["Wiggle", "My Subcategory"]`
-produces `categoryId = "Tracks-Wiggle,My Subcategory"`.
+comma-joined path of category names from the track's `category` config field, so
+`"category": ["Wiggle", "My Subcategory"]` produces
+`categoryId = "Tracks-Wiggle,My Subcategory"`. Return the default component
+unchanged for categories you don't handle.
 
-Example: custom dialog for a specific folder category
-
-```javascript
-pluginManager.addToExtensionPoint(
-  'TrackSelector-folderDialog',
-  (DefaultComponent, { categoryId, model, subtracks }) => {
-    if (categoryId !== 'Tracks-Wiggle,My Subcategory') {
-      return DefaultComponent
-    }
-
-    const React = pluginManager.jbrequire('react')
-    const { observer } = pluginManager.jbrequire('mobx-react')
-    const { Dialog, DialogTitle, DialogContent, DialogActions, Button } =
-      pluginManager.jbrequire('@mui/material')
-
-    return observer(function MyFolderDialog({
-      model,
-      title,
-      subtracks,
-      handleClose,
-    }) {
-      const { shownTrackIds, view } = model
-      const tracks = subtracks.filter(s => s.type === 'track')
-
-      return React.createElement(
-        Dialog,
-        { open: true, onClose: handleClose, maxWidth: 'sm', fullWidth: true },
-        React.createElement(DialogTitle, null, title),
-        React.createElement(
-          DialogContent,
-          null,
-          ...tracks.map(track =>
-            React.createElement(
-              'div',
-              {
-                key: track.trackId,
-                onClick: () => view.toggleTrack(track.trackId),
-                style: {
-                  padding: 12,
-                  marginBottom: 8,
-                  border: shownTrackIds.has(track.trackId)
-                    ? '2px solid #1976d2'
-                    : '2px solid #ddd',
-                  cursor: 'pointer',
-                },
-              },
-              track.name,
-            ),
-          ),
-        ),
-        React.createElement(
-          DialogActions,
-          null,
-          React.createElement(Button, { onClick: handleClose }, 'Close'),
-        ),
-      )
-    })
-  },
-)
-```
-
-A more complete example using this extension point is in
+For a complete example see
 [test_data/volvox/umd_plugin.js](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js)
 (search for `TrackSelector-folderDialog`).
 
@@ -616,11 +486,11 @@ A more complete example using this extension point is in
 
 type: async
 
-Launches a linear genome view. Rarely extended directly, but useful as a
-reference for implementing a `LaunchView-*` point for your own view type. See
+Launches a linear genome view. Rarely extended directly, but a useful reference
+for implementing a `LaunchView-*` point for your own view type. See
 [Creating view types](/docs/developer_guides/creating_view).
 
-- `args` - an object with the following format
+- `args` - an object of the format below
 
 ```typescript
 import type { LaunchLinearGenomeViewArgs } from '@jbrowse/plugin-linear-genome-view'
@@ -644,7 +514,7 @@ type: async
 
 Launches a circular view.
 
-- `args` - an object with the following format
+- `args` - an object of the format below
 
 ```typescript
 interface args {
@@ -662,7 +532,7 @@ type: async
 
 Launches an SV inspector.
 
-- `args` - an object with the following format
+- `args` - an object of the format below
 
 ```typescript
 interface args {
@@ -681,7 +551,7 @@ type: async
 
 Launches a spreadsheet view.
 
-- `args` - an object with the following format
+- `args` - an object of the format below
 
 ```typescript
 interface args {
@@ -748,9 +618,9 @@ interface props {
 }
 ```
 
-Allows rendering a custom overlay component inside the LinearGenomeView
-TracksContainer. Used e.g. to render highlights as a full-height div over the
-tracks area. Append to the array and return it.
+Render a custom overlay inside the LinearGenomeView TracksContainer, e.g.
+highlights as a full-height div over the tracks area. Append to the array and
+return it.
 
 ### LinearGenomeView-OverviewScalebarComponent
 
@@ -767,8 +637,8 @@ interface props {
 }
 ```
 
-Allows rendering custom overlay components inside the overview scalebar, e.g.
-bookmark highlights. Append to the array and return it.
+Render custom overlays inside the overview scalebar, e.g. bookmark highlights.
+Append to the array and return it.
 
 ### LinearGenomeView-searchResultSelected
 
@@ -786,13 +656,11 @@ interface props {
 }
 ```
 
-Called when a search result is selected in the LinearGenomeView search box.
-Fires after navigation (if the result has a location). Useful for taking
-additional action after a search, e.g. selecting a corresponding feature.
-
-This is a notification-style extension point: the payload lives in `props`
-(passed unchanged to every callback) rather than `args`, because callbacks
-should not be able to alter what subsequent callbacks see.
+Called when a search result is selected in the LinearGenomeView search box,
+after navigation (if the result has a location). Useful for taking further
+action, e.g. selecting a corresponding feature. It's a notification point: the
+payload lives in `props` (passed unchanged to every callback) rather than
+`args`, so callbacks can't alter what later callbacks see.
 
 Example:
 
@@ -832,10 +700,8 @@ interface props {
 }
 ```
 
-Allows plugins to add custom radio options to the DotplotView import form. When
-a user selects a custom radio option, the plugin's React component is rendered.
-
-Each option in the array should have the following structure:
+Add custom radio options to the DotplotView import form; selecting one renders
+the plugin's React component. Each option:
 
 ```typescript
 interface DotplotImportFormSyntenyOption {
@@ -879,12 +745,10 @@ type: synchronous
 - `args` - `SyntenyFileFormatOption[]` - array of file format options for the
   "New track" panel in the dotplot import form
 
-Allows plugins to add support for new synteny file formats in the DotplotView
-import form. The built-in formats (`.paf`, `.delta`, `.out`, `.chain`,
-`.anchors`, `.anchors.simple`, `.pif.gz`) are the initial value; each callback
-appends to or replaces entries.
-
-Each option should have the following structure:
+Add support for new synteny file formats in the DotplotView import form. The
+built-in formats (`.paf`, `.delta`, `.out`, `.chain`, `.anchors`,
+`.anchors.simple`, `.pif.gz`) are the initial value; each callback appends to or
+replaces entries. Each option:
 
 ```typescript
 interface SyntenyFileFormatOption {
@@ -945,10 +809,8 @@ interface props {
 }
 ```
 
-Allows plugins to add custom radio options to the LinearSyntenyView import form.
-Same pattern as `DotplotView-ImportFormSyntenyOptions`.
-
-Each option should have the following structure:
+Add custom radio options to the LinearSyntenyView import form. Same pattern as
+`DotplotView-ImportFormSyntenyOptions`. Each option:
 
 ```typescript
 import type { LinearSyntenyImportFormSyntenyOption } from '@jbrowse/plugin-linear-comparative-view'
@@ -964,58 +826,15 @@ interface option {
 }
 ```
 
-Example:
+Register it the same way as `DotplotView-ImportFormSyntenyOptions` above,
+appending your `{ value, label, ReactComponent }` option to the array.
 
-```typescript
-import type { LinearSyntenyImportFormSyntenyOption } from '@jbrowse/plugin-linear-comparative-view'
+### Adding your own extension points
 
-pluginManager.addToExtensionPoint(
-  'LinearSyntenyView-ImportFormSyntenyOptions',
-  (options: LinearSyntenyImportFormSyntenyOption[]) => {
-    return [
-      ...options,
-      {
-        value: 'my-server-synteny',
-        label: 'Load from my server',
-        ReactComponent: MySyntenyServerComponent,
-      },
-    ]
-  },
-)
-```
-
-### Extension point footnote
-
-Users that want to add further extension points can do so, by simply calling
-
-```typescript
-const returnVal = pluginManager.evaluateExtensionPoint(
-  'YourCustomNameHere',
-  processThisValue,
-  extraContext,
-)
-```
-
-Then, any code that had used:
-
-```typescript
-pluginManager.addToExtensionPoint(
-  'YourCustomNameHere',
-  (processThisValue, extraContext) => {
-    /* the first arg is the "processThisValue" from the extension point, it may
-    get mutated if multiple extension points are chained together
-
-    the second argument to the extension point is the extra context from
-    evaluating the extension point. it does not get mutated even if there is a
-    chain of values, it is passed as is to each one*/
-    return processThisValue
-  },
-)
-```
-
-The naming system, "Core-" just refers to the fact that these extension points
-are from our core codebase. Plugin developers may choose their own prefix to
-avoid collisions.
+Fire any name with `evaluateExtensionPoint('YourCustomNameHere', value, props)`
+and let other code register against it with `addToExtensionPoint` (see the API
+section above). The `Core-` prefix just marks points from the core codebase;
+choose your own prefix to avoid collisions.
 
 ## See also
 

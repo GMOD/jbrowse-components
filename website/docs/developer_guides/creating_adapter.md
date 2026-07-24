@@ -10,10 +10,14 @@ guide_category: Creating pluggable elements
 An adapter is a class that fetches and parses your data and returns it in a
 format JBrowse understands.
 
-To display data from a new source using JBrowse's existing gene displays, write
-a custom adapter. For custom rendering, you'll also need a
+**TL;DR:** extend `BaseFeatureDataAdapter`, implement `getRefNames()` and
+`getFeatures()` (an rxjs stream of `SimpleFeature`s), and register the type in
+your plugin.
+
+To display data from a new source with JBrowse's existing gene displays, write a
+custom adapter. For custom rendering, you'll also need a
 [custom display](/docs/developer_guides/creating_display), which owns the
-drawing as well as the state and menus.
+drawing, state, and menus.
 
 ## Adapter types
 
@@ -47,24 +51,22 @@ import type { Observable } from 'rxjs'
 import type { MyAdapterConfig } from './configSchema.ts'
 
 export default class MyAdapter extends BaseFeatureDataAdapter<MyAdapterConfig> {
-  // The base class stores `config`, `getSubAdapter`, and `pluginManager` for
-  // you and exposes `this.getConf('slotName')` — no constructor is needed
-  // unless you set up instance state.
+  // Base class stores config/getSubAdapter/pluginManager and exposes
+  // this.getConf('slotName'); no constructor needed unless you set up state.
 
-  // refNames this adapter serves, used for refName renaming
   async getRefNames(opts?: BaseOptions): Promise<string[]> {
     return []
   }
 
-  // stream the features overlapping `region`; positions are 0-based half-open
+  // features overlapping region, positions 0-based half-open
   getFeatures(region: Region, opts?: BaseOptions): Observable<Feature> {
     // ...
   }
 }
 ```
 
-Implement `getRefNames` (used for refName renaming) and `getFeatures` (returns
-an rxjs observable stream of features). Type the adapter on your config schema
+Implement `getRefNames` (used for refName renaming) and `getFeatures` (an rxjs
+observable stream of features). Type the adapter on your config schema
 (`BaseFeatureDataAdapter<MyAdapterConfig>`, where `MyAdapterConfig` comes from
 your [config schema](/docs/developer_guides/configuration_schema)) so
 `this.getConf(...)` reads are typed.
@@ -153,14 +155,12 @@ interface Region {
 ```
 
 `refName`/`start`/`end` specify the genomic range. `assemblyName` is used when
-your adapter handles multiple assemblies (e.g. synteny or multi-assembly REST
-API). `originalRefName` is the queried refname before ref renaming. For example,
-if the BAM uses chr1 but the reference uses 1, originalRefName is 1 and refName
-is chr1.
+your adapter handles multiple assemblies (e.g. synteny or a multi-assembly REST
+API). `originalRefName` is the queried refname before ref renaming: if the BAM
+uses chr1 but the reference uses 1, `originalRefName` is 1 and `refName` is chr1.
 
 The options parameter is `BaseOptions` (from
-`@jbrowse/core/data_adapters/BaseAdapter`); the fields an adapter typically
-reads:
+`@jbrowse/core/data_adapters/BaseAdapter`). Fields an adapter typically reads:
 
 ```typescript
 interface BaseOptions {
@@ -182,9 +182,9 @@ interface BaseOptions {
 - any `renderProps` from the display model type are also spread in
 
 Returns an rxjs `Observable`. Emit features with
-`observer.next(new SimpleFeature(...))` and signal completion with
-`observer.complete()`. You don't need a `try`/`catch`: `ObservableCreate`
-forwards a thrown error (or a rejected async callback) to `observer.error()`.
+`observer.next(new SimpleFeature(...))` and finish with `observer.complete()`.
+No `try`/`catch` needed: `ObservableCreate` forwards a thrown error (or rejected
+async callback) to `observer.error()`.
 
 ## See also
 

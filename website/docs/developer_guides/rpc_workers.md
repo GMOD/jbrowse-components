@@ -9,6 +9,11 @@ GPU buffers) inside web workers via an RPC layer. The main thread dispatches
 calls by name; a pool of workers receives them and returns results via
 structured clone.
 
+**TL;DR:** Subclass `RpcMethodType` with an `execute()`, register it with
+`addRpcMethod` in your plugin's `install()`, and call it with
+`rpcManager.call(sessionId, name, args)`. Only structured-clone-safe values
+cross the boundary.
+
 ## The RPC lifecycle
 
 ```
@@ -22,8 +27,8 @@ rpcManager.call('MyMethod', args)
 result
 ```
 
-Sessions are sticky: a `sessionId` is assigned to one worker via round-robin and
-stays there, so adapter caches remain warm across calls from the same session.
+Sessions are sticky: a `sessionId` is pinned to one worker (round-robin), so
+adapter caches stay warm across calls from the same session.
 
 ## Implementing an RPC method
 
@@ -48,7 +53,7 @@ export default class MyRpcMethod extends RpcMethodType {
   name = 'MyRpcMethod'
 
   async execute(args: MyRpcArgs, rpcDriverClassName: string) {
-    // Always deserialize first — handles blob map and other transport concerns
+    // deserialize first: handles the blob map and other transport concerns
     const { sessionId, adapterConfig, region, stopToken } =
       await this.deserializeArguments(args, rpcDriverClassName)
 
@@ -58,7 +63,6 @@ export default class MyRpcMethod extends RpcMethodType {
       adapterConfig,
     )
 
-    // Do your work here — this runs in the worker
     return computeResult(dataAdapter, region, stopToken)
   }
 }
@@ -67,8 +71,8 @@ export default class MyRpcMethod extends RpcMethodType {
 ### Renaming regions
 
 If your method receives `Region` objects, call `renameRegions` inside
-`serializeArguments` so refName aliases are resolved before the args cross the
-worker boundary:
+`serializeArguments` to resolve refName aliases before the args cross the worker
+boundary:
 
 ```ts
 async serializeArguments(args: MyRpcArgs, rpcDriverClassName: string) {
@@ -90,7 +94,7 @@ async execute(args: MyRpcArgs, rpcDriverClassName: string) {
   const { sessionId, adapterConfig, region } =
     await this.deserializeArguments(args, rpcDriverClassName)
   const buf = await buildBuffer(...)
-  // Second argument is the transfer list — buffers are moved, not copied
+  // second arg is the transfer list: buffers are moved, not copied
   return rpcResult(buf, [buf.buffer])
 }
 ```
@@ -134,8 +138,8 @@ const result = await rpcManager.call(sessionId, 'MyRpcMethod', {
 
 The worker boundary uses the [Structured Clone Algorithm][sca]. Safe types:
 
-- Primitives - `string`, `number`, `boolean`, `null`, `undefined`
-- `ArrayBuffer`, typed arrays (`Uint8Array`, `Float32Array`, …) - use
+- Primitives: `string`, `number`, `boolean`, `null`, `undefined`
+- `ArrayBuffer`, typed arrays (`Uint8Array`, `Float32Array`, …) - use the
   `rpcResult` transfer list to avoid copying
 - `File`, `Blob`
 - Plain objects and arrays (recursively)
@@ -143,24 +147,24 @@ The worker boundary uses the [Structured Clone Algorithm][sca]. Safe types:
 
 **Not safe**, filtered out automatically:
 
-- Functions (including callbacks) - use `statusCallback` mechanism below
+- Functions and callbacks - use the `statusCallback` mechanism below
 - MST model nodes or observables
 - Circular references
 
 ### Status callbacks
 
-`statusCallback` props are intercepted by the RPC layer and channeled back to
-the main thread via a side-channel. Pass it through to your adapter calls:
+The RPC layer intercepts `statusCallback` props and channels them back to the
+main thread via a side-channel. Pass it through to your adapter calls:
 
 ```ts
-// Main thread
+// main thread
 await rpcManager.call(sessionId, 'MyRpcMethod', {
   statusCallback: (msg: string) => {
     if (isAlive(self)) self.setStatusMessage(msg)
   },
 })
 
-// Worker — statusCallback arrives deserialized and can be called normally
+// worker: statusCallback arrives deserialized and can be called normally
 async execute(args, rpcDriverClassName) {
   const { statusCallback } = await this.deserializeArguments(args, rpcDriverClassName)
   statusCallback?.('Loading index…')
@@ -202,7 +206,7 @@ override it per-driver in config:
 ```
 
 (Older sessions stored `workerCount` under a per-driver `drivers` map; that
-shape is still read and hoisted to the flat `workerCount` slot on load.)
+shape is still read and hoisted to the flat slot on load.)
 
 ## See also
 

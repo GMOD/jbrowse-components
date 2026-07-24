@@ -13,24 +13,15 @@ guide_category: Getting started
 - a stable and recent version of [node](https://nodejs.org/en/)
 - basic familiarity with the command line and navigating the file system
 
-## What is the difference between a no-build plugin and a "regular" plugin?
+A "regular" plugin uses the
+[plugin template](https://github.com/GMOD/jbrowse-plugin-template) and bundles
+dependencies with `rollup`. A no-build plugin has no build step and is hand
+edited, useful for
+[jexl config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
 
-A "regular" JBrowse plugin uses the
-[plugin template](https://github.com/GMOD/jbrowse-plugin-template), which uses
-`rollup` to bundle extra dependencies.
+## Adding a jexl callback
 
-In contrast, "no-build" plugins have no build step and can be hand edited. This
-can be useful for adding
-[extra jexl config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
-
-## Writing a "no-build" plugin
-
-### Example use case: Adding a jexl callback function which you can use in your config
-
-A common pattern is registering a custom jexl function to simplify config
-callbacks. Create `myplugin.js`:
-
-`myplugin.js`
+Register a custom jexl function to simplify config callbacks in `myplugin.js`:
 
 ```js
 export default class MyPlugin {
@@ -67,12 +58,9 @@ Put `myplugin.js` alongside your config file and reference it in `config.json`:
 }
 ```
 
-### Example use case: Adding a global menu item
+## Adding a global menu item
 
-Another example of a no-build plugin is to add menu items or minor extension
-points. This example adds a menu item via the plugin's `configure` method:
-
-`myplugin.js`
+This adds a menu item via the plugin's `configure` method:
 
 ```js
 export default class MyPlugin {
@@ -99,13 +87,12 @@ export default class MyPlugin {
 }
 ```
 
-### Importing with jbrequire
+## Importing with jbrequire
 
-Since no-build plugins have no build step, use `jbrequire` to access the shared
-libraries JBrowse re-exports (React, MobX, MST, MUI, and `@jbrowse/core` APIs).
-See
+With no build step, use `jbrequire` to access the shared libraries JBrowse
+re-exports (React, MobX, MST, MUI, and `@jbrowse/core` APIs). See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
-for the full story on what's available and why, and the
+and the
 [canonical list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
 
 ```js
@@ -207,30 +194,25 @@ your JBrowse session should look like the following:
 
 <Figure caption="Screenshot of a running JBrowse instance with the simple no build plugin added. Note our top level menu item has been added, and upon clicking it our widget opens." src="/img/no_build_final.png"/>
 
-## Next steps
-
-Have questions? [Contact us](/contact).
-
 ## Note: JSX syntax
 
-Writing React code without JSX is more verbose since JSX requires a build step.
-If your plugin has dependencies or you prefer TypeScript, use the
-[plugin template](https://github.com/GMOD/jbrowse-plugin-template) which
-includes a build step, bundler, and type checking.
+React without JSX is more verbose since JSX needs a build step. If your plugin
+has dependencies or you prefer TypeScript, use the
+[plugin template](https://github.com/GMOD/jbrowse-plugin-template), which
+includes a bundler and type checking.
 
 ## Note: UMD vs ESM module syntax
 
-This guide uses ESM modules (exporting a plain class), which all modern browsers
-support. For legacy browser compatibility you can also use UMD modules. See
+This guide uses ESM modules (a plain exported class), supported by all modern
+browsers. For legacy browsers you can use UMD modules instead. See
 [this example](https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127),
-which defines a specific global variable rather than exporting a class.
+which defines a global variable rather than exporting a class.
 
 ## Note: Plugins in embedded React components
 
-This no-build guide targets jbrowse-web, which loads plugins via `config.json`.
-If you are using an embedded component (`@jbrowse/react-app2` or
-`@jbrowse/react-linear-genome-view2`) the approach is different: define your
-plugin as a class and pass it in the `plugins` array to `createViewState`:
+This guide targets jbrowse-web, which loads plugins via `config.json`. Embedded
+components (`@jbrowse/react-app2` or `@jbrowse/react-linear-genome-view2`)
+instead pass the plugin class in the `plugins` array to `createViewState`:
 
 ```js
 import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
@@ -254,7 +236,4 @@ example in the `@jbrowse/react-app2` examples site for a live example.
 
 - [Writing a plugin](/docs/developer_guides/simple_plugin)
 - [Pluggable elements](/docs/developer_guides/pluggable_elements)
-- [Top-level menu items](/docs/developer_guides/menus)
 - [Custom widgets](/docs/developer_guides/creating_widget)
-- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
-- [Config guide: customizing feature colors](/docs/config_guides/customizing_feature_colors)

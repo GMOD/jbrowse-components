@@ -7,17 +7,20 @@ guide_category: Core concepts
 ---
 
 Your plugin runs _inside_ the host JBrowse app, sharing its JavaScript runtime.
-That makes "where does this import come from?" a real question with two answers:
+So "where does this import come from?" has two answers:
 
 - Re-exports are a fixed set of libraries the host already loaded. Your plugin
   must use the host's copy, not bundle its own.
 - Everything else is any other npm package. Your plugin bundles it normally.
 
+**TL;DR:** Import React, MobX, MST, MUI, and the `@jbrowse/core` APIs listed
+below normally (the plugin template externalizes them to the host's copy);
+everything else gets bundled into your plugin.
+
 ## Why re-exports exist
 
-Some libraries break if two copies are loaded at once. If your plugin bundled
-its own React or MobX, you'd have the host's instance _and_ yours running side
-by side, which causes:
+Some libraries break if two copies load at once. If your plugin bundled its own
+React or MobX, the host's instance and yours would run side by side:
 
 - React - "Invalid hook call" errors and broken context; hooks only work against
   the React instance that rendered the tree.
@@ -29,14 +32,14 @@ by side, which causes:
 - `@jbrowse/core` - pluggable-element base classes, the configuration system,
   and shared model types must be the same objects the host registers against.
 
-So JBrowse loads one copy of each and **re-exports** it to plugins. Your plugin
-reaches for the host's instance instead of bundling its own.
+So JBrowse loads one copy of each and **re-exports** it to plugins.
 
 ## What is re-exported
 
 The canonical list lives in
-[`packages/core/src/ReExports/list.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
-It changes over time, so treat that file as the source of truth. The categories:
+[`packages/core/src/ReExports/list.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts)
+and changes over time, so treat that file as the source of truth. The
+categories:
 
 - Framework singletons - `react`, `react-dom`, `mobx`, `mobx-react`,
   `@jbrowse/mobx-state-tree` (our internal MST fork).
@@ -69,17 +72,16 @@ It changes over time, so treat that file as the source of truth. The categories:
 
 ## What is _not_ re-exported
 
-Anything not in that list: `d3`, `lodash-es`, a file-format parser, your own
-helpers, and so on. There's nothing special to do: `import` it normally and your
-bundler includes it in your plugin's output. These don't need to be shared
-because nothing breaks from having more than one copy.
+Anything not in that list (`d3`, `lodash-es`, a file-format parser, your own
+helpers): `import` it normally and your bundler includes it in your plugin's
+output. Nothing breaks from having more than one copy, so these aren't shared.
 
 ## Standalone helper packages
 
 JBrowse publishes several **framework-free utility packages** to npm. They have
-no React/MobX/`@jbrowse/core` dependency, so they aren't re-exported. You
-`npm install` and `import` them like any other dependency (they get bundled).
-Reach for these instead of re-implementing the parsing/scale math yourself:
+no React/MobX/`@jbrowse/core` dependency, so they aren't re-exported: `npm
+install` and `import` them like any other dependency (they get bundled). Reach
+for these instead of re-implementing the parsing/scale math yourself:
 
 | Package                        | What it provides                                         |
 | ------------------------------ | -------------------------------------------------------- |
@@ -109,12 +111,11 @@ import Button from '@mui/material/Button'
 import { scaleLinear } from 'd3-scale' // not re-exported → bundled
 ```
 
-The [plugin templates](/docs/developer_guides/simple_plugin) wire up their
-bundler to mark the re-export list as **external**, so re-exported imports
-resolve to the host's copy at runtime instead of being bundled, while
-non-re-exported imports (like `d3-scale` above) are bundled into your plugin.
-The build configs read `ReExports/list.ts` directly to get this set, so you
-don't maintain it yourself.
+The [plugin templates](/docs/developer_guides/simple_plugin) mark the re-export
+list as **external**, so those imports resolve to the host's copy at runtime
+while non-re-exported imports (like `d3-scale` above) are bundled in. The build
+configs read `ReExports/list.ts` directly, so you don't maintain this set
+yourself.
 
 ### No-build plugins
 
@@ -138,9 +139,8 @@ shared between plugins, add it to ReExports. If it does not need to be shared,
 just import it normally.
 ```
 
-In a no-build plugin you can't bundle, so a non-re-exported dependency has to be
-loaded another way (inline it into your single file, or switch to a build-step
-plugin).
+With no bundler, a non-re-exported dependency has to be loaded another way:
+inline it into your single file, or switch to a build-step plugin.
 
 ## Quick reference
 
@@ -150,16 +150,16 @@ plugin).
 | `@jbrowse/core` APIs (in the list above) | `import` from `@jbrowse/core/...`         | `pluginManager.jbrequire('@jbrowse/core/...')` |
 | Any other npm package                    | `import` normally (gets bundled)          | inline it, or use a build-step plugin          |
 
-## A note on `@jbrowse/core` paths not in the list
+## `@jbrowse/core` paths not in the list
 
 `@jbrowse/core` exports far more than the re-exported subset. With a build step
 you _can_ import a core path that isn't re-exported, but the bundler copies that
 code into your plugin rather than sharing the host's. That's harmless for pure
-helpers, but risky for anything that depends on shared identity or singletons
-(model types, registries, the configuration system), because you'd end up with
-two diverging copies. If you need such a module shared and it isn't re-exported,
+helpers, but risky for anything depending on shared identity or singletons
+(model types, registries, the configuration system), since you'd get two
+diverging copies. If you need such a module shared,
 [open a request](https://github.com/GMOD/jbrowse-components/discussions/new) to
-have it added to the list.
+add it to the list.
 
 ## See also
 

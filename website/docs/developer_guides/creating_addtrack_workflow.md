@@ -4,11 +4,11 @@ description: Custom UI in the Add track dialog for non-standard track types
 guide_category: Creating pluggable elements
 ---
 
-Plugins can register their own React component to display in the "Add track"
-widget for adding tracks that require custom logic. The Multi-wiggle track is an
-example: it produces a textbox where you can paste a list of files.
+**TL;DR:** Register a React component in the "Add track" widget for tracks that
+need custom logic. The Multi-wiggle track does this, producing a textbox to
+paste a list of files.
 
-A simple addition to the add track workflow:
+A simple add-track workflow:
 
 ```ts
 // plugins/wiggle/src/MultiWiggleAddTrackWorkflow/index.ts
@@ -24,8 +24,7 @@ export default (pm: PluginManager) => {
     () =>
       new AddTrackWorkflowType({
         name: 'Multi-wiggle track',
-        /* in a separate file, export the react component to render within the track widget,
-        typically a form to collect relevant data for your track */
+        // ReactComponent (in a separate file) is the form rendered in the track widget
         ReactComponent: MultiWiggleWidget,
         stateModel: types.model({}),
       }),
@@ -33,7 +32,7 @@ export default (pm: PluginManager) => {
 }
 ```
 
-...and ensure you install this component into your larger plugin:
+Install this component into your plugin:
 
 ```ts
 // plugins/wiggle/src/index.ts

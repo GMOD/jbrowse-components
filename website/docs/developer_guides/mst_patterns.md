@@ -5,13 +5,17 @@ guide_category: Core concepts
 ---
 
 JBrowse uses `@jbrowse/mobx-state-tree`, an internal ESM fork of
-[MobX-State-Tree](https://mobx-state-tree.js.org/). The public API closely
-matches upstream MST, so the upstream documentation applies.
+[MobX-State-Tree](https://mobx-state-tree.js.org/). The public API matches
+upstream MST, so the upstream documentation applies.
+
+**TL;DR:** Patterns for the MST idioms JBrowse relies on: driving side-effects
+with `autorun`, composing models from mixins, `types.frozen`, volatile state,
+and using `self` over `this` in views.
 
 ## autorun inside useEffect
 
-The standard pattern for driving canvas drawing or other side-effects from MST
-observables in a React component:
+Drive canvas drawing or other side-effects from MST observables in a React
+component:
 
 ```tsx
 import { useEffect, useRef } from 'react'
@@ -22,15 +26,14 @@ const MyCanvas = observer(({ model }: { model: MyDisplayModel }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    // autorun returns a disposer; useEffect returns it as the cleanup function
+    // autorun's disposer becomes the useEffect cleanup
     return autorun(() => {
       const canvas = canvasRef.current
       if (!canvas) return
       const ctx = canvas.getContext('2d')
       if (!ctx) return
 
-      // Every observable read here (model.data, model.height, etc.)
-      // becomes a dependency — the autorun re-runs when any of them change
+      // every observable read here becomes a dependency
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       drawData(ctx, model.data, model.height)
     })
@@ -40,12 +43,12 @@ const MyCanvas = observer(({ model }: { model: MyDisplayModel }) => {
 })
 ```
 
-Prefer `autorun` over `reaction` for drawing. `autorun` runs immediately and
-tracks dependencies automatically. Use `reaction` only when you need to
-explicitly separate the tracked expression from the effect.
+Prefer `autorun` over `reaction` for drawing: it runs immediately and tracks
+dependencies automatically. Use `reaction` only to separate the tracked
+expression from the effect.
 
-For code inside an autorun that should read an observable **without** making it
-a dependency, wrap it in `untracked()`:
+To read an observable inside an autorun **without** making it a dependency, wrap
+it in `untracked()`:
 
 ```ts
 autorun(() => {
@@ -81,13 +84,11 @@ const MyDisplay = types
   }))
 ```
 
-Mixins are factory functions that return a model type, not classes. This makes
-them composable without classical inheritance and allows the same mixin to be
-included at different positions in the chain.
+Mixins are factory functions returning a model type, not classes, so the same
+mixin can be composed at different positions in the chain without inheritance.
 
 Keep the main model chain in one file. Splitting `.views()` or `.actions()`
-across multiple files makes it hard to follow the composition order and which
-views depend on which.
+across files obscures the composition order and which views depend on which.
 
 ## Chaining multiple .views() blocks
 
@@ -98,20 +99,18 @@ because each block extends the type incrementally:
 const MyModel = types
   .model({ type: types.literal('MyModel') })
   .views(self => ({
-    // First block: simple getters
     get adapterConfig() {
       return getConf(self, 'adapter')
     },
   }))
   .views(self => ({
-    // Second block: depends on adapterConfig from the first block
     get adapterType() {
       return pluginManager.getAdapterType(self.adapterConfig.type)
     },
   }))
 ```
 
-Use multiple blocks when a getter depends on another getter. This makes the
+Use multiple blocks when a getter depends on another getter, making the
 dependency explicit through ordering.
 
 ## types.frozen
@@ -129,30 +128,30 @@ const MyModel = types.model({
 })
 ```
 
-Frozen values are compared by reference. MST does not track individual fields
-inside them. If you need reactive access to a field inside a frozen value, copy
-it out into a regular MST property or a `.volatile()` field.
+Frozen values are compared by reference; MST does not track fields inside them.
+For reactive access to a field inside a frozen value, copy it out into a regular
+MST property or a `.volatile()` field.
 
-For iterating a `types.frozen` field inside an autorun to track changes, `void`
-the field. You don't need to enumerate its properties:
+To track a `types.frozen` field in an autorun, `void` the field rather than
+enumerating its properties:
 
 ```ts
 autorun(() => {
-  void self.displayedRegions // tracks the reference; fires when the array is replaced
+  void self.displayedRegions // fires when the array is replaced
   doSomething()
 })
 ```
 
 ## self over this in .views()
 
-Inside a `.views(self => ...)` block, reference sibling views via `self.X`
-rather than `this.X`. `this` works at runtime but breaks when a subclass
-overrides the getter. `self` dispatches to the override, `this` doesn't:
+Inside a `.views(self => ...)` block, reference sibling views via `self.X`, not
+`this.X`. Both work at runtime, but only `self` dispatches to a subclass
+override:
 
 ```ts
 .views(self => ({
   get derivedThing() {
-    return compute(self.baseThing)  // uses override if subclass provides one
+    return compute(self.baseThing)
   },
 }))
 ```
@@ -184,9 +183,9 @@ flags, cached computed values, maps that are rebuilt from props):
 }))
 ```
 
-Observable maps (`.map<K, V>()`) give you reactive key-level tracking. An
-autorun that reads `map.get(key)` re-fires when that specific key changes, not
-on every map write.
+Observable maps (`.map<K, V>()`) give reactive key-level tracking: an autorun
+reading `map.get(key)` re-fires only when that key changes, not on every map
+write.
 
 ## See also
 

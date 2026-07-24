@@ -5,11 +5,12 @@ description:
 guide_category: Core concepts
 ---
 
-Every linear display that fetches data composes `MultiRegionDisplayMixin`, which
-installs five autoruns that collectively manage fetch lifecycle, cancellation,
-and cache invalidation. Understanding this chain is essential for writing a
-custom display that doesn't use the GPU path, and for debugging unexpected
-refetches in one that does.
+**TL;DR:** Every linear display composes `MultiRegionDisplayMixin`, which
+installs five autoruns that manage fetch lifecycle, cancellation, and cache
+invalidation. You override `fetchNeeded` (usually via `fetchEachRegion`) and
+declare `rpcProps` as the cache key. This chain is the thing to understand for
+writing a non-GPU display, and for debugging unexpected refetches in any
+display.
 
 ## The five autoruns
 
@@ -54,13 +55,13 @@ trigger a new fetch.
 
 ## Implementing fetchNeeded
 
-`fetchNeeded` is the hook you override in your display to make RPC calls. The
-mixin's primitive is `fetchRegions(needed, work)`, which handles cancellation,
-stop tokens, and byte estimation. But most displays don't call it directly: they
-use the `fetchEachRegion` wrapper, which runs one RPC per region in parallel and
-applies the two `ctx.isStale()` guards for you. Forgetting either guard is a
-stale-data write, so the wrapper is a correctness primitive, not just a
-convenience. Prefer it:
+`fetchNeeded` is the hook you override to make RPC calls. The mixin's primitive
+is `fetchRegions(needed, work)`, which handles cancellation, stop tokens, and
+byte estimation. Most displays don't call it directly: they use the
+`fetchEachRegion` wrapper, which runs one RPC per region in parallel and applies
+the two `ctx.isStale()` guards for you. Forgetting either guard is a stale-data
+write, so the wrapper is a correctness primitive, not just a convenience. Prefer
+it:
 
 ```ts
 import { getSession } from '@jbrowse/core/util'
@@ -137,10 +138,8 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed
-while the fetch was in flight. Always check it before writing results to the
-model, since stale writes trigger unnecessary re-renders. The
-[architecture spec's data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#data-fetching-pipeline)
-covers the byte gate, `regionTooLarge`, and the refetch-loop traps in depth.
+while the fetch was in flight. Always check it before writing results, since
+stale writes trigger unnecessary re-renders.
 
 ## rpcProps: the cache key
 

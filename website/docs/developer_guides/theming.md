@@ -4,10 +4,9 @@ description: Customizing JBrowse colors and theme via config
 guide_category: Getting started
 ---
 
-JBrowse uses [MUI theming](https://mui.com/material-ui/customization/theming/)
-with additional custom palette properties. The theme is configured via the
-`configuration.theme` field in your JBrowse config. For an end-user walkthrough
-of changing colors, dark mode, the logo, and sizing, see the
+**TL;DR:** JBrowse extends [MUI theming](https://mui.com/material-ui/customization/theming/)
+with custom palette properties, set via the `configuration.theme` field. For an
+end-user walkthrough of colors, dark mode, the logo, and sizing, see the
 [Coloring/theming config guide](/docs/config_guides/theme).
 
 ## Built-in themes
@@ -47,11 +46,9 @@ These extend MUI's standard `primary`/`secondary`/`error`/etc:
 | `frames[1..6]`    | PaletteColor[] | grey shades                | Reading frame coloring (non-CDS)       |
 | `framesCDS[1..6]` | PaletteColor[] | red/green/blue alternating | Reading frame coloring (CDS)           |
 
-The exact hex values for the `string`-valued feature colors are shown in the
-swatch table below, generated from the `#color`-tagged definitions in `theme.ts`
-so they never drift from the code (the `insertion`/`softclip`/`hardclip`
-indicators are tagged there too, under a separate `alignments-indicators`
-group):
+Hex values for the `string`-valued feature colors, generated from the
+`#color`-tagged definitions in `theme.ts` (the `insertion`/`softclip`/`hardclip`
+indicators are tagged under a separate `alignments-indicators` group):
 
 <!-- COLOR_TABLE theme-colors START -->
 
@@ -92,9 +89,8 @@ import {
 
 <!-- COLOR_TABLE theme-methylation END -->
 
-Use these constants directly; do not re-derive them from `theme.palette` in
-worker code. The table above is generated from the `#color`-tagged definitions
-in `theme.ts`, so it never drifts from the actual values.
+Use these constants directly; don't re-derive them from `theme.palette` in
+worker code.
 
 ## Example config
 

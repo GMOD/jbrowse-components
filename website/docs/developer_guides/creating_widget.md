@@ -4,12 +4,12 @@ description: Add new drawer/panel UI components
 guide_category: Creating pluggable elements
 ---
 
-Widgets are info panels that appear in side panels (drawers), modals, or other
-places in the app, such as the configuration editor, feature detail popups, and
-the add-track form. A custom widget pairs a state model with a React component
-and is registered with `pluginManager.addWidgetType`.
+**TL;DR:** Widgets are info panels shown in drawers, modals, or elsewhere in the
+app (the config editor, feature detail popups, the add-track form). A widget
+pairs a state model with a React component, registered via
+`pluginManager.addWidgetType`.
 
-Register a custom widget in `index.tsx`:
+Register a widget in `index.tsx`:
 
 ```tsx
 import { ConfigurationSchema } from '@jbrowse/core/configuration'

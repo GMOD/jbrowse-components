@@ -6,10 +6,9 @@ description:
 guide_category: Creating pluggable elements
 ---
 
-A connection is a way to add data to a JBrowse session in bulk. At its simplest
-a connection adds a pre-configured set of tracks pointing at some publicly
-available data. More powerfully, it can dynamically create tracks by querying a
-remote resource, for example importing a UCSC Track Hub.
+**TL;DR:** A connection adds data to a JBrowse session in bulk. At its simplest
+it adds a pre-configured set of tracks; more powerfully, it dynamically creates
+tracks by querying a remote resource, such as a UCSC Track Hub.
 
 ## Adding a connection type
 
@@ -44,8 +43,7 @@ pluginManager.addConnectionType(
 
 ### Optional items
 
-These are shown in the GUI when a user adds a connection, so they can better
-understand the connection they are adding:
+Shown in the GUI when a user adds a connection:
 
 - `displayName`: a user-friendly name for the connection type; `name` is used if
   absent.
@@ -87,9 +85,6 @@ export default function modelFactory(pluginManager: PluginManager) {
       async connect() {
         const dataLocation = getConf(self, 'dataLocation')
         const data = await fetchData(dataLocation)
-        // convert the fetched data into JBrowse track configs. All tracks are
-        // added under an assembly, which may be user-configured or determined by
-        // the connection itself.
         self.addTrackConfs(transformData(data))
       },
     }))

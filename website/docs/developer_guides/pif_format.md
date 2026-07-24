@@ -6,11 +6,10 @@ guide_category: Advanced topics
 ---
 
 PIF (Pairwise Indexed Format) is a tabix-indexed variant of
-[PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Unlike plain
-PAF, which must be loaded entirely into memory, PIF splits each alignment into
-two indexed records (one per genome), so JBrowse fetches only the alignments
-overlapping the current viewport, and can query from either assembly's
-perspective.
+[PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Plain PAF must
+be loaded entirely into memory; PIF splits each alignment into two indexed
+records (one per genome), so JBrowse fetches only the alignments overlapping the
+viewport and can query from either assembly's perspective.
 
 ## File format
 
@@ -50,23 +49,19 @@ The t-line carries the original PAF CIGAR unchanged.
 
 ### Identity tag
 
-`make-pif` enriches each alignment with a `de:f:` tag (the gap-compressed
-per-base divergence used by minimap2) when the CIGAR contains `=`/`X` operators
-and no `de:f:` tag is already present. The renderer reads this tag as
-`identity = 1 - de`, falling back to `numMatches / blockLen` when the tag is
-absent.
+`make-pif` enriches each alignment with a `de:f:` tag (minimap2's gap-compressed
+per-base divergence) when the CIGAR contains `=`/`X` operators and no `de:f:` tag
+is present. The renderer reads it as `identity = 1 - de`, falling back to
+`numMatches / blockLen` when absent.
 
 For accurate identity, run minimap2 with `--eqx` so the CIGAR distinguishes
-matches (`=`) from mismatches (`X`). Without `--eqx` the CIGAR uses ambiguous
-`M` operators and `make-pif` leaves identity to be approximated from the
-standard PAF columns.
+matches (`=`) from mismatches (`X`). Without it the CIGAR uses ambiguous `M`
+operators and identity is approximated from the standard PAF columns.
 
-This matches the approach used by
-[rustybam](https://github.com/mrvollger/rustybam) (`rb stats --paf` writes the
-same `perID_by_all` quantity) and [SVbyEye](https://github.com/daewoooo/SVbyEye)
-(which derives per-bin identity from the CIGAR for its miropeats-style ribbons).
-Storing identity at file-build time means coloring at view time is a cheap
-column lookup.
+This matches [rustybam](https://github.com/mrvollger/rustybam) (`rb stats --paf`
+writes the same `perID_by_all` quantity) and
+[SVbyEye](https://github.com/daewoooo/SVbyEye). Storing identity at build time
+makes view-time coloring a cheap column lookup.
 
 ### Tabix index parameters
 
@@ -111,15 +106,13 @@ the `PairwiseIndexedPAFAdapter`.
 
 ### Level-of-detail coarse tier
 
-By default `make-pif` also writes a second, no-CIGAR "coarse" tier of the same
-alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom (whole genome
-or whole chromosome), the `PairwiseIndexedPAFAdapter` serves this tier
-automatically (controlled by the
+By default `make-pif` also writes a no-CIGAR "coarse" tier of the same
+alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the
+`PairwiseIndexedPAFAdapter` serves this tier automatically (controlled by the
 [`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
-slot, in bp/px), so the renderer draws clean ribbons without downloading or
-parsing megabyte-scale CIGAR strings. Zooming in switches back to the fine
-`t`/`q` tier for per-base detail. No configuration is needed; the view's "Level
-of detail" menu defaults to `auto`.
+slot), drawing clean ribbons without parsing megabyte-scale CIGAR strings.
+Zooming in switches back to the fine `t`/`q` tier. No configuration is needed;
+the view's "Level of detail" menu defaults to `auto`.
 
 ```bash
 # coarse tier is on by default
@@ -148,10 +141,9 @@ minimap2 -cx asm5 --eqx reference.fa query.fa \
   | jbrowse make-pif /dev/stdin --out alignment.pif.gz
 ```
 
-This is entirely optional. The rustybam-produced tags pass through `make-pif`
-and are available to the renderer, but `make-pif` alone is sufficient. The
-[SafFire](https://github.com/mrvollger/SafFire) viewer documents the rationale
-for each rustybam step.
+The rustybam tags pass through to the renderer, but `make-pif` alone is
+sufficient. The [SafFire](https://github.com/mrvollger/SafFire) viewer documents
+the rationale for each rustybam step.
 
 ## JBrowse configuration
 

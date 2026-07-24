@@ -4,36 +4,32 @@ description: How to implement renderSvg on a custom display type
 guide_category: Creating pluggable elements
 ---
 
-JBrowse's "Export SVG" feature calls `renderSvg()` on each visible display and
-assembles the results into a single SVG file. Displays that don't implement it
-are silently skipped.
+**TL;DR:** implement `renderSvg()` on your display, drawing layers with
+`paintLayer`; displays without it are skipped by "Export SVG".
 
-## How it works
+The Linear Genome View's `exportSvg()` action calls each visible display's
+`renderSvg()`, collecting the returned React nodes and rendering them into a
+server-side SVG via `renderToSvg`.
 
-The Linear Genome View's `exportSvg()` action calls each display's `renderSvg()`
-and collects the returned React nodes. Each node is rendered into a server-side
-SVG document via `renderToSvg`.
+## paintLayer
 
-The key utility is `paintLayer` from `@jbrowse/core/util/paintLayer`:
+`paintLayer` from `@jbrowse/core/util/paintLayer` drives both on-screen and
+export drawing from one callback:
 
 ```ts
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 
-// In your draw callback, ctx is CanvasRenderingContext2D | SvgCanvas.
-// The same paint function handles both on-screen canvas and SVG export.
+// ctx is CanvasRenderingContext2D | SvgCanvas — one callback, both targets.
 const node = paintLayer(width, height, opts, ctx => {
   ctx.fillStyle = '#f00'
   ctx.fillRect(x, y, w, h)
 })
 ```
 
-When `opts.rasterizeLayers` is true, `paintLayer` draws to an offscreen canvas
-and embeds the result as a `<image>` PNG in the SVG. When false it draws to
-`SvgCanvas`, a `CanvasRenderingContext2D` duck-type that emits `<rect>`,
-`<text>`, `<path>` etc. The same paint callback works for both.
-
-Pass `undefined` instead of `opts` to force vector output regardless of user
-preference. Always do this for text and labels so they stay crisp.
+With `opts.rasterizeLayers` true it draws to an offscreen canvas and embeds a
+`<image>` PNG; otherwise it draws to `SvgCanvas`, a `CanvasRenderingContext2D`
+duck-type emitting `<rect>`, `<text>`, `<path>`. Pass `undefined` for `opts` to
+force vector output — always do this for text and labels so they stay crisp.
 
 ## Implementing renderSvg
 
@@ -56,7 +52,6 @@ export async function renderSvg(
 ) {
   const view = getContainingView(model) as LinearGenomeViewModel
 
-  // Wait until data is ready or an error is set
   await when(() => model.svgReady || !!model.error)
 
   if (!model.svgReady) {
@@ -67,12 +62,10 @@ export async function renderSvg(
   const width = view.totalWidthPx
   const height = model.height
 
-  // Features layer — can be rasterized
+  // Features can be rasterized; labels stay vector so text is sharp.
   const featuresNode = paintLayer(width, height, opts, ctx => {
     drawYourFeatures(ctx, model.data, { width, height, theme })
   })
-
-  // Labels layer — always vector so text stays sharp
   const labelsNode = paintLayer(width, height, undefined, ctx => {
     drawYourLabels(ctx, model.data, { width, height, theme })
   })
@@ -103,26 +96,25 @@ export async function renderSvg(
 
 ## Coordinate system
 
-SVG export renders the entire visible span, not just the scrolled viewport, so
-the coordinate space differs slightly from on-screen rendering:
+SVG export renders the entire visible span, not the scrolled viewport, so the
+coordinate space differs from on-screen rendering:
 
-- `view.totalWidthPx` - total pixel width across all visible regions (use this
-  as your canvas width, not `view.width` which is the viewport width)
+- `view.totalWidthPx` - canvas width across all visible regions (use this, not
+  `view.width`, which is the viewport width)
 - `view.visibleRegions` - list of displayed regions
-- Y axis runs from 0 (top) to `model.height` (bottom), same as on-screen
+- Y axis runs 0 (top) to `model.height` (bottom), same as on-screen
 
-Use `buildRenderBlocks(view.visibleRegions)` (imported from
-`@jbrowse/render-core/renderBlock`) to get `{ startPx, endPx }` offsets per
-region. These map genomic coordinates into pixels in the full export canvas. The
-display model also exposes a `renderBlocks` getter via
+`buildRenderBlocks(view.visibleRegions)` from `@jbrowse/render-core/renderBlock`
+gives `{ startPx, endPx }` per region, mapping genomic coordinates into export
+pixels. The display also exposes a `renderBlocks` getter via
 `MultiRegionDisplayMixin`.
 
 ## Reusing on-screen drawing code
 
-The recommended pattern is to write drawing functions that accept the `Ctx2D`
-type (`CanvasRenderingContext2D | SvgCanvas`, exported from
-`@jbrowse/core/util/paintLayer`) and call them from both the on-screen renderer
-and `renderSvg`. Alignments, canvas-features, and wiggle displays all do this.
+Write drawing functions against the `Ctx2D` type
+(`CanvasRenderingContext2D | SvgCanvas`, from `@jbrowse/core/util/paintLayer`)
+and call them from both the on-screen renderer and `renderSvg`. Alignments,
+canvas-features, and wiggle displays all do this:
 
 ```ts
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -137,16 +129,12 @@ export function drawFeatures(ctx: Ctx2D, data: FeatureData, opts: DrawOpts) {
 
 ## Reference examples
 
-From simplest to most complex:
+Simplest to most complex:
 
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` - text
-  only
-- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` - score plot with scale
-  bar
-- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` - features + labels
-  layers
-- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` - coverage,
-  pileup, arcs
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` - text only
+- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` - score plot with scale bar
+- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` - features + labels layers
+- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` - coverage, pileup, arcs
 
 ## See also
 
