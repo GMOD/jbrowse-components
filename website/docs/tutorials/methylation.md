@@ -45,7 +45,7 @@ match an assembly already configured in JBrowse (see the
 [assemblies configuration guide](/docs/config_guides/assemblies)), and the
 `.bai`/`.crai` index sits beside the file:
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "my_modbam",

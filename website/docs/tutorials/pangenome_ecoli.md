@@ -356,7 +356,7 @@ bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
 Load it as a [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on
 K12:
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "ecoli_pggb_depth",
