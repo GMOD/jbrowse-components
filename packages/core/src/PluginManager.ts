@@ -280,7 +280,13 @@ export default class PluginManager {
    */
   trackConfigHydrationCache = new WeakMap<object, WeakMap<object, unknown>>()
 
-  constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
+  constructor(
+    initialPlugins: (
+      | Plugin
+      | PluginLoadRecord
+      | RuntimePluginLoadRecord
+    )[] = [],
+  ) {
     // add the core plugin
     this.addPlugin({
       plugin: new CorePlugin(),
