@@ -57,7 +57,7 @@ sidebar_label: Overview
 - [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
 - [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
 - [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli) - Build a four-strain pggb pangenome graph and load its linear projections plus the graph itself in JBrowse
-- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc) - Stream HPRC release 2's pangenome VCF off S3, cluster 464 haplotypes at a locus, and open the same region as a graph
+- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc) - Open HPRC release 2's Minigraph-Cactus graph as a graph in the browser, then its 464-haplotype variant callset and per-haplotype ancestry painting, all with no preprocessing
 - [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from one VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
