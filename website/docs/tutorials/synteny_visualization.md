@@ -1,5 +1,6 @@
 ---
-title: Synteny visualization
+title: Synteny visualization (pairwise minimap2)
+sidebar_label: Synteny (pairwise minimap2)
 description: Compare genome assemblies using dotplot and linear synteny views
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics

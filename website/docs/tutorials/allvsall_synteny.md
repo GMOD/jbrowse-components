@@ -1,5 +1,6 @@
 ---
-title: All-vs-all synteny
+title: Synteny visualization (all-vs-all minimap2)
+sidebar_label: Synteny (all-vs-all minimap2)
 description: Stack strains in a linear synteny view from one all-vs-all PAF
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics

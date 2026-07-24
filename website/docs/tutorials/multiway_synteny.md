@@ -1,5 +1,6 @@
 ---
-title: Synteny from ortholog tables
+title: Synteny visualization (ortholog tables)
+sidebar_label: Synteny (ortholog tables)
 description: Stack N genomes from a jcvi MCScan .blocks file
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
