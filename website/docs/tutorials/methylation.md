@@ -109,7 +109,7 @@ loaded using a `BedTabixAdapter` inside a `MultiQuantitativeTrack` (see the
 JBrowse reads the modification type from the `name` column (e.g. `m` for 5mC,
 `h` for 5hmC) and creates one subtrack per type.
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "sample_modkit",

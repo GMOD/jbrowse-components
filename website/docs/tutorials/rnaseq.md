@@ -110,7 +110,7 @@ across junctions required.
 Once you have an aligned, sorted, and indexed BAM or CRAM, load it in JBrowse
 Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "my_rnaseq",

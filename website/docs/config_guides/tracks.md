@@ -64,7 +64,7 @@ case, or the full `displays` array when you need precise control.
 Put your settings in a `displayDefaults` object and JBrowse applies each one for
 you. You don't have to know or write the display's name:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "repeats_hg19",
@@ -83,7 +83,7 @@ drawn more than one way, each setting lands where it fits, e.g. a `VariantTrack`
 colors its linear display with `color` and its circular (chord) display with
 `strokeColor`, both in the same object:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "variants_hg19",

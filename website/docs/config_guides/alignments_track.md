@@ -6,7 +6,7 @@ guide_category: Track types
 
 Example `AlignmentsTrack` config:
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "my_alignments_track",
@@ -53,7 +53,7 @@ pick a coloring scheme via the
 a default, set it with the track's
 [`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays):
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "my_alignments_track",

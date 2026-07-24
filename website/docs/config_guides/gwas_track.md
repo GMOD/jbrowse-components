@@ -112,7 +112,7 @@ A minimal track, using the
 [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) for the
 tabix index:
 
-```json
+```json addtrack
 {
   "type": "GWASTrack",
   "trackId": "my_gwas",

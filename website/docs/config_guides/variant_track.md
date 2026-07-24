@@ -7,7 +7,7 @@ guide_category: Track types
 
 Example config:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "my_track",
@@ -47,7 +47,7 @@ Use a jexl expression on the display's `color` slot to color variants by their
 `SVTYPE` INFO field (or any other VCF field). The expression reads the INFO
 field via `feature.INFO.SVTYPE` and maps it to a color:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "my_sv_track",

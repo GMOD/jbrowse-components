@@ -164,7 +164,7 @@ jbrowse add-assembly tair10.fa --name tair10 --load copy
 Then add the alignments track. The per-read bisulfite coloring is a property of
 this track, no separate configuration:
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "arabidopsis_wgbs",

@@ -198,7 +198,7 @@ See [assemblies](/docs/config_guides/assemblies) for the inline
 A track's color is `color` in `displayDefaults`: a plain CSS color, or a `jexl:`
 expression run per feature.
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "genes_by_strand",
@@ -378,7 +378,7 @@ The same slot works on variant and alignments tracks.
 
 `colorBy`, `height`, `showSoftClipping`, and `groupBy` are display settings:
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "my_bam",
@@ -419,7 +419,7 @@ fetched. See [alignments tracks](/docs/config_guides/alignments_track).
 
 ## Quantitative (wiggle) tracks {#quantitative-wiggle-tracks}
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "coverage",

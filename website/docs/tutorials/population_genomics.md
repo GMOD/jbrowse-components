@@ -254,7 +254,7 @@ gene-name search works. See
 its own data. Add each track object below to the `tracks` array of your
 `config.json` (or paste it via the add-track JSON editor in the app):
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "fst_in2lt",

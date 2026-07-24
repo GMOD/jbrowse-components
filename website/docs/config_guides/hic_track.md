@@ -6,7 +6,7 @@ guide_category: Track types
 
 Example Hi-C track config:
 
-```json
+```json addtrack
 {
   "type": "HicTrack",
   "trackId": "hic",

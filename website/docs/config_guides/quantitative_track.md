@@ -8,7 +8,7 @@ guide_category: Track types
 
 Example QuantitativeTrack config:
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "my_wiggle_track",
@@ -30,7 +30,7 @@ settings, so they go in the
 `defaultRendering` picks the plot style and accepts `xyplot`, `density`, `line`,
 or `scatter`:
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "my_wiggle_track",

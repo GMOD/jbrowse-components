@@ -94,7 +94,7 @@ coverage/pileup display options.
 
 <!-- FILE_TYPES alignments END -->
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "my_reads",
@@ -131,7 +131,7 @@ Gene models, repeats, and other interval features use a `FeatureTrack`.
 
 <!-- FILE_TYPES feature END -->
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "genes",
@@ -192,7 +192,7 @@ Coverage and other numeric signals use a `QuantitativeTrack`. See
 
 <!-- FILE_TYPES quantitative END -->
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "coverage",
@@ -224,7 +224,7 @@ coloring and multi-sample displays.
 
 <!-- FILE_TYPES variants END -->
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "variants",
