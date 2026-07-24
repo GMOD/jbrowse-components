@@ -4,9 +4,10 @@ description: Customizing JBrowse colors and theme via config
 guide_category: Getting started
 ---
 
-**TL;DR:** JBrowse extends [MUI theming](https://mui.com/material-ui/customization/theming/)
-with custom palette properties, set via the `configuration.theme` field. For an
-end-user walkthrough of colors, dark mode, the logo, and sizing, see the
+**TL;DR:** JBrowse extends
+[MUI theming](https://mui.com/material-ui/customization/theming/) with custom
+palette properties, set via the `configuration.theme` field. For an end-user
+walkthrough of colors, dark mode, the logo, and sizing, see the
 [Coloring/theming config guide](/docs/config_guides/theme).
 
 ## Built-in themes

@@ -37,10 +37,10 @@ producer passes `{value:1}` and two such callbacks are registered, `ret` is
 ## TypeScript types for extension points
 
 Built-in points are registered in the `ExtensionPointRegistry` interface in
-`@jbrowse/core/PluginManager`. `addToExtensionPoint` /
-`evaluateExtensionPoint` / `evaluateAsyncExtensionPoint` narrow to the
-registered types when you pass a known name, so callbacks get typed `args` and
-evaluate calls return the correct type without a cast.
+`@jbrowse/core/PluginManager`. `addToExtensionPoint` / `evaluateExtensionPoint`
+/ `evaluateAsyncExtensionPoint` narrow to the registered types when you pass a
+known name, so callbacks get typed `args` and evaluate calls return the correct
+type without a cast.
 
 Register your own point the same way:
 

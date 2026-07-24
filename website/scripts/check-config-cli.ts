@@ -63,7 +63,9 @@ function adapterUri(adapter: Record<string, unknown>) {
   const direct = typeof adapter.uri === 'string' ? adapter.uri : undefined
   const located = Object.values(adapter)
     .map(v =>
-      v && typeof v === 'object' && typeof (v as Record<string, unknown>).uri === 'string'
+      v &&
+      typeof v === 'object' &&
+      typeof (v as Record<string, unknown>).uri === 'string'
         ? ((v as Record<string, unknown>).uri as string)
         : undefined,
     )
@@ -102,13 +104,16 @@ function roundTrip(config: Record<string, unknown>): string {
     const gotAdapter = track?.adapter as Record<string, unknown> | undefined
     const mismatches = [
       track === undefined && 'track not added',
-      track && track.type !== config.type && `type ${track.type} != ${config.type}`,
+      track &&
+        track.type !== config.type &&
+        `type ${track.type} != ${config.type}`,
       track && track.name !== config.name && `name mismatch`,
       gotAdapter &&
         gotAdapter.type !== srcAdapter.type &&
         `adapter ${gotAdapter.type} != ${srcAdapter.type}`,
       gotAdapter &&
-        basename(adapterUri(gotAdapter) ?? '') !== basename(srcAdapter.uri as string) &&
+        basename(adapterUri(gotAdapter) ?? '') !==
+          basename(srcAdapter.uri as string) &&
         `uri ${adapterUri(gotAdapter)} != ${srcAdapter.uri}`,
       track &&
         JSON.stringify(track.displayDefaults ?? {}) !==
@@ -134,11 +139,19 @@ for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
         : roundTrip(block.config)
     checked++
     if (reason) {
-      errorLines.push(`  ${rel}:${block.line}  (${block.config.trackId})`, `    → ${reason}\n`)
+      errorLines.push(
+        `  ${rel}:${block.line}  (${block.config.trackId})`,
+        `    → ${reason}\n`,
+      )
     }
   }
 }
 if (errorLines.length) {
-  errorLines.unshift(`Found addtrack blocks whose derived command doesn't round-trip:\n`)
+  errorLines.unshift(
+    `Found addtrack blocks whose derived command doesn't round-trip:\n`,
+  )
 }
-reportProblems(errorLines, `All ${checked} addtrack block(s) round-trip through jbrowse add-track.`)
+reportProblems(
+  errorLines,
+  `All ${checked} addtrack block(s) round-trip through jbrowse add-track.`,
+)

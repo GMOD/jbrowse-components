@@ -6,8 +6,8 @@ guide_category: Advanced topics
 ---
 
 PIF (Pairwise Indexed Format) is a tabix-indexed variant of
-[PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Plain PAF must
-be loaded entirely into memory; PIF splits each alignment into two indexed
+[PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Plain PAF
+must be loaded entirely into memory; PIF splits each alignment into two indexed
 records (one per genome), so JBrowse fetches only the alignments overlapping the
 viewport and can query from either assembly's perspective.
 
@@ -50,8 +50,8 @@ The t-line carries the original PAF CIGAR unchanged.
 ### Identity tag
 
 `make-pif` enriches each alignment with a `de:f:` tag (minimap2's gap-compressed
-per-base divergence) when the CIGAR contains `=`/`X` operators and no `de:f:` tag
-is present. The renderer reads it as `identity = 1 - de`, falling back to
+per-base divergence) when the CIGAR contains `=`/`X` operators and no `de:f:`
+tag is present. The renderer reads it as `identity = 1 - de`, falling back to
 `numMatches / blockLen` when absent.
 
 For accurate identity, run minimap2 with `--eqx` so the CIGAR distinguishes

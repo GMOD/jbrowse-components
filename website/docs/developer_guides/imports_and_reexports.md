@@ -79,9 +79,9 @@ output. Nothing breaks from having more than one copy, so these aren't shared.
 ## Standalone helper packages
 
 JBrowse publishes several **framework-free utility packages** to npm. They have
-no React/MobX/`@jbrowse/core` dependency, so they aren't re-exported: `npm
-install` and `import` them like any other dependency (they get bundled). Reach
-for these instead of re-implementing the parsing/scale math yourself:
+no React/MobX/`@jbrowse/core` dependency, so they aren't re-exported:
+`npm install` and `import` them like any other dependency (they get bundled).
+Reach for these instead of re-implementing the parsing/scale math yourself:
 
 | Package                        | What it provides                                         |
 | ------------------------------ | -------------------------------------------------------- |

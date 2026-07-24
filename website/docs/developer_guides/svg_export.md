@@ -131,10 +131,14 @@ export function drawFeatures(ctx: Ctx2D, data: FeatureData, opts: DrawOpts) {
 
 Simplest to most complex:
 
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` - text only
-- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` - score plot with scale bar
-- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` - features + labels layers
-- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` - coverage, pileup, arcs
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` - text
+  only
+- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` - score plot with scale
+  bar
+- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` - features + labels
+  layers
+- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` - coverage,
+  pileup, arcs
 
 ## See also
 

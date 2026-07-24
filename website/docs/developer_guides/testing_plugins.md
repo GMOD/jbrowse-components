@@ -1,6 +1,7 @@
 ---
 title: Testing a plugin
-description: Unit-testing adapters, models, and components, plus where browser tests fit
+description:
+  Unit-testing adapters, models, and components, plus where browser tests fit
 guide_category: Advanced topics
 ---
 

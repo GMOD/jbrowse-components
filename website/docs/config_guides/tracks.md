@@ -133,8 +133,8 @@ optional and defaults to `{trackId}-{displayType}`.
 ```
 
 The display types available, grouped by the track type they attach to. Most
-tracks can be drawn more than one way, and the `displays` array is where you pick
-which:
+tracks can be drawn more than one way, and the `displays` array is where you
+pick which:
 
 <!-- DISPLAY_TYPES START -->
 

@@ -1,6 +1,8 @@
 ---
 title: Exported functions
-description: Auto-generated reference for the functions each JBrowse plugin package exports for reuse.
+description:
+  Auto-generated reference for the functions each JBrowse plugin package exports
+  for reuse.
 ---
 
 Auto-generated reference for the utility functions each plugin package exports

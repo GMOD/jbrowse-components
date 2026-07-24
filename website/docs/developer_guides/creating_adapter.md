@@ -157,7 +157,8 @@ interface Region {
 `refName`/`start`/`end` specify the genomic range. `assemblyName` is used when
 your adapter handles multiple assemblies (e.g. synteny or a multi-assembly REST
 API). `originalRefName` is the queried refname before ref renaming: if the BAM
-uses chr1 but the reference uses 1, `originalRefName` is 1 and `refName` is chr1.
+uses chr1 but the reference uses 1, `originalRefName` is 1 and `refName` is
+chr1.
 
 The options parameter is `BaseOptions` (from
 `@jbrowse/core/data_adapters/BaseAdapter`). Fields an adapter typically reads:

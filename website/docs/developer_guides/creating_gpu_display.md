@@ -26,10 +26,10 @@ and
 [Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#adding-a-new-gpu-display-type)
 sections mirror the steps below.
 
-`@jbrowse/render-core` is published but `@experimental`: names and signatures may
-still change before it's frozen under semver, so pin an exact version and expect
-to rebuild on upgrade. Its GPU surface is static-import-only (not exposed through
-JBrowse's runtime `ReExports` registry), so a GPU display must be a
+`@jbrowse/render-core` is published but `@experimental`: names and signatures
+may still change before it's frozen under semver, so pin an exact version and
+expect to rebuild on upgrade. Its GPU surface is static-import-only (not exposed
+through JBrowse's runtime `ReExports` registry), so a GPU display must be a
 [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build plugin](/docs/developer_guides/no_build_plugin).
 
@@ -213,8 +213,8 @@ npx jbrowse-build-shaders        # or: ... build-shaders src/.../score.slang
 
 Run it from your project root: it scans for `*.slang`, fetches a pinned `slangc`
 on first use, and writes each `*.generated.ts` next to its source (`hpmath` /
-`colorPack` resolve from your installed `@jbrowse/render-core`). Inside this repo
-the same tool runs as `pnpm gen:shaders`.
+`colorPack` resolve from your installed `@jbrowse/render-core`). Inside this
+repo the same tool runs as `pnpm gen:shaders`.
 
 :::note
 
@@ -520,7 +520,8 @@ alignments) need the whole-map `laidOutDataMap` form instead. `fetchNeeded`
 calls `fetchEachRegion` and writes each region through `setRpcData`, exactly as
 on the Canvas2D path
 ([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model));
-full detail in [the data fetching pipeline](/docs/developer_guides/data_fetching).
+full detail in
+[the data fetching pipeline](/docs/developer_guides/data_fetching).
 
 Any change to `rpcProps()` triggers a full worker re-fetch (via
 `SettingsInvalidate`), so keep frequently-changing values (scroll, zoom) in

@@ -168,8 +168,7 @@ export default class MyPlugin extends Plugin {
 ## Config.json wiring
 
 Add the adapter under `aggregateTextSearchAdapters` at the config root for
-global search, or under a track's `textSearching` field for track-scoped
-search:
+global search, or under a track's `textSearching` field for track-scoped search:
 
 ```json
 {

@@ -54,7 +54,8 @@ coverage, GWAS/Manhattan, and Hi-C data. Data is organized into
 
 Ask questions on the
 [GitHub discussions board](https://github.com/GMOD/jbrowse-components/discussions),
-report a bug on [GitHub issues](https://github.com/GMOD/jbrowse-components/issues),
-or [contact us](/contact) directly with suggestions and feedback.
+report a bug on
+[GitHub issues](https://github.com/GMOD/jbrowse-components/issues), or
+[contact us](/contact) directly with suggestions and feedback.
 
 Enjoy!

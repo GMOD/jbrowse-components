@@ -1,6 +1,8 @@
 ---
 title: State models
-description: Auto-generated reference for JBrowse's MobX state-tree models, grouped by category.
+description:
+  Auto-generated reference for JBrowse's MobX state-tree models, grouped by
+  category.
 ---
 
 Auto-generated reference for JBrowse's [MobX state-tree](/docs/developer_guide)
