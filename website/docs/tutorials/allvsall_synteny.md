@@ -8,9 +8,10 @@ tutorial_category: Synteny & comparative genomics
 
 **TL;DR:** stack N genome rows in one linear synteny view from a single
 all-vs-all PAF, using `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for
-large files). The PanSN `sample#haplotype#contig` prefix is what tells the
-adapter which genome each record belongs to, so each assembly's refNames must be
-the bare contig name.
+large files). The PanSN `sample#haplotype#contig` prefix in the PAF tells the
+adapter which genome each record belongs to. The adapter strips that prefix
+before matching, so the genomes you load into JBrowse keep just the plain contig
+name (`chr`, not `K12#1#chr`).
 
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
