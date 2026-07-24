@@ -1,5 +1,6 @@
 ---
-title: Cancer SVs (C-GIAB)
+title: Structural variants (Cancer GIAB)
+sidebar_label: SVs (Cancer GIAB)
 description:
   Load and inspect structural variants from real cancer sequencing data
 guide_category: Tutorials

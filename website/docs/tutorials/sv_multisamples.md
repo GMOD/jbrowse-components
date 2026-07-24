@@ -1,5 +1,6 @@
 ---
-title: 1000 Genomes SVs
+title: Structural variants (1000 Genomes)
+sidebar_label: SVs (1000 Genomes)
 description: Population SVs, a family trio, and a large chromosomal inversion
 guide_category: Tutorials
 tutorial_category: Structural variation

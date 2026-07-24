@@ -62,7 +62,7 @@ sidebar_label: Overview
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
 - [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs
-- [1000 Genomes SVs](/docs/tutorials/sv_multisamples) - Population SVs, a family trio, and a large chromosomal inversion
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
+- [Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples) - Population SVs, a family trio, and a large chromosomal inversion
+- [Structural variants (Cancer GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
 - [Synteny visualization (pairwise minimap2)](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views
 - [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv) - Plot somatic copy number across a thousand tumors, one row per sample
