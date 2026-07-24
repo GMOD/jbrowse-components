@@ -38,6 +38,20 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     const { statusCallback = () => {} } = opts
     const blockAssemblies = this.getConf('blockAssemblies')
     const bedLocations = this.getConf('bedLocations') as FileLocation[]
+    // one BED per column, all present: caught here so a misconfigured track
+    // fails with the offending column rather than an opaque openLocation error
+    // deep in the download
+    if (bedLocations.length !== blockAssemblies.length) {
+      throw new Error(
+        `MCScanBlocksAdapter: blockAssemblies lists ${blockAssemblies.length} columns but bedLocations has ${bedLocations.length}; supply exactly one BED per column`,
+      )
+    }
+    const missing = blockAssemblies.filter((_, i) => !bedLocations[i])
+    if (missing.length) {
+      throw new Error(
+        `MCScanBlocksAdapter: missing BED file for column(s) ${missing.join(', ')}; each genome column needs its BED`,
+      )
+    }
     const pm = this.pluginManager
     const blocks = openLocation(this.getConf('mcscanBlocksLocation'), pm)
     const [blockstext, ...bedtexts] = await updateStatus(

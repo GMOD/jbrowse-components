@@ -77,7 +77,7 @@ const MCScanBlocksAddTrackComponent = observer(
             <FileSelector
               name={`Column ${idx + 1} BED`}
               inline
-              description=""
+              description="Required: maps this column's gene ids to coordinates"
               location={col.bed}
               setLocation={loc => {
                 setColumn(idx, { bed: loc })

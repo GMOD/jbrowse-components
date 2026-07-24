@@ -109,6 +109,26 @@ test('getRefNames scopes to the target pair on a full-list track', async () => {
   expect(names.length).toBeGreaterThan(0)
 })
 
+test('throws a clear error when a column has no BED', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      mcscanBlocksLocation: bed('grape.blocks'),
+      blockAssemblies: ['grape', 'peach', 'cacao'],
+      bedLocations: [bed('grape.bed'), bed('cacao.bed')],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    }),
+  )
+  const obs = adapter.getFeatures({
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  } as never)
+  await expect(firstValueFrom(obs.pipe(toArray()))).rejects.toThrow(
+    /one BED per column/,
+  )
+})
+
 test('throws when the pair is not present in blockAssemblies', async () => {
   const obs = makeAdapter(['grape', 'rice']).getFeatures({
     refName: 'chr1',
