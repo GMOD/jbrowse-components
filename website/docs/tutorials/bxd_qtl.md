@@ -110,19 +110,11 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
   "adapter": {
     "type": "BedTabixAdapter",
     "disableGeneHeuristic": true,
-    "bedGzLocation": {
-      "uri": "https://jbrowse.org/demos/bxd/bxd_painting.bed.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/bxd/bxd_painting.bed.gz.tbi"
-      }
-    }
+    "uri": "https://jbrowse.org/demos/bxd/bxd_painting.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
       "showTree": true
     }
@@ -213,8 +205,7 @@ differently-named or raw-p-value column, set `scoreColumn` and
   },
   "displays": [
     {
-      "type": "LinearManhattanDisplay",
-      "displayId": "bxd_gwas_coatcolor_mm10-LinearManhattanDisplay"
+      "type": "LinearManhattanDisplay"
     }
   ]
 }

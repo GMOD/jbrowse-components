@@ -117,14 +117,7 @@ JBrowse reads the modification type from the `name` column (e.g. `m` for 5mC,
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "bedGzLocation": {
-      "uri": "https://yourhost/sample_modkit.bed.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://yourhost/sample_modkit.bed.gz.tbi"
-      }
-    }
+    "uri": "https://yourhost/sample_modkit.bed.gz"
   }
 }
 ```

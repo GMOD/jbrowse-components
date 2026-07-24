@@ -125,7 +125,7 @@ pair:
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
   "adapter": {
     "type": "AllVsAllPAFAdapter",
-    "pafLocation": { "uri": "all_vs_all.paf" },
+    "uri": "all_vs_all.paf",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
   }
 }
@@ -176,8 +176,7 @@ from the un-indexed version above:
 ```json
 {
   "type": "AllVsAllIndexedPAFAdapter",
-  "pifGzLocation": { "uri": "all_vs_all.pif.gz" },
-  "index": { "location": { "uri": "all_vs_all.pif.gz.tbi" } },
+  "uri": "all_vs_all.pif.gz",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
 }
 ```

@@ -130,19 +130,19 @@ mechanism as the
         "type": "BigWigAdapter",
         "name": "CpG",
         "color": "red",
-        "bigWigLocation": { "uri": "arabidopsis_wgbs_CpG.bw" }
+        "uri": "arabidopsis_wgbs_CpG.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CHG",
         "color": "green",
-        "bigWigLocation": { "uri": "arabidopsis_wgbs_CHG.bw" }
+        "uri": "arabidopsis_wgbs_CHG.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CHH",
         "color": "blue",
-        "bigWigLocation": { "uri": "arabidopsis_wgbs_CHH.bw" }
+        "uri": "arabidopsis_wgbs_CHH.bw"
       }
     ]
   }

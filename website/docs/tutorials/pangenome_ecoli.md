@@ -218,8 +218,7 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
   "adapter": {
     "type": "AllVsAllIndexedPAFAdapter",
-    "pifGzLocation": { "uri": "ecoli_pggb_ava.pif.gz" },
-    "index": { "location": { "uri": "ecoli_pggb_ava.pif.gz.tbi" } },
+    "uri": "ecoli_pggb_ava.pif.gz",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
   }
 }
@@ -257,8 +256,7 @@ sample:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": "ecoli_pggb.vcf.gz" },
-    "index": { "location": { "uri": "ecoli_pggb.vcf.gz.tbi" } }
+    "uri": "ecoli_pggb.vcf.gz"
   },
   "displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
 }
@@ -367,7 +365,7 @@ K12:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "BigWigAdapter",
-    "bigWigLocation": { "uri": "ecoli_pggb_depth.bw" }
+    "uri": "ecoli_pggb_depth.bw"
   }
 }
 ```
@@ -414,17 +412,17 @@ done
       {
         "type": "BigWigAdapter",
         "name": "Sakai",
-        "bigWigLocation": { "uri": "ecoli_pggb_pav_Sakai.bw" }
+        "uri": "ecoli_pggb_pav_Sakai.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CFT073",
-        "bigWigLocation": { "uri": "ecoli_pggb_pav_CFT073.bw" }
+        "uri": "ecoli_pggb_pav_CFT073.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "NCTC86",
-        "bigWigLocation": { "uri": "ecoli_pggb_pav_NCTC86.bw" }
+        "uri": "ecoli_pggb_pav_NCTC86.bw"
       }
     ]
   }

@@ -117,15 +117,11 @@ haven't, see the
       "itemRgb",
       "cellType"
     ],
-    "bedGzLocation": {
-      "uri": "wgEncodeBroadHmm.multirow.bed.gz",
-      "locationType": "UriLocation"
-    }
+    "uri": "wgEncodeBroadHmm.multirow.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "broad_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
       "partitionField": "cellType",
       "rowOrder": [
         "GM12878",
@@ -162,7 +158,7 @@ slot only to override that.
 
 **Using JBrowse Desktop?** These steps work unchanged. Desktop opens
 `wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point
-`bedGzLocation` at the local path), no web server needed. See the
+`uri` at the local path), no web server needed. See the
 [desktop quickstart](/docs/quickstart_desktop). (A bigBed loaded with a
 `BigBedAdapter` works too, and is what the hosted demo below uses, while the
 tabix-indexed BED just skips the conversion and chrom.sizes step.)

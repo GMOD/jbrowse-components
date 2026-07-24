@@ -209,21 +209,21 @@ three-cell-type example against hg38:
         "name": "Beta (insulin)",
         "group": "Islet",
         "color": "#f58231",
-        "bigWigLocation": { "uri": "https://example.com/bw/Beta.bw" }
+        "uri": "https://example.com/bw/Beta.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "Alpha (glucagon)",
         "group": "Islet",
         "color": "#e6194b",
-        "bigWigLocation": { "uri": "https://example.com/bw/Alpha.bw" }
+        "uri": "https://example.com/bw/Alpha.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CD8 T cell",
         "group": "Immune",
         "color": "#4363d8",
-        "bigWigLocation": { "uri": "https://example.com/bw/CD8T.bw" }
+        "uri": "https://example.com/bw/CD8T.bw"
       }
     ]
   }
@@ -302,7 +302,6 @@ Example display config that starts taller and in density mode:
 "displays": [
   {
     "type": "MultiLinearWiggleDisplay",
-    "displayId": "scatac_pseudobulk-display",
     "defaultRendering": "multirowdensity",
     "height": 400
   }

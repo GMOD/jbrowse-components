@@ -169,13 +169,11 @@ painted with it automatically. Drop this into the `tracks` array of your
       "itemRgb",
       "parenthap"
     ],
-    "bedGzLocation": { "uri": "trio.hapibd.bed.gz" },
-    "index": { "location": { "uri": "trio.hapibd.bed.gz.tbi" } }
+    "uri": "trio.hapibd.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "khv_trio_hapibd-LinearMultiRowFeatureDisplay",
       "partitionField": "parenthap",
       "rowOrder": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
     }
@@ -253,15 +251,11 @@ haplotype gets a row:
       "sample",
       "ancestry"
     ],
-    "bedGzLocation": { "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz" },
-    "index": {
-      "location": { "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz.tbi" }
-    }
+    "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "asw_trio_ancestry-LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
       "rowOrder": [
         "Child hap1",
