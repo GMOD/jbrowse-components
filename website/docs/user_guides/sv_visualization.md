@@ -4,16 +4,15 @@ description: Interpreting SV signals across display types
 guide_category: Views
 ---
 
-This guide covers how to interpret structural variant (SV) signals across
-JBrowse's views. A typical workflow starts in the
+**TL;DR:** Triage structural variant (SV) candidates in the
 [SV inspector](/docs/user_guides/sv_inspector_view) (a combined variant table
-and whole-genome circular overview) to triage candidates, then drills into the
-alignments at each breakpoint to examine read-level evidence.
-
-SV calls load as [variant tracks](/docs/user_guides/variant_track) (VCF), reads
-as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). The
-[alignments track guide](/docs/user_guides/alignments_track) covers the general
-features; this page focuses on what to look for when interpreting SVs.
+and whole-genome circular overview), then drill into the alignments at each
+breakpoint for read-level evidence. SV calls load as
+[variant tracks](/docs/user_guides/variant_track) (VCF), reads as
+[alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM); this page
+focuses on interpreting SVs, while the
+[alignments track guide](/docs/user_guides/alignments_track) covers general
+features.
 
 For the read-level signals behind these displays (how split (supplementary)
 alignments, the `SA` tag, pair orientation, `TLEN`, and clipping encode SV
@@ -28,8 +27,8 @@ tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
 
 ## SV signals in the alignments track
 
-The standard alignments track gives you several SV-relevant signals without any
-extra steps:
+The standard alignments track gives several SV-relevant signals with no extra
+steps:
 
 - Soft clipping - reads that extend past a breakpoint have their overhanging
   bases soft-clipped; enabling Show soft clipping from the track menu makes
@@ -135,7 +134,7 @@ that the strongest cue wins:
 ## SV-type signatures
 
 The patterns below describe what each SV type typically looks like in the
-alignments track; combine several signals (clipping, orientation, coverage,
+alignments track. Combine several signals (clipping, orientation, coverage,
 arcs) before calling an SV rather than relying on any one. The
 [DRAGEN SV IGV tutorial](https://help.dragen.illumina.com/product-guides/dragen-v4.5/dragen-dna-pipeline/sv-calling/sv-igv-tutorial)
 is a useful companion reference.
@@ -320,9 +319,9 @@ sorting, coloring, and filtering by tag.
 
 ## Working with large SVs
 
-Loading a very large genomic region can trigger an error when the window would
-require fetching more data than JBrowse allows in a single request. For large or
-inter-chromosomal SVs, a better approach is:
+Loading a very large region can trigger an error when the window would require
+fetching more data than JBrowse allows in a single request. For large or
+inter-chromosomal SVs:
 
 - Use a BigWig coverage track (or a
   [multi-quantitative track](/docs/user_guides/multiquantitative_track) for

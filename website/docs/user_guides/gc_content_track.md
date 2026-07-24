@@ -4,16 +4,16 @@ description: Compute GC content or GC skew directly from a reference sequence
 guide_category: Track types
 ---
 
-A GC content track plots the base composition of the reference genome itself,
-with no data file of your own required. It reads the assembly's sequence, slides
-a window along it, and draws the result as a quantitative (wiggle) track, so
-GC-rich and GC-poor regions, isochores, and, in bacterial genomes, the
-replication origin all become visible at a glance.
+**TL;DR:** A GC content track plots the base composition of the reference genome
+itself, with no data file required. It slides a window along the assembly's
+sequence and draws the result as a quantitative (wiggle) track, making GC-rich
+and GC-poor regions, isochores, and (in bacterial genomes) the replication
+origin visible at a glance.
 
 ## Launching a GC content track from the sequence
 
-Because the signal is derived from the reference sequence, you don't add a file.
-Instead, launch the track straight off the reference sequence track:
+Because the signal is derived from the reference sequence, you launch the track
+straight off the reference sequence track rather than adding a file:
 
 - From the track selector, open the track menu (vertical "...") on the reference
   sequence track and choose **Add GC content track**.
@@ -54,9 +54,9 @@ sliding-window settings, each with a reset button:
 
 The GC content track is a quantitative (wiggle) track under the hood, so it
 inherits the full set of
-[quantitative track](/docs/user_guides/quantitative_track) display options (XY
-plot / line / density / scatter rendering, linear vs log scale, autoscale modes,
-and manual min/max) all from the same track menu.
+[quantitative track](/docs/user_guides/quantitative_track) display options from
+the same track menu: XY plot / line / density / scatter rendering, linear vs log
+scale, autoscale modes, and manual min/max.
 
 ## See also
 

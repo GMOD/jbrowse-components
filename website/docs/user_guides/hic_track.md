@@ -4,16 +4,15 @@ description: Contact matrix display
 guide_category: Track types
 ---
 
-Hi-C measures how often pairs of genomic loci contact each other in the nucleus.
-JBrowse draws it as a triangular contact matrix under the ruler, with brighter
-color for more contacts. It reads `.hic` files (Juicer and compatible pipelines)
-through the hic-straw module.
+**TL;DR:** Hi-C measures how often pairs of genomic loci contact each other in
+the nucleus. JBrowse draws it as a triangular contact matrix under the ruler,
+brighter where contacts are more frequent, reading `.hic` files (Juicer and
+compatible pipelines) through the hic-straw module.
 
 ## Loading a Hi-C track
 
 In the "Add a track" form, paste the URL to a `.hic` file (or open it from
-disk). JBrowse detects the format and creates a Hi-C track that renders below
-the ruler.
+disk). JBrowse detects the format and renders a Hi-C track below the ruler.
 
 ## Reading the contact matrix
 
@@ -30,10 +29,10 @@ Three cues carry most Hi-C reads:
 JBrowse picks a resolution to fit the view width. Zoom in for finer bins, out
 for larger-scale structure. For manual control, open the **Resolution** item in
 the track menu: the Finer/Coarser buttons step through the binning levels stored
-in the file, disabling themselves at the finest and coarsest levels available,
-and the menu stays open so you can step repeatedly. Stepping applies a
-persistent offset from the auto-selected level, so resolution still tracks your
-zoom, just shifted; **Reset** returns to auto.
+in the file, disabling at the finest and coarsest available, and the menu stays
+open so you can step repeatedly. Stepping applies a persistent offset from the
+auto-selected level, so resolution still tracks your zoom, just shifted.
+**Reset** returns to auto.
 
 Pick the color ramp from the track menu: `juicebox`, `fall`, or `viridis`. See
 the [Hi-C track config guide](/docs/config_guides/hic_track/) for the color,

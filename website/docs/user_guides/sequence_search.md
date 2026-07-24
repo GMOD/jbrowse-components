@@ -5,9 +5,9 @@ description:
 guide_category: Other features
 ---
 
-The linear genome view's menu has a **Sequence search** item that searches the
-reference sequence itself and adds the hits as a new track. It works whether or
-not a sequence track is currently displayed. It offers three modes:
+**TL;DR:** The linear genome view's **Sequence search** menu item searches the
+reference sequence itself and adds the hits as a new track, whether or not a
+sequence track is displayed. Three modes:
 
 - Sequence pattern - find every occurrence of a single DNA motif or regex across
   the reference.
@@ -36,11 +36,11 @@ BamHI   G^GATCC
 PstI    CTGCA^G
 ```
 
-The panel is prefilled with common cloning enzymes, but nothing about the list
-is built in - wipe it and paste your own set from REBASE or anywhere else. Sites
-may use [IUPAC ambiguity codes](https://www.bioinformatics.org/sms/iupac.html)
-(e.g. `GGTNACC`), blank lines and `#` comments are ignored, and a bare site with
-no name simply names itself.
+The panel is prefilled with common cloning enzymes, but nothing is built in:
+wipe it and paste your own set from REBASE or anywhere else. Sites may use
+[IUPAC ambiguity codes](https://www.bioinformatics.org/sms/iupac.html) (e.g.
+`GGTNACC`), blank lines and `#` comments are ignored, and a bare site with no
+name simply names itself.
 
 The `^` is what makes this more than a motif search: it pins the top-strand cut,
 and for a palindromic site (which most restriction sites are) the bottom-strand
@@ -51,7 +51,7 @@ strand checkboxes only appear when the list contains a motif that is actually
 stranded.
 
 Because the list is just text, the same mode works for primers, adapters,
-polylinker sites, or any other named motif set - not only enzymes.
+polylinker sites, or any other named motif set, not only enzymes.
 
 With more than one motif in the list, two buttons are available:
 

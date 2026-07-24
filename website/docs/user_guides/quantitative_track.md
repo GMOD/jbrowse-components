@@ -4,9 +4,9 @@ description: BigWig/BedGraph signal tracks
 guide_category: Track types
 ---
 
-BigWig and BedGraph files store genome-wide quantitative signals such as read
-depth, ChIP-seq enrichment, conservation scores, and more. JBrowse renders them
-as continuous tracks with several visual styles.
+**TL;DR:** BigWig and BedGraph files store genome-wide quantitative signals
+(read depth, ChIP-seq enrichment, conservation scores). JBrowse renders them as
+continuous tracks in several visual styles.
 
 ## Rendering types
 
@@ -62,10 +62,10 @@ Drag the bottom edge of the track down to make it taller.
 For tumor vs normal comparisons using two BigWig tracks on the same Y-axis, see
 [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track).
 
-Not every dip or spike in a coverage profile is a true copy-number change.
-Coverage is shaped by GC content, mappability, repeats, PCR bias, and (when
-mapping a divergent strain) hyper-divergent regions. For these reasons coverage
-is often uneven even in samples with no true copy-number changes.
+Not every dip or spike is a true copy-number change. Coverage is shaped by GC
+content, mappability, repeats, PCR bias, and (when mapping a divergent strain)
+hyper-divergent regions, so it is often uneven even without any true copy-number
+change.
 
 ## See also
 

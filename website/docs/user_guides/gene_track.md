@@ -6,10 +6,10 @@ description:
 guide_category: Track types
 ---
 
-Gene and transcript features (GFF3, GTF, BED12, and similar) render as glyphs
-with their exons, UTRs, and CDS segments. The sections below cover the display
-and analysis options available on gene tracks, from reading the coding sequence
-directly off the track to reshaping the view around a gene's exons.
+**TL;DR:** Gene and transcript features (GFF3, GTF, BED12, and similar) render
+as glyphs with their exons, UTRs, and CDS segments. The sections below cover the
+display and analysis options, from reading the coding sequence off the track to
+reshaping the view around a gene's exons.
 
 ## Choosing which transcripts to show
 
@@ -28,11 +28,11 @@ glyph** option in the track menu controls how a gene's transcripts are drawn:
 Genes often span far more intronic than exonic sequence, so the coding parts are
 spread thinly across the view. Right-click a gene and choose **Collapse
 introns** to replace the view's displayed regions with just the gene's exons
-placed side by side, dropping the introns. A window-size setting controls how
-many base pairs of flanking sequence to keep around each splice boundary. By
-default the union of exons across all transcripts is used; you can instead pick
-a single transcript from the dialog. This makes it easy to read a gene's coding
-sequence (or inspect reads spanning it) without scrolling past large introns.
+placed side by side. A window-size setting controls how many base pairs of
+flanking sequence to keep around each splice boundary. By default the union of
+exons across all transcripts is used, or pick a single transcript from the
+dialog. This makes it easy to read a gene's coding sequence (or inspect reads
+spanning it) without scrolling past large introns.
 
 This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
 spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and

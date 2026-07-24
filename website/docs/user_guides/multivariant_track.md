@@ -4,8 +4,8 @@ description: Population-level variant views
 guide_category: Track types
 ---
 
-A VCF can contain genotypes for many samples. JBrowse shows them with one of two
-displays, switchable from the track menu:
+**TL;DR:** A VCF can carry genotypes for many samples. JBrowse shows them with
+one of two displays, switchable from the track menu:
 
 - Multi-sample variant display (regular) - variants drawn at their true genomic
   positions, one row per sample
@@ -15,7 +15,7 @@ displays, switchable from the track menu:
 ## Regular: best for full SV detail
 
 Each variant is drawn at its real genomic position. This is the only
-multi-sample display that renders structural variants at the right scale;
+multi-sample display that renders structural variants at the right scale, and
 overlapping calls use slight transparency so you can still tell them apart.
 
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
@@ -108,8 +108,8 @@ If the VCF's `INFO` field carries SnpEff `ANN` or VEP `CSQ` annotations, each
 variant's alt-carrying cells can be colored by the severity of its most severe
 predicted consequence instead of by genotype. From the track menu, open **Color
 cells by** and choose **Consequence impact** (this option only appears once the
-track detects real annotations in the loaded data, it's hidden, not just
-disabled, for unannotated VCFs).
+track detects real annotations in the loaded data, hidden rather than disabled
+for unannotated VCFs).
 
 Every annotation is bucketed into one of four impact tiers and painted with a
 fixed color, so the legend is the same across tracks:
@@ -140,9 +140,9 @@ Set it declaratively in the display configuration with the built-in
 }
 ```
 
-`featureColor` accepts any per-feature Jexl expression, not just this preset.
-The same slot backs a plain CSS color or a custom expression referencing
-`feature` attributes, same as the single-sample `color` slot.
+`featureColor` accepts any per-feature Jexl expression, not just this preset: a
+plain CSS color or a custom expression referencing `feature` attributes, same as
+the single-sample `color` slot.
 
 ## Coloring by SV type
 
@@ -187,9 +187,9 @@ Set it declaratively with the `svType` value on `featureColor`:
 Samples can be grouped and colored by metadata: population, phenotype, sex, or
 any attribute you supply. Add a samples TSV to the adapter with
 `samplesTsvLocation`: its first column is the sample name (matching the VCF
-header) and each remaining column is a metadata attribute. Setting `colorBy` on
-the display configuration to one of those columns groups and colors the
-per-sample rows by that attribute the first time the track loads.
+header) and each remaining column is a metadata attribute. Set `colorBy` on the
+display to one of those columns to group and color the per-sample rows by that
+attribute the first time the track loads.
 
 The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way:
@@ -261,10 +261,9 @@ a region with informative variants for the best separation.
 
 ### Encoding a clustering result in a session URL
 
-A clustering result can be embedded directly in a session snapshot, useful for
-sharing a pre-computed clustering via URL. Set `layout` and `clusterTree` (and
-optionally `treeAreaWidth` / `subtreeFilter`) in the display's `displaySnapshot`
-(see
+A clustering result can be embedded in a session snapshot, useful for sharing a
+pre-computed clustering via URL. Set `layout` and `clusterTree` (and optionally
+`treeAreaWidth` / `subtreeFilter`) in the display's `displaySnapshot` (see
 [URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
 The [MultiSampleVariantBaseModel](/docs/models/multisamplevariantbasemodel) docs
 have the full field reference.

@@ -4,24 +4,22 @@ description: Viewing multiple alignment format (MAF) data
 guide_category: Track types
 ---
 
-A MAF track shows a multiple sequence alignment of several species (or samples)
-against a reference genome: one row per aligned species, drawn at their true
-genomic positions on the reference, with a coverage summary on top. It is the
-view for "how does this region compare across many genomes at once", the kind of
-multiz alignment UCSC publishes (e.g. the human 470-way or the _C. elegans_
-26-way).
+**TL;DR:** A MAF track shows a multiple sequence alignment of several species
+(or samples) against a reference genome: one row per aligned species at its true
+genomic position, with a coverage summary on top. It answers "how does this
+region compare across many genomes at once", the kind of multiz alignment UCSC
+publishes (e.g. the human 470-way or the _C. elegans_ 26-way).
 
-JBrowse reads three file formats, MAF (tabix-indexed BED), BigMaf, and bgzipped
-TAF (taffy), all opened as a single track. To add one, use **File → Open track**
-and point it at the data, or load a track an administrator has already
-configured. The data-format and configuration details (adapters, supplying the
-species list or a Newick guide tree) live in the
-[MAF track configuration guide](/docs/config_guides/maf_track); this page covers
+JBrowse reads three formats, MAF (tabix-indexed BED), BigMaf, and bgzipped TAF
+(taffy), all opened as a single track. Add one with **File → Open track**, or
+load a track an administrator has configured. Data-format and configuration
+details (adapters, the species list or Newick guide tree) live in the
+[MAF track configuration guide](/docs/config_guides/maf_track). This page covers
 what you can do once the track is on screen.
 
 <Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes), with the ce11 NCBI RefSeq gene lane on top for context: the coverage band, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks. The conserved alignment blocks line up with the coding exons above."/>
 
-Zoomed out, each pixel summarizes the alignment beneath it; zoom in and the
+Zoomed out, each pixel summarizes the alignment beneath it. Zoom in and the
 per-species rows resolve into individual bases, with positions where a species
 differs from the reference drawn as colored marks. Most of the features below
 are toggled from the track menu's **Show...** submenu.

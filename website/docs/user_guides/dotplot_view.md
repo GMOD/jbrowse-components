@@ -4,21 +4,21 @@ description: Whole-genome synteny dotplot
 guide_category: Views
 ---
 
-The dotplot view shows alignments between genome assemblies, or between a single
-read and a reference genome. Syntenic regions appear as diagonal lines or
-blocks; inversions appear as reverse-diagonal segments; translocations and
-rearrangements appear as off-diagonal blocks.
+**TL;DR:** The dotplot view plots alignments between two genome assemblies (or a
+read against a reference). Syntenic regions appear as diagonal streaks,
+inversions as reverse-diagonal segments, and translocations/rearrangements as
+off-diagonal blocks.
 
 ## Opening a dotplot view
 
 Launch a new Dotplot view from the Add menu. If your config already has a
 synteny track, the form opens in **Quick start**: pick the track and click
-**Launch**. It takes both axes from that track's `assemblyNames`, and since a
-synteny track is queryable in either direction, **Swap** puts them the other way
-round (which just transposes the plot). Switch to **Manual** to select the two
-assemblies yourself and optionally supply a synteny file. The import form and
-the supported file types (`.paf`, `.out`, `.delta`, `.chain`,
-`.anchors`/`.anchors.simple`) are shared with the linear synteny view. See
+**Launch**. Both axes come from that track's `assemblyNames`, and because a
+synteny track is queryable either way, **Swap** transposes the plot. Switch to
+**Manual** to pick the two assemblies yourself and optionally supply a synteny
+file. The import form and supported file types (`.paf`, `.out`, `.delta`,
+`.chain`, `.anchors`/`.anchors.simple`) are shared with the linear synteny view.
+See
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
 for the full file-format details.
 
@@ -45,9 +45,9 @@ box-selection to keep both axes at the same scale.
 
 ## Opening a synteny view from a dotplot view
 
-Click and drag to select a region in the dotplot, then choose **Open linear
-synteny view** from the context menu. This zooms into that region in a new
-linear synteny view with both genomes shown as tracks.
+Click and drag to select a region, then choose **Open linear synteny view** from
+the context menu to zoom into it in a new linear synteny view with both genomes
+as tracks.
 
 <Figure caption="Top: click-and-drag selection (pink highlight) on the grape vs peach dotplot, with the context menu showing 'Zoom in' and 'Open linear synteny view'. Bottom: the resulting linear synteny view for the selected region (Pp02 vs chr15), with red connection lines linking each syntenic alignment block across the two genome panels." src="/img/synteny_from_dotplot_view.png" />
 

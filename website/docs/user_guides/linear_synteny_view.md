@@ -4,27 +4,25 @@ description: Side-by-side alignment of two genomes
 guide_category: Views
 ---
 
-The linear synteny view stacks two genomes horizontally, one above the other,
-and draws their alignments as ribbons connecting matching regions across the two
-panels. Each genome panel behaves like a linear genome view, so you can scroll,
-zoom, and add tracks to either side independently while the ribbons update to
-follow.
+**TL;DR:** The linear synteny view stacks two genomes, one above the other, and
+draws their alignments as ribbons connecting matching regions. Each panel
+behaves like a linear genome view, so you can scroll, zoom, and add tracks to
+either side independently while the ribbons follow.
 
 Forward-strand alignments are drawn in one color and inverted alignments in
-another, so a ribbon that twists or crosses between the panels marks an
-inversion or rearrangement relative to the other genome.
+another, so a ribbon that twists or crosses marks an inversion or rearrangement.
 
 ## Opening a linear synteny view
 
 Launch a new Linear synteny view. If your config already has a synteny track,
-the form opens in **Quick start**: pick the track and click **Launch**, and it
+the form opens in **Quick start**: pick the track, click **Launch**, and it
 fills in a row per assembly the track names. **Swap** reverses that row order,
-since a synteny track is queryable in either direction and the order it lists
-its assemblies in is not a claim about which genome belongs on top. Switch to
-**Manual** to select the two assemblies to compare yourself, where you can
-optionally add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
-.anchors.simple (MCScan) file. Manual also lets you stack more than two genomes;
-see [All-vs-all synteny](/docs/tutorials/allvsall_synteny) for a worked example.
+since a synteny track is queryable in either direction and its listed order does
+not claim which genome belongs on top. Switch to **Manual** to select the two
+assemblies yourself and optionally add a .paf, .out (MashMap), .delta (MUMmer),
+.chain, .anchors, or .anchors.simple (MCScan) file. Manual also stacks more than
+two genomes; see [All-vs-all synteny](/docs/tutorials/allvsall_synteny) for a
+worked example.
 
 <Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). Its Manual mode, shown here, is where you select two different assemblies and can supply an additional file." src="/img/dotplot_add.png" />
 
@@ -78,6 +76,5 @@ the indel:
 - [Dotplot view](/docs/user_guides/dotplot_view)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
 - [Synteny/dotplot configuration](/docs/config_guides/synteny_track)
-- [MAF track](/docs/user_guides/maf_track) — multiple alignment against one
-  reference
+- [MAF track](/docs/user_guides/maf_track)
 - [Gallery: synteny examples](/gallery/#synteny)

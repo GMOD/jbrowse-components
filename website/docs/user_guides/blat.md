@@ -4,10 +4,10 @@ description: Search a sequence against a genome and find primer amplicons
 guide_category: Other features
 ---
 
-The `blat` plugin adds two tools to the **Tools** menu that query UCSC-style
-sequence-search servers: **BLAT search** and **In-silico PCR**. Both work
-against hosted UCSC databases (or a self-hosted mirror/proxy) and add their hits
-to the current view as a new track.
+**TL;DR:** The `blat` plugin adds two **Tools** menu items that query UCSC-style
+sequence-search servers, **BLAT search** and **In-silico PCR**. Both run against
+hosted UCSC databases (or a self-hosted mirror/proxy) and add their hits to the
+current view as a new track.
 
 ## BLAT search
 

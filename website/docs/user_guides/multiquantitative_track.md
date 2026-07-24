@@ -4,9 +4,9 @@ description: Multiple signal tracks displayed together
 guide_category: Track types
 ---
 
-A multi-quantitative track combines several quantitative signals (typically
-BigWig files) into one track with a shared Y axis. The track menu's **Plot
-type** submenu groups the modes by layout:
+**TL;DR:** A multi-quantitative track combines several quantitative signals
+(typically BigWig files) into one track with a shared Y axis. The track menu's
+**Plot type** submenu groups the modes by layout:
 
 - **Multi-row** (`XY plot`, `Density`, `Line (step)`, `Line (interpolated)`,
   `Scatter`) draws one plot per subtrack, stacked
@@ -16,14 +16,13 @@ type** submenu groups the modes by layout:
 
 <Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
 
-In the multi-row modes the subtracks keep their configured colors. In the
-overlapping modes the subtracks are auto-assigned colors from the palette. You
-can edit colors and ordering from the track menu.
+Multi-row modes keep each subtrack's configured color. Overlapping modes
+auto-assign colors from the palette. Edit colors and ordering from the track
+menu.
 
 An outlier on one subtrack can blow out the shared Y axis. The "Local ± 3σ"
-autoscale type clips to three standard deviations of the visible data, which
-usually gives a more readable view. You can also pin the min and max from the
-track menu.
+autoscale type clips to three standard deviations of the visible data for a more
+readable view, or pin the min and max from the track menu.
 
 ## Adding a multi-quantitative track
 
@@ -102,9 +101,8 @@ the Methylation category (assembly hg38, chr21).
 
 ## Clustering rows by score
 
-Subtracks can be reordered by signal similarity using hierarchical clustering.
-From the track menu, select **Cluster rows by score**. A dialog opens with two
-modes:
+Reorder subtracks by signal similarity using hierarchical clustering. From the
+track menu, select **Cluster rows by score**. A dialog opens with two modes:
 
 - Auto mode runs hierarchical clustering (hclust via JavaScript) directly in the
   browser, sampling signal values at each pixel across the visible region.
@@ -125,9 +123,9 @@ interest before running it.
 
 ### Encoding a clustering result in a session URL
 
-A clustering result can be embedded directly in a session snapshot, useful for
-sharing a pre-computed clustering via URL. Set `layout`, `clusterTree`,
-`treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot` (see
+A clustering result can be embedded in a session snapshot to share a
+pre-computed clustering via URL. Set `layout`, `clusterTree`, `treeAreaWidth`,
+and `subtreeFilter` in the display's `displaySnapshot` (see
 [URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
 The [MultiLinearWiggleDisplay config](/docs/config/multilinearwiggledisplay) has
 the display's full config reference.

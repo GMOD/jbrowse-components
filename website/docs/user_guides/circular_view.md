@@ -4,10 +4,10 @@ description: Whole-genome chord plot of structural variants
 guide_category: Views
 ---
 
-The circular genome view lays out an entire assembly as a ring and draws
-long-range structural variants as chords across the interior. It is the best way
-to see translocations, inter-chromosomal breakends, and other whole-genome
-rearrangements at a glance. Each arc connects the two breakpoints of one event.
+**TL;DR:** The circular genome view lays out an entire assembly as a ring and
+draws long-range structural variants as chords across the interior, one arc per
+event connecting its two breakpoints. It is the best way to see translocations,
+inter-chromosomal breakends, and other whole-genome rearrangements at a glance.
 
 <Figure caption="A circular genome view of a structural-variant VCF. Each chord connects the two breakpoints of one variant; arcs spanning between different chromosomes are inter-chromosomal events (translocations/breakends)." src="/img/jbrowse-img/circular_chords.png" />
 
@@ -34,9 +34,9 @@ duplications load but don't produce an informative chord.
   centered on the event's two breakpoints
 
 The [SV inspector](/docs/user_guides/sv_inspector_view) pairs this same circular
-overview with a filterable variant table and wires a single chord click straight
-to the breakpoint split view. Reach for it when you want to triage many variants
-at once rather than plot a single track.
+overview with a filterable variant table and wires a chord click straight to the
+breakpoint split view. Reach for it to triage many variants at once rather than
+plot a single track.
 
 ## See also
 

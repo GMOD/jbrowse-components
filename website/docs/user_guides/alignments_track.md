@@ -4,9 +4,9 @@ description: Learn how to show BAM and CRAM files
 guide_category: Track types
 ---
 
-An alignments track shows BAM/CRAM reads two ways at once: a coverage histogram
-on top (read depth at each position) and a pileup below (one box per read). Open
-a track, zoom to base level, and most of what you need is already on screen. The
+**TL;DR:** An alignments track shows BAM/CRAM reads two ways at once: a coverage
+histogram on top (read depth at each position) and a pileup below (one box per
+read). Zoom to base level and most of what you need is already on screen. The
 sections below cover the track-menu options you'll reach for most often.
 
 <Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
@@ -103,9 +103,6 @@ short-insert signal isn't washed out. See the
 tables.
 
 <Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints: teal RL pairs (mates pointing away) flag the tandem duplication, while green LL and dark blue RR same-direction pairs flag the inversion." src="/img/inverted_duplication.png" />
-
-The [SV visualization guide](/docs/user_guides/sv_visualization) has the full
-color tables and worked examples on real structural variants.
 
 ### By tag
 

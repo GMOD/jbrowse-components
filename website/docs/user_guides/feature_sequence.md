@@ -4,8 +4,8 @@ description: Sequence extraction for selected features
 guide_category: Track types
 ---
 
-The feature detail sidebar can extract and display the sequence underlying a
-selected feature, with options that vary by feature type.
+**TL;DR:** The feature detail sidebar can extract and display the sequence
+underlying a selected feature, with options that vary by feature type.
 
 ## Gene features
 

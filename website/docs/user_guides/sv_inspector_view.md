@@ -4,14 +4,13 @@ description: Structural variant spreadsheet and circular view
 guide_category: Views
 ---
 
-The SV inspector is a combined variant table and whole-genome circular view for
-triaging structural variant calls.
-
-For an end-to-end walkthrough using real cancer sequencing data, see the
+**TL;DR:** The SV inspector is a combined variant table and whole-genome
+circular view for triaging structural variant calls. For an end-to-end
+walkthrough on real cancer sequencing data, see the
 [C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab).
 
-Launch it from the **Add** menu in the main menu bar; an import form then
-appears asking for your SV data.
+Launch it from the **Add** menu in the main menu bar; an import form then asks
+for your SV data.
 
 <Figure caption="Launching the SV inspector from the Add menu." src="/img/sv_cgiab/translocation_sv_inspector_start.png" />
 
@@ -46,8 +45,8 @@ into the import form and select hg19:
 
 ## SV inspector results
 
-The loaded file appears as a searchable table with each row representing one
-variant, alongside a whole-genome circular overview.
+The loaded file appears as a searchable table, one variant per row, alongside a
+whole-genome circular overview.
 
 <Figure caption="The SV inspector with loaded results." src="/img/sv_inspector_importform_loaded.png" />
 
@@ -61,9 +60,9 @@ Click a feature in the circular view, or the triangle dropdown on any table row,
 to open the
 [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
 for that variant: two stacked linear genome views, each centered on one
-breakpoint. It opens with empty views; add alignment tracks to both via their
-track selectors, and the read arcs and splines connecting supporting reads
-appear automatically.
+breakpoint. It opens empty; add alignment tracks to both via their track
+selectors, and the arcs and splines connecting supporting reads appear
+automatically.
 
 ## See also
 

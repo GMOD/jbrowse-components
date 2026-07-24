@@ -67,12 +67,10 @@ setup.
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
 When you pick a gene or feature from the search results (rather than a plain
-region), JBrowse navigates to it and also highlights the specific matched
-feature on its track, so it stands out from its neighbors even in a dense
-region. The highlighted feature is pinned toward the top of the track so it
-isn't buried in the layout, and the highlight follows the feature as you pan and
-zoom. Search again to move the highlight to a new feature, or click the "Clear
-search highlight" button that appears in the header bar to remove it.
+region), JBrowse navigates to it and highlights the matched feature, pinning it
+toward the top of its track so it isn't buried in a dense layout. The highlight
+follows the feature as you pan and zoom. Search again to move it, or click the
+"Clear search highlight" button in the header bar to remove it.
 
 <Figure caption="Selecting a feature from the search results pins it to the top of its track and boxes and tints that specific feature, not just the surrounding region." src="/img/search_feature_highlight.png" />
 
@@ -104,11 +102,10 @@ To load a batch of tracks in one step, click **Add multiple tracks** in the "Add
 a track" form (or **Add a single track instead** to switch back). Paste a list
 of file URLs (one per line) or drop a set of local files. JBrowse auto-detects
 each track's type from its extension and pairs index files (`.bai`, `.csi`,
-`.tbi`, `.crai`) with their data file automatically, so you can paste data and
-index URLs together without matching them up by hand. A preview table shows the
-detected type and guessed name for every row, which you can rename or remove
-before submitting. Pick one assembly that applies to all the tracks in the
-batch, then add them together.
+`.tbi`, `.crai`) with their data file, so data and index URLs can be pasted
+together in any order. A preview table shows the detected type and guessed name
+for every row, which you can rename or remove before submitting. Pick one
+assembly for the whole batch, then add them together.
 
 ## File format support
 
@@ -208,12 +205,11 @@ The track menu provides access to the "About track" dialog.
 
 ## Editing track configs
 
-You can edit the settings of any track directly from the track menu's **Track
-actions → Settings** item. There is no longer any need to copy the track first.
-For non-admin users, the edits are saved as a "session track" override that
-shadows the original, so they persist with (and are shareable via) your session
-without modifying the underlying admin-owned track. Admin users editing in admin
-mode change the track config in place.
+Edit any track's settings directly from the track menu's **Track actions →
+Settings** item. For non-admin users, edits are saved as a "session track"
+override that shadows the original, so they persist with (and are shareable via)
+your session without modifying the underlying admin-owned track. Admin users
+editing in admin mode change the track config in place.
 
 <Figure caption="Opening Settings from the track menu's Track actions submenu to edit any track's configuration directly." src="/img/edit_track_settings.png" />
 
@@ -259,9 +255,8 @@ clickable. Clicking a name opens a menu with:
 
 ## Track label positioning
 
-Track labels can be positioned on their own row or overlapping the data to save
-vertical screen space. They can also be hidden. This is done by clicking on the
-hamburger menu for a specific view.
+Track labels can be positioned on their own row, overlapping the data to save
+vertical space, or hidden entirely, via the view's hamburger menu.
 
 <Figure caption="Example of using the overlap and offset track label positioning options." src="/img/tracklabels.png" />
 

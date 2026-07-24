@@ -4,8 +4,10 @@ description: VCF variant display
 guide_category: Track types
 ---
 
-A common workflow is to view a VCF variant track alongside the alignment track
-that produced the calls:
+**TL;DR:** A variant track displays VCF records. Click a variant for a
+per-sample genotype table, and use the matrix display for multi-sample VCFs. A
+common workflow is viewing variants alongside the alignments that produced the
+calls:
 
 <Figure caption="Variant track indicating an SNV alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
@@ -22,8 +24,8 @@ The SAMPLES section lists every sample with its genotype (GT) and other
 per-sample fields, and each column has its own filter box accepting plain text
 or a regex. For example, typing '1' in the genotype filter keeps only samples
 carrying the first alternate allele (0|1 or 1|1), hiding the many
-homozygous-reference rows. GT=0 is the REF allele; any non-zero value is an ALT
-allele.
+homozygous-reference rows. GT=0 is the REF allele, and any non-zero value is an
+ALT allele.
 
 ## Multi-sample variant matrix display
 
