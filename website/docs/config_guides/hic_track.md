@@ -4,6 +4,10 @@ description: Contact matrix track config using the HicAdapter
 guide_category: Track types
 ---
 
+**TL;DR:** a `HicTrack` with a `HicAdapter` needs only the `.hic` file location.
+Loop and interaction calls (BEDPE) are a separate `VariantTrack` drawn with a
+`LinearPairedArcDisplay`.
+
 Example Hi-C track config:
 
 ```json addtrack

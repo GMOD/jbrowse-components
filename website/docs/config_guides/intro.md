@@ -4,6 +4,12 @@ description: Overall structure and key fields of the config.json file
 guide_category: Getting started
 ---
 
+**TL;DR:** you rarely write `config.json` by hand. The
+[`@jbrowse/cli`](/docs/cli) commands (`jbrowse add-assembly`, `jbrowse
+add-track`) write it for you. The two fields that matter are
+[assemblies](/docs/config_guides/assemblies) and
+[tracks](/docs/config_guides/tracks); everything else is optional.
+
 The JBrowse 2 config file (typically `config.json`) is structured as follows:
 
 ```json
@@ -38,19 +44,15 @@ optional:
 | `defaultSession`              | [Default session](/docs/config_guides/default_session)    |
 | `configuration`               | [JBrowseConfiguration](/docs/config/jbrowseconfiguration) |
 
-Looking for the complete list of options for a specific track or adapter type?
-The auto-generated [config reference](/docs/config_guide) has one page per type,
-generated directly from the source code (so it never goes stale), e.g.
-[BamAdapter](/docs/config/bamadapter) or
-[LinearWiggleDisplay](/docs/config/linearwiggledisplay). The hand-written guides
-explain the common cases. The reference is the exhaustive master list.
+These hand-written guides explain the common cases. For the exhaustive list of
+options for a specific track or adapter type, the auto-generated
+[config reference](/docs/config_guide) has one page per type, generated from
+source so it never goes stale, e.g. [BamAdapter](/docs/config/bamadapter) or
+[LinearWiggleDisplay](/docs/config/linearwiggledisplay).
 
-You rarely need to write `config.json` by hand. The [`@jbrowse/cli`](/docs/cli)
-commands (`jbrowse add-assembly`, `jbrowse add-track`) write the JSON for you,
-and for repetitive data you can
-[generate `config.json` from a script](/docs/config_guides/deploying). See
-[Deploying JBrowse Web](/docs/config_guides/deploying) for an end-to-end
-scripted setup.
+For repetitive data you can
+[generate `config.json` from a script](/docs/config_guides/deploying); see
+[Deploying JBrowse Web](/docs/config_guides/deploying) for an end-to-end setup.
 
 On jbrowse-desktop, saved sessions use this same config format, stored in a file
 with a `.jbrowse` extension.

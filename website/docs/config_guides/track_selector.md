@@ -4,6 +4,10 @@ description: Track grouping and display options for the hierarchical selector
 guide_category: Other features
 ---
 
+**TL;DR:** control track grouping, sorting, and collapse with `hierarchical`
+settings under `configuration`. Add a `metadata` object to any track to gain
+filterable columns in the faceted selector.
+
 By default, tracks appear in the order defined in config.json. The following
 options control sorting and default collapse behavior.
 
@@ -49,8 +53,8 @@ Example config.json with examples of these hierarchical settings:
 }
 ```
 
-Note: `defaultCollapsed` options only apply on initial startup. Afterwards the
-user's preference is preserved in their session.
+`defaultCollapsed` options only apply on initial startup. Afterwards the user's
+preference is preserved in their session.
 
 ## Folder categories (supertracks)
 
@@ -78,7 +82,7 @@ Example config.json:
 }
 ```
 
-Note: Like `defaultCollapsed`, `defaultFolderCategories` only applies on initial
+Like `defaultCollapsed`, `defaultFolderCategories` only applies on initial
 startup. Afterwards the user's preference is preserved in their session.
 
 For plugin developers: the category ID used internally is

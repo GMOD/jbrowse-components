@@ -6,10 +6,11 @@ description:
 guide_category: Core configuration
 ---
 
-A **connection** points JBrowse at an external track hub or data directory and
-makes its tracks available in the track selector without configuring each track
-by hand. This guide covers the connection config format. For the in-app behavior
-see the [Connections user guide](/docs/user_guides/connections).
+**TL;DR:** a connection makes an external hub's tracks available in the track
+selector without configuring each track by hand. Admin-defined connections go in
+the top-level `connections` array; connections a user adds at runtime live in
+their session. This guide covers the config format; for in-app behavior see the
+[Connections user guide](/docs/user_guides/connections).
 
 ## Where connections live
 
@@ -18,8 +19,8 @@ Connections come from two places, combined in the track selector:
 - **`connections`**: a top-level array in your `config.json`, alongside
   `assemblies` and `tracks`. These are administrator-defined and available to
   everyone who loads the config.
-- **Session connections**: connections a user adds at runtime (via `File` →
-  `Open connection...`). These live in the saved session, not the admin config.
+- **Session connections**: connections a user adds at runtime. These live in the
+  saved session, not the admin config.
 
 Both render identically as categories in the track selector.
 

@@ -4,11 +4,11 @@ description: Per-track and aggregate full-text search indexes
 guide_category: Other features
 ---
 
-Text searching comes in two forms. An **aggregate index** lives in the top-level
-`aggregateTextSearchAdapters` array and is searched across many tracks at once.
-Use it for a genome-wide gene-name index shared by every track on an assembly. A
-**per-track index** attaches to a single track's `textSearching` slot. Use it to
-make just one track searchable.
+**TL;DR:** text searching comes in two forms, both built with
+[`jbrowse text-index`](/docs/cli#jbrowse-text-index). An **aggregate index**
+(top-level `aggregateTextSearchAdapters`) is searched across many tracks at once,
+for a genome-wide gene-name index. A **per-track index** (a track's
+`textSearching` slot) makes just one track searchable.
 
 An aggregate index looks like this:
 

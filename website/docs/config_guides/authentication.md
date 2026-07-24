@@ -6,10 +6,16 @@ description:
 guide_category: Core configuration
 ---
 
+**TL;DR:** JBrowse fetches data files directly, so a file behind authentication
+needs JBrowse to present the credentials. Add an entry to the top-level
+`internetAccounts` array with the `domains` its token applies to. The first
+account whose `domains` substring-matches a URL wins, so order specific ones
+first.
+
 JBrowse reads data files directly over HTTP, so a file behind authentication
-needs JBrowse itself to present the credentials. That is what an **internet
-account** does: it is an entry in the top-level `internetAccounts` array that
-knows how to obtain a token and which URLs to attach it to.
+needs JBrowse itself to present the credentials. An **internet account** is an
+entry in the top-level `internetAccounts` array that knows how to obtain a token
+and which URLs to attach it to.
 
 ```json
 {
@@ -46,10 +52,9 @@ in.
 
 ## How an account is matched to a URL
 
-When JBrowse needs to fetch a file, it walks `internetAccounts` in order and
-picks the **first** account whose `domains` matches. The match is a plain
-substring test against the whole URL, not a hostname comparison. That has two
-consequences worth knowing:
+When JBrowse fetches a file, it walks `internetAccounts` in order and picks the
+**first** account whose `domains` matches. The match is a plain substring test
+against the whole URL, not a hostname comparison, which has two consequences:
 
 - You can scope an account to a **path**, not just a host, by including the path
   in the domain entry. This is how one server can use different credentials for

@@ -4,6 +4,10 @@ description: Configuration options common to all track types
 guide_category: Core configuration
 ---
 
+**TL;DR:** every track needs a `trackId`, `name`, `assemblyNames`, and an
+`adapter`. Put appearance settings (`color`, `height`, etc.) in a
+`displayDefaults` object and JBrowse routes each one to the right display.
+
 All tracks can contain:
 
 - `trackId` - internal track ID, must be unique
@@ -173,9 +177,9 @@ you can paste into `config.json` or into a
 
 ## Finding every option for a track or adapter type
 
-The config guides cover common settings. The complete list of every slot for
-every track, display, and adapter type is the auto-generated **config
-reference**, built from the source so it never drifts. For example:
+The config guides cover common settings. Every slot for every track, display,
+and adapter type is in the auto-generated **config reference**, built from source
+so it never drifts. For example:
 
 - [BamAdapter](/docs/config/bamadapter),
   [VcfTabixAdapter](/docs/config/vcftabixadapter),

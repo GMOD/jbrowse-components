@@ -4,7 +4,10 @@ description: Customizing feature detail panels with the formatDetails slot
 guide_category: Callbacks and customization
 ---
 
-Every track has a configuration slot called `formatDetails`.
+**TL;DR:** the track slot `formatDetails` takes jexl callbacks that return an
+object of fields to merge onto a feature: a new key adds a row, an existing key
+overrides it, and `undefined`/`null` hides it. For complex logic, register a
+jexl function in a small plugin.
 
 Here is an example track with a formatter:
 
@@ -33,25 +36,19 @@ Here is an example track with a formatter:
 
 <Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name) instead of plain text. The same callback also injects the extra 'newfield' row and drops the default 'type' row."/>
 
-This formatter links the `name` field to a Google search, useful for linking to
-gene pages. It also adds a custom `newfield` and removes `type` from the
-display.
+This formatter links the `name` field to a Google search (useful for linking to
+gene pages), adds a custom `newfield`, and removes `type` by setting it to
+`undefined`.
 
-The schema for `formatDetails` is:
+The `formatDetails` slots are:
 
 - `feature` - customizes the top-level feature
 - `subfeatures` - customizes the subfeatures, recursively up to `depth`
 - [`depth`](/docs/config/formatdetails/#slot-configurationformatdetailsdepth) -
   depth to customize the subfeatures to
 
-Use a jexl callback for `feature`, `subfeatures`, or both. The callback returns
-an object with the fields to replace.
-
-In the example above we return an object with:
-
-- `name` - customizes the name field with a link in the feature details
-- `type` - we make this undefined, which removes it from the feature details
-- `newfield` - this generates a new field in the feature details
+Use a jexl callback for `feature`, `subfeatures`, or both. Each returns an object
+with the fields to replace.
 
 ## How the returned object is applied
 

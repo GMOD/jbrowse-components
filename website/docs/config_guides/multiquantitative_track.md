@@ -4,6 +4,11 @@ description: Multiple BigWig/BedGraph signals combined into one display
 guide_category: Track types
 ---
 
+**TL;DR:** a `MultiQuantitativeTrack` overlays many BigWig/bedGraph signals in
+one display. Use the `bigWigs` array for quick absolute-URL setups, or
+`subadapters` when you need relative URLs or per-subtrack `color`, `group`, and
+`source`.
+
 ## MultiQuantitativeTrack config
 
 Example MultiQuantitativeTrack config:

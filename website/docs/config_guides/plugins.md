@@ -4,11 +4,12 @@ description: Adding first- and third-party plugins via config.json
 guide_category: Core configuration
 ---
 
-In jbrowse-web and jbrowse-desktop, plugins are added via `config.json`.
+**TL;DR:** in jbrowse-web and jbrowse-desktop, add a plugin by listing its
+`name` (which must match the name the plugin registers itself under) and bundle
+`url` in the top-level `plugins` array.
+
 Embedded components use a different approach. See the
 [inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
-
-External plugins can be added to the config.json file like so:
 
 ```json
 {
@@ -22,16 +23,13 @@ External plugins can be added to the config.json file like so:
 ```
 
 The `name` must match the name the plugin registers itself under in its source
-(e.g. `name = 'GDC'` in the plugin class). If it doesn't match, the plugin fails
-to load. The `url` (or one of the location fields below) points at the built
-plugin bundle.
+(e.g. `name = 'GDC'` in the plugin class), or the plugin fails to load. The `url`
+(or one of the location fields below) points at the built plugin bundle. The
+[plugin store](/plugin_store/) lists unpkg URLs for published plugins, which you
+can also download to your own server.
 
-Our plugin store lists unpkg URLs for published plugins at
-[the plugin store](/plugin_store/). You can also download plugin files from
-those URLs to your own server.
-
-The `url` field shown above is the simplest option and is equivalent to
-`umdUrl`. There are additional fields available for different situations:
+`url` is the simplest option and is equivalent to `umdUrl`. Other fields cover
+different situations:
 
 | Field    | Module format | Path resolved relative to |
 | -------- | ------------- | ------------------------- |

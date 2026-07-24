@@ -6,11 +6,15 @@ description:
 guide_category: Track types
 ---
 
+**TL;DR:** a `MafTrack` (with a `LinearMafDisplay`) shows a multiple alignment
+of several species against a reference, one row per species with a coverage
+summary on top. JBrowse reads three formats (BigMaf, tabix MAF, bgzipped TAF).
+Supply the species with a `samples` array or an `nhLocation` Newick tree.
+
 A MAF track shows a multiple alignment of several species against a reference
 genome: one row per aligned species, with a coverage summary on top. JBrowse
 reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
-This page covers the data formats and configuration; for what the track looks
-like and does once loaded, see the
+For what the track looks like once loaded, see the
 [MAF track user guide](/docs/user_guides/maf_track).
 
 ## Adapters
@@ -60,35 +64,32 @@ carry the two optional sub-adapters below.
 Two optional sub-adapters hang off the MAF **adapter**, alongside the main
 location:
 
-- **`summaryAdapter`** — a UCSC `bigMafSummary` (a `BigBedAdapter` over
+- **`summaryAdapter`**: a UCSC `bigMafSummary` (a `BigBedAdapter` over
   `bigMafSummary.bb`) used for cheap rendering when zoomed far out. Its bars are
-  shaded by the summary's normalized alignment score, which is a different
-  metric from the per-base percent identity the conservation band computes from
-  the alignment itself (that needs no file).
-- **`annotationAdapter`** — a UCSC `mafFrames` file (a `BigBedAdapter` over
+  shaded by the summary's normalized alignment score, a different metric from the
+  per-base percent identity the conservation band computes from the alignment
+  itself (that needs no file).
+- **`annotationAdapter`**: a UCSC `mafFrames` file (a `BigBedAdapter` over
   `multiz<N>wayFrames.bb`) carrying each gene's CDS reading frame projected
   through the alignment, one record per (species, region), keyed by `src`
-  species. It enables the **Show CDS frames** overlay and the **Codon view**
-  (amino-acid changes) in the track menu, both off by default. When the file
-  carries a record for the reference `src`, the reference row shows its own gene
-  structure too.
+  species. It enables the "Show CDS frames" overlay and the "Codon view"
+  (amino-acid changes), both off by default. When the file carries a record for
+  the reference `src`, the reference row shows its own gene structure too.
 
 ## Display options
 
 The conservation band, per-row identity (heatmap / X-Y plot), color by source
 chromosome, and inversion (strand-flip) overlays are all derived from the
-alignment with no extra configuration — toggle them from the track menu. The
+alignment with no extra configuration, toggled from the track menu. The
 [user guide](/docs/user_guides/maf_track) covers what each one shows.
 
 ## A larger example: the human 470-way
 
 These features scale to genome-scale alignments. The UCSC hg38 **470-way
 multiz** (the Zoonomia mammals and more) is a `BigMafAdapter` over
-`multiz470way.bigMaf` with its `multiz470waySummary.bb` (zoom-out) and
-`multiz470wayFrames.bb` (CDS frames / codon view), the same three pieces as the
-smaller examples above, just pointed at the UCSC downloads. Because the
-reference is a chromosome-level assembly, the rows read far cleaner than a
-fragmented scaffold-level alignment.
+`multiz470way.bigMaf`, with its `multiz470waySummary.bb` (zoom-out) and
+`multiz470wayFrames.bb` (CDS frames / codon view): the same three pieces as the
+smaller examples, pointed at the UCSC downloads.
 
 ```json
 {

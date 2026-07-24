@@ -4,10 +4,13 @@ description: Setting an initial session state loaded for all users
 guide_category: Other features
 ---
 
-A "default session" in `config.json` sets the initial state loaded for all
-users. Sessions are tedious to write by hand, so set the view up in the app, use
-**File → Export session**, and copy the exported `"session"` object in as
-`"defaultSession"`.
+**TL;DR:** a `defaultSession` in `config.json` sets the initial state loaded for
+all users. Don't write one by hand. Set the view up in the app, use its export
+session option, and paste the exported `"session"` object in as
+`"defaultSession"`. URL params like `&session=` and `&loc=` build a fresh
+session and ignore the `defaultSession`, unless
+[`&extendSession=true`](/docs/urlparams#navigating-within-the-default-session)
+is set, which navigates within it while keeping its tracks and settings.
 
 A complete `config.json` that opens on a region of `ctgA` with the genes track
 already showing:
@@ -65,14 +68,14 @@ already showing:
 }
 ```
 
-Note how the session's track entry refers back to the top-level track by
-`trackId` through its `configuration` field, rather than repeating the adapter.
+The session's track entry refers back to the top-level track by `trackId`
+through its `configuration` field rather than repeating the adapter.
 
-That indirection is also the thing most likely to break. Any track the session
-opens must exist in the top-level `tracks` array (or come from the assembly), or
-the session silently fails to open it. If a pipeline regenerates `config.json`
-with different `trackId`s each build, the `defaultSession` breaks along with
-every previously shared link, which is why
+That indirection is also what most often breaks. Any track the session opens
+must exist in the top-level `tracks` array (or come from the assembly), or the
+session silently fails to open it. If a pipeline regenerates `config.json` with
+different `trackId`s each build, the `defaultSession` breaks along with every
+previously shared link, which is why
 [trackIds must stay stable](/docs/config_guides/deploying#keep-trackids-stable-for-reproducible-links).
 
 To configure sessions via URL, see [URL parameters](/docs/urlparams).

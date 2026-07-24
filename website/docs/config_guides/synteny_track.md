@@ -4,12 +4,14 @@ description: Synteny track config for dotplot and linear synteny views
 guide_category: Track types
 ---
 
-A `SyntenyTrack` powers both the **dotplot view** and the **linear synteny
-view**. It pairs two assemblies using a whole-genome or gene-level alignment
-file.
+**TL;DR:** a `SyntenyTrack` pairs two assemblies from an alignment file and
+powers both the dotplot and linear synteny views. Pick the adapter by alignment
+format (PAF for minimap2). The one thing to get right is that `assemblyNames` is
+`[query, target]`, the reverse of the order minimap2 takes its inputs.
 
-For a full end-to-end walkthrough (from generating alignments to navigating the
-views), see the
+A `SyntenyTrack` powers both the **dotplot view** and the **linear synteny
+view**, pairing two assemblies with a whole-genome or gene-level alignment file.
+For an end-to-end walkthrough see the
 [synteny visualization tutorial](/docs/tutorials/synteny_visualization).
 
 ## Choosing an adapter

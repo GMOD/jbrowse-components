@@ -4,9 +4,9 @@ description: Per-feature color callbacks using jexl or plugin code
 guide_category: Callbacks and customization
 ---
 
-If a color callback has too much logic to express cleanly in
-[jexl](/docs/config_guides/jexl), add a function to the jexl language with a
-small plugin and call it from your jexl callback.
+**TL;DR:** set a track's `color` in `displayDefaults`, either as a plain CSS
+color or a `jexl:` expression. When the logic outgrows one jexl line, add a
+function to the jexl language with a small plugin and call it from your callback.
 
 For example, create a file named `myplugin.js`:
 
@@ -59,9 +59,9 @@ Put `myplugin.js` in the same directory as your config file and reference it:
 ```
 
 The `color` is set with the
-[`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays)
-and works as a plain CSS color (`"displayDefaults": { "color": "green" }`) or,
-as here, a `jexl:` expression evaluated per feature.
+[`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays):
+a plain CSS color (`"color": "green"`) or, as here, a `jexl:` expression
+evaluated per feature.
 
 The feature is a `SimpleFeature`. In jexl color callbacks, read attributes as
 plain properties, e.g. `feature.start`, `feature.refName`,

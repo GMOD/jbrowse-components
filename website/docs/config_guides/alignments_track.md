@@ -4,6 +4,10 @@ description: BAM/CRAM track config with BamAdapter and CramAdapter options
 guide_category: Track types
 ---
 
+**TL;DR:** point an `AlignmentsTrack` at a BAM or CRAM with the `uri` shorthand
+and the index resolves automatically. Coloring, height, and filtering are slots
+on the `LinearAlignmentsDisplay`, set via `displayDefaults`.
+
 Example `AlignmentsTrack` config:
 
 ```json addtrack
