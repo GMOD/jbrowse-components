@@ -314,7 +314,10 @@ This 1000 Genomes VCF is _statistically_ phased, so its haplotypes carry switch
 errors: the extra copy-switches in the genotype rows. hap-ibd's cM-length
 threshold filters most of them out, so its blocks track the real boundaries more
 closely, but treat the finer ones as approximate. The two crossovers above are
-the well-supported ones.
+the well-supported ones. hap-ibd is used here as a simple way to generate
+paintable inheritance blocks; for rigorous crossover mapping reach for a
+pedigree-aware method such as
+[duoHMM](https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm.html).
 
 ## Reproduce it end to end
 
