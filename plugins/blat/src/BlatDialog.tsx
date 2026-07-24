@@ -1,9 +1,10 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { DialogContent, TextField } from '@mui/material'
+import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import MonospaceTextField from './MonospaceTextField.tsx'
 import UcscQueryActions from './UcscQueryActions.tsx'
 import UcscQueryFields from './UcscQueryFields.tsx'
 import UcscQueryStatus from './UcscQueryStatus.tsx'
@@ -75,9 +76,8 @@ const BlatDialog = observer(function BlatDialog({
       <DialogContent
         style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
       >
-        <TextField
+        <MonospaceTextField
           label="Sequence"
-          variant="outlined"
           value={seq}
           onChange={event => {
             setSeq(event.target.value)
@@ -92,7 +92,6 @@ const BlatDialog = observer(function BlatDialog({
             seqError ||
             'DNA or FASTA, up to 25 kb. Results are added as a new track.'
           }
-          slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
         />
         <UcscQueryFields
           session={session}

@@ -4,6 +4,7 @@ import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import MonospaceTextField from './MonospaceTextField.tsx'
 import UcscQueryActions from './UcscQueryActions.tsx'
 import UcscQueryFields from './UcscQueryFields.tsx'
 import UcscQueryStatus from './UcscQueryStatus.tsx'
@@ -84,28 +85,21 @@ const IsPcrDialog = observer(function IsPcrDialog({
           Enter a forward and reverse primer to find their PCR products against
           the UCSC in-silico PCR server. Products are added as a new track.
         </Typography>
-        <UcscQueryFields
-          session={session}
-          query={query}
-          urlLabel="In-silico PCR server URL"
-        />
-        <TextField
+        <MonospaceTextField
           label="Forward primer"
           value={forwardPrimer}
           onChange={event => {
             setForwardPrimer(event.target.value)
           }}
           placeholder="e.g. GTGACGTCGTGACCTAGG"
-          slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
         />
-        <TextField
+        <MonospaceTextField
           label="Reverse primer"
           value={reversePrimer}
           onChange={event => {
             setReversePrimer(event.target.value)
           }}
           placeholder="e.g. CCTAGGTTGACGTCACGA"
-          slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
         />
         <TextField
           label="Max product size (bp)"
@@ -122,6 +116,11 @@ const IsPcrDialog = observer(function IsPcrDialog({
             {`Primers must be at least ${MINIMUM_PRIMER_LENGTH} bp`}
           </Typography>
         ) : null}
+        <UcscQueryFields
+          session={session}
+          query={query}
+          urlLabel="In-silico PCR server URL"
+        />
         <UcscQueryStatus query={query} />
       </DialogContent>
       <UcscQueryActions
