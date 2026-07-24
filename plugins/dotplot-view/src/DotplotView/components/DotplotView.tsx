@@ -1,6 +1,6 @@
 import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
-import { useRenderingBackend } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import {
   ColorByLegend,
   DiagonalizeLoadingScreen,

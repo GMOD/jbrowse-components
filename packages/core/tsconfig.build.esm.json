@@ -8,6 +8,5 @@
     "paths": {},
     "noEmit": false,
     "composite": true
-  },
-  "references": [{ "path": "../render-core/tsconfig.build.esm.json" }]
+  }
 }

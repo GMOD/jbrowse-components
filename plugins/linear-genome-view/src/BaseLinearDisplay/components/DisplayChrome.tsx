@@ -1,4 +1,4 @@
-import { useRenderingBackend } from '@jbrowse/core/util'
+import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
@@ -9,8 +9,8 @@ import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
 import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
-import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
+import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
 
 // The model contract is the *union of what the chrome and its sub-overlays

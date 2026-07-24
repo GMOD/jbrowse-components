@@ -353,7 +353,6 @@ export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
-export { useRenderingBackend } from './useRenderingBackend.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
 export { cmpStr } from './cmpStr.ts'
 export {

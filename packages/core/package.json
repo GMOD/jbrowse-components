@@ -157,7 +157,6 @@
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
-    "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
     "./util/wheelZoom": "./src/util/wheelZoom.ts"
   },
@@ -184,7 +183,6 @@
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/quick-lru": "^7.3.5",
-    "@jbrowse/render-core": "workspace:^",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
@@ -758,10 +756,6 @@
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
       },
-      "./util/useRenderingBackend": {
-        "types": "./esm/util/useRenderingBackend.d.ts",
-        "import": "./esm/util/useRenderingBackend.js"
-      },
       "./util/useVirtualScrollWheel": {
         "types": "./esm/util/useVirtualScrollWheel.d.ts",
         "import": "./esm/util/useVirtualScrollWheel.js"
@@ -1183,9 +1177,6 @@
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"
-        ],
-        "util/useRenderingBackend": [
-          "esm/util/useRenderingBackend.d.ts"
         ],
         "util/useVirtualScrollWheel": [
           "esm/util/useVirtualScrollWheel.d.ts"

@@ -1,13 +1,10 @@
 import { useRef } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  openFeatureWidget,
-  useRenderingBackend,
-} from '@jbrowse/core/util'
+import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 

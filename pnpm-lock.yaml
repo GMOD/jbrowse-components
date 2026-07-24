@@ -395,9 +395,6 @@ importers:
       '@jbrowse/quick-lru':
         specifier: ^7.3.5
         version: 7.3.5
-      '@jbrowse/render-core':
-        specifier: workspace:^
-        version: link:../render-core
       '@leeoniya/ufuzzy':
         specifier: ^1.0.19
         version: 1.0.19
