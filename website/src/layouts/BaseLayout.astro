@@ -1,6 +1,7 @@
 ---
 import { Font } from 'astro:assets'
 
+import SearchBox from '../components/SearchBox.astro'
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
 import { navLinks } from '../lib/nav.ts'
@@ -184,28 +185,7 @@ const year = new Date().getFullYear()
       </div>
 
       <div class={styles.navRight}>
-        <a
-          href={`${baseUrl}/search/`}
-          class:list={[
-            styles.navSearchLink,
-            { [navActive]: isActive(`${baseUrl}/search/`) },
-          ]}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"
-            ></path>
-          </svg>Search
-        </a>
+        <SearchBox />
         <a
           href="https://github.com/GMOD/jbrowse-components"
           class:list={[styles.socialIcon, styles.githubIcon]}

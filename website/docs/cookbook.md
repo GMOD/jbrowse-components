@@ -707,7 +707,7 @@ config.
   functions
 - [Supported file types](/docs/config_guides/file_types) - every format and its
   adapter
-- [Config reference](/docs/config/basetrack) - the complete, auto-generated slot
-  list for every track, display, and adapter
+- [Config reference](/docs/config) - the complete, auto-generated slot list for
+  every track, display, and adapter
 - [Automating JBrowse](/docs/automating) - the shared `init` launch model across
   config, URL, and embedded components

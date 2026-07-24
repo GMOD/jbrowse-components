@@ -102,8 +102,14 @@ point at them, not re-copy their contents (which silently goes stale).
 - **Don't hand-list a docs directory's pages.** Drop a `<!-- doclist:<dir> -->`
   marker (see `remark-doc-list.ts`) and it expands at build time to a
   `[title](url) — description` bullet per page under that dir, from frontmatter
-  — the same source the sidebar and landing pages use. `introduction.md` uses
-  `<!-- doclist:tutorials -->`. A typo'd dir fails the build.
+  — the same source the sidebar and landing pages use. A typo'd dir fails the
+  build. Two space-separated flags: `nodesc` lists titles only; `grouped`
+  buckets entries under `### <Category>` headings by their `Category -> Name`
+  `sidebar_label` prefix (alphabetical, matching the sidebar's grouping). The
+  `config.md`/`models.md`/`api.md` reference index pages (which route at the
+  otherwise-404 `/docs/config` etc., since they sit beside the autogen dirs and
+  survive `pnpm autogen`) use `grouped nodesc`. A page whose id equals the dir
+  (an index page) is excluded from its own list.
 - **Prefer an `include:` marker over a hand-copied code fence.** A fence
   preceded by `<!-- include: <repo/path/to/file.ts> -->` (optionally
   `#<region>`, marked in the source with `// #region <name>` / `// #endregion`)

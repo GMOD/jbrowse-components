@@ -63,37 +63,37 @@ own via pull request.
 
 ### Getting started
 
-- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin) - Plugin without a build step, useful for jexl callbacks and simple modifications
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - Overview of all element types a plugin can register
-- [Writing a plugin](/docs/developer_guides/simple_plugin) - Scaffold a plugin from an official template
-- [Theming](/docs/developer_guides/theming) - Customizing JBrowse colors and theme via config
+- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [Writing a plugin](/docs/developer_guides/simple_plugin)
+- [Theming](/docs/developer_guides/theming)
 
 ### Core concepts
 
-- [Configuration schema](/docs/developer_guides/configuration_schema) - Slot types, inheritance, callbacks, preProcessSnapshot, and reading config values
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) - How MultiRegionDisplayMixin fetches data, the autorun chain, and rpcProps
-- [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app
-- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) - What JBrowse provides as shared libraries (re-exports) versus what your plugin bundles itself from npm, and how to import each
-- [MST patterns](/docs/developer_guides/mst_patterns) - Common MobX-State-Tree patterns used across JBrowse plugins
-- [RPC and worker system](/docs/developer_guides/rpc_workers) - How to register and call RPC methods that run in web workers
+- [Configuration schema](/docs/developer_guides/configuration_schema)
+- [Data fetching pipeline](/docs/developer_guides/data_fetching)
+- [Extension points](/docs/developer_guides/extension_points)
+- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+- [MST patterns](/docs/developer_guides/mst_patterns)
+- [RPC and worker system](/docs/developer_guides/rpc_workers)
 
 ### Creating pluggable elements
 
-- [Custom adapters](/docs/developer_guides/creating_adapter) - Read data from custom file formats with feature, regions, or sequence adapters
-- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow) - Custom UI in the Add track dialog for non-standard track types
-- [Custom connections](/docs/developer_guides/creating_connection) - Add many tracks at once, or dynamically query a remote resource, with a connection type
-- [Custom track and display types](/docs/developer_guides/creating_display) - Define track types (high-level identity) and display types (how a track renders in a given view)
-- [GPU displays](/docs/developer_guides/creating_gpu_display) - Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
-- [Text search adapters](/docs/developer_guides/creating_text_search_adapter) - Implement a custom backend for the search box
-- [Custom view types](/docs/developer_guides/creating_view) - Add entirely new view panels such as DotplotView or CircularView
-- [Custom widgets](/docs/developer_guides/creating_widget) - Add new drawer/panel UI components
-- [Drawer widgets](/docs/developer_guides/drawer_widgets) - Launching sidebar or popup widgets in the embedded LGV
-- [Top-level menu items](/docs/developer_guides/menus) - Add items to the top-level application menu bar
-- [Plotting features in a custom display](/docs/developer_guides/plotting_features) - Build a plugin that fetches features in a worker and plots them on the main thread with Canvas2D, no shaders required
-- [SVG export](/docs/developer_guides/svg_export) - How to implement renderSvg on a custom display type
+- [Custom adapters](/docs/developer_guides/creating_adapter)
+- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow)
+- [Custom connections](/docs/developer_guides/creating_connection)
+- [Custom track and display types](/docs/developer_guides/creating_display)
+- [GPU displays](/docs/developer_guides/creating_gpu_display)
+- [Text search adapters](/docs/developer_guides/creating_text_search_adapter)
+- [Custom view types](/docs/developer_guides/creating_view)
+- [Custom widgets](/docs/developer_guides/creating_widget)
+- [Drawer widgets](/docs/developer_guides/drawer_widgets)
+- [Top-level menu items](/docs/developer_guides/menus)
+- [Plotting features in a custom display](/docs/developer_guides/plotting_features)
+- [SVG export](/docs/developer_guides/svg_export)
 
 ### Advanced topics
 
-- [PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format) - Tabix-indexed pairwise alignment format for large-scale synteny data
-- [RefName aliasing](/docs/developer_guides/refname_aliasing) - Map between chromosome naming conventions across tracks and assemblies
-- [Testing a plugin](/docs/developer_guides/testing_plugins) - How to unit-test adapters, models, and components, plus where browser and component tests fit
+- [PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format)
+- [RefName aliasing](/docs/developer_guides/refname_aliasing)
+- [Testing a plugin](/docs/developer_guides/testing_plugins)

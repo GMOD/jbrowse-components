@@ -1,0 +1,190 @@
+---
+import { baseUrl } from '../lib/base-url.ts'
+---
+
+<!-- Header search: a compact input with an instant pagefind results dropdown.
+     Enter (or the dropdown footer) opens the full /search/ page, which reruns
+     the same query. Pagefind is loaded lazily on first input; if it is absent
+     (local dev without `pnpm index`), the box still submits to /search/. -->
+<form class="hs-form" role="search" action={`${baseUrl}/search/`} method="get">
+  <svg
+    class="hs-icon"
+    xmlns="http://www.w3.org/2000/svg"
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
+  </svg>
+  <input
+    id="hs-input"
+    name="q"
+    type="search"
+    class="hs-input"
+    placeholder="Search docs..."
+    autocomplete="off"
+    aria-label="Search documentation"
+  />
+  <div id="hs-results" class="hs-results" hidden></div>
+</form>
+
+<script is:inline define:vars={{ baseUrl }}>
+  const form = document.querySelector('.hs-form')
+  const input = document.getElementById('hs-input')
+  const panel = document.getElementById('hs-results')
+  let pagefind
+  let debounce
+
+  async function getPagefind() {
+    if (pagefind === undefined) {
+      try {
+        pagefind = await import(`${baseUrl}/pagefind/pagefind.js`)
+      } catch {
+        pagefind = null // absent in local dev; Enter still submits to /search/
+      }
+    }
+    return pagefind
+  }
+
+  function close() {
+    panel.hidden = true
+    panel.replaceChildren()
+  }
+
+  function shortPath(url) {
+    return new URL(url, location.href).pathname
+      .replace(/^\/jb2\/|^\//, '')
+      .replace(/\/$/, '')
+  }
+
+  async function run(query) {
+    if (!query.trim()) {
+      close()
+      return
+    }
+    const pf = await getPagefind()
+    if (!pf) {
+      return
+    }
+    const { results } = await pf.search(query)
+    const items = await Promise.all(results.slice(0, 6).map(r => r.data()))
+    if (input.value !== query) {
+      return // a newer keystroke already superseded this search
+    }
+    const all = `${baseUrl}/search/?q=${encodeURIComponent(query)}`
+    panel.innerHTML = items.length
+      ? items
+          .map(
+            it =>
+              `<a class="hs-hit" href="${it.url}"><span class="hs-hit-title">${it.meta?.title ?? shortPath(it.url)}</span><span class="hs-hit-path">${shortPath(it.url)}</span></a>`,
+          )
+          .join('') + `<a class="hs-all" href="${all}">See all results</a>`
+      : `<a class="hs-all" href="${all}">No quick matches — search all docs</a>`
+    panel.hidden = false
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounce)
+    debounce = setTimeout(() => run(input.value), 150)
+  })
+  input.addEventListener('focus', () => {
+    if (input.value.trim()) {
+      run(input.value)
+    }
+  })
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      close()
+      input.blur()
+    }
+  })
+  document.addEventListener('click', e => {
+    if (!form.contains(e.target)) {
+      close()
+    }
+  })
+</script>
+
+<style is:global>
+  .hs-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+  .hs-form:focus-within {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: var(--color-teal-bright);
+  }
+  .hs-icon {
+    color: rgba(255, 255, 255, 0.8);
+    flex-shrink: 0;
+  }
+  .hs-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 0.9rem;
+    width: 150px;
+    max-width: 40vw;
+  }
+  .hs-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .hs-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: min(360px, 90vw);
+    max-height: 70vh;
+    overflow-y: auto;
+    background: white;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    z-index: 300;
+  }
+  /* Prefix with .hs-results so these beat the header's `.navRight a { color:
+     white }` (specificity 0,1,1) — otherwise the dropdown text inherits white
+     on a white background. */
+  .hs-results .hs-hit,
+  .hs-results .hs-all {
+    display: block;
+    text-decoration: none;
+    color: var(--color-text);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .hs-results .hs-hit:hover,
+  .hs-results .hs-all:hover {
+    background: var(--color-surface);
+  }
+  .hs-results .hs-hit-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .hs-results .hs-hit-path {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-accent);
+  }
+  .hs-results .hs-all {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    border-bottom: none;
+  }
+</style>
