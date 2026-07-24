@@ -8,9 +8,10 @@ import {
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage, NumberTextField } from '@jbrowse/core/ui'
-import { getContainingView, getSession, useFetch } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
   Button,
   CircularProgress,

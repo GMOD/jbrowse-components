@@ -1,4 +1,4 @@
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 
 // Persisted view/format preferences for the MAF sequence widget. Bundled into
 // one hook so the widget body stays focused on data fetching and layout.

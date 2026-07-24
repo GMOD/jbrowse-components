@@ -1,5 +1,6 @@
 import { ErrorBanner } from '@jbrowse/core/ui'
-import { SimpleFeature, toLocale, useFetch } from '@jbrowse/core/util'
+import { SimpleFeature, toLocale } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'

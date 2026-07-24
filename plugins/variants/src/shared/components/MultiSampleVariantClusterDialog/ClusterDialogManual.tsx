@@ -5,14 +5,11 @@ import {
   ErrorBanner,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getSession,
-  useFetch,
-  useLocalStorage,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
   buildClusteredLayout,
   generateClusterRScript,

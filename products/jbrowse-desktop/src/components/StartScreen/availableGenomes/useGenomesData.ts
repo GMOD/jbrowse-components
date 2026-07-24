@@ -1,4 +1,5 @@
-import { fetchJson, useFetch } from '@jbrowse/core/util'
+import { fetchJson } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 
 import type { Fav } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'

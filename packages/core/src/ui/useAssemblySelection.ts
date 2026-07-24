@@ -1,4 +1,4 @@
-import { useLocalStorage } from '../util/index.ts'
+import { useLocalStorage } from '../util/hooks.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
 

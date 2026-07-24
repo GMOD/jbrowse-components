@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
 import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
-import { mutate, useFetch, useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { mutate, useFetch } from '@jbrowse/core/util/useFetch'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import DeleteIcon from '@mui/icons-material/Delete'
 import OpenIcon from '@mui/icons-material/FolderOpen'

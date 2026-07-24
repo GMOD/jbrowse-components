@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession, useFocusOnInteraction } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
+import { useFocusOnInteraction } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'

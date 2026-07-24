@@ -1,4 +1,4 @@
-import { useLocalStorage } from '../util/index.ts'
+import { useLocalStorage } from '../util/hooks.ts'
 import { instanceScopedKey } from './useAssemblySelection.ts'
 
 // keep the list short so it reads as "jump back to somewhere recent" rather

@@ -3,8 +3,8 @@ import {
   fetchJson,
   getEnv,
   isSessionWithSessionPlugins,
-  useFetch,
 } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 
 import type {
   AbstractSessionModel,

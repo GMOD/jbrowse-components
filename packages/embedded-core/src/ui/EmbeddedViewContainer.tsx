@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 
-import { getSession, useWidthSetter } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
+import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'

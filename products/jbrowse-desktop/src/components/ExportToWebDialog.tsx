@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
 import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
-import { encodeSessionParam, fetchJson, useFetch } from '@jbrowse/core/util'
+import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
   DEFAULT_WEB_BASE_URL,
   bakePromotedDefaultsIntoSnapshot,

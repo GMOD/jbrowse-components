@@ -1,6 +1,7 @@
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getSession, useFetch } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 

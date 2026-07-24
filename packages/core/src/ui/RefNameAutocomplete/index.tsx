@@ -4,7 +4,8 @@ import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
-import { useDebounce, useFetch } from '../../util/index.ts'
+import { useDebounce } from '../../util/hooks.ts'
+import { useFetch } from '../../util/useFetch.ts'
 import {
   MAX_OPTIONS,
   cap,

@@ -1,7 +1,7 @@
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
-import { useFetch } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 
 import { readConfSlot } from './util.ts'
 

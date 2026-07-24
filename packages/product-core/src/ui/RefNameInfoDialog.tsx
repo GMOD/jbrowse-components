@@ -4,8 +4,8 @@ import {
   ErrorBanner,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
-import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 

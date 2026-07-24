@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { useFetch } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 
 import { useInnerDims } from '../availableGenomes/util.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'

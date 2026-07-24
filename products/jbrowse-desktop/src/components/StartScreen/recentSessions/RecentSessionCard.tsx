@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import { CascadingMenuButton } from '@jbrowse/core/ui'
-import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import {
   Card,

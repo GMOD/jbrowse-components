@@ -24,8 +24,9 @@ import {
   Dialog,
   ErrorBanner,
 } from '../../../ui/index.ts'
-import { getContainingView, saveAs, useFetch } from '../../../util/index.ts'
+import { getContainingView, saveAs } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
+import { useFetch } from '../../../util/useFetch.ts'
 import { fetchTrackData } from './fetchTrackData.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'

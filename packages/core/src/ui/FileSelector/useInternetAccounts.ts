@@ -1,4 +1,4 @@
-import { useLocalStorage } from '../../util/index.ts'
+import { useLocalStorage } from '../../util/hooks.ts'
 import { isAppRootModel } from '../../util/types/index.ts'
 
 import type { AbstractRootModel } from '../../util/types/index.ts'

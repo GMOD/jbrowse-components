@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 
 import type { FilterOption } from './useGenomesData.ts'
 

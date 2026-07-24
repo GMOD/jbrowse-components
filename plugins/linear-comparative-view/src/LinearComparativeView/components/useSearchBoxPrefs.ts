@@ -1,4 +1,4 @@
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 
 // Persist search-box visibility/orientation per regime (few vs many genomes)
 // rather than one global key, so the "compact default" heuristic isn't

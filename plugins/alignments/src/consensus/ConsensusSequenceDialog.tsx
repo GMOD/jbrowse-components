@@ -15,9 +15,9 @@ import {
   getSession,
   isSessionWithAddTracks,
   toLocale,
-  useFetch,
 } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'

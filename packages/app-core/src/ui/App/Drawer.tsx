@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { useFocusOnInteraction } from '@jbrowse/core/util'
+import { useFocusOnInteraction } from '@jbrowse/core/util/hooks'
 import { Drawer as DrawerShell } from '@jbrowse/product-core'
 import { observer } from 'mobx-react'
 

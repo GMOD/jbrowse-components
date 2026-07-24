@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,

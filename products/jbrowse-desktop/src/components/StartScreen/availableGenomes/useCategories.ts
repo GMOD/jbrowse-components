@@ -1,4 +1,5 @@
-import { fetchJson, useFetch } from '@jbrowse/core/util'
+import { fetchJson } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 
 const CATEGORIES_URL = 'https://jbrowse.org/hubs/categories.json'
 

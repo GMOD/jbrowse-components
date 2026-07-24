@@ -1,5 +1,6 @@
 import CoreFeatureSequenceDialog from '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog'
-import { getSession, useFetch } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import { observer } from 'mobx-react'
 
 import { findSubfeatureById } from '../baseModelHelpers.ts'

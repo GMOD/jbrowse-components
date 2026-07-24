@@ -7,8 +7,9 @@ import {
   LoadingEllipses,
   MonospaceTextField,
 } from '@jbrowse/core/ui'
-import { complement, reverse, toLocale, useFetch } from '@jbrowse/core/util'
+import { complement, reverse, toLocale } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
 

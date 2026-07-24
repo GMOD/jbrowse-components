@@ -1,7 +1,7 @@
 import { ThemeProvider } from '@mui/material'
 
 import { createJBrowseTheme } from '../ui/theme.ts'
-import { renderToStaticMarkup } from '../util/index.ts'
+import { renderToStaticMarkup } from '../util/renderToStaticMarkup.ts'
 import { SVGExportRoot } from './SvgExport.tsx'
 
 import type { ThemeOptions } from '@mui/material'

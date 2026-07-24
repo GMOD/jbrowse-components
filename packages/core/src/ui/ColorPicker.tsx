@@ -4,7 +4,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, Popover, Select, TextField } from '@mui/material'
 
-import { useDebounce, useLocalStorage } from '../util/index.ts'
+import { useDebounce, useLocalStorage } from '../util/hooks.ts'
 import { swatchStyle } from './colorSwatchStyle.ts'
 import { paletteColors } from './colors.ts'
 import { RgbaStringColorPicker } from './react-colorful.ts'

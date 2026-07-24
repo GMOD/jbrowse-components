@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
 import { ErrorBanner, SubmitDialog, TagTextField } from '@jbrowse/core/ui'
-import { getContainingView, useDebounce, useFetch } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
+import { useDebounce } from '@jbrowse/core/util/hooks'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 

@@ -1,10 +1,7 @@
 import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import {
-  formatRelativeTime,
-  measureGridWidth,
-  useLocalStorage,
-} from '@jbrowse/core/util'
+import { formatRelativeTime, measureGridWidth } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'

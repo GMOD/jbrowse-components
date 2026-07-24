@@ -1,4 +1,5 @@
-import { fetchJson, useFetch } from '@jbrowse/core/util'
+import { fetchJson } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 
 const TAXONOMY_FILTER_URL = 'https://genomes.jbrowse.org/taxonomyFilter.json'
 

@@ -5,8 +5,9 @@ import {
   ErrorBanner,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
-import { getContainingView, getSession, useFetch } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
   buildClusteredLayout,
   generateClusterRScript,

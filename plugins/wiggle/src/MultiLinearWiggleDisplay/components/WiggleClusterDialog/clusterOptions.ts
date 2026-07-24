@@ -1,4 +1,5 @@
-import { getContainingView, useLocalStorage } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
