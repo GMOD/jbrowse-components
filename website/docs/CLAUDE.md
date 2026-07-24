@@ -129,6 +129,15 @@ point at them, not re-copy their contents (which silently goes stale).
 - **Cross-page anchor links:** write `/docs/page#anchor` (no slash before `#`);
   `rehypeTrailingSlash` adds the trailing slash to the path. CI validates
   fragment targets via `untitaker/hyperlink --check-anchors`.
+- **`add-track` CLI tab from a track config.** Tag a `json` fence
+  ` ```json addtrack ` and `remark-config-cli-tabs.ts` renders it as a
+  Config/CLI tab pair, deriving the `jbrowse add-track` command from the same
+  JSON (`src/lib/derive-add-track.ts`) so the two can't drift.
+  `pnpm check-config-cli` round-trips every tagged block through the real CLI
+  and fails on any mismatch. Only "CLI-clean" configs qualify — a single-file
+  `uri` adapter with a recognized extension, no extra adapter slots, and no
+  custom `displays` (`displayDefaults` is fine, it maps to `--displayDefaults`).
+  Tag a richer block and both the build and the check flag it; leave it plain.
 
 ## Tutorials (`tutorials/*`)
 
