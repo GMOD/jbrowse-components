@@ -20,12 +20,16 @@ CAPTCHA. You can either solve the CAPTCHA in the dialog, or paste a UCSC apiKey
 (generate one from a UCSC Genome Browser account under Hub Development → API
 key) to skip it. A proxy that injects a key server-side also avoids the CAPTCHA.
 
+<Figure src="/img/desktop-blat-search.png" caption="The BLAT search dialog on hg19. Paste a DNA sequence or FASTA and pick the assembly; 'Show advanced settings' reveals the UCSC database, server URL, and apiKey field."/>
+
 ## In-silico PCR
 
 Choose **Tools → In-silico PCR…** to find where a primer pair amplifies. Enter a
 forward and reverse primer and an optional maximum product size; the predicted
 amplicons are returned as a track. This uses UCSC's `hgPcr` service and follows
 the same database-selection and apiKey/proxy options as BLAT search.
+
+<Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19. Forward and reverse primer fields with a max product size, sharing the same assembly picker and advanced apiKey/proxy options as BLAT search."/>
 
 ## See also
 

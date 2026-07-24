@@ -64,6 +64,70 @@ async function clickActiveAddTrackButton(driver: WebDriver): Promise<void> {
   throw new Error('no enabled addTrackNextButton found')
 }
 
+// Kill CSS transitions/animations so a capture can't land on a half-faded
+// dialog or menu (the desktop harness, unlike the web generator, drives a live
+// app with MUI Grow/Fade transitions running).
+async function freezeAnimations(driver: WebDriver): Promise<void> {
+  await driver.executeScript(`
+    const s = document.createElement('style')
+    s.textContent =
+      '*,*::before,*::after{transition:none !important;animation:none !important;}'
+    document.head.appendChild(s)
+  `)
+}
+
+// BLAT and in-silico PCR (blat plugin, a desktop core plugin) query UCSC by
+// assembly, so demonstrate them on a real UCSC assembly: launch the seeded hg19
+// favorite from the start screen, capture both Tools-menu dialogs in their
+// default (collapsed) state — which fits the window and keeps hg19 prominent;
+// the guide prose covers the "advanced settings" apiKey/CAPTCHA path the toggle
+// reveals — then hand the run back a clean start screen for the remaining shots.
+async function captureBlatDialogs(driver: WebDriver): Promise<void> {
+  console.log('Launching hg19 for BLAT/in-silico PCR dialogs...')
+  const hg19Link = await driver.wait(
+    until.elementLocated(By.xpath("//a[contains(., 'GRCh37/hg19')]")),
+    30000,
+  )
+  await driver.executeScript('arguments[0].click();', hg19Link)
+  // the app bar (where the blat plugin's Tools items live) appears once the
+  // session opens; the hg19 config is fetched from jbrowse.org, so allow time
+  await findByText(driver, 'Tools')
+  await delay(3000)
+  await freezeAnimations(driver)
+
+  // Tools -> BLAT search: paste a sample sequence so the figure shows a query
+  // being set up against hg19.
+  console.log('Capturing BLAT search dialog...')
+  await openMenuItem(driver, 'Tools', 'BLAT search')
+  await findByText(driver, 'BLAT search (UCSC)')
+  await delay(500)
+  const blatSeqInput = await driver.wait(
+    until.elementLocated(By.css('textarea:not([aria-hidden="true"])')),
+    10000,
+  )
+  await blatSeqInput.click()
+  await blatSeqInput.sendKeys(
+    'CACGTGACTGAGGCTTGATCCGGATTACAGTGCCATTGACCTGAAGTTCAGG',
+  )
+  await delay(500)
+  await capture(driver, 'desktop-blat-search.png')
+  await cleanupUI(driver)
+
+  // Tools -> In-silico PCR: the hgPcr primer-pair dialog. Its forward/reverse
+  // primer fields carry their own example placeholders.
+  console.log('Capturing In-silico PCR dialog...')
+  await openMenuItem(driver, 'Tools', 'In-silico PCR')
+  await findByText(driver, 'In-silico PCR (UCSC)')
+  await delay(500)
+  await capture(driver, 'desktop-ispcr.png')
+  await cleanupUI(driver)
+
+  console.log('Returning to start screen...')
+  await openMenuItem(driver, 'File', 'Return to start screen')
+  await waitForStartScreen(driver)
+  await delay(1000)
+}
+
 async function main(): Promise<void> {
   console.log(`Running in ${isHeadless ? 'headless' : 'headed'} mode`)
   console.log(`App binary: ${APP_BINARY}`)
@@ -94,6 +158,9 @@ async function main(): Promise<void> {
   await waitForStartScreen(driver)
   await delay(1500) // let panels settle
   await capture(driver, 'desktop-landing.png')
+
+  // BLAT / in-silico PCR dialogs on hg19, then back to the start screen
+  await captureBlatDialogs(driver)
 
   // "Open genome(s)" dialog (custom genome from files/URLs)
   console.log('Capturing open-genome dialog...')
