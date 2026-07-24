@@ -1,5 +1,5 @@
 ---
-title: Minigraph-Cactus pangenomes
+title: Pangenome (Minigraph-Cactus)
 description:
   Build a Minigraph-Cactus pangenome graph and load its linear projections in
   JBrowse

@@ -1,5 +1,5 @@
 ---
-title: Pangenome graphs
+title: Pangenome (pggb)
 description:
   Build a four-strain pggb pangenome graph and load its linear projections plus
   the graph itself in JBrowse

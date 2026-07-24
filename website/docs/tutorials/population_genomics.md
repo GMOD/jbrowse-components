@@ -1,5 +1,6 @@
 ---
-title: Population genomics
+title: Selection scans (Fst, π, Tajima's D)
+sidebar_label: Selection scans
 description:
   Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from
   one VCF

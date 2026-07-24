@@ -43,7 +43,7 @@ sidebar_label: Overview
 
 ## Tutorials
 
-- [All-vs-all synteny](/docs/tutorials/allvsall_synteny) - Stack strains in a linear synteny view from one all-vs-all PAF
+- [Synteny visualization (all-vs-all minimap2)](/docs/tutorials/allvsall_synteny) - Stack strains in a linear synteny view from one all-vs-all PAF
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
 - [Bisulfite methylation](/docs/tutorials/bisulfite) - A WGBS/EM-seq pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
 - [BXD QTL mapping](/docs/tutorials/bxd_qtl) - Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
@@ -54,15 +54,15 @@ sidebar_label: Overview
 - [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - Open a UCSC liftOver track in a linear genome view and launch a synteny view from it
 - [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium) - Read an LD triangle across a selective sweep and an inversion
 - [Long-read methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
-- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
-- [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
-- [Pangenome graphs](/docs/tutorials/pangenome_ecoli) - Build a four-strain pggb pangenome graph and load its linear projections plus the graph itself in JBrowse
-- [The HPRC human pangenome](/docs/tutorials/pangenome_hprc) - Stream HPRC release 2's pangenome VCF off S3, cluster 464 haplotypes at a locus, and open the same region as a graph
-- [Population genomics](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from one VCF
+- [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
+- [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
+- [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli) - Build a four-strain pggb pangenome graph and load its linear projections plus the graph itself in JBrowse
+- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc) - Stream HPRC release 2's pangenome VCF off S3, cluster 464 haplotypes at a locus, and open the same region as a graph
+- [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus per-sample inversion genotypes from one VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
 - [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs
 - [1000 Genomes SVs](/docs/tutorials/sv_multisamples) - Population SVs, a family trio, and a large chromosomal inversion
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
-- [Synteny visualization](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views
+- [Synteny visualization (pairwise minimap2)](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views
 - [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv) - Plot somatic copy number across a thousand tumors, one row per sample

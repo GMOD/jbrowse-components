@@ -1,5 +1,5 @@
 ---
-title: The HPRC human pangenome
+title: Pangenome (HPRC)
 description:
   Stream HPRC release 2's pangenome VCF off S3, cluster 464 haplotypes at a
   locus, and open the same region as a graph
