@@ -2,6 +2,11 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import {
+  DEFAULT_HIC_COLOR_SCHEME,
+  HIC_COLOR_SCHEMES,
+} from './components/colorRamp.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -56,12 +61,8 @@ const HicTrackConfigFactory = () => {
        */
       colorScheme: {
         type: 'stringEnum',
-        model: types.enumeration('HicColorScheme', [
-          'fall',
-          'juicebox',
-          'viridis',
-        ]),
-        defaultValue: 'juicebox',
+        model: types.enumeration('HicColorScheme', [...HIC_COLOR_SCHEMES]),
+        defaultValue: DEFAULT_HIC_COLOR_SCHEME,
         description: 'color ramp used to render contact intensity',
       },
       /**

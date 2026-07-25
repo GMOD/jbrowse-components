@@ -24,6 +24,14 @@ export interface HicDataResult {
   positions: Float32Array
   counts: Float32Array
   numContacts: number
+  /**
+   * Color-scale saturation candidates, both always **finite** — they are scored
+   * off the finite subset of `counts`, so a NaN (the .hic dense-block "no value"
+   * marker) or an Infinity (a tiny normalization divisor) in one bin can't reach
+   * them. `colorMaxScore` divides by these, and NaN there propagates to every
+   * bin's color. `counts` itself may still hold a non-finite value; only that
+   * bin is affected. Both are 0 for an empty result.
+   */
   maxScore: number
   percentile95: number
   binWidth: number

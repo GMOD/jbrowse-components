@@ -1,10 +1,8 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
-import {
-  GpuHicRenderer,
-  HIC_INSTANCE_STRIDE_F32,
-  HIC_PASSES,
-} from './GpuHicRenderer.ts'
+import { GpuHicRenderer, HIC_PASSES } from './GpuHicRenderer.ts'
+// the packed layout is the generated shader's, so assert against it directly
+import { INSTANCE_STRIDE_BYTES } from './shaders/hic.iface.generated.ts'
 
 import type {
   HicRenderState,
@@ -49,7 +47,7 @@ describe('GpuHicRenderer', () => {
     const buf = hal.getBuffer(0, 'main')
     expect(buf).toBeDefined()
     expect(buf!.count).toBe(2)
-    expect(buf!.data.byteLength).toBe(2 * HIC_INSTANCE_STRIDE_F32 * 4)
+    expect(buf!.data.byteLength).toBe(2 * INSTANCE_STRIDE_BYTES)
 
     const f32 = new Float32Array(buf!.data)
     // first contact: px=10, py=20, count=5.0

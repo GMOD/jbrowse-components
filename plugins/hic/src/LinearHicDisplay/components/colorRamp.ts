@@ -53,15 +53,25 @@ function viridisRgbaFromHex(): RGBA[] {
 
 const VIRIDIS_FULL_STOPS: ColorStops = { stops: viridisRgbaFromHex() }
 
-const SCHEMES = {
+// One source of truth for the scheme names and the default: the config schema's
+// `types.enumeration` spreads this list and its slot reads the constant, so
+// adding a scheme is one edit here. `Record<HicColorScheme, …>` below makes that
+// addition a type error until its stops exist.
+//
+// The track menu's default entry writes DEFAULT_HIC_COLOR_SCHEME and relies on
+// stripDefault omitting it (so picking it doesn't mark the track edited), which
+// holds by construction now that the slot default *is* this constant.
+export const HIC_COLOR_SCHEMES = ['fall', 'juicebox', 'viridis'] as const
+
+export type HicColorScheme = (typeof HIC_COLOR_SCHEMES)[number]
+
+export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
+
+const SCHEMES: Record<HicColorScheme, ColorStops> = {
   fall: FALL_STOPS,
   juicebox: JUICEBOX_STOPS,
   viridis: VIRIDIS_FULL_STOPS,
-} as const
-
-export type HicColorScheme = keyof typeof SCHEMES
-
-export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
+}
 
 function lerp(a: number, b: number, t: number) {
   return a * (1 - t) + b * t

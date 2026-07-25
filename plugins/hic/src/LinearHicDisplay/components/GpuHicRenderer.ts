@@ -15,7 +15,6 @@ const REGION_KEY = 0
 const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
 const U = hicShader.UNIFORM_OFFSET_F32
 const UU = hicShader.UNIFORM_OFFSET_U32
-const STRIDE = hicShader.INSTANCE_STRIDE_F32
 
 export const HIC_PASSES: PassDescriptor[] = [
   slangPass({
@@ -25,10 +24,7 @@ export const HIC_PASSES: PassDescriptor[] = [
   }),
 ]
 
-export {
-  STRIDE as HIC_INSTANCE_STRIDE_F32,
-  UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE,
-}
+export { UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE }
 
 export class GpuHicRenderer
   extends GpuGlobalRenderingBackend<HicUploadData, HicRenderState>

@@ -6,7 +6,7 @@ import { getNiceScale } from '@jbrowse/wiggle-core'
  * overlay panel (HTML spans) and the SVG export legend (SVG text) so both
  * read identically. `maxLabel` carries the `(log)` suffix when relevant.
  */
-export function getHicScaleLabels(score: number, useLogScale?: boolean) {
+export function getHicScaleLabels(score: number, useLogScale: boolean) {
   const { min, max } = getNiceScale(score, useLogScale)
   return {
     minLabel: min !== undefined ? toLocale(min) : '',

@@ -17,7 +17,7 @@ export default function HicSVGColorLegend({
 }: {
   maxScore: number
   colorScheme: HicColorScheme
-  useLogScale?: boolean
+  useLogScale: boolean
   width: number
   positionOutside?: boolean
   idSuffix: string
