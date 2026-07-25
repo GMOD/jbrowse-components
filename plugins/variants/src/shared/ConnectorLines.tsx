@@ -7,8 +7,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { connectorLineAlpha } from './connectorLineAlpha.ts'
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
+import { connectorLineAlpha } from './connectorLineAlpha.ts'
 
 // One connector: `mx` is the matrix-column center x, `gx` the genomic x on the
 // ruler. How those are computed differs per display (index layout vs the
