@@ -37,16 +37,17 @@ const transcript = {
   ],
 }
 
-test('a bare region offers only the genomic types', () => {
+test('a bare region offers the genomic types', () => {
   expect(openedOptions(region)).toEqual([
     'genomic',
     'genomic_sequence_updownstream',
   ])
 })
 
-test('a coding transcript also offers the raw genomic span', () => {
-  // the gene_* types are the spliced/highlighted views; the plain genomic ones
-  // are how a promoter or terminator gets read off a transcript
+// the gene_* types already span the whole feature, with and without flanks, so
+// a spliced feature has no use for the plain genomic ones -- what they render
+// differently (CDS/UTR coloring, casing) is the upperCaseCDS setting's job
+test('a coding transcript offers the spliced types instead', () => {
   expect(openedOptions(transcript)).toEqual([
     'cds',
     'protein',
@@ -55,7 +56,5 @@ test('a coding transcript also offers the raw genomic span', () => {
     'gene_updownstream',
     'gene_collapsed_intron',
     'gene_updownstream_collapsed_intron',
-    'genomic',
-    'genomic_sequence_updownstream',
   ])
 })
