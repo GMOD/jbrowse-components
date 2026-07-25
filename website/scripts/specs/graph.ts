@@ -26,6 +26,7 @@ const TOOLBAR_READY =
 
 const CONFIG = 'test_data/graphgenomeview/config.json'
 const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
+const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
 // The HPRC figures take the other route into the same view: instead of a whole
 // GFA file, a GraphGenomeView carrying `loadedTrackId`/`loadedRegion` — the exact
@@ -121,6 +122,55 @@ export const graphSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.1,
     viewportWidth: 1000,
     viewportHeight: 640,
+    hideTooltip: true,
+  },
+  // The indexed route on the tutorial's own four-strain graph: the rGFA
+  // segments as a feature track over a 50 kb K12 window, and the subgraph the
+  // launch menu cuts from that same window below it. Same two tabix indexes
+  // feed both, so the segment ids above are the nodes below. The track is
+  // declared in the session rather than the config because the config is the
+  // shared graphgenomeview fixture; the indexes are hosted beside the GFAs.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_subgraph_launch',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: ECOLI_SEGMENTS_TRACK,
+          name: 'minigraph graph segments (rGFA)',
+          assemblyNames: ['K12'],
+          adapter: {
+            type: 'RgfaTabixAdapter',
+            uri: `${DATA}/ecoli_minigraph`,
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:4,050,000-4,100,000',
+          tracks: [ECOLI_SEGMENTS_TRACK],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: ECOLI_SEGMENTS_TRACK,
+          loadedRegion: {
+            refName: 'chr',
+            assemblyName: 'K12',
+            start: 4050000,
+            end: 4100000,
+          },
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    settleMs: 4000,
+    viewportWidth: 1000,
+    viewportHeight: 900,
     hideTooltip: true,
   },
   // The HPRC release-2 graph at HLA class II, anchored: the bubble and segment
