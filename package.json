@@ -134,7 +134,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",
     "typescript7": "npm:typescript@^7.0.2",
-    "webpack": "^5.108.4",
+    "webpack": "^5.109.0",
     "webpack-cli": "^7.2.1",
     "webpack-dev-server": "^6.0.0"
   },
