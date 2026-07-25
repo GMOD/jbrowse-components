@@ -12,7 +12,8 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import { computeLabelExtraWidth, computeOverlayRect } from './highlightUtils.ts'
+import { computeOverlayRect } from './highlightUtils.ts'
+import { computeLabelExtraWidth } from './labelPositioning.ts'
 import {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,

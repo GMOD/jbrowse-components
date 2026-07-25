@@ -1,77 +1,60 @@
-import { measureText } from '@jbrowse/core/util'
+import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 
-import { computeLabelExtraWidth, computeOverlayRect } from './highlightUtils.ts'
+// 1000bp of region across 1000px of screen — 1bp per px, so bp and px read the
+// same and the clamping is what the assertions are about.
+const REGION = { start: 0, end: 1000, screenStartPx: 0, screenEndPx: 1000 }
+const ROW = { topPx: 10, bottomPx: 20 }
 
-import type { FeatureLabelData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-
-function makeLabelData(
-  texts: string[],
-  overrides?: Partial<FeatureLabelData>,
-): FeatureLabelData {
-  const base: FeatureLabelData = {
-    featureId: 'feat1',
-    minX: 0,
-    maxX: 100,
-    topY: 0,
-    featureHeight: 10,
-    ...overrides,
-  }
-  if (texts.length >= 1) {
-    base.nameLabel = {
-      text: texts[0]!,
-      relativeY: 0,
-      color: 'black',
-      textWidth: measureText(texts[0]!, 11),
-    }
-  }
-  if (texts.length >= 2) {
-    base.descriptionLabel = {
-      text: texts[1]!,
-      relativeY: 0,
-      color: 'black',
-      textWidth: measureText(texts[1]!, 11),
-    }
-  }
-  return base
-}
-
-describe('computeLabelExtraWidth', () => {
-  test('returns positive extra width when label is wider than feature', () => {
-    const labelData = makeLabelData(['BRCA1_longGeneName'])
-    const labelWidth = measureText('BRCA1_longGeneName', 11)
-    const featureWidthPx = 2
-    const result = computeLabelExtraWidth(labelData, featureWidthPx)
-    expect(result).toBeCloseTo(labelWidth - featureWidthPx)
-    expect(result).toBeGreaterThan(0)
+describe('overlayItemRect', () => {
+  test('maps a contained feature to its screen span', () => {
+    expect(
+      overlayItemRect({ startBp: 100, endBp: 200, ...ROW }, REGION),
+    ).toEqual({ leftPx: 100, width: 100, topPx: 10, heightPx: 10 })
   })
 
-  test('returns 0 when feature is wider than label', () => {
-    const labelData = makeLabelData(['A'])
-    const result = computeLabelExtraWidth(labelData, 500)
-    expect(result).toBe(0)
+  test('clamps a feature running past the region to the region edge', () => {
+    expect(
+      overlayItemRect({ startBp: 900, endBp: 5000, ...ROW }, REGION),
+    ).toEqual({ leftPx: 900, width: 100, topPx: 10, heightPx: 10 })
   })
 
-  test('returns 0 when there are no labels', () => {
-    const labelData = makeLabelData([])
-    const result = computeLabelExtraWidth(labelData, 2)
-    expect(result).toBe(0)
+  test('drops a feature that only touches the region start', () => {
+    // the shape at every displayed-region boundary: this feature is drawn (and
+    // boxed) entirely in the PREVIOUS region, so a zero-width rect here becomes
+    // a phantom stripe once computeOverlayRect adds padding + label overhang
+    expect(
+      overlayItemRect({ startBp: -500, endBp: 0, ...ROW }, REGION),
+    ).toBeUndefined()
   })
 
-  test('uses widest label when multiple labels exist', () => {
-    const labelData = makeLabelData(['X', 'LongLabelText_description'])
-    const featureWidthPx = 5
-    const widestLabelWidth = measureText('LongLabelText_description', 11)
-    const result = computeLabelExtraWidth(labelData, featureWidthPx)
-    expect(result).toBeCloseTo(widestLabelWidth - featureWidthPx)
+  test('drops a feature that only touches the region end', () => {
+    expect(
+      overlayItemRect({ startBp: 1000, endBp: 1500, ...ROW }, REGION),
+    ).toBeUndefined()
   })
 
-  test('SNP-like feature (1bp, very narrow) gets large extra width', () => {
-    const labelData = makeLabelData(['rs12345'])
-    const snpWidthPx = 0.5
-    const labelWidth = measureText('rs12345', 11)
-    const result = computeLabelExtraWidth(labelData, snpWidthPx)
-    expect(result).toBeCloseTo(labelWidth - snpWidthPx)
-    expect(result).toBeGreaterThan(labelWidth - 1)
+  test('keeps a sub-pixel feature inside the region', () => {
+    const rect = overlayItemRect(
+      { startBp: 500, endBp: 500.01, ...ROW },
+      REGION,
+    )
+    expect(rect?.leftPx).toBeCloseTo(500)
+    expect(rect?.width).toBeGreaterThan(0)
+  })
+
+  test('keeps a zero-length feature, whose width is genuinely 0', () => {
+    expect(
+      overlayItemRect({ startBp: 500, endBp: 500, ...ROW }, REGION),
+    ).toEqual({ leftPx: 500, width: 0, topPx: 10, heightPx: 10 })
+  })
+
+  test('reversed region mirrors the span but keeps left < right', () => {
+    expect(
+      overlayItemRect(
+        { startBp: 100, endBp: 200, ...ROW },
+        { ...REGION, reversed: true },
+      ),
+    ).toEqual({ leftPx: 800, width: 100, topPx: 10, heightPx: 10 })
   })
 })
 

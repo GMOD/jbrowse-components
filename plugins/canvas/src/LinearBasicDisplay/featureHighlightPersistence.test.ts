@@ -4,9 +4,11 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { resetUnresolvedHighlightWarnings } from './featureHighlight.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { FeatureHighlight } from './featureHighlight.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const brca1: FeatureHighlight = {
   refName: 'ctgA',
@@ -100,6 +102,33 @@ describe('feature highlight declarative persistence', () => {
 
     display.clearFeatureHighlights()
     expect(display.featureHighlights.length).toBe(0)
+  })
+
+  // A highlight can outlive the view that created it (pan away, or a search
+  // highlight nothing has replaced), and per-feature "Remove highlight" needs
+  // the boxed feature under the cursor — so the track menu carries the only
+  // reachable clear.
+  it('offers a track-menu clear only while something is highlighted', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const labels = () =>
+      (display.trackMenuItems() as MenuItem[]).map(m =>
+        'label' in m ? String(m.label) : '',
+      )
+
+    expect(labels()).not.toContain('Clear 1 highlight')
+
+    display.setFeatureHighlights([brca1])
+    const clear = (display.trackMenuItems() as MenuItem[]).find(
+      m => 'label' in m && m.label === 'Clear 1 highlight',
+    )
+    expect(clear).toBeDefined()
+
+    if (clear && 'onClick' in clear) {
+      clear.onClick()
+    }
+    expect(display.featureHighlights.length).toBe(0)
+    expect(labels().some(l => l.startsWith('Clear'))).toBe(false)
   })
 
   it('stripDefault omits featureHighlights from an at-default snapshot', () => {
@@ -376,6 +405,60 @@ describe('feature highlight declarative persistence', () => {
 
     display.removeFeatureHighlightsForId('unrelated-feat')
     expect(getSnapshot(display.featureHighlights)).toEqual([brca1])
+  })
+
+  // The unresolved-highlight warning exists to catch a hand-authored spec whose
+  // coordinates are a few bases off the track's record. It is gated on the
+  // LOADED REGION SPANS, because a stored highlight resolves to nothing for the
+  // much more common reason that the user navigated away from it.
+  describe('unresolved-highlight warning', () => {
+    beforeEach(() => {
+      resetUnresolvedHighlightWarnings()
+    })
+
+    it('warns when data covering the highlight has nothing that matches', () => {
+      const { createDisplay } = createTestEnvironment()
+      // 7bp past the rendered feature's end, and a name that matches nothing
+      const { display } = createDisplay({
+        featureHighlights: [
+          { refName: 'ctgA', start: 1000, end: 2007, name: 'NOT_A_GENE' },
+        ],
+      })
+      loadFeature(display, {
+        featureId: 'feat-1',
+        startBp: 1000,
+        endBp: 2000,
+        name: 'BRCA1',
+      })
+      display.setLoadedRegion(0, ctgA)
+
+      expect(display.highlightedFeatureIdSet.size).toBe(0)
+      expect(console.warn).toHaveBeenCalledTimes(1)
+    })
+
+    it('stays silent once the view has navigated off the highlight', () => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay({ featureHighlights: [brca1] })
+      const elsewhere = { ...ctgA, start: 40_000, end: 45_000 }
+      display.setRpcData(
+        0,
+        makeFeatureData({
+          flatbushItems: [
+            makeFlatbushItem({
+              featureId: 'far-away',
+              startBp: 41_000,
+              endBp: 42_000,
+            }),
+          ],
+        }),
+        10,
+        elsewhere,
+      )
+      display.setLoadedRegion(0, elsewhere)
+
+      expect(display.highlightedFeatureIdSet.size).toBe(0)
+      expect(console.warn).not.toHaveBeenCalled()
+    })
   })
 
   it('merges the highlight with existing user pins', () => {

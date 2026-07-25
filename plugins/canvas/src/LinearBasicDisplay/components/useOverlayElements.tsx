@@ -1,14 +1,17 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { alpha } from '@mui/material'
 
 import {
-  computeLabelExtraWidth,
   computeOverlayRect,
   highlightBoxColors,
+  overlayItemRect,
 } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
-import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
+import {
+  computeLabelExtraWidth,
+  forEachDisplayLabel,
+  labelCullBand,
+} from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
 import type {
@@ -326,51 +329,30 @@ export function useHighlightOverlays(
 
   const overlays: React.ReactElement[] = []
 
-  const getItemRect = (
-    item: {
-      startBp: number
-      endBp: number
-      topPx: number
-      bottomPx: number
-    },
-    vr: VisibleRegion,
-  ) => {
-    if (item.endBp < vr.start || item.startBp > vr.end) {
-      return undefined
-    }
-    const toScreen = makeBpMapper(vr)
-    const px1 = toScreen(item.startBp)
-    const px2 = toScreen(item.endBp)
-    const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
-    const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
-    return {
-      leftPx,
-      width: rightPx - leftPx,
-      topPx: item.topPx,
-      heightPx: item.bottomPx - item.topPx,
-    }
-  }
-
-  const addOverlay = (
-    item: {
-      startBp: number
-      endBp: number
-      topPx: number
-      bottomPx: number
-    },
-    refName: string,
-    className: string,
-    key: string,
+  const addOverlay = ({
+    item,
+    refName,
+    className,
+    key,
     extraWidth = 0,
     xPadding = 0,
     yPadding = 0,
-    testId?: string,
-  ) => {
+    testId,
+  }: {
+    item: { startBp: number; endBp: number; topPx: number; bottomPx: number }
+    refName: string
+    className: string
+    key: string
+    extraWidth?: number
+    xPadding?: number
+    yPadding?: number
+    testId?: string
+  }) => {
     for (const vr of visibleRegions) {
       if (vr.refName !== refName) {
         continue
       }
-      const rect = getItemRect(item, vr)
+      const rect = overlayItemRect(item, vr)
       if (rect) {
         overlays.push(
           <div
@@ -412,16 +394,16 @@ export function useHighlightOverlays(
   ) => {
     const entry = featureItemMap.get(featureId)
     if (entry) {
-      addOverlay(
-        entry.item,
-        entry.vr.refName,
+      addOverlay({
+        item: entry.item,
+        refName: entry.vr.refName,
         className,
         key,
-        computeExtraWidth(entry),
-        2,
-        2,
+        extraWidth: computeExtraWidth(entry),
+        xPadding: 2,
+        yPadding: 2,
         testId,
-      )
+      })
     }
   }
 
@@ -434,15 +416,14 @@ export function useHighlightOverlays(
       // (buildSubfeatureFlatbushIndex), so its shading must mirror that exact,
       // unpadded box rather than overhang it.
       const subfeatureHover = !!hoveredSubfeature
-      addOverlay(
-        hoverItem,
-        entry.vr.refName,
-        classes.hoverOverlay,
-        'hover',
-        subfeatureHover ? 0 : computeExtraWidth(entry),
-        subfeatureHover ? 0 : HIT_PAD_PX,
-        0,
-      )
+      addOverlay({
+        item: hoverItem,
+        refName: entry.vr.refName,
+        className: classes.hoverOverlay,
+        key: 'hover',
+        extraWidth: subfeatureHover ? 0 : computeExtraWidth(entry),
+        xPadding: subfeatureHover ? 0 : HIT_PAD_PX,
+      })
     }
   }
 

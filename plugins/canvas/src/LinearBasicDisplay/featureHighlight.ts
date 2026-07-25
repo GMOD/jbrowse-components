@@ -109,6 +109,36 @@ export interface ResolvedHighlights {
   boxedBy: ReadonlySet<string>[]
 }
 
+// The loaded genomic span of one fetched region, the evidence that a highlight
+// SHOULD have resolved (see warnUnresolvedHighlights).
+export interface LoadedSpan {
+  refName: string
+  start: number
+  end: number
+}
+
+// Whether "this highlight boxed nothing" is evidence of a bad spec rather than
+// of the user simply looking elsewhere. Only a highlight whose own span overlaps
+// fetched data can be judged: the features that would have matched it were
+// fetched, so nothing matching means nothing matches.
+//
+// A name-only highlight (`{ refName: 'chr12', name: 'KRAS' }`) is never
+// checkable — "not fetched yet" and "misspelled" are indistinguishable without a
+// span, since the feature could sit anywhere on the refName.
+function highlightIsCheckable(
+  h: FeatureHighlight,
+  loadedSpans: readonly LoadedSpan[],
+) {
+  const { refName, start, end } = h
+  return (
+    start !== undefined &&
+    end !== undefined &&
+    loadedSpans.some(
+      r => r.refName === refName && r.start < end && r.end > start,
+    )
+  )
+}
+
 // Warn once per highlight that resolved to nothing.
 //
 // Matching is exact by design (see featureMatchesHighlight), which is right for
@@ -121,9 +151,9 @@ export interface ResolvedHighlights {
 // hand-tuned arrow annotation compensating for it until someone diffed the
 // coordinates against the GFF.)
 //
-// Reaching here means BOTH the span/featureId pass and the name fallback missed,
-// so either the coordinates are wrong and no `name` was supplied, or the name
-// doesn't match any rendered feature on that refName.
+// Reaching here means BOTH the span/featureId pass and the name fallback missed
+// over data that covers the highlight's own span, so the coordinates disagree
+// with the track's record and no `name` rescued them.
 // Module-level so the warning stays once-per-highlight across the many times the
 // getter recomputes. Exported purely so tests can reset it — without that, cases
 // silently depend on each other through it.
@@ -136,26 +166,23 @@ export function resetUnresolvedHighlightWarnings() {
 export function warnUnresolvedHighlights(
   highlights: readonly FeatureHighlight[],
   resolved: ResolvedHighlights,
-  hasData: boolean,
+  loadedSpans: readonly LoadedSpan[],
 ) {
-  // before any data lands every highlight is trivially unresolved
-  if (hasData) {
-    for (const [i, h] of highlights.entries()) {
-      if (resolved.boxedBy[i]?.size === 0) {
-        const key = `${h.refName}:${h.start}-${h.end}:${h.featureId ?? h.name ?? ''}`
-        if (!warned.has(key)) {
-          warned.add(key)
-          const span =
-            h.start === undefined || h.end === undefined
-              ? h.refName
-              : `${h.refName}:${h.start}-${h.end}`
-          console.warn(
-            `featureHighlight matched no rendered feature: ${span}` +
-              `${h.name ? ` (${h.name})` : ''}. A highlight matches a feature's span ` +
-              `exactly (±1bp), falling back to an exact name match` +
-              `${h.name ? '' : ' — but this one supplied no name'}.`,
-          )
-        }
+  for (const [i, h] of highlights.entries()) {
+    if (
+      resolved.boxedBy[i]?.size === 0 &&
+      highlightIsCheckable(h, loadedSpans)
+    ) {
+      const key = `${h.refName}:${h.start}-${h.end}:${h.featureId ?? h.name ?? ''}`
+      if (!warned.has(key)) {
+        warned.add(key)
+        console.warn(
+          `featureHighlight matched no rendered feature: ` +
+            `${h.refName}:${h.start}-${h.end}` +
+            `${h.name ? ` (${h.name})` : ''}. A highlight matches a feature's span ` +
+            `exactly (±1bp), falling back to an exact name match` +
+            `${h.name ? '' : ' — but this one supplied no name'}.`,
+        )
       }
     }
   }

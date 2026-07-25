@@ -1,5 +1,7 @@
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
+import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+
 import type {
   FeatureDataResult,
   FeatureLabelData,
@@ -40,6 +42,23 @@ export function labelCullBand(
     top: bucketTop - LABEL_CULL_BUCKET_PX,
     bottom: bucketTop + viewportHeight + 2 * LABEL_CULL_BUCKET_PX,
   }
+}
+
+// How far a feature's widest visible label overhangs its glyph. The label is
+// left-aligned to the glyph and spills rightward (see computeLabelLeftPx), so
+// every consumer that has to cover the label as well as the glyph — the hit box
+// (buildFeatureFlatbushIndex), the highlight/selection overlay, and the SVG
+// export's highlight boxes — widens by exactly this.
+export function computeLabelExtraWidth(
+  labelData: FeatureLabelData,
+  featureWidthPx: number,
+  showLabels = true,
+  showDescriptions = true,
+) {
+  return Math.max(
+    0,
+    maxLabelTextWidth(labelData, showLabels, showDescriptions) - featureWidthPx,
+  )
 }
 
 export interface FeatureBoundsPx {

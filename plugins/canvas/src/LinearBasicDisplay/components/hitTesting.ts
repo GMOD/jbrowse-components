@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { computeLabelExtraWidth } from './highlightUtils.ts'
+import { computeLabelExtraWidth } from './labelPositioning.ts'
 
 import type {
   AminoAcidOverlayItem,

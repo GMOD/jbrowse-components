@@ -35,31 +35,32 @@ export function highlightSearchResultFeature({
 }) {
   const loc = result.getLocation()
   const trackId = result.getTrackId()
-  if (!loc || !trackId) {
-    return
-  }
-  const { assemblyManager } = getSession(model)
-  const parsed = parseLocString(loc, ref =>
-    assemblyManager.isValidRefName(ref, assemblyName),
-  )
-  if (parsed.start !== undefined && parsed.end !== undefined) {
-    // Canonicalize the parsed refName: trix records whatever refName the source
-    // GFF/GTF used (e.g. "1"), but visibleRegions carry the assembly's canonical
-    // name (e.g. "chr1"). featureMatchesHighlight compares them directly, so an
-    // alias here would navigate correctly yet never resolve to a highlight.
-    const assembly = assemblyManager.get(assemblyName)
-    const highlight: FeatureHighlight = {
-      refName: assembly?.getCanonicalRefName(parsed.refName) ?? parsed.refName,
-      start: parsed.start,
-      end: parsed.end,
-      name: result.getLabel(),
-    }
-    const track = model.tracks.find(
-      t => readConfObject(t.configuration, 'trackId') === trackId,
+  if (loc && trackId) {
+    const { assemblyManager } = getSession(model)
+    const parsed = parseLocString(loc, ref =>
+      assemblyManager.isValidRefName(ref, assemblyName),
     )
-    for (const display of track?.displays ?? []) {
-      if (isFeatureHighlightCapable(display)) {
-        display.setFeatureHighlights([highlight])
+    if (parsed.start !== undefined && parsed.end !== undefined) {
+      // Canonicalize the parsed refName: trix records whatever refName the
+      // source GFF/GTF used (e.g. "1"), but visibleRegions carry the assembly's
+      // canonical name (e.g. "chr1"). featureMatchesHighlight compares them
+      // directly, so an alias here would navigate correctly yet never resolve
+      // to a highlight.
+      const assembly = assemblyManager.get(assemblyName)
+      const highlight: FeatureHighlight = {
+        refName:
+          assembly?.getCanonicalRefName(parsed.refName) ?? parsed.refName,
+        start: parsed.start,
+        end: parsed.end,
+        name: result.getLabel(),
+      }
+      const track = model.tracks.find(
+        t => readConfObject(t.configuration, 'trackId') === trackId,
+      )
+      for (const display of track?.displays ?? []) {
+        if (isFeatureHighlightCapable(display)) {
+          display.setFeatureHighlights([highlight])
+        }
       }
     }
   }

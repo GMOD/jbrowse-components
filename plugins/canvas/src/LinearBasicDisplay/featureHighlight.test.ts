@@ -53,6 +53,7 @@ describe('warnUnresolvedHighlights', () => {
     flatbushItems: [{ startBp: 100, endBp: 200, featureId: 'f1' }],
     subfeatureInfos: [],
   }
+  const loaded = [{ refName: 'chr1', start: 0, end: 1000 }]
   let warn: jest.SpyInstance
 
   beforeEach(() => {
@@ -66,7 +67,7 @@ describe('warnUnresolvedHighlights', () => {
   it('warns when a highlight matches nothing', () => {
     // 7bp past the real end — the mistake a hand-written spec actually makes
     const h = [{ refName: 'chr1', start: 100, end: 207, name: 'KRAS' }]
-    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), true)
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0]![0]).toContain('chr1:100-207')
     expect(warn.mock.calls[0]![0]).toContain('KRAS')
@@ -74,20 +75,40 @@ describe('warnUnresolvedHighlights', () => {
 
   it('warns only once for the same highlight', () => {
     const h = [{ refName: 'chr1', start: 300, end: 400, name: 'TP53' }]
-    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), true)
-    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), true)
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
     expect(warn).toHaveBeenCalledTimes(1)
   })
 
   it('stays silent when the highlight resolves', () => {
     const h = [{ refName: 'chr1', start: 100, end: 200 }]
-    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), true)
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
     expect(warn).not.toHaveBeenCalled()
   })
 
   it('stays silent before any data has loaded', () => {
     const h = [{ refName: 'chr1', start: 500, end: 600 }]
-    warnUnresolvedHighlights(h, resolveFeatureHighlights([], h), false)
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([], h), [])
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('stays silent once the view navigates off the highlighted refName', () => {
+    // the highlight is still stored and still resolves to nothing, but chr12
+    // was never fetched — blaming the coordinates here is a false alarm
+    const h = [{ refName: 'chr12', start: 100, end: 200, name: 'KRAS' }]
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('stays silent when the view pans past the highlight on the same ref', () => {
+    const h = [{ refName: 'chr1', start: 90_000, end: 91_000, name: 'KRAS' }]
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('stays silent for a name-only highlight, which cannot be localized', () => {
+    const h = [{ refName: 'chr1', name: 'NOT_A_GENE' }]
+    warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
     expect(warn).not.toHaveBeenCalled()
   })
 })

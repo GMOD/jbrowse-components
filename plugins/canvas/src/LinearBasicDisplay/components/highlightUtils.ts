@@ -1,8 +1,7 @@
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { alpha } from '@mui/material'
 
-import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-
-import type { FeatureLabelData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 // The one definition of the highlight box's border/tint, shared by the
 // on-screen DOM overlay (searchHighlightBox) and the SVG export's vector
@@ -19,16 +18,38 @@ export function highlightBoxColors(highlightMain: string) {
   }
 }
 
-export function computeLabelExtraWidth(
-  labelData: FeatureLabelData,
-  featureWidthPx: number,
-  showLabels = true,
-  showDescriptions = true,
+// The screen rect a laid-out item occupies inside ONE visible region: its bp
+// span mapped to px and clamped to the region, so a box drawn for a feature
+// running past the region edge can't bleed over its neighbour. Callers walk
+// every visible region on the feature's refName, so a feature spanning a
+// displayed-region boundary is boxed piecewise.
+//
+// undefined means "contributes no pixels here". That covers plain no-overlap
+// AND the case a bp test alone misses: a feature whose span merely TOUCHES the
+// edge (endBp === vr.start, the normal shape at a displayed-region boundary)
+// clamps to zero width, and computeOverlayRect would inflate that nothing into a
+// phantom stripe — the padding plus the feature's full label overhang — at the
+// neighbouring region's edge, for a feature drawn entirely in the previous one.
+// A genuinely zero-length feature is kept: zero width is its true extent there
+// rather than the clamp's doing.
+export function overlayItemRect(
+  item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
+  vr: BpRegionBounds,
 ) {
-  return Math.max(
-    0,
-    maxLabelTextWidth(labelData, showLabels, showDescriptions) - featureWidthPx,
-  )
+  const toScreen = makeBpMapper(vr)
+  const px1 = toScreen(item.startBp)
+  const px2 = toScreen(item.endBp)
+  const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
+  const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
+  const clampedToNothing = rightPx <= leftPx && item.endBp > item.startBp
+  return clampedToNothing
+    ? undefined
+    : {
+        leftPx,
+        width: rightPx - leftPx,
+        topPx: item.topPx,
+        heightPx: item.bottomPx - item.topPx,
+      }
 }
 
 // Position an overlay box outset by (xPadding, yPadding) around a feature rect.
