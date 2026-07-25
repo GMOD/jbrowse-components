@@ -10,9 +10,9 @@ const EMPTY_PLOT_DOMAIN: [number, number] = [0, 1]
 
 // The render-state a wiggle-family GPU display builds from its score `domain`,
 // always resolvable (real domain, else EMPTY_PLOT_DOMAIN). This is NOT the
-// loading gate — "no fetch has completed yet" is the caller's
-// `rpcDataMap.size === 0` check in its render callback (the same first-paint gate
-// every GPU display uses), not a nullable render state. `build` absorbs each
+// loading gate — "no fetch has completed yet" is answered by the boolean
+// `renderBlocks` returns (did a region actually draw), not by a nullable render
+// state and no longer by a per-display size check. `build` absorbs each
 // display's render-state shape (wiggle's encoded WiggleGPURenderState vs
 // manhattan's { domainY, canvasWidth, canvasHeight }), so only the empty-plot
 // domain is shared, not the construction.

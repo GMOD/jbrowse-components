@@ -145,22 +145,45 @@ purpose and say so: `createSvgRasterCanvas` pins 2x because export goes to a fil
 rather than a screen, and the analytics / error-report paths read the raw global
 because they are reporting the device, not drawing on it.
 
-### Every region arrival draws twice, the first draw pre-upload
+### A region arrival draws twice wherever the render autorun observes the data
 
-**Status:** Open. Low severity, invisible to the user, retired by a queued fix.
+**Status:** Accepted. Invisible to the user; the alternative costs more than it
+buys.
 
-**Never rely on the upload autorun running before the render autorun.** Measured
-against the real shape (`RenderLifecycleMixin` + `installPerRegionLifecycle`,
-mobx from this repo), 4 regions arriving in separate actions produce 4 uploads
-and **8** renders, logging `tick=0 size=1` then `tick=1 size=1`. Both autoruns
-observe the same `keysAtom_` (render through `rpcDataMap.size`, upload through
-the key set) and MobX notifies in observer order, not creation order. So each
-arrival paints the pre-upload state, then the `renderTick` bump paints the real
-one. That bump is what makes the ordering come out right eventually, and it is
-the only thing that does.
+**Never rely on the upload autorun running before the render autorun.** Both can
+observe the same arrival — upload through the key set, render through any read
+that reaches `rpcDataMap` — and MobX notifies in observer order, not creation
+order. A render autorun that observes the map therefore paints the pre-upload
+state on each arrival, and the `renderTick` bump paints the real one. Both draws
+land in one task, so the browser composites only the second; the cost is a wasted
+GPU submit per arrival, not a visible flash.
 
-Both draws land in one task, so the browser composites only the second. The cost
-is a wasted GPU submit per arrival per track, not a visible flash.
+**What matters is the render autorun's dependency set, not any one syntactic
+read.** A direct `rpcDataMap` read in the callback does it, and so does a
+computed chain the callback reaches through `renderState`.
+`installPerRegionLifecycle.test.ts` pins the direct form: 4 arrivals in separate
+actions give 4 uploads and, counting the one render at attach before any data,
+**5** renders when the callback ignores the map (the per-key `renderNow()` and
+the upload autorun's `renderNow()` land in one reaction batch and coalesce)
+against **9** when it reads it.
+
+Three code paths have such a dependency, so the double draw is not confined to
+one display:
+
+- **`LinearAlignmentsDisplay`** reads the map directly (`rpcDataMap.size === 0`,
+  for the zero-group grouped-fetch reason in [HISTORICAL.md](HISTORICAL.md)
+  §"Each display asserted its own 'did we paint?'") **and** transitively:
+  `renderState.sections` is `buildSectionRenders(self.sections, …)`, and
+  `sections` reads `groupOrder` / `groupLaidOutMap`, both derived from
+  `rpcDataMap`. Deleting the gate would leave the second path in place, so it
+  would not stop the double draw. Band geometry has to follow the laid-out data,
+  making that path structural. `model.coupling.test.ts` §"a region arrival
+  invalidates renderState, not just the size gate" pins it.
+- **`LinearManhattanDisplay`** passes `self.rpcDataMap` into `renderBlocks`,
+  where the renderer `.get()`s per block inside the render autorun.
+- **The wiggle family** through `renderState` → `domain` → `visibleScoreStats` →
+  `visibleEntries` (`WiggleCommonMixin`), which reads `rpcDataMap.size` and
+  `.get()`.
 
 Two things that already coalesce correctly, so don't "fix" them:
 
@@ -171,28 +194,22 @@ Two things that already coalesce correctly, so don't "fix" them:
   `requestAnimationFrame` (`useWheelScroll`, `usePointerDrag`, `useRafCommit`),
   so a gesture commits at most once per frame.
 
-**Half the retire condition has landed, and it has not been re-measured.**
-`renderBlocks` now reports whether it painted, and every per-region render
-callback that used to gate on `rpcDataMap.size` (`LinearBasicDisplay`, Manhattan,
-wiggle) forwards that boolean instead. One reader survives on purpose:
-`LinearAlignmentsDisplay` keeps `self.rpcDataMap.size === 0` because its backend
-answers off a group's laid-out map, and a grouped fetch over a region with no
-reads partitions to zero groups — so the backend's boolean alone would leave the
-overlay up forever. That display therefore still observes the data map, and the
-double draw should still be expected there.
-
-**Retire when** the 4-regions-in-separate-actions measurement above is rerun
-against the current callbacks and shows 4 uploads / 4 renders for a display that
-no longer reads the data map. Until someone does that, treat the count as
-unknown rather than fixed — the reasoning says `renderTick` is now the single
-redraw channel for those displays, but reasoning is what the original
-measurement contradicted.
-
 A frame scheduler on the render autorun (`autorun(fn, { scheduler })`) coalesces
-identically and was measured to work, but it papers over the duplicated predicate
-instead of removing it, breaks the synchronous contract
-`RenderLifecycleMixin.test.ts` and `installPerRegionLifecycle.test.ts` assert,
-and would stall under jest fake timers, which mock rAF. Prefer the predicate fix.
+every case at once and was measured to work, but it breaks the synchronous
+contract `RenderLifecycleMixin.test.ts` and `installPerRegionLifecycle.test.ts`
+assert, and would stall under jest fake timers, which mock rAF.
+
+**Don't chase this per display.** Removing one display's read is not a fix: the
+dependency is legitimate wherever render geometry derives from fetched data
+(alignments' stacked bands, wiggle's autoscale domain), and eliminating it means
+either duplicating the derivation outside MobX or pushing a data-arrival concept
+down into backends whose contract is "did a draw call run". Both cost more than
+one wasted submit per arrival.
+
+**Retire when** the two autoruns stop racing — a scheduler on the render autorun
+(with the synchronous contract those two test files assert re-expressed as a
+flush), or an explicit ordering guarantee in `attachRenderingBackend` that runs
+upload before render on a shared invalidation.
 
 ---
 

@@ -48,6 +48,7 @@ import {
 } from './sourcesLogic.ts'
 
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
+import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
@@ -196,8 +197,8 @@ export default function stateModelFactory(
         // Always defined: until autoscale resolves a domain, resolveRenderState
         // returns a [0,1] stub so an uncovered region still renders (clears the
         // canvas, flips canvasDrawn, instead of spinning forever). "Still
-        // loading" is expressed separately
-        // by the render callback's `rpcDataMap.size === 0` first-paint gate.
+        // loading" is expressed separately by the boolean `renderBlocks`
+        // returns — did a region actually draw — not by a size gate here.
         return resolveRenderState(self.domain, domain =>
           makeRenderState(
             domain,
@@ -499,3 +500,17 @@ export type MultiLinearWiggleDisplayStateModel = ReturnType<
 >
 export type MultiLinearWiggleDisplayModel =
   Instance<MultiLinearWiggleDisplayStateModel>
+
+// Compile-time proof the real MST model still satisfies the structural type its
+// component takes. That type can't be `Instance<...>` here: the contract lives in
+// `@jbrowse/wiggle-core`, a package *below* this one, so it cannot import this
+// model — unlike the canvas display, which registers its component in index.ts and
+// types it off the model directly. Without this, a renamed/dropped field is a
+// silent runtime failure inside the lazy-loaded component, because the
+// `DisplayMessageComponent` getter is typed `React.FC<any>` and erases the check.
+// Type-only, so it's erased at runtime; it lives in this file (not a standalone
+// one) so a "remove files with no importers" sweep can't drop the guard.
+type _ComponentContract<T extends MultiWiggleDisplayModel> = T
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ModelSatisfiesComponentContract =
+  _ComponentContract<MultiLinearWiggleDisplayModel>

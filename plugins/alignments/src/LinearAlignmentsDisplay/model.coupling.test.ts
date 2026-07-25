@@ -6,12 +6,14 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
 
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
@@ -82,6 +84,8 @@ function createDisplay() {
       // satisfies isSessionModel so getSession(view) resolves; the LGV
       // localStorage autorun calls getSession via the trackLabels getter
       rpcManager: {},
+      // `colorPalette` (and so `renderState`) derives from the session theme
+      theme: createJBrowseTheme(),
     }))
     .views(() => ({
       getTrackById(id: string) {
@@ -108,6 +112,8 @@ function createDisplay() {
       ],
     }),
   )
+  // `renderState` reads `view.width`, which throws while volatileWidth is unset
+  view.setWidth(800)
   return view.tracks[0]!.displays[0]!
 }
 
@@ -442,4 +448,31 @@ describe('sashimi score filter releases the reserved band', () => {
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
     expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
   })
+})
+
+// `renderState.sections` is built from `sections`, which reads `groupOrder` and
+// `groupLaidOutMap` — both derived from `rpcDataMap`. So the render autorun
+// observes a data arrival through the render state itself, with no help from
+// the `rpcDataMap.size === 0` first-paint gate in the render callback. Deleting
+// that gate would therefore NOT stop this display double-drawing on arrival
+// (agent-docs/reference/ARCHITECTURAL_LIMITS.md "A region arrival draws twice
+// if the render callback reads `rpcDataMap`"). Band geometry has to follow the
+// laid-out data, so this coupling is structural, not incidental — anything
+// claiming to retire that entry has to keep this test green while decoupling
+// the two autoruns' ordering.
+test('a region arrival invalidates renderState, not just the size gate', () => {
+  const display = createDisplay()
+  let runs = 0
+  const dispose = autorun(() => {
+    void display.renderState
+    runs++
+  })
+  expect(runs).toBe(1)
+
+  display.setRpcData(0, {
+    groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
+  })
+  expect(runs).toBe(2)
+
+  dispose()
 })

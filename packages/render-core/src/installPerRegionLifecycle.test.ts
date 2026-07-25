@@ -64,6 +64,75 @@ test('N sequential region arrivals trigger N uploads, not N²', () => {
   expect(uploads.map(u => u.key)).toEqual([0, 1, 2, 3, 4])
 })
 
+// Pins the retirement of ARCHITECTURAL_LIMITS "Every region arrival draws
+// twice": a render callback that does not observe rpcDataMap paints once per
+// arrival, because the per-key renderNow() and the outer upload autorun's
+// renderNow() land in the same reaction batch.
+test('a region arrival paints once when render does not read the data map', () => {
+  const model = TestModel.create()
+  const { backend, uploads } = makeFakeRenderingBackend()
+  const data = observable.map<number, number>(undefined, { deep: false })
+  let renders = 0
+
+  installPerRegionLifecycle(
+    model,
+    data,
+    backend,
+    value => ({ value, marker: 0 }),
+    () => {
+      renders++
+      return true
+    },
+  )
+
+  // one render at attach, before any data
+  expect(renders).toBe(1)
+
+  for (let key = 0; key < 4; key++) {
+    runInAction(() => {
+      data.set(key, key * 10)
+    })
+  }
+
+  expect(uploads).toHaveLength(4)
+  expect(renders).toBe(5)
+})
+
+// The mirror of the case above, and the mechanism behind ARCHITECTURAL_LIMITS
+// "A region arrival draws twice if the render callback reads the data map".
+// Observing the map subscribes the render autorun to the arrival itself, so it
+// runs once on the arrival (pre-upload state) and again on the renderNow()
+// bump. Any read reaching the map does this — a direct `.get()` here, a
+// computed chain in a real display — so it is not specific to a size gate.
+test('a region arrival draws twice when the render callback reads the data map', () => {
+  const model = TestModel.create()
+  const { backend, uploads } = makeFakeRenderingBackend()
+  const data = observable.map<number, number>(undefined, { deep: false })
+  let renders = 0
+
+  installPerRegionLifecycle(
+    model,
+    data,
+    backend,
+    value => ({ value, marker: 0 }),
+    () => {
+      renders++
+      return data.size > 0
+    },
+  )
+
+  expect(renders).toBe(1)
+
+  for (let key = 0; key < 4; key++) {
+    runInAction(() => {
+      data.set(key, key * 10)
+    })
+  }
+
+  expect(uploads).toHaveLength(4)
+  expect(renders).toBe(9)
+})
+
 test('encode-tracked observable change re-fires every per-key autorun', () => {
   const model = TestModel.create()
   const { backend, uploads } = makeFakeRenderingBackend()
