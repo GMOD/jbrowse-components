@@ -1,11 +1,7 @@
 import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
-import {
-  ColorByLegend,
-  DiagonalizeLoadingScreen,
-  coerceColorBy,
-} from '@jbrowse/synteny-core'
+import { ColorByLegend, DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
@@ -84,17 +80,15 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
 }) {
   const { classes } = useStyles()
   const interaction = useDotplotInteraction(model)
-  const display = model.dotplotDisplays[0]
-  const colorBy = coerceColorBy(display?.colorBy)
   return (
     <div>
       <Header model={model} interaction={interaction} />
       <div className={classes.root}>
         {model.showColorLegend ? (
           <ColorByLegend
-            colorBy={colorBy}
+            colorBy={model.colorBy}
             pointBased
-            alpha={display?.alpha ?? 1}
+            alpha={model.alpha}
             onClose={() => {
               model.setShowColorLegend(false)
             }}

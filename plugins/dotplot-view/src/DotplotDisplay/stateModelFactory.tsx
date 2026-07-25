@@ -1,8 +1,14 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { isDataCurrent, syntenyFetchRegions } from '@jbrowse/synteny-core'
+import {
+  SyntenyFetchStateMixin,
+  isDataCurrent,
+  swappedAssembliesWarning,
+  syntenyFetchRegions,
+} from '@jbrowse/synteny-core'
 
 import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
@@ -15,7 +21,6 @@ import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
@@ -29,6 +34,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'DotplotDisplay',
       BaseDisplay,
+      SyntenyFetchStateMixin(),
       types
         .model({
           /**
@@ -67,23 +73,36 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * shared backend keyed by track index.
            */
           geometry: undefined as DotplotGeometryData | undefined,
-          fetchStopToken: undefined as StopToken | undefined,
           fetchWarnings: [] as { message: string; effect: string }[],
-          // Signature of the view inputs the current rpcData was fetched for
-          // (see fetchKey.ts). Compared against the live inputs in `dataCurrent`
-          // to detect data gone stale after a zoom or diagonalize reorder.
-          loadedFetchKey: undefined as string | undefined,
-          // Set once at view load by a refName-comparison check, independent of
-          // the per-render fetch. See afterAttach.
-          assembliesSwapped: false,
         })),
     )
     .views(self => ({
-      get isLoading() {
-        return self.fetchStopToken !== undefined && !self.rpcData
+      /**
+       * #getter
+       * A fetch has completed (data is present, even if it mapped zero
+       * features). Not a feature-count test — an empty-but-finished fetch is
+       * ready, otherwise an empty plot spins the loading overlay forever.
+       */
+      get ready() {
+        return self.rpcData !== undefined
       },
-      get isRefetching() {
-        return self.fetchStopToken !== undefined && !!self.rpcData
+      /**
+       * #getter
+       * First load: no data has arrived yet. Excludes error so error UI and
+       * loading UI never show simultaneously. Drives the centered overlay.
+       */
+      get loading() {
+        return !this.ready && !self.error
+      },
+      /**
+       * #getter
+       * Refetch in-flight: a new fetch is running but a stale plot is still on
+       * screen (zoom, diagonalize reorder, pan past the buffer). Drives a
+       * subtle corner indicator instead of the full overlay so the visible
+       * plot isn't masked on every viewport change.
+       */
+      get refetching() {
+        return self.fetching && this.ready && !self.error
       },
       /**
        * #getter
@@ -151,11 +170,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return self.assembliesSwapped
           ? [
               ...self.fetchWarnings,
-              {
-                message: 'The assemblies appear to be in the wrong order',
-                effect:
-                  'The chromosome names in the file match the opposite axis. Try switching the X and Y assemblies in the dotplot import form.',
-              },
+              swappedAssembliesWarning(
+                'The chromosome names in the file match the opposite axis. Try switching the X and Y assemblies in the dotplot import form.',
+              ),
             ]
           : self.fetchWarnings
       },
@@ -164,15 +181,22 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
        * (see the [SVG export guide](/docs/developer_guides/svg_export)).
        * Dotplot is non-rectangular (square canvas), so it keeps a bespoke
-       * `SVGErrorBox` error UI instead of `SvgChrome`, but still exposes
-       * `svgReady` + awaits it via the shared `awaitSvgReady` — no inlined
-       * `when()`. No `regionTooLarge` state. Stale-safe via `dataCurrent`: an
-       * export fired right after a zoom/diagonalize reorder waits for geometry
-       * rebuilt from the fresh fetch instead of exporting the stale plot (the
-       * follow-up the synteny gate also now carries).
+       * `SVGErrorBox` error UI instead of `SvgChrome`, but it runs the same
+       * shared `computeSvgReady` policy and awaits it via the shared
+       * `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state.
+       * Stale-safe via `dataCurrent`: an export fired right after a
+       * zoom/diagonalize reorder waits for geometry rebuilt from the fresh
+       * fetch instead of exporting the stale plot.
        */
       get svgReady() {
-        return (!!self.geometry && this.dataCurrent) || !!self.error
+        return computeSvgReady(
+          {
+            error: self.error,
+            regionTooLarge: false,
+            extraTerminal: false,
+          },
+          () => !!self.geometry && this.dataCurrent,
+        )
       },
     }))
     .views(self => ({
@@ -187,8 +211,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(stopToken: StopToken) {
-        self.fetchStopToken = stopToken
+      setLoading() {
+        self.fetching = true
         self.error = undefined
       },
       /**
@@ -197,15 +221,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setRpcData(data: DotplotRpcData, fetchKey: string) {
         self.rpcData = data
         self.loadedFetchKey = fetchKey
-        self.fetchStopToken = undefined
+        self.fetching = false
         self.statusMessage = undefined
         self.statusProgress = undefined
       },
       setWarnings(w: { message: string; effect: string }[]) {
         self.fetchWarnings = w
-      },
-      setAssembliesSwapped(arg: boolean) {
-        self.assembliesSwapped = arg
       },
       setGeometry(data: DotplotGeometryData | undefined) {
         self.geometry = data
@@ -216,7 +237,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setError(error: unknown) {
         console.error(error)
         self.error = error
-        self.fetchStopToken = undefined
+        self.fetching = false
         self.statusMessage = undefined
         self.statusProgress = undefined
       },

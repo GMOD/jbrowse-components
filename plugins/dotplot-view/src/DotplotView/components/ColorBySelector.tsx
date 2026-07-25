@@ -59,8 +59,7 @@ const ColorBySelector = observer(function ColorBySelector({
 }: {
   model: DotplotViewModel
 }) {
-  const { dotplotDisplays, showColorLegend } = model
-  const colorBy = dotplotDisplays[0]?.colorBy ?? 'default'
+  const { colorBy, showColorLegend } = model
 
   return (
     <CascadingMenuButton
@@ -70,9 +69,7 @@ const ColorBySelector = observer(function ColorBySelector({
           type: 'radio' as const,
           checked: colorBy === opt.value,
           onClick: () => {
-            for (const d of dotplotDisplays) {
-              d.setColorBy(opt.value)
-            }
+            model.setColorBy(opt.value)
           },
           helpText: opt.helpText,
         })),

@@ -4,9 +4,7 @@ import {
   measureText,
   toLocale,
 } from '@jbrowse/core/util'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { Dotplot1DViewModel } from '../model.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -92,18 +90,9 @@ export function computeTickPositions(
   view: Dotplot1DViewModel,
   ticks: Tick[],
 ): PositionedTick[] {
-  const snap = {
-    ...getSnapshot(view),
-    width: view.width,
-    staticBlocks: view.staticBlocks,
-  }
-  const offsetPx = view.offsetPx
+  const { offsetPx } = view
   return ticks.flatMap(tick => {
-    const px = bpToPx({
-      refName: tick.refName,
-      coord: tick.base,
-      self: snap,
-    })?.offsetPx
+    const px = view.bpToPx({ refName: tick.refName, coord: tick.base })
     return px === undefined ? [] : [{ tick, alongPx: px - offsetPx }]
   })
 }

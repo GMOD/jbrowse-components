@@ -4,6 +4,7 @@ import {
   parseLocString,
   selectNamedRegions,
 } from '@jbrowse/core/util'
+import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
@@ -14,68 +15,26 @@ import { LS_CURSOR_MODE } from './types.ts'
 import type { DotplotViewModel } from './model.ts'
 import type { DotplotViewInit } from './types.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
 
 type AssemblyManager = ReturnType<typeof getSession>['assemblyManager']
 
-// colorBy/minAlignmentLength live on each display, not the view. tracks and
-// displays are pluggable so the setters are feature-detected.
-interface DotplotDisplaySettings {
-  setColorBy?: (v: string) => void
-  setMinAlignmentLength?: (v: number) => void
-}
-
-function tryParseJson(s: string): Record<string, unknown> | undefined {
-  try {
-    const v: unknown = JSON.parse(s)
-    return v && typeof v === 'object'
-      ? (v as Record<string, unknown>)
-      : undefined
-  } catch {
-    return undefined
-  }
-}
-
 // Resolve init.highlight entries to HighlightType objects. Each entry is a loc
-// string ("ctgA:100-200") or a JSON object carrying color/label, mirroring
-// LinearGenomeView's init.highlight. Pure — no view dependency — so it is unit
+// string ("ctgA:100-200") or a JSON object carrying color/label — the same
+// three forms LinearGenomeView's init.highlight accepts, so both go through
+// core's shared coerceHighlight. Pure — no view dependency — so it is unit
 // testable on its own.
 export function parseInitHighlights(
   entries: string[],
   assemblyManager: AssemblyManager,
   defaultAssembly: string,
 ): HighlightType[] {
-  const out: HighlightType[] = []
-  for (const h of entries) {
-    const json = h.trimStart().startsWith('{') && tryParseJson(h)
-    if (
-      json &&
-      typeof json.refName === 'string' &&
-      typeof json.start === 'number' &&
-      typeof json.end === 'number'
-    ) {
-      out.push({
-        refName: json.refName,
-        start: json.start,
-        end: json.end,
-        assemblyName:
-          typeof json.assemblyName === 'string'
-            ? json.assemblyName
-            : defaultAssembly,
-        color: typeof json.color === 'string' ? json.color : undefined,
-        label: typeof json.label === 'string' ? json.label : undefined,
-      })
-    } else {
-      const p = parseLocString(h, refName =>
-        assemblyManager.isValidRefName(refName, defaultAssembly),
-      )
-      const { start, end } = p
-      if (start !== undefined && end !== undefined) {
-        out.push({ ...p, start, end, assemblyName: defaultAssembly })
-      }
-    }
-  }
-  return out
+  return entries.flatMap(h => {
+    const highlight = coerceHighlight(h, defaultAssembly, refName =>
+      assemblyManager.isValidRefName(refName, defaultAssembly),
+    )
+    return highlight ? [highlight] : []
+  })
 }
 
 // Navigate one dotplot axis (hview/vview) to a loc string for region-based
@@ -111,14 +70,18 @@ export function navAxisToLoc(
   }
 }
 
-// Bounded wait: resolves when cond() turns true or after ms, whichever first.
-// Used to keep init steps from deadlocking on a display/region that never
-// becomes ready.
-async function waitFor(cond: () => boolean, ms: number) {
+// Ceiling on each bounded init wait. Long enough that a slow remote assembly
+// still lands; the point is only that a display/region which never becomes
+// ready can't deadlock the rest of init.
+const INIT_WAIT_MS = 30_000
+
+// Bounded wait: resolves when cond() turns true or after INIT_WAIT_MS,
+// whichever comes first.
+async function waitFor(cond: () => boolean) {
   await Promise.race([
     when(cond),
     new Promise(resolve => {
-      setTimeout(resolve, ms)
+      setTimeout(resolve, INIT_WAIT_MS)
     }),
   ])
 }
@@ -139,18 +102,11 @@ function applyInitDisplaySettings(
   if (init.showColorLegend !== undefined) {
     self.setShowColorLegend(init.showColorLegend)
   }
-  if (init.colorBy !== undefined || init.minAlignmentLength !== undefined) {
-    for (const track of self.tracks) {
-      for (const display of track.displays) {
-        const d = display as DotplotDisplaySettings
-        if (init.colorBy && d.setColorBy) {
-          d.setColorBy(init.colorBy)
-        }
-        if (init.minAlignmentLength !== undefined && d.setMinAlignmentLength) {
-          d.setMinAlignmentLength(init.minAlignmentLength)
-        }
-      }
-    }
+  if (init.colorBy) {
+    self.setColorBy(init.colorBy)
+  }
+  if (init.minAlignmentLength !== undefined) {
+    self.setMinAlignmentLength(init.minAlignmentLength)
   }
 }
 
@@ -277,7 +233,7 @@ function setupInitAutorun(self: DotplotViewModel) {
             // whatever the axes currently display, so restricting afterwards
             // would diagonalize the full assembly and then throw most of it away
             if (init.views.some(v => v.displayedRegionNames?.length)) {
-              await waitFor(() => self.initialized, 30_000)
+              await waitFor(() => self.initialized)
               if (isAlive(self)) {
                 applyInitDisplayedRegions(self, init)
               }
@@ -293,9 +249,8 @@ function setupInitAutorun(self: DotplotViewModel) {
             const hasHighlight = !!init.highlight?.length
             const hasLoc = init.views.some(v => v.loc)
             if (hasHighlight || hasLoc) {
-              await waitFor(
-                () => (hasLoc ? self.initialized : self.assembliesInitialized),
-                30_000,
+              await waitFor(() =>
+                hasLoc ? self.initialized : self.assembliesInitialized,
               )
               if (isAlive(self)) {
                 if (hasHighlight && self.assembliesInitialized) {
@@ -379,10 +334,7 @@ function setupAspectLockAutorun(self: DotplotViewModel) {
         // unconditionally would write offsetPx on every run and retrigger this
         // autorun. Wheel zoom already keeps the axes equal; only box-zoom and
         // other per-axis operations split them.
-        if (
-          self.lockAspectRatio &&
-          self.hview.bpPerPx !== self.vview.bpPerPx
-        ) {
+        if (self.lockAspectRatio && self.hview.bpPerPx !== self.vview.bpPerPx) {
           self.squareView()
         }
       },

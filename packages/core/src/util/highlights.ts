@@ -2,6 +2,7 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { colord } from './colord.ts'
+import { parseLocString } from './locString.ts'
 import { getSession } from './mstUtils.ts'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -73,4 +74,70 @@ export function getHighlightColor(
   return highlight.color
     ? colord(highlight.color)
     : colord(theme.palette.highlight.main).alpha(alpha)
+}
+
+function tryParseJson(s: string): Record<string, unknown> | undefined {
+  try {
+    const v: unknown = JSON.parse(s)
+    return v && typeof v === 'object'
+      ? (v as Record<string, unknown>)
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
+// a string is either a loc string ("chr1:100-200") or a JSON-encoded
+// HighlightType (the URL wire-format, since URL params can't carry objects).
+// note: the jbrowse-web &highlight= URL param is space-split, so the JSON-string
+// form only survives when it contains no spaces; a label with a space is
+// shattered by the split — pass a HighlightType object instead
+function parseJsonHighlight(
+  s: string,
+  defaultAssembly: string,
+): HighlightType | undefined {
+  const json = s.trimStart().startsWith('{') ? tryParseJson(s) : undefined
+  return json &&
+    typeof json.refName === 'string' &&
+    typeof json.start === 'number' &&
+    typeof json.end === 'number'
+    ? {
+        refName: json.refName,
+        start: json.start,
+        end: json.end,
+        assemblyName:
+          typeof json.assemblyName === 'string'
+            ? json.assemblyName
+            : defaultAssembly,
+        color: typeof json.color === 'string' ? json.color : undefined,
+        label: typeof json.label === 'string' ? json.label : undefined,
+      }
+    : undefined
+}
+
+function parseLocHighlight(
+  s: string,
+  defaultAssembly: string,
+  isValidRefName: (refName: string) => boolean,
+): HighlightType | undefined {
+  const { refName, start, end } = parseLocString(s, isValidRefName)
+  return start !== undefined && end !== undefined
+    ? { refName, start, end, assemblyName: defaultAssembly }
+    : undefined
+}
+
+// Normalize an `init.highlight` entry (HighlightType object, JSON string, or
+// loc string) into a HighlightType, defaulting the assemblyName. Shared by
+// LinearGenomeView and DotplotView, whose `init.highlight` accept the same
+// three forms — the JSON shape-check in particular has to stay identical or a
+// highlight that works in one view silently drops in the other.
+export function coerceHighlight(
+  h: string | HighlightType,
+  defaultAssembly: string,
+  isValidRefName: (refName: string) => boolean,
+): HighlightType | undefined {
+  return typeof h === 'object'
+    ? { ...h, assemblyName: h.assemblyName ?? defaultAssembly }
+    : (parseJsonHighlight(h, defaultAssembly) ??
+        parseLocHighlight(h, defaultAssembly, isValidRefName))
 }

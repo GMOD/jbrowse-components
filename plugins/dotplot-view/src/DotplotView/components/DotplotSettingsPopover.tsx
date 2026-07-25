@@ -14,10 +14,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
 }: {
   model: DotplotViewModel
 }) {
-  const { dotplotDisplays, lineWidth } = model
-  const firstDisplay = dotplotDisplays[0]
-  const alpha = firstDisplay?.alpha ?? 1
-  const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
+  const { alpha, lineWidth, minAlignmentLength } = model
 
   return (
     <SettingsPopover title="Dotplot display settings">
@@ -25,9 +22,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
         <OpacitySlider
           value={alpha}
           onChange={v => {
-            for (const d of dotplotDisplays) {
-              d.setAlpha(v)
-            }
+            model.setAlpha(v)
           }}
         />
       </SettingRow>
@@ -48,9 +43,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
         <MinLengthSlider
           value={minAlignmentLength}
           onCommit={bp => {
-            for (const d of dotplotDisplays) {
-              d.setMinAlignmentLength(bp)
-            }
+            model.setMinAlignmentLength(bp)
           }}
         />
       </SettingRow>

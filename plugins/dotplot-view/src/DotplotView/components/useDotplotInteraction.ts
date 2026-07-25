@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 
 import { transaction } from 'mobx'
 
+import { DRAG_THRESHOLD_PX } from '../types.ts'
+
 import type { DotplotViewModel } from '../model.ts'
 import type React from 'react'
 
@@ -39,9 +41,6 @@ function dragVector(from: PointerSample, to: PointerSample, square: boolean) {
     ? { dx: Math.sign(dx) * side, dy: Math.sign(dy) * side }
     : { dx, dy }
 }
-
-// Below this the drag is a click, not a selection.
-const DRAG_THRESHOLD_PX = 3
 
 export interface DotplotInteraction {
   // spread onto the element that owns the plot area

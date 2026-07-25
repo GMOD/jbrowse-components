@@ -113,7 +113,7 @@ export function doAfterAttach(
         }))
 
         const { stopToken, isCurrent, statusCallback } = fetch.begin()
-        self.setLoading(stopToken)
+        self.setLoading()
         debounce.prime()
 
         try {

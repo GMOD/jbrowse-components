@@ -73,6 +73,10 @@ export type {
 } from './diagonalizeTypes.ts'
 export { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
 export { DiagonalizeProgressMixin } from './DiagonalizeProgressMixin.ts'
+export {
+  SyntenyFetchStateMixin,
+  swappedAssembliesWarning,
+} from './SyntenyFetchStateMixin.ts'
 export { default as MinLengthSlider } from './MinLengthSlider.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {

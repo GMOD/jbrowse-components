@@ -2,9 +2,9 @@ import {
   getSession,
   isSessionModelWithWidgets,
   localStorageSetItem,
-  parseLocString,
   selectNamedRegions,
 } from '@jbrowse/core/util'
+import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
@@ -12,7 +12,7 @@ import { SearchResultsNotFoundError } from '../searchUtils.ts'
 import { normalizeTrackInit } from './normalizeTrackInit.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
-import type { HighlightType, InitState } from './types.ts'
+import type { InitState } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // Derived from InitState so the two can't drift: the Record requires exactly
@@ -29,17 +29,6 @@ const knownInitKeyMap: Record<keyof InitState, true> = {
   highlight: true,
 }
 export const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
-
-function tryParseJson(s: string): Record<string, unknown> | undefined {
-  try {
-    const v: unknown = JSON.parse(s)
-    return v && typeof v === 'object'
-      ? (v as Record<string, unknown>)
-      : undefined
-  } catch {
-    return undefined
-  }
-}
 
 // a declarative init is easy to typo (e.g. `tracksList`, `highlights`); MST
 // stores it as a frozen blob so a mistyped key would otherwise be silently
@@ -158,58 +147,6 @@ function backfillHighlightAssemblies(self: LinearGenomeViewModel) {
       self.setHighlight(normalized)
     }
   }
-}
-
-// a string is either a loc string ("chr1:100-200") or a JSON-encoded
-// HighlightType (the URL wire-format, since URL params can't carry objects).
-// note: the jbrowse-web &highlight= URL param is space-split, so the JSON-string
-// form only survives when it contains no spaces; a label with a space is
-// shattered by the split — pass a HighlightType object instead
-function parseJsonHighlight(
-  s: string,
-  defaultAssembly: string,
-): HighlightType | undefined {
-  const json = s.trimStart().startsWith('{') ? tryParseJson(s) : undefined
-  return json &&
-    typeof json.refName === 'string' &&
-    typeof json.start === 'number' &&
-    typeof json.end === 'number'
-    ? {
-        refName: json.refName,
-        start: json.start,
-        end: json.end,
-        assemblyName:
-          typeof json.assemblyName === 'string'
-            ? json.assemblyName
-            : defaultAssembly,
-        color: typeof json.color === 'string' ? json.color : undefined,
-        label: typeof json.label === 'string' ? json.label : undefined,
-      }
-    : undefined
-}
-
-function parseLocHighlight(
-  s: string,
-  defaultAssembly: string,
-  isValidRefName: (refName: string) => boolean,
-): HighlightType | undefined {
-  const { refName, start, end } = parseLocString(s, isValidRefName)
-  return start !== undefined && end !== undefined
-    ? { refName, start, end, assemblyName: defaultAssembly }
-    : undefined
-}
-
-// normalize an init.highlight entry (HighlightType object, JSON string, or loc
-// string) into a HighlightType, defaulting the assemblyName
-function coerceHighlight(
-  h: string | HighlightType,
-  defaultAssembly: string,
-  isValidRefName: (refName: string) => boolean,
-): HighlightType | undefined {
-  return typeof h === 'object'
-    ? { ...h, assemblyName: h.assemblyName ?? defaultAssembly }
-    : (parseJsonHighlight(h, defaultAssembly) ??
-        parseLocHighlight(h, defaultAssembly, isValidRefName))
 }
 
 function applyInitHighlights(

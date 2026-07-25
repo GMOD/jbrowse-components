@@ -1,12 +1,15 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   NO_CIGAR_OPS,
+  SyntenyFetchStateMixin,
   coerceColorBy,
   isDataCurrent,
   regionSignature,
+  swappedAssembliesWarning,
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
@@ -143,6 +146,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'LinearSyntenyDisplay',
       BaseDisplay,
+      SyntenyFetchStateMixin(),
       types.model({
         /**
          * #property
@@ -169,19 +173,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       hoveredFeatureIdx: -1,
       clickedFeatureIdx: -1,
       contextMenuAnchor: undefined as ClickCoord | undefined,
-      // True while an RPC fetch is in-flight. Distinguishes a first load (no
-      // data yet) from a refetch (stale data still on screen) so the two get
-      // different overlays — see `loading`/`refetching`.
-      fetching: false,
-      // Fetch-input signature the current featureData/instanceData was fetched
-      // for (see `currentFetchKey`). Compared against the live inputs in
-      // `dataCurrent` to detect data gone stale after a region/zoom change,
-      // including during the pre-refetch debounce gap where `fetching` is still
-      // false.
-      loadedFetchKey: undefined as string | undefined,
-      // Set once at view load by a refName-comparison check, independent of the
-      // per-render fetch. See afterAttach.
-      assembliesSwapped: false,
     }))
     .actions(self => ({
       /**
@@ -206,12 +197,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.loadedFetchKey = fetchKey
         self.hoveredFeatureIdx = -1
         self.clickedFeatureIdx = -1
-      },
-      setFetching(arg: boolean) {
-        self.fetching = arg
-      },
-      setAssembliesSwapped(arg: boolean) {
-        self.assembliesSwapped = arg
       },
       setHoveredFeatureIdx(idx: number) {
         self.hoveredFeatureIdx = idx
@@ -346,11 +331,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get warnings() {
         return self.assembliesSwapped
           ? [
-              {
-                message: 'The assemblies appear to be in the wrong order',
-                effect:
-                  'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
-              },
+              swappedAssembliesWarning(
+                'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
+              ),
             ]
           : []
       },
@@ -429,9 +412,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * True when the rendered data was fetched for the view's current inputs.
        * Goes false the instant a region/zoom/draw-option change makes the held
        * ribbons stale — including during the pre-refetch debounce gap where
-       * `fetching` is still false so `refetching` alone can't catch it. The
-       * synteny analog of LGV's `viewportWithinLoadedData` and arc's
-       * `loadedRegionSignature === currentRegionSignature`.
+       * `fetching` is still false so `refetching` alone can't catch it.
+       *
+       * This is the shared freshness hook every display foundation answers,
+       * expressed the signature-compare way (as arc and dotplot do); the
+       * per-region families answer it with spatial coverage instead.
        */
       get dataCurrent(): boolean {
         return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
@@ -439,18 +424,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
-       * (see the [SVG export guide](/docs/developer_guides/svg_export)).
-       * Synteny is not an LGV display — it composes only `BaseDisplay` with its
-       * own fetch — so it has no `MultiRegionDisplayMixin`/`GlobalDataDisplayMixin`
-       * `svgReady`; this is the equivalent. Stale-safe on both axes: `dataCurrent`
-       * closes the pre-refetch debounce gap (stale window before `fetching`
-       * flips) and `!refetching` covers the in-flight RPC, so an export fired
-       * right after a zoom/pan waits for fresh ribbons instead of capturing stale
-       * ones. No `regionTooLarge` state (synteny never gates on region size).
+       * (see the [SVG export guide](/docs/developer_guides/svg_export)). Synteny
+       * is not an LGV display — it composes only `BaseDisplay` with its own
+       * fetch — so it gets no mixin `svgReady`, but it runs the same shared
+       * `computeSvgReady` policy so the two can't drift. Stale-safe on both
+       * axes: `dataCurrent` closes the pre-refetch debounce gap (stale window
+       * before `fetching` flips) and `!refetching` covers the in-flight RPC, so
+       * an export fired right after a zoom/pan waits for fresh ribbons instead
+       * of capturing stale ones. No `regionTooLarge` state (synteny never gates
+       * on region size).
        */
       get svgReady() {
-        return (
-          (this.ready && !this.refetching && this.dataCurrent) || !!self.error
+        return computeSvgReady(
+          {
+            error: self.error,
+            regionTooLarge: false,
+            extraTerminal: false,
+          },
+          () => this.ready && !this.refetching && this.dataCurrent,
         )
       },
       /**

@@ -19,7 +19,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import { DiagonalizeProgressMixin } from '@jbrowse/synteny-core'
+import { DiagonalizeProgressMixin, coerceColorBy } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { observable } from 'mobx'
@@ -32,7 +32,7 @@ import {
   getBlockLabelKeysToHide,
   makeTicks,
 } from './components/util.ts'
-import { LS_CURSOR_MODE } from './types.ts'
+import { DRAG_THRESHOLD_PX, LS_CURSOR_MODE } from './types.ts'
 
 import type {
   DotplotGeometryData,
@@ -46,6 +46,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
 
@@ -392,7 +393,6 @@ export default function stateModelFactory(pm: PluginManager) {
         get loadingMessage() {
           return this.showLoading ? 'Loading' : undefined
         },
-
         /**
          * #getter
          * Plot area width. Floored at 0: the axis borders have their own
@@ -442,6 +442,35 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * The color-by mode the whole plot renders with. colorBy is stored per
+         * display (it feeds the display's own geometry rebuild), but every
+         * control writes it to all of them at once, so the view resolves it
+         * once here instead of each consumer re-deriving it from
+         * `dotplotDisplays[0]` with its own fallback — two of them disagreed,
+         * one running the raw string through `coerceColorBy` and one not, so an
+         * unrecognized value lit the legend as 'default' while the menu showed
+         * no mode checked.
+         */
+        get colorBy() {
+          return coerceColorBy(this.dotplotDisplays[0]?.colorBy)
+        },
+        /**
+         * #getter
+         * Plot-wide alpha. See colorBy: resolved here so the no-display case is
+         * answered once. Matches the display schema's own default.
+         */
+        get alpha() {
+          return this.dotplotDisplays[0]?.alpha ?? 1
+        },
+        /**
+         * #getter
+         * Plot-wide minimum alignment length filter, in bp. See colorBy.
+         */
+        get minAlignmentLength() {
+          return this.dotplotDisplays[0]?.minAlignmentLength ?? 0
+        },
+        /**
+         * #getter
          * Canvas has painted and no display is still fetching, so what's on
          * screen is the final settled content. Drives the
          * `dotplot_webgl_canvas_done` test-id that screenshot capture and the
@@ -454,9 +483,10 @@ export default function stateModelFactory(pm: PluginManager) {
             this.dotplotDisplays.every(
               // dataCurrent guards the debounce gap: after a zoom or diagonalize
               // reorder the held rpcData is stale (drawn against the new axes)
-              // yet no fetch is in flight for ~1s, so isLoading/isRefetching
-              // alone would report done on the wrong plot
-              d => !d.isLoading && !d.isRefetching && d.dataCurrent,
+              // yet no fetch is in flight for ~1s, so loading/refetching alone
+              // would report done on the wrong plot. Same three terms
+              // LinearSyntenyViewHelper's settled gate uses.
+              d => !d.loading && !d.refetching && d.dataCurrent,
             ) &&
             // if an init autoDiagonalize was requested, the plot isn't "done"
             // until that reorder has actually completed — otherwise a
@@ -513,6 +543,26 @@ export default function stateModelFactory(pm: PluginManager) {
             lineWidth: self.lineWidth,
             displayKeys,
           }
+        },
+        /**
+         * #method
+         * Both corners of a drag rect, in bp on each axis. The vertical axis
+         * lays out bottom-up, so its pixels are flipped through viewHeight
+         * first. Undefined for a drag too small to be a selection — the same
+         * threshold the interaction hook uses to tell a drag from a click.
+         */
+        getCoords(mousedown: Coord, mouseup: Coord) {
+          const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
+          const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
+          return xmax - xmin > DRAG_THRESHOLD_PX &&
+            ymax - ymin > DRAG_THRESHOLD_PX
+            ? {
+                x1: self.hview.pxToBp(xmin),
+                x2: self.hview.pxToBp(xmax),
+                y1: self.vview.pxToBp(this.viewHeight - ymin),
+                y2: self.vview.pxToBp(this.viewHeight - ymax),
+              }
+            : undefined
         },
       }))
       // One canvas on the view, shared by all displays. The view aggregates
@@ -588,6 +638,35 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setShowColorLegend(arg: boolean) {
           self.showColorLegend = arg
+        },
+        /**
+         * #action
+         * Fan a per-display render setting out to every display, so the
+         * view-level getters above stay the single answer for the whole plot.
+         * The controls are view-level (one palette menu, one settings popover)
+         * even though the state is per-display, so every writer went through
+         * the same loop — it lives here now instead of at each call site.
+         */
+        setColorBy(value: SyntenyColorBy) {
+          for (const d of self.dotplotDisplays) {
+            d.setColorBy(value)
+          }
+        },
+        /**
+         * #action
+         */
+        setAlpha(value: number) {
+          for (const d of self.dotplotDisplays) {
+            d.setAlpha(value)
+          }
+        },
+        /**
+         * #action
+         */
+        setMinAlignmentLength(value: number) {
+          for (const d of self.dotplotDisplays) {
+            d.setMinAlignmentLength(value)
+          }
         },
         /**
          * #action
@@ -701,26 +780,10 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         */
-        getCoords(mousedown: Coord, mouseup: Coord) {
-          const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
-          const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
-          return Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3
-            ? {
-                x1: self.hview.pxToBp(xmin),
-                x2: self.hview.pxToBp(xmax),
-                y1: self.vview.pxToBp(self.viewHeight - ymin),
-                y2: self.vview.pxToBp(self.viewHeight - ymax),
-              }
-            : undefined
-        },
-
-        /**
-         * #action
          * zooms into clicked and dragged region
          */
         zoomInToMouseCoords(mousedown: Coord, mouseup: Coord) {
-          const result = this.getCoords(mousedown, mouseup)
+          const result = self.getCoords(mousedown, mouseup)
           if (result) {
             self.hview.moveTo(result.x1, result.x2)
             self.vview.moveTo(result.y2, result.y1)
@@ -733,7 +796,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * the drag rect is their intersection
          */
         addHighlightFromMouseCoords(mousedown: Coord, mouseup: Coord) {
-          const result = this.getCoords(mousedown, mouseup)
+          const result = self.getCoords(mousedown, mouseup)
           if (result) {
             self.addToHighlights(dragToHighlight(result.x1, result.x2))
             self.addToHighlights(dragToHighlight(result.y2, result.y1))
@@ -791,7 +854,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * creates a linear synteny view from the clicked and dragged region
          */
         onDotplotView(mousedown: Coord, mouseup: Coord) {
-          const result = this.getCoords(mousedown, mouseup)
+          const result = self.getCoords(mousedown, mouseup)
           if (result) {
             const { x1, x2, y1, y2 } = result
             const session = getSession(self)

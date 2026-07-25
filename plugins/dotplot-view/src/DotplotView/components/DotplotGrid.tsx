@@ -3,6 +3,27 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+
+// One line per block boundary, carrying the position it draws at. Blocks that
+// round to the same pixel as the previous one are dropped — at whole-genome
+// zoom hundreds of scaffolds land on the same column and would stack identical
+// <line> elements (visible as a darker band in SVG export).
+function gridLines(
+  blocks: ContentBlock[],
+  toPx: (block: ContentBlock) => number,
+) {
+  const out: { key: string; px: number }[] = []
+  let prev: number | undefined
+  for (const block of blocks) {
+    const px = toPx(block)
+    if (Math.floor(px) !== prev) {
+      out.push({ key: block.key, px })
+      prev = Math.floor(px)
+    }
+  }
+  return out
+}
 
 const DotplotGrid = observer(function DotplotGrid({
   model,
@@ -31,21 +52,11 @@ const DotplotGrid = observer(function DotplotGrid({
   const w = Math.min(htop - hbottom, viewWidth)
   const h = Math.min(viewHeight - vbottom - ry, viewHeight)
 
-  // Filter blocks to avoid rendering duplicate lines at the same pixel position
-  const hlines = hblocks.filter((region, idx) => {
-    const x = Math.floor(region.offsetPx - hview.offsetPx)
-    const prevX =
-      idx > 0 ? Math.floor(hblocks[idx - 1]!.offsetPx - hview.offsetPx) : null
-    return x !== prevX
-  })
-  const vlines = vblocks.filter((region, idx) => {
-    const y = Math.floor(viewHeight - (region.offsetPx - vview.offsetPx))
-    const prevY =
-      idx > 0
-        ? Math.floor(viewHeight - (vblocks[idx - 1]!.offsetPx - vview.offsetPx))
-        : null
-    return y !== prevY
-  })
+  const hlines = gridLines(hblocks, b => b.offsetPx - hview.offsetPx)
+  const vlines = gridLines(
+    vblocks,
+    b => viewHeight - (b.offsetPx - vview.offsetPx),
+  )
 
   return (
     <>
@@ -57,32 +68,26 @@ const DotplotGrid = observer(function DotplotGrid({
         {...getFillProps(theme.palette.background.default)}
       />
       <g>
-        {hlines.map(region => {
-          const x = region.offsetPx - hview.offsetPx
-          return (
-            <line
-              key={region.key}
-              x1={x}
-              y1={0}
-              x2={x}
-              y2={viewHeight}
-              {...getStrokeProps(stroke)}
-            />
-          )
-        })}
-        {vlines.map(region => {
-          const y = viewHeight - (region.offsetPx - vview.offsetPx)
-          return (
-            <line
-              key={region.key}
-              x1={0}
-              y1={y}
-              x2={viewWidth}
-              y2={y}
-              {...getStrokeProps(stroke)}
-            />
-          )
-        })}
+        {hlines.map(({ key, px }) => (
+          <line
+            key={key}
+            x1={px}
+            y1={0}
+            x2={px}
+            y2={viewHeight}
+            {...getStrokeProps(stroke)}
+          />
+        ))}
+        {vlines.map(({ key, px }) => (
+          <line
+            key={key}
+            x1={0}
+            y1={px}
+            x2={viewWidth}
+            y2={px}
+            {...getStrokeProps(stroke)}
+          />
+        ))}
         <line
           x1={htop}
           y1={0}

@@ -2,7 +2,6 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getEnv, getSession } from '@jbrowse/core/util'
-import { coerceColorBy } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
@@ -22,11 +21,7 @@ export async function renderToSvg(
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
-  const display = model.dotplotDisplays[0]
-  const legendColorBy =
-    model.showColorLegend && display
-      ? coerceColorBy(display.colorBy)
-      : undefined
+  const legendColorBy = model.showColorLegend ? model.colorBy : undefined
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const trackDisplay = track.displays[0]
@@ -67,7 +62,7 @@ export async function renderToSvg(
             <SVGColorByLegend
               colorBy={legendColorBy}
               viewWidth={viewWidth}
-              alpha={display?.alpha ?? 1}
+              alpha={model.alpha}
             />
           ) : null}
         </g>

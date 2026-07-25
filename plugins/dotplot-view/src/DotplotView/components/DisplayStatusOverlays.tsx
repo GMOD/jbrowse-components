@@ -33,7 +33,7 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
       {model.dotplotDisplays.map(display =>
         display.error ? (
           <ErrorBanner key={display.id} error={display.error} />
-        ) : display.isLoading ? (
+        ) : display.loading ? (
           <div key={display.id} className={classes.loadingOverlay}>
             <LoadingProgress
               message={display.statusMessage}
@@ -41,7 +41,7 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
               barClassName={classes.bar}
             />
           </div>
-        ) : display.isRefetching ? (
+        ) : display.refetching ? (
           <RefetchIndicator
             key={display.id}
             statusMessage={display.statusMessage}

@@ -16,6 +16,46 @@ export interface SvgExportable {
 }
 
 /**
+ * The terminal states that let an export proceed with no current data. Mirrors
+ * `DisplayPhaseInputs`: named fields, all required, so adding a state is a
+ * compile error at every call site rather than a silently missing branch.
+ *
+ * `extraTerminal` is the display-specific escape hatch — sequence sets it when
+ * zoomed past base resolution, where it renders a static "zoom in" message and
+ * fetches nothing, so a data-only gate would never resolve.
+ */
+export interface SvgReadyTerminals {
+  error: unknown
+  regionTooLarge: boolean
+  extraTerminal: boolean
+}
+
+/**
+ * Whether an off-screen (SVG) export can read this display's data now: the held
+ * data is current for what is on screen, or the fetch reached a terminal state.
+ *
+ * Single-sourced for the same reason as `computeDisplayPhase`: every display
+ * family expresses freshness differently — spatial coverage (per-region),
+ * viewport-snapshot compare (global), signature compare (arc / dotplot /
+ * synteny) — but the *policy* wrapping it is identical, and each of the five
+ * hand-written copies this replaced was one place to forget a terminal and hang
+ * the export, or to forget freshness and capture a stale viewport (both have
+ * shipped; see agent-docs/reference/SVG_EXPORT.md).
+ *
+ * `dataCurrent` is a **thunk**, evaluated only after the terminals are ruled
+ * out, for the same MobX reason `computeDisplayPhase`'s `loading` is: freshness
+ * typically reads the containing view's `visibleRegions` / `loadedRegions`, and
+ * the `when()` in `awaitSvgReady` shouldn't subscribe to that churn while a
+ * banner is up.
+ */
+export function computeSvgReady(
+  { error, regionTooLarge, extraTerminal }: SvgReadyTerminals,
+  dataCurrent: () => boolean,
+) {
+  return !!error || regionTooLarge || extraTerminal || dataCurrent()
+}
+
+/**
  * Off-screen renderers (SVG export, headless jbrowse-img) must wait until the
  * display reaches a terminal state before reading its data. That whole policy
  * lives in `svgReady`; this is the one shared way to await it, so renderers

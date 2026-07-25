@@ -6,6 +6,12 @@ export type Coord = [number, number]
 
 export const LS_CURSOR_MODE = 'dotplot-cursorMode'
 
+// Below this a drag is a click, not a selection. Shared by the interaction hook
+// (which decides whether to open the selection menu) and the model's getCoords
+// (which the menu's actions run through), so the two can't disagree about what
+// counts as a selection.
+export const DRAG_THRESHOLD_PX = 3
+
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 export interface DotplotViewInit extends SyntenyViewSharedInit {
