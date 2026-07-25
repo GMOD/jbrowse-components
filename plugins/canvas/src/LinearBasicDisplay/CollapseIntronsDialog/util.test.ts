@@ -11,25 +11,49 @@ import {
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 
-function feat({
-  type,
-  subfeatures,
-  refName,
-}: {
+interface FeatFields {
   type?: string
   subfeatures?: Feature[]
   refName?: string
-} = {}): Feature {
+  start?: number
+  end?: number
+}
+
+function feat(fields: FeatFields = {}): Feature {
   return {
-    get: (k: string) =>
-      k === 'type'
-        ? type
-        : k === 'subfeatures'
-          ? subfeatures
-          : k === 'refName'
-            ? refName
-            : undefined,
+    get: (k: keyof FeatFields) => fields[k],
   } as unknown as Feature
+}
+
+const assembly = {
+  name: 'volvox',
+  getCanonicalRefName2: (r: string) => r,
+  regions: [{ refName: 'ctgA', start: 0, end: 50_000 }],
+} as unknown as Assembly
+
+function intronArgs({
+  transcripts,
+  flip,
+}: {
+  transcripts: Feature[]
+  flip: boolean
+}) {
+  return {
+    view: createTestEnvironment().createDisplay().view,
+    transcripts,
+    assembly,
+    padding: 20,
+    flip,
+    trackId: 'test_track',
+    soloFeatureId: undefined,
+    label: 'myGene',
+  }
+}
+
+// buildMergedRegions is private, so the regions it produces are read back off
+// the snapshot the "Open in new view" action builds from them.
+function collapsedRegionsOf(opts: { transcripts: Feature[]; flip: boolean }) {
+  return buildCollapsedViewSnapshot(intronArgs(opts)).displayedRegions
 }
 
 describe('CollapseIntrons utilities', () => {
@@ -252,26 +276,66 @@ describe('CollapseIntrons utilities', () => {
   // would blank the view back to the import form, and the new-view path would
   // divide by a zero-length span.
   describe('no collapsible intervals', () => {
-    const assembly = {
-      name: 'volvox',
-      getCanonicalRefName2: (r: string) => r,
-      regions: [{ refName: 'ctgA', start: 0, end: 50_000 }],
-    } as unknown as Assembly
-
     it('throws rather than building an empty region set', () => {
-      const { view } = createTestEnvironment().createDisplay()
       expect(() => {
-        buildCollapsedViewSnapshot({
-          view,
+        collapsedRegionsOf({
           transcripts: [feat({ refName: 'ctgA', type: 'tRNA' })],
-          assembly,
-          padding: 100,
           flip: false,
-          trackId: 'test_track',
-          soloFeatureId: undefined,
-          label: 'tRNA1',
         })
       }).toThrow(/No exons or CDS/)
+    })
+  })
+
+  // The flip option has to move two things together: the region order and the
+  // per-region `reversed` flag. Order without the flag draws each exon's own
+  // bases backwards; the flag without the order leaves the gene reading 3'->5'.
+  describe('flip', () => {
+    const transcripts = [
+      feat({
+        refName: 'ctgA',
+        subfeatures: [
+          feat({ type: 'exon', start: 0, end: 100 }),
+          feat({ type: 'exon', start: 5000, end: 5100 }),
+        ],
+      }),
+    ]
+
+    it('leaves regions in genomic order when off', () => {
+      expect(collapsedRegionsOf({ transcripts, flip: false })).toEqual([
+        { refName: 'ctgA', assemblyName: 'volvox', start: 0, end: 120 },
+        { refName: 'ctgA', assemblyName: 'volvox', start: 4980, end: 5120 },
+      ])
+    })
+
+    it('reverses the region order and marks every region reversed when on', () => {
+      expect(collapsedRegionsOf({ transcripts, flip: true })).toEqual([
+        {
+          refName: 'ctgA',
+          assemblyName: 'volvox',
+          start: 4980,
+          end: 5120,
+          reversed: true,
+        },
+        {
+          refName: 'ctgA',
+          assemblyName: 'volvox',
+          start: 0,
+          end: 120,
+          reversed: true,
+        },
+      ])
+    })
+
+    it('frames the same span either way (flip is order-only, not zoom)', () => {
+      const plain = buildCollapsedViewSnapshot(
+        intronArgs({ transcripts, flip: false }),
+      )
+      const flipped = buildCollapsedViewSnapshot(
+        intronArgs({ transcripts, flip: true }),
+      )
+
+      expect(flipped.bpPerPx).toBe(plain.bpPerPx)
+      expect(flipped.offsetPx).toBe(plain.offsetPx)
     })
   })
 })
