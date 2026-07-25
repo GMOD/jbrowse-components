@@ -142,44 +142,79 @@ const noTint = (c: [number, number, number]) => c
 const lighten = (c: [number, number, number]) => lightenColor(c, 0.4)
 const darken = (c: [number, number, number]) => darkenColor(c, 0.4)
 
-// One side of a whisker band as a solid-color layer: only the features whose
-// value sits on `keepPos`'s side of the pivot, returning undefined when that
-// side is empty. Filled rendering splits each band by sign because the two
-// sides must stack in opposite order (see makeWhiskersLayers) — a split can't
-// be avoided the way per-instance coloring avoids it for line/scatter.
-function whiskerBandSide(
+// One whisker band split into its above-pivot and below-pivot solid-color
+// layers, `undefined` for an empty side. Filled rendering splits each band by
+// sign because the two sides must stack in opposite order (see
+// makeWhiskersLayers) — a split can't be avoided the way per-instance coloring
+// avoids it for line/scatter. Both sides come out of one counting pass plus one
+// fill pass, and a single-sided band (all-positive coverage, the common case)
+// aliases the band arrays instead of copying them.
+function whiskerBandSides(
   featurePositions: Uint32Array,
   bandScores: Float32Array,
   numFeatures: number,
   pivot: number,
-  keepPos: boolean,
-  color: [number, number, number],
-): WiggleLayer | undefined {
-  let count = 0
+  posColor: [number, number, number],
+  negColor: [number, number, number],
+): { pos: WiggleLayer | undefined; neg: WiggleLayer | undefined } {
+  let posCount = 0
   for (let i = 0; i < numFeatures; i++) {
-    if (bandScores[i]! >= pivot === keepPos) {
-      count++
+    if (bandScores[i]! >= pivot) {
+      posCount++
     }
   }
-  if (count === 0) {
-    return undefined
+  const negCount = numFeatures - posCount
+  const whole = (color: [number, number, number]) => ({
+    featurePositions,
+    featureScores: bandScores,
+    numFeatures,
+    color,
+  })
+  if (negCount === 0) {
+    return {
+      pos: posCount === 0 ? undefined : whole(posColor),
+      neg: undefined,
+    }
   }
-  const positions = new Uint32Array(count * 2)
-  const scores = new Float32Array(count)
-  let j = 0
+  if (posCount === 0) {
+    return { pos: undefined, neg: whole(negColor) }
+  }
+
+  const posPositions = new Uint32Array(posCount * 2)
+  const posScores = new Float32Array(posCount)
+  const negPositions = new Uint32Array(negCount * 2)
+  const negScores = new Float32Array(negCount)
+  let p = 0
+  let n = 0
   for (let i = 0; i < numFeatures; i++) {
-    if (bandScores[i]! >= pivot === keepPos) {
-      positions[j * 2] = featurePositions[i * 2]!
-      positions[j * 2 + 1] = featurePositions[i * 2 + 1]!
-      scores[j] = bandScores[i]!
-      j++
+    const score = bandScores[i]!
+    const start = featurePositions[i * 2]!
+    const end = featurePositions[i * 2 + 1]!
+    if (score >= pivot) {
+      posPositions[p * 2] = start
+      posPositions[p * 2 + 1] = end
+      posScores[p] = score
+      p++
+    } else {
+      negPositions[n * 2] = start
+      negPositions[n * 2 + 1] = end
+      negScores[n] = score
+      n++
     }
   }
   return {
-    featurePositions: positions,
-    featureScores: scores,
-    numFeatures: count,
-    color,
+    pos: {
+      featurePositions: posPositions,
+      featureScores: posScores,
+      numFeatures: posCount,
+      color: posColor,
+    },
+    neg: {
+      featurePositions: negPositions,
+      featureScores: negScores,
+      numFeatures: negCount,
+      color: negColor,
+    },
   }
 }
 
@@ -254,29 +289,20 @@ export function makeWhiskersLayers({
     // Positive side back-to-front: max (light, tallest) painted first, min (dark)
     // on top near the pivot. Negative side reverses: min (light, deepest) first,
     // max (dark) on top near the pivot.
-    const posSide = bands.map(b =>
-      whiskerBandSide(
+    const sides = bands.map(b =>
+      whiskerBandSides(
         featurePositions,
         b.scores,
         numFeatures,
         pivot,
-        true,
         b.pos,
+        b.neg,
       ),
     )
-    const negSide = [...bands]
-      .reverse()
-      .map(b =>
-        whiskerBandSide(
-          featurePositions,
-          b.scores,
-          numFeatures,
-          pivot,
-          false,
-          b.neg,
-        ),
-      )
-    return [...posSide, ...negSide].filter(l => l !== undefined)
+    return [
+      ...sides.map(s => s.pos),
+      ...[...sides].reverse().map(s => s.neg),
+    ].filter(l => l !== undefined)
   }
 
   const layers = [

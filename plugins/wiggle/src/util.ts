@@ -1,8 +1,10 @@
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export {
+  autoscaleDomainFromStats,
   computeAutoscaleDomain,
   computeScoreExtent,
+  computeScoreStats,
   domainFromStats,
   getEffectiveScores,
   getNiceDomain,
@@ -100,6 +102,48 @@ export interface RawFeatureArrays {
   count: number
 }
 
+// Fresh per call, never a shared constant: these buffers are handed to
+// postMessage as transferables, and transferring detaches them.
+function emptySide() {
+  return { positions: new Uint32Array(0), scores: new Float32Array(0) }
+}
+
+// The features on one side of the pivot, copied out in order. Only called when
+// both sides are non-empty — a one-sided split aliases the full arrays instead.
+function splitSide(
+  featurePositions: Uint32Array,
+  featureScores: Float32Array,
+  count: number,
+  sideCount: number,
+  bicolorPivot: number,
+  keepPos: boolean,
+) {
+  const positions = new Uint32Array(sideCount * 2)
+  const sideScores = new Float32Array(sideCount)
+  let j = 0
+  for (let i = 0; i < count; i++) {
+    const score = featureScores[i]!
+    if (score >= bicolorPivot === keepPos) {
+      positions[j * 2] = featurePositions[i * 2]!
+      positions[j * 2 + 1] = featurePositions[i * 2 + 1]!
+      sideScores[j] = score
+      j++
+    }
+  }
+  return { positions, scores: sideScores }
+}
+
+// Adapter arrays -> the render-side layout: absolute positions, scores, the
+// min/max summary bands, and the pivot-split pos/neg arrays the 'avg' render
+// path draws from.
+//
+// Arrays are aliased, not copied, wherever a copy would be identical: no
+// summary data means min/max === score, and an all-positive (or all-negative)
+// window means one side's arrays === the full arrays. Aliasing is safe because
+// every consumer only reads, and structured clone preserves the sharing across
+// the worker boundary (collectWiggleTransferables dedupes the buffers). This
+// matters at scale: a typical all-positive coverage source used to allocate,
+// fill, and transfer three full copies of its positions.
 export function processFeaturesFromArrays(
   raw: RawFeatureArrays,
   bicolorPivot: number,
@@ -108,43 +152,70 @@ export function processFeaturesFromArrays(
   const { starts, ends, scores, minScores, maxScores, count } = raw
   const featurePositions = new Uint32Array(count * 2)
   const featureScores = new Float32Array(count)
-  const featureMinScores = new Float32Array(count)
-  const featureMaxScores = new Float32Array(count)
-  const posFeaturePositionsBuf = new Uint32Array(count * 2)
-  const posFeatureScoresBuf = new Float32Array(count)
-  const negFeaturePositionsBuf = new Uint32Array(count * 2)
-  const negFeatureScoresBuf = new Float32Array(count)
-  let posCount = 0
-  let negCount = 0
-  let hasSummaryScores = false
-
   for (let i = 0; i < count; i++) {
-    const score = scores[i]!
-    const startPos = starts[i]! | 0
-    const endPos = ends[i]! | 0
-    featurePositions[i * 2] = startPos
-    featurePositions[i * 2 + 1] = endPos
-    featureScores[i] = score
-    const minScore = minScores ? (minScores[i] ?? score) : score
-    const maxScore = maxScores ? (maxScores[i] ?? score) : score
-    featureMinScores[i] = minScore
-    featureMaxScores[i] = maxScore
-    if (minScore !== score || maxScore !== score) {
-      hasSummaryScores = true
-    }
+    featurePositions[i * 2] = starts[i]!
+    featurePositions[i * 2 + 1] = ends[i]!
+    featureScores[i] = scores[i]!
+  }
 
-    if (!useBicolor || score >= bicolorPivot) {
-      posFeaturePositionsBuf[posCount * 2] = startPos
-      posFeaturePositionsBuf[posCount * 2 + 1] = endPos
-      posFeatureScoresBuf[posCount] = score
-      posCount++
-    } else {
-      negFeaturePositionsBuf[negCount * 2] = startPos
-      negFeaturePositionsBuf[negCount * 2 + 1] = endPos
-      negFeatureScoresBuf[negCount] = score
-      negCount++
+  let featureMinScores = featureScores
+  let featureMaxScores = featureScores
+  let hasSummaryScores = false
+  if (minScores !== undefined || maxScores !== undefined) {
+    const mins = new Float32Array(count)
+    const maxs = new Float32Array(count)
+    for (let i = 0; i < count; i++) {
+      const score = featureScores[i]!
+      const minScore = minScores ? (minScores[i] ?? score) : score
+      const maxScore = maxScores ? (maxScores[i] ?? score) : score
+      mins[i] = minScore
+      maxs[i] = maxScore
+      if (minScore !== score || maxScore !== score) {
+        hasSummaryScores = true
+      }
+    }
+    featureMinScores = mins
+    featureMaxScores = maxs
+  }
+
+  // Counted with the same `>= pivot` predicate splitSide partitions on, so a
+  // NaN score (never >=, never <) lands on the same side in both.
+  let posCount = count
+  if (useBicolor) {
+    posCount = 0
+    for (let i = 0; i < count; i++) {
+      if (featureScores[i]! >= bicolorPivot) {
+        posCount++
+      }
     }
   }
+  const negCount = count - posCount
+  const pos =
+    negCount === 0
+      ? { positions: featurePositions, scores: featureScores }
+      : posCount === 0
+        ? emptySide()
+        : splitSide(
+            featurePositions,
+            featureScores,
+            count,
+            posCount,
+            bicolorPivot,
+            true,
+          )
+  const neg =
+    posCount === 0
+      ? { positions: featurePositions, scores: featureScores }
+      : negCount === 0
+        ? emptySide()
+        : splitSide(
+            featurePositions,
+            featureScores,
+            count,
+            negCount,
+            bicolorPivot,
+            false,
+          )
 
   return {
     featurePositions,
@@ -153,11 +224,11 @@ export function processFeaturesFromArrays(
     featureMaxScores,
     numFeatures: count,
     hasSummaryScores,
-    posFeaturePositions: posFeaturePositionsBuf.subarray(0, posCount * 2),
-    posFeatureScores: posFeatureScoresBuf.subarray(0, posCount),
+    posFeaturePositions: pos.positions,
+    posFeatureScores: pos.scores,
     posNumFeatures: posCount,
-    negFeaturePositions: negFeaturePositionsBuf.subarray(0, negCount * 2),
-    negFeatureScores: negFeatureScoresBuf.subarray(0, negCount),
+    negFeaturePositions: neg.positions,
+    negFeatureScores: neg.scores,
     negNumFeatures: negCount,
   }
 }

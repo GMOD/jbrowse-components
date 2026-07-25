@@ -5,9 +5,10 @@ import type { WiggleDataResult } from './dataTypes.ts'
 // Field set matches WiggleFeatureArrays — when fields change there, update
 // here so the buffers actually transfer instead of being structured-cloned.
 //
-// Buffers are deduped via a Set in case any source shares an underlying
-// buffer (subarray slices in processFeaturesFromArrays don't, but it's cheap
-// insurance).
+// The Set dedupe is load-bearing, not insurance: processFeaturesFromArrays
+// aliases fields onto one buffer whenever a copy would be identical (no summary
+// data → min/max are the scores; an all-one-sided window → the pos or neg
+// arrays are the full arrays). postMessage throws on a repeated transferable.
 export function collectWiggleTransferables(
   result: WiggleDataResult,
 ): ArrayBuffer[] {

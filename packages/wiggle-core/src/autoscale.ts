@@ -60,7 +60,11 @@ function isStdDevAutoscale(autoscaleType: string) {
 // the second pass O(n) with a fixed, trivial allocation.
 const NUM_HISTOGRAM_BINS = 1024
 
-function computeStats(
+// Min/max/mean/stddev of the visible features for a summary mode, in one pass.
+// Exported (not #api — internal plumbing shared with the wiggle displays) so a
+// caller needing both a domain and the raw extent computes the stats once and
+// feeds them to autoscaleDomainFromStats instead of walking the arrays twice.
+export function computeScoreStats(
   summaryScoreMode: string,
   datasets: Dataset[],
 ): ScoreStats | undefined {
@@ -250,6 +254,35 @@ function percentileDomainFromHistogram(
   return [scoreMin < 0 ? -negExtent : 0, high]
 }
 
+// Turns already-computed stats into the displayed domain for the `local` /
+// `localsd` / `localpercentile` autoscale types. `localpercentile` re-walks the
+// entries to build its histogram; the other types read the stats alone.
+// computeAutoscaleDomain (#api) is the one-shot form.
+export function autoscaleDomainFromStats({
+  stats,
+  autoscaleType,
+  summaryScoreMode,
+  numStdDev,
+  numQuantile = 0.99,
+  visibleEntries,
+}: {
+  stats: ScoreStats
+  autoscaleType: string
+  summaryScoreMode: string
+  numStdDev: number
+  numQuantile?: number
+  visibleEntries: Dataset[]
+}): [number, number] {
+  return autoscaleType === 'localpercentile'
+    ? percentileDomainFromHistogram(
+        stats,
+        summaryScoreMode,
+        numQuantile,
+        visibleEntries,
+      )
+    : domainFromStats(stats, autoscaleType, numStdDev)
+}
+
 /**
  * #api
  * Computes a score domain from the visible feature arrays for the `local` /
@@ -266,19 +299,17 @@ export function computeAutoscaleDomain(
   }[],
   numQuantile = 0.99,
 ): [number, number] | undefined {
-  const stats = computeStats(summaryScoreMode, visibleEntries)
-  if (!stats) {
-    return undefined
-  }
-  if (autoscaleType === 'localpercentile') {
-    return percentileDomainFromHistogram(
-      stats,
-      summaryScoreMode,
-      numQuantile,
-      visibleEntries,
-    )
-  }
-  return domainFromStats(stats, autoscaleType, numStdDev)
+  const stats = computeScoreStats(summaryScoreMode, visibleEntries)
+  return stats
+    ? autoscaleDomainFromStats({
+        stats,
+        autoscaleType,
+        summaryScoreMode,
+        numStdDev,
+        numQuantile,
+        visibleEntries,
+      })
+    : undefined
 }
 
 /**
@@ -296,6 +327,6 @@ export function computeScoreExtent(
     visEnd: number
   }[],
 ): [number, number] | undefined {
-  const stats = computeStats(summaryScoreMode, visibleEntries)
+  const stats = computeScoreStats(summaryScoreMode, visibleEntries)
   return stats ? [stats.scoreMin, stats.scoreMax] : undefined
 }

@@ -2,8 +2,8 @@ import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 
 import {
-  computeAutoscaleDomain,
-  computeScoreExtent,
+  autoscaleDomainFromStats,
+  computeScoreStats,
   getNiceDomain,
 } from '../util.ts'
 import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
@@ -81,17 +81,35 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
+       * The visible feature arrays plus their min/max/mean/stddev, walked once.
+       * `visibleScoreRange` and `dataRange` both derive from this so the score
+       * arrays aren't scanned twice per domain recompute.
        */
-      get visibleScoreRange() {
+      get visibleScoreStats() {
         const entries = visibleEntries(self)
         return entries
-          ? computeAutoscaleDomain(
-              self.autoscaleType,
-              self.summaryScoreMode,
-              self.numStdDev,
+          ? {
               entries,
-              self.numQuantile,
-            )
+              stats: computeScoreStats(self.summaryScoreMode, entries),
+            }
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get visibleScoreRange() {
+        const visible = self.visibleScoreStats
+        return visible?.stats
+          ? autoscaleDomainFromStats({
+              stats: visible.stats,
+              autoscaleType: self.autoscaleType,
+              summaryScoreMode: self.summaryScoreMode,
+              numStdDev: self.numStdDev,
+              numQuantile: self.numQuantile,
+              visibleEntries: visible.entries,
+            })
           : undefined
       },
       /**
@@ -100,11 +118,9 @@ export function WiggleCommonMixin() {
        * `domain` may clip this (localpercentile/localsd/fixed bounds), so the
        * score legend compares the two to flag clipped signal.
        */
-      get dataRange() {
-        const entries = visibleEntries(self)
-        return entries
-          ? computeScoreExtent(self.summaryScoreMode, entries)
-          : undefined
+      get dataRange(): [number, number] | undefined {
+        const stats = self.visibleScoreStats?.stats
+        return stats ? [stats.scoreMin, stats.scoreMax] : undefined
       },
     }))
     .views(self => ({
