@@ -1161,7 +1161,12 @@ test('a compact mode reserves label overhang at its own smaller font size', () =
       { featureId: 'g2', startBp: 2470, endBp: 2540, height: 10 },
     ],
   })
-  const label = (id: string, minX: number, maxX: number, textWidth: number) => ({
+  const label = (
+    id: string,
+    minX: number,
+    maxX: number,
+    textWidth: number,
+  ) => ({
     featureId: id,
     minX,
     maxX,

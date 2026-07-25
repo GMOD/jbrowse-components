@@ -43,9 +43,9 @@ allele index is a category, so Euclidean distance over it is meaningless. Where
 allele identity matters, `anchoredHaplotypeSort.ts` compares alleles exactly.
 
 `buildGenotypeMatrix.ts` is the single place that picks the matrix for a
-rendering mode. Both the auto (WASM) and manual (R export) paths must go
-through it; when only the auto path branched, manual clustering in phased mode
-silently produced a sample-level tree wearing haplotype labels.
+rendering mode. Both the auto (WASM) and manual (R export) paths must go through
+it; when only the auto path branched, manual clustering in phased mode silently
+produced a sample-level tree wearing haplotype labels.
 
 ## Row sorting is anchored, not clustered
 

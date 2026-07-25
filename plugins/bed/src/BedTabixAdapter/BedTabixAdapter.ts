@@ -2,19 +2,15 @@ import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  SimpleFeature,
-  downloadStatus,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { SimpleFeature, downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
-import { unzip } from '@jbrowse/core/util/unzip'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
   checkStopToken2,
   checkStopToken,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { unzip } from '@jbrowse/core/util/unzip'
 
 import { bedFeatureLocus, featureData, parseNamesFromHeader } from '../util.ts'
 

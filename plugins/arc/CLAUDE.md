@@ -33,8 +33,8 @@ re-encode the terminal-state precedence by hand.
 display's, not derived in the component — a component-side derivation is free to
 drift from what the model believes.
 
-`BaseDisplayComponent.tsx` then just branches on `model.displayPhase` and renders
-the shared banners `DisplayErrorBar` / `DisplayLoadingOverlay` /
+`BaseDisplayComponent.tsx` then just branches on `model.displayPhase` and
+renders the shared banners `DisplayErrorBar` / `DisplayLoadingOverlay` /
 `TooLargeMessage` (from `@jbrowse/plugin-linear-genome-view`) — so arc looks
 identical to every GPU display; `error` and `loading` overlay the still-mounted
 SVG, `tooLarge` replaces the subtree. It also emits `data-display-phase`, the

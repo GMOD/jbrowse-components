@@ -7,7 +7,6 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
-import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
 import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
@@ -17,6 +16,7 @@ import {
   installGlobalFetchAutorun,
   viewportMatchesLastDrawn,
 } from '@jbrowse/plugin-linear-genome-view'
+import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
 
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'

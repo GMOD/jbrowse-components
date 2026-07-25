@@ -94,22 +94,25 @@ describe('color ramps', () => {
     expect(generateColorRamp(scheme)).toHaveLength(256 * 4)
   })
 
-  test.each(SCHEMES)('%s legend samples the same source as the ramp', scheme => {
-    const stops = getLegendStops(scheme)
-    const ramp = generateColorRamp(scheme)
-    expect(stops).toHaveLength(11)
-    expect(stops[0]!.offset).toBe(0)
-    expect(stops[10]!.offset).toBe(1)
-    // legend endpoints must equal the ramp endpoints, or the legend advertises
-    // a color the heatmap never paints
-    for (const i of [0, 10]) {
-      const o = (i === 0 ? 0 : 255) * 4
-      expect(stops[i]!.rgba).toEqual([
-        ramp[o]!,
-        ramp[o + 1]!,
-        ramp[o + 2]!,
-        ramp[o + 3]!,
-      ])
-    }
-  })
+  test.each(SCHEMES)(
+    '%s legend samples the same source as the ramp',
+    scheme => {
+      const stops = getLegendStops(scheme)
+      const ramp = generateColorRamp(scheme)
+      expect(stops).toHaveLength(11)
+      expect(stops[0]!.offset).toBe(0)
+      expect(stops[10]!.offset).toBe(1)
+      // legend endpoints must equal the ramp endpoints, or the legend advertises
+      // a color the heatmap never paints
+      for (const i of [0, 10]) {
+        const o = (i === 0 ? 0 : 255) * 4
+        expect(stops[i]!.rgba).toEqual([
+          ramp[o]!,
+          ramp[o + 1]!,
+          ramp[o + 2]!,
+          ramp[o + 3]!,
+        ])
+      }
+    },
+  )
 })

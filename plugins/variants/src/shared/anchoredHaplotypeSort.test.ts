@@ -38,37 +38,33 @@ describe('refineRowsBySite', () => {
   const readSite = (site: number) => (row: number) => grid[row]![site]!
 
   test('sorts by the anchor site first, alt-carrying rows leading', () => {
-    expect(refineRowsBySite({ items, readSite, sites: [0], maxValue: 3 })).toEqual([
-      'a',
-      'c',
-      'd',
-      'b',
-    ])
+    expect(
+      refineRowsBySite({ items, readSite, sites: [0], maxValue: 3 }),
+    ).toEqual(['a', 'c', 'd', 'b'])
   })
 
   test('breaks anchor ties with the next site', () => {
     // at site 0 a/c/d tie at 1; site 1 splits c (0) from a and d (1)
-    expect(refineRowsBySite({ items, readSite, sites: [0, 1], maxValue: 3 })).toEqual([
-      'a',
-      'd',
-      'c',
-      'b',
-    ])
+    expect(
+      refineRowsBySite({ items, readSite, sites: [0, 1], maxValue: 3 }),
+    ).toEqual(['a', 'd', 'c', 'b'])
   })
 
   test('a later site cannot reorder rows an earlier site separated', () => {
     // site 2 would put c above d, but site 0/1 already ranked d above c
-    expect(refineRowsBySite({ items, readSite, sites: [0, 1, 2], maxValue: 3 })).toEqual([
-      'a',
-      'd',
-      'c',
-      'b',
-    ])
+    expect(
+      refineRowsBySite({ items, readSite, sites: [0, 1, 2], maxValue: 3 }),
+    ).toEqual(['a', 'd', 'c', 'b'])
   })
 
   test('rows that never differ keep their input order', () => {
     expect(
-      refineRowsBySite({ items: ['x', 'y'], readSite: () => () => 1, sites: [0, 1], maxValue: 3 }),
+      refineRowsBySite({
+        items: ['x', 'y'],
+        readSite: () => () => 1,
+        sites: [0, 1],
+        maxValue: 3,
+      }),
     ).toEqual(['x', 'y'])
   })
 
@@ -108,23 +104,34 @@ describe('refineRowsBySite', () => {
       site === 1 ? undefined : (row: number) => grid[row]![site]!,
     )
     expect(
-      refineRowsBySite({ items, readSite: read, sites: [0, 1, 2], maxValue: 3 }),
+      refineRowsBySite({
+        items,
+        readSite: read,
+        sites: [0, 1, 2],
+        maxValue: 3,
+      }),
     ).toEqual(['a', 'c', 'd', 'b'])
     expect(read).toHaveBeenCalledWith(1)
   })
 
   test('handles a single row and no rows', () => {
-    expect(refineRowsBySite({ items: ['only'], readSite, sites: [0], maxValue: 3 })).toEqual([
-      'only',
-    ])
-    expect(refineRowsBySite({ items: [], readSite, sites: [0], maxValue: 3 })).toEqual([])
+    expect(
+      refineRowsBySite({ items: ['only'], readSite, sites: [0], maxValue: 3 }),
+    ).toEqual(['only'])
+    expect(
+      refineRowsBySite({ items: [], readSite, sites: [0], maxValue: 3 }),
+    ).toEqual([])
   })
 })
 
 function makeSources(names: string[], phased: boolean): ProcessedSource[] {
   return phased
     ? names.flatMap(name =>
-        [0, 1].map(hp => ({ name: `${name} HP${hp}`, sampleName: name, HP: hp })),
+        [0, 1].map(hp => ({
+          name: `${name} HP${hp}`,
+          sampleName: name,
+          HP: hp,
+        })),
       )
     : names.map(name => ({ name, sampleName: name }))
 }
@@ -133,7 +140,9 @@ function makeSources(names: string[], phased: boolean): ProcessedSource[] {
 // featureId -> sampleName -> genotype table.
 function makePayload(table: Record<string, Record<string, string>>) {
   const featureIds = Object.keys(table)
-  const sampleNames = [...new Set(featureIds.flatMap(f => Object.keys(table[f]!)))]
+  const sampleNames = [
+    ...new Set(featureIds.flatMap(f => Object.keys(table[f]!))),
+  ]
   const genotypeDict: string[] = []
   const genotypeCodesByFeatureId = new Map<string, Uint16Array>()
   for (const featureId of featureIds) {
@@ -197,12 +206,7 @@ describe('sortSourcesAroundVariant', () => {
       phased: true,
     })
     // the alt-carrying haplotypes lead, regardless of which sample they are on
-    expect(names(sorted)).toEqual([
-      's1 HP1',
-      's2 HP0',
-      's1 HP0',
-      's2 HP1',
-    ])
+    expect(names(sorted)).toEqual(['s1 HP1', 's2 HP0', 's1 HP0', 's2 HP1'])
   })
 
   test('groups haplotypes carrying the same alt at a multiallelic site', () => {

@@ -20,7 +20,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+)
 
 // Packages that have no business executing in a worker realm.
 const UI_PACKAGES = [/^@mui\//, /^@emotion\//, /^react-dom/, /^tss-react/]

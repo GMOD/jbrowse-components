@@ -190,9 +190,7 @@ function renderedLabelWidths(
   labelFontPx: number,
 ): LabelWidths {
   return {
-    name: showLabels
-      ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx)
-      : 0,
+    name: showLabels ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx) : 0,
     description: showDescriptions
       ? paddedLabelWidthPx(labelData.descriptionLabel, labelFontPx)
       : 0,

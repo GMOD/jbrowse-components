@@ -1,5 +1,5 @@
-import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeaturesAndPositions.ts'
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
+import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeaturesAndPositions.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // What the display holds after a fetch: the RPC result minus the two

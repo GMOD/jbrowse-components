@@ -3,7 +3,10 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
 import { resolveSampleName } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
-import { MISSING, readPhasedAlleleIndicators } from './genotypeMatrixEncoding.ts'
+import {
+  MISSING,
+  readPhasedAlleleIndicators,
+} from './genotypeMatrixEncoding.ts'
 import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
@@ -66,10 +69,11 @@ export async function getPhasedGenotypeMatrix({
   const rowSpecs = sources.flatMap(s => {
     const key = resolveSampleName(s)
     return s.HP === undefined
-      ? Array.from(
-          { length: sampleInfo[s.name]?.maxPloidy ?? 2 },
-          (_, hp) => ({ key, hp, name: `${s.name} HP${hp}` }),
-        )
+      ? Array.from({ length: sampleInfo[s.name]?.maxPloidy ?? 2 }, (_, hp) => ({
+          key,
+          hp,
+          name: `${s.name} HP${hp}`,
+        }))
       : [{ key, hp: s.HP, name: s.name }]
   })
 

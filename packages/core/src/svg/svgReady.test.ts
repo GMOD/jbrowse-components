@@ -2,7 +2,11 @@ import { autorun, observable, runInAction } from 'mobx'
 
 import { awaitSvgReady, computeSvgReady } from './svgReady.ts'
 
-const noTerminals = { error: undefined, regionTooLarge: false, extraTerminal: false }
+const noTerminals = {
+  error: undefined,
+  regionTooLarge: false,
+  extraTerminal: false,
+}
 
 describe('computeSvgReady', () => {
   it('is ready on current data with no terminal', () => {
@@ -12,9 +16,15 @@ describe('computeSvgReady', () => {
 
   it('each terminal resolves the gate on its own, with no data', () => {
     const stale = () => false
-    expect(computeSvgReady({ ...noTerminals, error: new Error('x') }, stale)).toBe(true)
-    expect(computeSvgReady({ ...noTerminals, regionTooLarge: true }, stale)).toBe(true)
-    expect(computeSvgReady({ ...noTerminals, extraTerminal: true }, stale)).toBe(true)
+    expect(
+      computeSvgReady({ ...noTerminals, error: new Error('x') }, stale),
+    ).toBe(true)
+    expect(
+      computeSvgReady({ ...noTerminals, regionTooLarge: true }, stale),
+    ).toBe(true)
+    expect(
+      computeSvgReady({ ...noTerminals, extraTerminal: true }, stale),
+    ).toBe(true)
   })
 
   // The thunk is why a display sitting under a banner doesn't subscribe to the
@@ -35,7 +45,11 @@ describe('computeSvgReady', () => {
     const dispose = autorun(() => {
       reads.push(
         computeSvgReady(
-          { error: undefined, regionTooLarge: m.regionTooLarge, extraTerminal: false },
+          {
+            error: undefined,
+            regionTooLarge: m.regionTooLarge,
+            extraTerminal: false,
+          },
           () => m.loaded,
         ),
       )
