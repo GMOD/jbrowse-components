@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@gmod/abortable-promise-cache": "^3.0.4",
-    "@gmod/indexedfasta": "^5.0.7",
-    "@gmod/twobit": "^6.0.9",
+    "@gmod/indexedfasta": "^5.0.9",
+    "@gmod/twobit": "^6.0.10",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

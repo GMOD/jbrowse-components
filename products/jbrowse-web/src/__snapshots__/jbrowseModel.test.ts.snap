@@ -2644,12 +2644,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Miscellaneous",
       ],
-      "name": "GTF - volvox.sorted.gtf",
-      "textSearching": {
-        "indexingAttributes": [
-          "gene_id",
-        ],
+      "metadata": {
+        "skipTextIndex": true,
       },
+      "name": "GTF - volvox.sorted.gtf",
       "trackId": "gtf_plain_text_test",
       "type": "FeatureTrack",
     },
