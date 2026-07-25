@@ -1,7 +1,8 @@
 import { stringify } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import GuideLabel from '../shared/GuideLabel.tsx'
 
 import type { MultiLevelRubberbandModel } from './types.ts'
 
@@ -24,17 +25,20 @@ const VerticalGuide = observer(function VerticalGuide({
   coordX: number
 }) {
   const { classes } = useStyles()
+  const { views } = model
   return (
-    <Tooltip
-      open
-      placement="top"
-      title={model.views.map(view => (
-        <div key={view.id}>{stringify(view.pxToBp(coordX), true)}</div>
-      ))}
-      arrow
-    >
+    <>
+      <GuideLabel
+        coordX={coordX}
+        viewWidth={Math.min(...views.map(view => view.width))}
+        stickyTop={undefined}
+      >
+        {views.map(view => (
+          <div key={view.id}>{stringify(view.pxToBp(coordX), true)}</div>
+        ))}
+      </GuideLabel>
       <div className={classes.guide} style={{ left: coordX }} />
-    </Tooltip>
+    </>
   )
 })
 
