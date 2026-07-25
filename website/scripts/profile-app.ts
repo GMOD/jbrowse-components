@@ -22,8 +22,8 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
-import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
 import { aggregateProfile, renderTable } from './profile-resolve.ts'
+import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
 
 import type { ProfileSummary } from './profile-resolve.ts'
 import type { CDPSession, Page } from 'puppeteer'
@@ -43,10 +43,7 @@ const tracks = arg(
   'tracks',
   'volvox_alignments,gff3tabix_genes,volvox_microarray',
 ).split(',')
-const outDir = arg(
-  'out',
-  path.join(repoRoot, 'perf-out'),
-)
+const outDir = arg('out', path.join(repoRoot, 'perf-out'))
 const PORT = 3341
 const VIEWPORT = { width: 1280, height: 800, deviceScaleFactor: 1 }
 
@@ -164,9 +161,9 @@ async function installPageTimers(page: Page) {
 
 async function readPageTimings(page: Page) {
   return page.evaluate(() => {
-    const nav = performance.getEntriesByType(
-      'navigation',
-    )[0] as PerformanceNavigationTiming | undefined
+    const nav = performance.getEntriesByType('navigation')[0] as
+      | PerformanceNavigationTiming
+      | undefined
     const paints = Object.fromEntries(
       performance.getEntriesByType('paint').map(p => [p.name, p.startTime]),
     )
@@ -218,7 +215,8 @@ async function stopFrameMeter(page: Page) {
     }
     w.__frames.stop()
     const d = [...w.__frames.deltas].sort((a, b) => a - b)
-    const pct = (p: number) => d[Math.min(d.length - 1, Math.floor(d.length * p))] ?? 0
+    const pct = (p: number) =>
+      d[Math.min(d.length - 1, Math.floor(d.length * p))] ?? 0
     return {
       frames: d.length,
       median: pct(0.5),
@@ -354,7 +352,9 @@ async function main() {
       `- DOMContentLoaded: ${timings.domContentLoaded.toFixed(0)} ms`,
       `- long tasks (>50ms): ${timings.longTasks.length}, total ${timings.longTasks
         .reduce((a, b) => a + b.dur, 0)
-        .toFixed(0)} ms, worst ${Math.max(0, ...timings.longTasks.map(t => t.dur)).toFixed(0)} ms`,
+        .toFixed(
+          0,
+        )} ms, worst ${Math.max(0, ...timings.longTasks.map(t => t.dur)).toFixed(0)} ms`,
       '',
       networkTable(net),
       '',
@@ -425,7 +425,12 @@ async function main() {
     for (const { label, profile } of interactionProfiles) {
       const summary = aggregateProfile(profile, buildJsDir)
       summaries.push({ label: `interaction/${label}`, summary })
-      report.push(`### CPU — interaction ${label}`, '', renderTable(summary), '')
+      report.push(
+        `### CPU — interaction ${label}`,
+        '',
+        renderTable(summary),
+        '',
+      )
     }
   } finally {
     await browser.close()

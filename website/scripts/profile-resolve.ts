@@ -1,8 +1,8 @@
 // Throwaway: turn a CDP .cpuprofile into self-time tables attributed to real
 // source files, resolving minified frames through the build's *.js.map.
 import fs from 'node:fs'
-import path from 'node:path'
 import { createRequire } from 'node:module'
+import path from 'node:path'
 
 const require = createRequire(import.meta.url)
 // source-map isn't a direct workspace dep; 0.6.1 is in the store (sync API).
@@ -86,7 +86,11 @@ function packageOf(file: string) {
     return `node_modules/${rest[0]?.startsWith('@') ? `${rest[0]}/${rest[1]}` : rest[0]}`
   }
   const parts = file.split('/')
-  if (parts[0] === 'plugins' || parts[0] === 'packages' || parts[0] === 'products') {
+  if (
+    parts[0] === 'plugins' ||
+    parts[0] === 'packages' ||
+    parts[0] === 'products'
+  ) {
     return `${parts[0]}/${parts[1]}`
   }
   return parts[0] ?? file
@@ -109,7 +113,10 @@ export function aggregateProfile(
     selfByNode.set(owner, (selfByNode.get(owner) ?? 0) + dt)
   }
 
-  const fnTotals = new Map<string, { name: string; where: string; selfMs: number }>()
+  const fnTotals = new Map<
+    string,
+    { name: string; where: string; selfMs: number }
+  >()
   const fileTotals = new Map<string, number>()
   const pkgTotals = new Map<string, number>()
   let idleUs = 0
@@ -157,8 +164,10 @@ export function aggregateProfile(
     pkgTotals.set(pkg, (pkgTotals.get(pkg) ?? 0) + us / 1000)
   }
 
-  const sortDesc = <T>(m: Map<string, number>, make: (k: string, v: number) => T) =>
-    [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => make(k, v))
+  const sortDesc = <T>(
+    m: Map<string, number>,
+    make: (k: string, v: number) => T,
+  ) => [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => make(k, v))
 
   return {
     totalMs: totalUs / 1000,
@@ -179,9 +188,7 @@ export function renderTable(s: ProfileSummary, top = 20) {
     '',
     '| self | package |',
     '| --- | --- |',
-    ...s.packages
-      .slice(0, 12)
-      .map(p => `| ${ms(p.selfMs)} | ${p.pkg} |`),
+    ...s.packages.slice(0, 12).map(p => `| ${ms(p.selfMs)} | ${p.pkg} |`),
     '',
     '| self | function | source |',
     '| --- | --- | --- |',

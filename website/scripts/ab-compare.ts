@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 // Throwaway: interleaved A/B of two prebuilt jbrowse-web `build/` trees —
 // startup timings, program-compile counts, and a pixel diff of the settled view.
 //
@@ -6,7 +7,6 @@
 //
 // Each root must contain `build/` and `test_data/` (a symlink is fine).
 import fs from 'node:fs'
-import { execFileSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -94,9 +94,11 @@ async function once(
   await waitForDisplaysDone(page, 60000)
   await waitForQuiescent(page, { timeout: 60000 })
   const toSettledMs = Date.now() - t0
-  const probe = (await page.evaluate(
-    () => (window as unknown as { __ab: { programs: number; statusMs: number } }).__ab,
-  ))
+  const probe = await page.evaluate(
+    () =>
+      (window as unknown as { __ab: { programs: number; statusMs: number } })
+        .__ab,
+  )
   if (shot) {
     // settle any trailing paint so the two captures compare like for like
     await delay(2000)
@@ -128,10 +130,20 @@ async function main() {
     // interleaved so machine-load drift hits both arms equally
     for (let i = 0; i < runs; i++) {
       results.a!.push(
-        await once(browser, portA, configA, i === 0 ? `${outDir}/shot-a.png` : undefined),
+        await once(
+          browser,
+          portA,
+          configA,
+          i === 0 ? `${outDir}/shot-a.png` : undefined,
+        ),
       )
       results.b!.push(
-        await once(browser, portB, configB, i === 0 ? `${outDir}/shot-b.png` : undefined),
+        await once(
+          browser,
+          portB,
+          configB,
+          i === 0 ? `${outDir}/shot-b.png` : undefined,
+        ),
       )
       process.stderr.write(`run ${i + 1}/${runs}\n`)
     }

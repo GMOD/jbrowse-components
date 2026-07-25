@@ -1490,10 +1490,10 @@
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
-    "status": "good",
-    "note": "previous notes: unclear what we are looking at. needs extra annotation potentially. or see previous agent notes: DELETED (reviewer: just delete): removed spec, PNG, and the One-genome-vs-all coda section in allvsall_synteny.md. Uninformative dense pink band.",
-    "reviewedAt": "2026-07-25T05:58:26.594Z",
-    "hash": "b2b4207c44e4c7def85ce3ca25f890f6eec9220e"
+    "status": "bad",
+    "note": "unclear why 'k12' does not have a line when aligned to itself in this region. previous notes: unclear what we are looking at. needs extra annotation potentially. or see previous agent notes: DELETED (reviewer: just delete): removed spec, PNG, and the One-genome-vs-all coda section in allvsall_synteny.md. Uninformative dense pink band.",
+    "reviewedAt": "2026-07-25T15:41:02.032Z",
+    "hash": "2e05da1263c1e9f71c84d711f25f61a6c333e052"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1813,16 +1813,16 @@
   "desktop-blat-search": {
     "name": "desktop-blat-search",
     "status": "good",
-    "note": "FIXED: dialog was already widened to maxWidth md (~900px, over the 800px asked for) in 879f74a43a; the committed PNG predated it. Desktop app rebuilt and the capture regenerated, so the figure now shows the wide dialog with the pasted sequence on one line.",
-    "reviewedAt": "2026-07-25T04:56:03.762Z",
-    "hash": "724b0a7d3208ea6c97d62c9e8905873464b50b8a"
+    "note": "",
+    "reviewedAt": "2026-07-25T15:40:22.250Z",
+    "hash": "7946f93968fe296445c6907884bd042e9c29d731"
   },
   "desktop-ispcr": {
     "name": "desktop-ispcr",
     "status": "good",
-    "note": "FIXED: same stale-capture case as desktop-blat-search. The form is outlined-variant monospace fields with the two primers side by side on one row and max-product-size compacted beside them (879f74a43a); regenerated against a fresh desktop build.",
-    "reviewedAt": "2026-07-25T04:56:35.225Z",
-    "hash": "c383884f327e42aedcdf81130de86fd4cd8cd2e2"
+    "note": "",
+    "reviewedAt": "2026-07-25T14:16:56.774Z",
+    "hash": "14b2b3b5e3e37e1e225b6385c9435d1e07216ca5"
   },
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
@@ -1896,10 +1896,10 @@
   },
   "pangenome/graph_force": {
     "name": "pangenome/graph_force",
-    "status": "good",
-    "note": "FIXED (both halves): the tutorial now defines rank before the figure - it is minigraph's SR tag and it counts build order, 0 = the first assembly on the command line (K12), 1 = sequence first added with Sakai, and so on, so a rank-3 segment is sequence none of the earlier assemblies had. Also raised viewportHeight 640 -> 820; the auto-fit had been leaving the bottom of the backbone off the frame. Not paired with an LGV: this is the force layout, whose whole point is that positions come from graph structure rather than reference coordinates, so there is no x-axis correspondence to show. pangenome/rgfa_subgraph_launch is the anchored figure that does line up with a linear view.",
-    "reviewedAt": "2026-07-25T05:05:15.717Z",
-    "hash": "fb1d32667d8e5ea853f7884d50d002a96fc9b45e"
+    "status": "bad",
+    "note": "needs to have a lineargenomeview where we can see how the graph corresponds to the linear genome. if that is done in another figure, just delete this one. FIXED (both halves): the tutorial now defines rank before the figure - it is minigraph's SR tag and it counts build order, 0 = the first assembly on the command line (K12), 1 = sequence first added with Sakai, and so on, so a rank-3 segment is sequence none of the earlier assemblies had. Also raised viewportHeight 640 -> 820; the auto-fit had been leaving the bottom of the backbone off the frame. Not paired with an LGV: this is the force layout, whose whole point is that positions come from graph structure rather than reference coordinates, so there is no x-axis correspondence to show. pangenome/rgfa_subgraph_launch is the anchored figure that does line up with a linear view.",
+    "reviewedAt": "2026-07-25T14:18:54.855Z",
+    "hash": "ca98603f3c4a87dfb4e811129e63e8e8f39c92d4"
   },
   "pangenome/graph_rgfa": {
     "name": "pangenome/graph_rgfa",
@@ -1967,8 +1967,8 @@
     "name": "genomes_synteny/ribbon_settings",
     "status": "good",
     "note": "FIXED: the first frame now has the synteny header's View options menu open with Show... hovered, so 'Show curved lines' (in the submenu) and 'CIGAR display mode' (in the parent) both appear beside the before state.",
-    "reviewedAt": "2026-07-25T06:02:36.478Z",
-    "hash": "417d3ae65a1609b940182119534417fbbb853696"
+    "reviewedAt": "2026-07-25T14:19:48.770Z",
+    "hash": "5fccf7f2f3e73e03449a05cdd743246a1bda0e33"
   },
   "genomes_synteny/launch_menu": {
     "name": "genomes_synteny/launch_menu",
@@ -1980,16 +1980,16 @@
   "multiway_synteny/ecoli_one_vs_all_whole_genome": {
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
     "status": "bad",
-    "note": "unclear what this showing, the data visualization is not useful or interesting. try to make it better and tell story with data",
-    "reviewedAt": "2026-07-25T06:03:57.002Z",
-    "hash": "06ad6f4e53688915372919d25b15ff7b42f278b2"
+    "note": "unclear why 'k12' does not have a line when aligned to itself in this region. previous notes: unclear what this showing, the data visualization is not useful or interesting. try to make it better and tell story with data",
+    "reviewedAt": "2026-07-25T15:41:13.788Z",
+    "hash": "2d98e87ef82b34b1bc62fcc422931129b75edeea"
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
-    "status": "good",
-    "note": "FIXED: same rank-matched coloring, declared on hprc_minigraph_segments in test_data/graphgenomeview/hprc.json, so the blue blocks in the linear panel are the blue backbone in the graph. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. The bubbles track above stays reference-anchored as the other half of the correspondence. A per-allele SV track colored by rank is not reachable from config: the bubbles BED carries no rank, and the rank>0 segments are on other assemblies' refNames.",
-    "reviewedAt": "2026-07-25T06:04:36.525Z",
-    "hash": "a70f39c4a2499eaa3283a814c2c7dc130ac7a92b"
+    "status": "bad",
+    "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do? FIXED: same rank-matched coloring, declared on hprc_minigraph_segments in test_data/graphgenomeview/hprc.json, so the blue blocks in the linear panel are the blue backbone in the graph. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. The bubbles track above stays reference-anchored as the other half of the correspondence. A per-allele SV track colored by rank is not reachable from config: the bubbles BED carries no rank, and the rank>0 segments are on other assemblies' refNames.",
+    "reviewedAt": "2026-07-25T14:19:36.494Z",
+    "hash": "73a285efe919787e3d18bee1f501769b3b184cf8"
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
@@ -2000,9 +2000,23 @@
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "good",
-    "note": "FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
-    "reviewedAt": "2026-07-25T06:04:44.432Z",
-    "hash": "9c876948bca68be455bf4756088c7a169776eed0"
+    "status": "bad",
+    "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do?  FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
+    "reviewedAt": "2026-07-25T14:19:44.982Z",
+    "hash": "e36b16ee93f642c2343527f2ea0b0591ea19bd20"
+  },
+  "genomes_synteny/launch_sequence": {
+    "name": "genomes_synteny/launch_sequence",
+    "status": "bad",
+    "note": "not a compelling third screenshot being captured. i often like to use an example more like comparing human vs dog for a random gene, for a specific gene of interest, or maybe mouse vs human",
+    "reviewedAt": "2026-07-25T14:20:21.673Z",
+    "hash": "48dd9a04e3418619c2429319e6542cbc41098e7d"
+  },
+  "desktop-blat-results": {
+    "name": "desktop-blat-results",
+    "status": "bad",
+    "note": "after the user hits submit, maybe it should show results in a sidebar widget for example so it stays visible",
+    "reviewedAt": "2026-07-25T15:40:16.789Z",
+    "hash": "90ea373a61eb580cfa1514bc5063d9dceb92e0ec"
   }
 }

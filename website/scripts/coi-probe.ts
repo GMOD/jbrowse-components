@@ -16,8 +16,8 @@ import {
   waitForLoadingComplete,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
-import handler from 'serve-handler'
 import { launch } from 'puppeteer'
+import handler from 'serve-handler'
 
 import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
 
@@ -54,7 +54,10 @@ const browser = await launch({
   headless: true,
   defaultViewport: { width: 1280, height: 800 },
   executablePath: findChromeExecutable(),
-  args: [...BASE_CHROME_ARGS.filter(a => a !== '--disable-web-security'), '--use-angle=gl'],
+  args: [
+    ...BASE_CHROME_ARGS.filter(a => a !== '--disable-web-security'),
+    '--use-angle=gl',
+  ],
 })
 const page = await browser.newPage()
 const errors: string[] = []
@@ -75,14 +78,21 @@ await page.evaluateOnNewDocument(() => {
   // count SharedArrayBuffers handed to postMessage — the stop token crossing
   // into the worker is the thing we care about
   const send = Worker.prototype.postMessage
-  Worker.prototype.postMessage = function (this: Worker, msg: unknown, ...rest) {
+  Worker.prototype.postMessage = function (
+    this: Worker,
+    msg: unknown,
+    ...rest
+  ) {
     const seen = new Set<unknown>()
     const walk = (v: unknown, d: number) => {
       if (d > 4 || v === null || typeof v !== 'object' || seen.has(v)) {
         return
       }
       seen.add(v)
-      if (typeof SharedArrayBuffer !== 'undefined' && v instanceof SharedArrayBuffer) {
+      if (
+        typeof SharedArrayBuffer !== 'undefined' &&
+        v instanceof SharedArrayBuffer
+      ) {
         p.sabTokens++
         return
       }
@@ -92,7 +102,7 @@ await page.evaluateOnNewDocument(() => {
     }
     walk(msg, 0)
     // eslint-disable-next-line prefer-spread
-     send.apply(this, [msg, ...rest] as Parameters<typeof send>)
+    send.apply(this, [msg, ...rest] as Parameters<typeof send>)
   } as typeof send
 })
 
@@ -111,29 +121,31 @@ await waitForQuiescent(page, { timeout: 60000 })
 const settled = Date.now() - t0
 await delay(500)
 
-const main = (await page.evaluate(() => {
-  const w = window as unknown as { __coi: { blobUrls: number; sabTokens: number } }
+const main = await page.evaluate(() => {
+  const w = window as unknown as {
+    __coi: { blobUrls: number; sabTokens: number }
+  }
   return {
     ...w.__coi,
     crossOriginIsolated: self.crossOriginIsolated,
     hasSAB: typeof SharedArrayBuffer !== 'undefined',
   }
-}))
+})
 
 // a synchronous XHR to the blob: token shows up as a resource entry in the worker
 let blobFetches = 0
 let painted = 0
 for (const w of page.workers()) {
-  blobFetches += (await w.evaluate(
+  blobFetches += await w.evaluate(
     () =>
       performance
         .getEntriesByType('resource')
         .filter(e => e.name.startsWith('blob:')).length,
-  ))
+  )
 }
-painted = (await page.evaluate(
+painted = await page.evaluate(
   () => document.querySelectorAll('[data-testid$="-done"]').length,
-))
+)
 
 process.stderr.write(
   [

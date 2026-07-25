@@ -190,7 +190,7 @@ async function install(page: Page, deferStatus: boolean) {
     const origRevoke = URL.revokeObjectURL
     URL.revokeObjectURL = function (url: string) {
       p.blobRevokes++
-       origRevoke.call(URL, url)
+      origRevoke.call(URL, url)
     }
 
     const OrigWorker = Worker
@@ -214,7 +214,7 @@ async function install(page: Page, deferStatus: boolean) {
       pw?: string | null,
     ) {
       this.__sync = async === false
-       origOpen.call(this, method, url, async ?? true, user, pw)
+      origOpen.call(this, method, url, async ?? true, user, pw)
     }
     const origSend = XMLHttpRequest.prototype.send
     XMLHttpRequest.prototype.send = function (
@@ -256,17 +256,20 @@ async function main() {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
     await page.waitForSelector('[data-testid="zoom_in"]', { timeout: 60000 })
     const toView = Date.now() - t0
-    await waitForLoadingComplete(page, { timeout: 60000, waitForDownloads: true })
+    await waitForLoadingComplete(page, {
+      timeout: 60000,
+      waitForDownloads: true,
+    })
     await waitForDisplayPhases(page, 60000)
     await waitForDisplaysDone(page, 60000)
     await waitForQuiescent(page, { timeout: 60000 })
     await delay(500)
-    const probe = (await page.evaluate(
+    const probe = await page.evaluate(
       () => (window as unknown as { __probe: Probe }).__probe,
-    ))
+    )
     // what each RPC worker actually downloads + evaluates
     for (const w of page.workers()) {
-      const res = (await w.evaluate(() => {
+      const res = await w.evaluate(() => {
         const entries = performance.getEntriesByType(
           'resource',
         ) as PerformanceResourceTiming[]
@@ -278,7 +281,7 @@ async function main() {
             .sort((a, b) => b.encodedBodySize - a.encodedBodySize)
             .map(e => e.name.split('/').pop() ?? ''),
         }
-      }))
+      })
       process.stderr.write(
         `worker scripts: ${res.count} files, ${(res.bytes / 1024) | 0} KB — ${res.top.join(', ')}\n`,
       )
@@ -308,7 +311,10 @@ async function main() {
         `programs linked: ${probe.programs}, shaders compiled: ${probe.shaders}`,
         `time in compileShader ${probe.compileMs.toFixed(0)} ms, linkProgram ${probe.linkMs.toFixed(0)} ms, status queries ${probe.statusMs.toFixed(0)} ms`,
         `programs actually bound: ${probe.programsUsed}, programs actually drawn with: ${probe.programsDrawn}`,
-        `per-program link-status ms (sorted): ${[...probe.programMs].sort((a, b) => b - a).map(x => x.toFixed(0)).join(' ')}`,
+        `per-program link-status ms (sorted): ${[...probe.programMs]
+          .sort((a, b) => b - a)
+          .map(x => x.toFixed(0))
+          .join(' ')}`,
         `blob URLs created: ${probe.blobUrls}, revoked: ${probe.blobRevokes}`,
         `synchronous XHRs on main thread: ${probe.syncXhr} (${probe.syncXhrMs.toFixed(0)} ms)`,
         `workers: ${probe.workers.length}`,

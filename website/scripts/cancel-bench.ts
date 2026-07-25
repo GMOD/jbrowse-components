@@ -21,8 +21,8 @@ import {
   waitForDisplaysDone,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
-import handler from 'serve-handler'
 import { launch } from 'puppeteer'
+import handler from 'serve-handler'
 
 import { lgvSession } from './screenshot-spec-helpers.ts'
 
@@ -46,7 +46,9 @@ function serve() {
         res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
         res.setHeader(
           'Cross-Origin-Embedder-Policy',
-          process.argv.includes('--credentialless') ? 'credentialless' : 'require-corp',
+          process.argv.includes('--credentialless')
+            ? 'credentialless'
+            : 'require-corp',
         )
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
       }
@@ -109,7 +111,7 @@ async function once(browser: Browser) {
       }
       walk(msg, 0)
       // eslint-disable-next-line prefer-spread
-       send.apply(this, [msg, ...r] as Parameters<typeof send>)
+      send.apply(this, [msg, ...r] as Parameters<typeof send>)
     } as typeof send
   })
 
@@ -127,12 +129,15 @@ async function once(browser: Browser) {
   // one of them has to be cancelled
   const t0 = Date.now()
   for (let i = 1; i <= hops; i++) {
-    await page.evaluate((loc: string) => {
-      const w = window as unknown as {
-        JBrowseSession: { views: { navToLocString: (s: string) => void }[] }
-      }
-      w.JBrowseSession.views[0]!.navToLocString(loc)
-    }, WINDOWS[i % WINDOWS.length]!)
+    await page.evaluate(
+      (loc: string) => {
+        const w = window as unknown as {
+          JBrowseSession: { views: { navToLocString: (s: string) => void }[] }
+        }
+        w.JBrowseSession.views[0]!.navToLocString(loc)
+      },
+      WINDOWS[i % WINDOWS.length]!,
+    )
     await delay(350)
   }
   const lastNav = Date.now()
@@ -142,10 +147,11 @@ async function once(browser: Browser) {
   const settleAfterLastNav = Date.now() - lastNav
   const total = Date.now() - t0
 
-  const probe = (await page.evaluate(
-    () => (window as unknown as { __c: { blobUrls: number; sabs: number } }).__c,
-  ))
-  const isolated = (await page.evaluate(() => self.crossOriginIsolated))
+  const probe = await page.evaluate(
+    () =>
+      (window as unknown as { __c: { blobUrls: number; sabs: number } }).__c,
+  )
+  const isolated = await page.evaluate(() => self.crossOriginIsolated)
   await page.close()
   return { settleAfterLastNav, total, ...probe, isolated }
 }
