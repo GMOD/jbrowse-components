@@ -7,7 +7,6 @@ import {
   ImportFormModeToggle,
   QuickStartPanel,
   allSessionTracks,
-  getConnectedAssemblies,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
 import { Container, Typography } from '@mui/material'
@@ -55,15 +54,13 @@ const LinearSyntenyViewImportForm = observer(
     const { assemblyNames } = session
     const quick = useQuickStartState(allSessionTracks(session))
     const [selectedRow, setSelectedRow] = useState(0)
-    // lazy: the connected-assembly scan is only for the opening pair, and it
-    // walks every synteny track in the session
+    // Two different assemblies, so Manual doesn't open on a same-assembly pair
+    // (which needs a self-alignment track and so is flagged). There is no point
+    // consulting connectivity here: any synteny track opens the form in Quick
+    // start instead, and reaching Manual from there hands over that track's rows.
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState(() => {
       const first = assemblyNames[0] ?? ''
-      // the second row opens on an assembly the first actually has synteny to,
-      // so Manual starts on a launchable pair rather than one the form
-      // immediately flags — same reasoning as LeftPanel's Add row
-      const connected = getConnectedAssemblies(allSessionTracks(session), first)
-      return [first, connected[0] ?? assemblyNames[1] ?? first]
+      return [first, assemblyNames[1] ?? first]
     })
 
     // the chosen track backs every adjacent band: a pairwise track has one pair,

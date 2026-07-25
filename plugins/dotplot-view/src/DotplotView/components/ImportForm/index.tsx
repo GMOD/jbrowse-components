@@ -8,7 +8,6 @@ import {
   QuickStartPanel,
   allSessionTracks,
   dotplotAxesFromRows,
-  getConnectedAssemblies,
   getSyntenyTracks,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
@@ -42,15 +41,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const firstAssembly = assemblyNames[0] ?? ''
   const quick = useQuickStartState(tracks)
   const [assemblyX, setAssemblyX] = useState(firstAssembly)
-  // the y-axis opens on an assembly the x-axis actually has synteny to, so
-  // Manual starts on a plottable pair instead of a same-assembly one whose
-  // picker is empty. Lazy because the scan walks every synteny track.
-  const [assemblyY, setAssemblyY] = useState(
-    () =>
-      getConnectedAssemblies(tracks, firstAssembly)[0] ??
-      assemblyNames[1] ??
-      firstAssembly,
-  )
+  // Two different assemblies, so Manual doesn't open on a same-assembly pair
+  // whose track picker is empty. There is no point consulting connectivity here:
+  // any synteny track opens the form in Quick start instead, and reaching Manual
+  // from there hands over that track's axes.
+  const [assemblyY, setAssemblyY] = useState(assemblyNames[1] ?? firstAssembly)
 
   const quickAxes = dotplotAxesFromRows(quick.rows)
   const quickY = quickAxes.y ?? firstAssembly

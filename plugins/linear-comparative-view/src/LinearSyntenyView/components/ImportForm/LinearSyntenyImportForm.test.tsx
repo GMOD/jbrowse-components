@@ -1,0 +1,319 @@
+import '@testing-library/jest-dom'
+
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createTestSession } from '@jbrowse/web/testUtils'
+import { ThemeProvider } from '@mui/material'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
+
+import LinearSyntenyImportForm from './LinearSyntenyImportForm.tsx'
+
+import type { LinearSyntenyViewModel } from '../../model.ts'
+
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+const assembly = (name: string) => ({
+  name,
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: `${name}_refseq`,
+    adapter: {
+      type: 'FromConfigSequenceAdapter',
+      features: [
+        {
+          refName: 'ctgA',
+          uniqueId: `${name}-ctgA`,
+          start: 0,
+          end: 100,
+          seq: 'A'.repeat(100),
+        },
+      ],
+    },
+  },
+})
+
+const syntenyTrack = (trackId: string, assemblyNames: string[]) => ({
+  type: 'SyntenyTrack',
+  trackId,
+  name: trackId,
+  assemblyNames,
+  adapter: { type: 'FromConfigAdapter', features: [] },
+})
+
+function setup({
+  assemblyNames = ['hg38', 'mm39'],
+  tracks = [],
+  connectionTracks,
+}: {
+  assemblyNames?: string[]
+  tracks?: ReturnType<typeof syntenyTrack>[]
+  // tracks a connection supplies, which live outside session.tracks
+  connectionTracks?: ReturnType<typeof syntenyTrack>[]
+} = {}) {
+  const session = createTestSession({
+    jbrowseConfig: {
+      assemblies: assemblyNames.map(assembly),
+      tracks,
+      connections: connectionTracks
+        ? [{ type: 'JBrowse1Connection', connectionId: 'conn', name: 'conn' }]
+        : [],
+    },
+    // no views on the synteny view, which is what puts it on the import form
+    sessionSnapshot: {
+      views: [{ id: 'syntenyview', type: 'LinearSyntenyView' }],
+    },
+  })
+  const model = session.views[0] as unknown as LinearSyntenyViewModel
+  const utils = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <LinearSyntenyImportForm model={model} />
+    </ThemeProvider>,
+  )
+  return {
+    model,
+    session,
+    // brings the connection up and hands it its tracks, inside act so React sees
+    // the observable change. The conf is hydrated from config, so it is a real
+    // configuration model rather than a plain snapshot.
+    loadConnection: () => {
+      act(() => {
+        const conn = session.makeConnection(session.connections[0]!)
+        conn.addTrackConfs(connectionTracks ?? [])
+      })
+    },
+    ...utils,
+  }
+}
+
+const rowSelects = () =>
+  within(screen.getByTestId('synteny-assembly-rows')).getAllByRole('combobox')
+
+const launchButton = () => screen.getByRole('button', { name: 'Launch' })
+
+// the assembly each row was built for. A row's `assemblyNames` derives from
+// displayedRegions, which its afterAttach autorun loads asynchronously, so the
+// declarative init is what a synchronous launch can be checked against.
+const launchedRows = (model: LinearSyntenyViewModel) =>
+  model.views.map(v => v.init?.assembly)
+
+// the synteny track on each level. A level's `tracks` is loosely typed, so the
+// track is annotated rather than cast.
+const levelTrackIds = (model: LinearSyntenyViewModel) =>
+  model.levels.map(level =>
+    level.tracks.map(
+      (track: { configuration: { trackId: string } }) =>
+        track.configuration.trackId,
+    ),
+  )
+
+const goManual = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Manual' }))
+}
+
+// A Tooltip wrapping a button directly becomes that button's accessible name, so
+// this one is queried by tooltip text rather than by its label
+const autoArrangeButton = () =>
+  screen.getByRole('button', { name: /Reorder rows so adjacent pairs/ })
+
+// MUI's Select opens its menu on mouseDown, not click
+function pickAssembly(rowIdx: number, assemblyName: string) {
+  fireEvent.mouseDown(rowSelects()[rowIdx]!)
+  fireEvent.click(screen.getByRole('option', { name: assemblyName }))
+}
+
+test('an empty session opens on Manual with two different assemblies', () => {
+  // both rows on one assembly would need a self-alignment track, so it would
+  // open already flagged
+  setup()
+  expect(screen.getByRole('button', { name: 'Manual' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39'])
+})
+
+test('a session with a synteny track opens on Quick start', () => {
+  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+  expect(screen.getByRole('button', { name: 'Quick start' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('1. hg38')
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('2. mm39')
+})
+
+test('Swap reverses the rows the track implies', () => {
+  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+  // the Tooltip title becomes the button's accessible name
+  fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
+  const rows = screen.getByTestId('quick-start-rows')
+  expect(rows.textContent).toMatch(/1\. mm39.*2\. hg38/s)
+})
+
+test('Quick start launch builds one row per assembly and shows the track', () => {
+  const { model } = setup({
+    tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
+  })
+  fireEvent.click(launchButton())
+  expect(launchedRows(model)).toEqual(['hg38', 'mm39'])
+  expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
+})
+
+test('an all-vs-all track stacks every assembly it names', () => {
+  const { model } = setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
+  })
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('3. rn7')
+  fireEvent.click(launchButton())
+  expect(launchedRows(model)).toEqual(['hg38', 'mm39', 'rn7'])
+  // the one track backs both adjacent bands
+  expect(levelTrackIds(model)).toEqual([['all'], ['all']])
+})
+
+test('switching to Manual hands over the rows Quick start had set up', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
+  })
+  goManual()
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39', 'rn7'])
+  // handed over as configured, not as three unconfigured pairs
+  expect(launchButton()).toBeEnabled()
+})
+
+test('the handover opens on the track pair, not the assembly-list order', () => {
+  // the track pairs hg38 with rn7, so switching to Manual opens on those rows
+  // even though mm39 comes first in the assembly list
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [syntenyTrack('hg38_rn7', ['hg38', 'rn7'])],
+  })
+  goManual()
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'rn7'])
+  expect(launchButton()).toBeEnabled()
+})
+
+test('a pair with no synteny dataset is flagged and blocks launch', () => {
+  setup({ assemblyNames: ['hg38', 'mm39'] })
+  expect(launchButton()).toBeDisabled()
+  expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
+    /Configure synteny track between row 1 and 2/,
+  )
+})
+
+test('a synteny track from a connection satisfies a pair', () => {
+  const { loadConnection } = setup({
+    assemblyNames: ['hg38', 'mm39'],
+    connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
+  })
+  expect(launchButton()).toBeDisabled()
+  loadConnection()
+  expect(launchButton()).toBeEnabled()
+})
+
+test('Add row defaults to an assembly connected to the current bottom row', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+      syntenyTrack('mm39_rn7', ['mm39', 'rn7']),
+    ],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  expect(rowSelects()).toHaveLength(3)
+  // whichever connected assembly it picked, the new pair is launchable rather
+  // than immediately flagged
+  expect(launchButton()).toBeEnabled()
+})
+
+test('removing a row drops that pair selection and keeps the others', () => {
+  const { model } = setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+      syntenyTrack('mm39_rn7', ['mm39', 'rn7']),
+    ],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  expect(rowSelects()).toHaveLength(3)
+  // the Quick start handover configured pair 0; the added pair has no entry and
+  // auto-picks at launch
+  expect(model.importFormSyntenyTrackSelections).toHaveLength(1)
+
+  fireEvent.click(screen.getByRole('button', { name: 'Remove row 3' }))
+  expect(rowSelects()).toHaveLength(2)
+  // the pair that vanished with the row took its selection; pair 0 kept its own
+  expect(model.importFormSyntenyTrackSelections).toEqual([
+    { type: 'preConfigured', value: 'hg38_mm39' },
+  ])
+  fireEvent.click(launchButton())
+  expect(launchedRows(model)).toEqual(['hg38', 'mm39'])
+  expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
+})
+
+test('the last two rows cannot be removed', () => {
+  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+  goManual()
+  expect(screen.getByRole('button', { name: 'Remove row 1' })).toBeDisabled()
+})
+
+test('Auto-arrange reorders rows so adjacent pairs share a dataset', () => {
+  // hg38-rn7 and rn7-mm39 exist, so the launchable chain puts rn7 in the middle
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_rn7', ['hg38', 'rn7']),
+      syntenyTrack('rn7_mm39', ['rn7', 'mm39']),
+    ],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  // force a broken ordering: hg38 and mm39 are adjacent with no dataset between
+  pickAssembly(1, 'mm39')
+  pickAssembly(2, 'rn7')
+  expect(launchButton()).toBeDisabled()
+
+  fireEvent.click(autoArrangeButton())
+  // rn7 is the hub, so it lands in the middle
+  expect(rowSelects().map(s => s.textContent)).toEqual(['mm39', 'rn7', 'hg38'])
+  expect(launchButton()).toBeEnabled()
+})
+
+test('Auto-arrange keeps a self-alignment pair adjacent', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39'],
+    tracks: [
+      syntenyTrack('hg38_self', ['hg38', 'hg38']),
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+    ],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  pickAssembly(1, 'hg38')
+  pickAssembly(2, 'mm39')
+
+  // already launchable, so Auto-arrange isn't offered; the point is that the
+  // self pair is not treated as unconfigured
+  expect(launchButton()).toBeEnabled()
+  expect(
+    screen.queryByRole('button', { name: /Reorder rows so adjacent pairs/ }),
+  ).not.toBeInTheDocument()
+})
+
+test('a same-assembly pair with no self-alignment track says so', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39'],
+    tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
+  })
+  goManual()
+  pickAssembly(1, 'hg38')
+  expect(launchButton()).toBeDisabled()
+  expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
+    /Configure synteny track between row 1 and 2/,
+  )
+  expect(
+    screen.getByText(/no self-alignment synteny track/),
+  ).toBeInTheDocument()
+})
