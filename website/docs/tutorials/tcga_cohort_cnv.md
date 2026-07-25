@@ -193,26 +193,22 @@ with similar profiles sit together, which turns a noisy stack into blocks, and
 draws the dendrogram in the sidebar (**Show sidebar with tree and labels**, on
 by default).
 
-- **Vertical blue stripes** are recurrent deletions, clearest at 9p21 (CDKN2A);
-  10q23 (PTEN) is present but faint in this cohort.
-- **Vertical red stripes** are recurrent amplifications: 17q12 (ERBB2), 8q24
-  (MYC), 11q13 (CCND1).
-- **Whole rows tending red or blue** are heavily aneuploid tumors, which
-  clustering pulls together into a band.
+- **A vertical stripe** is one locus called the same way across many rows: blue
+  for recurrent loss, red for recurrent gain.
+- **A whole row tending red or blue** is one heavily aneuploid tumor, and
+  clustering pulls those rows together into a band.
 
 Zooming to a single locus turns the stripe back into per-tumor calls, and
 clustering on just that window sorts the cohort into its copy-number classes
 there.
 
-<Figure caption="chr17:39.0-40.5Mb, spanning ERBB2, across the same 1104 tumors with clustering run on this window alone. The cohort separates into bands from top to bottom: amplification (dark red), gain (salmon), loss (blue), and finally the balanced majority, which is near-white because neutral copy number is drawn near-white throughout. That pale lower band is tumors, not empty track. The same locus is one vertical stripe in the genome-wide view above." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="chr17:39.0-40.5Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified (dark red), gained (salmon), lost (blue) and balanced bands. The pale band is the balanced majority, drawn near-white, not empty track. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
 
-Read proportions off the data rather than off the picture. At 1104 rows in a few
-hundred pixels each tumor is well under one pixel tall, so rows alias together
-and the saturated colors crowd out the neutral ones: the figure is a faithful
-map of _where_ events are, not of _how many_ tumors carry them. Computed from
-the BED, ERBB2 itself is amplified (log2 > 1) in 114 of the 1104 tumors (10.3%),
-gained in a further 108 (9.8%), balanced in 756 (68.5%), and lost in 126
-(11.4%).
+Do not read proportions off this display. At 1104 rows in a few hundred pixels
+each row is well under one pixel tall, so rows alias together and the saturated
+colors crowd out the neutral ones: the stack maps _where_ events are, not _how
+many_ rows carry them. The ERBB2 window above is 68.5% balanced in the file and
+paints as roughly half that.
 
 ## Add a recurrence track
 
@@ -284,10 +280,9 @@ Bins where fewer than half the cohort has any call at all are left out rather
 than drawn as zero. That only trims chromosome tips here: SNP 6.0 segments span
 centromeres, so the track has no interior gaps.
 
-Placed above the stack, the peaks line up with the stripes and put numbers on
-them: 1q gained in 58.9% of tumors at its peak, 16q lost in 46.4%, 8q24 (MYC)
-gained in 49.7%, 8p lost in 38.7%, 11q13 (CCND1) gained in 26.1%, 9p21 (CDKN2A)
-lost in 20.6%, and the 100kb bin over ERBB2 gained in 19.2%.
+Placed above the stack, each peak sits over a stripe and puts a number on it: 1q
+gained in 58.9% of tumors at its peak, 16q lost in 46.4%, the 100kb bin over
+ERBB2 gained in 19.2%.
 
 <Figure caption="TCGA-BRCA gain (red, up) and loss (blue, down) frequency per 100kb above the same 1104-tumor stack, both whole-genome. Every peak in the top track is a stripe in the bottom one, and only the top track carries a count: 1q gained in 58.9% of tumors, 8q24 in 49.7%, 16q lost in 46.4%. The axis is pinned at plus or minus 100% of the cohort." src="/img/tcga/cnv_recurrence_genome.png" />
 
@@ -331,6 +326,10 @@ splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
 
 ## See also
 
+- [Multi-row feature tracks](/docs/user_guides/multirow_feature_track), the
+  display's own menus and options
+- [Quantitative tracks](/docs/user_guides/quantitative_track), for the
+  recurrence track's scale and color controls
 - [BXD QTL mapping](/docs/tutorials/bxd_qtl), the same multi-row display for
   strain genotypes
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm), the same display across
