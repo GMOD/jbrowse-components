@@ -294,22 +294,36 @@ already does. The cheap intermediate is a worker-side parsed-feature cache keyed
 by adapter + region + the non-visual payload, so a color change re-encodes
 without re-parsing.
 
-### Three staleness mechanisms, only the final compare shared
+### Three staleness mechanisms behind one name
 
-**Status:** Open.
+**Status:** Mostly closed (2026-07). The naming and the consumers are unified;
+the three computations remain, deliberately.
 
-Data freshness is expressed three ways: spatial coverage
+Data freshness is still computed three ways — spatial coverage
 (`viewportWithinLoadedData`, per-region mixins), viewport snapshot
-(`viewportMatchesLastDrawn`, global mixins), and signature compare
-(`isDataCurrent`, arc / dotplot / synteny). Only that last compare is shared, and
-each mechanism has independently shipped a stale-capture bug
-([SVG_EXPORT.md](SVG_EXPORT.md), HISTORICAL.md §"In-place-refetch staleness"). So
-a new display has three ways to choose wrong and an open invitation to invent a
-fourth.
+(`viewportMatchesLastDrawn`, HiC/LD), signature compare (`isDataCurrent`, arc /
+dotplot / synteny) — and each has independently shipped a stale-capture bug
+([SVG_EXPORT.md](SVG_EXPORT.md), HISTORICAL.md §"In-place-refetch staleness").
 
-**Retire when** one `dataFreshness(self)` helper returns a comparable signature
-for all three shapes (spatial coverage can be expressed as a signature), so a
-display composes rather than chooses.
+What changed: all three now answer under the single name **`dataCurrent`**, and
+every consumer reads that name. `svgReady` — five hand-written copies of
+`fresh || terminal`, the actual bug surface — collapsed into one
+`computeSvgReady` that each foundation feeds its own `dataCurrent`. So a display
+composes a freshness answer instead of choosing which of three names to expose,
+and forgetting the terminal set is no longer possible.
+
+Unifying the *computations* into one signature was considered and dropped:
+spatial coverage over N streaming regions is not naturally a string, and forcing
+it into one would make the per-region refetch decision (which needs the
+per-block answer, not the aggregate) go through a serialize/compare it has no
+use for.
+
+**Residual:** `dataCurrent` is an overridable getter defaulting to `false`, so a
+new global display that forgets it hangs its export rather than failing to
+compile. Deliberate (fail-hung over fail-stale). Making it a *required* member
+would need a composition trick that
+[ADR-041](../architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
+rules out; tracked in OTHER_IDEAS.md §"Deferred architecture-review items".
 
 ---
 

@@ -63,7 +63,7 @@ export function computeRenderTransform({
  * viewport via `setLastDrawnViewport` *after* committing, so throughout the
  * debounce+RPC window that follows a viewport change these disagree. `renderTransform`
  * exploits that gap to reposition stale pixels for the *live* canvas; off-screen
- * SVG export must not — it gates `dataLoaded`/`svgReady` on this so it never
+ * SVG export must not — it gates `dataCurrent`/`svgReady` on this so it never
  * captures a matrix fetched for the pre-pan viewport. `undefined` lastDrawn
  * means nothing has been drawn yet, so it is not fresh.
  */

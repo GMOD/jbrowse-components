@@ -131,11 +131,13 @@ gate](#the-region-too-large-gate-summary)).
 synteny (`LinearSyntenyDisplay`) composes only `BaseDisplay` and owns its fetch;
 dotplot puts `RenderLifecycleMixin` at the *view* level. Neither gets
 `FetchMixin`'s cancel/stale machinery, `RegionTooLargeMixin` or `loadedRegions`,
-so each re-implements a `fetching` flag, a 500ms debounce, and a signature-compare
-freshness gate (`isDataCurrent` over `dotplotFetchKey` / synteny's
-`currentFetchKey`) in place of `viewportWithinLoadedData` — which is where the
+so each re-implements a `fetching` flag and a 500ms debounce. They do answer the
+shared `dataCurrent` freshness question and run the shared `computeSvgReady`
+policy, just via a signature compare (`isDataCurrent` over `dotplotFetchKey` /
+synteny's `currentFetchKey`) rather than spatial coverage — which is where the
 stale-capture bugs lived
 ([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) §"On-screen capture gate").
+The remaining duplication is the fetch state machine itself, not freshness.
 Both scope their fetch through the shared `syntenyFetchRegions`
 (`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and
 snapped to a buffer-sized grid, so a pan inside the buffer neither refetches nor
@@ -166,7 +168,7 @@ anti-flash. The stricter, staleness-aware `svgReady` is the export gate.
 gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
 every run, so a read placed inside the gate drops out of it on any run that
 decides not to fetch — and can then never wake the autorun again. Arc is the
-shape that exposes this: its `shouldFetch` is `!regionTooLarge && !dataLoaded`,
+shape that exposes this: its `shouldFetch` is `!regionTooLarge && !dataCurrent`,
 so it goes false on every successful fetch, and with `reloadCounter` read under
 the gate `reload()` was silently dead. The display's own `shouldFetch` is the
 only gate in the skeleton; each display's `fetch` re-checks `isMinimized` /
@@ -181,7 +183,7 @@ un-minimizing re-runs the body and re-reads everything. A pure signal like
 is the dangerous case: nothing else will ever re-run the body on its behalf.
 `installGlobalFetchAutorun.test.ts` pins this.
 
-A global display whose `shouldFetch` gates on its own `dataLoaded` must also
+A global display whose `shouldFetch` gates on its own `dataCurrent` must also
 invalidate that freshness signal in `reload()` — bumping `reloadCounter` alone
 re-runs the autorun but leaves `shouldFetch` false. `ArcFetchModel.reload()`
 clears `loadedRegionSignature` for exactly this reason (keeping `features`, so

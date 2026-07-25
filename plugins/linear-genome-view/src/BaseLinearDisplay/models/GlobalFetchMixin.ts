@@ -1,3 +1,4 @@
+import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
@@ -21,7 +22,9 @@ import FetchMixin from './FetchMixin.ts'
  * Installs no autoruns — each display owns its fetch trigger, sharing the
  * `installGlobalFetchAutorun` skeleton. `displayPhase` lives in
  * GlobalDataDisplayMixin, not here, because it reads `renderError` from
- * RenderLifecycleMixin — the one genuinely GPU-only piece.
+ * RenderLifecycleMixin — the one genuinely GPU-only piece. A non-GPU composer
+ * (arc) defines its own one-line `displayPhase` over the same shared
+ * `computeDisplayPhase`, passing `renderError: undefined`.
  *
  * #stateModel GlobalFetchMixin
  * #displayFoundationDef The same single-global fetch foundation without the render lifecycle, so a non-GPU display that paints main-thread SVG does not drag it in.
@@ -48,13 +51,18 @@ export default function GlobalFetchMixin() {
     .views(() => ({
       /**
        * #getter
-       * Overridable hook (default false): a subclass returns true once its
-       * single global dataset has actually been fetched — even when the fetch
-       * committed an empty result. The mixin owns no data state, so a global
-       * display must express this; it is the global-display analog of
-       * `MultiRegionDisplayMixin.viewportWithinLoadedData`.
+       * This family's answer to the shared freshness question every display
+       * foundation must answer: the held data corresponds to what is on screen
+       * right now — fetched, and fetched *for this viewport*. The mixin owns no
+       * data state, so a global display must express it; the two in tree do so
+       * differently (HiC compares the viewport snapshot via
+       * `viewportMatchesLastDrawn`, arc compares a region signature via
+       * `isDataCurrent`), which is exactly what the hook is for.
+       *
+       * Default false, so a display that forgets the override never exports —
+       * a hung export is diagnosable, a stale one silently ships wrong pixels.
        */
-      get dataLoaded(): boolean {
+      get dataCurrent(): boolean {
         return false
       },
       /**
@@ -70,22 +78,23 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
-       * off-screen (SVG) export can read final data. Like that mixin it requires
-       * the dataset to actually be loaded (or a terminal error / too-large /
-       * extra state), NOT merely "not currently fetching": the fetch trigger is
-       * a debounced `afterAttach` autorun, so at export time `isLoading` can
-       * still be false with no data yet — a `displayPhase !== 'loading'` test
-       * would then capture an empty render. Never gates on `canvasDrawn`, which
-       * an off-screen export never sets. Off-screen renderers gate on it via
+       * Policy single-sourced in `computeSvgReady`; this family supplies only
+       * its `dataCurrent` predicate. Note it requires the dataset to actually be
+       * current, NOT merely "not currently fetching": the fetch trigger is a
+       * debounced `afterAttach` autorun, so at export time `isLoading` can still
+       * be false with no data yet — a `displayPhase !== 'loading'` test would
+       * then capture an empty render. Never gates on `canvasDrawn`, which an
+       * off-screen export never sets. Off-screen renderers gate on it via
        * `awaitSvgReady(model)`.
        */
       get svgReady(): boolean {
-        return (
-          self.dataLoaded ||
-          !!self.error ||
-          self.regionTooLarge ||
-          self.svgReadyExtraTerminal
+        return computeSvgReady(
+          {
+            error: self.error,
+            regionTooLarge: self.regionTooLarge,
+            extraTerminal: self.svgReadyExtraTerminal,
+          },
+          () => self.dataCurrent,
         )
       },
     }))

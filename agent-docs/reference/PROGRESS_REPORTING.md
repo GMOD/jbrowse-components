@@ -32,7 +32,8 @@ only.
 worker adapter → opts.statusCallback(status)
   → RPC drivers special-case statusCallback as out-of-band
     (message type `unknown`, so the object survives serialization)
-  → FetchMixin.setStatusMessage splits it into statusMessage + statusProgress
+  → the display's status callback thins the stream (createStatusThrottle)
+  → setStatusMessage splits it into statusMessage + statusProgress
   → DisplayLoadingOverlay draws a determinate bar + cancel, else a spinner
 ```
 
@@ -59,6 +60,28 @@ the same volatiles. Route each through `FetchMixin.setRegionStatus(key,
 status)` (keyed by `displayedRegionIndex`), which re-derives the shared fields
 via `aggregateStatus`. N downloads then read as one honest bar instead of
 last-writer thrash. `runFetch` / `cancelFetch` clear the map.
+
+## The stream is throttled on the callback, never on the write
+
+An adapter emits progress ~40/s and each observable write repaints the overlay
+(and repositions its MUI Popper) — measured outpacing the view's own animation.
+`createStatusThrottle()` (`@jbrowse/core/util`) is the one leading-edge window
+(100ms): **one per display**, shared across its status callbacks so N parallel
+region fetches thin to one stream between them rather than N. Both fetch
+families own one — `FetchMixin` for the LGV displays, `createStopTokenRotation`
+for the bare-autorun fetches (dotplot, synteny) that compose no fetch mixin — so
+progress cadence is uniform whichever path a display took.
+
+Two rules the shape enforces:
+
+- **`setStatusMessage` itself is never throttled.** A display writing a phase
+  label by hand ("Downloading" → "Parsing") must see every write land; there is
+  no trailing flush to recover a dropped one.
+- **`setRegionStatus` throttles only its derived bar write**, never the
+  per-region map. Throttling the whole call (as it once did) dropped `undefined`
+  deletes too, stranding a finished region in the aggregate for the rest of the
+  fetch. A cleared aggregate also bypasses the window, or a finished fetch's
+  message would stay on screen.
 
 ## Cancel is durable and retryable
 

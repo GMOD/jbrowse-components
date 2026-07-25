@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   getContainingView,
   getEnv,
@@ -107,12 +108,21 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
        * (see the [SVG export guide](/docs/developer_guides/svg_export)). Chord
        * displays are non-rectangular (radial), so they keep a bespoke
-       * `<DisplayError>` error UI instead of `SvgChrome`, but still expose
-       * `svgReady` + await it via the shared `awaitSvgReady` — no inlined
-       * `when()`. No `regionTooLarge` state.
+       * `<DisplayError>` error UI instead of `SvgChrome`, but they run the same
+       * shared `computeSvgReady` policy and await it via the shared
+       * `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state, and a
+       * chord fetch covers the whole view at once, so `ready` (features
+       * arrived) is the whole freshness axis.
        */
       get svgReady() {
-        return this.ready || self.error !== undefined
+        return computeSvgReady(
+          {
+            error: self.error,
+            regionTooLarge: false,
+            extraTerminal: false,
+          },
+          () => this.ready,
+        )
       },
 
       /**

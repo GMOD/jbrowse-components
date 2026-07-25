@@ -7,7 +7,7 @@
 // so a trigger read placed inside the gate silently falls out of that set on
 // the first run that decides not to fetch — and can then never wake the autorun
 // again. A display whose `shouldFetch` goes false once its data has loaded
-// (arc: `!regionTooLarge && !dataLoaded`) hits that on every successful fetch,
+// (arc: `!regionTooLarge && !dataCurrent`) hits that on every successful fetch,
 // which is how `reload()` came to be a no-op there.
 //
 // So these assert on how often the BODY re-evaluated (shouldFetch call count),
@@ -50,7 +50,7 @@ const TestDisplay = types
     isMinimized: false,
     reloadCounter: 0,
     setting: 'a',
-    // stands in for arc's `dataLoaded`. MUST be observable: the bug only
+    // stands in for arc's `dataCurrent`. MUST be observable: the bug only
     // appears once the gate closing itself re-runs the autorun, because that
     // re-run is what rebuilds the dependency set without the trigger reads. A
     // plain closure variable flips silently and reproduces nothing.

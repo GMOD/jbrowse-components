@@ -234,8 +234,8 @@ export default function sharedModelFactory(
         },
         /**
          * #getter
-         * Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`
-         * (analog of `viewportWithinLoadedData`). The fetch commits `rpcData` even
+         * The shared freshness hook, read by `GlobalFetchMixin.svgReady`. The
+         * fetch commits `rpcData` even
          * for an empty viewport, so this flips true once data has loaded AND that
          * data was fetched for the current viewport. Gating on freshness — not
          * merely `rpcData !== null` — keeps off-screen `svgReady` from resolving on
@@ -244,7 +244,7 @@ export default function sharedModelFactory(
          * override the mixin default (`false`) leaves `svgReady` unable to resolve
          * on a successful load, hanging SVG export.
          */
-        get dataLoaded(): boolean {
+        get dataCurrent(): boolean {
           const view = getContainingView(self) as LinearGenomeViewModel
           return (
             self.rpcData !== null &&

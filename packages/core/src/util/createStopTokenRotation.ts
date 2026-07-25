@@ -1,5 +1,6 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
+import { createStatusThrottle } from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
@@ -22,7 +23,8 @@ export interface ActiveFetch {
   /**
    * RPC `statusCallback` pre-gated by `isCurrent`: forwards progress to
    * `setStatusMessage` only while this is still the latest fetch, so a
-   * superseded fetch's late status update can't flicker the overlay. Pass it
+   * superseded fetch's late status update can't flicker the overlay, and
+   * throttled to the same leading edge as `FetchMixin`'s callbacks. Pass it
    * straight as the RPC `statusCallback` arg.
    */
   statusCallback: (status: RpcStatus) => void
@@ -47,6 +49,11 @@ export function createStopTokenRotation(
   self: IAnyStateTreeNode & StatusReporter,
 ) {
   let currentStopToken: StopToken | undefined
+  // One window for this display, reopened per fetch so each new fetch reports
+  // its first status immediately. Without it these displays wrote an observable
+  // per progress event where every mixin-based display thins to 10/s — the
+  // overlay repainted faster than the view animated.
+  const throttle = createStatusThrottle()
   return {
     begin(): ActiveFetch {
       if (currentStopToken) {
@@ -54,13 +61,16 @@ export function createStopTokenRotation(
       }
       const stopToken = createStopToken()
       currentStopToken = stopToken
+      throttle.reset()
       const isCurrent = () => stopToken === currentStopToken && isAlive(self)
       return {
         stopToken,
         isCurrent,
         statusCallback: status => {
           if (isCurrent()) {
-            self.setStatusMessage(status)
+            throttle.run(() => {
+              self.setStatusMessage(status)
+            })
           }
         },
       }

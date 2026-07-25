@@ -1,6 +1,7 @@
 import {
   aggregateStatus,
   createProgressReporter,
+  createStatusThrottle,
   downloadStatus,
   progressLabel,
   statusFraction,
@@ -126,6 +127,59 @@ describe('createProgressReporter', () => {
       report()
       report()
     }).not.toThrow()
+  })
+})
+
+describe('createStatusThrottle', () => {
+  let clock = 0
+  beforeEach(() => {
+    clock = 1_000_000
+    jest.spyOn(Date, 'now').mockImplementation(() => clock)
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('applies the first update, drops the rest of a burst', () => {
+    const throttle = createStatusThrottle()
+    const applied: number[] = []
+    for (const n of [1, 2, 3]) {
+      throttle.run(() => applied.push(n))
+    }
+    expect(applied).toEqual([1])
+  })
+
+  it('passes updates spaced beyond the window', () => {
+    const throttle = createStatusThrottle()
+    const applied: number[] = []
+    throttle.run(() => applied.push(1))
+    clock += 150
+    throttle.run(() => applied.push(2))
+    clock += 50
+    throttle.run(() => applied.push(3))
+    expect(applied).toEqual([1, 2])
+  })
+
+  it('reset reopens the window, so the next fetch reports at once', () => {
+    const throttle = createStatusThrottle()
+    const applied: number[] = []
+    throttle.run(() => applied.push(1))
+    clock += 10
+    throttle.run(() => applied.push(2))
+    throttle.reset()
+    throttle.run(() => applied.push(3))
+    expect(applied).toEqual([1, 3])
+  })
+
+  // one window per display, not per callback: N parallel per-region fetches
+  // must thin to one stream between them rather than N
+  it('separate throttles keep independent windows', () => {
+    const a = createStatusThrottle()
+    const b = createStatusThrottle()
+    const applied: string[] = []
+    a.run(() => applied.push('a'))
+    b.run(() => applied.push('b'))
+    expect(applied).toEqual(['a', 'b'])
   })
 })
 

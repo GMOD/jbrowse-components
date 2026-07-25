@@ -1,10 +1,14 @@
 import { isDataCurrent } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { GlobalFetchMixin } from '@jbrowse/plugin-linear-genome-view'
+import {
+  GlobalFetchMixin,
+  computeDisplayPhase,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import { currentRegionSignature } from './regionSignature.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { DisplayPhase } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Shared fetch/gating model for both arc displays. Composes the
@@ -31,7 +35,7 @@ export function ArcFetchModel() {
         /**
          * #volatile
          * signature of the static-block region set `features` were fetched for;
-         * the `dataLoaded`/`svgReady` freshness axis (see regionSignature.ts)
+         * the `dataCurrent`/`svgReady` freshness axis (see regionSignature.ts)
          */
         loadedRegionSignature: undefined as string | undefined,
       }))
@@ -63,10 +67,29 @@ export function ArcFetchModel() {
          * fresh only when `features` were fetched for the current static-block set;
          * overrides GlobalFetchMixin's default so `svgReady` can resolve on load
          */
-        get dataLoaded() {
+        get dataCurrent() {
           return isDataCurrent(
             self.loadedRegionSignature,
             currentRegionSignature(self),
+          )
+        },
+        /**
+         * #getter
+         * The same mutually-exclusive visual state every GPU display exposes,
+         * over the same shared `computeDisplayPhase` — arc just has no
+         * `renderError` phase, having no GPU backend. On the model rather than
+         * derived inside `BaseDisplayComponent` so the component can't disagree
+         * with the model, and so arc publishes `data-display-phase` for tests
+         * like every other display.
+         */
+        get displayPhase(): DisplayPhase {
+          return computeDisplayPhase(
+            {
+              renderError: undefined,
+              regionTooLarge: self.regionTooLarge,
+              error: self.error,
+            },
+            () => self.isLoading,
           )
         },
       }))
@@ -75,9 +98,9 @@ export function ArcFetchModel() {
         return {
           /**
            * #action
-           * Arc's fetch trigger gates on `!dataLoaded`, so bumping
+           * Arc's fetch trigger gates on `!dataCurrent`, so bumping
            * `reloadCounter` alone can't refetch: the signature still matches the
-           * current blocks. Drop it so `dataLoaded` goes false and the autorun
+           * current blocks. Drop it so `dataCurrent` goes false and the autorun
            * fires. `features` deliberately survives — the stale arcs stay on
            * screen under the loading overlay rather than blanking, and
            * `setFeatures` replaces them.

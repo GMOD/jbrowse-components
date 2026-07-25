@@ -25,24 +25,29 @@ export, parameterized by which `<Arcs>` paints). Per-display `model.ts` /
 ## Chrome: shares the DisplayChrome _concept_, not the component
 
 Because arc has no GPU backend it can't wrap `DisplayChrome`, but it must not
-re-encode the terminal-state precedence by hand. `BaseDisplayComponent.tsx`:
+re-encode the terminal-state precedence by hand.
 
-- derives the phase from the shared
-  `computeDisplayPhase({ renderError: undefined, regionTooLarge, error }, () => model.isLoading)`
-  (arc has no `renderError` GPU phase),
-- renders the shared banners `DisplayErrorBar` / `DisplayLoadingOverlay` /
-  `TooLargeMessage` (from `@jbrowse/plugin-linear-genome-view`) — so arc looks
-  identical to every GPU display; `error` and `loading` overlay the
-  still-mounted SVG, `tooLarge` replaces the subtree.
+`ArcFetchModel` exposes `displayPhase` from the shared
+`computeDisplayPhase({ renderError: undefined, ...self }, () => self.isLoading)`
+(arc has no `renderError` GPU phase). It is on the **model**, like every GPU
+display's, not derived in the component — a component-side derivation is free to
+drift from what the model believes.
+
+`BaseDisplayComponent.tsx` then just branches on `model.displayPhase` and renders
+the shared banners `DisplayErrorBar` / `DisplayLoadingOverlay` /
+`TooLargeMessage` (from `@jbrowse/plugin-linear-genome-view`) — so arc looks
+identical to every GPU display; `error` and `loading` overlay the still-mounted
+SVG, `tooLarge` replaces the subtree. It also emits `data-display-phase`, the
+same "is this display finished" signal DisplayChrome publishes for tests.
 
 Don't reintroduce arc-local loading/error components — that was the drift this
 removed. See `agent-docs/reference/DISPLAYCHROME.md` for the whole adoption map.
 
-### `reload()` must invalidate `dataLoaded`, not just bump the counter
+### `reload()` must invalidate `dataCurrent`, not just bump the counter
 
 `GlobalFetchMixin.reload()` clears `error` + `fetchCanceled` and bumps
 `reloadCounter`. That is enough for LD/HiC, whose `shouldFetch` doesn't look at
-loaded data — but arc's is `!regionTooLarge && !dataLoaded`, so once a fetch
+loaded data — but arc's is `!regionTooLarge && !dataCurrent`, so once a fetch
 commits, `shouldFetch` is false and a counter bump refires the autorun into a
 no-op. `ArcFetchModel` therefore overrides `reload()` to also drop
 `loadedRegionSignature`. `features` deliberately survives, so the stale arcs
@@ -55,7 +60,7 @@ global-fetch trigger list must be read unconditionally".)
 
 ## Readiness / testid
 
-Two separate flags, don't conflate them. `svgReady` (`dataLoaded` =
+Two separate flags, don't conflate them. `svgReady` (`dataCurrent` =
 `isDataCurrent(loadedRegionSignature, currentRegionSignature(self))`, or error,
 or too-large) is the **SVG-export terminal gate**: it goes false again on a
 pan/zoom past a block boundary, so an export fired mid-refetch waits for fresh

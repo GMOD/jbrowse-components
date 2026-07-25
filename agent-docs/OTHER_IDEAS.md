@@ -2061,49 +2061,12 @@ gap from the same pass is tracked in TODO.md.
   Threading height through `TooLargeMessage`→`BlockMsg` could churn many
   displays' too-large snapshots and the intrinsic height may be intentional —
   needs a product call.
-- **Migrate imperative `regionTooLarge`** (wiggle/alignments/LD) to the derived
-  shape, or document why they can't hit the stuck-banner bug. Bigger refactor.
 - **Make `dataCurrent` a required member** (omission = compile error, not a
   runtime export hang). MST mixin composition doesn't enforce "must override a
-  getter" cleanly; riskier, deferred.
-- **Don't compose a mixin into `BaseDisplay`.** Tried, backed out (2026-07):
-  factoring the error/status vocabulary into a `DisplayStatusMixin` composed at
-  the `BaseDisplay` root pushed the deeper display chains past MST's
-  type-inference limit, and properties from *later* mixins (`displayCrossHatches`,
-  `treeAreaWidth`, `resolution`, `layout`) silently dropped out of the inferred
-  instance type across wiggle / multi-wiggle / variants. `BaseDisplay` is already
-  at the depth budget; add to it with `.props`/`.volatile`/`.views`, not
-  `types.compose`. Shared *policy* at that level has to be a plain function
-  (`createStatusThrottle`, `computeSvgReady`, `computeDisplayPhase`).
+  getter" cleanly, and [ADR-041](architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
+  rules out the composition trick that would express it. Deferred; the default
+  is fail-hung rather than fail-stale, which is the safe side.
 
-## Fold the non-LGV fetches onto `FetchMixin`
-
-Multi-LGV synteny and dotplot hand-roll the fetch state machine in ~480 lines of
-`afterAttach.ts` plus per-model volatiles, sharing only `createStopTokenRotation`
-(token mechanics) with each other. Freshness and export readiness are now shared
-(`dataCurrent` / `computeSvgReady`), and the progress throttle is shared
-(`createStatusThrottle`), so what remains genuinely duplicated is the state
-machine: a raw token volatile each, their own `isLoading`/`refetching` derivations
-(which disagree — dotplot splits the two, synteny's `loading` is `!ready &&
-!error` and so stays true forever if the fetch never runs), no
-`fetchCanceled`/`cancelFetchByUser`, no `reload()`. Synteny also still uses a
-plain `{ delay: 500 }` where dotplot and `installGlobalFetchAutorun` leading-edge.
-
-The shape: a `SignatureFetchMixin` = `FetchMixin` + `loadedFetchKey` volatile +
-overridable `currentFetchKey` + `dataCurrent`, plus an
-`installSignatureFetchAutorun` skeleton modeled on `installGlobalFetchAutorun`.
-That makes the display-stacks table three rows that all compose `FetchMixin`
-instead of two rows and a footnote. Not attempted yet because a
-`SyntenyFetchStateMixin` landed in `@jbrowse/synteny-core` concurrently — check
-whether that is the same move under another name before starting.
-
-## Extract the duplicated assembly-swap-check autorun
-
-`syntenyAssemblySwapCheck` and `dotplotAssemblySwapCheck` are the same ~20-line
-autorun, differing only in how they read the two assembly names;
-`detectDisplayAssembliesSwapped` is already shared, the wrapper isn't. One
-`installAssemblySwapCheck(self, getAssemblyNames)` in `@jbrowse/synteny-core`.
-Small; left alone only because both files were under concurrent edit.
 ## Vertical real estate & the "scrolls within scrolls" problem
 
 The app nests scroll surfaces (page scroll, per-track synthetic scroll, horizontal

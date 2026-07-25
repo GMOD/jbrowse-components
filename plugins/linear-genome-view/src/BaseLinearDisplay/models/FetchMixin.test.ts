@@ -255,6 +255,22 @@ describe('FetchMixin: status message', () => {
 })
 
 describe('FetchMixin: progress reporting', () => {
+  // `setRegionStatus` throttles its bar write, so these aggregation tests step
+  // the clock past the window before each call; otherwise a synchronous burst
+  // is thinned and the assertions read a deliberately-skipped value. Starts well
+  // past the window so the first write in each test always lands.
+  let clock = 1_000_000
+  beforeEach(() => {
+    clock = 1_000_000
+    jest.spyOn(Date, 'now').mockImplementation(() => clock)
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+  function step() {
+    clock += 1000
+  }
+
   it('setStatusMessage splits a determinate status into message + fraction', () => {
     const m = makeModel()
     m.setStatusMessage({ message: 'Downloading', current: 1, total: 4 })
@@ -274,6 +290,7 @@ describe('FetchMixin: progress reporting', () => {
     // two regions downloading in parallel: the bar reflects Σcurrent/Σtotal,
     // not whichever region reported last
     m.setRegionStatus(0, { message: 'Downloading', current: 30, total: 100 })
+    step()
     m.setRegionStatus(1, { message: 'Downloading', current: 10, total: 100 })
     expect(m.statusMessage).toBe('Downloading')
     expect(m.statusProgress).toBeCloseTo(0.2)
@@ -282,10 +299,28 @@ describe('FetchMixin: progress reporting', () => {
   it('setRegionStatus(key, undefined) drops a region from the aggregate', () => {
     const m = makeModel()
     m.setRegionStatus(0, { message: 'Downloading', current: 50, total: 100 })
+    step()
     m.setRegionStatus(1, { message: 'Downloading', current: 0, total: 100 })
     expect(m.statusProgress).toBeCloseTo(0.25)
+    step()
     m.setRegionStatus(1, undefined)
     expect(m.statusProgress).toBeCloseTo(0.5)
+  })
+
+  // The throttle gates only the bar write, never the per-region map: a region
+  // whose update is thinned out must still be recorded, or a finished region
+  // would sit in the aggregate for the rest of the fetch.
+  it('a throttled-out region update still lands in the bookkeeping', () => {
+    const m = makeModel()
+    m.setRegionStatus(0, { message: 'Downloading', current: 50, total: 100 })
+    // same tick, so both bar writes below are thinned out
+    m.setRegionStatus(1, { message: 'Downloading', current: 25, total: 100 })
+    m.setRegionStatus(0, undefined)
+    step()
+    m.setRegionStatus(1, { message: 'Downloading', current: 30, total: 100 })
+    // 0.3 (region 1 alone), not 0.4 ((50 + 30) / 200) — region 0's thinned-out
+    // delete still took effect
+    expect(m.statusProgress).toBeCloseTo(0.3)
   })
 
   it('clears the aggregate when the last region finishes', () => {

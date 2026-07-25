@@ -63,6 +63,46 @@ export function statusFraction(status: RpcStatus | undefined) {
     : undefined
 }
 
+// An RPC statusCallback fires per progress event (often ~40/s), and each write
+// to the observable statusMessage/statusProgress re-renders whatever loading
+// indicator is up (and repositions its MUI Tooltip/Popper) — re-renders were
+// measured outpacing the zoom animation's own frame rate before this. A progress
+// indicator gains nothing from updating faster.
+const STATUS_THROTTLE_MS = 100
+
+/**
+ * Leading-edge throttle for a display's RPC progress stream: sparse updates pass
+ * straight through, dense bursts are thinned. Create **one per display** and
+ * share it across that display's status callbacks, so N parallel per-region
+ * fetches thin to one stream between them rather than N.
+ *
+ * Deliberately wraps only the *callback* path, never `setStatusMessage` itself
+ * — a display writing a phase label by hand ("Downloading" → "Parsing") must
+ * see every write land, and there is no trailing flush to recover a dropped one.
+ *
+ * Both fetch families own one: `FetchMixin` for the LGV displays, and
+ * `createStopTokenRotation` for the bare-autorun fetches (dotplot, synteny)
+ * that compose no fetch mixin. A plain function rather than shared model state
+ * because the two families declare their status fields separately and one set
+ * shadows the other — see ADR-041.
+ */
+export function createStatusThrottle() {
+  let lastMs = 0
+  return {
+    run(apply: () => void) {
+      const now = Date.now()
+      if (now - lastMs >= STATUS_THROTTLE_MS) {
+        lastMs = now
+        apply()
+      }
+    },
+    /** reopen the window, so the next fetch reports its first status at once */
+    reset() {
+      lastMs = 0
+    },
+  }
+}
+
 /**
  * Format a phase label with a rounded percentage appended when a determinate
  * `fraction` is present (e.g. `progressLabel('Downloading', 0.45)` →

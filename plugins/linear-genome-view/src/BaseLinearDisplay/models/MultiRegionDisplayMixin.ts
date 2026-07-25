@@ -1,3 +1,4 @@
+import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   getContainingTrack,
   getContainingView,
@@ -127,20 +128,36 @@ export default function MultiRegionDisplayMixin() {
 
       /**
        * #getter
+       * This family's answer to the shared freshness question every display
+       * foundation must answer (`dataCurrent`): the held data corresponds to
+       * what is on screen right now. Here that is spatial — every visible block
+       * lies within a fetched region — plus `loadedRegions.size`, which rules
+       * out the vacuously-true empty viewport. Regions stream in one at a time,
+       * so this (not "the first datum arrived") is what keeps a
+       * multi-region/whole-genome export complete.
+       *
+       * Distinct from `viewportWithinLoadedData`, which is the raw coverage
+       * predicate the fetch autorun and the loading overlay use.
+       */
+      get dataCurrent(): boolean {
+        return this.viewportWithinLoadedData && self.loadedRegions.size > 0
+      },
+
+      /**
+       * #getter
        * true once an off-screen (SVG) export can safely read this display's
-       * data: every visible region has loaded, or the fetch reached a terminal
-       * error / too-large state. Off-screen renderers gate on it via
-       * `awaitSvgReady(model)` instead of inlining the condition. Regions
-       * stream in one at a time, so gating on `viewportWithinLoadedData` (not the
-       * first datum) is what keeps multi-region/whole-genome exports complete;
-       * `loadedRegions.size` guards the vacuously-true empty-viewport case.
+       * data. Policy single-sourced in `computeSvgReady`; this family supplies
+       * only its `dataCurrent` predicate. Off-screen renderers gate on it via
+       * `awaitSvgReady(model)` instead of inlining the condition.
        */
       get svgReady(): boolean {
-        return (
-          (this.viewportWithinLoadedData && self.loadedRegions.size > 0) ||
-          !!self.error ||
-          self.regionTooLarge ||
-          this.svgReadyExtraTerminal
+        return computeSvgReady(
+          {
+            error: self.error,
+            regionTooLarge: self.regionTooLarge,
+            extraTerminal: this.svgReadyExtraTerminal,
+          },
+          () => this.dataCurrent,
         )
       },
 

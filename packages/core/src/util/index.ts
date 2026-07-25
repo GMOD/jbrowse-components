@@ -110,6 +110,7 @@ export {
   type StatusWithProgress,
   aggregateStatus,
   createProgressReporter,
+  createStatusThrottle,
   downloadStatus,
   progressLabel,
   statusFraction,

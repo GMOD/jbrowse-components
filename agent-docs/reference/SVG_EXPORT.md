@@ -144,7 +144,7 @@ blob vs per-region map) its fetch happens to take:
 - **Single nullable fetch object** — HiC / LD (`if (!rpcData)`), multi-variant /
   multi-variant-matrix (`if (!cellData)`). The monolithic-blob fetch stores
   `null` until the dataset lands, and the body destructures fields off it.
-  `svgReady`'s `dataLoaded` disjunct is exactly what makes the `SvgChrome` pass
+  `svgReady`'s `dataCurrent` disjunct is exactly what makes the `SvgChrome` pass
   (`!error && !regionTooLarge`) imply the object is set. Drop any `&&
   numContacts === 0` size clause — the narrow alone is enough, and even it never
   fires.
@@ -159,7 +159,7 @@ blob vs per-region map) its fetch happens to take:
 
 These narrows stay (rather than being deleted) only because the field is `T |
 null` at the type level and can't be made non-nullable without a fake
-empty-blob sentinel that would just duplicate `dataLoaded`. Where a getter's
+empty-blob sentinel that would just duplicate `dataCurrent`. Where a getter's
 `undefined` came from view-shape alone, it *was* made non-nullable and the guard
 deleted:
 
@@ -187,53 +187,65 @@ It deliberately **excludes `canvasDrawn`/`isReady`** — an off-screen export ru
 on a display whose on-screen canvas may never have painted (e.g. headless
 jbrowse-img), so gating on the paint flag would hang forever.
 
-Two definitions, one per fetch mixin:
+**One policy, five predicates.** The formula is single-sourced in
+`computeSvgReady(terminals, dataCurrent)` (`@jbrowse/core/svg/svgReady`, beside
+`awaitSvgReady`) — the `computeDisplayPhase` treatment applied to export
+readiness: `error || regionTooLarge || extraTerminal || dataCurrent()`, with
+`dataCurrent` a **thunk** so a display under a banner doesn't subscribe to the
+view's `visibleRegions`/`loadedRegions` churn. Every `svgReady` getter in the
+tree calls it; what varies is only how that display answers `dataCurrent`, the
+one freshness name every foundation exposes. Each of the five hand-written copies
+this replaced was a place to forget a terminal (hang the export) or forget
+freshness (capture a stale viewport) — both have shipped.
 
-- **`MultiRegionDisplayMixin.svgReady`** (per-region streamed — canvas,
-  alignments, MAF, manhattan, wiggle / multi-wiggle, multi-variant,
-  multi-variant-matrix): `(viewportWithinLoadedData && loadedRegions.size > 0)
-  || error || regionTooLarge || svgReadyExtraTerminal`. The spatial-coverage
-  check waits for *every* visible region (not the first to stream in) and goes
-  false the instant a pan/zoom moves the viewport past loaded data.
+- **`MultiRegionDisplayMixin`** (per-region streamed — canvas, alignments, MAF,
+  manhattan, wiggle / multi-wiggle, multi-variant, multi-variant-matrix):
+  `dataCurrent` = `viewportWithinLoadedData && loadedRegions.size > 0`. The
+  spatial-coverage check waits for *every* visible region (not the first to
+  stream in) and goes false the instant a pan/zoom moves the viewport past
+  loaded data; `loadedRegions.size` rules out the vacuously-true empty viewport.
+  `viewportWithinLoadedData` stays a separate getter — it is the raw coverage
+  predicate the fetch autorun and loading overlay use.
   `svgReadyExtraTerminal` is the overridable hook the sequence display uses.
-- **`GlobalDataDisplayMixin.svgReady`** (whole-view single-blob — HiC, LD):
-  `dataLoaded || error || regionTooLarge || svgReadyExtraTerminal`. A global
+- **`GlobalFetchMixin`** (whole-view single-blob — HiC, LD, and arc): a global
   display has no per-region spatial axis, so it requires the single dataset to
-  actually be loaded — deliberately **not** `displayPhase !== 'loading'`,
+  actually be current — deliberately **not** `displayPhase !== 'loading'`,
   because the fetch trigger is a debounced `afterAttach` autorun, so at export
   time `isLoading` can be false with no data yet, and a `displayPhase !==
-  'loading'` test would capture an empty render. `dataLoaded` is an overridable
-  getter (default `false`) each display must implement — the global-display
-  analog of `viewportWithinLoadedData`. It carries a **freshness** axis: both
-  HiC and LD return `rpcData !== null && viewportMatchesLastDrawn(…)` (comparing
-  the `setLastDrawnViewport` snapshot committed alongside `setRpcData` to the
-  live `offsetPx`/`bpPerPx`). Presence alone (`rpcData !== null`) would leave an
-  in-place-refetch gap: a pan/zoom export resolving on the pre-pan matrix during
-  the debounce+RPC window, since neither fetch clears `rpcData` at refetch start.
-  A display that forgets to override `dataLoaded` makes `svgReady` unable to
-  resolve on a successful load, so `awaitSvgReady` waits out its
-  `SVG_READY_TIMEOUT_MS` (60s) and rejects with a diagnostic rather than
-  exporting.
+  'loading'` test would capture an empty render. `dataCurrent` is an overridable
+  getter (default `false`) each display must implement. HiC and LD return
+  `rpcData !== null && viewportMatchesLastDrawn(…)` (comparing the
+  `setLastDrawnViewport` snapshot committed alongside `setRpcData` to the live
+  `offsetPx`/`bpPerPx`); arc compares a region signature. Presence alone
+  (`rpcData !== null`) would leave an in-place-refetch gap: a pan/zoom export
+  resolving on the pre-pan matrix during the debounce+RPC window, since neither
+  fetch clears `rpcData` at refetch start. A display that forgets to override
+  `dataCurrent` makes `svgReady` unable to resolve on a successful load, so
+  `awaitSvgReady` waits out its `SVG_READY_TIMEOUT_MS` (60s) and rejects with a
+  diagnostic rather than exporting — fail-hung over fail-stale.
 
 The **sequence** display adds one extra terminal disjunct — it overrides
 `svgReadyExtraTerminal` to return `zoomedOut`, because zoomed past its
 base-render threshold it shows a static "zoom in" message and issues no fetch,
 so `svgReady` alone would never resolve.
 
-### Displays outside the two LGV GPU mixins define their own `svgReady`
+### Displays outside the two LGV GPU mixins supply their own `dataCurrent`
 
-They don't track `loadedRegions`/`displayPhase` the same way:
+They don't track `loadedRegions`/`displayPhase` the same way, but they run the
+same `computeSvgReady` policy:
 
-- **Arc / paired-arc** are still LGV track displays, so they keep the full
-  contract (own `svgReady` getter + `awaitSvgReady` + `SvgChrome`). Drawing all
-  features into a single array (gated by `RegionTooLargeMixin`), their `svgReady`
-  is `isDataCurrent(loadedRegionSignature, currentRegionSignature(self)) || error
-  || regionTooLarge`. The signature freshness compare makes an export fired right
-  after a pan/zoom wait for fresh arcs instead of capturing stale ones.
+- **Arc / paired-arc** are still LGV track displays and compose
+  `GlobalFetchMixin`, so they get `svgReady` from it and override only
+  `dataCurrent`: `isDataCurrent(loadedRegionSignature,
+  currentRegionSignature(self))`. Drawing all features into a single array
+  (gated by `RegionTooLargeMixin`), the signature freshness compare makes an
+  export fired right after a pan/zoom wait for fresh arcs instead of capturing
+  stale ones.
 - **Multi-LGV synteny** is *non-LGV* (a `LinearSyntenyView` level composing only
   `BaseDisplay` with its own fetch) yet *rectangular*, so it keeps the shared
-  `SvgChrome` + `awaitSvgReady` contract with its own `svgReady`: `(ready &&
-  !refetching && dataCurrent) || error` (`ready` = `featureData !== undefined`).
+  `SvgChrome` + `awaitSvgReady` contract, calling `computeSvgReady` directly with
+  `dataCurrent` = `ready && !refetching && dataCurrent` (`ready` =
+  `featureData !== undefined`).
   It needs BOTH freshness terms — `!refetching` covers the in-flight RPC, but a
   debounced fetch (500ms) leaves a *pre-refetch* window where a region/zoom
   change has invalidated the held data yet `fetching` hasn't flipped true, so
@@ -243,17 +255,27 @@ They don't track `loadedRegions`/`displayPhase` the same way:
   `error` only. **`SvgChrome` is not LGV-specific** — it is the terminal chrome
   for *any* rectangular display, and synteny is the proof.
 
-### The shared freshness predicate
+### The shared freshness name, and the shared signature compare
+
+Every display foundation answers one question under one name — **`dataCurrent`**:
+does the held data correspond to what is on screen right now? What differs is
+only how it is computed, and there are three ways:
+
+| Mechanism | Foundation | Implementation |
+| --- | --- | --- |
+| Spatial coverage | `MultiRegionDisplayMixin` | `viewportWithinLoadedData && loadedRegions.size > 0` |
+| Viewport-snapshot compare | `GlobalFetchMixin` (HiC, LD) | `viewportMatchesLastDrawn(…)` |
+| Signature compare | `GlobalFetchMixin` (arc), synteny, dotplot | `isDataCurrent(loaded, current)` |
+
+Consumers — `computeSvgReady`, the `settled` capture gates, BreakpointSplitView's
+overlays — read `dataCurrent` and never the mechanism, so a display *composes* a
+freshness answer rather than choosing which of three names to expose.
 
 `isDataCurrent(loadedSignature, currentSignature)` (`@jbrowse/core/util`,
-`loaded !== undefined && loaded === current`) is the one freshness rule for every
-display whose data liveness is a single signature string rather than a
-spatial-coverage map — arc / paired-arc (region-key signature), dotplot +
-linear-comparative synteny (fetch-input signature). It's the signature-based
-analog of the LGV mixins' spatial `viewportWithinLoadedData` and the global
-mixins' `viewportMatchesLastDrawn`; the view-specific part (how each builds its
-signature) stays per-display, only the final compare is shared. It gates both
-`svgReady` (off-screen export) and `settled` (on-screen capture).
+`loaded !== undefined && loaded === current`) is the shared rule for the third
+row: arc / paired-arc (region-key signature), dotplot + linear-comparative
+synteny (fetch-input signature). The view-specific part (how each builds its
+signature) stays per-display; only the final compare is shared.
 
 ## On-screen capture gate (`settled` → `*_canvas_done`)
 
@@ -290,11 +312,13 @@ The *non-rectangular* views keep their own error UI (no rectangular width/height
 axis to host a message box) but still expose a `svgReady` getter and await it via
 the shared `awaitSvgReady` — never an inlined `when()`:
 
-- **dotplot**: `svgReady = (!!geometry && dataCurrent) || !!error`, hand-rolled
-  `SVGErrorBox` on a square canvas (`dataCurrent` makes it stale-safe, matching
-  the capture gate above).
-- **circular chord**: `svgReady = ready || error !== undefined`, renders
-  `<DisplayError>`.
+Both still run `computeSvgReady`; they pass `regionTooLarge: false` (neither
+gates on region size) and supply their own `dataCurrent` thunk:
+
+- **dotplot**: `!!geometry && dataCurrent`, hand-rolled `SVGErrorBox` on a square
+  canvas (`dataCurrent` makes it stale-safe, matching the capture gate above).
+- **circular chord**: `ready` — a chord fetch covers the whole view at once, so
+  "features arrived" is the whole freshness axis. Renders `<DisplayError>`.
 
 So the readiness gate is uniform across **every** display (LGV, arc, synteny,
 dotplot, circular) — no `renderSvg` inlines `when()` — while the error chrome

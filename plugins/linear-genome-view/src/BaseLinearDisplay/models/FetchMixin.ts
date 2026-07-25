@@ -1,5 +1,6 @@
 import {
   aggregateStatus,
+  createStatusThrottle,
   isAbortException,
   statusFraction,
   statusMessageText,
@@ -14,14 +15,6 @@ export interface FetchContext {
   stopToken: StopToken
   isStale: () => boolean
 }
-
-// RPC statusCallback fires per progress event (often ~40/s), and each write to
-// the observable statusMessage/statusProgress re-renders the loading overlay
-// (and repositions its MUI Tooltip/Popper). A progress indicator gains nothing
-// from updating faster than this, so the two status callbacks throttle writes to
-// a leading edge — re-renders were measured outpacing the zoom animation's own
-// frame rate before this.
-const STATUS_THROTTLE_MS = 100
 
 // Cancel-safe fetch lifecycle for any display that loads data over RPC.
 //
@@ -72,6 +65,14 @@ export default function FetchMixin() {
        */
       fetchGeneration: 0,
 
+      // error / statusMessage / statusProgress below duplicate BaseDisplay's,
+      // so this mixin composes standalone (its own tests) as well as onto a
+      // display. In a real composition one set wins — which is exactly why the
+      // throttle policy lives in the shared `createStatusThrottle` and not in
+      // either `setStatusMessage` body. Don't "fix" the duplication by
+      // extracting a mixin: see ADR-041, the compose layer breaks type
+      // inference in unrelated display chains.
+
       /**
        * #volatile
        * last non-abort fetch error, or undefined
@@ -111,13 +112,6 @@ export default function FetchMixin() {
        * parallel region fetches aggregate into one bar instead of clobbering.
        */
       regionStatuses: new Map<number, RpcStatus>(),
-
-      /**
-       * #volatile
-       * Date.now() of the last applied status write; the status callbacks gate
-       * on it to throttle a high-frequency progress stream.
-       */
-      lastStatusMs: 0,
     }))
     .views(self => ({
       /**
@@ -128,48 +122,50 @@ export default function FetchMixin() {
         return self.activeStopToken !== undefined
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setError(error?: unknown) {
-        self.error = error
-      },
-      /**
-       * #action
-       */
-      setStatusMessage(status?: RpcStatus) {
-        self.statusMessage = statusMessageText(status)
-        self.statusProgress = statusFraction(status)
-      },
-      /**
-       * #action
-       * Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the
-       * last status write. A leading-edge throttle: sparse updates pass straight
-       * through, dense progress bursts are thinned so the loading overlay stops
-       * re-rendering faster than the view animates. The final status doesn't need
-       * a trailing flush — fetch completion clears it via `resetStatus`.
-       */
-      throttleStatus(apply: () => void) {
-        const now = Date.now()
-        if (now - self.lastStatusMs >= STATUS_THROTTLE_MS) {
-          self.lastStatusMs = now
-          apply()
-        }
-      },
-      /**
-       * #action
-       * Drop the active stop token and clear all status bookkeeping. Shared by
-       * both cancel paths and runFetch's cleanup.
-       */
-      resetStatus() {
-        self.lastStatusMs = 0
-        self.activeStopToken = undefined
-        self.statusMessage = undefined
-        self.statusProgress = undefined
-        self.regionStatuses.clear()
-      },
-    }))
+    .actions(self => {
+      // One window per display instance, shared by both callback factories
+      // below, so N parallel per-region fetches thin to one stream between them
+      // rather than N. The shared primitive is also what the non-mixin fetches
+      // (dotplot, synteny, via createStopTokenRotation) use.
+      const throttle = createStatusThrottle()
+      return {
+        /**
+         * #action
+         */
+        setError(error?: unknown) {
+          self.error = error
+        },
+        /**
+         * #action
+         * Unthrottled: a display writing a phase label by hand must see every
+         * write land. The high-frequency RPC stream is thinned one level up, in
+         * the callback factories.
+         */
+        setStatusMessage(status?: RpcStatus) {
+          self.statusMessage = statusMessageText(status)
+          self.statusProgress = statusFraction(status)
+        },
+        /**
+         * #action
+         * Run `apply` only if the throttle window has elapsed.
+         */
+        throttleStatus(apply: () => void) {
+          throttle.run(apply)
+        },
+        /**
+         * #action
+         * Drop the active stop token and clear all status bookkeeping. Shared by
+         * both cancel paths and runFetch's cleanup.
+         */
+        resetStatus() {
+          throttle.reset()
+          self.activeStopToken = undefined
+          self.statusMessage = undefined
+          self.statusProgress = undefined
+          self.regionStatuses.clear()
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action
@@ -198,9 +194,20 @@ export default function FetchMixin() {
         } else {
           self.regionStatuses.set(key, status)
         }
-        self.setStatusMessage(
-          aggregateStatus([...self.regionStatuses.values()]),
-        )
+        // The map update above is unconditional and only this derived write is
+        // thinned. Throttling the whole call — as the caller used to — dropped
+        // `undefined` deletes too, stranding a finished region in the aggregate
+        // for the rest of the fetch. A cleared aggregate (every region done)
+        // also bypasses the throttle, or a finished fetch's message would stay
+        // on screen.
+        const aggregate = aggregateStatus([...self.regionStatuses.values()])
+        if (aggregate === undefined) {
+          self.setStatusMessage(undefined)
+        } else {
+          self.throttleStatus(() => {
+            self.setStatusMessage(aggregate)
+          })
+        }
       },
       /**
        * #action
@@ -310,14 +317,13 @@ export default function FetchMixin() {
        * Per-region variant of `makeStatusCallback`: routes progress through
        * `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate
        * into one status bar instead of clobbering each other. Same `isAlive`
-       * guard.
+       * guard; `setRegionStatus` owns the throttling (it has to thin only the
+       * bar write, not the per-region bookkeeping).
        */
       makeRegionStatusCallback(key: number) {
         return (status: RpcStatus) => {
           if (isAlive(self)) {
-            self.throttleStatus(() => {
-              self.setRegionStatus(key, status)
-            })
+            self.setRegionStatus(key, status)
           }
         }
       },

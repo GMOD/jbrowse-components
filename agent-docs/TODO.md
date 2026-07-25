@@ -3,6 +3,30 @@ name: todo
 description: Action items to build or fix, the current backlog. Read when picking up work.
 ---
 
+## Fold the non-LGV fetches onto `FetchMixin`
+
+Multi-LGV synteny and dotplot hand-roll the fetch state machine in ~480 lines of
+`afterAttach.ts` plus per-model volatiles, sharing only `createStopTokenRotation`
+(token mechanics) with each other. Freshness and export readiness are now shared
+(`dataCurrent` / `computeSvgReady`), and the progress throttle is shared
+(`createStatusThrottle`), so what remains genuinely duplicated is the state
+machine: a raw token volatile each, their own `loading`/`refetching` derivations,
+no `fetchCanceled`/`cancelFetchByUser`, no `reload()`. Synteny also still uses a
+plain `{ delay: 500 }` where dotplot and `installGlobalFetchAutorun` leading-edge,
+so its first fetch waits out the full debounce with nothing to coalesce.
+
+The shape: a `SignatureFetchMixin` = `FetchMixin` + `loadedFetchKey` volatile +
+overridable `currentFetchKey` + `dataCurrent`, plus an
+`installSignatureFetchAutorun` skeleton modeled on `installGlobalFetchAutorun`.
+That makes the display-stacks table in
+[ARCHITECTURE.md](ARCHITECTURE.md#display-stacks) three rows that all compose
+`FetchMixin`, instead of two rows and a footnote.
+
+**Read `@jbrowse/synteny-core`'s `SyntenyFetchStateMixin` first** — it landed
+2026-07 and already shares `fetching` / `loadedFetchKey` / `assembliesSwapped`
+between the two displays. Decide whether this is that mixin growing into
+`FetchMixin` or a separate move before starting.
+
 ## Alignments / canvas
 
 - Group by strand, `plugins/canvas`. Nothing in `plugins/canvas` groups today;

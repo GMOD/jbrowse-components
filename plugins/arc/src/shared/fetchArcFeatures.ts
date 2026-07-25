@@ -11,7 +11,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // (CoreGetRegionByteEstimate), commit it, and let the DERIVED regionTooLarge
 // getter (ArcFetchModel) decide — no imperative flag, no bespoke gating. The
 // installGlobalFetchAutorun trigger (afterAttach.ts) gates on regionTooLarge +
-// dataLoaded, so this only runs when a fetch is actually needed; runFetch makes
+// dataCurrent, so this only runs when a fetch is actually needed; runFetch makes
 // it cancel-safe so a superseded run can't clobber fresh features.
 export async function fetchArcFeatures(self: ArcDisplayModel) {
   if (self.isMinimized) {

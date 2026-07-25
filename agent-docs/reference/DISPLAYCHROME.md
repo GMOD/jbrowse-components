@@ -77,11 +77,15 @@ component import). They get the chrome for free.
 **SVG exception (2): arc / paired-arc.** These render main-thread SVG (no worker,
 no GPU backend, all features in one array), so they can't wrap `DisplayChrome`,
 which owns the backend hook. They share the concept without the backend:
-`plugins/arc/src/shared/BaseDisplayComponent.tsx` calls the same
-`computeDisplayPhase` (with `renderError: undefined`) and renders the same shared
-banners (`DisplayErrorBar`, `DisplayLoadingOverlay`, `TooLargeMessage`). Only the
-container and the readiness flag (`svgReady`, not `canvasDrawn`) are arc-local,
-so precedence and visuals stay single-sourced. See `plugins/arc/CLAUDE.md`.
+`ArcFetchModel` exposes `displayPhase` off the same `computeDisplayPhase` (with
+`renderError: undefined` — arc has no GPU error phase), and
+`plugins/arc/src/shared/BaseDisplayComponent.tsx` branches on `model.displayPhase`
+exactly as the chrome does, rendering the same shared banners
+(`DisplayErrorBar`, `DisplayLoadingOverlay`, `TooLargeMessage`) and publishing
+the same `data-display-phase` attribute. The phase lives on the model, not in the
+component, for the same reason it does for a GPU display: the component then
+can't disagree with it. Only the container and the readiness flag (`svgReady`,
+not `canvasDrawn`) are arc-local, so precedence and visuals stay single-sourced. See `plugins/arc/CLAUDE.md`.
 
 Arc's fetch autorun is `error`-gated, so its `reload()` clears `error` to re-fire
 it. Without that override the shared error bar's retry would be dead.

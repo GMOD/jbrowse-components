@@ -50,4 +50,6 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [038](adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md) | Accepted | Desktop vets remote-config plugins at the `fetchConfig` funnel, not per caller; mitigation until contextIsolation |
 | [039](adr-039-synteny-no-read-time-binning.md) | Accepted | No read-time binning for synteny/PIF (optimizes the wrong end); the N→M lever is a deferred `make-pif` binned tier, not a region gate |
 | [040](adr-040-no-genome-quad-vertex-helper.md) | Accepted | No shared genome-quad vertex helper; hpmath atoms are the right granularity and the composition on top is single-consumer |
+| [041](adr-041-no-mixin-composed-into-basedisplay.md) | Rejected | Don't factor shared display state into a mixin composed at the BaseDisplay root — it exhausts MST's type-inference depth and silently drops later mixins' members |
+| [042](adr-042-no-shared-assembly-swap-autorun-installer.md) | Rejected | Keep dotplot's and synteny's assembly-swap-check autoruns separate; a shared installer would put a mobx dependency on synteny-core to dedup ~12 lines |
 <!-- END GENERATED ADR INDEX -->

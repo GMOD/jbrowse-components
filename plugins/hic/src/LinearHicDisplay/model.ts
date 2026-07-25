@@ -174,8 +174,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .views(self => ({
       /**
        * #getter
-       * GlobalDataDisplayMixin hook (global-display analog of
-       * `viewportWithinLoadedData`): the contact matrix is loaded once
+       * The shared freshness hook, HiC's way: the contact matrix is current once
        * `rpcData` is set (the fetch commits it even for an empty viewport) AND
        * that data was fetched for the current viewport. Gating on freshness —
        * not merely `rpcData !== null` — keeps off-screen `svgReady` from
@@ -183,7 +182,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * the debounced-refetch window (`setLastDrawnViewport` runs right after
        * `setRpcData`, so the two move together).
        */
-      get dataLoaded(): boolean {
+      get dataCurrent(): boolean {
         return (
           self.rpcData !== null &&
           viewportMatchesLastDrawn({

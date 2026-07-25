@@ -218,7 +218,37 @@ describe('arc derived regionTooLarge', () => {
 // install). Browser tests cover the end-to-end path via the arc-display-done
 // testid.
 
-// Arc's fetch trigger gates on `!dataLoaded`, which goes false the moment a
+// `displayPhase` moved from BaseDisplayComponent onto the model so the component
+// can't disagree with it. Pinned here because the terminal flags reach
+// computeDisplayPhase as explicit fields: spreading the MST node instead drops
+// them (view getters are non-enumerable), which reads as a permanently
+// non-terminal display rather than as an error.
+describe('arc displayPhase', () => {
+  it('ranks tooLarge above error above loading', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    // before the debounced fetch autorun starts, isLoading is false — the
+    // pre-first-paint window is the component's `drawn` flag, not a phase
+    expect(display.displayPhase).toBe('ready')
+
+    display.setError(new Error('boom'))
+    expect(display.displayPhase).toBe('error')
+
+    view.zoomTo(2000)
+    display.setByteEstimate({ bytes: 1_500_000 })
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.displayPhase).toBe('tooLarge')
+  })
+
+  it('reaches ready once features land with no fetch in flight', async () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(50)
+    await settle()
+    expect(display.features).toBeDefined()
+    expect(display.displayPhase).toBe('ready')
+  })
+})
+
+// Arc's fetch trigger gates on `!dataCurrent`, which goes false the moment a
 // fetch commits. That is the shape that breaks a naive reload: the skeleton
 // autorun stops re-reading `reloadCounter` once it settles into "nothing to
 // fetch", so bumping the counter can't wake it, and the signature still matches
@@ -235,7 +265,7 @@ describe('arc reload', () => {
 
     const featureFetches = () =>
       mockRpcCall.mock.calls.filter(c => c[1] === 'CoreGetFeatures').length
-    expect(display.dataLoaded).toBe(true)
+    expect(display.dataCurrent).toBe(true)
     expect(featureFetches()).toBe(1)
 
     display.reload()

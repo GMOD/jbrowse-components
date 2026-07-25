@@ -169,7 +169,7 @@ the fetch can't start until `CoreGetInfo` resolves the file's resolution list
 (that RPC is also what makes the resolution/norm overlay panel appear before
 anything else), so `isLoading` is false with nothing painted for the length of
 that round-trip — without `!canvasDrawn` the track reads as blank there. It does
-NOT fold in a `dataLoaded`/`viewportWithinLoadedData` staleness axis the way
+NOT fold in a `dataCurrent`/`viewportWithinLoadedData` staleness axis the way
 MultiRegion does — global displays keep the last frame up during a refetch
 (StaleViewportRescaleMixin rescales it), so a pan/zoom shows no scrim beyond the
 existing `isLoading` window. `rendersCanvas` (default true) gates the clause so a

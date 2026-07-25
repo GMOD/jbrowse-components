@@ -86,6 +86,15 @@ derive the third from the other two — `clearAllRpcData` empties the data while
 deliberately leaving the too-large gate alone, and a zoom-out into the banner
 leaves the previous region's data sitting in `rpcDataMap`.
 
+`dataCurrent` (`viewportWithinLoadedData && loadedRegions.size > 0`) is not a
+fourth axis: it is this family's answer to the one freshness name every display
+foundation exposes, so cross-cutting consumers — `computeSvgReady`, the
+`settled` capture gates — read one name instead of picking among spatial
+coverage, viewport-snapshot compare, and signature compare. The raw
+`viewportWithinLoadedData` stays separate because the fetch autorun and the
+loading overlay want coverage without the non-empty guard. See
+`agent-docs/reference/SVG_EXPORT.md` §"The shared freshness name".
+
 `layoutReady` exists because a failed feature lookup is ambiguous from outside
 the display: "laid out, but off-display" (filtered, past `maxHeight`) is a real
 answer; "there is no layout to be off-display _of_" is no answer at all. Only
