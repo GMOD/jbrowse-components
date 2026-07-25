@@ -108,6 +108,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     canvasRef,
     error: gpuError,
     retry,
+    canvasKey,
   } = useRenderingBackend(SyntenyRendererFactory, model)
 
   const { scrollingRef } = useWheelScrollZoom(canvas, parentView)
@@ -229,6 +230,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   return (
     <div className={classes.root} style={{ width, height }}>
       <canvas
+        // fresh element per re-init: neither WebGL nor Canvas2D can bind to one
+        // that already held a lost context (see useRenderingBackend)
+        key={canvasKey}
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

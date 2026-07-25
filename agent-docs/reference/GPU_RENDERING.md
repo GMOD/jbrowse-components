@@ -233,9 +233,20 @@ lazy mount in `useViewVisibility` is the pressure reducer). For that, the
 `isGpuRenderingDisabled()` is the single read for "GPU is off page-wide";
 `DisplayRenderErrorOverlay` hides the button when it's already true, and the
 button is scoped to context-loss errors (an over-allocation error's remedy is to
-zoom in, not to change backend). Known gap: dotplot and synteny keep their canvas
-mounted through a `renderError`, so their banner can report a loss but in-place
-retry can't clear one — they'd need a fresh canvas element.
+zoom in, not to change backend).
+
+**Every re-init needs a canvas element that never held a context**, verified in
+Chrome: `getContext('webgl2')` on a lost element returns the same lost context
+(and the HAL ctor then throws in shader compile, since `getShaderParameter`
+reports null), _and_ `getContext('2d')` returns **null** on any element that once
+had WebGL — so even the Canvas2D fallback can't bind there, turning a recoverable
+loss into "Canvas 2D context not available". DisplayChrome consumers get a fresh
+element for free (the `renderError` phase unmounts the canvas). The two
+drop-to-primitive consumers keep their canvas mounted through an error by design
+(ADR-025's mount-lifetime rule, written for a _live_ context), so they take
+`canvasKey` off the hook and put it on `<canvas key={canvasKey}>` — dotplot's
+`DotplotView.tsx` and synteny's `LevelSyntenyCanvas.tsx`. Any new
+`useRenderingBackend` consumer that renders its own banner must do the same.
 
 **Tab visibility.** `useTabVisibilityRerender` calls `model.renderNow()` on
 `visibilitychange`, bumping `renderTick`. WebGPU swap-chain textures are reissued

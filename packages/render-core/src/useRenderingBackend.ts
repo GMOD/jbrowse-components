@@ -348,5 +348,20 @@ export function useRenderingBackend<
   // model owns the terminal state, the hook only writes/reads it. Returned for
   // standalone consumers (dotplot, synteny) that render their own banner;
   // DisplayChrome reads `model.renderError` directly.
-  return { canvas, canvasRef, error: model.renderError, retry }
+  //
+  // `canvasKey` belongs on those same standalone consumers' `<canvas key=…>`.
+  // Every re-init needs a canvas element that has never held a context: a lost
+  // WebGL context is never replaced on its element (`getContext('webgl2')` keeps
+  // returning the lost one), and the Canvas2D fallback can't bind there either
+  // (`getContext('2d')` returns null on an element that once had WebGL), so
+  // reusing the element turns a recoverable loss into
+  // "Canvas 2D context not available". DisplayChrome consumers get this for free:
+  // the `renderError` phase unmounts the canvas, and the remount is a new element.
+  return {
+    canvas,
+    canvasRef,
+    error: model.renderError,
+    retry,
+    canvasKey: contextVersion,
+  }
 }

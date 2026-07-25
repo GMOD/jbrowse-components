@@ -52,13 +52,17 @@ const DotplotCanvas = observer(function DotplotCanvas({
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight } = model
-  const { canvasRef, error: gpuError } = useRenderingBackend(
-    createDotplotRenderer,
-    model,
-  )
+  const {
+    canvasRef,
+    error: gpuError,
+    canvasKey,
+  } = useRenderingBackend(createDotplotRenderer, model)
   return (
     <>
       <canvas
+        // fresh element per re-init: neither WebGL nor Canvas2D can bind to one
+        // that already held a lost context (see useRenderingBackend)
+        key={canvasKey}
         ref={canvasRef}
         data-testid={
           model.settled ? 'dotplot_webgl_canvas_done' : 'dotplot_webgl_canvas'

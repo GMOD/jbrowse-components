@@ -375,6 +375,33 @@ describe('useRenderingBackend', () => {
     expect(model.renderError).toBeUndefined()
   }, 10000)
 
+  test('canvasKey changes per re-init so a consumer can remount the element', async () => {
+    const factory = createMockFactory()
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+    const initial = result.current.canvasKey
+
+    // a browser-driven restore rebuilds, and must do so on a new element
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+      canvas.dispatchEvent(new Event('webglcontextrestored'))
+    })
+    await act(async () => {})
+    const afterRestore = result.current.canvasKey
+    expect(afterRestore).not.toBe(initial)
+
+    act(() => {
+      result.current.retry()
+    })
+    await act(async () => {})
+    expect(result.current.canvasKey).not.toBe(afterRestore)
+  })
+
   test('cleans up device lost listener on unmount', () => {
     const cleanup = jest.fn()
     jest.mocked(onDeviceLost).mockReturnValueOnce(cleanup)

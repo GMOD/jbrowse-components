@@ -93,7 +93,11 @@ be conflated:
   types with no `ChromeModel` contract (`displayPhase` / `regionTooLarge` /
   `height`), so the chrome doesn't fit. This is the sanctioned
   drop-to-primitive path, not partial adoption. Don't force them onto
-  DisplayChrome.
+  DisplayChrome. What they owe in exchange: because their canvas stays mounted
+  through an error rather than being replaced by a banner, they must key it on the
+  hook's `canvasKey` (`<canvas key={canvasKey}>`) so a re-init gets an element
+  that never held a context. Neither WebGL nor Canvas2D can bind to one that did
+  — see GPU_RENDERING.md "Context-loss recovery".
 - **Main-thread SVG, own radial banners:** `circular-view` (ChordVariant) is not
   a GPU display at all, having no `useRenderingBackend`, `RenderLifecycleMixin`,
   or `canvasDrawn`. It renders SVG chords (`SVChordsReactComponent`) gated on
