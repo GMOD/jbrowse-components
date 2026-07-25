@@ -51,6 +51,9 @@ CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
 in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data --env TMPDIR=/data/tmp "$CACTUS_IMAGE" "$@"; }
 
 # ── Fetch each genome + annotation; keep only the chromosome, renamed `chr` ────
+# NCTC86 is GCF_002007705.1 (NZ_CP019778.1, 5,111,920 bp), the assembly the
+# hosted demo was built from; GCF_003697165.2 is a different deposit of the same
+# isolate (ATCC 11775, 4,903,501 bp) and would not line up with it.
 while read -r strain acc; do
   [ -f "$strain.zip" ] || datasets download genome accession "$acc" \
     --include genome,gff3 --filename "$strain.zip"
@@ -61,7 +64,7 @@ done <<'STRAINS_TBL'
 K12     GCF_000005845.2
 Sakai   GCF_000008865.2
 CFT073  GCF_000007445.1
-NCTC86  GCF_003697165.2
+NCTC86  GCF_002007705.1
 STRAINS_TBL
 
 # ── Build the graph with cactus-pangenome (Minigraph-Cactus) ──────────────────

@@ -26,6 +26,11 @@ cd "$OUTDIR"
 
 # ── Fetch each genome + annotation; keep only the chromosome, renamed `chr` ───
 # Heredoc columns: short strain name, NCBI RefSeq accession.
+# NCTC86 is GCF_002007705.1 (chromosome NZ_CP019778.1, 5,111,920 bp), the
+# assembly the hosted demo was built from. Do not "upgrade" it to
+# GCF_003697165.2: that is a separate deposit of the same historical isolate
+# (ATCC 11775 / DSM 30083, 4,903,501 bp), so it would not line up with the
+# hosted PAF, PIF or graphs, or with this strain's gene track.
 while read -r strain acc; do
   [ -f "$strain.zip" ] || datasets download genome accession "$acc" \
     --include genome,gff3 --filename "$strain.zip"
@@ -38,7 +43,7 @@ done <<'STRAINS'
 K12     GCF_000005845.2
 Sakai   GCF_000008865.2
 CFT073  GCF_000007445.1
-NCTC86  GCF_003697165.2
+NCTC86  GCF_002007705.1
 STRAINS
 
 # ── PanSN-rename a concatenated copy and self-align it into the all-vs-all PAF ─
