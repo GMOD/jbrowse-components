@@ -27,13 +27,12 @@ capture, status reporting); consumers see only `runFetch`, `cancelFetch`,
 | [statusProgress](#volatile-statusprogress)                   | Volatiles | FetchMixin | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate                                                                                                                           |
 | [fetchCanceled](#volatile-fetchcanceled)                     | Volatiles | FetchMixin | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                   |
 | [regionStatuses](#volatile-regionstatuses)                   | Volatiles | FetchMixin | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                               |
-| [lastStatusMs](#volatile-laststatusms)                       | Volatiles | FetchMixin | Date.now() of the last applied status write; the status callbacks gate on it to throttle a high-frequency progress stream.                                                                                                                   |
 | [isLoading](#getter-isloading)                               | Getters   | FetchMixin | true while a fetch is active                                                                                                                                                                                                                 |
 | [makeStatusCallback](#method-makestatuscallback)             | Methods   | FetchMixin | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. |
 | [makeRegionStatusCallback](#method-makeregionstatuscallback) | Methods   | FetchMixin | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                             |
 | [setError](#action-seterror)                                 | Actions   | FetchMixin |                                                                                                                                                                                                                                              |
-| [setStatusMessage](#action-setstatusmessage)                 | Actions   | FetchMixin |                                                                                                                                                                                                                                              |
-| [throttleStatus](#action-throttlestatus)                     | Actions   | FetchMixin | Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last status write.                                                                                                                                                    |
+| [setStatusMessage](#action-setstatusmessage)                 | Actions   | FetchMixin | Unthrottled: a display writing a phase label by hand must see every write land.                                                                                                                                                              |
+| [throttleStatus](#action-throttlestatus)                     | Actions   | FetchMixin | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                         |
 | [resetStatus](#action-resetstatus)                           | Actions   | FetchMixin | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                 |
 | [stopActiveFetch](#action-stopactivefetch)                   | Actions   | FetchMixin | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                     |
 | [setRegionStatus](#action-setregionstatus)                   | Actions   | FetchMixin | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                    |
@@ -132,18 +131,6 @@ type regionStatuses = Map<number, RpcStatus>
 regionStatuses: new Map<number, RpcStatus>()
 ```
 
-#### volatile: lastStatusMs
-
-Date.now() of the last applied status write; the status callbacks gate on it to
-throttle a high-frequency progress stream.
-
-```ts
-// type signature
-type lastStatusMs = number
-// code
-lastStatusMs: 0
-```
-
 </details>
 
 <details>
@@ -178,7 +165,9 @@ type makeStatusCallback = () => (status: RpcStatus) => void
 
 Per-region variant of `makeStatusCallback`: routes progress through
 `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
-status bar instead of clobbering each other. Same `isAlive` guard.
+status bar instead of clobbering each other. Same `isAlive` guard;
+`setRegionStatus` owns the throttling (it has to thin only the bar write, not
+the per-region bookkeeping).
 
 ```ts
 type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
@@ -189,13 +178,19 @@ type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
 <details>
 <summary>FetchMixin - Actions</summary>
 
+#### action: setStatusMessage
+
+Unthrottled: a display writing a phase label by hand must see every write land.
+The high-frequency RPC stream is thinned one level up, in the callback
+factories.
+
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
+```
+
 #### action: throttleStatus
 
-Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last
-status write. A leading-edge throttle: sparse updates pass straight through,
-dense progress bursts are thinned so the loading overlay stops re-rendering
-faster than the view animates. The final status doesn't need a trailing flush —
-fetch completion clears it via `resetStatus`.
+Run `apply` only if the throttle window has elapsed.
 
 ```ts
 type throttleStatus = (apply: () => void) => void
@@ -282,9 +277,8 @@ type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 <details>
 <summary>FetchMixin - Actions (other undocumented members)</summary>
 
-| Member                                                     | Type                                        |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| <span id="action-seterror">setError</span>                 | `(error?: unknown) => void`                 |
-| <span id="action-setstatusmessage">setStatusMessage</span> | `(status?: RpcStatus \| undefined) => void` |
+| Member                                     | Type                        |
+| ------------------------------------------ | --------------------------- |
+| <span id="action-seterror">setError</span> | `(error?: unknown) => void` |
 
 </details>

@@ -115,8 +115,10 @@ The configuration slots for this model are documented on its
 Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the
 [SVG export guide](/docs/developer_guides/svg_export)). Chord displays are
 non-rectangular (radial), so they keep a bespoke `<DisplayError>` error UI
-instead of `SvgChrome`, but still expose `svgReady` + await it via the shared
-`awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state.
+instead of `SvgChrome`, but they run the same shared `computeSvgReady` policy
+and await it via the shared `awaitSvgReady` — no inlined `when()`. No
+`regionTooLarge` state, and a chord fetch covers the whole view at once, so
+`ready` (features arrived) is the whole freshness axis.
 
 ```ts
 type svgReady = boolean

@@ -25,14 +25,15 @@ clear.
 | Member                                                                 | Kind      | Defined by                                    | Description                                                                                                                                                                                                                                  |
 | ---------------------------------------------------------------------- | --------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [features](#volatile-features)                                         | Volatiles | ArcFetchModel                                 |                                                                                                                                                                                                                                              |
-| [loadedRegionSignature](#volatile-loadedregionsignature)               | Volatiles | ArcFetchModel                                 | signature of the static-block region set `features` were fetched for; the `dataLoaded`/`svgReady` freshness axis (see regionSignature.ts)                                                                                                    |
+| [loadedRegionSignature](#volatile-loadedregionsignature)               | Volatiles | ArcFetchModel                                 | signature of the static-block region set `features` were fetched for; the `dataCurrent`/`svgReady` freshness axis (see regionSignature.ts)                                                                                                   |
 | [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters   | ArcFetchModel                                 |                                                                                                                                                                                                                                              |
-| [dataLoaded](#getter-dataloaded)                                       | Getters   | ArcFetchModel                                 | fresh only when `features` were fetched for the current static-block set; overrides GlobalFetchMixin's default so `svgReady` can resolve on load                                                                                             |
+| [dataCurrent](#getter-datacurrent)                                     | Getters   | ArcFetchModel                                 | fresh only when `features` were fetched for the current static-block set; overrides GlobalFetchMixin's default so `svgReady` can resolve on load                                                                                             |
+| [displayPhase](#getter-displayphase)                                   | Getters   | ArcFetchModel                                 | The same mutually-exclusive visual state every GPU display exposes, over the same shared `computeDisplayPhase` — arc just has no `renderError` phase, having no GPU backend.                                                                 |
 | [setFeatures](#action-setfeatures)                                     | Actions   | ArcFetchModel                                 |                                                                                                                                                                                                                                              |
-| [reload](#action-reload)                                               | Actions   | ArcFetchModel                                 | Arc's fetch trigger gates on `!dataLoaded`, so bumping `reloadCounter` alone can't refetch: the signature still matches the current blocks.                                                                                                  |
+| [reload](#action-reload)                                               | Actions   | ArcFetchModel                                 | Arc's fetch trigger gates on `!dataCurrent`, so bumping `reloadCounter` alone can't refetch: the signature still matches the current blocks.                                                                                                 |
 | [reloadCounter](#volatile-reloadcounter)                               | Volatiles | [GlobalFetchMixin](../globalfetchmixin)       | Bumped by `reload()` to retrigger a global display's fetch autorun.                                                                                                                                                                          |
 | [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                 | Getters   | [GlobalFetchMixin](../globalfetchmixin)       | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                 |
-| [svgReady](#getter-svgready)                                           | Getters   | [GlobalFetchMixin](../globalfetchmixin)       | Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an off-screen (SVG) export can read final data.                                                                                                                       |
+| [svgReady](#getter-svgready)                                           | Getters   | [GlobalFetchMixin](../globalfetchmixin)       | Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate.                                                                                                                                           |
 | [userByteLimit](#volatile-userbytelimit)                               | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | user-confirmed byte limit after a force-load, disabling the gate.                                                                                                                                                                            |
 | [byteEstimate](#volatile-byteestimate)                                 | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | Last byte estimate reported for this display, with the adapter's own `fetchSizeLimit` and `alwaysRender` flag.                                                                                                                               |
 | [measuredSpanBp](#volatile-measuredspanbp)                             | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | The span the current `byteEstimate` was measured over, so the derived gate can rescale it to the span on screen now.                                                                                                                         |
@@ -54,13 +55,12 @@ clear.
 | [statusProgress](#volatile-statusprogress)                             | Volatiles | [FetchMixin](../fetchmixin)                   | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate                                                                                                                           |
 | [fetchCanceled](#volatile-fetchcanceled)                               | Volatiles | [FetchMixin](../fetchmixin)                   | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                   |
 | [regionStatuses](#volatile-regionstatuses)                             | Volatiles | [FetchMixin](../fetchmixin)                   | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                               |
-| [lastStatusMs](#volatile-laststatusms)                                 | Volatiles | [FetchMixin](../fetchmixin)                   | Date.now() of the last applied status write; the status callbacks gate on it to throttle a high-frequency progress stream.                                                                                                                   |
 | [isLoading](#getter-isloading)                                         | Getters   | [FetchMixin](../fetchmixin)                   | true while a fetch is active                                                                                                                                                                                                                 |
 | [makeStatusCallback](#method-makestatuscallback)                       | Methods   | [FetchMixin](../fetchmixin)                   | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. |
 | [makeRegionStatusCallback](#method-makeregionstatuscallback)           | Methods   | [FetchMixin](../fetchmixin)                   | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                             |
 | [setError](#action-seterror)                                           | Actions   | [FetchMixin](../fetchmixin)                   |                                                                                                                                                                                                                                              |
-| [setStatusMessage](#action-setstatusmessage)                           | Actions   | [FetchMixin](../fetchmixin)                   |                                                                                                                                                                                                                                              |
-| [throttleStatus](#action-throttlestatus)                               | Actions   | [FetchMixin](../fetchmixin)                   | Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last status write.                                                                                                                                                    |
+| [setStatusMessage](#action-setstatusmessage)                           | Actions   | [FetchMixin](../fetchmixin)                   | Unthrottled: a display writing a phase label by hand must see every write land.                                                                                                                                                              |
+| [throttleStatus](#action-throttlestatus)                               | Actions   | [FetchMixin](../fetchmixin)                   | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                         |
 | [resetStatus](#action-resetstatus)                                     | Actions   | [FetchMixin](../fetchmixin)                   | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                 |
 | [stopActiveFetch](#action-stopactivefetch)                             | Actions   | [FetchMixin](../fetchmixin)                   | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                     |
 | [setRegionStatus](#action-setregionstatus)                             | Actions   | [FetchMixin](../fetchmixin)                   | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                    |
@@ -75,7 +75,7 @@ clear.
 #### volatile: loadedRegionSignature
 
 signature of the static-block region set `features` were fetched for; the
-`dataLoaded`/`svgReady` freshness axis (see regionSignature.ts)
+`dataCurrent`/`svgReady` freshness axis (see regionSignature.ts)
 
 ```ts
 // type signature
@@ -98,13 +98,25 @@ loadedRegionSignature: undefined as string | undefined
 <details>
 <summary>ArcFetchModel - Getters</summary>
 
-#### getter: dataLoaded
+#### getter: dataCurrent
 
 fresh only when `features` were fetched for the current static-block set;
 overrides GlobalFetchMixin's default so `svgReady` can resolve on load
 
 ```ts
-type dataLoaded = boolean
+type dataCurrent = boolean
+```
+
+#### getter: displayPhase
+
+The same mutually-exclusive visual state every GPU display exposes, over the
+same shared `computeDisplayPhase` — arc just has no `renderError` phase, having
+no GPU backend. On the model rather than derived inside `BaseDisplayComponent`
+so the component can't disagree with the model, and so arc publishes
+`data-display-phase` for tests like every other display.
+
+```ts
+type displayPhase = DisplayPhase
 ```
 
 </details>
@@ -123,9 +135,9 @@ type dataLoaded = boolean
 
 #### action: reload
 
-Arc's fetch trigger gates on `!dataLoaded`, so bumping `reloadCounter` alone
+Arc's fetch trigger gates on `!dataCurrent`, so bumping `reloadCounter` alone
 can't refetch: the signature still matches the current blocks. Drop it so
-`dataLoaded` goes false and the autorun fires. `features` deliberately survives
+`dataCurrent` goes false and the autorun fires. `features` deliberately survives
 — the stale arcs stay on screen under the loading overlay rather than blanking,
 and `setFeatures` replaces them.
 
@@ -184,9 +196,8 @@ type svgReadyExtraTerminal = boolean
 
 #### getter: svgReady
 
-Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
-off-screen (SVG) export can read final data. Like that mixin it requires the
-dataset to actually be loaded (or a terminal error / too-large / extra state),
+Policy single-sourced in `computeSvgReady`; this family supplies only its
+`dataCurrent` predicate. Note it requires the dataset to actually be current,
 NOT merely "not currently fetching": the fetch trigger is a debounced
 `afterAttach` autorun, so at export time `isLoading` can still be false with no
 data yet — a `displayPhase !== 'loading'` test would then capture an empty
@@ -473,18 +484,6 @@ type regionStatuses = Map<number, RpcStatus>
 regionStatuses: new Map<number, RpcStatus>()
 ```
 
-#### volatile: lastStatusMs
-
-Date.now() of the last applied status write; the status callbacks gate on it to
-throttle a high-frequency progress stream.
-
-```ts
-// type signature
-type lastStatusMs = number
-// code
-lastStatusMs: 0
-```
-
 **Getters**
 
 #### getter: isLoading
@@ -513,7 +512,9 @@ type makeStatusCallback = () => (status: RpcStatus) => void
 
 Per-region variant of `makeStatusCallback`: routes progress through
 `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
-status bar instead of clobbering each other. Same `isAlive` guard.
+status bar instead of clobbering each other. Same `isAlive` guard;
+`setRegionStatus` owns the throttling (it has to thin only the bar write, not
+the per-region bookkeeping).
 
 ```ts
 type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
@@ -521,13 +522,19 @@ type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
 
 **Actions**
 
+#### action: setStatusMessage
+
+Unthrottled: a display writing a phase label by hand must see every write land.
+The high-frequency RPC stream is thinned one level up, in the callback
+factories.
+
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
+```
+
 #### action: throttleStatus
 
-Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last
-status write. A leading-edge throttle: sparse updates pass straight through,
-dense progress bursts are thinned so the loading overlay stops re-rendering
-faster than the view animates. The final status doesn't need a trailing flush —
-fetch completion clears it via `resetStatus`.
+Run `apply` only if the throttle window has elapsed.
 
 ```ts
 type throttleStatus = (apply: () => void) => void
@@ -609,9 +616,8 @@ others are stored in `error` if not stale.
 type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 ```
 
-| Member                                                     | Type                                        |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| <span id="action-seterror">setError</span>                 | `(error?: unknown) => void`                 |
-| <span id="action-setstatusmessage">setStatusMessage</span> | `(status?: RpcStatus \| undefined) => void` |
+| Member                                     | Type                        |
+| ------------------------------------------ | --------------------------- |
+| <span id="action-seterror">setError</span> | `(error?: unknown) => void` |
 
 </details>

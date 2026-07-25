@@ -53,8 +53,7 @@ Hi-C display that renders contact matrix using WebGL
 | [selectedNormalization](#getter-selectednormalization)                 | Getters    | LinearHicDisplay                                          | The user's persisted normalization choice.                                                                                                                                                                                                                           |
 | [activeNormalization](#getter-activenormalization)                     | Getters    | LinearHicDisplay                                          | The normalization actually used, resolved against what the file offers (`availableNormalizations`).                                                                                                                                                                  |
 | [fitToHeight](#getter-fittoheight)                                     | Getters    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
-| [dataLoaded](#getter-dataloaded)                                       | Getters    | LinearHicDisplay                                          | GlobalDataDisplayMixin hook (global-display analog of `viewportWithinLoadedData`): the contact matrix is loaded once `rpcData` is set (the fetch commits it even for an empty viewport) AND that data was fetched for the current viewport.                          |
-| [isEmpty](#getter-isempty)                                             | Getters    | LinearHicDisplay                                          | Data has arrived for the current viewport and it is genuinely empty — the file has no contacts here at this resolution (HicAdapter returns `[]` for such a region pair).                                                                                             |
+| [dataCurrent](#getter-datacurrent)                                     | Getters    | LinearHicDisplay                                          | The shared freshness hook, HiC's way: the contact matrix is current once `rpcData` is set (the fetch commits it even for an empty viewport) AND that data was fetched for the current viewport.                                                                      |
 | [colorScheme](#getter-colorscheme)                                     | Getters    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
 | [showLegend](#getter-showlegend)                                       | Getters    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
 | [colorMaxScore](#getter-colormaxscore)                                 | Getters    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
@@ -64,6 +63,7 @@ Hi-C display that renders contact matrix using WebGL
 | [effectiveResolutionIdx](#getter-effectiveresolutionidx)               | Getters    | LinearHicDisplay                                          | Index actually used after applying `resolutionBias`, clamped to the valid range so a stale bias from a different zoom level can't index out of bounds.                                                                                                               |
 | [effectiveResolution](#getter-effectiveresolution)                     | Getters    | LinearHicDisplay                                          | The actual binsize to fetch at, after auto-pick + bias.                                                                                                                                                                                                              |
 | [renderTransform](#getter-rendertransform)                             | Getters    | LinearHicDisplay                                          | Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test, and SVG export.                                                                                                                                                                       |
+| [yScalarForHeight](#method-yscalarforheight)                           | Methods    | LinearHicDisplay                                          | Vertical squash for an arbitrary display height.                                                                                                                                                                                                                     |
 | [rpcProps](#method-rpcprops)                                           | Methods    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
 | [hitTest](#method-hittest)                                             | Methods    | LinearHicDisplay                                          | Inverse of the render transform: takes mouse coords (canvas-relative) and returns the contact bin under the cursor, or undefined.                                                                                                                                    |
 | [renderState](#method-renderstate)                                     | Methods    | LinearHicDisplay                                          | Computed per-frame render state for the GPU backend.                                                                                                                                                                                                                 |
@@ -115,7 +115,7 @@ Hi-C display that renders contact matrix using WebGL
 | [displayPhase](#getter-displayphase)                                   | Getters    | [GlobalDataDisplayMixin](../globaldatadisplaymixin)       | Same precedence as MultiRegionDisplayMixin (single-sourced in `computeDisplayPhase`).                                                                                                                                                                                |
 | [reloadCounter](#volatile-reloadcounter)                               | Volatiles  | [GlobalFetchMixin](../globalfetchmixin)                   | Bumped by `reload()` to retrigger a global display's fetch autorun.                                                                                                                                                                                                  |
 | [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                 | Getters    | [GlobalFetchMixin](../globalfetchmixin)                   | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                                         |
-| [svgReady](#getter-svgready)                                           | Getters    | [GlobalFetchMixin](../globalfetchmixin)                   | Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an off-screen (SVG) export can read final data.                                                                                                                                               |
+| [svgReady](#getter-svgready)                                           | Getters    | [GlobalFetchMixin](../globalfetchmixin)                   | Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate.                                                                                                                                                                   |
 | [userByteLimit](#volatile-userbytelimit)                               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             | user-confirmed byte limit after a force-load, disabling the gate.                                                                                                                                                                                                    |
 | [byteEstimate](#volatile-byteestimate)                                 | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             | Last byte estimate reported for this display, with the adapter's own `fetchSizeLimit` and `alwaysRender` flag.                                                                                                                                                       |
 | [measuredSpanBp](#volatile-measuredspanbp)                             | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             | The span the current `byteEstimate` was measured over, so the derived gate can rescale it to the span on screen now.                                                                                                                                                 |
@@ -135,11 +135,10 @@ Hi-C display that renders contact matrix using WebGL
 | [fetchGeneration](#volatile-fetchgeneration)                           | Volatiles  | [FetchMixin](../fetchmixin)                               | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                     |
 | [fetchCanceled](#volatile-fetchcanceled)                               | Volatiles  | [FetchMixin](../fetchmixin)                               | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                                           |
 | [regionStatuses](#volatile-regionstatuses)                             | Volatiles  | [FetchMixin](../fetchmixin)                               | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                                                       |
-| [lastStatusMs](#volatile-laststatusms)                                 | Volatiles  | [FetchMixin](../fetchmixin)                               | Date.now() of the last applied status write; the status callbacks gate on it to throttle a high-frequency progress stream.                                                                                                                                           |
 | [isLoading](#getter-isloading)                                         | Getters    | [FetchMixin](../fetchmixin)                               | true while a fetch is active                                                                                                                                                                                                                                         |
 | [makeStatusCallback](#method-makestatuscallback)                       | Methods    | [FetchMixin](../fetchmixin)                               | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op.                         |
 | [makeRegionStatusCallback](#method-makeregionstatuscallback)           | Methods    | [FetchMixin](../fetchmixin)                               | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                                                     |
-| [throttleStatus](#action-throttlestatus)                               | Actions    | [FetchMixin](../fetchmixin)                               | Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last status write.                                                                                                                                                                            |
+| [throttleStatus](#action-throttlestatus)                               | Actions    | [FetchMixin](../fetchmixin)                               | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                                                 |
 | [resetStatus](#action-resetstatus)                                     | Actions    | [FetchMixin](../fetchmixin)                               | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                                         |
 | [stopActiveFetch](#action-stopactivefetch)                             | Actions    | [FetchMixin](../fetchmixin)                               | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                                             |
 | [setRegionStatus](#action-setregionstatus)                             | Actions    | [FetchMixin](../fetchmixin)                               | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                                            |
@@ -222,30 +221,18 @@ does.
 type activeNormalization = string
 ```
 
-#### getter: dataLoaded
+#### getter: dataCurrent
 
-GlobalDataDisplayMixin hook (global-display analog of
-`viewportWithinLoadedData`): the contact matrix is loaded once `rpcData` is set
-(the fetch commits it even for an empty viewport) AND that data was fetched for
-the current viewport. Gating on freshness — not merely `rpcData !== null` —
-keeps off-screen `svgReady` from resolving on a matrix left over from the
-pre-pan/zoom viewport during the debounced-refetch window
+The shared freshness hook, HiC's way: the contact matrix is current once
+`rpcData` is set (the fetch commits it even for an empty viewport) AND that data
+was fetched for the current viewport. Gating on freshness — not merely
+`rpcData !== null` — keeps off-screen `svgReady` from resolving on a matrix left
+over from the pre-pan/zoom viewport during the debounced-refetch window
 (`setLastDrawnViewport` runs right after `setRpcData`, so the two move
 together).
 
 ```ts
-type dataLoaded = boolean
-```
-
-#### getter: isEmpty
-
-Data has arrived for the current viewport and it is genuinely empty — the file
-has no contacts here at this resolution (HicAdapter returns `[]` for such a
-region pair). Lets the UI tell "nothing to show" apart from "still fetching",
-which otherwise look identical: a blank track.
-
-```ts
-type isEmpty = boolean
+type dataCurrent = boolean
 ```
 
 #### getter: hasLegendData
@@ -319,6 +306,24 @@ type renderTransform = RenderTransform
 
 <details>
 <summary>LinearHicDisplay - Methods</summary>
+
+#### method: yScalarForHeight
+
+Vertical squash for an arbitrary display height. Bidirectional fill like the LD
+display: dragging taller than the natural triangle height stretches to fill
+rather than leaving a blank band below. Sole owner of the triangle-base width,
+so the on-screen `yScalar` and the SVG export's `overrideHeight` variant can't
+drift apart.
+
+WithoutBorders, because the base is the _content_ the worker packed
+(`regionOffsets` lays contentBlocks out contiguously). `totalWidthPx` also
+counts the boundary padding blocks dynamicBlocks adds when scrolled left of
+genome start / past the end, which would overstate the base and leave
+fit-to-height short of the display.
+
+```ts
+type yScalarForHeight = (displayHeight: number) => number
+```
 
 #### method: hitTest
 
@@ -431,16 +436,16 @@ type performHicFetch = () => Promise<void>
 <details>
 <summary>LinearHicDisplay - Actions (other undocumented members)</summary>
 
-| Member                                                                       | Type                                                           |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| <span id="action-setrpcdata">setRpcData</span>                               | `(data: HicDataResult \| null) => void`                        |
-| <span id="action-setuselogscale">setUseLogScale</span>                       | `(f: boolean) => void`                                         |
-| <span id="action-setusecolorpercentile">setUseColorPercentile</span>         | `(f: boolean) => void`                                         |
-| <span id="action-setshowresolutioncontrols">setShowResolutionControls</span> | `(f: boolean) => void`                                         |
-| <span id="action-setcolorscheme">setColorScheme</span>                       | `(f?: "fall" \| "juicebox" \| "viridis" \| undefined) => void` |
-| <span id="action-setfittoheight">setFitToHeight</span>                       | `(arg: boolean) => void`                                       |
-| <span id="action-setshowlegend">setShowLegend</span>                         | `(arg: boolean) => void`                                       |
-| <span id="action-setavailableresolutions">setAvailableResolutions</span>     | `(f: number[]) => void`                                        |
+| Member                                                                       | Type                                             |
+| ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| <span id="action-setrpcdata">setRpcData</span>                               | `(data: HicDataResult \| null) => void`          |
+| <span id="action-setuselogscale">setUseLogScale</span>                       | `(f: boolean) => void`                           |
+| <span id="action-setusecolorpercentile">setUseColorPercentile</span>         | `(f: boolean) => void`                           |
+| <span id="action-setshowresolutioncontrols">setShowResolutionControls</span> | `(f: boolean) => void`                           |
+| <span id="action-setcolorscheme">setColorScheme</span>                       | `(f: "fall" \| "juicebox" \| "viridis") => void` |
+| <span id="action-setfittoheight">setFitToHeight</span>                       | `(arg: boolean) => void`                         |
+| <span id="action-setshowlegend">setShowLegend</span>                         | `(arg: boolean) => void`                         |
+| <span id="action-setavailableresolutions">setAvailableResolutions</span>     | `(f: number[]) => void`                          |
 
 </details>
 
@@ -719,9 +724,8 @@ type svgReadyExtraTerminal = boolean
 
 #### getter: svgReady
 
-Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
-off-screen (SVG) export can read final data. Like that mixin it requires the
-dataset to actually be loaded (or a terminal error / too-large / extra state),
+Policy single-sourced in `computeSvgReady`; this family supplies only its
+`dataCurrent` predicate. Note it requires the dataset to actually be current,
 NOT merely "not currently fetching": the fetch trigger is a debounced
 `afterAttach` autorun, so at export time `isLoading` can still be false with no
 data yet — a `displayPhase !== 'loading'` test would then capture an empty
@@ -986,18 +990,6 @@ type regionStatuses = Map<number, RpcStatus>
 regionStatuses: new Map<number, RpcStatus>()
 ```
 
-#### volatile: lastStatusMs
-
-Date.now() of the last applied status write; the status callbacks gate on it to
-throttle a high-frequency progress stream.
-
-```ts
-// type signature
-type lastStatusMs = number
-// code
-lastStatusMs: 0
-```
-
 **Getters**
 
 #### getter: isLoading
@@ -1026,7 +1018,9 @@ type makeStatusCallback = () => (status: RpcStatus) => void
 
 Per-region variant of `makeStatusCallback`: routes progress through
 `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
-status bar instead of clobbering each other. Same `isAlive` guard.
+status bar instead of clobbering each other. Same `isAlive` guard;
+`setRegionStatus` owns the throttling (it has to thin only the bar write, not
+the per-region bookkeeping).
 
 ```ts
 type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
@@ -1036,11 +1030,7 @@ type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
 
 #### action: throttleStatus
 
-Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last
-status write. A leading-edge throttle: sparse updates pass straight through,
-dense progress bursts are thinned so the loading overlay stops re-rendering
-faster than the view animates. The final status doesn't need a trailing flush —
-fetch completion clears it via `resetStatus`.
+Run `apply` only if the throttle window has elapsed.
 
 ```ts
 type throttleStatus = (apply: () => void) => void

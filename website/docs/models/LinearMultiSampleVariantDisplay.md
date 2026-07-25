@@ -113,7 +113,7 @@ per-cell feature widget on click.
 | [resizeHeight](#action-resizeheight)                                     | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Override resizeHeight to scale a pinned row height proportionally when the display is vertically resized.                                                                                                                                                         |
 | [setReferenceDrawingMode](#action-setreferencedrawingmode)               | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
 | [setFeatureColor](#action-setfeaturecolor)                               | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Set the per-variant cell color override (jexl string or CSS color), or '' to restore default genotype coloring.                                                                                                                                                   |
-| [sortByGenotype](#action-sortbygenotype)                                 | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
+| [sortByGenotype](#action-sortbygenotype)                                 | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Order the rows by their genotype at one variant, breaking ties by how far each row agrees with its neighbours to either side of it.                                                                                                                               |
 | [setScrollTop](#action-setscrolltop)                                     | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
 | [clearDisplaySpecificData](#action-cleardisplayspecificdata)             | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
 | [isCacheValid](#action-iscachevalid)                                     | Actions    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
@@ -147,7 +147,8 @@ per-cell feature widget on click.
 | [canRender](#getter-canrender)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                 |
 | [isReady](#getter-isready)                                               | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                        |
 | [viewportWithinLoadedData](#getter-viewportwithinloadeddata)             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                            |
-| [svgReady](#getter-svgready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state.                                                                                               |
+| [dataCurrent](#getter-datacurrent)                                       | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | This family's answer to the shared freshness question every display foundation must answer (`dataCurrent`): the held data corresponds to what is on screen right now.                                                                                             |
+| [svgReady](#getter-svgready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | true once an off-screen (SVG) export can safely read this display's data.                                                                                                                                                                                         |
 | [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data.                                                                                                                |
 | [layoutReady](#getter-layoutready)                                       | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | Overridable hook (default false): whether a searchable feature layout currently exists.                                                                                                                                                                           |
 | [renderBlocks](#getter-renderblocks)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin)         | Shared cached view for every LGV-based GPU display.                                                                                                                                                                                                               |
@@ -189,11 +190,10 @@ per-cell feature widget on click.
 | [fetchGeneration](#volatile-fetchgeneration)                             | Volatiles  | [FetchMixin](../fetchmixin)                                   | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                  |
 | [fetchCanceled](#volatile-fetchcanceled)                                 | Volatiles  | [FetchMixin](../fetchmixin)                                   | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                                        |
 | [regionStatuses](#volatile-regionstatuses)                               | Volatiles  | [FetchMixin](../fetchmixin)                                   | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                                                    |
-| [lastStatusMs](#volatile-laststatusms)                                   | Volatiles  | [FetchMixin](../fetchmixin)                                   | Date.now() of the last applied status write; the status callbacks gate on it to throttle a high-frequency progress stream.                                                                                                                                        |
 | [isLoading](#getter-isloading)                                           | Getters    | [FetchMixin](../fetchmixin)                                   | true while a fetch is active                                                                                                                                                                                                                                      |
 | [makeStatusCallback](#method-makestatuscallback)                         | Methods    | [FetchMixin](../fetchmixin)                                   | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op.                      |
 | [makeRegionStatusCallback](#method-makeregionstatuscallback)             | Methods    | [FetchMixin](../fetchmixin)                                   | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                                                  |
-| [throttleStatus](#action-throttlestatus)                                 | Actions    | [FetchMixin](../fetchmixin)                                   | Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last status write.                                                                                                                                                                         |
+| [throttleStatus](#action-throttlestatus)                                 | Actions    | [FetchMixin](../fetchmixin)                                   | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                                              |
 | [resetStatus](#action-resetstatus)                                       | Actions    | [FetchMixin](../fetchmixin)                                   | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                                      |
 | [stopActiveFetch](#action-stopactivefetch)                               | Actions    | [FetchMixin](../fetchmixin)                                   | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                                          |
 | [setRegionStatus](#action-setregionstatus)                               | Actions    | [FetchMixin](../fetchmixin)                                   | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                                         |
@@ -701,6 +701,18 @@ worker.
 type setFeatureColor = (arg: string) => void
 ```
 
+#### action: sortByGenotype
+
+Order the rows by their genotype at one variant, breaking ties by how far each
+row agrees with its neighbours to either side of it. The flanking tiebreak is
+what makes the local haplotype structure legible: rows sharing the anchor allele
+sit together, and their shared block frays outward at the recombination
+breakpoints that end it.
+
+```ts
+type sortByGenotype = (featureId: string) => void
+```
+
 | Member                                                                                 | Type                                                                                           |
 | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | <span id="action-setcelldata">setCellData</span>                                       | `(data: CellDataResult \| undefined) => void`                                                  |
@@ -722,7 +734,6 @@ type setFeatureColor = (arg: string) => void
 | <span id="action-setrunclustering">setRunClustering</span>                             | `(arg?: boolean \| undefined) => void`                                                         |
 | <span id="action-setphasedmode">setPhasedMode</span>                                   | `(arg: string) => void`                                                                        |
 | <span id="action-setreferencedrawingmode">setReferenceDrawingMode</span>               | `(arg: string) => void`                                                                        |
-| <span id="action-sortbygenotype">sortByGenotype</span>                                 | `(featureId: string) => void`                                                                  |
 | <span id="action-setscrolltop">setScrollTop</span>                                     | `(scrollTop: number) => void`                                                                  |
 | <span id="action-cleardisplayspecificdata">clearDisplaySpecificData</span>             | `() => void`                                                                                   |
 | <span id="action-iscachevalid">isCacheValid</span>                                     | `(_displayedRegionIndex: number) => boolean`                                                   |
@@ -948,15 +959,28 @@ resolution-staleness gap.
 type viewportWithinLoadedData = boolean
 ```
 
+#### getter: dataCurrent
+
+This family's answer to the shared freshness question every display foundation
+must answer (`dataCurrent`): the held data corresponds to what is on screen
+right now. Here that is spatial — every visible block lies within a fetched
+region — plus `loadedRegions.size`, which rules out the vacuously-true empty
+viewport. Regions stream in one at a time, so this (not "the first datum
+arrived") is what keeps a multi-region/whole-genome export complete.
+
+Distinct from `viewportWithinLoadedData`, which is the raw coverage predicate
+the fetch autorun and the loading overlay use.
+
+```ts
+type dataCurrent = boolean
+```
+
 #### getter: svgReady
 
-true once an off-screen (SVG) export can safely read this display's data: every
-visible region has loaded, or the fetch reached a terminal error / too-large
-state. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
-inlining the condition. Regions stream in one at a time, so gating on
-`viewportWithinLoadedData` (not the first datum) is what keeps
-multi-region/whole-genome exports complete; `loadedRegions.size` guards the
-vacuously-true empty-viewport case.
+true once an off-screen (SVG) export can safely read this display's data. Policy
+single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent`
+predicate. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
+inlining the condition.
 
 ```ts
 type svgReady = boolean
@@ -1453,18 +1477,6 @@ type regionStatuses = Map<number, RpcStatus>
 regionStatuses: new Map<number, RpcStatus>()
 ```
 
-#### volatile: lastStatusMs
-
-Date.now() of the last applied status write; the status callbacks gate on it to
-throttle a high-frequency progress stream.
-
-```ts
-// type signature
-type lastStatusMs = number
-// code
-lastStatusMs: 0
-```
-
 **Getters**
 
 #### getter: isLoading
@@ -1493,7 +1505,9 @@ type makeStatusCallback = () => (status: RpcStatus) => void
 
 Per-region variant of `makeStatusCallback`: routes progress through
 `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
-status bar instead of clobbering each other. Same `isAlive` guard.
+status bar instead of clobbering each other. Same `isAlive` guard;
+`setRegionStatus` owns the throttling (it has to thin only the bar write, not
+the per-region bookkeeping).
 
 ```ts
 type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
@@ -1503,11 +1517,7 @@ type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
 
 #### action: throttleStatus
 
-Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last
-status write. A leading-edge throttle: sparse updates pass straight through,
-dense progress bursts are thinned so the loading overlay stops re-rendering
-faster than the view animates. The final status doesn't need a trailing flush —
-fetch completion clears it via `resetStatus`.
+Run `apply` only if the throttle window has elapsed.
 
 ```ts
 type throttleStatus = (apply: () => void) => void
