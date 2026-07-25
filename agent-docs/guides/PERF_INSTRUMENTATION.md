@@ -322,12 +322,33 @@ The SAB survives the RPC argument serialization intact (it arrives as a real
 `SharedArrayBuffer`, not a mangled object), which is the part most likely to
 have rotted silently.
 
-But it buys nothing measurable: interleaved, 5 runs each, time-to-settled medians
-are **1933 ms without isolation vs 1917 ms with**. The 19–48 ms of `checkStopToken`
-self time per worker that shows up in a CPU profile is real, and it is still
-below the wall-clock noise floor. So the fallback being the only live path is
-not costing users anything worth a deployment constraint that would break
-cross-origin data fetching.
+On a **light** load it buys nothing: 5 runs each, time-to-settled medians
+1933 ms without isolation vs 1917 ms with. That measurement is misleading on its
+own, though, and it is the wrong workload — a volvox LGV has almost nothing to
+cancel, and cancellation is the entire point of a stop token.
+
+`node website/scripts/cancel-bench.ts [--coi] [--credentialless]` measures the
+case that matters: the ultra-deep (~2000x) BAM in `extra_test_data/`, driven
+through six navigations 350 ms apart so each one cancels a fetch still in
+flight. There the difference is real (6 runs each, back to back):
+
+| | XHR fallback | SharedArrayBuffer |
+| --- | --- | --- |
+| settle after the last hop | median **1016 ms** (633–1240) | median **692 ms** (655–848, one 2960 outlier) |
+| whole 6-hop burst | median **3175 ms** | median **2844 ms** |
+
+That matches the mechanism exactly: `checkStopToken2`'s XHR interval backs off
+to 500 ms, so a burst of cancels accumulates work the worker doesn't yet know is
+dead, while the atomic read notices within 10 iterations. **So don't delete the
+SAB path as dead code** — it is ~40 lines, it is verified working, and it is
+worth ~30% of cancel latency wherever it does run.
+
+Note `Cross-Origin-Embedder-Policy: credentialless` also produces
+`crossOriginIsolated` (verified: same SAB counts, 686 ms settle) and, unlike
+`require-corp`, does **not** require CORP headers on cross-origin subresources —
+so it is the variant that could make this live without breaking fetching public
+data from arbitrary hosts. `agent-docs/OTHER_IDEAS.md` only considered
+`require-corp` when it concluded isolation was unusable.
 
 ## Getting UI code out of the RPC workers
 
