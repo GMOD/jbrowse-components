@@ -147,8 +147,8 @@ because they are reporting the device, not drawing on it.
 
 ### A region arrival draws twice wherever the render autorun observes the data
 
-**Status:** Accepted. Invisible to the user; the alternative costs more than it
-buys.
+**Status:** Accepted, and as of 2026-07-25 measured rather than assumed. Removing
+the redundant draws changes nothing a user can perceive.
 
 **Never rely on the upload autorun running before the render autorun.** Both can
 observe the same arrival — upload through the key set, render through any read
@@ -194,10 +194,52 @@ Two things that already coalesce correctly, so don't "fix" them:
   `requestAnimationFrame` (`useWheelScroll`, `usePointerDrag`, `useRafCommit`),
   so a gesture commits at most once per frame.
 
-A frame scheduler on the render autorun (`autorun(fn, { scheduler })`) coalesces
-every case at once and was measured to work, but it breaks the synchronous
-contract `RenderLifecycleMixin.test.ts` and `installPerRegionLifecycle.test.ts`
-assert, and would stall under jest fake timers, which mock rAF.
+**Deferring the `renderTick` bump does not help, and the arrival draw is the
+stale one.** The obvious-looking fix is a `renderSoon()` (dirty flag flushed on
+rAF) replacing the `renderNow()` in `installPerRegionLifecycle`. It cannot work:
+the render autorun is scheduled by the `rpcDataMap` write itself, and it runs
+*before* the upload autorun, so deferring the tick defers only the correct,
+post-upload draw and leaves the pre-upload one as the single draw in that frame.
+Measured with a prototype host whose `renderNow` was frame-coalesced: 4 arrivals
+gave 9 renders, exactly the un-deferred count.
+
+**A scheduler on the render autorun works, and buys nothing in the app.**
+`autorun(fn, { scheduler })` does coalesce every case. A/B on
+`tcga/cohort_cnv_genome` (24 whole-genome regions into
+`LinearMultiRowFeatureDisplay`), headed on a real GPU, 3 runs, median:
+
+| arm | draws | to ready | frames >50ms | worst frame | long tasks |
+| --- | --- | --- | --- | --- | --- |
+| baseline | 72 | 11.9s | 22 | 176ms | 1.3s |
+| rAF | 25 | 11.3s | 19 | 176ms | 1.4s |
+| microtask | 26 | 11.2s | 18 | 176ms | 1.3s |
+| `setTimeout(0)` | 25 | 11.7s | 18 | 174ms | 1.4s |
+
+Note 24 regions cost **72** draws, not the 48 the double-draw alone predicts, so
+there is more redundancy here than this entry describes. Removing two thirds of
+it still moves nothing: every column is inside baseline run-to-run spread
+(11.1s to 12.7s to-ready). The draws are not on the critical path. Fetch, parse
+and clustering are, and the long tasks are JS. A microtask scheduler scores the
+same as rAF, which says most of the redundancy is same-task.
+
+Three costs, for whoever revisits this:
+
+- **rAF makes painting depend on frame delivery.** In one headless run the rAF
+  arm recorded **zero** draws and never became ready inside 900s, because a
+  backgrounded tab gets no frames (the harness needed `page.bringToFront()`).
+  Synchronous rendering has no such dependency. A microtask or timeout scheduler
+  avoids it.
+- **The test contract.** Forcing a scheduler on across render-core, wiggle,
+  canvas, gwas and maf fails **11 tests in 3 files** (`RenderLifecycleMixin.test.ts`,
+  `installPerRegionLifecycle.test.ts`,
+  `plugins/canvas/.../renderLifecycleGate.test.ts`), all asserting a synchronous
+  draw. Smaller than feared, but they would need an explicit flush helper, and
+  anything on jest fake timers stalls because rAF is mocked.
+- **Software raster is the one place it pays, and is not the app.** The same A/B
+  under SwiftShader went from 208.7s to 43.2s. That is the figure pipeline, not a
+  user, and its real answer is the `--angle-gl` flag already on
+  `website/scripts/profile-spec.ts` (background in
+  [SCREENSHOT_PERF.md](SCREENSHOT_PERF.md)).
 
 **Don't chase this per display.** Removing one display's read is not a fix: the
 dependency is legitimate wherever render geometry derives from fetched data
@@ -206,10 +248,12 @@ either duplicating the derivation outside MobX or pushing a data-arrival concept
 down into backends whose contract is "did a draw call run". Both cost more than
 one wasted submit per arrival.
 
-**Retire when** the two autoruns stop racing — a scheduler on the render autorun
-(with the synchronous contract those two test files assert re-expressed as a
-flush), or an explicit ordering guarantee in `attachRenderingBackend` that runs
-upload before render on a shared invalidation.
+**Retire when** a profile shows GPU submits on the critical path of a real
+interaction, which the numbers above say they are not today. The mechanism is
+settled if that ever happens: a microtask (not rAF) scheduler on the render
+autorun, with the synchronous contract those three test files assert re-expressed
+as an explicit flush. Re-measure first, on hardware GL, and treat any change that
+only helps SwiftShader as a figure-pipeline change rather than an app one.
 
 ---
 

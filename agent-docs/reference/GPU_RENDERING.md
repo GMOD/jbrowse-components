@@ -517,6 +517,16 @@ The helper spawns one autorun per `rpcDataMap` key. When a new key arrives only
 its autorun fires (O(1) upload). When an encoder-tracked observable changes
 (theme, color, scale), all per-key autoruns fire (O(N) re-encode).
 
+**This fixes uploads only. Draws keep the O(N²) shape.** `renderBlocks` clears
+the canvas and redraws every loaded region, so N sequential arrivals still cost
+about N²/2 block draws, and each arrival draws twice wherever the render autorun
+observes the data map. That is measured, accepted and not worth chasing (24
+regions cost 72 draws, and removing two thirds of them moved no user-visible
+number), but read
+[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#a-region-arrival-draws-twice-wherever-the-render-autorun-observes-the-data)
+before trying, because the obvious fix (deferring the per-region `renderNow()`
+bump to the next frame) is one of the things measured not to work.
+
 Key MobX fact: `ObservableMap.get(existingKey)` tracks `hasMap_.get(key)` (per-key
 existence atom), not `keysAtom_`. Adding a new key fires `keysAtom_` (waking the
 key-manager only) and that new key's `hasMap_` entry. Existing per-key autoruns
