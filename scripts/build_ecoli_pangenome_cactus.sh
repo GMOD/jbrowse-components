@@ -198,11 +198,23 @@ in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x 
 #
 # The mapping is exact, not eyeballed: node ids in a cactus graph run 1..N in node
 # order, so a node's pangenome offset is the cumulative length of every lower id,
-# and walking K12's own P line gives K12 offset -> node -> pangenome offset. (That
-# walk is monotonic here, which is what makes the graph axis interpretable at all;
-# the awk below asserts it rather than assuming it.) Emits the K12 windows to
-# graph_landmarks.tsv so website/scripts/specs/pangenome_cactus.ts can highlight
-# the identical coordinates.
+# and walking K12's own P line gives K12 offset -> node -> pangenome offset.
+#
+# What has to hold is that a window's K12 bases land on a CONTIGUOUS run of
+# pangenome offsets, and the awk asserts exactly that, per window. It used to
+# assert the stronger property that K12's whole path is monotonic in node order,
+# which held for four strains and stops holding at five: K12's path now takes
+# exactly one backward step out of 362,720, at K12 1,652,761, jumping from
+# pangenome offset 9,198,811 back to 3,598,999 (the graph is 9,203,584 bp). One
+# discontinuity in a circular genome is an origin wrap, not a rearrangement, and
+# all three landmark windows sit on one side of it, so each still maps to a
+# contiguous interval and the boxes are still exact. Asserting globally would
+# reject a graph the figure can represent perfectly well; asserting per window
+# rejects only the case that would actually draw a wrong box.
+#
+# Emits the K12 windows to graph_landmarks.tsv so
+# website/scripts/specs/pangenome_cactus.ts can highlight the identical
+# coordinates.
 in_cactus odgi view -i /data/mc/ecoli.full.og -g > full.gfa
 awk -v OFS='\t' -v vizx="$VIZ_X" '
   $1 == "S" { len[$2 + 0] = length($3); if ($2 + 0 > maxid) maxid = $2 + 0; next }
@@ -210,21 +222,25 @@ awk -v OFS='\t' -v vizx="$VIZ_X" '
   END {
     for (i = 1; i <= maxid; i++) { cum[i] = total; total += len[i] }
     n = split(k12, steps, ",")
-    prev = -1
     for (i = 1; i <= n; i++) {
       id = steps[i] + 0
-      kpos[i] = klen; pan[i] = cum[id]; klen += len[id]
-      if (cum[id] < prev) { print "node order not monotonic along K12" > "/dev/stderr"; exit 1 }
-      prev = cum[id]
+      kpos[i] = klen; pan[i] = cum[id]; slen[i] = len[id]; klen += len[id]
     }
     print "#k12_start", "k12_end", "pan_start", "pan_end", "viz_x1", "viz_x2"
     split("1000000 2040000 3100000", starts, " ")
     for (w = 1; w <= 3; w++) {
       s = starts[w]; e = s + 100000
-      ps = -1; pe = -1
+      ps = -1; pe = -1; prev = -1
       for (i = 1; i <= n; i++) {
-        if (ps < 0 && kpos[i] + len[steps[i] + 0] > s) ps = pan[i] + (s - kpos[i])
-        if (pe < 0 && kpos[i] + len[steps[i] + 0] > e) { pe = pan[i] + (e - kpos[i]); break }
+        if (kpos[i] + slen[i] > s && kpos[i] < e) {
+          if (pan[i] < prev) {
+            printf "K12 %d-%d straddles a node-order discontinuity; pick another window\n", s, e > "/dev/stderr"
+            exit 1
+          }
+          prev = pan[i]
+          if (ps < 0) ps = pan[i] + (s - kpos[i])
+          if (pe < 0 && kpos[i] + slen[i] > e) pe = pan[i] + (e - kpos[i])
+        }
       }
       print s, e, ps, pe, int(ps / total * vizx + 0.5), int(pe / total * vizx + 0.5)
     }
@@ -260,7 +276,11 @@ READS_ACC=DRR063408
 mkdir -p reads
 for r in 1 2; do
   [ -f "reads/sub_$r.fastq.gz" ] && continue
-  [ -f "reads/${READS_ACC}_$r.fastq.gz" ] || wget -qO "reads/${READS_ACC}_$r.fastq.gz" \
+  # -nv not -q, and retries: these are ~90 MB each off a public FTP mirror, and a
+  # silent `wget -q` failure here aborts the whole run under `set -e` with no
+  # message at all, after the graph has already been built.
+  [ -f "reads/${READS_ACC}_$r.fastq.gz" ] || wget -nv --tries=5 --continue \
+    -O "reads/${READS_ACC}_$r.fastq.gz" \
     "https://ftp.sra.ebi.ac.uk/vol1/fastq/${READS_ACC:0:6}/${READS_ACC}/${READS_ACC}_$r.fastq.gz"
   zcat "reads/${READS_ACC}_$r.fastq.gz" | head -600000 | gzip > "reads/sub_$r.fastq.gz"
 done
