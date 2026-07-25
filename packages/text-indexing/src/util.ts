@@ -1,7 +1,9 @@
 import path from 'node:path'
 
-import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
-import { sanitizeForFilename } from '@jbrowse/text-indexing-core'
+import {
+  isSupportedIndexingAdapter,
+  sanitizeForFilename,
+} from '@jbrowse/text-indexing-core'
 
 import type {
   LocalPathLocation,

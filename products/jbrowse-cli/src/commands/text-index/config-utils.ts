@@ -86,6 +86,25 @@ export function formatDryRun(trackConfigs: Track[]): string {
   return trackConfigs.map(t => `${t.trackId}\t${t.adapter?.type}`).join('\n')
 }
 
+// why a track was left out, or undefined if it is indexable
+function skipReason(
+  track: Track,
+  assemblyName: string | undefined,
+  excludeSet: Set<string>,
+) {
+  if (assemblyName && !track.assemblyNames.includes(assemblyName)) {
+    return `not in assembly '${assemblyName}'`
+  } else if (excludeSet.has(track.trackId)) {
+    return 'excluded with --excludeTracks'
+  } else if (track.metadata?.skipTextIndex) {
+    return 'metadata.skipTextIndex is set'
+  } else if (!supported(track.adapter?.type)) {
+    return `adapter type ${track.adapter?.type} is not indexable`
+  } else {
+    return undefined
+  }
+}
+
 export function getTrackConfigs(
   config: Config,
   trackIds?: string[],
@@ -111,19 +130,13 @@ export function getTrackConfigs(
 
   const excludeSet = new Set(excludeTrackIds)
   return requested.filter(track => {
-    const inAssembly =
-      !assemblyName || track.assemblyNames.includes(assemblyName)
-    if (!inAssembly) {
-      console.log(
-        `Skipping ${track.trackId}: not in assembly '${assemblyName}'`,
-      )
+    const reason = skipReason(track, assemblyName, excludeSet)
+    // only narrate skips for tracks the user named: sweeping a multi-assembly
+    // config otherwise prints a line per track per assembly
+    if (reason && trackIds?.length) {
+      console.log(`Skipping ${track.trackId}: ${reason}`)
     }
-    return (
-      inAssembly &&
-      !excludeSet.has(track.trackId) &&
-      !track.metadata?.skipTextIndex &&
-      supported(track.adapter?.type)
-    )
+    return !reason
   })
 }
 

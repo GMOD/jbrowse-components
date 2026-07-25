@@ -15,8 +15,7 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 function decodeURIComponentNoThrow(uri: string) {
   try {
     return decodeURIComponent(uri)
-  } catch (e) {
-    // avoid throwing exception on a failure to decode URI component
+  } catch {
     return uri
   }
 }

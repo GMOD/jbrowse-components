@@ -41,8 +41,7 @@ export async function* indexVcf({
       ref === undefined ||
       pos === undefined ||
       id === undefined ||
-      info === undefined ||
-      id === '.'
+      info === undefined
     ) {
       continue
     }
@@ -59,13 +58,25 @@ export async function* indexVcf({
       .map(attr => fields[attr])
       .filter((f): f is string => !!f)
 
-    const encodedInfoAttrs = infoAttrs.map(a => `"${encodeURIComponent(a)}"`)
+    // VCF separates multiple IDs with ';' (matching @gmod/vcf), not ','. '.' is
+    // the no-id sentinel; such a row is still worth indexing by its INFO
+    // attributes, it just has no id to search by
+    const variantIds = id === '.' ? [] : id.split(';').filter(Boolean)
+    // one record per id so each is separately searchable, plus an id-less
+    // record when the row carries only attributes
+    const attrGroups = variantIds.length
+      ? variantIds.map(variantId => [variantId, ...infoAttrs])
+      : [infoAttrs]
 
-    // VCF separates multiple IDs with ';' (matching @gmod/vcf), not ','
-    for (const variantId of id.split(';')) {
-      const encodedId = encodeURIComponent(variantId)
-      const record = `["${encodedLocStr}"|"${encodedTrackId}"|"${encodedId}"${encodedInfoAttrs.length > 0 ? `|${encodedInfoAttrs.join('|')}` : ''}]`
-      yield `${record} ${variantId}\n`
+    for (const attrs of attrGroups) {
+      if (attrs.length > 0) {
+        // attributes go in the record so the adapter can display them, and in
+        // the trailing word list so trix indexes them as searchable terms
+        const encodedAttrs = attrs.map(a => `"${encodeURIComponent(a)}"`)
+        const record = `["${encodedLocStr}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
+
+        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
+      }
     }
   }
 }

@@ -6,6 +6,8 @@ import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import { createGunzip } from 'node:zlib'
 
+import { indexableAdapters } from '../util.ts'
+
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
 export function isURL(fileName: string) {
@@ -173,21 +175,15 @@ export function makeLocation(
   throw new Error(`invalid protocol ${protocol}`)
 }
 
-// ordered most-specific-first so e.g. `.vcf.gz` matches before `.vcf`
+// ordered most-specific-first so e.g. `.vcf.gz` matches before `.vcf`.
+// GtfAdapter reads plain and gzipped GTF through the same gtfLocation slot, so
+// there is no separate tabix variant for it
 const adapterGuesses = [
-  {
-    regex: /\.vcf\.b?gz$/i,
-    type: 'VcfTabixAdapter',
-    locationKey: 'vcfGzLocation',
-  },
-  {
-    regex: /\.gff3?\.b?gz$/i,
-    type: 'Gff3TabixAdapter',
-    locationKey: 'gffGzLocation',
-  },
-  { regex: /\.gtf?$/i, type: 'GtfAdapter', locationKey: 'gtfLocation' },
-  { regex: /\.vcf$/i, type: 'VcfAdapter', locationKey: 'vcfLocation' },
-  { regex: /\.gff3?$/i, type: 'Gff3Adapter', locationKey: 'gffLocation' },
+  { regex: /\.vcf\.b?gz$/i, type: 'VcfTabixAdapter' },
+  { regex: /\.gff3?\.b?gz$/i, type: 'Gff3TabixAdapter' },
+  { regex: /\.gtf(\.b?gz)?$/i, type: 'GtfAdapter' },
+  { regex: /\.vcf$/i, type: 'VcfAdapter' },
+  { regex: /\.gff3?$/i, type: 'Gff3Adapter' },
 ]
 
 export function guessAdapterFromFileName(filePath: string): Track {
@@ -201,7 +197,10 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: guess.type,
-        [guess.locationKey]: makeLocation(filePath, protocol),
+        [indexableAdapters[guess.type]!.locationKey]: makeLocation(
+          filePath,
+          protocol,
+        ),
       },
     }
   } else {

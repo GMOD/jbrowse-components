@@ -1,5 +1,4 @@
 export {
-  adapterLocationKey,
   createReadlineInterface,
   decodeURIComponentNoThrow,
   defaultAttributesToIndex,
@@ -9,17 +8,21 @@ export {
   guessAdapterFromFileName,
   indexFiles,
   indexGff3,
+  indexGtf,
   indexVcf,
+  indexableAdapters,
+  isSupportedIndexingAdapter,
   isURL,
   makeLocation,
   parseAttributes,
   sanitizeForFilename,
 } from '@jbrowse/text-indexing-core'
 export type {
-  Gff3Adapter,
   Gff3IndexerOptions,
+  Gff3Adapter,
   Gff3TabixAdapter,
   GtfAdapter,
+  IndexableFormat,
   IndexerOptions,
   LocalPathLocation,
   Track,

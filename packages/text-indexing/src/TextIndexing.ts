@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 
-import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   checkStopToken,
@@ -13,6 +12,7 @@ import {
   defaultFeatureTypesToExclude,
   generateMeta,
   indexFiles,
+  isSupportedIndexingAdapter,
   sanitizeForFilename,
 } from '@jbrowse/text-indexing-core'
 import { ixIxxStream } from 'ixixx'

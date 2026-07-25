@@ -125,11 +125,11 @@ export function prepareFileTrackConfigs(
       config.trackId = fileIds[i]!
     }
     // throw rather than silently filtering: a user who named the file with
-    // --file should be told it can't be indexed (e.g. GTF) instead of getting
-    // a misleading "successfully created index" with no output
+    // --file should be told it can't be indexed instead of getting a misleading
+    // "successfully created index" with no output
     if (!supported(config.adapter?.type)) {
       throw new Error(
-        `Cannot text-index ${file}: adapter type ${config.adapter?.type} is not indexable (only GFF3 and VCF are supported)`,
+        `Cannot text-index ${file}: adapter type ${config.adapter?.type} is not indexable (only GFF3, GTF and VCF are supported)`,
       )
     }
     return config

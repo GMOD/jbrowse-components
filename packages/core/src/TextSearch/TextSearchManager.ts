@@ -12,10 +12,10 @@ import type {
 import type BaseResult from './BaseResults.ts'
 
 export interface SearchScope {
-  includeAggregateIndexes: boolean
   assemblyName: string
-  tracks?: string[]
 }
+
+const uf = new uFuzzy({})
 
 export default class TextSearchManager {
   adapterCache = new QuickLRU<string, BaseTextSearchAdapter>({
@@ -52,7 +52,7 @@ export default class TextSearchManager {
     )
   }
 
-  relevantAdapters(searchScope: SearchScope) {
+  relevantAdapters({ assemblyName }: SearchScope) {
     const rootModel = this.pluginManager.rootModel
     const { aggregateTextSearchAdapters } = rootModel?.jbrowse as {
       aggregateTextSearchAdapters: AnyConfigurationModel[]
@@ -60,8 +60,6 @@ export default class TextSearchManager {
     const { tracks } = rootModel?.session as {
       tracks: AnyConfigurationModel[]
     }
-
-    const { assemblyName } = searchScope
 
     return [
       ...this.getAdaptersWithAssembly(
@@ -104,6 +102,11 @@ export default class TextSearchManager {
     return this.sortResults({ args, results: results.flat() })
   }
 
+  // Ranks, never filters: the adapters have already decided what matches, and
+  // they match against attributes the display string does not always carry (a
+  // multi-word query hits e.g. the description while the display string is just
+  // the gene name). uFuzzy floats the results whose display string matches the
+  // query to the top and the rest keep their adapter order behind them.
   sortResults({
     results,
     args,
@@ -111,34 +114,32 @@ export default class TextSearchManager {
     results: BaseResult[]
     args: BaseTextSearchArgs
   }) {
-    const uf = new uFuzzy({})
-
-    // does fuzzy matching on the 'display string'
-    const haystack = results.map(r => r.getDisplayString())
-
     // this code sample relatively unmodified from
     // https://github.com/leeoniya/uFuzzy?tab=readme-ov-file#example
+    const haystack = results.map(r => r.getDisplayString())
     const needle = args.queryString
 
     // false positive, this is not Array.prototype.filter
     const idxs = uf.filter(haystack, needle)
-    const res: BaseResult[] = []
+    const ranked: BaseResult[] = []
+    const seen = new Set<number>()
 
     // idxs can be null when the needle is non-searchable (has no alpha-numeric chars)
-    if (idxs != null && idxs.length > 0) {
+    if (idxs?.length) {
       const info = uf.info(idxs, haystack, needle)
 
       // order is a double-indirection array (a re-order of the passed-in idxs)
       // this allows corresponding info to be grabbed directly by idx, if needed
       const order = uf.sort(info, haystack, needle)
 
-      // render post-filtered & ordered matches
       for (const element of order) {
         // using info.idx here instead of idxs because uf.info() may have
         // further reduced the initial idxs based on prefix/suffix rules
-        res.push(results[info.idx[element]!]!)
+        const idx = info.idx[element]!
+        seen.add(idx)
+        ranked.push(results[idx]!)
       }
     }
-    return res
+    return [...ranked, ...results.filter((_, i) => !seen.has(i))]
   }
 }

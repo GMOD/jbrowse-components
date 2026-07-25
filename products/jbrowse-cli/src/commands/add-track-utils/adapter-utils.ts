@@ -86,7 +86,9 @@ const formats: { regex: RegExp; spec: AdapterSpec }[] = [
     },
   },
   {
-    regex: /\.gtf?$/i,
+    // GtfAdapter unzips through the same gtfLocation slot, so there is no
+    // tabix sibling to route .gtf.gz to
+    regex: /\.gtf(\.b?gz)?$/i,
     spec: {
       kind: 'single',
       adapterType: 'GtfAdapter',

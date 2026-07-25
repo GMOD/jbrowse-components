@@ -10,25 +10,9 @@ export async function createRemoteStream(urlIn: string) {
   return res
 }
 
-export function isURL(FileName: string) {
-  let url: URL | undefined
-
-  try {
-    url = new URL(FileName)
-  } catch (_) {
-    return false
-  }
-
-  return url.protocol === 'http:' || url.protocol === 'https:'
-}
-
-const SUPPORTED_ADAPTERS = new Set([
-  'Gff3TabixAdapter',
-  'VcfTabixAdapter',
-  'Gff3Adapter',
-  'VcfAdapter',
-])
-
-export function supported(type = '') {
-  return SUPPORTED_ADAPTERS.has(type)
-}
+// the indexer package owns both of these: which adapter types text-index can
+// handle, and the URL test its stream opener uses to pick fetch vs fs
+export {
+  isURL,
+  isSupportedIndexingAdapter as supported,
+} from '@jbrowse/text-indexing-core'

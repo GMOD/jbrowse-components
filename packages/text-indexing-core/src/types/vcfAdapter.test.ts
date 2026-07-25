@@ -84,7 +84,7 @@ describe('indexVcf', () => {
     expect(results[1]).toContain('varB')
   })
 
-  test('rows without an id (.) and malformed short rows are skipped', async () => {
+  test('rows without an id (.) or attributes, and malformed short rows, are skipped', async () => {
     const file = writeVcf([
       '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
       'ctgA\t500\t.\tA\tT\t.\t.\t.',
@@ -94,5 +94,39 @@ describe('indexVcf', () => {
     const results = await indexToArray(file, tmpDir)
     expect(results).toHaveLength(1)
     expect(results[0]).toContain('var4')
+  })
+
+  test('requested INFO attributes become searchable words, not just record payload', async () => {
+    // regression: the attributes went into the record but the trailing word
+    // list held only the variant id, so `--attributes Name` indexed nothing
+    // findable
+    const file = writeVcf([
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+      'ctgA\t100\trs123\tA\tT\t.\t.\tName=BRCA1;END=200',
+    ])
+    const results = await indexToArray(file, tmpDir)
+    expect(results[0]!.trim().split(' ').slice(1)).toEqual(['rs123', 'BRCA1'])
+  })
+
+  test('a row with no id is still indexed by its attributes', async () => {
+    const file = writeVcf([
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+      'ctgA\t300\t.\tA\tT\t.\t.\tName=TP53',
+    ])
+    const results = await indexToArray(file, tmpDir)
+    expect(results).toHaveLength(1)
+    expect(results[0]!.trim().split(' ').slice(1)).toEqual(['TP53'])
+  })
+
+  test('each of several ids carries the attributes', async () => {
+    const file = writeVcf([
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+      'ctgA\t400\tvarA;varB\tA\tT\t.\t.\tName=MYGENE',
+    ])
+    const results = await indexToArray(file, tmpDir)
+    expect(results.map(r => r.trim().split(' ').slice(1))).toEqual([
+      ['varA', 'MYGENE'],
+      ['varB', 'MYGENE'],
+    ])
   })
 })

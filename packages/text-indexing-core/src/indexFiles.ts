@@ -1,6 +1,7 @@
 import { indexGff3 } from './types/gff3Adapter.ts'
+import { indexGtf } from './types/gtfAdapter.ts'
 import { indexVcf } from './types/vcfAdapter.ts'
-import { adapterLocationKey } from './util.ts'
+import { indexableAdapters } from './util.ts'
 
 import type { LocalPathLocation, Track, UriLocation } from './util.ts'
 
@@ -14,18 +15,15 @@ export interface TrackIndexProgress {
   onDone?: () => void
 }
 
-function getIndexingLocation(track: Track) {
+function getIndexingLocation(track: Track, locationKey: string) {
   const { adapter } = track
-  const key = adapterLocationKey[adapter?.type ?? '']
-  // adapter[key] is the canonical location object, e.g. gffGzLocation; fall
-  // back to the adapter itself to support the shorthand where a bare `uri`
+  // adapter[locationKey] is the canonical location object, e.g. gffGzLocation;
+  // fall back to the adapter itself to support the shorthand where a bare `uri`
   // sits directly on the adapter
-  const loc = key
-    ? ((adapter?.[key] ?? adapter) as
-        | UriLocation
-        | LocalPathLocation
-        | undefined)
-    : undefined
+  const loc = (adapter?.[locationKey] ?? adapter) as
+    | UriLocation
+    | LocalPathLocation
+    | undefined
   return loc?.locationType === 'LocalPathLocation' ? loc.localPath : loc?.uri
 }
 
@@ -52,9 +50,11 @@ export async function* indexFiles({
   for (const track of tracks) {
     checkAbort?.()
     const { adapter, textSearching, trackId } = track
-    const { type } = adapter ?? {}
-    const inLocation = getIndexingLocation(track)
-    if (inLocation) {
+    const indexable = indexableAdapters[adapter?.type ?? '']
+    const inLocation = indexable
+      ? getIndexingLocation(track, indexable.locationKey)
+      : undefined
+    if (indexable && inLocation) {
       const progress = makeProgress?.(trackId)
       const common = {
         config: track,
@@ -66,14 +66,16 @@ export async function* indexFiles({
         onUpdate: progress?.onUpdate ?? noop,
         checkAbort,
       }
-      if (type === 'Gff3Adapter' || type === 'Gff3TabixAdapter') {
+      if (indexable.format === 'gff3') {
         yield* indexGff3({
           ...common,
           featureTypesToExclude:
             textSearching?.indexingFeatureTypesToExclude ??
             featureTypesToExclude,
         })
-      } else if (type === 'VcfAdapter' || type === 'VcfTabixAdapter') {
+      } else if (indexable.format === 'gtf') {
+        yield* indexGtf(common)
+      } else {
         yield* indexVcf(common)
       }
       progress?.onDone?.()

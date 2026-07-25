@@ -68,6 +68,23 @@ The `textSearching` slots control what gets indexed when you run
   feature types to skip (e.g. `CDS`, `exon`), so the index holds only the
   genes/transcripts users search for
 
+## Indexable formats
+
+`text-index` reads GFF3 (`Gff3Adapter`, `Gff3TabixAdapter`), GTF (`GtfAdapter`)
+and VCF (`VcfAdapter`, `VcfTabixAdapter`) tracks. Tracks with any other adapter
+type are skipped.
+
+For VCF, the variant IDs are indexed along with any INFO fields named in
+`--attributes`.
+
+GTF has no gene or transcript rows: a gene exists only as its exon/CDS/UTR rows
+repeating a `gene_id`. Rows are therefore grouped by `gene_id` and
+`transcript_id`, and each gene or transcript is indexed once, spanning all of
+its rows. `indexingFeatureTypesToExclude` does not apply to GTF, since dropping
+rows would only truncate those spans. GTF also has no `Name`/`ID` attributes, so
+the defaults additionally match their GTF spellings (`gene_name`,
+`transcript_name`, `gene_id`, `transcript_id`).
+
 See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
 via the CLI. See the
 [Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter) for adapter
@@ -121,6 +138,9 @@ others with `--attributes`:
 ```bash
 jbrowse text-index --attributes=Name,ID,symbol,gene_name
 ```
+
+Also check that the feature type carrying the name is not in `--exclude`
+(default `CDS,exon`).
 
 ## See also
 

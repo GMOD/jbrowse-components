@@ -20,10 +20,7 @@ function fakeAssembly(
   } as unknown as Assembly
 }
 
-const searchScope: SearchScope = {
-  includeAggregateIndexes: true,
-  assemblyName: 'volvox',
-}
+const searchScope: SearchScope = { assemblyName: 'volvox' }
 
 const labels = async (args: Parameters<typeof fetchResults>[0]) =>
   (await fetchResults(args)).map(r => r.getLabel())

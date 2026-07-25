@@ -1,14 +1,16 @@
 export {
-  adapterLocationKey,
   decodeURIComponentNoThrow,
   defaultAttributesToIndex,
   defaultFeatureTypesToExclude,
+  indexableAdapters,
+  isSupportedIndexingAdapter,
 } from './util.ts'
 export type {
-  Gff3Adapter,
   Gff3IndexerOptions,
+  Gff3Adapter,
   Gff3TabixAdapter,
   GtfAdapter,
+  IndexableFormat,
   IndexerOptions,
   LocalPathLocation,
   Track,
@@ -28,6 +30,7 @@ export {
 } from './types/common.ts'
 
 export { indexGff3 } from './types/gff3Adapter.ts'
+export { indexGtf } from './types/gtfAdapter.ts'
 export { indexVcf } from './types/vcfAdapter.ts'
 export { indexFiles } from './indexFiles.ts'
 export type { TrackIndexProgress } from './indexFiles.ts'

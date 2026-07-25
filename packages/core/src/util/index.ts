@@ -353,14 +353,16 @@ export const rIC =
         cb()
       }
 
-// Supported adapter types by text indexer ensure that this matches the method
-// found in @jbrowse/text-indexing/util
+// Browser-safe mirror of `indexableAdapters` in @jbrowse/text-indexing-core,
+// which cannot be imported here (it pulls in node:fs). Pinned by the parity
+// test in packages/text-indexing-core/src/types/common.test.ts
 export function isSupportedIndexingAdapter(type = '') {
   return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
     'Gff3Adapter',
+    'Gff3TabixAdapter',
+    'GtfAdapter',
     'VcfAdapter',
+    'VcfTabixAdapter',
   ].includes(type)
 }
 

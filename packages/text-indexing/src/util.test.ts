@@ -1,6 +1,23 @@
 import path from 'node:path'
 
+import { isSupportedIndexingAdapter as browserCopy } from '@jbrowse/core/util'
+import { indexableAdapters } from '@jbrowse/text-indexing-core'
+
 import { createTextSearchConf, findTrackConfigsToIndex } from './util.ts'
+
+// @jbrowse/core ships to the browser so it cannot import the node-only indexer
+// package; this is the one place that depends on both, so it pins its hand
+// mirror of the adapter table to the real one
+test('the browser copy of the indexable adapter list matches the indexer', () => {
+  const types = [
+    ...Object.keys(indexableAdapters),
+    'SomeOtherAdapter',
+    'BamAdapter',
+  ]
+  expect(types.filter(t => browserCopy(t))).toEqual(
+    Object.keys(indexableAdapters),
+  )
+})
 
 describe('createTextSearchConf', () => {
   const outDir = '/some/dir'

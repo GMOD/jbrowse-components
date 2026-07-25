@@ -8,6 +8,7 @@ import http from 'node:http'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 
+import { isSupportedIndexingAdapter } from '../util.ts'
 import {
   getLocalOrRemoteStream,
   guessAdapterFromFileName,
@@ -27,20 +28,6 @@ const testDataDir = path.join(
   'test',
   'data',
 )
-
-// mirrors isSupportedIndexingAdapter in @jbrowse/core/util (not imported here:
-// text-indexing-core is deliberately dependency-free). GTF is intentionally
-// absent — it is not indexable, only GFF3 and VCF are
-const supportedIndexingAdapters = new Set([
-  'Gff3TabixAdapter',
-  'Gff3Adapter',
-  'VcfTabixAdapter',
-  'VcfAdapter',
-])
-
-function isSupportedIndexingAdapter(type?: string) {
-  return supportedIndexingAdapters.has(type || '')
-}
 
 describe('sanitizeForFilename', () => {
   it('replaces forward slash with underscore', () => {
@@ -101,6 +88,21 @@ describe('utils for text indexing', () => {
     expect(() => {
       guessAdapterFromFileName(unsupported)
     }).toThrow(`Unsupported file type ${unsupported}`)
+  })
+  it('guesses GtfAdapter for plain and gzipped gtf', () => {
+    // GtfAdapter unzips through the same gtfLocation slot, so both variants
+    // land on one adapter type rather than a tabix sibling
+    expect(guessAdapterFromFileName('genes.gtf').adapter).toMatchObject({
+      type: 'GtfAdapter',
+      gtfLocation: { locationType: 'LocalPathLocation' },
+    })
+    expect(guessAdapterFromFileName('genes.gtf.gz').adapter?.type).toBe(
+      'GtfAdapter',
+    )
+    // regression: the guess regex was /\.gtf?$/i, which matched `.gt`
+    expect(() => {
+      guessAdapterFromFileName('genes.gt')
+    }).toThrow('Unsupported file type')
   })
 })
 
