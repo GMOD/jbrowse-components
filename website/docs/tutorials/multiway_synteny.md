@@ -46,6 +46,10 @@ GSVIVT01012261001   .                  .
 This is a coordinate-free gene-id table. The accompanying `.bed` files (one per
 genome, produced alongside) map each gene id to a genomic position.
 
+Nothing in the adapter is specific to jcvi: any ortholog table of this shape
+loads, whatever produced it. See
+[Bringing your own ortholog table](#bringing-your-own-ortholog-table).
+
 ## Producing the data
 
 `grape.blocks` and the three BED files come from
@@ -59,6 +63,89 @@ pair, and join the results into one reference-anchored table. The
 
 The adapter reads `.blocks` and BED files plain or gzipped, and the config below
 uses the gzipped `.gz` names.
+
+## Bringing your own ortholog table
+
+`MCScanBlocksAdapter` only needs two things, and neither is MCScan-specific:
+
+- a tab-delimited table, one row per orthogroup and one column per genome, each
+  cell holding a single gene id (`.` or an empty cell for no ortholog)
+- one BED per column whose fourth field carries those same gene ids
+
+Any ortholog or all-vs-all homology result reshapes into that. Two columns is a
+valid table, so a plain reciprocal-best-hit list already works as a pairwise
+synteny track with no MCScan step at all.
+
+### From OrthoFinder
+
+`Orthogroups.tsv` is already one row per orthogroup and one column per genome,
+but it carries a header row, a leading `Orthogroup` id column, and
+comma-separated gene lists per cell. Drop the first two and keep one gene per
+cell:
+
+```bash
+tail -n +2 Orthogroups.tsv \
+  | cut -f2- \
+  | awk -F'\t' -v OFS='\t' '{
+      for (i = 1; i <= NF; i++) {
+        sub(/,.*/, "", $i)
+        gsub(/ /, "", $i)
+        if ($i == "") $i = "."
+      }
+      print
+    }' > orthogroups.blocks
+```
+
+`blockAssemblies` then lists the genomes in the order of the header row you
+dropped, which is the order of the FASTAs you gave OrthoFinder.
+
+### From reciprocal best BLAST hits
+
+Reduce each direction of an all-vs-all `blastp` or DIAMOND run (`-outfmt 6`) to
+its best hit per query, then keep the pairs that agree both ways:
+
+```bash
+sort -k1,1 -k12,12gr grape_vs_peach.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > g2p
+sort -k1,1 -k12,12gr peach_vs_grape.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > p2g
+awk 'NR == FNR {best[$1] = $2; next} best[$2] == $1' p2g g2p > grape_peach.rbh
+```
+
+`grape_peach.rbh` is a two-column table, loadable as-is with
+`blockAssemblies: ["grape", "peach"]`. For more genomes, run the same reduction
+against one reference genome and outer-join the results on the reference gene:
+
+```bash
+export LC_ALL=C  # join and sort must agree on collation
+join -t $'\t' -a1 -a2 -e . -o 0,1.2,2.2 \
+  <(sort -k1,1 grape_peach.rbh) <(sort -k1,1 grape_cacao.rbh) > grape.blocks
+```
+
+Ensembl Compara, OrthoDB, InParanoid and SonicParanoid all export gene pairs per
+genome pair, so they join the same way. The reference column is whichever genome
+you joined on, which is what makes the
+[direct vs transitive](#direct-vs-transitive-pairs) distinction below apply to
+any table built this way.
+
+### BED files
+
+Only the first six BED fields are read, and only the fourth (name) has to match
+the table. From a GFF3:
+
+```bash
+awk -F'\t' -v OFS='\t' '$3 == "gene" {
+  match($9, /ID=[^;]+/)
+  print $1, $4 - 1, $5, substr($9, RSTART + 3, RLENGTH - 3), 0, $7
+}' grape.gff3 > grape.bed
+```
+
+Column 1 must use the same sequence names as the JBrowse assembly, and column 4
+must match the table's gene ids byte for byte. That last point is the usual
+failure: the track loads without an error and draws nothing, because no cell
+resolved to a BED entry. Ids get mangled by isoform suffixes, by BLAST
+truncating a FASTA header at the first space, and by jcvi stripping suffixes
+unless run with `--no_strip_names` (which is why the
+[script](#reproduce-it-end-to-end) passes it). Spot-check a few ids from each
+side against each other before loading.
 
 ## Set up the three assemblies
 
