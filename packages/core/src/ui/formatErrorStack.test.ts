@@ -92,6 +92,44 @@ test('terminates on a cyclic cause chain', () => {
   )
 })
 
+// an AggregateError's own frames only name the collector (PhasedScheduler), so
+// without walking .errors the failing plugin never appears in the stack dialog
+test('expands the sub-errors of an AggregateError', () => {
+  const a = err(
+    'plugin a failed',
+    'Error: plugin a failed\n    at a (a.js:1:1)',
+  )
+  const b = err(
+    'plugin b failed',
+    'Error: plugin b failed\n    at b (b.js:2:2)',
+  )
+  const aggregate = new AggregateError([a, b], 'Errors during creation')
+  aggregate.stack =
+    'AggregateError: Errors during creation\n    at run (s.js:3:3)'
+  expect(formatErrorStack(aggregate)).toBe(
+    [
+      '    at run (s.js:3:3)',
+      'Aggregated error: Error: plugin a failed',
+      '    at a (a.js:1:1)',
+      'Aggregated error: Error: plugin b failed',
+      '    at b (b.js:2:2)',
+    ].join('\n'),
+  )
+})
+
+test('walks the cause of an aggregated sub-error', () => {
+  const root = err('root cause', 'Error: root cause\n    at root (r.js:1:1)')
+  const sub = err(
+    'plugin failed',
+    'Error: plugin failed\n    at p (p.js:2:2)',
+    root,
+  )
+  const aggregate = new AggregateError([sub], 'Errors during creation')
+  aggregate.stack =
+    'AggregateError: Errors during creation\n    at run (s.js:3:3)'
+  expect(formatErrorStack(aggregate)).toContain('Caused by: Error: root cause')
+})
+
 test('caps a pathologically long chain', () => {
   let e = err('root', 'Error: root\n    at root (file.js:1:1)')
   for (let i = 0; i < 50; i++) {

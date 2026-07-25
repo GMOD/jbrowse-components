@@ -22,27 +22,44 @@ function getCause(error: unknown) {
     : undefined
 }
 
+// an AggregateError's own stack points at whatever collected the failures, and
+// its message names none of them, so the sub-errors have to be walked the same
+// way causes are. PhasedScheduler throws one of these for every plugin that
+// fails to create its pluggable elements.
+function getAggregated(error: unknown): unknown[] {
+  return typeof error === 'object' &&
+    error !== null &&
+    'errors' in error &&
+    Array.isArray(error.errors)
+    ? error.errors
+    : []
+}
+
 export function formatErrorStack(error: unknown) {
   const parts: string[] = []
   const seen = new Set<unknown>()
-  let current = error
-  while (
-    current !== undefined &&
-    current !== null &&
-    !seen.has(current) &&
-    parts.length < MAX_CAUSE_DEPTH
-  ) {
-    seen.add(current)
-    // chrome prepends the message to every stack in the chain; drop it and
-    // reintroduce it as the "Caused by" label so both browsers read the same
-    const stack = stripStackTraceMessage(
-      getStack(current),
-      `${current}`,
-    ).replace(/^\n/, '')
-    // the caller prints the top-level message itself, so only causes get a label
-    const label = parts.length === 0 ? '' : `Caused by: ${current}`
-    parts.push([label, stack].filter(Boolean).join('\n'))
-    current = getCause(current)
+  // a cause chain is linear but an aggregate branches, so both are walked from
+  // one queue; the label is decided when a child is enqueued
+  const queue: { error: unknown; label: string }[] = [{ error, label: '' }]
+  while (queue.length > 0 && parts.length < MAX_CAUSE_DEPTH) {
+    const { error: current, label } = queue.shift()!
+    if (current !== undefined && current !== null && !seen.has(current)) {
+      seen.add(current)
+      // chrome prepends the message to every stack in the chain; drop it and
+      // reintroduce it as the "Caused by" label so both browsers read the same
+      const stack = stripStackTraceMessage(
+        getStack(current),
+        `${current}`,
+      ).replace(/^\n/, '')
+      parts.push([label, stack].filter(Boolean).join('\n'))
+      const cause = getCause(current)
+      if (cause !== undefined && cause !== null) {
+        queue.push({ error: cause, label: `Caused by: ${cause}` })
+      }
+      for (const sub of getAggregated(current)) {
+        queue.push({ error: sub, label: `Aggregated error: ${sub}` })
+      }
+    }
   }
   return parts.filter(Boolean).join('\n')
 }

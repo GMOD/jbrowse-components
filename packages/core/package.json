@@ -96,6 +96,7 @@
     "./ui/ShareLinkField": "./src/ui/ShareLinkField.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
+    "./ui/StackTraceButton": "./src/ui/StackTraceButton.tsx",
     "./ui/buildExtraTrackMenuItems": "./src/ui/buildExtraTrackMenuItems.ts",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
@@ -514,6 +515,10 @@
       "./ui/SnackbarModel": {
         "types": "./esm/ui/SnackbarModel.d.ts",
         "import": "./esm/ui/SnackbarModel.js"
+      },
+      "./ui/StackTraceButton": {
+        "types": "./esm/ui/StackTraceButton.d.ts",
+        "import": "./esm/ui/StackTraceButton.js"
       },
       "./ui/buildExtraTrackMenuItems": {
         "types": "./esm/ui/buildExtraTrackMenuItems.d.ts",
@@ -1009,6 +1014,9 @@
         ],
         "ui/SnackbarModel": [
           "esm/ui/SnackbarModel.d.ts"
+        ],
+        "ui/StackTraceButton": [
+          "esm/ui/StackTraceButton.d.ts"
         ],
         "ui/buildExtraTrackMenuItems": [
           "esm/ui/buildExtraTrackMenuItems.d.ts"

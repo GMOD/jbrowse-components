@@ -36,9 +36,13 @@ export default class PhasedScheduler<PhaseName extends string> {
     }
     this.phaseCallbacks.clear()
     if (errors.length) {
+      // AggregateError's message names none of its causes, and plenty of
+      // surfaces print only `${error}` (the desktop start-screen snackbar, a
+      // console log), so a bare summary loses which plugin actually failed.
+      // formatErrorStack walks .errors for the full stacks.
       throw new AggregateError(
         errors,
-        'Errors during pluggable element creation',
+        `Errors during pluggable element creation: ${errors.map(e => `${e}`).join('; ')}`,
       )
     }
   }
