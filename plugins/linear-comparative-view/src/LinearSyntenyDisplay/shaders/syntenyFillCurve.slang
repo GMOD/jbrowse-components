@@ -97,20 +97,45 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   evalT(t, c, xL, xR, y);
 
   // Perpendicular pad (in horizontal pixels). Accommodates:
-  //   (1) thin-feature stroke widening: perpFactor·0.5 (1-px perpendicular
-  //       stroke projected onto the x-axis at this slope).
+  //   (1) thin-feature stroke widening: perpFactor·0.5 (a 1-px perpendicular
+  //       stroke projected onto the x-axis at THIS segment's steepest slope).
   //   (2) bezier bulge within the segment: max|s''|·dt²/8 in s-units, scaled
   //       by max edge Δ.
   //   (3) AA fade at the boundary: 1 px.
-  // The bezier's centerline x'(t) reaches 1.5× the linear chord at t=0.5
-  // while y'(t) drops to 0.75×, so local dx/dy peaks at 2× the chord slope.
+  //
+  // Term (1) is per-segment. It used to use the ribbon-wide maximum, which
+  // over-pads every segment but the middle one: local dx/dy peaks at 2× the
+  // chord slope only near t=0.5, and falls to 0 at the ends where the x-curve
+  // is momentarily vertical. Bounding it per segment is exact (the ratio below
+  // is unimodal, so its max over the segment is a single evaluation) and cuts
+  // the rasterized-then-discarded area of a thin steep ribbon by a measured
+  // 10-17% (`syntenyFillCurvePad.test.ts` computes both).
+  //
+  // Term (2) is deliberately still the ribbon-wide bound. Do NOT try to make it
+  // per-segment via |s''(t)| = |6-12t| (which is 0 at t=0.5, so it looks like
+  // free savings): that bounds the curve's deviation from its chord in *t*, but
+  // this quad interpolates x linearly in *screen y*, and y(t) is itself
+  // nonlinear, so the y-reparameterization adds deviation the t-chord bound
+  // misses. It under-pads for real — corners (0, 300, 1400, 1500) at h=400
+  // clip the analytic edge by 0.27px. The test pins that counterexample.
+  //
   // CIGAR indel tiles use the same pad as BASE — they clip to the smooth
   // analytic curve in the fragment, not to this trapezoid geometry.
   float h = max(u.height, 1.0);
-  float maxSlope = abs((c.x3 + c.x4 - c.x1 - c.x2) * 0.5) / h * 2.0;
-  float maxPerpFactor = sqrt(1.0 + maxSlope * maxSlope);
-  float bulgeX = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2)) * invN * invN * 0.75;
-  float pad = maxPerpFactor * 0.5 + bulgeX + 1.0;
+  float t0 = float(seg) * invN;
+  float t1 = float(seg + 1u) * invN;
+  // The pad protects the EDGES, so it scales with the larger edge Δ, not the
+  // centerline's (they differ on a width-changing ribbon, where the centerline
+  // average under-pads the wider edge).
+  float maxEdgeDx = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2));
+  // dx/dy = (Δ/h)·sBlendDeriv(t)/yCurveDeriv(t). That ratio is unimodal with
+  // its peak of 2.0 at t=0.5, so its maximum over the segment is at whichever
+  // in-range t sits closest to 0.5.
+  float tPeak = clamp(0.5, t0, t1);
+  float segSlope = maxEdgeDx / h * sBlendDeriv(tPeak) / yCurveDeriv(tPeak);
+  float perpFactor = sqrt(1.0 + segSlope * segSlope);
+  float bulgeX = maxEdgeDx * invN * invN * 0.75;
+  float pad = perpFactor * 0.5 + bulgeX + 1.0;
 
   // AA y-pad only at the first segment's top and last segment's bottom; the
   // shared boundaries between adjacent segments must match exactly.

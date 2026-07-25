@@ -11,6 +11,7 @@ import * as syntenyFillCurveShader from './shaders/syntenyFillCurve.generated.ts
 import * as syntenyFillStraightShader from './shaders/syntenyFillStraight.generated.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
+import { computeTransform } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
@@ -225,12 +226,14 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     // panned from the fetch-time base, in px. Computed float64 from a SMALL
     // numerator (base ≈ the fetch-time viewport start), so no genome-scale
     // magnitude is multiplied by the rounded inv — that's what lets a single
-    // Float32 corner stay sub-pixel. SYNC: matches computeTransform in
-    // syntenyPickEngine and computeCorners in syntenyTypes.slang.
-    u[U.panPx0] = (data.base0 - p.offsetPx0 * p.bpPerPx0) / p.bpPerPx0
-    u[U.bpPerPxInv0] = 1 / p.bpPerPx0
-    u[U.panPx1] = (data.base1 - p.offsetPx1 * p.bpPerPx1) / p.bpPerPx1
-    u[U.bpPerPxInv1] = 1 / p.bpPerPx1
+    // Float32 corner stay sub-pixel. Shared with the CPU draw + pick paths
+    // (computeTransform) so the two cannot drift; the shader consumes exactly
+    // these four numbers in computeCorners (syntenyTypes.slang).
+    const t = computeTransform(p, data)
+    u[U.panPx0] = t.panPx0
+    u[U.bpPerPxInv0] = t.bpPerPxInv0
+    u[U.panPx1] = t.panPx1
+    u[U.bpPerPxInv1] = t.bpPerPxInv1
     u[U.overdrawPx] = overdrawPx
     u[U.minAlignmentLength] = p.minAlignmentLength
     u[U.alpha] = p.alpha

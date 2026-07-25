@@ -11,34 +11,86 @@ import {
   KIND_MARKER,
 } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
+import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
   buildFeaturePath,
   computeTransform,
   isEdgeCulled,
-  pickFeatureAtPoint,
   projectCorners,
   ribbonPerpWidth,
   strokeCenterline,
   strokeFeatureSideEdges,
-} from './syntenyPickEngine.ts'
+} from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { CanvasLike, ComputedTransform } from './syntenyPickEngine.ts'
 import type {
   SyntenyRenderState,
   SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
+import type { CanvasLike, ComputedTransform } from './syntenyRibbonPath.ts'
 
-export type { CanvasLike } from './syntenyPickEngine.ts'
+export type { CanvasLike } from './syntenyRibbonPath.ts'
 
 // SYNC: mirrors WIDTH_FADE_FLOOR in syntenyTypes.slang — keeps a lone
 // sub-pixel ribbon faintly locatable instead of fading all the way to
 // invisible on a whole-genome view with no minAlignmentLength filter.
 const WIDTH_FADE_FLOOR = 0.15
 
-const rgba = (r: number, g: number, b: number, a: number) =>
-  `rgba(${r},${g},${b},${a})`
+// Memoized `rgba()` text plus last-assigned tracking for one draw pass.
+// Building the strings is the dominant per-instance cost in the draw loop — a
+// 500k-instance pass spends >100ms on nothing but `rgba()` construction, before
+// the engine's per-assignment color parse — while the number of distinct colors
+// is tiny: the identity/MAPQ ramps are 256-entry LUTs and the chromosome palette
+// is 9 colors.
+//
+// Keyed on the resolved 8-bit RGB plus the alpha rounded to a byte, so it needs
+// no knowledge of how a color was derived. Colors whose alpha comes from a
+// packed byte (every fill and marker) round-trip exactly. Only the sub-pixel
+// stroke's continuous width-fade can collide, and then it reuses a string within
+// 1/510 alpha of the exact one — below the 8-bit grid the canvas composites to.
+// Scoped per pass rather than kept on the renderer: no unbounded growth, and the
+// hit rate within one pass is what matters.
+class StyleCache {
+  private strings = new Map<number, string>()
+  private lastFill: string | undefined
+  private lastStroke: string | undefined
+
+  private text(r: number, g: number, b: number, a: number) {
+    const key = ((r << 24) | (g << 16) | (b << 8) | Math.round(a * 255)) >>> 0
+    let s = this.strings.get(key)
+    if (s === undefined) {
+      s = `rgba(${r},${g},${b},${a})`
+      this.strings.set(key, s)
+    }
+    return s
+  }
+
+  fill(ctx: CanvasLike, r: number, g: number, b: number, a: number) {
+    const s = this.text(r, g, b, a)
+    if (s !== this.lastFill) {
+      ctx.fillStyle = s
+      this.lastFill = s
+    }
+  }
+
+  stroke(ctx: CanvasLike, r: number, g: number, b: number, a: number) {
+    const s = this.text(r, g, b, a)
+    if (s !== this.lastStroke) {
+      ctx.strokeStyle = s
+      this.lastStroke = s
+    }
+  }
+
+  // The clicked-feature outline is a literal, so it bypasses the memo but still
+  // needs to participate in the last-assigned tracking.
+  strokeLiteral(ctx: CanvasLike, s: string) {
+    if (s !== this.lastStroke) {
+      ctx.strokeStyle = s
+      this.lastStroke = s
+    }
+  }
+}
 
 interface ResolvedFill {
   r: number
@@ -95,6 +147,10 @@ function drawInstances(
     drawCurves,
     fadeThinAlignments,
   } = params
+  const style = new StyleCache()
+  // Every stroke this function makes is 1px (centerlines, marker ticks, the
+  // clicked outline), so the width is set once for the pass.
+  ctx.lineWidth = 1
   for (let i = 0; i < data.instanceCount; i++) {
     if (data.alignmentLengths[i]! < minAlignmentLength) {
       continue
@@ -118,13 +174,13 @@ function drawInstances(
     if (kind === KIND_MARKER) {
       const xt = (c.sx1 + c.sx2) * 0.5
       const xb = (c.sx3 + c.sx4) * 0.5
-      ctx.strokeStyle = rgba(
+      style.stroke(
+        ctx,
         abgrRed(packed),
         abgrGreen(packed),
         abgrBlue(packed),
         abgrAlpha(packed) / 255,
       )
-      ctx.lineWidth = 1
       strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
       continue
     }
@@ -146,7 +202,7 @@ function drawInstances(
     // antialiases poorly (ragged diagonals in SVG export). Below 1px thick we
     // instead stroke the centerline at 1px, which canvas renders cleanly at any
     // slope; above it we fill the silhouette. The same perpW<1 boundary gates
-    // pickability (syntenyPickEngine.buildPickIndex via ribbonPerpWidth), so a
+    // pickability (syntenyPickEngine.pickFeatureAtPoint via ribbonPerpWidth), so a
     // ribbon is clickable exactly when it's drawn as a solid fill.
     // SYNC: perpFactor and the BASE alpha fade (×widthFade, floored at
     // WIDTH_FADE_FLOOR, gated by fadeThinAlignments) mirror fillCoverage's
@@ -161,16 +217,14 @@ function drawInstances(
       const widthFade = fadeThinAlignments
         ? Math.max(perpW, WIDTH_FADE_FLOOR)
         : 1
-      ctx.strokeStyle = rgba(r, g, b, isCigar ? fa : fa * widthFade)
-      ctx.lineWidth = 1
+      style.stroke(ctx, r, g, b, isCigar ? fa : fa * widthFade)
       strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
     } else {
-      ctx.fillStyle = rgba(r, g, b, fa)
+      style.fill(ctx, r, g, b, fa)
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
       if (isClicked && !isCigar) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.4)'
-        ctx.lineWidth = 1
+        style.strokeLiteral(ctx, 'rgba(0,0,0,0.4)')
         strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
       }
     }
@@ -188,7 +242,7 @@ export function drawSyntenyTrack(
   logicalW: number,
   overdrawPx: number,
 ) {
-  const transform = computeTransform(params)
+  const transform = computeTransform(params, data)
   drawInstances(
     ctx,
     data,

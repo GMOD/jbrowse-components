@@ -159,9 +159,14 @@ export function buildSyntenyGeometry({
       willDrawCigarArr[i] = 1
       cigarBudget = Math.min(cigar.length, Math.ceil(widthPx0 + widthPx1) + 4)
     }
-    const markerBudget = drawLocationMarkers
-      ? Math.ceil((widthPx0 + widthPx1) / 10) + 4
-      : 0
+    // Gated on the same >=30px average width addLocationMarkers emits at, so a
+    // whole-genome view of sub-pixel blocks doesn't reserve 4 unused slots per
+    // feature. The arrays are handed out as `subarray` views, so unused capacity
+    // is not just allocated but transferred across the RPC boundary intact.
+    const markerBudget =
+      drawLocationMarkers && (widthPx0 + widthPx1) / 2 >= 30
+        ? Math.ceil((widthPx0 + widthPx1) / 10) + 4
+        : 0
     capacity += 1 + cigarBudget + markerBudget
   }
 
@@ -190,6 +195,14 @@ export function buildSyntenyGeometry({
     featureIdx: number,
     alignmentLength: number,
   ) {
+    // The capacity bounds above are strict, so this never trips. It is here
+    // because the failure mode otherwise is silent and far away: typed-array
+    // writes past the end are no-ops while `idx` keeps counting, so
+    // `subarray(0, instanceCount)` would hand the renderer a short array and
+    // every corner read past the end would project as NaN.
+    if (idx >= capacity) {
+      return
+    }
     bp1Arr[idx] = cumBp1 - base0
     bp2Arr[idx] = cumBp2 - base0
     bp3Arr[idx] = cumBp3 - base1

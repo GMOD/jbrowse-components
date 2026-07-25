@@ -308,7 +308,8 @@ touching either path, preserve whichever of these the display uses:
 - **One draw helper, both consumers.** Marker/glyph geometry and color math that
   both paths (or the on-screen overlay + SVG export) need lives in one function:
   `drawMafInsertionMarker`, `appendPointMarker` (wiggle scatter + Manhattan),
-  `mapHicCount`, synteny's `syntenyPickEngine` geometry. Change the shared fn,
+  `mapHicCount`, synteny's `syntenyRibbonPath` geometry (shared by the Canvas2D
+  backend, the SVG export, and the CPU pick engine). Change the shared fn,
   not one caller. The same trick covers shared *predicates*, not just geometry —
   canvas's `canvasEdgeFlags` derives the continuation-marker edge gates for both
   backends so the 0.5px epsilon can't drift from `continuation.slang`'s.
