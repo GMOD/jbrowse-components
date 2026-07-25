@@ -105,7 +105,35 @@ coverage alone is correct and it keeps the buffered fetch — don't extend the
 strict-zoom check or the visible-only fetch to it (needless refetches). The
 connector lines, GPU/Canvas render, hit-test, and SVG export all key off
 `view.totalWidthPxWithoutBorders` (the rounded width) so columns/lines/clicks
-stay pixel-aligned.
+stay pixel-aligned — via the `columnGeometry` getter, which is also what the
+click hit-test inverts.
+
+## Connector lines: one frame, one coord list
+
+The lines tying a matrix column to its genomic position are shared by the LD and
+multi-sample-matrix displays (`shared/ConnectorLines.tsx`): the field, hover
+hit-test, tooltip, crosshair line, zone resize, and SVG export all live there.
+Each display contributes only a `connectorLineCoords` **model getter** —
+`{mx, gx, label}` in **viewport pixels**, 0 = the view's left edge. Rules that
+keep the two from drifting:
+
+- Coords are computed on the model, not in a component `useMemo`. They depend on
+  `view.bpPerPx`/`offsetPx`, and a memo that doesn't re-run also stops
+  _tracking_ those, so the overlay can miss a zoom entirely.
+- One frame, no group transform. The `|offsetPx|` gap when content doesn't reach
+  the left edge is baked into `mx`/`gx` (LD via `renderTransform.viewOffsetX`,
+  matrix via `columnGeometry.left`), so the live overlay and the export don't
+  each restate a shift.
+- The LD column pitch comes from the **fetch-time** cell width
+  (`cellWidth * SQRT2` = `uniformW * SQRT2`) rescaled by `renderTransform`,
+  exactly like the shader and `hitTest`. Deriving it from the live block width
+  double-applies the zoom during the debounce+RPC window.
+- No genomic x means no line: `genomicViewportX` returns undefined when the
+  refName has left the view, and callers drop that entry instead of pinning it
+  to x=0 (which also skewed the field's density-derived alpha).
+- Per-line alpha is an ink budget, so it takes the stroke width
+  (`connectorLineAlpha`) — LD's 1px lines and the matrix's 0.5px lines must read
+  as equally dark at equal density.
 
 ## Allele counting: two implementations on purpose, count inline
 

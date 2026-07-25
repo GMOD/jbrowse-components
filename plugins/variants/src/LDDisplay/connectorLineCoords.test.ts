@@ -60,9 +60,9 @@ test('column centers land on the triangle apexes the shader draws', () => {
 // while still being multiplied by renderTransform.scale, so whenever the two
 // disagreed a zoom applied the scale twice and the lines slid off the apexes for
 // the whole debounce+RPC window. They disagree exactly when the content doesn't
-// fill the viewport — here the region's last 400px — because zooming then
-// changes how much content the viewport holds. Deriving the pitch from the
-// fetch-time cellWidth tracks the same rescale the stale pixels get.
+// fill the viewport (here it stops 100px short), because zooming then changes
+// how much content the viewport holds. Deriving the pitch from the fetch-time
+// cellWidth tracks the same rescale the stale pixels get.
 test('zooming before the refetch lands keeps the lines on the stale triangle', () => {
   const { display, view } = loadedDisplay({ scrollToEnd: true })
   const fetchWidth = view.dynamicBlocks.totalWidthPxWithoutBorders
@@ -100,7 +100,9 @@ test('a SNP off the displayed regions is dropped, not pinned to the left edge', 
   const data = ldData(4, view.dynamicBlocks.totalWidthPxWithoutBorders)
   display.setRpcData({
     ...data,
-    snps: data.snps.map((snp, i) => (i === 2 ? { ...snp, refName: 'ctgB' } : snp)),
+    snps: data.snps.map((snp, i) =>
+      i === 2 ? { ...snp, refName: 'ctgB' } : snp,
+    ),
   })
 
   expect(display.connectorLineCoords.map(c => c.label)).toEqual([

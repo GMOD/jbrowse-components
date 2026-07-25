@@ -12,6 +12,7 @@ import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome
 import sharedLDConfigFactory from './SharedLDConfigSchema.ts'
 import sharedModelFactory from './shared.ts'
 
+import type { SharedLDModel } from './shared.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Headless harness for the LD display: registers a VariantTrack + LDDisplay and
@@ -135,7 +136,9 @@ export function createTestEnvironment() {
     view.setDisplayedRegions([
       { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgA' },
     ])
-    const display = view.tracks[0]!.displays[0]!
+    // `displays[0]` is untyped; annotating it makes a getter that doesn't exist
+    // on the model a typecheck error rather than a silent any
+    const display: SharedLDModel = view.tracks[0]!.displays[0]
     return { session, view, display, mockRpcCall }
   }
 

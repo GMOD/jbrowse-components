@@ -166,6 +166,7 @@ export function ConnectorZone({
       style={{
         position: 'absolute',
         top: 0,
+        left: 0,
         height,
         width,
       }}

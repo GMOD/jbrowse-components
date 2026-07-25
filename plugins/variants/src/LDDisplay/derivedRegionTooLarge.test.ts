@@ -1,6 +1,5 @@
 import { createTestEnvironment } from './testEnv.ts'
 
-
 // Derived regionTooLarge: a pure function of the cached byte estimate scaled to
 // the current viewport. These lock in the behavior the imperative path got
 // wrong — a banner that stuck on zoom-in (the reported bug), and that would

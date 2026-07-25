@@ -60,15 +60,14 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     ) {
       return undefined
     }
-    const w = view.totalWidthPxWithoutBorders
+    // same column pitch the canvas and the connector lines lay out on. `rect` is
+    // the canvas, which already sits at columnGeometry.left, so mouseX is
+    // canvas-relative and the origin must not be subtracted again here.
+    const { columnWidth, n } = model.columnGeometry
     const mouseX = clientX - rect.left
     const mouseY = clientY - rect.top
-    const screenCol = Math.floor((mouseX / w) * cellData.numFeatures)
-    const featureIdx = mirrorColumnIndex(
-      screenCol,
-      cellData.numFeatures,
-      model.flipped,
-    )
+    const screenCol = Math.floor(mouseX / columnWidth)
+    const featureIdx = mirrorColumnIndex(screenCol, n, model.flipped)
     const rowIdx = Math.floor(
       (mouseY + model.scrollTop) / model.effectiveRowHeight,
     )
