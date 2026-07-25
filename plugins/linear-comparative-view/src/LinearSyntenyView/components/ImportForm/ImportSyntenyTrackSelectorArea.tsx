@@ -95,7 +95,7 @@ const ImportSyntenyTrackSelectorArea = observer(
               <NoSyntenyTrackMessage
                 assembly1={assembly1}
                 assembly2={assembly2}
-                remedy='Choose "New track" above to add one, or switch to "Quick start" to launch from an existing synteny track.'
+                remedy='Choose "New track" above to add one, or launch anyway to stack these rows with no ribbons between them.'
               />
             }
           />

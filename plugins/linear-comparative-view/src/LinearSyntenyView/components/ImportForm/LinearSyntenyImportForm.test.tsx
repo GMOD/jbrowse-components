@@ -177,8 +177,10 @@ test('switching to Manual hands over the rows Quick start had set up', () => {
   })
   goManual()
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39', 'rn7'])
-  // handed over as configured, not as three unconfigured pairs
-  expect(launchButton()).toBeEnabled()
+  // handed over as configured, so both pairs draw the track
+  expect(
+    screen.queryByRole('button', { name: /No synteny dataset connects/ }),
+  ).not.toBeInTheDocument()
 })
 
 test('the handover opens on the track pair, not the assembly-list order', () => {
@@ -190,25 +192,48 @@ test('the handover opens on the track pair, not the assembly-list order', () => 
   })
   goManual()
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'rn7'])
-  expect(launchButton()).toBeEnabled()
 })
 
-test('a pair with no synteny dataset is flagged and blocks launch', () => {
+test('a pair with no synteny dataset launches, stacking the rows blank', () => {
+  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+  expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
+    /No synteny dataset connects row 1 and 2/,
+  )
+  expect(launchButton()).toBeEnabled()
+  fireEvent.click(launchButton())
+  expect(launchedRows(model)).toEqual(['hg38', 'mm39'])
+  expect(levelTrackIds(model)).toEqual([[]])
+})
+
+test('an unfinished new-track upload is the one thing that blocks launch', () => {
   setup({ assemblyNames: ['hg38', 'mm39'] })
+  // picking "New track" starts an upload with no file yet; launching would drop it
+  fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
   expect(launchButton()).toBeDisabled()
   expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
-    /Configure synteny track between row 1 and 2/,
+    /Finish the new synteny track for row 1 and 2/,
   )
+
+  // clearing it back to None makes the same blank pair launchable again
+  fireEvent.click(screen.getByRole('radio', { name: 'None' }))
+  expect(launchButton()).toBeEnabled()
+  expect(screen.getByTestId('synbutton')).toHaveAccessibleName(/set to None/)
 })
 
-test('a synteny track from a connection satisfies a pair', () => {
-  const { loadConnection } = setup({
+test('a synteny track from a connection is applied to its pair', () => {
+  const { model, loadConnection } = setup({
     assemblyNames: ['hg38', 'mm39'],
     connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
   })
-  expect(launchButton()).toBeDisabled()
+  expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
+    /No synteny dataset connects/,
+  )
   loadConnection()
-  expect(launchButton()).toBeEnabled()
+  expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
+    /Configure synteny track/,
+  )
+  fireEvent.click(launchButton())
+  expect(levelTrackIds(model)).toEqual([['conn_track']])
 })
 
 test('Add row defaults to an assembly connected to the current bottom row', () => {
@@ -222,9 +247,11 @@ test('Add row defaults to an assembly connected to the current bottom row', () =
   goManual()
   fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
   expect(rowSelects()).toHaveLength(3)
-  // whichever connected assembly it picked, the new pair is launchable rather
-  // than immediately flagged
-  expect(launchButton()).toBeEnabled()
+  // whichever connected assembly it picked, the new pair draws ribbons rather
+  // than stacking blank
+  expect(
+    screen.queryByRole('button', { name: /No synteny dataset connects/ }),
+  ).not.toBeInTheDocument()
 })
 
 test('removing a row drops that pair selection and keeps the others', () => {
@@ -273,12 +300,18 @@ test('Auto-arrange reorders rows so adjacent pairs share a dataset', () => {
   // force a broken ordering: hg38 and mm39 are adjacent with no dataset between
   pickAssembly(1, 'mm39')
   pickAssembly(2, 'rn7')
-  expect(launchButton()).toBeDisabled()
+  expect(
+    screen.getByRole('button', {
+      name: /No synteny dataset connects row 1 and 2/,
+    }),
+  ).toBeInTheDocument()
 
   fireEvent.click(autoArrangeButton())
   // rn7 is the hub, so it lands in the middle
   expect(rowSelects().map(s => s.textContent)).toEqual(['mm39', 'rn7', 'hg38'])
-  expect(launchButton()).toBeEnabled()
+  expect(
+    screen.queryByRole('button', { name: /No synteny dataset connects/ }),
+  ).not.toBeInTheDocument()
 })
 
 test('Auto-arrange keeps a self-alignment pair adjacent', () => {
@@ -294,9 +327,11 @@ test('Auto-arrange keeps a self-alignment pair adjacent', () => {
   pickAssembly(1, 'hg38')
   pickAssembly(2, 'mm39')
 
-  // already launchable, so Auto-arrange isn't offered; the point is that the
-  // self pair is not treated as unconfigured
-  expect(launchButton()).toBeEnabled()
+  // every pair has a dataset, so Auto-arrange isn't offered; the point is that
+  // the self pair counts as connected
+  expect(
+    screen.queryByRole('button', { name: /No synteny dataset connects/ }),
+  ).not.toBeInTheDocument()
   expect(
     screen.queryByRole('button', { name: /Reorder rows so adjacent pairs/ }),
   ).not.toBeInTheDocument()
@@ -309,11 +344,12 @@ test('a same-assembly pair with no self-alignment track says so', () => {
   })
   goManual()
   pickAssembly(1, 'hg38')
-  expect(launchButton()).toBeDisabled()
   expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
-    /Configure synteny track between row 1 and 2/,
+    /both use hg38, which only a self-alignment track can connect/,
   )
   expect(
     screen.getByText(/no self-alignment synteny track/),
   ).toBeInTheDocument()
+  // legal, just blank
+  expect(launchButton()).toBeEnabled()
 })
