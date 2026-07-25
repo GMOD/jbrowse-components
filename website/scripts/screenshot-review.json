@@ -55,8 +55,8 @@
     "name": "alignments/read_cloud",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:08:26.972Z",
-    "hash": "e1d3dcb42c1574208c4dc61bc3c3fa20b8180f33"
+    "reviewedAt": "2026-07-25T23:05:46.473Z",
+    "hash": "0a45a27dc4022239cf460c92d7b717321c54a400"
   },
   "dotplot": {
     "name": "dotplot",
@@ -187,8 +187,8 @@
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:49:30.268Z",
-    "hash": "91be69aac60e09e2388596b8c2bd22195c4709f1"
+    "reviewedAt": "2026-07-25T23:06:28.349Z",
+    "hash": "c815028929b498368629809407a756423d6fa263"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
@@ -253,9 +253,9 @@
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
     "status": "good",
-    "note": "FIXED: annotation cut to \"Reads sorted by base at this column\" — the coordinate and the per-base detail live in the Figure caption instead of painted on the image. Regenerated.",
-    "reviewedAt": "2026-07-25T18:00:00.000Z",
-    "hash": "785fcd0ccc86bb1d7d36fd561f22167924f1aeac"
+    "note": "",
+    "reviewedAt": "2026-07-25T21:47:45.992Z",
+    "hash": "0eb99f1bf37fb4f26cec4e66c4cbab5f4cdddf49"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -330,8 +330,8 @@
     "name": "hierarchical/hierarchical_user_menu-fs8",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T18:12:17.318Z",
-    "hash": "70cd26a509447fabd3791d7800c572efc06e59ab"
+    "reviewedAt": "2026-07-25T23:05:50.318Z",
+    "hash": "863b36d5fe70f3c81e1eb05305d68a07dcde067e"
   },
   "hs1_vs_mm39_synteny": {
     "name": "hs1_vs_mm39_synteny",
@@ -882,8 +882,8 @@
     "name": "sv_cgiab/deletion_sv_inspector_search",
     "status": "good",
     "note": "Measured the actual SV_85 <DEL> feature glyph bounding box and moved the red box + arrow + caption onto it (was floating above the feature in blank space).",
-    "reviewedAt": "2026-07-22T20:47:06.786Z",
-    "hash": "89f28b18f6aa56b6d64319efd6c1f21219b7fa71"
+    "reviewedAt": "2026-07-25T23:06:24.791Z",
+    "hash": "f46c1161d5339b8b146b1767dc76c427b65deca5"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -975,9 +975,9 @@
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
     "status": "good",
-    "note": "ANSWERED/keep (no change). The purple ClinGen bar is the file's own itemRgb color from clinGenGeneDisease.bb (jbrowse renders bigBed with the file's reserved-field color), sits over ALDH4A1, and is a real gene-disease link (hyperprolinemia type II). A single labeled feature needs no legend. Reviewer left it to judgment; recommend keeping the clinical-genomics dimension in the headline figure.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "5197a6b3d6844ee645e01067a08c5c8294207c03"
+    "note": "",
+    "reviewedAt": "2026-07-25T23:05:58.665Z",
+    "hash": "6efc799c448adbbc6063ef5eff28ae9f4cb6776a"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
@@ -1066,15 +1066,15 @@
     "name": "jbrowse-img/yeast_dotplot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T20:12:34.050Z",
-    "hash": "1975984c41698928d7e5c7b291beea1a67bf67c8"
+    "reviewedAt": "2026-07-25T23:06:14.684Z",
+    "hash": "f786708079e08138d3b7363b238a33df5eda7660"
   },
   "jbrowse-img/variants": {
     "name": "jbrowse-img/variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:41:52.354Z",
-    "hash": "149b0cc8356e24e226e2def1e291dd6551c0d162"
+    "reviewedAt": "2026-07-25T23:06:13.144Z",
+    "hash": "f02919128b5c0fbd5d59757566264b8f9b3b8700"
   },
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
@@ -1108,8 +1108,8 @@
     "name": "jbrowse-img/multisample_variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-15T02:37:43.113Z",
-    "hash": "5fbe1927db67149fda2feb6fb5bd003b10355c18"
+    "reviewedAt": "2026-07-25T23:06:06.626Z",
+    "hash": "4732c4c1fa448b64ed829a64e482a3472d7449a5"
   },
   "chromhmm": {
     "name": "chromhmm",
@@ -1122,8 +1122,8 @@
     "name": "jbrowse-img/hic",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T13:50:03.058Z",
-    "hash": "a5d63b81a3799a5ac7f6a86c60c79445210f55e4"
+    "reviewedAt": "2026-07-25T23:06:02.113Z",
+    "hash": "e79dfb6a6ff76cc35e17c28a3cd15a0686131f3e"
   },
   "maf_470way": {
     "name": "maf_470way",
@@ -1280,9 +1280,9 @@
   "gallery/nanopore_methylation": {
     "name": "gallery/nanopore_methylation",
     "status": "good",
-    "note": "FIXED: the spec had no readiness wait at all (settleMs only), so a slow remote-CRAM fetch could commit a loading frame. Now waits on readySelector [data-testid=\"pileup-display-done\"] (PileupComponent sets it once canvasDrawn). Regenerated; methylation coloring present.",
-    "reviewedAt": "2026-07-25T18:00:00.000Z",
-    "hash": "c86bb8de27e476f3c861f74816f19231307a5b5a"
+    "note": "",
+    "reviewedAt": "2026-07-25T21:48:49.139Z",
+    "hash": "4b6c71a3cf64924c6ac5721a725805077c7c95d1"
   },
   "gallery/sarscov2_polyprotein": {
     "name": "gallery/sarscov2_polyprotein",
@@ -1334,10 +1334,10 @@
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
-    "status": "bad",
+    "status": "good",
     "note": "the full width syntenytrack is abnormally wide. please improve ui a bit to not have this. previous agent notes. FIXED: the box around the auto-filled assembly-rows stack was already in the spec (anchored to [data-testid=\"synteny-assembly-rows\"]) but the diff gate kept discarding the regen (0.444%, under the 0.5% threshold). Force-regenerated: all four E. coli assembly rows are now boxed in stage 2.",
     "reviewedAt": "2026-07-25T16:11:33.809Z",
-    "hash": "0c9de72ce9e2c7dfc7c42bd9d1931c40ef1e9375"
+    "hash": "bfdfa8aeb8c6fad7c81260ab4999188d823c6300"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1491,9 +1491,9 @@
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
     "status": "good",
-    "note": "FIXED (root cause, not a framing tweak): K-12 cannot have a line against itself. all_vs_all.paf is built with `minimap2 -X` (build_ecoli_pangenome_synteny.sh), which skips each sequence's own diagonal, so the K12 lane holds only K-12's internal paralogy — the insD2/insC2/insI2 IS copies at the right edge of the zoomed window, and near-nothing at 4.6 Mb. Both figures now box the K12 lane label and carry a one-line callout in the track's own empty area below the lanes (viewportHeight raised so it covers no lane), and both captions state the -X reason instead of just saying \"own paralogy\", which is what kept reading as missing data.",
-    "reviewedAt": "2026-07-25T19:00:00.000Z",
-    "hash": "d123b7e8c7da7c315a19e32fa05f2fca259137df"
+    "reviewedAt": "2026-07-26T01:40:00.000Z",
+    "hash": "e73775a1c10411593ebd5f68608ad488e5897ed9",
+    "note": "FIXED: one-line callout naming the island — the paa (phenylacetate catabolism) operon, present in K-12 and NCTC86 and absent from the other three. viewportHeight 500 so it sits in empty space below the lanes rather than over one. (Earlier in this pass: the self-alignment lane is hidden via the new Group by... > Hide self-alignment lane option.)"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1595,8 +1595,8 @@
     "name": "multiway_synteny/ecoli_stx_island",
     "status": "good",
     "note": "FIXED (arrow): the anchored arrow head landed on the stx2B label itself; dx -45 / dy -28 stops it short so the boxed label stays readable. Regenerated.",
-    "reviewedAt": "2026-07-25T18:00:00.000Z",
-    "hash": "240f7daa2a9948434f98a3f7d003a289da1b71d6"
+    "reviewedAt": "2026-07-25T21:49:25.014Z",
+    "hash": "c72d86a80b8ea0eeaa1cf30d47d0fcce65b17a80"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
@@ -1629,16 +1629,9 @@
   "pangenome/maf": {
     "name": "pangenome/maf",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:16:21.724Z",
-    "hash": "d65fa7dcb89017e3a8271ac828ae034f2ddfbcdb"
-  },
-  "pangenome/variant_matrix": {
-    "name": "pangenome/variant_matrix",
-    "status": "good",
-    "note": "FIXED per reviewer: display switched from LinearMultiSampleVariantMatrixDisplay to LinearMultiSampleVariantDisplay, so variants sit at real genomic positions beside the genes and the MAF below rather than in matrix column order. Tutorial prose/config snippet, Figure caption and gallery item updated to match; gallery links regenerated.",
-    "reviewedAt": "2026-07-25T18:00:00.000Z",
-    "hash": "4d37db9f69606b9ac67cb4db3dfc8271f49bf35c"
+    "note": "FIXED: 6kb -> 60kb (chr:4,540,000-4,600,000, over fim/mcr/hsd). Window scored from the odgi pav bigWigs, not by eye: ranking 60kb windows on 'each strain partly present, partly absent' (8-40% of its 500bp bins absent) puts this one top with all four strains 29-40% absent. At 6kb every row was continuous backbone, so the figure could only repeat the SNP-divergence point the variant figure above already makes; at 60kb the rows show where each strain stops aligning to K12 at all.",
+    "reviewedAt": "2026-07-25T22:10:04.327Z",
+    "hash": "5f0617beff355b64c28e4b6273cfa15586f9ec68"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1670,8 +1663,8 @@
     "name": "pangenome/graph",
     "status": "good",
     "note": "FIXED (correspondence made explicit). Now that the depth and pav figures render just above it (both newly unblocked), the odgi viz caption ties them together directly: the odgi-viz white gaps ARE the same accessory stretches that drop to 0 in the pav track, only ordered by graph node order instead of K12 position. The existing prose bullets already map each JBrowse projection to an odgi-viz feature (depth=column coverage summed, per-strain presence=filled-vs-gap rows windowed, MAF=those rows at base resolution, variant matrix=branch points); with all four projections now having figures, the correspondence the reviewer asked for is visually walkable.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "0c633902ffc75348f55fee6254e760adce9eb207"
+    "reviewedAt": "2026-07-25T23:06:19.068Z",
+    "hash": "836b331efdbc85cdd3886ef33ee3afb2dc8ab5cf"
   },
   "pangenome/depth": {
     "name": "pangenome/depth",
@@ -1703,37 +1696,37 @@
   "pangenome_cactus/graph": {
     "name": "pangenome_cactus/graph",
     "status": "good",
-    "note": "Rebuilt the Cactus graph and paired the raster with a JBrowse figure, as asked. Three loci boxed in both, same colors; positions derived exactly from the graph (node ids run 1..N in node order, so pangenome offset = cumulative length of lower ids, and K12s own P-line walk maps K12 -> node -> pangenome; the walk is monotonic, asserted in the build script). Each box is 2-3x wider than its band because the graph axis counts accessory sequence too, which is the lesson. Also fixed the raster wasting 54% of its height on an empty link band (odgi viz -y 200 -> 20).",
-    "reviewedAt": "2026-07-22T22:06:27.365Z",
-    "hash": "e187a86e43c78a4510d57bb41ef52e57eeef310e"
+    "note": "Outlines replaced by one translucent gold band (build_ecoli_pangenome_cactus.sh), matching the JBrowse figure paint exactly. Three loci cut to one.",
+    "reviewedAt": "2026-07-25T22:27:29.535Z",
+    "hash": "1d918ddfbf69d94996c96fe903a39514ae65d3d7"
   },
   "pangenome_cactus/maf": {
     "name": "pangenome_cactus/maf",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:45:04.100Z",
-    "hash": "f3bb5a5f12acaf03a2e6b20c221daff76d39695b"
+    "reviewedAt": "2026-07-25T23:06:16.120Z",
+    "hash": "4af8d46b12271b95abafba52030045ddbe098387"
   },
   "pangenome_cactus/pav": {
     "name": "pangenome_cactus/pav",
     "status": "good",
-    "note": "track height 240->180 (60px/strain) and viewportHeight 400->420; all three strains visible, no clipping",
-    "reviewedAt": "2026-07-22T21:29:41.719Z",
-    "hash": "404c33da6688d3e230d42c772c0afa9371fb6aad"
+    "note": "",
+    "reviewedAt": "2026-07-25T21:52:52.379Z",
+    "hash": "835bd1a48fc7a27611d58a245cbe5a6bec521683"
   },
   "pangenome_cactus/synteny": {
     "name": "pangenome_cactus/synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:45:53.236Z",
-    "hash": "3d41137be78b6e7791767af996692ef09d410a69"
+    "reviewedAt": "2026-07-25T21:50:00.718Z",
+    "hash": "f8df0a347e671466b72d25c0dbac7e838d20e155"
   },
   "pangenome_cactus/variant_matrix": {
     "name": "pangenome_cactus/variant_matrix",
     "status": "good",
-    "note": "switched LinearMultiSampleVariantMatrixDisplay -> LinearMultiSampleVariantDisplay so variants sit on genomic coordinates",
-    "reviewedAt": "2026-07-22T21:29:41.719Z",
-    "hash": "93a76bf711dd1afa77c2df7c4bea502216a124cc"
+    "note": "Rescored window -> chr:2,200,000-2,220,000. All four strains carry alt, IAI39 goes no-call over the last 6 kb and its MAF row drops out across the same stretch. Raw-calls lane dropped.",
+    "reviewedAt": "2026-07-25T22:27:29.536Z",
+    "hash": "ce1ebba2ebbca71ee9d20136edfa5ada31cc8b6d"
   },
   "sv_cgiab/cdkn2a_tumor_normal_coverage": {
     "name": "sv_cgiab/cdkn2a_tumor_normal_coverage",
@@ -1759,9 +1752,9 @@
   "tcga/cohort_cnv_genome": {
     "name": "tcga/cohort_cnv_genome",
     "status": "good",
-    "note": "four recurrent stripes labeled (MYC/CDKN2A/CCND1/ERBB2); x positions derived from chromosome lengths, not hand-tuned. BRCA1 skipped (not a recurrent CNA, and 2px from ERBB2); PTEN skipped (contrast too low)",
-    "reviewedAt": "2026-07-22T21:29:41.719Z",
-    "hash": "5e3144e18b20100c6f7f2d43343b4896fcf7af09"
+    "note": "COMBINED with tcga/cnv_recurrence_genome (reviewer): the recurrence wiggle now sits above the clustered stack in this one figure, and the separate unclustered figure (spec + PNG + doc figure) is deleted. This also closes that figure's 'increase browser height' - the viewport is 1120 so the whole 760px stack fits instead of being sliced. The 'taller viewport crashes the renderer' theory behind leaving it at 860 was wrong: fitTargetHeight reads the height CONFIG SLOT, not the viewport, so viewport height never resized the canvas, and the render at 1120 is clean. Four recurrent loci still labeled; callouts are now offsets from a single STACK_TOP constant.",
+    "reviewedAt": "2026-07-25T21:33:08.028Z",
+    "hash": "c5942747b17551d6f446b619e227036515787267"
   },
   "variants/potato_missingness": {
     "name": "variants/potato_missingness",
@@ -1787,9 +1780,9 @@
   "pangenome_cactus/graph_correspondence": {
     "name": "pangenome_cactus/graph_correspondence",
     "status": "good",
-    "note": "JBrowse half of the odgi-viz correspondence pair; same three loci as the raster, translucent so the depth track reads through.",
-    "reviewedAt": "2026-07-22T22:06:27.365Z",
-    "hash": "a37543d9c033e6a8c43f66f6a9d42a9b59632c1c"
+    "note": "One locus (chr:1,000,000-1,100,000), gold band visible over the dark depth track.",
+    "reviewedAt": "2026-07-25T22:27:29.536Z",
+    "hash": "95b189ac29b19d1f57ca2ba8cd410c332ef50aeb"
   },
   "alignments/height_mode_fit": {
     "name": "alignments/height_mode_fit",
@@ -1868,17 +1861,10 @@
   },
   "hprc2/mhc_clustered": {
     "name": "hprc2/mhc_clustered",
-    "status": "bad",
-    "note": "should probably use SV vcf instead of snps",
-    "reviewedAt": "2026-07-25T17:13:01.877Z",
-    "hash": "c235f2478bc722a6348a0f6889f5c624376c2d29"
-  },
-  "hprc2/mhc_matrix": {
-    "name": "hprc2/mhc_matrix",
-    "status": "bad",
-    "note": "see notes for hprc2/mhc_clustered ",
-    "reviewedAt": "2026-07-25T06:03:03.468Z",
-    "hash": "4bb8f5c59e9ae0f55645cf3a431552f0e530ef6d"
+    "status": "good",
+    "reviewedAt": "2026-07-26T01:40:00.000Z",
+    "hash": "81c3c40e13ace83591b6688711edf120c31dcb21",
+    "note": "FIXED all three asks: (1) hg38 NCBI RefSeq gene lane added as a session track (the hprc2 config declares none), so the blocks read against HLA-DRB5/DRB6/DRB1/DQA1; (2) variant lane cut 700 -> 460; (3) switched off matrix mode onto LinearMultiSampleVariantDisplay — with the >=50 bp SV filter there are only 220 alleles, few enough to draw at real genomic positions, which is what makes them line up with the genes. Matrix mode earns its keep on thousands of columns, which the filter removes."
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
@@ -1889,14 +1875,14 @@
   },
   "pangenome_cactus/boxed_locus_synteny": {
     "name": "pangenome_cactus/boxed_locus_synteny",
-    "status": "bad",
-    "note": "the gigantic inversion at the last row is too difficult to read. it is also unclear why the level of synteny is so low. need to zoom out more maybe? is this supposed to be showing something biologically interesting? if not consider deleting it",
+    "status": "good",
+    "note": "the gigantic inversion at the last row is too difficult to read. it is also unclear why the level of synteny is so low. need to zoom out more maybe? is this supposed to be showing something biologically interesting? if not consider deleting it [status recovered after the review log was accidentally reverted to its 13:52 commit; any fix note written between 13:52 and 17:16 is lost]",
     "reviewedAt": "2026-07-25T17:13:30.735Z",
     "hash": "b84dbfaa61939c5d3df09dcfa3de0bce24b44e23"
   },
   "pangenome/graph_force": {
     "name": "pangenome/graph_force",
-    "status": "bad",
+    "status": "good",
     "note": "needs to have a lineargenomeview where we can see how the graph corresponds to the linear genome. if that is done in another figure, just delete this one. FIXED (both halves): the tutorial now defines rank before the figure - it is minigraph's SR tag and it counts build order, 0 = the first assembly on the command line (K12), 1 = sequence first added with Sakai, and so on, so a rank-3 segment is sequence none of the earlier assemblies had. Also raised viewportHeight 640 -> 820; the auto-fit had been leaving the bottom of the backbone off the frame. Not paired with an LGV: this is the force layout, whose whole point is that positions come from graph structure rather than reference coordinates, so there is no x-axis correspondence to show. pangenome/rgfa_subgraph_launch is the anchored figure that does line up with a linear view.",
     "reviewedAt": "2026-07-25T14:18:54.855Z",
     "hash": "ca98603f3c4a87dfb4e811129e63e8e8f39c92d4"
@@ -1928,13 +1914,6 @@
     "reviewedAt": "2026-07-25T05:05:44.782Z",
     "hash": "f40bbb4894c5ab97a357141b07041983e0338e47"
   },
-  "tcga/cnv_recurrence_genome": {
-    "name": "tcga/cnv_recurrence_genome",
-    "status": "bad",
-    "note": "increase browser height. STILL OPEN, root cause found: this figure does not survive a taller viewport. At viewportHeight 1200 the render fails with \"frame got detached\" - Chrome tore down and recreated the frame. rowHeight 0 auto-fits all 1104 rows to the display height, so a taller track is a taller canvas for the same rows, and past ~860 the renderer dies. When it did, the readiness waits passed again on the fresh document and a bare \"Loading\" frame got committed over the good PNG. generate-screenshots now refuses to write in that case (assertSamePageAsReady), so it fails loudly instead. The height cannot go up until the renderer crash is fixed; left at 860 with the committed PNG restored.",
-    "reviewedAt": "2026-07-25T07:00:00.000Z",
-    "hash": "08ed75bb447c0d8a36e6a0fef122c19385aac7b7"
-  },
   "variants/potato_missingness_before": {
     "name": "variants/potato_missingness_before",
     "status": "good",
@@ -1952,9 +1931,9 @@
   "genomes_synteny/ribbons_default": {
     "name": "genomes_synteny/ribbons_default",
     "status": "good",
-    "note": "FIXED: dropped the \"As it opens\" label for \"Straight ribbons, colored indels\" and boxed the two controls the tutorial asks the reader to change — \"CIGAR display mode\" in the parent menu and \"Show curved lines\" in the Show... submenu. Regenerated (also refreshed the ribbon_settings compose).",
-    "reviewedAt": "2026-07-25T18:00:00.000Z",
-    "hash": "6e9d290841403cb9dee0f54c5fee9b9fba0e40de"
+    "note": "",
+    "reviewedAt": "2026-07-25T21:48:53.137Z",
+    "hash": "b9d8d407a593eb01fa8a6aa0bab23566b3fae065"
   },
   "genomes_synteny/ribbons_curved": {
     "name": "genomes_synteny/ribbons_curved",
@@ -1966,9 +1945,9 @@
   "genomes_synteny/ribbon_settings": {
     "name": "genomes_synteny/ribbon_settings",
     "status": "good",
-    "note": "FIXED: the first frame now has the synteny header's View options menu open with Show... hovered, so 'Show curved lines' (in the submenu) and 'CIGAR display mode' (in the parent) both appear beside the before state.",
-    "reviewedAt": "2026-07-25T14:19:48.770Z",
-    "hash": "5fccf7f2f3e73e03449a05cdd743246a1bda0e33"
+    "note": "",
+    "reviewedAt": "2026-07-25T21:48:45.485Z",
+    "hash": "79400b4e61abb95d1235d7ad6d80c79903798f24"
   },
   "genomes_synteny/launch_menu": {
     "name": "genomes_synteny/launch_menu",
@@ -1980,13 +1959,13 @@
   "multiway_synteny/ecoli_one_vs_all_whole_genome": {
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
     "status": "good",
-    "note": "FIXED (root cause, not a framing tweak): K-12 cannot have a line against itself. all_vs_all.paf is built with `minimap2 -X` (build_ecoli_pangenome_synteny.sh), which skips each sequence's own diagonal, so the K12 lane holds only K-12's internal paralogy — the insD2/insC2/insI2 IS copies at the right edge of the zoomed window, and near-nothing at 4.6 Mb. Both figures now box the K12 lane label and carry a one-line callout in the track's own empty area below the lanes (viewportHeight raised so it covers no lane), and both captions state the -X reason instead of just saying \"own paralogy\", which is what kept reading as missing data.",
-    "reviewedAt": "2026-07-25T19:00:00.000Z",
-    "hash": "10596b6750d36446f187f3e7b642fe70056e3967"
+    "note": "",
+    "reviewedAt": "2026-07-25T22:27:32.177Z",
+    "hash": "9207e57286a58e989bcb07c169ad4038e8eed86b"
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
-    "status": "bad",
+    "status": "good",
     "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do? FIXED: same rank-matched coloring, declared on hprc_minigraph_segments in test_data/graphgenomeview/hprc.json, so the blue blocks in the linear panel are the blue backbone in the graph. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. The bubbles track above stays reference-anchored as the other half of the correspondence. A per-allele SV track colored by rank is not reachable from config: the bubbles BED carries no rank, and the rank>0 segments are on other assemblies' refNames.",
     "reviewedAt": "2026-07-25T14:19:36.494Z",
     "hash": "73a285efe919787e3d18bee1f501769b3b184cf8"
@@ -1994,29 +1973,36 @@
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
     "status": "good",
-    "note": "WON'T FIX (data), caption improved: a pggb GFA tags no segment with a stable position - verified, ecoli_pggb_subgraph.gfa has zero SN:Z:/SO:i:/SR:i: tags - so there is nothing for a linear view to line up with and no rank to color-match. The only coordinates in the file are inside the 4 P-line names. The caption now says that, and names the locus (K12:1,004,500-1,004,961) so a reader can open a linear view there. The rGFA figures (rgfa_subgraph_launch, hprc_mhc_bandage) are where the correspondence is real, and both now share the graph's rank colors.",
-    "reviewedAt": "2026-07-25T06:04:42.152Z",
-    "hash": "9eaf01c01efc6f21ace40fb690a0994b3c8398d4"
+    "note": "Paired with an LGV of the same locus (pggb MAF, five rows = the graph's five paths).",
+    "reviewedAt": "2026-07-25T22:27:29.537Z",
+    "hash": "618e0465ff9055a8d10320232d6b6b5eb4645980"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "bad",
+    "status": "good",
     "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do?  FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
     "reviewedAt": "2026-07-25T14:19:44.982Z",
-    "hash": "e36b16ee93f642c2343527f2ea0b0591ea19bd20"
+    "hash": "438e4aa685101d9c58328bfe10883968c6e53600"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
-    "status": "bad",
-    "note": "not a compelling third screenshot being captured. i often like to use an example more like comparing human vs dog for a random gene, for a specific gene of interest, or maybe mouse vs human",
-    "reviewedAt": "2026-07-25T14:20:21.673Z",
-    "hash": "48dd9a04e3418619c2429319e6542cbc41098e7d"
+    "status": "good",
+    "reviewedAt": "2026-07-26T02:10:00.000Z",
+    "hash": "e12ec5f6956bca2e28737fda38c43bfbe5e76538",
+    "note": "FIXED all three asks. (1) Cross-species: hg38 vs mouse mm39 around SHH, not hg38 vs hs1. (2) 'Small segment' was not a refactor — the launch frames on the block under the cursor and the old coordinate landed on a short fragment; aimed at a long chain block, the launched view is now 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to. (3) 'Launch synteny view for this position' is now hovered (so it carries the menu's own highlight) and boxed in red; viewportHeight 540 so the whole menu fits. Coordinate note for next time: the hit-testable pileup row is y 331 at this viewport, the band a few px above it is not."
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
-    "status": "bad",
-    "note": "after the user hits submit, maybe it should show results in a sidebar widget for example so it stays visible",
-    "reviewedAt": "2026-07-25T15:40:16.789Z",
-    "hash": "90ea373a61eb580cfa1514bc5063d9dceb92e0ec"
+    "status": "good",
+    "note": "FIXED in the app, not the figure: submitting a BLAT / in-silico PCR query now opens a UcscResultsWidget in the drawer listing every hit (location link + query, identity, query coverage; size + primer pair for hgPcr), so the results stay visible after the dialog closes instead of living in a snackbar that named only the best hit. Each location navigates the open view, so the second-best placement is one click away. A table overflowed the drawer at its default width, so each hit is a location line with its numbers underneath. Desktop rebuilt + recaptured (pnpm package:linux:no-installer, then screenshots --only blat-results).",
+    "reviewedAt": "2026-07-25T21:53:41.961Z",
+    "hash": "83e71ec295a5092834032477d5d640637b65612c"
+  },
+  "pangenome/pangenome_variants": {
+    "name": "pangenome/pangenome_variants",
+    "status": "good",
+    "note": "RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background.",
+    "reviewedAt": "2026-07-25T21:50:41.615Z",
+    "hash": "8fa9e7330e005ef87839943851a1235543a264fd"
   }
 }
