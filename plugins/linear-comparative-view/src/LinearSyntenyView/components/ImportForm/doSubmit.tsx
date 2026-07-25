@@ -1,20 +1,22 @@
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import { getSyntenyTracks, resolveRowTrackAction } from '@jbrowse/synteny-core'
+import { isSessionWithAddTracks } from '@jbrowse/core/util'
+import {
+  allSessionTracks,
+  resolveSyntenyTrackActions,
+} from '@jbrowse/synteny-core'
 import { toJS } from 'mobx'
 
-import { assemblyPairAt } from '../../util/importFormRows.ts'
-
 import type { LinearSyntenyViewModel } from '../../model.ts'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export function doSubmit({
   selectedAssemblyNames,
   model,
+  session,
 }: {
   selectedAssemblyNames: string[]
   model: LinearSyntenyViewModel
+  session: AbstractSessionModel
 }) {
-  const session = getSession(model)
-
   // each row is a LinearGenomeView built from a declarative `init` — its
   // afterAttach autorun loads the assembly regions and shows the whole genome,
   // so we don't wait for assemblies or navigate here (see LinearGenomeView
@@ -29,18 +31,19 @@ export function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    for (let idx = 0; idx < selectedAssemblyNames.length - 1; idx++) {
-      const pairAssemblies = assemblyPairAt(selectedAssemblyNames, idx)
-      const action = resolveRowTrackAction(
-        model.importFormSyntenyTrackSelections[idx],
-        getSyntenyTracks(session.tracks, pairAssemblies),
-        pairAssemblies,
-      )
+    // level i draws between rows i and i+1, which is the pair index the actions
+    // are keyed by
+    const actions = resolveSyntenyTrackActions({
+      tracks: allSessionTracks(session),
+      selections: model.importFormSyntenyTrackSelections,
+      assemblyNames: selectedAssemblyNames,
+    })
+    for (const [level, action] of actions.entries()) {
       if (action?.kind === 'open') {
         session.addTrackConf(toJS(action.conf))
-        model.toggleTrack(action.conf.trackId, idx)
+        model.toggleTrack(action.conf.trackId, level)
       } else if (action?.kind === 'show') {
-        model.showTrack(action.trackId, idx)
+        model.showTrack(action.trackId, level)
       }
     }
   }

@@ -5,14 +5,16 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   ImportFormModeToggle,
+  QuickStartPanel,
+  allSessionTracks,
   dotplotAxesFromRows,
+  getConnectedAssemblies,
   getSyntenyTracks,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
 import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import QuickStart from './QuickStart.tsx'
 import TrackSelector from './TrackSelector.tsx'
 import { doSubmit } from './doSubmit.ts'
 
@@ -36,18 +38,25 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
+  const tracks = allSessionTracks(session)
   const firstAssembly = assemblyNames[0] ?? ''
-  const quick = useQuickStartState(session.tracks)
+  const quick = useQuickStartState(tracks)
   const [assemblyX, setAssemblyX] = useState(firstAssembly)
-  const [assemblyY, setAssemblyY] = useState(firstAssembly)
-  const [error, setError] = useState<unknown>()
+  // the y-axis opens on an assembly the x-axis actually has synteny to, so
+  // Manual starts on a plottable pair instead of a same-assembly one whose
+  // picker is empty. Lazy because the scan walks every synteny track.
+  const [assemblyY, setAssemblyY] = useState(
+    () =>
+      getConnectedAssemblies(tracks, firstAssembly)[0] ??
+      assemblyNames[1] ??
+      firstAssembly,
+  )
 
   const quickAxes = dotplotAxesFromRows(quick.rows)
   const quickY = quickAxes.y ?? firstAssembly
   const quickX = quickAxes.x ?? firstAssembly
 
-  const syntenyTracks = getSyntenyTracks(session.tracks, [assemblyX, assemblyY])
-  const displayError = error ?? model.error
+  const syntenyTracks = getSyntenyTracks(tracks, [assemblyX, assemblyY])
 
   // a dotplot is one pair, so the chosen Quick start track is the selection for
   // the form's single row
@@ -58,18 +67,14 @@ const DotplotImportForm = observer(function DotplotImportForm({
     })
   }
 
+  // the model owns the error: doSubmit clears it on the way in, so a re-submit
+  // supersedes the old banner without a second copy of the state here
   const launch = (x: string, y: string) => {
     try {
-      setError(undefined)
-      doSubmit({
-        model,
-        session,
-        assemblyX: x,
-        assemblyY: y,
-      })
+      doSubmit({ model, session, assemblyX: x, assemblyY: y })
     } catch (e) {
       console.error(e)
-      setError(e)
+      model.setError(e)
     }
   }
 
@@ -78,7 +83,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
       className={classes.importFormContainer}
       data-testid="import-form"
     >
-      {displayError ? <ErrorBanner error={displayError} /> : null}
+      {model.error ? <ErrorBanner error={model.error} /> : null}
 
       <Paper style={{ padding: 12 }}>
         <div className={classes.toggle}>
@@ -97,11 +102,10 @@ const DotplotImportForm = observer(function DotplotImportForm({
           />
         </div>
         {quick.mode === 'quick' ? (
-          <QuickStart
+          <QuickStartPanel
             model={model}
             tracks={quick.quickTracks}
             trackId={quick.trackId}
-            rows={quick.rows}
             onChange={newTrackId => {
               quick.setTrackId(newTrackId)
             }}
@@ -112,7 +116,25 @@ const DotplotImportForm = observer(function DotplotImportForm({
               applyQuickSelection()
               launch(quickX, quickY)
             }}
-          />
+            swapTitle="Put each assembly on the other axis (transposes the plot)"
+          >
+            {/* Only the track's first two assemblies are used, since a dotplot
+            is one pair; an all-vs-all track's extras are called out rather than
+            silently dropped. Which assembly lands on which axis is the user's
+            choice, not a fact about the track (it answers in either direction),
+            which is what Swap is for — see dotplotAxesFromRows. */}
+            <div data-testid="quick-start-axes">
+              <Typography variant="body2">X-axis: {quickX}</Typography>
+              <Typography variant="body2">Y-axis: {quickY}</Typography>
+              {quick.rows.length > 2 ? (
+                <Typography variant="body2" color="text.secondary">
+                  This track spans {quick.rows.length} assemblies; a dotplot
+                  shows one pair, so the other {quick.rows.length - 2} are not
+                  used. Switch to Manual to plot a different pair.
+                </Typography>
+              ) : null}
+            </div>
+          </QuickStartPanel>
         ) : (
           <>
             <Typography style={{ textAlign: 'center' }}>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
 import {
   quickStartSyntenyTracks,
   syntenyTrackRows,
@@ -22,16 +23,21 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  *
  * The opening mode is Quick start when there is a launchable track and Manual
  * otherwise, so an empty session opens on the form that can actually do
- * something.
+ * something. Only the opening mode is a snapshot: which track is picked resolves
+ * against the current list on every render, so a track list that grows after
+ * mount (a connection finishing its load) can't leave the picker holding an id
+ * that isn't in it, showing a blank Select over a Launch that silently opens
+ * nothing.
  */
 export function useQuickStartState(tracks: AnyConfigurationModel[]) {
   const quickTracks = quickStartSyntenyTracks(tracks)
   const [mode, setMode] = useState<ImportFormMode>(
     quickTracks.length ? 'quick' : 'manual',
   )
-  const [trackId, setTrackId] = useState(quickTracks[0]?.trackId ?? '')
+  const [preferredTrackId, setTrackId] = useState('')
   const [swapped, setSwapped] = useState(false)
 
+  const trackId = pickSyntenyTrackId(preferredTrackId, quickTracks) ?? ''
   const track = quickTracks.find(t => t.trackId === trackId)
   const trackRows = track ? syntenyTrackRows(track) : []
 

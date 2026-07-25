@@ -1,15 +1,16 @@
 import { Suspense } from 'react'
 
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getEnv } from '@jbrowse/core/util'
 import {
   ImportFormOpenCustomTrack,
   ImportFormSyntenyChoiceRadioGroup,
+  NoSyntenyTrackMessage,
+  PreConfiguredSyntenyTrackSelect,
   useImportFormSyntenyChoice,
 } from '@jbrowse/synteny-core'
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector.tsx'
 
 import type { DotplotViewModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -82,12 +83,23 @@ const TrackSelector = observer(function TrackSelector({
         />
       ) : null}
       {choice === 'tracklist' ? (
-        <ImportSyntenyTrackSelector
+        <PreConfiguredSyntenyTrackSelect
           model={model}
-          assemblyX={assemblyX}
-          assemblyY={assemblyY}
-          syntenyTracks={syntenyTracks}
-        />
+          tracks={syntenyTracks}
+          rowIndex={0}
+          emptyState={
+            <NoSyntenyTrackMessage
+              assembly1={assembly1}
+              assembly2={assembly2}
+              remedy='Choose "New track" above to add one.'
+            />
+          }
+        >
+          <Typography variant="body2" color="text.secondary">
+            More synteny tracks can be toggled inside the dotplot from the track
+            selector <TrackSelectorIcon />; multiple can show at once.
+          </Typography>
+        </PreConfiguredSyntenyTrackSelect>
       ) : null}
       {selectedCustomOption ? (
         <Suspense fallback={<CircularProgress size={20} />}>

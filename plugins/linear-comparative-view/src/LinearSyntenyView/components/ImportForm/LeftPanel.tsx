@@ -2,10 +2,12 @@ import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import {
+  allSessionTracks,
   getConnectedAssemblies,
   getSyntenyTracks,
   planSyntenyChain,
-  resolveRowTrackAction,
+  remapUploadsToPairs,
+  resolveSyntenyTrackActions,
 } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
@@ -13,7 +15,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { assemblyPairAt, planRowRemoval } from '../../util/importFormRows.ts'
+import { planRowRemoval } from '../../util/importFormRows.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -41,29 +43,25 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 // Whether each row pair still needs the user's attention before launch: it does
-// unless launching would actually apply a track. An explicit "none" is a
-// deliberate no-track and so never needs attention; every other case defers to
-// the same resolveRowTrackAction call doSubmit makes, so the warning icon and
-// what launch really does can't drift apart. That covers a pending or stranded
-// upload (a userOpened whose baked assemblies no longer match the pair) and a
-// pair with no pre-configured track to auto-pick.
+// unless launching would actually apply a track. Launch's own answer is the only
+// input, so the warning icon and what launch really does can't drift apart. An
+// explicit "none" is a deliberate no-track and so never needs attention. The
+// rest falls out of the resolution: a pending or stranded upload (a userOpened
+// whose baked assemblies no longer match the pair) and a pair with no
+// pre-configured track to auto-pick both resolve to nothing.
 function rowsNeedingConfiguration(
   model: LinearSyntenyViewModel,
   session: AbstractSessionModel,
   selectedAssemblyNames: string[],
 ) {
-  return selectedAssemblyNames.slice(0, -1).map((_, idx) => {
-    const pairAssemblies = assemblyPairAt(selectedAssemblyNames, idx)
-    const selection = model.importFormSyntenyTrackSelections[idx]
-    return (
-      selection?.type !== 'none' &&
-      !resolveRowTrackAction(
-        selection,
-        getSyntenyTracks(session.tracks, pairAssemblies),
-        pairAssemblies,
-      )
-    )
-  })
+  return resolveSyntenyTrackActions({
+    tracks: allSessionTracks(session),
+    selections: model.importFormSyntenyTrackSelections,
+    assemblyNames: selectedAssemblyNames,
+  }).map(
+    (action, idx) =>
+      !action && model.importFormSyntenyTrackSelections[idx]?.type !== 'none',
+  )
 }
 
 const AssemblyRows = observer(function AssemblyRows({
@@ -175,7 +173,6 @@ const LeftPanel = observer(function LeftPanel({
   setSelectedAssemblyNames,
   selectedRow,
   setSelectedRow,
-  defaultAssemblyName,
   onLaunch,
 }: {
   model: LinearSyntenyViewModel
@@ -183,7 +180,6 @@ const LeftPanel = observer(function LeftPanel({
   setSelectedAssemblyNames: (names: string[]) => void
   selectedRow: number
   setSelectedRow: (row: number) => void
-  defaultAssemblyName: string
   onLaunch: () => void
 }) {
   const { classes } = useStyles()
@@ -197,6 +193,46 @@ const LeftPanel = observer(function LeftPanel({
     selectedAssemblyNames,
   )
   const canLaunch = needsConfigByPair.every(needsConfig => !needsConfig)
+
+  // default the new row to an assembly that already has a synteny track to the
+  // current bottom row, so the added pair is launchable instead of immediately
+  // flagged as needing configuration
+  function addRow() {
+    const bottom = selectedAssemblyNames.at(-1)!
+    const connected = getConnectedAssemblies(allSessionTracks(session), bottom)
+    setSelectedAssemblyNames([
+      ...selectedAssemblyNames,
+      connected[0] ?? session.assemblyNames[0] ?? bottom,
+    ])
+  }
+
+  function autoArrangeRows() {
+    const tracks = allSessionTracks(session)
+    // no a !== b guard: getSyntenyTracks counts multiplicity, so a
+    // self-alignment pair is connected exactly when a track names the assembly
+    // twice, and the guard would pull apart a self-alignment adjacency this same
+    // panel calls valid
+    const reordered = planSyntenyChain(
+      selectedAssemblyNames,
+      (a, b) => getSyntenyTracks(tracks, [a, b]).length > 0,
+    )
+    // per-pair selections are indexed by row position, so a reorder invalidates
+    // them. Pre-configured picks are dropped so doSubmit auto-picks for the new
+    // ordering, but an upload carries a file the user entered by hand, so it
+    // follows its assemblies to wherever the reorder put them.
+    const uploads = remapUploadsToPairs(
+      model.importFormSyntenyTrackSelections,
+      reordered,
+    )
+    model.clearImportFormSyntenyTracks()
+    for (const [pairIdx, upload] of uploads.entries()) {
+      if (upload) {
+        model.setImportFormSyntenyTrack(pairIdx, upload)
+      }
+    }
+    setSelectedAssemblyNames(reordered)
+    setSelectedRow(0)
+  }
 
   return (
     <>
@@ -219,16 +255,7 @@ const LeftPanel = observer(function LeftPanel({
           className={classes.button}
           variant="outlined"
           onClick={() => {
-            // default the new row to an assembly that already has a synteny
-            // track to the current bottom row, so the added pair is launchable
-            // instead of immediately flagged as needing configuration
-            const bottom =
-              selectedAssemblyNames[selectedAssemblyNames.length - 1]!
-            const connected = getConnectedAssemblies(session.tracks, bottom)
-            setSelectedAssemblyNames([
-              ...selectedAssemblyNames,
-              connected[0] ?? defaultAssemblyName,
-            ])
+            addRow()
           }}
         >
           Add row
@@ -239,19 +266,7 @@ const LeftPanel = observer(function LeftPanel({
               className={classes.button}
               variant="outlined"
               onClick={() => {
-                setSelectedAssemblyNames(
-                  planSyntenyChain(
-                    selectedAssemblyNames,
-                    (a, b) =>
-                      a !== b &&
-                      getSyntenyTracks(session.tracks, [a, b]).length > 0,
-                  ),
-                )
-                // per-pair selections are indexed by row position, so a
-                // reorder invalidates them; clear so doSubmit auto-picks each
-                // pair's track for the new ordering
-                setSelectedRow(0)
-                model.clearImportFormSyntenyTracks()
+                autoArrangeRows()
               }}
             >
               Auto-arrange rows

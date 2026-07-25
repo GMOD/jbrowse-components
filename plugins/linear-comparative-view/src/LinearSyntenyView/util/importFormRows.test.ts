@@ -1,10 +1,4 @@
-import { assemblyPairAt, planRowRemoval } from './importFormRows.ts'
-
-test('a pair names its two adjacent rows', () => {
-  const rows = ['hg38', 'mm39', 'rn7']
-  expect(assemblyPairAt(rows, 0)).toEqual(['hg38', 'mm39'])
-  expect(assemblyPairAt(rows, 1)).toEqual(['mm39', 'rn7'])
-})
+import { planRowRemoval } from './importFormRows.ts'
 
 test('removing a middle row drops the pair below it', () => {
   expect(

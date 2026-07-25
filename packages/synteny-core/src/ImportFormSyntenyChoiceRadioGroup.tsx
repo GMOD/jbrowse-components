@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import {
   FormControl,
   FormControlLabel,
@@ -22,9 +24,12 @@ export default function ImportFormSyntenyChoiceRadioGroup({
   customOptions: { value: string; label: string }[]
   label?: string
 }) {
+  // two views can have an import form open at once, and the synteny form has one
+  // of these per row pair, so a fixed id would label them all from the first one
+  const labelId = useId()
   return (
     <FormControl>
-      {label ? <FormLabel id="group-label">{label}</FormLabel> : null}
+      {label ? <FormLabel id={labelId}>{label}</FormLabel> : null}
       <RadioGroup
         row
         value={choice}
@@ -32,7 +37,7 @@ export default function ImportFormSyntenyChoiceRadioGroup({
           onChange(event.target.value)
         }}
         aria-label={label ? undefined : 'Synteny track source'}
-        aria-labelledby={label ? 'group-label' : undefined}
+        aria-labelledby={label ? labelId : undefined}
       >
         <FormControlLabel value="none" control={<Radio />} label="None" />
         <FormControlLabel

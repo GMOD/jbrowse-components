@@ -1,14 +1,17 @@
 import { Suspense } from 'react'
 
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import {
   ImportFormOpenCustomTrack,
   ImportFormSyntenyChoiceRadioGroup,
+  NoSyntenyTrackMessage,
+  PreConfiguredSyntenyTrackSelect,
+  allSessionTracks,
+  getSyntenyTracks,
   useImportFormSyntenyChoice,
 } from '@jbrowse/synteny-core'
 import { CircularProgress } from '@mui/material'
-
-import ImportSyntenyPreConfigured from './ImportSyntenyPreConfigured.tsx'
+import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 
@@ -38,64 +41,78 @@ declare module '@jbrowse/core/PluginManager' {
   }
 }
 
-export default function ImportSyntenyTrackSelectorArea({
-  model,
-  assembly1,
-  assembly2,
-  selectedRow,
-}: {
-  model: LinearSyntenyViewModel
-  assembly1: string
-  assembly2: string
-  selectedRow: number
-}) {
-  const { pluginManager } = getEnv(model)
-  const { choice, setChoice } = useImportFormSyntenyChoice(model, selectedRow)
+const ImportSyntenyTrackSelectorArea = observer(
+  function ImportSyntenyTrackSelectorArea({
+    model,
+    assembly1,
+    assembly2,
+    selectedRow,
+  }: {
+    model: LinearSyntenyViewModel
+    assembly1: string
+    assembly2: string
+    selectedRow: number
+  }) {
+    const { pluginManager } = getEnv(model)
+    const session = getSession(model)
+    const { choice, setChoice } = useImportFormSyntenyChoice(model, selectedRow)
 
-  const customOptions = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint LinearSyntenyView-ImportFormSyntenyOptions | sync | Add options to the linear synteny view import form */
-    'LinearSyntenyView-ImportFormSyntenyOptions',
-    [],
-    { model, assembly1, assembly2, selectedRow },
-  )
+    const customOptions = pluginManager.evaluateExtensionPoint(
+      /** #extensionPoint LinearSyntenyView-ImportFormSyntenyOptions | sync | Add options to the linear synteny view import form */
+      'LinearSyntenyView-ImportFormSyntenyOptions',
+      [],
+      { model, assembly1, assembly2, selectedRow },
+    )
 
-  const selectedCustomOption = customOptions.find(opt => opt.value === choice)
+    const selectedCustomOption = customOptions.find(opt => opt.value === choice)
 
-  return (
-    <div>
-      <ImportFormSyntenyChoiceRadioGroup
-        choice={choice}
-        onChange={setChoice}
-        customOptions={customOptions}
-      />
-      {choice === 'custom' ? (
-        <ImportFormOpenCustomTrack
-          model={model}
-          rowIndex={selectedRow}
-          /** #extensionPoint LinearSyntenyView-SyntenyFileFormats | sync | Add synteny file formats to the linear synteny import form */
-          extensionPoint="LinearSyntenyView-SyntenyFileFormats"
-          assembly1={assembly1}
-          assembly2={assembly2}
+    return (
+      <div>
+        <ImportFormSyntenyChoiceRadioGroup
+          choice={choice}
+          onChange={setChoice}
+          customOptions={customOptions}
         />
-      ) : null}
-      {choice === 'tracklist' ? (
-        <ImportSyntenyPreConfigured
-          model={model}
-          assembly1={assembly1}
-          assembly2={assembly2}
-          selectedRow={selectedRow}
-        />
-      ) : null}
-      {selectedCustomOption ? (
-        <Suspense fallback={<CircularProgress size={20} />}>
-          <selectedCustomOption.ReactComponent
+        {choice === 'custom' ? (
+          <ImportFormOpenCustomTrack
             model={model}
+            rowIndex={selectedRow}
+            /** #extensionPoint LinearSyntenyView-SyntenyFileFormats | sync | Add synteny file formats to the linear synteny import form */
+            extensionPoint="LinearSyntenyView-SyntenyFileFormats"
             assembly1={assembly1}
             assembly2={assembly2}
-            selectedRow={selectedRow}
           />
-        </Suspense>
-      ) : null}
-    </div>
-  )
-}
+        ) : null}
+        {choice === 'tracklist' ? (
+          <PreConfiguredSyntenyTrackSelect
+            model={model}
+            tracks={getSyntenyTracks(allSessionTracks(session), [
+              assembly1,
+              assembly2,
+            ])}
+            rowIndex={selectedRow}
+            emptyState={
+              <NoSyntenyTrackMessage
+                assembly1={assembly1}
+                assembly2={assembly2}
+                remedy='Choose "New track" above to add one, or switch to "Quick start" to launch from an existing synteny track.'
+              />
+            }
+          />
+        ) : null}
+        {selectedCustomOption ? (
+          <Suspense fallback={<CircularProgress size={20} />}>
+            <selectedCustomOption.ReactComponent
+              model={model}
+              assembly1={assembly1}
+              assembly2={assembly2}
+              selectedRow={selectedRow}
+            />
+          </Suspense>
+        ) : null}
+      </div>
+    )
+  },
+)
+
+export default ImportSyntenyTrackSelectorArea

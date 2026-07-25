@@ -1,5 +1,8 @@
 import { isSessionWithAddTracks } from '@jbrowse/core/util'
-import { getSyntenyTracks, resolveRowTrackAction } from '@jbrowse/synteny-core'
+import {
+  allSessionTracks,
+  resolveSyntenyTrackActions,
+} from '@jbrowse/synteny-core'
 import { toJS, transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../../model.ts'
@@ -19,11 +22,13 @@ export function doSubmit({
   model.setError(undefined)
   transaction(() => {
     if (isSessionWithAddTracks(session)) {
-      const action = resolveRowTrackAction(
-        model.importFormSyntenyTrackSelections[0],
-        getSyntenyTracks(session.tracks, [assemblyX, assemblyY]),
-        [assemblyX, assemblyY],
-      )
+      // a dotplot is the single-pair case of the same resolution the synteny
+      // form runs per row pair
+      const [action] = resolveSyntenyTrackActions({
+        tracks: allSessionTracks(session),
+        selections: model.importFormSyntenyTrackSelections,
+        assemblyNames: [assemblyX, assemblyY],
+      })
       if (action?.kind === 'open') {
         session.addTrackConf(toJS(action.conf))
         model.toggleTrack(action.conf.trackId)

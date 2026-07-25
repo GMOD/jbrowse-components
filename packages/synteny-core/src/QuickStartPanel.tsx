@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -56,12 +58,15 @@ const QuickStartPanel = observer(function QuickStartPanel({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
+  // two views can have an import form open at once, so a fixed id would point
+  // the label at whichever Select rendered first
+  const labelId = useId()
   return tracks.length ? (
     <div>
       <FormControl fullWidth style={{ marginBottom: 10 }}>
-        <InputLabel id="quick-start-track-label">Synteny track</InputLabel>
+        <InputLabel id={labelId}>Synteny track</InputLabel>
         <Select
-          labelId="quick-start-track-label"
+          labelId={labelId}
           label="Synteny track"
           value={trackId}
           onChange={event => {

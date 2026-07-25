@@ -3,13 +3,18 @@ import { useState } from 'react'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ImportFormModeToggle, useQuickStartState } from '@jbrowse/synteny-core'
-import { Container } from '@mui/material'
+import {
+  ImportFormModeToggle,
+  QuickStartPanel,
+  allSessionTracks,
+  getConnectedAssemblies,
+  useQuickStartState,
+} from '@jbrowse/synteny-core'
+import { Container, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ImportSyntenyTrackSelectorArea from './ImportSyntenyTrackSelectorArea.tsx'
 import LeftPanel from './LeftPanel.tsx'
-import QuickStart from './QuickStart.tsx'
 import { doSubmit } from './doSubmit.tsx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -32,6 +37,11 @@ const useStyles = makeStyles()(theme => ({
   toggle: {
     marginBottom: theme.spacing(2),
   },
+  // inline-block so the row list hugs its contents rather than spanning the
+  // form, which keeps it a meaningful thing to point at
+  rows: {
+    display: 'inline-block',
+  },
 }))
 
 const LinearSyntenyViewImportForm = observer(
@@ -43,21 +53,18 @@ const LinearSyntenyViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const { assemblyNames } = session
-    const defaultAssemblyName = assemblyNames[0] ?? ''
-    // second row defaults to a different assembly when one exists, so Manual
-    // mode doesn't open on a same-assembly pair (which is flagged as needing a
-    // self-alignment track)
-    const secondAssemblyName = assemblyNames[1] ?? defaultAssemblyName
-    const quick = useQuickStartState(session.tracks)
+    const quick = useQuickStartState(allSessionTracks(session))
     const [selectedRow, setSelectedRow] = useState(0)
-    const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
-      defaultAssemblyName,
-      secondAssemblyName,
-    ])
-    const [error, setError] = useState<unknown>()
-    // a failed `init` lands the view here rather than on a spinner (see
-    // showImportForm); show what went wrong instead of a bare form
-    const bannerError = error ?? model.error
+    // lazy: the connected-assembly scan is only for the opening pair, and it
+    // walks every synteny track in the session
+    const [selectedAssemblyNames, setSelectedAssemblyNames] = useState(() => {
+      const first = assemblyNames[0] ?? ''
+      // the second row opens on an assembly the first actually has synteny to,
+      // so Manual starts on a launchable pair rather than one the form
+      // immediately flags — same reasoning as LeftPanel's Add row
+      const connected = getConnectedAssemblies(allSessionTracks(session), first)
+      return [first, connected[0] ?? assemblyNames[1] ?? first]
+    })
 
     // the chosen track backs every adjacent band: a pairwise track has one pair,
     // an all-vs-all track has one per adjacent row
@@ -71,16 +78,16 @@ const LinearSyntenyViewImportForm = observer(
       }
     }
 
+    // the model owns the error: setViews clears it, so a re-submit after a bad
+    // init supersedes the old banner without a second copy of the state here. A
+    // failed `init` also lands the view on this form rather than a spinner (see
+    // showImportForm), and the banner is what explains why.
     const launch = (rows: string[]) => {
       try {
-        setError(undefined)
-        doSubmit({
-          selectedAssemblyNames: rows,
-          model,
-        })
+        doSubmit({ selectedAssemblyNames: rows, model, session })
       } catch (e) {
         console.error(e)
-        setError(e)
+        model.setError(e)
       }
     }
 
@@ -89,7 +96,7 @@ const LinearSyntenyViewImportForm = observer(
         className={classes.importFormContainer}
         data-testid="import-form"
       >
-        {bannerError ? <ErrorBanner error={bannerError} /> : null}
+        {model.error ? <ErrorBanner error={model.error} /> : null}
         <div className={classes.toggle}>
           <ImportFormModeToggle
             mode={quick.mode}
@@ -106,11 +113,10 @@ const LinearSyntenyViewImportForm = observer(
           />
         </div>
         {quick.mode === 'quick' ? (
-          <QuickStart
+          <QuickStartPanel
             model={model}
             tracks={quick.quickTracks}
             trackId={quick.trackId}
-            rows={quick.rows}
             onChange={newTrackId => {
               quick.setTrackId(newTrackId)
             }}
@@ -121,7 +127,24 @@ const LinearSyntenyViewImportForm = observer(
               applyQuickSelections()
               launch(quick.rows)
             }}
-          />
+            swapTitle="Reverse the row order (flips the stack top to bottom)"
+          >
+            {/* the rows the chosen track implies, shown where the picker is
+            rather than written into a form elsewhere on the page. A synteny
+            track is queryable in either direction, so the order it implies is a
+            starting point the user can flip, not a property of the track. */}
+            <div data-testid="quick-start-rows" className={classes.rows}>
+              <Typography variant="body2" color="text.secondary">
+                Opens {quick.rows.length} rows, top to bottom:
+              </Typography>
+              {quick.rows.map((row, idx) => (
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- row position is the identity here; assembly names can repeat across rows
+                <Typography key={`${row}-${idx}`} variant="body2">
+                  {idx + 1}. {row}
+                </Typography>
+              ))}
+            </div>
+          </QuickStartPanel>
         ) : (
           <div className={classes.flex}>
             <div className={classes.leftPanel}>
@@ -131,7 +154,6 @@ const LinearSyntenyViewImportForm = observer(
                 setSelectedAssemblyNames={setSelectedAssemblyNames}
                 selectedRow={selectedRow}
                 setSelectedRow={setSelectedRow}
-                defaultAssemblyName={defaultAssemblyName}
                 onLaunch={() => {
                   launch(selectedAssemblyNames)
                 }}

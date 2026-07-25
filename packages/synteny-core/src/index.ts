@@ -83,6 +83,7 @@ export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {
   getConnectedAssemblies,
   getSyntenyTracks,
+  isSyntenyTrack,
   pickSyntenyTrackId,
   sameAssemblySet,
 } from './getSyntenyTracks.ts'
@@ -97,8 +98,15 @@ export { default as QuickStartPanel } from './QuickStartPanel.tsx'
 export { useQuickStartState } from './useQuickStartState.ts'
 export { default as PreConfiguredSyntenyTrackSelect } from './PreConfiguredSyntenyTrackSelect.tsx'
 export { planSyntenyChain } from './planSyntenyChain.ts'
-export { resolveRowTrackAction } from './resolveRowTrackAction.ts'
+export {
+  resolveRowTrackAction,
+  resolveSyntenyTrackActions,
+} from './resolveRowTrackAction.ts'
 export type { RowTrackAction } from './resolveRowTrackAction.ts'
+export { allSessionTracks } from './allSessionTracks.ts'
+export { syntenyPairs } from './syntenyPairs.ts'
+export { remapUploadsToPairs } from './remapUploadsToPairs.ts'
+export { default as NoSyntenyTrackMessage } from './NoSyntenyTrackMessage.tsx'
 export { useImportFormSyntenyChoice } from './useImportFormSyntenyChoice.ts'
 export { default as ImportFormSyntenyChoiceRadioGroup } from './ImportFormSyntenyChoiceRadioGroup.tsx'
 export { default as ImportFormOpenCustomTrack } from './ImportFormOpenCustomTrack.tsx'

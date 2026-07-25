@@ -35,16 +35,23 @@ export function sameAssemblySet(a: string[], b: string[]) {
  * Shared by the linear-synteny and dotplot import forms (the per-level/per-pair
  * track selectors) and the "add assembly row" dialog.
  */
+/**
+ * Cheap type test, no config read. Gates the `readConfObject` in every scan
+ * below: resolving `assemblyNames` on every track in the session is wasted work
+ * for the non-synteny majority.
+ */
+export function isSyntenyTrack(track: AnyConfigurationModel) {
+  return track.type.includes('Synteny')
+}
+
 export function getSyntenyTracks(
   tracks: AnyConfigurationModel[],
   assemblies: string[],
 ) {
   const needed = [...countByName(assemblies)]
   return tracks.filter(track => {
-    // cheap type test gates the readConfObject — resolving assemblyNames on
-    // every track in the session is wasted work for the non-synteny majority
     let matches = false
-    if (track.type.includes('Synteny')) {
+    if (isSyntenyTrack(track)) {
       const available = countByName(
         readConfObject(track, 'assemblyNames') as string[],
       )

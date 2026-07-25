@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { FormControl, InputLabel, MenuItem, Paper, Select } from '@mui/material'
@@ -31,6 +33,10 @@ const PreConfiguredSyntenyTrackSelect = observer(
     children?: React.ReactNode
   }) {
     const session = getSession(model)
+    // one per instance: the synteny form has one of these per row pair and two
+    // views can have an import form open at once, so a fixed id would point
+    // every label at the first Select on the page
+    const labelId = useId()
     const selection = model.importFormSyntenyTrackSelections[rowIndex]
     const picked = selection?.type === 'preConfigured' ? selection.value : ''
     const value = pickSyntenyTrackId(picked, tracks) ?? ''
@@ -39,11 +45,9 @@ const PreConfiguredSyntenyTrackSelect = observer(
         {tracks.length ? (
           <>
             <FormControl fullWidth style={{ marginBottom: 10 }}>
-              <InputLabel id="preconfigured-synteny-track-label">
-                Synteny track
-              </InputLabel>
+              <InputLabel id={labelId}>Synteny track</InputLabel>
               <Select
-                labelId="preconfigured-synteny-track-label"
+                labelId={labelId}
                 label="Synteny track"
                 value={value}
                 onChange={event => {

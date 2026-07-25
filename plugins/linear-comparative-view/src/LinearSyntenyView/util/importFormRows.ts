@@ -1,13 +1,8 @@
 // A linear synteny view is N assembly rows with N-1 synteny pairs between
-// adjacent rows: pair i spans rows i and i+1. The import form indexes its
-// per-pair track selections by pair, so every row edit implies some pair
-// arithmetic. It all lives here, named, so the components can speak in rows and
-// pairs instead of open-coding offsets.
-
-/** The two assemblies pair `pairIdx` connects: rows `pairIdx` and `pairIdx + 1`. */
-export function assemblyPairAt(assemblyNames: string[], pairIdx: number) {
-  return [assemblyNames[pairIdx]!, assemblyNames[pairIdx + 1]!]
-}
+// adjacent rows: pair i spans rows i and i+1 (see synteny-core's syntenyPairs).
+// The import form indexes its per-pair track selections by pair, so every row
+// edit implies some pair arithmetic. It lives here, named, so the components can
+// speak in rows and pairs instead of open-coding offsets.
 
 /**
  * How removing an assembly row rewrites the pair-indexed state: which pair

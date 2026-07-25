@@ -1,4 +1,9 @@
-import { pickSyntenyTrackId, sameAssemblySet } from './getSyntenyTracks.ts'
+import {
+  getSyntenyTracks,
+  pickSyntenyTrackId,
+  sameAssemblySet,
+} from './getSyntenyTracks.ts'
+import { syntenyPairs } from './syntenyPairs.ts'
 
 import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -39,4 +44,32 @@ export function resolveRowTrackAction(
   const picked = selection?.type === 'preConfigured' ? selection.value : ''
   const trackId = pickSyntenyTrackId(picked, syntenyTracksForPair)
   return trackId ? { kind: 'show', trackId } : undefined
+}
+
+/**
+ * What launching would apply to every adjacent row pair, one entry per pair
+ * (`undefined` where it would apply nothing). A dotplot passes its two
+ * assemblies and gets a single entry.
+ *
+ * This is the one answer both the launch path and the UI that predicts it read:
+ * the synteny form's per-pair warning icons are `undefined` entries, and its
+ * doSubmit applies the same array. Deriving them separately is how the icon and
+ * the outcome drift apart.
+ */
+export function resolveSyntenyTrackActions({
+  tracks,
+  selections,
+  assemblyNames,
+}: {
+  tracks: AnyConfigurationModel[]
+  selections: (ImportFormSyntenyTrack | undefined)[]
+  assemblyNames: string[]
+}) {
+  return syntenyPairs(assemblyNames).map((pair, idx) =>
+    resolveRowTrackAction(
+      selections[idx],
+      getSyntenyTracks(tracks, pair),
+      pair,
+    ),
+  )
 }

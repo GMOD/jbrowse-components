@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { getSyntenyTracks } from './getSyntenyTracks.ts'
+import { isSyntenyTrack } from './getSyntenyTracks.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -46,7 +46,7 @@ export function dotplotAxesFromRows(rows: string[]) {
  * entries, rather than surfacing an option that errors on Launch.
  */
 export function quickStartSyntenyTracks(tracks: AnyConfigurationModel[]) {
-  return getSyntenyTracks(tracks, []).filter(
-    track => syntenyTrackRows(track).length >= 2,
+  return tracks.filter(
+    track => isSyntenyTrack(track) && syntenyTrackRows(track).length >= 2,
   )
 }
