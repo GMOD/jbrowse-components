@@ -84,7 +84,7 @@ export function packRenderArrays(
   const rectColors = new Uint32Array(visibleRects.length)
   const rectStrands = new Float32Array(visibleRects.length)
   // Allocated here but valued by the main-thread layout, which decides the
-  // dense-pileup regime per FEATURE (see applyLayoutToRegion) — the worker has no
+  // dense-pileup regime per FEATURE (see applyLayoutToRegion). The worker has no
   // say, so it doesn't pretend to by writing a per-rect eligibility flag.
   const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)

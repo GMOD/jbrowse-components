@@ -87,7 +87,7 @@ export function readFeatureLabels(
 // LABEL_FONT_SIZE vs the narrower drawn text) is already handled: every consumer
 // of a baked width scales it through `renderedTextWidth`. That fix does not carry
 // over here because a width is one multiply at the point of use, whereas this
-// height is folded into a running Y offset — see below.
+// height is folded into a running Y offset. See below.
 //
 // The real fix is bigger than "reserve the row on the main thread": this gap is
 // NOT a separable row. layoutSubfeatures folds totalLayoutHeight into the

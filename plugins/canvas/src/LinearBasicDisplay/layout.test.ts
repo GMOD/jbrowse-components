@@ -1154,7 +1154,7 @@ test('a compact mode reserves label overhang at its own smaller font size', () =
   // normal label size but not at superCompact's (×0.7). Widths are baked at
   // LABEL_FONT_SIZE in the worker, so reserving the raw width in every mode held
   // 43% more room than superCompact's text needs and pushed the second gene onto
-  // a second row — thinning rows in the mode chosen for density.
+  // a second row, thinning rows in the mode chosen for density.
   const data = makeFeatureData({
     features: [
       { featureId: 'g1', startBp: 1000, endBp: 1070, height: 10 },
@@ -1188,7 +1188,7 @@ test('a compact mode reserves label overhang at its own smaller font size', () =
 
 test('an unlabeled sub-pixel box does not collapse onto a labeled one', () => {
   // A partially-rs-ID'd VCF at sub-pixel zoom: the named variant is held out of
-  // the collapse (its name must not pile onto row 0), so it takes a real row —
+  // the collapse (its name must not pile onto row 0), so it takes a real row,
   // and the unnamed one at the same locus therefore has to see it and stack too.
   // Counting only wide features as "solid" left the labeled sub-pixel feature
   // invisible to the overlap guard, so the unnamed mark pinned to row 0 and its

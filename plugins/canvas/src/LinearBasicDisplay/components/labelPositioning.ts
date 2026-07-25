@@ -52,7 +52,7 @@ export function labelCullBand(
 // left-aligned to the glyph and spills rightward (see computeLabelLeftPx), so
 // every consumer that has to cover the label as well as the glyph — the hit box
 // (buildFeatureFlatbushIndex), the highlight/selection overlay, and the SVG
-// export's highlight boxes — widens by exactly this. `fontSize` is the display
+// export's highlight boxes, widens by exactly this. `fontSize` is the display
 // mode's resolved label size: the baked widths are measured at the base size, so
 // a compact mode must scale them down or every one of those boxes overhangs the
 // text it is meant to cover.

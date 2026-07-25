@@ -153,7 +153,7 @@ function strandArrowPadding(ext: {
 }
 
 // The label's width as DRAWN at this mode's font size (baked widths are measured
-// at the base size — see renderedTextWidth), plus LABEL_PADDING_PX so adjacent
+// at the base size, see renderedTextWidth), plus LABEL_PADDING_PX so adjacent
 // labels packed onto one row keep a small gap and small measureText
 // underestimates don't cause visual overlap. The padding is a fixed gap, so it is
 // added after the scale rather than scaled with the text. Keep 0 when there's no
@@ -818,7 +818,7 @@ interface PackPrep {
   // `fitWidth` decimation; the default `all` policy keeps every name and never asks.
   overhangRoom: ReturnType<typeof labelOverhangRoomPx> | undefined
   // Box px-spans of every feature guaranteed to occupy a real row. A sub-pixel
-  // fade box may collapse onto row 0 only where it doesn't overlap one of these —
+  // fade box may collapse onto row 0 only where it doesn't overlap one of these,
   // else it must stack, or it renders on top of the other feature (a 1bp SNP
   // sitting inside a wide gene box is the canonical case).
   solidSpansPx: [number, number][]

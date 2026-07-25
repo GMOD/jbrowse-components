@@ -728,7 +728,7 @@ describe('collectRenderData color-slot robustness', () => {
 // Fade eligibility is recorded once per FEATURE on the flatbush item. The
 // per-rect `rectDensityFade` array is allocated here but valued by the
 // main-thread layout, so it is deliberately all-zero on the way out of the
-// worker — asserting on it here would be asserting on nothing.
+// worker, so asserting on it here would be asserting on nothing.
 describe('collectRenderData density-fade eligibility', () => {
   it('marks whole-feature box glyphs (variants, plain BED) fade-eligible', () => {
     const feature = mockFeature({

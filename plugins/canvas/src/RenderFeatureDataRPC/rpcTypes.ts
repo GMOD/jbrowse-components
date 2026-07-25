@@ -93,7 +93,7 @@ export interface FeatureDataResult {
   // unpacks with bit shifts.
   rectColors: Uint32Array
   rectStrands: Float32Array // strand direction per rect: -1, 0, or +1
-  // Allocated zero-filled by the worker, VALUED by the main-thread layout —
+  // Allocated zero-filled by the worker, VALUED by the main-thread layout.
   // `applyLayoutToRegion` writes every element from its own per-feature decision:
   // 1 only for a feature whose sub-pixel box collapsed onto row 0 in the
   // dense-pileup regime (thousands of such marks), 0 otherwise, so a sparse

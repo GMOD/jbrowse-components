@@ -157,7 +157,7 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
     // Drawn last so the "feature keeps going" markers sit on top of the glyph
     // they annotate. The pass runs one instance per rect and every instance
     // self-culls to OFFSCREEN unless it straddles a canvas edge, so an interior
-    // block in a multi-region view — where no instance can qualify — would shade a
+    // block in a multi-region view, where no instance can qualify, would shade a
     // full pileup's worth of vertices to draw nothing. Skip it there, as the
     // Canvas2D path already skips its equivalent per-rect scan.
     if (leftIsCanvasEdge || rightIsCanvasEdge) {

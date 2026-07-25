@@ -29,7 +29,7 @@ function arrow(x: number): ArrowData {
 }
 
 // Spans (rect/line) use a half-open overlap test against [regionStart, regionEnd);
-// arrows are points, so both ends are inclusive — an arrow sitting exactly on
+// arrows are points, so both ends are inclusive. An arrow sitting exactly on
 // regionEnd is the end cap of a feature whose box was kept, so dropping it left
 // that feature stranded without its strand marker.
 test('rect/line use half-open spans; arrows keep both endpoints', () => {

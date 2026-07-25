@@ -705,7 +705,7 @@ export function processFeatureRecord(
     strand: strand !== 0 ? strand : undefined,
     // Fade *eligibility*, per feature: Box is the only glyph whose top-level box
     // layout may collapse onto row 0 and fade (see isSubPixelFade). The actual
-    // per-rect decision is layout's alone — the worker writes no rect-level flag.
+    // per-rect decision is layout's alone. The worker writes no rect-level flag.
     densityFade: layout.glyphType === 'Box',
   })
   const flatbushIdx = collector.flatbushItems.length - 1
