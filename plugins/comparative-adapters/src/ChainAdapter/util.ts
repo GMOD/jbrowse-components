@@ -46,10 +46,12 @@ function generateRecord(
     tstart,
     tend,
     strand: qstrand === '-' ? -1 : 1,
+    // No mappingQual: a chain file carries no mapping quality, and emitting 0
+    // made every alignment read as MAPQ 0 ("multi-mapping") in the MAPQ color
+    // ramp and group-by rather than "unavailable".
     extra: {
       numMatches,
       blockLen: Math.max(qend - qstart, tend - tstart),
-      mappingQual: 0,
       cg: cigar,
     },
   }

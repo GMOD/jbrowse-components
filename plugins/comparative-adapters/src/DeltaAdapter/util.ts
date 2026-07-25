@@ -101,10 +101,12 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
             tstart: rs,
             tend: re,
             strand,
+            // No mappingQual: a delta file carries no mapping quality, and
+            // emitting 0 made every alignment read as MAPQ 0 ("multi-mapping")
+            // in the MAPQ color ramp and group-by rather than "unavailable".
             extra: {
               numMatches: blen - NM,
               blockLen: blen,
-              mappingQual: 0,
               NM,
               cg: cigar_str.join(''),
             },
