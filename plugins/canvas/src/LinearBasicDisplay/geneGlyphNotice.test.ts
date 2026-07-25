@@ -69,4 +69,45 @@ describe('gene-glyph collapse notice', () => {
     expect(display.showGeneGlyphNotice).toBe(true)
     expect(display.geneGlyphNoticeDismissed).toBe(true)
   })
+
+  // The shared canvas body renders the control from this one hook, whose base
+  // default is `undefined` (the variant display shares that body and has no
+  // geneGlyphMode slot to answer with). So the bundle both existing and carrying
+  // working actions is the whole contract: reorder the `.views()` blocks so the
+  // base default wins and the chip silently vanishes with nothing else failing.
+  it('exposes the control as a geneGlyphNotice bundle wired to the actions', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setGeneGlyphMode('longestCoding')
+
+    display.setRpcData(
+      0,
+      makeFeatureData({ hasMultiIsoformGenes: false }),
+      1,
+      region,
+    )
+    expect(display.geneGlyphNotice).toBeUndefined()
+
+    display.setRpcData(
+      0,
+      makeFeatureData({ hasMultiIsoformGenes: true }),
+      1,
+      region,
+    )
+    expect(display.geneGlyphNotice).toEqual({
+      collapsed: true,
+      dismissed: false,
+      mode: 'longestCoding',
+      setMode: expect.any(Function),
+      dismiss: expect.any(Function),
+    })
+
+    // the bundled callbacks are the model's own actions, not inert copies
+    display.geneGlyphNotice!.setMode('all')
+    expect(display.geneGlyphMode).toBe('all')
+    expect(display.geneGlyphNotice!.collapsed).toBe(false)
+
+    display.geneGlyphNotice!.dismiss()
+    expect(display.geneGlyphNotice!.dismissed).toBe(true)
+  })
 })

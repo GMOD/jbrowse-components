@@ -1,12 +1,18 @@
-import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleFeatureUnderMouse } from '../../util.ts'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
-export interface WiggleDisplayModel
-  extends WiggleGpuDisplayModel, WiggleGpuProps {
+// What WiggleComponent reads off the display. NOT `WiggleGpuProps` (the
+// GPU-encode input contract): the single-wiggle model exposes those only through
+// `gpuProps()`, not as flat fields — it has no top-level `sources` at all — so
+// inheriting that interface here demanded a field the model doesn't have. The
+// component reads exactly the two below. See the contract assertion at the bottom
+// of ../model.ts, which is what caught the mismatch.
+export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   domain: [number, number] | undefined
   dataRange: [number, number] | undefined
   scaleType: string
+  summaryScoreMode: string
+  isDensityMode: boolean
   featureUnderMouse?: WiggleFeatureUnderMouse
   setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse) => void
   selectFeature: (feat: WiggleFeatureUnderMouse) => void

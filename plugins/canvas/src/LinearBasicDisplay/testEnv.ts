@@ -8,11 +8,9 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  BaseLinearDisplayComponent,
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import LinearBasicDisplayComponent from './components/LinearBasicDisplayComponent.tsx'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
@@ -76,7 +74,7 @@ export function createTestEnvironment(opts?: {
       stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: LinearBasicDisplayComponent,
     })
   })
 
@@ -200,7 +198,13 @@ export function createTestEnvironment(opts?: {
       },
     }))
 
-  function createDisplay(displaySnapshot?: Record<string, unknown>) {
+  function createDisplay(
+    displaySnapshot?: Record<string, unknown>,
+    // `unmeasuredView` leaves the view without a width, i.e. before
+    // `view.initialized` — the window where every view-derived getter throws by
+    // design. Only a test driving that window wants it.
+    opts?: { unmeasuredView?: boolean },
+  ) {
     const session = Session.create({ configuration: {} }, { pluginManager })
     const view = session.setView(
       LinearGenomeModel.create({
@@ -214,10 +218,12 @@ export function createTestEnvironment(opts?: {
         ],
       }),
     )
-    view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-    ])
+    if (!opts?.unmeasuredView) {
+      view.setWidth(800)
+      view.setDisplayedRegions([
+        { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
+      ])
+    }
 
     const track = view.tracks[0]!
     const display = track.displays[0]!

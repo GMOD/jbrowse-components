@@ -30,125 +30,19 @@ import {
   useHighlightOverlays,
 } from './useOverlayElements.tsx'
 
-import type {
-  FeatureDataResult,
-  FlatbushItem,
-  SubfeatureInfo,
-} from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { GeneGlyphMode } from '../geneGlyphMode.ts'
-import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
-import type { FeatureItemEntry, FlatbushRegionIndexes } from './hitTesting.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
-import type {
-  HeightMode,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
+import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-// Hand-rolled structural type, NOT `Instance<typeof stateModelFactory>`. The
-// MST factory references this component via `lazy()`, so importing the real
-// model type back into the component creates a circular type reference that
-// breaks inference across the whole file. The compile-time check in
-// LinearBasicDisplay/modelContract.ts catches drift: when the real MST model
-// renames or drops a field, the contract file fails to typecheck.
-export interface LinearBasicDisplayModel {
-  height: number
-  laidOutDataMap: Map<number, FeatureDataResult>
-  renderDataMap: Map<number, FeatureDataResult>
-  morphFromTops: Map<string, number> | undefined
-  morphStartMs: number
-  setMorphProgress: (t: number) => void
-  endYMorph: () => void
-  featureItemMap: Map<string, FeatureItemEntry>
-  displayPhase: DisplayPhase
-  error: unknown
-  maxY: number
-  hasOverflow: boolean
-  truncatedFeatureCount: number
-  contentHeight: number
-  scrollableHeight: number
-  heightMode: HeightMode
-  setHeightMode: (mode: HeightMode) => void
-  selectedFeatureId: string | undefined
-  highlightedFeatureIdSet: ReadonlySet<string>
-  featureIdUnderMouse: string | null
-  subfeatureIdUnderMouse: string | null
-  hoveredFeature: FlatbushItem | null
-  hoveredSubfeature: SubfeatureInfo | null
-  flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>
-  scrollTop: number
-  effectiveShowDescriptions: boolean
-  renderedShowDescriptions: boolean
-  renderedShowLabels: boolean
-  displayMode: string
-  labelFontSize: number
-  labelScrollBucket: number
-  regionTooLarge: boolean
-  regionTooLargeReason: string
-  showGeneGlyphNotice: boolean
-  geneGlyphCollapsed: boolean
-  geneGlyphNoticeDismissed: boolean
-  geneGlyphMode: GeneGlyphMode
-  setGeneGlyphMode: (value: GeneGlyphMode) => void
-  dismissGeneGlyphNotice: () => void
-  statusMessage: string | undefined
-  setScrollTop: (n: number) => void
-  forceLoad: () => void
-  reload: () => void
-  clearHover: () => void
-  mouseoverExtraInformation: string | undefined
-  setHover: (
-    featureId: string | null,
-    subfeatureId: string | null,
-    tooltip: string | undefined,
-  ) => void
-  selectFeatureById: (
-    featureId: string,
-    subfeatureInfo: SubfeatureInfo | undefined,
-    displayedRegionIndex: number,
-  ) => void
-  toggleSoloFeature: (featureId: string) => void
-  soloFeatureIdSet: ReadonlySet<string>
-  soloApplied: boolean
-  applySolo: () => void
-  clearSolo: () => void
-  openContextMenu: (
-    featureInfo: FlatbushItem,
-    displayedRegionIndex: number,
-    clientX: number,
-    clientY: number,
-    subfeature?: SubfeatureInfo,
-  ) => void
-  contextMenuInfo:
-    | {
-        item: FlatbushItem
-        subfeature?: SubfeatureInfo
-        displayedRegionIndex: number
-        clientX: number
-        clientY: number
-      }
-    | undefined
-  closeContextMenu: () => void
-  fetchFullFeature: (
-    featureId: string,
-    displayedRegionIndex: number,
-  ) => Promise<Feature | undefined>
-  contextMenuItems: () => MenuItem[]
-  getFeatureById: (featureId: string) => FlatbushItem | undefined
-  clearSelection: () => void
-  startRenderingBackend: (backend: CanvasFeatureRenderingBackend) => void
-  stopRenderingBackend: () => void
-  renderNow: () => void
-  renderError: unknown
-  setRenderError: (error: unknown) => void
-  canvasDrawn: boolean
-}
-
+// The model type is the real MST instance (`LinearCanvasBaseDisplayModel`): the
+// display registers this component from index.ts, so nothing imports it back into
+// the model and there's no cycle to work around. It used to be a hand-mirrored
+// 92-field structural interface plus a separate compile-time contract file
+// guarding it.
 export interface LinearBasicDisplayComponentProps {
-  model: LinearBasicDisplayModel
+  model: LinearCanvasBaseDisplayModel
 }
 
 const useStyles = makeStyles()({
@@ -188,7 +82,7 @@ function OverlayLayer({ children }: { children: React.ReactNode }) {
 const ContextMenu = observer(function ContextMenu({
   model,
 }: {
-  model: LinearBasicDisplayModel
+  model: LinearCanvasBaseDisplayModel
 }) {
   const info = model.contextMenuInfo
   const items = info ? model.contextMenuItems() : []
@@ -226,7 +120,7 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   onLabelMouseOver,
   onLabelMouseLeave,
 }: {
-  model: LinearBasicDisplayModel
+  model: LinearCanvasBaseDisplayModel
   view: LGV
   openContextMenu: (
     feature: FlatbushItem,
@@ -282,7 +176,7 @@ const HighlightLayer = observer(function HighlightLayer({
   model,
   view,
 }: {
-  model: LinearBasicDisplayModel
+  model: LinearCanvasBaseDisplayModel
   view: LGV
 }) {
   const width = view.initialized ? view.trackWidthPx : undefined
@@ -301,6 +195,28 @@ const HighlightLayer = observer(function HighlightLayer({
   return <OverlayLayer>{highlightOverlays}</OverlayLayer>
 })
 
+// The isoform-collapse chip, driven by the `geneGlyphNotice` hook. Its own
+// observer so the hook's reads (which include the loaded data's
+// hasMultiIsoformGenes) re-render just this chip rather than the whole body.
+const GeneGlyphIndicator = observer(function GeneGlyphIndicator({
+  model,
+}: LinearBasicDisplayComponentProps) {
+  const notice = model.geneGlyphNotice
+  return notice ? (
+    <GeneGlyphControl
+      collapsed={notice.collapsed}
+      dismissed={notice.dismissed}
+      geneGlyphMode={notice.mode}
+      onSetGeneGlyphMode={value => {
+        notice.setMode(value)
+      }}
+      onDismiss={() => {
+        notice.dismiss()
+      }}
+    />
+  ) : null
+})
+
 // Wraps the overlays in the shared ScrollLockedOverlay so labels/highlights
 // track the GPU canvas's model.scrollTop rather than the native compositor
 // scroll (see ScrollLockedOverlay for why). Its own observer so only this thin
@@ -310,7 +226,7 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
   model,
   children,
 }: {
-  model: LinearBasicDisplayModel
+  model: LinearCanvasBaseDisplayModel
   children: React.ReactNode
 }) {
   return (
@@ -324,9 +240,15 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
   )
 })
 
+// The canvas body shared by every canvas-family display (features, variants).
 // Thin outer owns the DisplayChrome; FeatureBody owns the scroll container,
 // hit-testing, and the canvas itself; FloatingLabelsLayer and HighlightLayer
 // (separate observers) own the label / peptide and hover / selection layers.
+//
+// Chrome that belongs to one subclass arrives through a model hook, not a prop:
+// the isoform control below reads `model.geneGlyphNotice`, which the canvas base
+// declares as absent by default (the variant display shares this body and has no
+// `geneGlyphMode` slot to answer with).
 const FeatureComponent = observer(function FeatureComponent({
   model,
 }: LinearBasicDisplayComponentProps) {
@@ -591,18 +513,7 @@ const FeatureBody = observer(function FeatureBody({
             model.clearSolo()
           }}
         />
-        <GeneGlyphControl
-          visible={model.showGeneGlyphNotice}
-          collapsed={model.geneGlyphCollapsed}
-          dismissed={model.geneGlyphNoticeDismissed}
-          geneGlyphMode={model.geneGlyphMode}
-          onSetGeneGlyphMode={value => {
-            model.setGeneGlyphMode(value)
-          }}
-          onDismiss={() => {
-            model.dismissGeneGlyphNotice()
-          }}
-        />
+        <GeneGlyphIndicator model={model} />
         <TrackHeightIndicator
           heightMode={model.heightMode}
           hasOverflow={model.hasOverflow}

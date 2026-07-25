@@ -187,6 +187,26 @@ export default function stateModelFactory(
         self.configuration.setSlot('displayDirectionalChevrons', value)
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * This display's answer to the base's isoform-collapse chrome hook (see
+       * `geneGlyphNotice` on the canvas base): absent unless the loaded data has
+       * a multi-isoform gene, so switching modes is meaningful. Its own block,
+       * after the actions it hands over, so `self` carries them.
+       */
+      get geneGlyphNotice() {
+        return self.showGeneGlyphNotice
+          ? {
+              collapsed: self.geneGlyphCollapsed,
+              dismissed: self.geneGlyphNoticeDismissed,
+              mode: self.geneGlyphMode,
+              setMode: self.setGeneGlyphMode,
+              dismiss: self.dismissGeneGlyphNotice,
+            }
+          : undefined
+      },
+    }))
     .views(self => {
       const superShowSubmenuCheckboxItems = self.showSubmenuCheckboxItems
       const superShowSubmenuRadioGroups = self.showSubmenuRadioGroups

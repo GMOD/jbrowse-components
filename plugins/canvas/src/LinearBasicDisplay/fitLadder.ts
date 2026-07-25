@@ -1,6 +1,65 @@
-import { maxBottom } from './layout.ts'
+import { createContentHeightProbe, maxBottom } from './layout.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LayoutInputs } from './layout.ts'
+
+// Fit-mode name-decimation solve (see `solveLabelRoomFactor`). The whitespace
+// factor keepFeatureLabel demands is searched in [0, MAX], where 0 keeps every
+// name (tallest) and MAX keeps only the most isolated (plus pinned) — beyond ~8x
+// almost nothing but pinned survives, so it caps the search. ITERS bisections
+// give ~MAX/2^ITERS factor resolution, enough to land the stack within one label
+// row of the track height without an over-long probe loop.
+const FIT_MAX_ROOM_FACTOR = 8
+const FIT_SOLVE_ITERS = 8
+
+/**
+ * The smallest `labelRoomFactor` whose packed stack fits `trackHeight`, or
+ * undefined when even the most aggressive decimation overflows.
+ *
+ * Smallest = most names kept, because the set of kept names shrinks
+ * monotonically as the factor rises (see keepFeatureLabel), so stack height is
+ * monotone non-increasing in the factor and a bisection is valid.
+ *
+ * Factor 0 (every name kept) is probed first rather than assumed to overflow:
+ * the `labels` rung that sent the ladder here is packed through the incremental
+ * memo, whose prior-row seeding can make it taller than an unseeded pack of the
+ * same label set, so "labels overflowed" does not actually establish "factor 0
+ * overflows". Probing it costs one height and turns the bisection's lower bound
+ * from an assumption into a measurement — and when it fits, the solve returns
+ * immediately with every name intact.
+ *
+ * `baseInputs` is typed without `labelRoomFactor` so the preparation the probe
+ * shares across trials provably can't depend on it.
+ */
+export function solveLabelRoomFactor(
+  rpcDataMap: Parameters<typeof createContentHeightProbe>[0],
+  baseInputs: Omit<LayoutInputs, 'labelRoomFactor'>,
+  trackHeight: number,
+) {
+  // One preparation shared by every probe below — the label widths and
+  // neighbor-room measurements don't vary with the factor.
+  const heightAt = createContentHeightProbe(rpcDataMap, baseInputs)
+  const fits = (labelRoomFactor: number) =>
+    heightAt(labelRoomFactor) <= trackHeight
+  if (fits(0)) {
+    return 0
+  }
+  // Bisect (0, FIT_MAX_ROOM_FACTOR]: `lo` is known to overflow, `hi` is the
+  // smallest factor measured to fit so far (undefined until one does).
+  let lo = 0
+  let hi = FIT_MAX_ROOM_FACTOR
+  let fitting: number | undefined
+  for (let i = 0; i < FIT_SOLVE_ITERS; i++) {
+    const mid = (lo + hi) / 2
+    if (fits(mid)) {
+      hi = mid
+      fitting = mid
+    } else {
+      lo = mid
+    }
+  }
+  return fitting
+}
 
 // The fit-to-height escalation ladder's reservation levels, least to most
 // reduced: `full` reserves names + descriptions, `labels` drops descriptions

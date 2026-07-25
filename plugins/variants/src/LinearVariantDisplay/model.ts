@@ -114,6 +114,23 @@ export default function stateModelFactory(
       },
 
       /**
+       * #getter
+       * This display's answer to the base's `colorLegend` chrome hook: the shared
+       * canvas body draws the key, so this display needs no component of its own
+       * (its `ReactComponent` is the one LinearBasicDisplay registers).
+       */
+      get colorLegend() {
+        return this.showColorLegend
+          ? {
+              items: this.colorLegendItems,
+              dismiss: () => {
+                self.setColorLegendDismissed(true)
+              },
+            }
+          : undefined
+      },
+
+      /**
        * #method
        */
       // Variants have no UTRs and no strand, so drop the base's "Strand" radio

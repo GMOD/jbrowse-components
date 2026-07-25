@@ -38,6 +38,7 @@ import {
 } from '../util.ts'
 
 import type { WiggleDataResult } from '../util.ts'
+import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -262,31 +263,29 @@ export default function stateModelFactory(
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         const view = getContainingView(self) as LGV
         const { adapterConfig } = self
-        if (adapterConfig) {
-          const { bpPerPx } = view
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
-          return fetchAllRegions(self, needed, {
-            call: (regions, ctx) =>
-              rpcManager.call(sessionId, 'RenderWiggleData', {
-                adapterConfig,
-                regions,
-                ...self.rpcProps(),
-                stopToken: ctx.stopToken,
-                bpPerPx,
-                statusCallback: self.makeRegionStatusCallback(
-                  needed[0]!.displayedRegionIndex,
-                ),
-              }),
-            onResult: (idx, result) => {
-              self.setRpcData(idx, result)
-            },
-            onComplete: () => {
-              self.setLoadedBpPerPx(bpPerPx)
-            },
-          })
-        }
-        return undefined
+        const { bpPerPx } = view
+        const sessionId = getRpcSessionId(self)
+        const { rpcManager } = getSession(self)
+        return fetchAllRegions(self, needed, {
+          call: (regions, ctx) =>
+            rpcManager.call(sessionId, 'RenderWiggleData', {
+              adapterConfig,
+              regions,
+              ...self.rpcProps(),
+              stopToken: ctx.stopToken,
+              bpPerPx,
+              // one batched call, so one status key: the first region's
+              statusCallback: self.makeRegionStatusCallback(
+                needed[0]!.displayedRegionIndex,
+              ),
+            }),
+          onResult: (idx, result) => {
+            self.setRpcData(idx, result)
+          },
+          onComplete: () => {
+            self.setLoadedBpPerPx(bpPerPx)
+          },
+        })
       },
     }))
     .views(self => ({
@@ -351,3 +350,17 @@ export default function stateModelFactory(
 
 export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>
+
+// Compile-time proof the real MST model still satisfies the structural type its
+// component takes. That type can't be `Instance<...>` here: the contract lives in
+// `@jbrowse/wiggle-core`, a package *below* this one, so it cannot import this
+// model — unlike the canvas display, which registers its component in index.ts and
+// types it off the model directly. Without this, a renamed/dropped field is a
+// silent runtime failure inside the lazy-loaded component, because the
+// `DisplayMessageComponent` getter is typed `React.FC<any>` and erases the check.
+// Type-only, so it's erased at runtime; it lives in this file (not a standalone
+// one) so a "remove files with no importers" sweep can't drop the guard.
+type _ComponentContract<T extends WiggleDisplayModel> = T
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ModelSatisfiesComponentContract =
+  _ComponentContract<LinearWiggleDisplayModel>

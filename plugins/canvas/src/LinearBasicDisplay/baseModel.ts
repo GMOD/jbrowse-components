@@ -3,13 +3,10 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  makeDisplayTypeDefaultControl,
   readConfObject,
   resolvePromotableConfigSnapshot,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { promotableRadioItem } from '@jbrowse/core/ui'
-import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
   clamp,
   getContainingTrack,
@@ -28,25 +25,10 @@ import {
   PromotableDefaultsMixin,
   TrackHeightMixin,
   autorunOnReadyView,
-  heightModeMenuItems,
   installGrowExitBake,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
-import BiotechIcon from '@mui/icons-material/Biotech'
-import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
-import HeightIcon from '@mui/icons-material/Height'
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import PaletteIcon from '@mui/icons-material/Palette'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
-import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove'
-import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { autorun, observable, toJS, untracked } from 'mobx'
 
 import {
@@ -64,7 +46,6 @@ import {
   fetchCanvasFeatureDetails,
   findSubfeatureById,
   indexById,
-  inlineRadioGroup,
   toggleArrayMember,
 } from './baseModelHelpers.ts'
 import {
@@ -72,19 +53,32 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
+import { featureContextMenuItems } from './featureContextMenu.ts'
 import {
   resolveFeatureHighlights,
   warnUnresolvedHighlights,
 } from './featureHighlight.ts'
-import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
+import {
+  resolveFitLadder,
+  snapFittedContentHeight,
+  solveLabelRoomFactor,
+} from './fitLadder.ts'
 import {
   computeLaidOutData,
   countTruncatedFeatures,
-  createContentHeightProbe,
   createIncrementalLayout,
   maxBottom,
   scaleLaidOutData,
 } from './layout.ts'
+import {
+  STRAND_COLOR_JEXL,
+  canvasTrackMenuItems,
+  colorBySubMenuItems,
+  colorMenuItems,
+  featureHeightMenuItems,
+  showSubmenuCheckboxItems,
+  showSubmenuRadioGroups,
+} from './trackMenus.ts'
 import {
   canMorph,
   captureDisplayedTops,
@@ -119,6 +113,7 @@ import type {
   ResolvedHighlights,
 } from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
+import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { IncrementalLayout, LayoutInputs } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
@@ -126,24 +121,20 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IAnyStateTreeNode, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
   HeightMode,
+  LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-// Single source for the "Feature height" radio options and their labels, so a
-// fourth mode can't drift between the menu and the label lookup.
-export const displayModeOptions: { value: DisplayMode; label: string }[] = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'compact', label: 'Compact' },
-  { value: 'superCompact', label: 'Super-compact' },
-  { value: 'collapsed', label: 'Collapsed' },
-]
 
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
 // A plain span+name signature — never the adapter uniqueId — so it can be
@@ -197,6 +188,23 @@ export function getView(self: IAnyStateTreeNode): LGV {
   return getContainingView(self) as LGV
 }
 
+// The two pieces of optional chrome a canvas-family subclass can contribute to
+// the shared body (see the `geneGlyphNotice` / `colorLegend` hooks). Each bundles
+// its state with the actions that change it, so the component never reaches for a
+// model field the display it's rendering might not have.
+export interface GeneGlyphNotice {
+  collapsed: boolean
+  dismissed: boolean
+  mode: GeneGlyphMode
+  setMode: (mode: GeneGlyphMode) => void
+  dismiss: () => void
+}
+
+export interface CanvasColorLegend {
+  items: LegendItem[]
+  dismiss: () => void
+}
+
 const morphClockMs = () =>
   typeof performance === 'undefined' ? 0 : performance.now()
 
@@ -221,15 +229,8 @@ export type { Region } from '@jbrowse/core/util'
 const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
 )
-const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
-const FeatureSequenceDialog = lazy(
-  () => import('./components/FeatureSequenceDialog.tsx'),
-)
-
-const STRAND_COLOR_JEXL =
-  "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
 
 // Floor for the auto-fit height so a sparse/empty track doesn't collapse to a
 // sliver. Capped by the maxHeight config in naturalContentHeight.
@@ -240,15 +241,6 @@ const MIN_FIT_HEIGHT = 50
 // shrinking boxes to invisibility. See `fitMinScale`.
 const MIN_FIT_BOX_PX = 2
 
-// Fit-mode name-decimation solve (see `fitDecimatedSolved`). The whitespace
-// factor keepFeatureLabel demands is searched in [0, MAX], where 0 keeps every
-// name (tallest) and MAX keeps only the most isolated (plus pinned) — beyond ~8x
-// almost nothing but pinned survives, so it caps the search. ITERS bisections
-// give ~MAX/2^ITERS factor resolution, enough to land the stack within one label
-// row of the track height without an over-long probe loop.
-const FIT_MAX_ROOM_FACTOR = 8
-const FIT_SOLVE_ITERS = 8
-
 // The vertical scale that resizes a laid-out feature body of `bodyPx` to exactly
 // `targetPx` — the basis for the fit squeeze floor (target the absolute
 // MIN_FIT_BOX_PX). 1 when there is no body to size, so a bound built on it
@@ -257,51 +249,6 @@ const FIT_SOLVE_ITERS = 8
 // with featureHeight cancelling out — see fitMaxScale.)
 function bodyScaleTo(bodyPx: number, targetPx: number) {
   return bodyPx > 0 ? targetPx / bodyPx : 1
-}
-
-// The "Show N hidden features" recovery item, shared by the feature context
-// menu (Show/hide submenu) and the track menu (Edit filters submenu). Empty
-// when nothing is hidden.
-function showHiddenFeaturesMenuItems(self: {
-  hiddenFeatureIds: { length: number }
-  showAllHidden: () => void
-}) {
-  const n = self.hiddenFeatureIds.length
-  return n > 0
-    ? [
-        {
-          label: `Show ${n} hidden feature${n > 1 ? 's' : ''}`,
-          icon: VisibilityIcon,
-          onClick: () => {
-            self.showAllHidden()
-          },
-        },
-      ]
-    : []
-}
-
-// The track-level "Clear N highlights" recovery item. Per-feature "Remove
-// highlight" needs the boxed feature under the cursor, and a highlight outlives
-// the navigation that created it (a text-search highlight is only ever replaced
-// by the next search) — so without this a highlight the user has panned away
-// from is unreachable. Empty when nothing is highlighted, matching the
-// "Show N hidden features" / "Clear filters" shape.
-function clearHighlightsMenuItems(self: {
-  featureHighlights: { length: number }
-  clearFeatureHighlights: () => void
-}) {
-  const n = self.featureHighlights.length
-  return n > 0
-    ? [
-        {
-          label: `Clear ${n} highlight${n > 1 ? 's' : ''}`,
-          icon: Highlighter,
-          onClick: () => {
-            self.clearFeatureHighlights()
-          },
-        },
-      ]
-    : []
 }
 
 /**
@@ -498,6 +445,34 @@ export default function baseStateModelFactory(
           return self.configuration
         },
       }))
+      .views(() => ({
+        /**
+         * #getter
+         * Overridable hook (default absent): the isoform-collapse control the
+         * shared canvas body draws in its bottom-right chip stack, or nothing
+         * when the display has no gene glyphs. Bundled — state plus the two
+         * actions — because the real implementation reads a `geneGlyphMode`
+         * config slot that only `LinearBasicDisplay`'s schema declares; the
+         * variant display shares this body and simply doesn't answer.
+         *
+         * Chrome a subclass owns arrives through hooks like this rather than
+         * through a per-subclass component, so one registered component serves
+         * every canvas-family display and no plugin imports another's component.
+         */
+        get geneGlyphNotice(): GeneGlyphNotice | undefined {
+          return undefined
+        },
+        /**
+         * #getter
+         * Overridable hook (default absent): a floating color key to draw over
+         * the canvas. Present only while a display's active coloring has a key
+         * worth showing and the user hasn't dismissed it (variants' consequence
+         * impact / SV type presets).
+         */
+        get colorLegend(): CanvasColorLegend | undefined {
+          return undefined
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -521,13 +496,6 @@ export default function baseStateModelFactory(
         // rebuild — labels only re-emit once the user scrolls a full bucket.
         get labelScrollBucket() {
           return Math.floor(self.scrollTop / LABEL_CULL_BUCKET_PX)
-        },
-
-        /**
-         * #getter
-         */
-        get DisplayMessageComponent() {
-          return FeatureComponent
         },
 
         /**
@@ -1004,48 +972,18 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #method
-         * The smallest `labelRoomFactor` whose packed stack fits `trackHeight`, or
-         * undefined when even the most aggressive decimation overflows.
-         *
-         * Smallest = most names kept, because the set of kept names shrinks
-         * monotonically as the factor rises (see keepFeatureLabel), so stack height
-         * is monotone non-increasing in the factor and a bisection is valid.
-         *
-         * Factor 0 (every name kept) is probed first rather than assumed to
-         * overflow: the `labels` rung that sent the ladder here is packed through
-         * the incremental memo, whose prior-row seeding can make it taller than an
-         * unseeded pack of the same label set, so "labels overflowed" does not
-         * actually establish "factor 0 overflows". Probing it costs one height and
-         * turns the bisection's lower bound from an assumption into a measurement —
-         * and when it fits, the solve returns immediately with every name intact.
+         * The whitespace factor the `decimated` rung commits at: the smallest one
+         * whose packed stack fits `trackHeight` (smallest = most names kept), or
+         * undefined when even the most aggressive decimation overflows. The
+         * bisection and its probe live in `solveLabelRoomFactor` (fitLadder.ts),
+         * next to the ladder walk they serve.
          */
         solveLabelRoomFactor(trackHeight: number) {
-          // One preparation shared by every probe below — the label widths and
-          // neighbor-room measurements don't vary with the factor.
-          const heightAt = createContentHeightProbe(
+          return solveLabelRoomFactor(
             self.rpcDataMap,
             self.decimatedBaseInputs,
+            trackHeight,
           )
-          const fits = (labelRoomFactor: number) =>
-            heightAt(labelRoomFactor) <= trackHeight
-          if (fits(0)) {
-            return 0
-          }
-          // Bisect (0, FIT_MAX_ROOM_FACTOR]: `lo` is known to overflow, `hi` is the
-          // smallest factor measured to fit so far (undefined until one does).
-          let lo = 0
-          let hi = FIT_MAX_ROOM_FACTOR
-          let fitting: number | undefined
-          for (let i = 0; i < FIT_SOLVE_ITERS; i++) {
-            const mid = (lo + hi) / 2
-            if (fits(mid)) {
-              hi = mid
-              fitting = mid
-            } else {
-              lo = mid
-            }
-          }
-          return fitting
         },
       }))
       .views(self => ({
@@ -1117,7 +1055,8 @@ export default function baseStateModelFactory(
          * control loop that picks the factor from measured heights — which can
          * oscillate the factor, and flickering labels are worse than shifting rows.
          *
-         * When even `FIT_MAX_ROOM_FACTOR` overflows, the `labels` stack is returned
+         * When even the solve's most aggressive factor overflows (see
+         * `FIT_MAX_ROOM_FACTOR` in fitLadder.ts), the `labels` stack is returned
          * — it overflows (that is why the ladder reached this rung), so
          * `resolveFitLadder` descends to `bodies`, and reusing a stack already
          * packed spares the solve one more pack that would only be discarded.
@@ -2526,61 +2465,34 @@ export default function baseStateModelFactory(
           },
         }
       })
+      // The menu builders live in ./trackMenus.ts and ./featureContextMenu.ts —
+      // ~450 lines of MUI construction that is not model state. Each method here
+      // stays as the thin, overridable seam: subclasses extend by super-capturing
+      // these (the flattened "Show..." submenu, colorMenuItems, trackMenuItems),
+      // and the builders read the composed section methods back off `self`, so an
+      // override still lands.
       .views(self => ({
         /**
          * #method
          */
-        // The checkbox rows of the "Show..." submenu. Subclasses override to
-        // append their own toggles; the flat list of all checkboxes is rendered
-        // before the radio groups so the menu reads top-to-bottom as
-        // checkboxes-then-radios rather than an interleaved mix.
         showSubmenuCheckboxItems(): MenuItem[] {
-          return [
-            {
-              label: 'Show descriptions',
-              type: 'checkbox' as const,
-              checked: self.showDescriptions,
-              keepMenuOpen: true,
-              onClick: () => {
-                self.setShowDescriptions(!self.showDescriptions)
-              },
-            },
-            {
-              label: 'Show outline',
-              type: 'checkbox' as const,
-              checked: self.showOutline,
-              keepMenuOpen: true,
-              onClick: () => {
-                self.setShowOutline(!self.showOutline)
-              },
-            },
-          ]
+          return showSubmenuCheckboxItems(self)
         },
-        // The radio groups of the "Show..." submenu, each a subHeader + inline
-        // radios. Rendered after the checkboxes; subclasses override to append.
+        /**
+         * #method
+         */
         showSubmenuRadioGroups(): MenuItem[] {
-          return inlineRadioGroup(
-            'Feature labels',
-            self.showLabelsMode,
-            [
-              { value: 'auto', label: 'Auto (hide when dense)' },
-              { value: 'on', label: 'Always on' },
-              { value: 'off', label: 'Always off' },
-            ],
-            mode => {
-              self.setShowLabels(mode)
-            },
-          )
+          return showSubmenuRadioGroups(self)
         },
       }))
       .views(self => ({
         /**
          * #method
+         * Flattened "Show..." submenu: all checkbox toggles first, then the
+         * radio groups (each under its own subHeader). Composed from the two
+         * extension points above so subclasses inject toggles/groups in place
+         * without rebuilding trackMenuItems from scratch.
          */
-        // Flattened "Show..." submenu: all checkbox toggles first, then the
-        // radio groups (each under its own subHeader). Composed from the two
-        // extension points above so subclasses inject toggles/groups in place
-        // without rebuilding trackMenuItems from scratch.
         showSubmenuMenuItems(): MenuItem[] {
           return [
             ...self.showSubmenuCheckboxItems(),
@@ -2591,252 +2503,11 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #method
+         * The feature right-click menu (open details, zoom to, get sequence,
+         * highlight scopes, pin/solo/hide, copy).
          */
-        contextMenuItems() {
-          const info = self.contextMenuInfo
-          if (!info) {
-            return []
-          }
-          const {
-            item: { featureId, startBp, endBp, name, type },
-            subfeature,
-            displayedRegionIndex,
-          } = info
-          const pinned = self.pinnedFeatureIdSet.has(featureId)
-          const highlighted = self.highlightedFeatureIdSet.has(featureId)
-          const inSoloSet = self.soloFeatureIdSet.has(featureId)
-          const soloCount = self.soloFeatureIds.length
-          const subfeatureHighlighted =
-            !!subfeature &&
-            self.highlightedFeatureIdSet.has(subfeature.featureId)
-          // Name each scope by its own type rather than hardcoding
-          // "transcript"/"gene": subfeatureInfos carries more than transcripts
-          // (a transposon's LTR parts, mature-protein regions), so fixed
-          // wording would mislabel those.
-          const subfeatureNoun = subfeature?.type ?? 'subfeature'
-          const featureNoun = type ?? 'feature'
-          // One toggle shared by both highlight scopes: when already boxed,
-          // remove by the target's id; otherwise add a highlight for the target.
-          function highlightItem(
-            active: boolean,
-            addLabel: string,
-            removeLabel: string,
-            target: HighlightTarget,
-          ) {
-            return {
-              label: active ? removeLabel : addLabel,
-              icon: Highlighter,
-              onClick: () => {
-                if (active) {
-                  self.removeFeatureHighlightsForId(target.featureId)
-                } else {
-                  const region = self.loadedRegions.get(displayedRegionIndex)
-                  if (region) {
-                    self.addFeatureHighlightForItem(target, region.refName)
-                  }
-                }
-              },
-            }
-          }
-          const wholeSuffix = name ? ` (${name})` : ''
-          const wholeFeatureItem = highlightItem(
-            highlighted,
-            subfeature
-              ? `Whole ${featureNoun}${wholeSuffix}`
-              : 'Highlight feature',
-            subfeature
-              ? `Remove whole ${featureNoun}${wholeSuffix} highlight`
-              : 'Remove highlight',
-            { startBp, endBp, name, featureId },
-          )
-          return [
-            {
-              label: 'Open feature details',
-              icon: MenuOpenIcon,
-              onClick: () => {
-                self.selectFeatureById(
-                  featureId,
-                  undefined,
-                  displayedRegionIndex,
-                )
-              },
-            },
-            {
-              label: 'Zoom to feature',
-              icon: CenterFocusStrongIcon,
-              onClick: () => {
-                const region = self.loadedRegions.get(displayedRegionIndex)
-                if (region) {
-                  const view = getView(self)
-                  // grow 0.2 adds ~20% flanks so the feature isn't pinned to
-                  // the viewport edges (matches synteny/bookmark zoom-to).
-                  view.navTo(
-                    {
-                      refName: region.refName,
-                      start: startBp,
-                      end: endBp,
-                    },
-                    0.2,
-                  )
-                }
-              },
-            },
-            // The feature-aware sequence panel (CDS, cDNA, protein, collapsed
-            // introns), not the region-based rubberband "Get sequence" dialog:
-            // right-clicking a gene and getting only its raw genomic span, with
-            // no protein option, is the confusing half of that overlap.
-            {
-              label: 'Get sequence',
-              icon: BiotechIcon,
-              onClick: () => {
-                const region = self.loadedRegions.get(displayedRegionIndex)
-                if (region) {
-                  getSession(self).queueDialog(handleClose => [
-                    FeatureSequenceDialog,
-                    {
-                      model: self,
-                      parentFeatureId: subfeature
-                        ? subfeature.parentFeatureId
-                        : featureId,
-                      featureId: subfeature ? subfeature.featureId : featureId,
-                      displayedRegionIndex,
-                      assemblyName: region.assemblyName,
-                      handleClose,
-                    },
-                  ])
-                }
-              },
-            },
-            // Two highlight scopes. When the click resolved to a subfeature (an
-            // isoform, an LTR part) both the whole feature and that subfeature
-            // can be boxed, so the scopes are grouped under a "Highlight"
-            // submenu. With no subfeature there is a single scope, kept as a
-            // top-level entry so the common case stays one click away.
-            ...(subfeature
-              ? [
-                  {
-                    label: 'Highlight',
-                    icon: Highlighter,
-                    subMenu: [
-                      // The subfeature scope carries the subfeature's own id, so
-                      // it resolves to this isoform rather than its gene even
-                      // when the two share a span (the common GFF3 case).
-                      highlightItem(
-                        subfeatureHighlighted,
-                        subfeature.displayLabel
-                          ? `${subfeatureNoun} (${subfeature.displayLabel})`
-                          : `This ${subfeatureNoun}`,
-                        subfeature.displayLabel
-                          ? `Remove ${subfeatureNoun} (${subfeature.displayLabel}) highlight`
-                          : `Remove ${subfeatureNoun} highlight`,
-                        {
-                          startBp: subfeature.startBp,
-                          endBp: subfeature.endBp,
-                          name: subfeature.displayLabel,
-                          featureId: subfeature.featureId,
-                        },
-                      ),
-                      wholeFeatureItem,
-                    ],
-                  },
-                ]
-              : [wholeFeatureItem]),
-            // The show/hide family (pin, solo, hide) groups the growing set of
-            // visibility toggles behind one submenu so the common actions above
-            // stay one click away.
-            {
-              label: 'Show/hide',
-              icon: VisibilityIcon,
-              subMenu: [
-                {
-                  label: pinned ? 'Unpin from top' : 'Pin to top of layout',
-                  icon: VerticalAlignTopIcon,
-                  onClick: () => {
-                    self.togglePinnedFeature(featureId)
-                  },
-                },
-                // Solo menu. Applying a collected set is done from the "N
-                // selected" badge (see SoloSelectionChip), so the menu only
-                // ever offers the one-shot single isolate, add/remove-from-set,
-                // and show-all.
-                //  - applied → show everything again (and optionally drop this)
-                //  - otherwise → the one-shot isolate + add/remove this feature
-                ...(self.soloApplied
-                  ? [
-                      {
-                        label: 'Show all features',
-                        icon: FilterAltOffIcon,
-                        onClick: () => {
-                          self.clearSolo()
-                        },
-                      },
-                      ...(inSoloSet && soloCount > 1
-                        ? [
-                            {
-                              label: 'Remove this feature from view',
-                              icon: PlaylistRemoveIcon,
-                              onClick: () => {
-                                self.toggleSoloFeature(featureId)
-                              },
-                            },
-                          ]
-                        : []),
-                    ]
-                  : [
-                      {
-                        label: 'Show only this feature',
-                        icon: FilterAltIcon,
-                        onClick: () => {
-                          self.soloFeature(featureId)
-                        },
-                      },
-                      {
-                        label: inSoloSet ? 'Remove from set' : 'Add to set',
-                        icon: inSoloSet ? PlaylistRemoveIcon : PlaylistAddIcon,
-                        onClick: () => {
-                          self.toggleSoloFeature(featureId)
-                        },
-                      },
-                    ]),
-                {
-                  label: 'Hide this feature',
-                  icon: VisibilityOffIcon,
-                  onClick: () => {
-                    self.hideFeature(featureId)
-                  },
-                },
-                // Reachable from any still-visible feature; the track menu's
-                // "Clear filters" covers the case where everything got hidden.
-                ...showHiddenFeaturesMenuItems(self),
-              ],
-            },
-            {
-              label: 'Copy info to clipboard',
-              icon: ContentCopyIcon,
-              onClick: () => {
-                void (async () => {
-                  const session = getSession(self)
-                  const fullFeature = await self.fetchFullFeature(
-                    featureId,
-                    displayedRegionIndex,
-                  )
-                  if (!fullFeature) {
-                    return
-                  }
-                  try {
-                    const { uniqueId: _, ...rest } = fullFeature.toJSON()
-                    const { default: copy } =
-                      await import('@jbrowse/core/util/copyToClipboard')
-                    copy(JSON.stringify(rest, null, 4))
-                    session.notify('Copied to clipboard', 'success')
-                  } catch (e) {
-                    console.error(e)
-                    session.notifyError(`${e}`, e)
-                  }
-                })()
-              },
-            },
-          ]
+        contextMenuItems(): MenuItem[] {
+          return featureContextMenuItems(self)
         },
 
         /**
@@ -2844,33 +2515,8 @@ export default function baseStateModelFactory(
          * The "Color by..." radio choices (solid/strand/attribute). Split out so
          * subclasses can reuse them while assembling their own color menu.
          */
-        colorBySubMenuItems() {
-          return [
-            {
-              label: 'Solid color...',
-              type: 'radio' as const,
-              checked: self.colorByMode === 'solid',
-              onClick: () => {
-                self.openSetColorDialog()
-              },
-            },
-            {
-              label: 'Strand',
-              type: 'radio' as const,
-              checked: self.colorByMode === 'strand',
-              onClick: () => {
-                self.setFeatureColor(STRAND_COLOR_JEXL)
-              },
-            },
-            {
-              label: 'Attribute...',
-              type: 'radio' as const,
-              checked: self.colorByMode === 'attribute',
-              onClick: () => {
-                self.openColorByAttributeDialog()
-              },
-            },
-          ]
+        colorBySubMenuItems(): MenuItem[] {
+          return colorBySubMenuItems(self)
         },
       }))
       .views(self => ({
@@ -2880,56 +2526,18 @@ export default function baseStateModelFactory(
          * "Solid color..." choice opens the solid+UTR color picker. Subclasses
          * (e.g. variants) override to drop the gene-oriented UTR picker.
          */
-        colorMenuItems() {
-          return [
-            {
-              label: 'Color by...',
-              icon: PaletteIcon,
-              subMenu: self.colorBySubMenuItems(),
-            },
-          ]
+        colorMenuItems(): MenuItem[] {
+          return colorMenuItems(self)
         },
 
         /**
          * #method
-         * One "Feature height" menu with two independent radio groups, mirroring
-         * the alignments display: the size presets (how tall each feature is
-         * drawn) and, under a "Track sizing" subheader, how the track responds
-         * when there are more features than fit — scroll / expand / squeeze. The
-         * two axes are orthogonal, so picking a size never changes the mode and
-         * vice versa. Shared by every canvas display (genes, variants).
+         * One "Feature height" menu with two independent radio groups: the size
+         * presets and, under a "Track sizing" subheader, how the track responds
+         * when there are more features than fit.
          */
-        featureHeightMenuItems() {
-          return [
-            {
-              label: 'Feature height',
-              icon: HeightIcon,
-              subMenu: [
-                // Each preset row carries its own pin (endAdornment): the radio
-                // selects the mode for this track, the pin promotes that preset
-                // as the session-wide default for this display type. displayMode
-                // is a sentinel promotable slot, so every preset — `normal`
-                // included — is customizable back over another session default.
-                ...displayModeOptions.map(option =>
-                  promotableRadioItem({
-                    label: option.label,
-                    checked: self.displayMode === option.value,
-                    keepMenuOpen: true,
-                    onClick: () => {
-                      self.setDisplayMode(option.value)
-                    },
-                    displayTypeDefault: makeDisplayTypeDefaultControl(
-                      self,
-                      'displayMode',
-                      option.value,
-                    ),
-                  }),
-                ),
-                { type: 'subHeader' as const, label: 'Track sizing' },
-                ...heightModeMenuItems(self, 'feature'),
-              ],
-            },
-          ]
+        featureHeightMenuItems(): MenuItem[] {
+          return featureHeightMenuItems(self)
         },
       }))
       .views(self => ({
@@ -2937,50 +2545,17 @@ export default function baseStateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
-          const hiddenCount = self.hiddenFeatureIds.length
-          const hasFeatureFilters =
-            self.jexlFiltersSetting !== undefined ||
-            self.soloFeatureIds.length > 0 ||
-            hiddenCount > 0
-          return [
-            {
-              label: 'Show...',
-              icon: VisibilityIcon,
-              subMenu: self.showSubmenuMenuItems(),
-            },
-            ...self.featureHeightMenuItems(),
-            ...self.colorMenuItems(),
-            ...clearHighlightsMenuItems(self),
-            {
-              label: 'Edit filters',
-              icon: FilterAltIcon,
-              subMenu: [
-                {
-                  label: 'Filter by...',
-                  icon: ClearAllIcon,
-                  onClick: () => {
-                    self.openFilterDialog()
-                  },
-                },
-                // Track-level unhide: the per-feature "Show N hidden" item is
-                // only reachable from a still-visible feature's menu, so this is
-                // the sole recovery once every feature in view is hidden.
-                ...showHiddenFeaturesMenuItems(self),
-                ...(hasFeatureFilters
-                  ? [
-                      {
-                        label: 'Clear filters',
-                        icon: FilterAltOffIcon,
-                        onClick: () => {
-                          self.clearAllFeatureFilters()
-                        },
-                      },
-                    ]
-                  : []),
-              ],
-            },
-          ]
+          return canvasTrackMenuItems(self)
         },
       }))
   )
 }
+
+type LinearCanvasBaseDisplayStateModel = ReturnType<
+  typeof baseStateModelFactory
+>
+// What FeatureComponent and its layers take. The subclasses (LinearBasicDisplay,
+// LinearVariantDisplay) only add to this, so their instances satisfy it — one
+// component serves both with no hand-mirrored structural type.
+export type LinearCanvasBaseDisplayModel =
+  Instance<LinearCanvasBaseDisplayStateModel>

@@ -9,8 +9,8 @@ import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const BaseLinearDisplayComponent = lazy(
-  () => import('./components/BaseLinearDisplayComponent.ts'),
+const LinearBasicDisplayComponent = lazy(
+  () => import('./components/LinearBasicDisplayComponent.tsx'),
 )
 
 export default function register(pluginManager: PluginManager) {
@@ -34,7 +34,7 @@ export default function register(pluginManager: PluginManager) {
       stateModel: modelFactory(configSchema),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: LinearBasicDisplayComponent,
       aliases: ['LinearFeatureDisplay'],
     })
   })
@@ -45,3 +45,4 @@ export { default as linearBasicDisplayConfigSchemaFactory } from './configSchema
 export { default as linearCanvasBaseDisplayStateModelFactory } from './baseModel.ts'
 export { default as linearCanvasBaseDisplayConfigSchemaFactory } from './baseConfigSchema.ts'
 export type { LinearBasicDisplayModel } from './model.ts'
+export type { LinearCanvasBaseDisplayModel } from './baseModel.ts'

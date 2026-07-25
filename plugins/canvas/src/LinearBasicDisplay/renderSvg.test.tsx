@@ -41,8 +41,15 @@ function makeDefaultMockView() {
 
 let mockView = makeDefaultMockView()
 
+// The barrel is stubbed rather than spread from the real one — requiring it here
+// pulls in tracks.ts and the whole config layer. `measureText` is stubbed with a
+// proportional approximation because SvgColorLegend really does call it (it sizes
+// the color key from its label widths); these tests assert on the key's labels and
+// swatch colors, not on its measured width.
 jest.mock('@jbrowse/core/util', () => ({
   getContainingView: () => mockView,
+  measureText: (str: unknown, fontSize = 10) =>
+    String(str).length * fontSize * 0.6,
 }))
 
 afterEach(() => {
@@ -89,6 +96,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     renderedShowLabels: true,
     renderedShowDescriptions: true,
     labelFontSize: 12,
+    colorLegend: undefined,
     ...overrides,
   }
 }
@@ -252,6 +260,35 @@ describe('renderSvg', () => {
     )
     const html = renderResult(result)
     expect(html).not.toContain('rgb(255,177,29)')
+  })
+
+  // The color key a display contributes through the `colorLegend` hook (variants'
+  // consequence-impact / SV-type presets) has to reach the export too — an
+  // exported figure of colored glyphs is unreadable without it. A plain feature
+  // track answers `undefined` and draws none.
+  it('bakes the display color key into the export, and omits it when absent', async () => {
+    const data = makeData([{ startBp: 1100, endBp: 1200 }])
+    const withKey = renderResult(
+      await renderSvg(
+        makeModel({
+          laidOutDataMap: new Map([[0, data]]),
+          colorLegend: {
+            items: [
+              { label: 'HIGH', color: '#d32f2f' },
+              { label: 'LOW', color: '#fbc02d' },
+            ],
+            dismiss: () => {},
+          },
+        }),
+      ),
+    )
+    expect(withKey).toContain('HIGH')
+    expect(withKey).toContain('#d32f2f')
+
+    const withoutKey = renderResult(
+      await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
+    )
+    expect(withoutKey).not.toContain('HIGH')
   })
 
   // Runs last: renderSvg emits clip <g>s whose ids come from a module-global

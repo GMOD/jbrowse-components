@@ -39,7 +39,10 @@ export {
   linearCanvasBaseDisplayConfigSchemaFactory,
   linearCanvasBaseDisplayStateModelFactory,
 } from './LinearBasicDisplay/index.ts'
-export type { LinearBasicDisplayModel } from './LinearBasicDisplay/index.ts'
+export type {
+  LinearBasicDisplayModel,
+  LinearCanvasBaseDisplayModel,
+} from './LinearBasicDisplay/index.ts'
 
 // Types that appear in the inferred shape of the exported display models. They
 // have to be reachable from this entry or tsc names them by source path in

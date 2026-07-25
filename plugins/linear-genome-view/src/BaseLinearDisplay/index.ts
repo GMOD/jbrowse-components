@@ -7,6 +7,7 @@ export type {
 
 export {
   BlockMsg,
+  DisplayContainer,
   Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
@@ -40,6 +41,7 @@ export {
   type FetchContext,
   type MultiRegionDisplayMixinType,
   autorunOnReadyView,
+  callEachRegion,
   checkByteEstimate,
   default as MultiRegionDisplayMixin,
   fetchAllRegions,

@@ -17,7 +17,10 @@ export interface WiggleGpuDisplayModel<
   ticks?: YScaleTicks
   canvasDrawn: boolean
   height: number
-  error: Error | null
+  // `unknown`, matching FetchMixin's volatile (it preserves whatever was thrown)
+  // and DisplayChrome's error bar. Declaring `Error | null` here was a lie the
+  // model never satisfied — nothing in this contract's consumers narrows it.
+  error: unknown
   isLoading: boolean
   displayPhase: DisplayPhase
   statusMessage?: string

@@ -40,6 +40,7 @@ import TooltipComponent from './components/TooltipComponent.tsx'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
@@ -502,32 +503,36 @@ export function stateModelFactory(
       /**
        * #action
        * Manhattan features are 1:1 with the underlying SNPs (pre-transformed
-       * -log10 p values) and don't downsample by zoom, so we never need to
-       * refetch on bpPerPx change. We intentionally don't call setLoadedBpPerPx
-       * — the inherited isCacheValid short-circuits to true whenever
-       * loadedBpPerPx is undefined, which is exactly the behavior we want here.
+       * -log10 p values) and don't downsample by zoom, so cached data is valid
+       * at any bpPerPx. Stated outright rather than left to
+       * `WiggleScoreConfigMixin`'s strict-equality version short-circuiting on an
+       * unset `loadedBpPerPx` — that made "never call setLoadedBpPerPx" a silent
+       * precondition of correct caching.
+       */
+      isCacheValid(_displayedRegionIndex: number) {
+        return true
+      },
+      /**
+       * #action
        */
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         const { adapterConfig } = self
-        if (adapterConfig) {
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
-          return fetchEachRegion(self, needed, {
-            call: (region, ctx, displayedRegionIndex) =>
-              rpcManager.call(sessionId, 'GetManhattanData', {
-                adapterConfig,
-                region,
-                ...self.rpcProps(),
-                stopToken: ctx.stopToken,
-                statusCallback:
-                  self.makeRegionStatusCallback(displayedRegionIndex),
-              }),
-            onResult: (idx, result) => {
-              self.setRpcData(idx, result)
-            },
-          })
-        }
-        return undefined
+        const sessionId = getRpcSessionId(self)
+        const { rpcManager } = getSession(self)
+        return fetchEachRegion(self, needed, {
+          call: (region, ctx, displayedRegionIndex) =>
+            rpcManager.call(sessionId, 'GetManhattanData', {
+              adapterConfig,
+              region,
+              ...self.rpcProps(),
+              stopToken: ctx.stopToken,
+              statusCallback:
+                self.makeRegionStatusCallback(displayedRegionIndex),
+            }),
+          onResult: (idx, result) => {
+            self.setRpcData(idx, result)
+          },
+        })
       },
       /**
        * #action
@@ -602,3 +607,17 @@ export type LinearManhattanDisplayStateModel = ReturnType<
 >
 export type LinearManhattanDisplayModel =
   Instance<LinearManhattanDisplayStateModel>
+
+// Compile-time proof the real MST model still satisfies the structural type its
+// component takes. That type can't be `Instance<...>` here: the contract lives in
+// `@jbrowse/wiggle-core`, a package *below* this one, so it cannot import this
+// model — unlike the canvas display, which registers its component in index.ts and
+// types it off the model directly. Without this, a renamed/dropped field is a
+// silent runtime failure inside the lazy-loaded component, because the
+// `DisplayMessageComponent` getter is typed `React.FC<any>` and erases the check.
+// Type-only, so it's erased at runtime; it lives in this file (not a standalone
+// one) so a "remove files with no importers" sweep can't drop the guard.
+type _ComponentContract<T extends ManhattanDisplayModel> = T
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ModelSatisfiesComponentContract =
+  _ComponentContract<LinearManhattanDisplayModel>

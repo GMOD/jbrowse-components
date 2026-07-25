@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { SvgColorLegend } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -20,6 +21,7 @@ import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './components/sharedRendererConstants.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { CanvasColorLegend } from './baseModel.ts'
 import type { ResolvedLabel } from './components/labelPositioning.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -40,6 +42,7 @@ export interface RenderSvgModel extends SvgExportable {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   labelFontSize: number
+  colorLegend: CanvasColorLegend | undefined
 }
 
 // Labels and amino-acid overlays are rendered as DOM/React overlays
@@ -110,6 +113,7 @@ function CanvasFeaturesSvgBody({
   const renderBlocks = buildRenderBlocks(visibleRegions)
   const highlightColor = theme.palette.highlight.main
   const fontSize = model.labelFontSize
+  const colorLegend = model.colorLegend
   const context = {
     showLabels: model.renderedShowLabels,
     showDescriptions: model.renderedShowDescriptions,
@@ -185,6 +189,24 @@ function CanvasFeaturesSvgBody({
           }
         }}
       />
+      {/* The same color key the display shows on screen (the `colorLegend` hook —
+          variants' consequence-impact / SV-type presets; absent for a plain
+          feature track). Without it an exported figure has colored glyphs and
+          nothing saying what the colors mean. Vector, via the shared
+          SvgColorLegend the multi-row painting export already uses; no
+          `onDismiss`, since an exported legend can't be clicked. */}
+      {colorLegend ? (
+        <SvgColorLegend
+          canvasWidth={canvasWidth}
+          maxHeight={height}
+          testid="canvas-color-legend"
+          entries={colorLegend.items.map(item => ({
+            key: item.label,
+            label: item.label,
+            color: item.color,
+          }))}
+        />
+      ) : null}
     </SvgClipRect>
   )
 }

@@ -69,9 +69,10 @@ LinearBasicDisplay (via `FeatureComponent`), canvas LinearMultiRowFeatureDisplay
 wiggle, multi-wiggle, gwas manhattan, sequence, maf, alignments, hic, LD,
 multi-sample-variant, variant-matrix.
 
-**Reuse one of those components (3):** `LGVSyntenyDisplay` → LinearBasicDisplay's
+**Reuse one of those components (3):** `LGVSyntenyDisplay` → LinearAlignmentsDisplay's
 component; `LinearGCContentDisplay` → wiggle's; `LinearVariantDisplay` →
-`BaseLinearDisplayComponent` → `FeatureComponent`. They get the chrome for free.
+LinearBasicDisplay's (borrowed off the DisplayType registry, so no cross-plugin
+component import). They get the chrome for free.
 
 **SVG exception (2): arc / paired-arc.** These render main-thread SVG (no worker,
 no GPU backend, all features in one array), so they can't wrap `DisplayChrome`,
@@ -122,22 +123,36 @@ canvas give the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
 ### Three testid shapes coexist — and why they aren't unified
 
 Two things vary per display: the `testid` base passed to DisplayChrome, and
-whether a legacy `BaseLinearDisplay.tsx` wrapper sits above it. Five displays
-(canvas-basic, LinearVariant, wiggle, manhattan, multi-wiggle) set
-`ReactComponent: BaseLinearDisplayComponent`, so they render inside a second
-`position:relative` container that emits `display-${id}-done` on its own. The
-resulting emitters:
+whether the outer `BaseLinearDisplay.tsx` container sits above it. Five displays
+render inside that second `position:relative` container, which emits
+`display-${id}-done` on its own — three of them (wiggle, manhattan,
+multi-wiggle) by registering `ReactComponent: BaseLinearDisplayComponent`, whose
+body comes from the model's `DisplayMessageComponent` getter; the canvas family
+(canvas-basic, LinearVariant) by composing that container itself
+(`DisplayContainer`, the same `-done` div, exported from the same file) around the
+canvas body in `LinearBasicDisplayComponent` — which is what let the canvas model
+drop the getter and with it the model↔component cycle.
+
+The canvas family shares that **one** registered component: LinearVariantDisplay
+borrows it via `pluginManager.getDisplayType('LinearBasicDisplay').ReactComponent`
+(the LGVSyntenyDisplay move) rather than importing a component across the plugin
+boundary. Chrome only one of them has arrives through overridable hooks on the
+canvas base model — `colorLegend` (variants' color key) and `geneGlyphNotice`
+(the isoform-collapse chip) — each defaulting to absent, so the shared component
+never reads a field the display it's rendering doesn't have. Because the state
+lives on the model rather than in a per-display component, the SVG export reads
+the same `colorLegend` and bakes the key in (`renderSvg.tsx`, via the shared
+`SvgColorLegend`). The resulting emitters:
 
 | Display(s) | Base → DisplayChrome | `-done` testid(s) emitted |
 | --- | --- | --- |
 | maf, alignments | `display-${id}` | `display-${id}-done` (chrome) |
-| canvas-basic, LinearVariant | none — wrapper only | `display-${id}-done` (wrapper) |
+| canvas-basic, LinearVariant | none — container only | `display-${id}-done` (container) |
 | wiggle, manhattan, multi-wiggle | `<type>-display` + wrapper | **both** `display-${id}-done` (wrapper) and `<type>-display-done` (chrome) |
 | every other display | `<type>-display` | `<type>-display-done` (chrome) |
 
-LinearVariant additionally leans on the wrapper's container to position its
-`FloatingLegend` child, and reuses canvas's `FeatureComponent` as its
-`DisplayMessageComponent`.
+LinearVariant additionally leans on the container to position its
+`FloatingLegend` child.
 
 This is genuine redundancy: a nested container duplicating DisplayChrome's own
 `position:relative` and `-done`. It is deliberately not collapsed, because the
@@ -159,7 +174,10 @@ Sequenced plan when that's available: (a) make DisplayChrome emit the generic
 `display-${id}-done` for every display; (b) migrate the static-base tests to it
 or keep both during a deprecation window; (c) drop `BaseLinearDisplay.tsx` from
 the GPU path, moving LinearVariant's `FloatingLegend` into its own DisplayChrome
-child. Until then, treat the redundancy as frozen.
+child. Until then, treat the redundancy as frozen. (Step (c) is half-prepared:
+canvas-basic and LinearVariant already compose `DisplayContainer` explicitly, so
+for them it's now a matter of moving the legend and deleting one wrapper element
+— no getter indirection in the way.)
 
 ## Load-bearing gotchas
 

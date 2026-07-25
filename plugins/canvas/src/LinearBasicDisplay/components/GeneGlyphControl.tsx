@@ -60,14 +60,12 @@ function getTooltip(
 // re-opening the menu is one click away). Both open the same Auto / All /
 // Longest-coding options as the track menu's "Gene glyph" radio.
 const GeneGlyphControl = observer(function GeneGlyphControl({
-  visible,
   collapsed,
   dismissed,
   geneGlyphMode,
   onSetGeneGlyphMode,
   onDismiss,
 }: {
-  visible: boolean
   collapsed: boolean
   dismissed: boolean
   geneGlyphMode: GeneGlyphMode
@@ -87,48 +85,48 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
   // The loud "Longest isoform" chip only makes sense while transcripts are
   // actually collapsed; in any other mode (or once dismissed) the control
   // stays reachable as the quiet icon button so the user can switch back.
-  return visible ? (
-    dismissed || !collapsed ? (
-      <CascadingMenuButton
-        size="small"
-        className={classes.button}
-        stopPropagation
+  // Whether the control belongs on screen at all is the caller's call (it mounts
+  // this only when the display offers a `geneGlyphNotice`).
+  return dismissed || !collapsed ? (
+    <CascadingMenuButton
+      size="small"
+      className={classes.button}
+      stopPropagation
+      tooltip={getTooltip(geneGlyphMode, collapsed, dismissed)}
+      menuItems={menuItems}
+    >
+      <UnfoldLessIcon />
+    </CascadingMenuButton>
+  ) : (
+    <>
+      <StatusChip
+        icon={<UnfoldLessIcon />}
+        label="Longest isoform"
         tooltip={getTooltip(geneGlyphMode, collapsed, dismissed)}
+        onClick={event => {
+          // don't let the click bubble to the track/view (drag-select, deselect)
+          event.stopPropagation()
+          setAnchorEl(event.currentTarget)
+        }}
+        onDelete={() => {
+          onDismiss()
+        }}
+      />
+      <CascadingMenu
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
+        onMenuItemClick={callback => {
+          callback()
+        }}
         menuItems={menuItems}
-      >
-        <UnfoldLessIcon />
-      </CascadingMenuButton>
-    ) : (
-      <>
-        <StatusChip
-          icon={<UnfoldLessIcon />}
-          label="Longest isoform"
-          tooltip={getTooltip(geneGlyphMode, collapsed, dismissed)}
-          onClick={event => {
-            // don't let the click bubble to the track/view (drag-select, deselect)
-            event.stopPropagation()
-            setAnchorEl(event.currentTarget)
-          }}
-          onDelete={() => {
-            onDismiss()
-          }}
-        />
-        <CascadingMenu
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          anchorOrigin={anchorOrigin}
-          transformOrigin={transformOrigin}
-          onClose={() => {
-            setAnchorEl(null)
-          }}
-          onMenuItemClick={callback => {
-            callback()
-          }}
-          menuItems={menuItems}
-        />
-      </>
-    )
-  ) : null
+      />
+    </>
+  )
 })
 
 export default GeneGlyphControl
