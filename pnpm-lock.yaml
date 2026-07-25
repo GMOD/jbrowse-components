@@ -158,9 +158,6 @@ importers:
       eslint-plugin-astro:
         specifier: 3.0.1
         version: 3.0.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@typescript-eslint/parser@8.65.0(eslint@10.7.0)(typescript@6.0.3))(eslint@10.7.0)
-      eslint-plugin-baseline-js:
-        specifier: ^0.7.0
-        version: 0.7.0(eslint@10.7.0)
       eslint-plugin-import-x:
         specifier: ^4.17.1
         version: 4.17.1(@typescript-eslint/utils@8.65.0(eslint@10.7.0)(typescript@6.0.3))(eslint@10.7.0)
@@ -817,8 +814,8 @@ importers:
   plugins/bed:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.3.3
-        version: 9.3.3
+        specifier: ^10.0.0
+        version: 10.0.0
       '@gmod/bed':
         specifier: ^2.2.6
         version: 2.2.6
@@ -1760,8 +1757,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.3.3
-        version: 9.3.3
+        specifier: ^10.0.0
+        version: 10.0.0
       '@gmod/hclust':
         specifier: 4.0.0
         version: 4.0.0
@@ -4187,8 +4184,8 @@ packages:
   '@gmod/bam@7.3.4':
     resolution: {integrity: sha512-TtYku3YFJ/V2xB32cemwVCjc7nIsrjB7ZuBbiIvfk9CCpoR1bPwJMEZPvW6vDN7s1Z9jJhIMEfYWGHSEaBY0FQ==}
 
-  '@gmod/bbi@9.3.3':
-    resolution: {integrity: sha512-Ck0yUTS4/KQnGBjtQ7uRkmF/gELcuXI3y7NqXLannGYz0jTl9WNFdioO7cXD79OmoaRPwqXoTbTXJMEtEF9mDQ==}
+  '@gmod/bbi@10.0.0':
+    resolution: {integrity: sha512-qI2wzkxKXa1uzxEwChc85jnzS8Woe/I3l49ZDLZ/RZFR9EfdTFcSBwOgH7iSuGEeFhY64TGROQBV84Q0cEPMfQ==}
 
   '@gmod/bed@2.2.6':
     resolution: {integrity: sha512-6L2EaYIHts/C3BQ4bcERUH24MPlQ2jpuq+qKWzG7ZWNOLrHx2YplYlXMuVZEiLmmiNShJnH1PFYWNGtM1QaS6Q==}
@@ -7012,18 +7009,6 @@ packages:
       eslint-plugin-jsx-a11y:
         optional: true
 
-  eslint-plugin-baseline-js@0.7.0:
-    resolution: {integrity: sha512-wnL74O4s+6y6Q8K+r64G0hL/RNZsXVJXM7U8x+Lf/ti/4vTMywGYcVSnkcuQG46tFtdo3lNZcGgIdOTEQ6i7oQ==}
-    engines: {node: ^20.19.0 || >=22.12.0}
-    peerDependencies:
-      eslint: '>=9.29.0 <11'
-
-  eslint-plugin-es-x@9.7.0:
-    resolution: {integrity: sha512-BT0pUw0toxtrHulYycGiUTL++qC11opyPYMuGUR7AgmuQ/N1YN1xLupF8rGxlaGqEqkqeedJuacCxxAcYgGkvg==}
-    engines: {node: ^20.19.0 || >=22.12.0}
-    peerDependencies:
-      eslint: '>=9.29.0'
-
   eslint-plugin-import-x@4.17.1:
     resolution: {integrity: sha512-4cdstYkKCyjumM2Q9NSI03K8D2a9F4Ssz33K2lv2hQa4KmR9jPLwk3uWGtNvclfqBrPGfGuMBwsGMbe6dMRbfg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -7108,12 +7093,6 @@ packages:
   eslint-scope@9.1.2:
     resolution: {integrity: sha512-xS90H51cKw0jltxmvmHy2Iai1LIqrfbw57b79w/J7MfvDfkIkFZ+kj6zC3BjtUwh150HsSSdxXZcsuv72miDFQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
-  eslint-type-tracer@0.5.2:
-    resolution: {integrity: sha512-YiJmgk6OD1suPB4UC3M/PB+oxahf145jQQ5gFXFk9F9Y7puWwnqGYC2BtTB+FoHqdOohImeTt0rNk0lhhECNaQ==}
-    engines: {node: ^18 || >=20}
-    peerDependencies:
-      eslint: '>=8'
 
   eslint-visitor-keys@3.4.3:
     resolution: {integrity: sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==}
@@ -12124,7 +12103,7 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@9.3.3':
+  '@gmod/bbi@10.0.0':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
@@ -15007,18 +14986,6 @@ snapshots:
       - '@emnapi/runtime'
       - supports-color
 
-  eslint-plugin-baseline-js@0.7.0(eslint@10.7.0):
-    dependencies:
-      eslint: 10.7.0
-      eslint-plugin-es-x: 9.7.0(eslint@10.7.0)
-
-  eslint-plugin-es-x@9.7.0(eslint@10.7.0):
-    dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.7.0)
-      '@eslint-community/regexpp': 4.12.2
-      eslint: 10.7.0
-      eslint-type-tracer: 0.5.2(eslint@10.7.0)
-
   eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.65.0(eslint@10.7.0)(typescript@6.0.3))(eslint@10.7.0):
     dependencies:
       '@typescript-eslint/types': 8.65.0
@@ -15186,11 +15153,6 @@ snapshots:
       '@types/estree': 1.0.9
       esrecurse: 4.3.0
       estraverse: 5.3.0
-
-  eslint-type-tracer@0.5.2(eslint@10.7.0):
-    dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.7.0)
-      eslint: 10.7.0
 
   eslint-visitor-keys@3.4.3: {}
 

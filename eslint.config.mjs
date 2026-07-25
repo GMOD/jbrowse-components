@@ -118,8 +118,7 @@ export default defineConfig(
       'unicorn/numeric-separators-style': 'off', // 2051 — purely cosmetic churn
       'unicorn/no-this-outside-of-class': 'off', // 351 — conflicts with MST `self` patterns
 
-      // Conflicts with baseline-js `available: 'widely'`: Uint8Array
-      // toBase64()/fromBase64() aren't widely-available baseline yet.
+      // Uint8Array toBase64()/fromBase64() aren't widely-available baseline yet.
       'unicorn/prefer-uint8array-base64': 'off',
 
       // === Conflicts with repo conventions (nest / ternaries over early return) ===
