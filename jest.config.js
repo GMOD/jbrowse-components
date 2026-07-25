@@ -1,4 +1,19 @@
 const baseConfig = {
+  // Pinned off /tmp (jest defaults to /tmp/jest_<uid>). Cache warmth is the
+  // single biggest lever on jest startup here: transpiling the plugin graph
+  // costs a serial prefix before any test body runs, measured repeatedly at
+  // ~19-26s cold vs ~5-7s warm for one trivial suite. Keeping it out of /tmp
+  // matters because /tmp is tmpfs on Linux dev boxes, so the ~200MB cache both
+  // sat in RAM competing with the workers and was lost on every reboot. On disk
+  // it survives reboots, and CI can restore it between runs (push.yml). Entries
+  // are keyed on file content + transformer config, so a partially stale cache
+  // is never wrongly reused, only re-transformed.
+  //
+  // Tuning preset-env's targets is NOT a lever, despite looking like one: at the
+  // default browserslist it adds only 3 niche regex transforms over
+  // targets:{node:'current'} (~8% of transform time), and an interleaved cold A/B
+  // showed no end-to-end difference. Don't diverge test/prod compilation for it.
+  cacheDirectory: '<rootDir>/node_modules/.cache/jest',
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',

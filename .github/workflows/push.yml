@@ -35,6 +35,25 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      # Babel has to transpile the whole plugin graph before the first test body
+      # runs, all of it before any assertion — measured at ~19-26s cold vs ~5-7s
+      # warm for a single trivial suite locally. CI had no jest cache at all, so
+      # it paid that cold every run. Jest keys each entry on file content +
+      # transformer config, so restoring a previous run's cache is safe — changed
+      # files simply miss and are re-transpiled. Keyed on the sha so every run
+      # saves a fresh entry, with restore-keys falling back to the nearest earlier
+      # one; the babel/jest config files are in the key because changing either
+      # invalidates every entry anyway.
+      - name: Restore jest transform cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.cache/jest
+          key:
+            jest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml',
+            'babel.config.cjs', 'jest.config.js') }}-${{ github.sha }}
+          restore-keys: |
+            jest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'babel.config.cjs', 'jest.config.js') }}-
+            jest-${{ runner.os }}-
       - name: Test codebase
         id: tests
         run: pnpm test-ci
