@@ -49,6 +49,52 @@ agents (not mine):
 `website/docs/user_guides/{alignments_track,hic_track,gc_content_track}.md`,
 root `package.json`/`pnpm-lock.yaml`/`.github`, etc.
 
+## 2026-07-25 session — 15 of 17 bad items cleared
+
+Three app changes came out of it:
+
+- **`hiddenGroupKeys`** (`LinearAlignmentsDisplay/model.ts`) — a base-model hook
+  `groupOrder` filters through, so a display can drop a lane its own grouping
+  produced without every consumer learning about it. LGVSyntenyDisplay overrides
+  it for the new **`hideSelfAlignments`** slot + "Group by... > Hide
+  self-alignment lane" checkbox: an aligner run with `minimap2 -X` skips each
+  sequence's own diagonal, so the view's own lane in an all-vs-all track holds
+  only internal paralogy and every reviewer read it as missing data.
+- **`alleleLength` jexl function** (`plugins/variants/src/shared/alleleLength.ts`)
+  — longest allele in bp, so `jexl:alleleLength(feature) >= 50` selects the SV
+  tier of a decomposed pangenome callset. A filter on `end - start` keeps only
+  deletions: an insertion consumes no reference, so its span is 1.
+- **QuickStartPanel track Select capped at 500px** — it was `fullWidth` with no
+  cap and stretched the whole import-form dialog.
+
+**The nested-bubble trap, twice.** pggb and Minigraph-Cactus both emit top-level
+bubble records thousands of bp wide alongside the decomposed SNPs, with a
+different allele per sample (GT 1/2/3/4). Two of those are "other alt", so ONE
+record paints kilobases of flat dark red across the genotype rows and buries
+everything under it — that is the "chaotic red" both variant figures were
+flagged for, not a coloring bug and not a matrix-mode regression. Fix is a
+`<100 bp` jexl filter on the genotype lane; the cactus figure also carries a raw
+unfiltered `LinearVariantDisplay` lane above, so the bubble is still visible as
+what it is.
+
+Deleted (redundant, per the reviewer's delete-when-redundant call):
+`pangenome/graph_rgfa`, `pangenome/graph_force` (graph-only; the
+`rgfa_subgraph_launch` and `hprc_mhc_bandage` figures pair the same layouts with
+a linear view), `pangenome_cactus/boxed_locus_synteny`,
+`hprc2/mhc_matrix`. `pangenome_cactus/depth` was folded into
+`pangenome_cactus/pav` (depth curve above the per-strain rows in one frame).
+
+**Right-click coordinates in `genomes_synteny/launch_sequence`**: only the pileup
+row hit-tests (y 331 at that viewport). The band a few px above it returns no
+context menu at all, which is what makes "the coordinate is wrong" look like
+"the feature is missing". Aim at a LONG chain block — the launch frames the new
+view on the block under the cursor, so a short fragment gives a tiny view.
+
+Still bad: `desktop-blat-results` (wants BLAT results in a sidebar widget — app
+feature, untouched), `tcga/cnv_recurrence_genome` (renderer dies past ~860px of
+canvas for 1104 auto-fit rows; unchanged), plus whatever the reviewer flags on
+the newly regenerated figures.
+
 ## Done this session (uncommitted) — the big one was a real bug
 
 **MAF fit-mode render regression (root cause + fix).** The MAF overlay

@@ -58,8 +58,8 @@ export const graphSpecs: ScreenshotSpec[] = [
   // The pggb subgraph: a plain GFA, so it has no rank tags to anchor to and the
   // force engine is the only layout that can draw it (layoutMode 'auto' falls
   // through to FMMM on its own). Colored by depth, how many of the four strains
-  // traverse each node. Same nondeterminism as the force spec below, hence the
-  // same raised diffThreshold.
+  // traverse each node. The FMMM run drifts ~3% between runs, so diffThreshold
+  // is raised well above it to keep the committed PNG stable across regens.
   {
     mode: 'url',
     name: 'pangenome/local_subgraph',
@@ -79,63 +79,6 @@ export const graphSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.1,
     viewportWidth: 1000,
     viewportHeight: 760,
-    hideTooltip: true,
-  },
-  // The four-strain minigraph (rGFA) slice in the anchored layout, colored by
-  // stable rank: the rank-0 K12 backbone runs blue along the x axis at the
-  // offsets its segments declare, with higher-rank alternate alleles below it.
-  // gfaLocation/colorScheme ride through the session spec onto the view snapshot
-  // (LaunchView-GraphGenomeView forwards every field), so one config drives the
-  // figure; session-spec locations don't inherit the config baseUri, so the uri
-  // is app-origin-relative.
-  {
-    mode: 'url',
-    name: 'pangenome/graph_rgfa',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'GraphGenomeView',
-          gfaLocation: { uri: `${DATA}/ecoli_rgfa_slice.gfa` },
-          colorScheme: 'stable-rank',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 60000,
-    settleMs: 4000,
-    viewportWidth: 1000,
-    viewportHeight: 640,
-    hideTooltip: true,
-  },
-  // The same minigraph slice in the force-directed (Bandage FMMM) layout: the
-  // backbone is inferred by the force simulation rather than drawn on the rank
-  // axis, so the alternate alleles fall out as bubbles instead of ranked rows.
-  // graph-perf-stats appears once the remote FMMM layout returns, so it is the
-  // ready signal; the view then auto-fits the settled graph. The FMMM run drifts
-  // ~3% between runs, so diffThreshold is raised well above it to keep the
-  // committed PNG stable across regens.
-  {
-    mode: 'url',
-    name: 'pangenome/graph_force',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'GraphGenomeView',
-          gfaLocation: { uri: `${DATA}/ecoli_rgfa_slice.gfa` },
-          layoutMode: 'force',
-          colorScheme: 'stable-rank',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 60000,
-    allowUnsettled: true,
-    settleMs: 8000,
-    diffThreshold: 0.1,
-    viewportWidth: 1000,
-    // the force layout is taller than it is wide at this node count, and the
-    // auto-fit left the bottom of the backbone off the frame at 640
-    viewportHeight: 820,
     hideTooltip: true,
   },
   // The indexed route on the tutorial's own four-strain graph: the rGFA

@@ -244,9 +244,9 @@ bedGraphToBigWig ecoli_cactus_depth.bedgraph chrom.sizes ecoli_cactus_depth.bw
 ```
 
 Load the bigWig as a
-[`QuantitativeTrack`](/docs/config_guides/quantitative_track) on K12.
-
-<Figure caption="odgi depth across all 4.64 Mb of K12 from the Minigraph-Cactus graph. The curve sits near 5 where every strain traverses the graph (core sequence) and drops toward 1 over the accessory stretches private to fewer strains. At this zoom each pixel is a bigWig summary bin covering roughly 4 kb, so the shades of blue are one bin's range rather than separate signals: the palest reaches the bin's maximum depth, the mid tone its mean, the darkest its minimum. A pale column standing over a dark floor is an accessory stretch narrower than a bin." src="/img/pangenome_cactus/depth.png" />
+[`QuantitativeTrack`](/docs/config_guides/quantitative_track) on K12. On its own
+the aggregate curve says how many strains cover a base but not which ones are
+missing, so pair it with the per-strain split below.
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
 splits that aggregate per strain. Slice each non-K12 strain's rows into its own
@@ -263,7 +263,7 @@ for strain in Sakai CFT073 NCTC86; do
 done
 ```
 
-<Figure caption="odgi pav over the same K12 windows, one row per non-K12 strain from the Minigraph-Cactus graph. Each row holds near 1 where that strain is present and drops to 0 over its own accessory stretches, so a single dip in the aggregate depth curve resolves here into which strain accounts for it." src="/img/pangenome_cactus/pav.png" />
+<Figure caption="Both odgi projections over all 4.64 Mb of K12. On top, odgi depth: near 5 where every strain traverses the graph (core sequence), dropping toward 1 over accessory stretches. Below it, odgi pav, one row per non-K12 strain, each near 1 where that strain is present and 0 over its own accessory stretches — so every dip in the curve above resolves into which strain accounts for it." src="/img/pangenome_cactus/pav.png" />
 
 ## Compared to `odgi viz`
 
@@ -317,9 +317,14 @@ Do not square the rows to a common width here. The span each row needs _is_ the
 result: 100 kb of K12 costs 331 kb in Sakai, 200 kb in CFT073, 141 kb in NCTC86
 and 92 kb in IAI39, the same 1 to 3 times spread the graph axis showed.
 
-<Figure caption="The blue box opened as a five-way synteny view, each row windowed to the sequence that aligns to K12 chr:1,000,000-1,100,000. The ribbons shear instead of running horizontal because each row spans a different amount of its own genome, and the gaps between ribbons are the accessory sequence: the widest one is Sakai's Shiga-toxin prophage, which has no K12 counterpart at all." src="/img/pangenome_cactus/boxed_locus_synteny.png" />
+Stacked five deep the ribbons shear rather than run horizontal, which is the
+result but is also most of what a reader can take from the picture. For what is
+actually inside the blue box, the
+[all-vs-all tutorial's stx2 figure](/docs/tutorials/allvsall_synteny) opens the
+same locus two rows deep with the gene lane on, where the prophage reads as
+genes rather than as a gap between ribbons.
 
-The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) covers the same
+The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) also covers the same
 stack driven from the UI, and
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) covers the
 gene-level version of this zoom.

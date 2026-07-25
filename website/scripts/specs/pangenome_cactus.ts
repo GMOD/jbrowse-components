@@ -63,6 +63,22 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome_cactus/variant_matrix',
     url: sessionSpec(CONFIG, {
+      // the same VCF a second time as a plain variant lane (reviewer: show the
+      // raw calls too). A view holds a track once, so the raw lane needs its own
+      // trackId; the adapter is absolute because a session track has no config
+      // baseUri to resolve against.
+      sessionTracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'ecoli_cactus_variants_raw',
+          name: 'MC graph: pangenome variants (raw calls)',
+          assemblyNames: ['K12'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.vcf.gz',
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -70,6 +86,14 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           loc: 'chr:995,000-1,015,000',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              // Unfiltered, so the nested top-level bubbles the genotype lane
+              // below filters out are still visible — as what they are, a few
+              // wide records, rather than as a wall of red genotype cells.
+              trackId: 'ecoli_cactus_variants_raw',
+              type: 'LinearVariantDisplay',
+              height: 70,
+            },
             {
               // NOT the matrix display: the matrix packs every variant into an
               // equal-width column, which with only three strains spends the
@@ -79,6 +103,16 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               trackId: 'ecoli_cactus_variants',
               type: 'LinearMultiSampleVariantDisplay',
               height: 160,
+              // Cactus's VCF is nested like pggb's: chr:997,582 is a 7,086 bp
+              // top-level bubble carrying a different allele in each of the
+              // three strains (GT 1/2/3), so two of them are "other alt" and it
+              // painted 7 kb of flat dark red over the SNPs underneath. That one
+              // record IS the red block the review flagged. Filtering the
+              // genotype lane to <100 bp leaves the decomposed SNP layer, and
+              // the raw lane above still shows the bubble.
+              jexlFilters: [
+                "jexl:get(feature,'end')-get(feature,'start') < 100",
+              ],
             },
             { trackId: 'ecoli_cactus_maf', type: 'LinearMafDisplay' },
           ],
@@ -88,7 +122,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyText: '1,000,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 740,
+    viewportHeight: 820,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -121,40 +155,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 480,
-    settleMs: 15000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-
-  // Projection 4: pangenome depth (odgi depth) as a whole-chromosome overview, so
-  // the shared plateau near 4 and the accessory dips toward 1 read at a glance.
-  {
-    mode: 'url',
-    name: 'pangenome_cactus/depth',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:1-4,641,652',
-          tracks: [
-            {
-              trackId: 'ecoli_cactus_depth',
-              type: 'LinearWiggleDisplay',
-              height: 200,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'pangenome depth',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    // 360 clipped the bottom of the 200px wiggle
-    viewportHeight: 420,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -231,132 +231,11 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The payoff for the boxed loci: the first box (K12 1.0-1.1 Mb, blue in
-  // graph_correspondence) opened as a four-way synteny view, so the reader can
-  // see what the depth dip and the over-wide graph box actually contain.
-  //
-  // Each row's window is read off the same halSynteny PAF the ribbons are drawn
-  // from (ecoli_cactus_ava.pif.gz), not chosen by eye: the K12 window's end
-  // points are walked through the blocks that span them, so every row holds the
-  // stretch of its own genome that aligns to K12 1.0-1.1 Mb.
-  //
-  //   K12      chr:1,000,000-1,100,000     100 kb
-  //   Sakai    chr:1,129,000-1,462,000     333 kb (carries the 66 kb stx2
-  //                                        prophage, Sakai 1,243,711-1,309,458,
-  //                                        plus an 84 kb private stretch)
-  //   CFT073   chr:1,044,000-1,243,500     200 kb
-  //   NCTC86   chr:2,972,000-3,062,000      90 kb, reverse orientation, so its
-  //                                        ribbon crosses (as in the
-  //                                        whole-genome synteny figure)
-  //
-  // The spans are the figure: the rows are deliberately NOT squared to the same
-  // bp/px, because the whole point is that the same K12 window costs 90-333 kb
-  // in the other strains. That ratio is the graph axis being 2-3x wider than the
-  // K12 axis in the graph_correspondence pair.
-  //
-  // showOnlyGenes + compact drops the CDS lanes and the full-width RefSeq
-  // `region` feature so the accessory content is readable at four rows.
-  {
-    mode: 'url',
-    name: 'pangenome_cactus/boxed_locus_synteny',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          views: [
-            {
-              assembly: 'K12',
-              loc: 'chr:1,000,000-1,100,000',
-              tracks: [
-                {
-                  trackId: 'K12_genes',
-                  showOnlyGenes: true,
-                  displayMode: 'compact',
-                  showDescriptions: false,
-                },
-              ],
-            },
-            {
-              assembly: 'Sakai',
-              loc: 'chr:1,128,000-1,459,000',
-              tracks: [
-                {
-                  trackId: 'Sakai_genes',
-                  showOnlyGenes: true,
-                  displayMode: 'compact',
-                  showDescriptions: false,
-                },
-              ],
-            },
-            {
-              assembly: 'CFT073',
-              loc: 'chr:1,044,000-1,243,500',
-              tracks: [
-                {
-                  trackId: 'CFT073_genes',
-                  showOnlyGenes: true,
-                  displayMode: 'compact',
-                  showDescriptions: false,
-                },
-              ],
-            },
-            {
-              // was chr:2,972,000-3,062,000, read off the graph built on the
-              // wrong NCTC86 deposit; recomputed against the rebuilt PAF
-              assembly: 'NCTC86',
-              loc: 'chr:1,184,000-1,325,000',
-              tracks: [
-                {
-                  trackId: 'NCTC86_genes',
-                  showOnlyGenes: true,
-                  displayMode: 'compact',
-                  showDescriptions: false,
-                },
-              ],
-            },
-            {
-              // IAI39 aligns to this window on the minus strand, so its ribbon
-              // is the one that crosses
-              assembly: 'IAI39',
-              loc: 'chr:2,163,000-2,255,000',
-              tracks: [
-                {
-                  trackId: 'IAI39_genes',
-                  showOnlyGenes: true,
-                  displayMode: 'compact',
-                  showDescriptions: false,
-                },
-              ],
-            },
-          ],
-          tracks: [
-            ['ecoli_cactus_ava'],
-            ['ecoli_cactus_ava'],
-            ['ecoli_cactus_ava'],
-            ['ecoli_cactus_ava'],
-          ],
-          drawCurves: true,
-          // colorBy and alpha are left at the view defaults ('default' / 0.2)
-          // on purpose. An earlier alpha: 0.8 here was 4x the default, and the
-          // AVA ribbons stack several deep per band, so every band composited
-          // to opaque red and the accessory gaps were the only readable thing.
-          //
-          // four bands at 90px: enough for the wedges to read without the
-          // five gene rows falling off the frame
-          levelHeights: [90, 90, 90, 90],
-        },
-      ],
-    }),
-    // fits all five gene rows plus the four 90px bands
-    viewportHeight: 1330,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 120000,
-    settleMs: 15000,
-  },
-
-  // Projection 4b: per-strain presence (odgi pav) as a MultiQuantitativeTrack,
-  // whole-chromosome so each strain's accessory dips read beside the aggregate
-  // depth curve.
+  // Projection 4: the two odgi projections in one whole-chromosome view — the
+  // aggregate depth curve (odgi depth) over the per-strain presence rows (odgi
+  // pav). They were two figures; alone, the depth wiggle is a solid blue wall
+  // that says nothing about WHICH strain is missing, which is exactly what the
+  // rows below it answer, so one dip and its explanation now sit in one frame.
   {
     mode: 'url',
     name: 'pangenome_cactus/pav',
@@ -367,6 +246,11 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:1-4,641,652',
           tracks: [
+            {
+              trackId: 'ecoli_cactus_depth',
+              type: 'LinearWiggleDisplay',
+              height: 150,
+            },
             {
               trackId: 'ecoli_cactus_pav',
               type: 'MultiLinearWiggleDisplay',
@@ -381,8 +265,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyText: 'per-strain presence',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // fits the whole 240px stack with no trailing whitespace
-    viewportHeight: 480,
+    // fits the 150px depth track plus the whole 240px stack
+    viewportHeight: 640,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

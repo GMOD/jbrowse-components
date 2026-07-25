@@ -209,7 +209,7 @@ only the slice you are viewing out of the 2.3 GB file. Paste the S3 URL into a
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "type": "LinearMultiSampleVariantDisplay",
       "renderingMode": "phased"
     }
   ]
@@ -222,18 +222,26 @@ independent rows instead of 232 diploid ones, which is what makes co-inherited
 blocks visible.
 
 The MHC class II region carries about **66 variants per kilobase** here, so a
-200 kb window is over ten thousand variant columns against 464 rows, several
-million genotype cells drawn at once. Matrix mode lays out one column per
-variant regardless of spacing, so the density stays legible:
+200 kb window holds over fourteen thousand records — and all but a couple of
+hundred are SNPs. The structural tier is the part a pangenome adds over a
+short-read callset, and it is already in this file: add the filter
 
-<Figure caption="The HPRC2 pangenome VCF as a genotype matrix across chr6:32,450,000-32,650,000. 464 haplotype rows against ~13,000 variant columns: blue non-reference, grey reference, yellow no-call. The vertical yellow band is a region many haplotypes could not be called against the reference; the fainter texture is shared haplotype allele state, which clustering (next) sharpens into blocks." src="/img/hprc2/mhc_matrix.png" />
+```
+jexl:alleleLength(feature) >= 50
+```
 
-The banding is suggestive; clustering confirms it. From the track menu,
-**Clustering > Cluster rows by genotype... > Run clustering** reorders the rows
-by genotype similarity and draws a dendrogram beside them. It runs in the
-worker, so the view stays responsive:
+from **Edit filters** and the same window drops to 220 alleles, each a real
+insertion or deletion. (`alleleLength` is the longest allele the record
+describes; a filter on `end - start` would keep only deletions, since an
+insertion consumes no reference.)
 
-<Figure caption="The same window with the 464 haplotype rows clustered by genotype and a dendrogram in the sidebar. The diffuse banding resolves into discrete blocks, including one all-yellow group with no calls at all: haplotypes divergent enough that the graph build declined to align them to the reference here, so 'no call' is itself the finding." src="/img/hprc2/mhc_clustered.png" />
+That leaves few enough alleles to draw each at its own genomic position, so they
+line up with the genes above. From the track menu, **Clustering > Cluster rows
+by genotype... > Run clustering** reorders the 464 haplotype rows by genotype
+similarity and draws a dendrogram beside them. It runs in the worker, so the
+view stays responsive:
+
+<Figure caption="Structural alleles (50 bp and up) of chr6:32,450,000-32,650,000 across 464 HPRC2 haplotypes, clustered by genotype, under the HLA class II genes they fall in. Blue carries the allele, red a second allele at the same site, grey reference, yellow no-call. The blocks are haplotype groups sharing whole sets of insertions and deletions across HLA-DRB5/DRB6/DRB1 — the classical HLA haplotypes, recovered from the pangenome with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
 
 ## Local ancestry (PCLAI)
 

@@ -229,14 +229,16 @@ less fragmented than a pggb one, since it records structural variation rather
 than every SNP, so a legible window is hundreds of kb rather than hundreds of
 bp.
 
-<Figure caption="The same five-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout. The indexed figure further down puts a linear view of the same window above this layout." src="/img/pangenome/graph_rgfa.png" />
-
-The rank-ladder layout above is anchored to K12, so it lines up with a linear
-view of the same window. The toolbar's **Layout** dropdown trades that
-correspondence for the classic Bandage picture of the same subgraph
-(**Force-directed layout**):
-
-<Figure caption="The same minigraph window in the Graph genome view's force-directed (Bandage) layout, colored by stable rank. The blue rank-0 K12 backbone is placed by the force simulation rather than on the reference axis, so the higher-rank alternate alleles fall out as bubbles off it rather than rows beneath it. It is the same graph as the anchored view above, laid out by its own structure instead of by K12 coordinate." src="/img/pangenome/graph_force.png" />
+That rank-ladder layout is anchored to K12, so it lines up with a linear view of
+the same window — the
+[indexed figure below](#opening-any-locus-without-a-slice-per-locus) shows the
+pair. The toolbar's **Layout** dropdown trades that correspondence for the
+classic Bandage picture of the same subgraph (**Force-directed layout**), where
+the backbone is placed by the force simulation rather than on the reference
+axis, so alternate alleles fall out as bubbles off it rather than as rows
+beneath it; the
+[MHC figure](/docs/tutorials/pangenome_hprc#open-a-locus-as-a-graph) shows that
+mode beside a linear view.
 
 A third mode, **Sample rows**, gives each contributing assembly its own row on
 the same reference axis, so an allele reads as "which strains carry it" rather
@@ -362,7 +364,7 @@ the same window turns the variant rows from a standalone summary into something
 you can check: each band of shared or absent genotype sits directly above the
 per-strain alignment it was decomposed from.
 
-<Figure caption="The graph's pangenome variants on the K12 reference, one row per strain, with the MAF alignment stacked below and the K12 gene lane (elfC, ycbU, pyrD…) above. Each colored column is a variant the graph called, colored by that strain's genotype (see the legend)." src="/img/pangenome/variant_matrix.png" />
+<Figure caption="The graph's pangenome variants on the K12 reference across the colanic-acid cluster (wca/wz), one row per strain, with the MAF alignment stacked below and the K12 gene lane above. Each column is a variant the graph called, colored by that strain's genotype (see the legend); a run of the same color across rows is a stretch those strains share." src="/img/pangenome/pangenome_variants.png" />
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and

@@ -17,9 +17,18 @@ const CONFIG = 'test_data/hprc2/config.json'
 
 const TRACK = 'hprc2_wave_grch38'
 
-// The MHC window the matrix figures cover: 200 kb of HLA class II/III at
-// ~66 variants/kb, so ~13,000 variant columns against 464 haplotype rows.
+// The MHC window the matrix figures cover: 200 kb of HLA class II/III.
 const MHC_WINDOW = 'chr6:32,450,000-32,650,000'
+
+// The wave VCF is fully decomposed, so that window holds ~14,300 records and
+// all but a couple of hundred are SNPs — 13,000 one-pixel columns of point
+// divergence that read as noise (reviewer: "should probably use SV vcf instead
+// of snps"). HPRC release 2 publishes no separate SV callset, but the SV tier
+// is already in this file: filtering to alleles of 50 bp or more leaves 220
+// columns over the same window, each a real insertion or deletion, wide enough
+// to see per haplotype. `alleleLength` rather than end-start because an
+// insertion consumes no reference — a span filter would keep only deletions.
+const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
 
 // Readiness. The track *name* is a useless gate here — it renders the moment the
 // track mounts, long before a byte of the 2.3 GB VCF has been fetched, and
@@ -29,8 +38,8 @@ const MHC_WINDOW = 'chr6:32,450,000-32,650,000'
 // publishes on that element: `-done` (canvasDrawn) and `data-display-phase=ready`
 // (the whole fetch finished, not just first paint — an empty canvas flips
 // canvasDrawn on its own).
-const MATRIX_READY =
-  '[data-testid="variant-matrix-display-done"][data-display-phase="ready"]'
+const REGULAR_READY =
+  '[data-testid="variant-display-done"][data-display-phase="ready"]'
 
 // A clustered display is ready only once its dendrogram exists AND the reordered
 // matrix has repainted. `body:has(dendrogram) <display>` is an AND (a bare `A,B`
@@ -40,53 +49,46 @@ const clusteredReady = (base: string) =>
   `body:has([data-testid="tree_sidebar_dendrogram"]) ${base}`
 
 export const hprc2Specs: ScreenshotSpec[] = [
-  // The density figure. MHC class II carries ~66 variants/kb, so the 200 kb
-  // MHC_WINDOW is ~13,000 columns against 464 haplotype rows — several million
-  // genotype cells in one GPU-rendered matrix, fetched live. The horizontal
-  // banding is HLA haplotype structure: rows sharing a classical haplotype share
-  // long runs of allele state.
-  {
-    mode: 'url',
-    name: 'hprc2/mhc_matrix',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: MHC_WINDOW,
-          tracks: [
-            {
-              trackId: TRACK,
-              type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 700,
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: MATRIX_READY,
-    readyTimeout: 240000,
-    viewportWidth: 1200,
-    viewportHeight: 820,
-    settleMs: 5000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 1150, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-
-  // The same MHC window with the 464 haplotype rows reordered by genotype
-  // similarity, so the banding of the first figure resolves into discrete
-  // haplotype groups with a dendrogram beside them — the classical HLA haplotypes
-  // recovered from the pangenome alone, no HLA typing involved. `runClustering`
-  // runs the real clustering RPC declaratively and `readySelector` waits on the
+  // The MHC figure: every structural allele (>=50 bp) of the window, one row per
+  // haplotype, clustered by genotype so the classical HLA haplotypes fall out of
+  // the pangenome alone with no HLA typing involved. `runClustering` runs the
+  // real clustering RPC declaratively and `readySelector` waits on the
   // dendrogram, so this stays correct however long clustering takes rather than
   // guessing a delay.
+  //
+  // The REGULAR multi-sample display, not the matrix (reviewer): 220 SVs at
+  // their genomic positions line up with the gene lane above, where matrix mode
+  // would spread them evenly across the width and break that correspondence.
+  // Matrix mode earns its keep on thousands of tightly-spaced columns, which is
+  // exactly what the SV filter removes.
   {
     mode: 'url',
     name: 'hprc2/mhc_clustered',
     url: sessionSpec(CONFIG, {
+      // the config declares no gene track, and the reviewer's ask is to see
+      // which genes the haplotype blocks sit over
+      sessionTracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'hg38_ncbiRefSeq_ucsc',
+          name: 'NCBI RefSeq genes (hg38)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
+                locationType: 'UriLocation',
+              },
+              indexType: 'CSI',
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -94,19 +96,27 @@ export const hprc2Specs: ScreenshotSpec[] = [
           loc: MHC_WINDOW,
           tracks: [
             {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+            },
+            {
               trackId: TRACK,
-              type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 700,
+              type: 'LinearMultiSampleVariantDisplay',
+              // shorter than the matrix figure's 700: 464 rows still read at
+              // this height and it leaves the gene lane its share of the frame
+              height: 460,
+              jexlFilters: SV_FILTER,
               runClustering: true,
             },
           ],
         },
       ],
     }),
-    readySelector: clusteredReady(MATRIX_READY),
+    readySelector: clusteredReady(REGULAR_READY),
     readyTimeout: 360000,
     viewportWidth: 1200,
-    viewportHeight: 820,
+    viewportHeight: 780,
     settleMs: 5000,
     hideTooltip: true,
     actions: [

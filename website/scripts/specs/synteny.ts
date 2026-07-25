@@ -446,8 +446,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
         dy: -28,
       },
       {
+        // grown upward off the label so it wraps the stx2B GLYPH as well —
+        // the default label-sized box clipped the glyph along its top edge
         type: 'box',
         anchor: { text: 'stx2B' },
+        dy: -14,
+        height: 36,
       },
     ],
   },
@@ -515,6 +519,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'ecoli_ava',
                 type: 'LGVSyntenyDisplay',
                 groupBy: { type: 'mateAssembly' },
+                // "Group by... > Hide self-alignment lane". K-12 cannot have a
+                // line against itself — all_vs_all.paf is built with
+                // `minimap2 -X`, which skips each sequence's own diagonal — so
+                // its lane held only K-12's internal paralogy and every
+                // reviewer read it as missing data. Hidden, the figure is the
+                // four lanes it is actually about.
+                hideSelfAlignments: true,
                 // Same thicker bar as the whole-genome figure below, and for
                 // the same reason: what the reader is asked to find is where a
                 // lane STOPS, and a 7px bar makes that a hairline.
@@ -531,38 +542,22 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    // taller than the lanes need, so the callout below sits in the track's own
-    // empty area rather than over a lane (16px pitch leaves no room for a pill)
-    viewportHeight: 460,
+    // the extra height below the lanes is where the callout sits, so it covers
+    // no lane
+    viewportHeight: 500,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 12000,
-    // The one thing the figure cannot say for itself: reviewers keep asking why
-    // K-12 has no line against itself. It cannot — all_vs_all.paf is built with
-    // `minimap2 -X`, which skips each sequence's own diagonal, so the K12 lane
-    // holds only K-12's internal paralogy (the IS copies at the right edge).
-    // Box the lane label, keep the reason in one line, leave the rest to the
-    // caption. No arrow: the label is at the far left, so a line to it would
-    // cross the other lanes' labels.
+    // name the island, since "three lanes stop here" is only interesting once
+    // the reader knows what stops. One line; the rest is in the caption.
     annotations: [
-      // the lane labels are 16px apart, so the default box (element + 6px pad,
-      // ~30px tall) swallows its neighbours' labels: pin it to the label's own
-      // height and thin the stroke
-      {
-        type: 'box',
-        anchor: { text: 'K12' },
-        height: 19,
-        dy: 5,
-        strokeWidth: 2,
-      },
       {
         type: 'text',
         fontSize: 18,
-        maxWidth: 520,
-        anchor: { text: 'K12' },
-        dx: 40,
-        dy: 60,
-        text: "K12 lane: no self-alignment line, only K-12's own repeats",
+        maxWidth: 560,
+        x: 250,
+        y: 445,
+        text: 'paa operon (phenylacetate catabolism): present in K-12 and NCTC86, absent from the other three',
       },
     ],
   },
@@ -615,6 +610,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'ecoli_ava',
                 type: 'LGVSyntenyDisplay',
                 groupBy: { type: 'mateAssembly' },
+                // Same as the zoomed figure above: the K12 lane can hold no
+                // self-alignment, so it is hidden rather than explained away.
+                hideSelfAlignments: true,
                 // Per-base mismatches are sub-pixel at 3.2kb/px — thousands of
                 // inter-strain SNPs, each drawn at a 1px floor, painted every
                 // lane a solid brown-and-purple wall and buried the block
@@ -634,34 +632,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    // room below the lanes for the same self-alignment callout as the zoomed
-    // figure above (see its comment); at 4.6 Mb the empty K12 lane is the first
-    // thing a reader asks about
-    viewportHeight: 310,
+    viewportHeight: 280,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 15000,
-    annotations: [
-      // the lane labels are 16px apart, so the default box (element + 6px pad,
-      // ~30px tall) swallows its neighbours' labels: pin it to the label's own
-      // height and thin the stroke
-      {
-        type: 'box',
-        anchor: { text: 'K12' },
-        height: 19,
-        dy: 5,
-        strokeWidth: 2,
-      },
-      {
-        type: 'text',
-        fontSize: 18,
-        maxWidth: 520,
-        anchor: { text: 'K12' },
-        dx: 40,
-        dy: 60,
-        text: "K12 lane: no self-alignment line, only K-12's own repeats",
-      },
-    ],
   },
 
   // The Linear synteny view import form for the allvsall_synteny.md "From the
@@ -923,11 +897,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // (and the reviewer) sees the sequence as one figure instead of three
   // near-identical frames.
   //
+  // Human vs MOUSE, not human vs T2T (reviewer): between two assemblies of the
+  // same species every block is near-identical and the launched view says
+  // nothing a reader could not have guessed. hg38 -> mm39 over SHH is the
+  // opposite case — a deeply conserved developmental gene whose coding exons
+  // still align at ~90 My of divergence while the sequence between them does
+  // not, so the chain track is a handful of separated blocks and the view the
+  // launch opens is worth looking at.
+  //
   // The right-click is a viewport coordinate, not a selector: the chain-block
   // canvas fills the display's whole height, so its center lands well below the
-  // two rows of blocks. (400, 340) is the purple reverse-strand block, the one
-  // worth launching a synteny view on. The loc and viewport width are fixed, so
-  // the block is at that coordinate every run.
+  // two rows of blocks. The loc and viewport width are fixed, so the block sits
+  // at that coordinate every run.
   {
     mode: 'url',
     name: 'genomes_synteny/launch_sequence',
@@ -936,22 +917,33 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr11:1,881,000-1,955,000',
+          loc: 'chr7:155,650,000-155,950,000',
           tracks: [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
               geneGlyphMode: 'longestCoding',
             },
-            { trackId: 'hg38_to_hs1_liftOver' },
+            {
+              // stacked, not the one-row-per-group default: the collapsed band
+              // is a single row of merged blocks, so a right-click lands on
+              // whatever fragment is under the cursor. Stacked, the long
+              // conserved chains are their own bars and the launch can be aimed
+              // at a big one.
+              trackId: 'hg38_to_mm39_liftOver',
+              type: 'LGVSyntenyDisplay',
+              collapseGroupRows: false,
+              height: 120,
+            },
           ],
         },
       ],
     }),
     viewportWidth: 1200,
-    // tall enough for the context menu in stage 1 (the binding frame) and, in
-    // stage 3, the collapsed LGV header plus the whole launched synteny view.
-    // Trimmed to the content so three stacked frames aren't mostly whitespace.
-    viewportHeight: 470,
+    // tall enough for the whole context menu in stage 1 (the binding frame) —
+    // the menu opens below the clicked block, so the boxed "Launch synteny
+    // view" item is its last line — and, in stage 3, the collapsed LGV header
+    // plus the launched synteny view.
+    viewportHeight: 540,
     hideTooltip: true,
     readySelector: '[data-testid="pileup-display-done"]',
     // the UCSC hub config is ~570 tracks and pulls three remote plugins
@@ -960,8 +952,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'rightclick', from: { x: 400, y: 340 } },
+          { type: 'rightclick', from: { x: 890, y: 331 } },
           { type: 'waitForText', text: 'Open feature details' },
+          // leave the item the reader is being pointed at under the cursor, so
+          // it carries the menu's own hover highlight as well as the box below
+          { type: 'hover', text: 'Launch synteny view for this position' },
+          { type: 'delay', ms: 500 },
         ],
         annotations: [
           {
@@ -970,6 +966,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             y: 56,
             fontSize: 20,
             text: 'Right-click a chain block',
+          },
+          {
+            type: 'box',
+            anchor: { text: 'Launch synteny view for this position' },
+            strokeWidth: 3,
           },
         ],
       },
