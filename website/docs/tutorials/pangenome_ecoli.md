@@ -222,14 +222,14 @@ minigraph graph is also far less fragmented than a pggb one, since it records
 structural variation rather than every SNP, so a legible window is hundreds of
 kb rather than hundreds of bp.
 
-<Figure caption="The same four-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout." src="/img/pangenome/graph_rgfa.png" link="" />
+<Figure caption="The same four-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout." src="/img/pangenome/graph_rgfa.png" />
 
 The rank-ladder layout above is anchored to K12, so it lines up with a linear
 view of the same window. The toolbar's **Layout** dropdown trades that
 correspondence for the classic Bandage picture of the same subgraph
 (**Force-directed layout**):
 
-<Figure caption="The same minigraph window in the Graph genome view's force-directed (Bandage) layout, colored by stable rank. The blue rank-0 K12 backbone is placed by the force simulation rather than on the reference axis, so the higher-rank alternate alleles fall out as bubbles off it rather than rows beneath it. It is the same graph as the anchored view above, laid out by its own structure instead of by K12 coordinate." src="/img/pangenome/graph_force.png" link="" />
+<Figure caption="The same minigraph window in the Graph genome view's force-directed (Bandage) layout, colored by stable rank. The blue rank-0 K12 backbone is placed by the force simulation rather than on the reference axis, so the higher-rank alternate alleles fall out as bubbles off it rather than rows beneath it. It is the same graph as the anchored view above, laid out by its own structure instead of by K12 coordinate." src="/img/pangenome/graph_force.png" />
 
 A third mode, **Sample rows**, gives each contributing assembly its own row on
 the same reference axis, so an allele reads as "which strains carry it" rather
@@ -241,13 +241,37 @@ is unavailable for a plain GFA such as the pggb subgraph above.
 Cutting a slice per window is fine for one look at one region. To browse the
 whole graph instead, index it once with
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-and load the result as a `FeatureTrack` on K12: the segments then draw as
-features in a linear view, and **Track menu, then Launch view, then Graph genome
-view (this region)** opens the graph for whatever is on screen (up to 100 kb,
-past which the layout stops being legible and the view declines). The
-[HPRC tutorial](/docs/tutorials/pangenome_hprc#load-the-graph) walks through
-that route on the human pangenome, and it works the same on
-`ecoli_minigraph.rgfa`.
+(98 kb of index for this four-strain graph) and load the two files as one
+`FeatureTrack` on K12:
+
+```bash
+bash build_rgfa_tabix.sh ecoli_minigraph.rgfa ecoli_minigraph
+```
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_minigraph_segments",
+  "name": "minigraph graph: rGFA segments",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_minigraph"
+  }
+}
+```
+
+The `uri` is the shared prefix: the adapter resolves `.segs.bed.gz`,
+`.links.bed.gz` and both `.tbi` files from it. The graph's stable names are
+PanSN (`K12#1#chr`) and their sample prefix is already the assembly name, so
+this needs no `assemblyNameToPanSN` mapping (the
+[HPRC tutorial](/docs/tutorials/pangenome_hprc#load-the-graph) does, because its
+graph calls the reference `GRCh38` while the assembly is `hg38`).
+
+The segments now draw as features in a linear view, and **Track menu, then
+Launch view, then Graph genome view (this region)** opens the graph for whatever
+is on screen, up to 100 kb, past which the layout stops being legible and the
+view declines.
 
 <Figure caption="The indexed route on the E. coli graph: the rGFA segments as a feature track over 50 kb of K12 on top, and the graph view launched from that same window below. Both are drawn from the tabix indexes, so the segment ids in the track are the nodes in the graph, at the same offsets." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
@@ -537,10 +561,13 @@ MAF, `odgi depth`, and `odgi pav` into the projections above, downloads JBrowse,
 and writes a `config.json` with the four assemblies, per-strain gene tracks, the
 five graph-derived tracks (synteny, variants, MAF, depth, per-strain presence),
 and a default session (a stacked synteny view plus the K12 reference lane). It
-also writes the `odgi viz` graph raster (`ecoli_pggb_graph.png`) and the two
-graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and `ecoli_rgfa_slice.gfa`,
-which needs the cactus image for minigraph and gfatools). It needs the same
-tools listed under [What you need](#what-you-need).
+also writes the `odgi viz` graph raster (`ecoli_pggb_graph.png`), the two
+graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and `ecoli_rgfa_slice.gfa`), and
+the rGFA tabix indexes behind the browsable segments track, all of which need
+the cactus image for minigraph and gfatools. The `config.json` it writes
+declares the graph genome view plugin, so the graph track and the launch menu
+item work in that build with nothing to install. It needs the same tools listed
+under [What you need](#what-you-need).
 
 The all-vs-all PAF sort and bigWig conversion spill large temp files. The
 default `/tmp` is often a small in-memory tmpfs that they overflow, failing the

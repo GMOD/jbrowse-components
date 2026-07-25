@@ -197,6 +197,13 @@ fi
 in_cactus gfatools view -R "${REF}#1#chr:1000000-1300000" -r 1 \
   /data/ecoli_minigraph.rgfa > ecoli_rgfa_slice.gfa
 
+# Index the whole rGFA so the graph is browsable by locus instead of one cut
+# window at a time: the segments become a feature track on REF, and the graph
+# view launches from whatever is on screen. The same script the HPRC tutorial
+# points at, run in the cactus image because it needs gfatools.
+cp "$SCRIPT_DIR/build_rgfa_tabix.sh" .
+in_cactus bash /data/build_rgfa_tabix.sh /data/ecoli_minigraph.rgfa /data/ecoli_minigraph
+
 # ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ────────────────
 if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
 APP=jbrowse2
@@ -283,6 +290,50 @@ cat > pav_track.json <<'JSON'
 }
 JSON
 jb add-track-json pav_track.json --update --out "$APP"
+
+# ── The graph itself, browsable by locus (rGFA segments as a feature track) ────
+# RgfaTabixAdapter reads the two indexes built above; its `uri` is the shared
+# prefix, and it resolves `.segs.bed.gz`/`.links.bed.gz` and their `.tbi`. The
+# graph's stable names are PanSN (`K12#1#chr`), and the sample prefix already
+# equals the assembly name, so no assemblyNameToPanSN mapping is needed. With
+# the graph genome view plugin installed, the track menu's Launch view opens the
+# subgraph for whatever window is on screen. Needs the four files beside
+# config.json, since add-track-json copies nothing.
+cp ecoli_minigraph.segs.bed.gz ecoli_minigraph.segs.bed.gz.tbi \
+   ecoli_minigraph.links.bed.gz ecoli_minigraph.links.bed.gz.tbi "$APP/"
+cat > rgfa_track.json <<'JSON'
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_minigraph_segments",
+  "name": "minigraph graph: rGFA segments (browsable by locus)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_minigraph"
+  }
+}
+JSON
+jb add-track-json rgfa_track.json --update --out "$APP"
+
+# The adapter and the view both come from the graph genome view plugin, which is
+# not bundled in JBrowse Web and has no CLI command, so declare it directly. It
+# is a native ES module loaded at runtime from its own url.
+python3 - "$APP/config.json" <<'PY'
+import json, sys
+
+path = sys.argv[1]
+with open(path) as fh:
+    config = json.load(fh)
+plugins = config.setdefault('plugins', [])
+name = 'GraphGenomeView'
+if not any(p.get('name') == name for p in plugins):
+    plugins.append({
+        'name': name,
+        'esmUrl': 'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
+    })
+with open(path, 'w') as fh:
+    json.dump(config, fh, indent=2)
+PY
 
 # ── Default session: all four projections ─────────────────────────────────────
 # view 1 stacks the four strains for the synteny projection; view 2 is the K12
