@@ -12,7 +12,9 @@ export function compactAxisLabel(maxValue: number) {
   return `[0, ${Math.round(maxValue)}]`
 }
 
-// Width reserved for a full y-axis.
+// Width reserved for a full y-axis. Shared, not re-declared per path: the
+// on-screen box width and the export's spine inset are derived from the same
+// number, so a copy in each file would silently disagree the moment one moved.
 export const AXIS_SVG_WIDTH = 50
 
 // YScaleBar grows its ticks and labels away from the spine: orientation 'left'

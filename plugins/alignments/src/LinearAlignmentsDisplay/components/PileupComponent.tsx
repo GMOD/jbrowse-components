@@ -9,7 +9,11 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import { COMPACT_AXIS_HEIGHT, compactAxisLabel } from '../coverageAxisStyle.ts'
+import {
+  AXIS_SVG_WIDTH,
+  COMPACT_AXIS_HEIGHT,
+  compactAxisLabel,
+} from '../coverageAxisStyle.ts'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
@@ -29,8 +33,6 @@ import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type React from 'react'
 
 const SCROLLBAR_WIDTH = 12
-// left-orientation g translates by AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET
-const AXIS_SVG_WIDTH = 50
 
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
