@@ -151,17 +151,6 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-export type { ArcColorByType } from '../shared/types'
-
-export {
-  getInsertionType,
-  insertionBarWidth as getInsertionRectWidthPx,
-  textWidthForNumber,
-} from './constants.ts'
-export type { InsertionType } from './constants.ts'
-
-export type { Region } from '@jbrowse/core/util'
-
 function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
   return getSequenceAdapterConfig(
     region.assemblyName
