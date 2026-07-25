@@ -18,7 +18,13 @@ import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { sectionKey } from './components/sectionScreen.ts'
-import { COMPACT_AXIS_HEIGHT, compactAxisLabel } from './coverageAxisStyle.ts'
+import {
+  COMPACT_AXIS_HEIGHT,
+  compactAxisLabel,
+  leftAxisSpineX,
+  rightAxisLabelX,
+  rightAxisSpineX,
+} from './coverageAxisStyle.ts'
 import { groupSectionLabel } from './groupLabelStyle.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { buildSectionRenders } from './sectionLayout.ts'
@@ -61,7 +67,7 @@ export async function renderSvg(
 }
 
 // An empty (zero-read) region draws an empty pileup + coverage axis here, so
-// this body renders unconditionally — there's no data-size gate. Readiness and
+// this body renders unconditionally: there's no data-size gate. Readiness and
 // the error terminal are already handled upstream (awaitSvgReady / SvgChrome).
 function AlignmentsSvgBody({
   model,
@@ -88,7 +94,7 @@ function AlignmentsSvgBody({
   const contentLeft = Math.max(-view.offsetPx, 0)
 
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
-  // model's renderState — only viewport-related fields are overridden. The
+  // model's renderState, overriding only the viewport-related fields. The
   // section geometry is rebuilt at scrollTop 0 so grouped coverage bands aren't
   // shifted off-screen (no-op for the ungrouped single-section case).
   const state = {
@@ -152,6 +158,8 @@ function AlignmentsSvgBody({
           sections={renderSections}
           ticks={coverageTicks}
           left={contentLeft}
+          grouped={model.isGrouped}
+          canvasWidth={canvasWidth}
         />
       ) : null}
       {insertSizeTicks ? (
@@ -181,7 +189,7 @@ function AlignmentsSvgBody({
 
 // The same color key the display shows on screen (`LegendHost` /
 // `FloatingLegend`). Without it an exported figure has colored reads and nothing
-// saying what the colors mean — decisive for color-by-tag and
+// saying what the colors mean, which is decisive for color-by-tag and
 // color-by-modification, where the swatches are the only decoder. Vector, via
 // the shared `SvgColorLegend` the canvas and HiC exports already use, and
 // floated over the right edge of the plot so it lands where the on-screen legend
@@ -189,7 +197,7 @@ function AlignmentsSvgBody({
 //
 // On screen the read fills and the connection curves split into two titled
 // sections. Here that becomes one flat list with a color-less heading row,
-// emitted only when both vocabularies are present — the same condition
+// emitted only when both vocabularies are present, the same condition
 // `LegendHost` uses to decide between its sectioned and untitled forms.
 function ColorKey({
   model,
@@ -220,19 +228,24 @@ function ColorKey({
   )
 }
 
-// One left-orientation coverage y-axis per stacked section's coverage band.
-// Export is always at scrollTop 0, so each `coverageTop` is the section's final
-// y — mirrors the on-screen `CoverageAxisHost`, including its compact fallback:
-// a band under COMPACT_AXIS_HEIGHT can't fit tick labels, so both paths show a
-// single `[0, max]` instead of a crammed scale bar.
-function CoverageScaleBars({
+// One coverage y-axis per stacked section's coverage band. Export is always at
+// scrollTop 0, so each `coverageTop` is the section's final y. Mirrors the
+// on-screen `CoverageAxisHost`, which makes a three-way choice: a band under
+// COMPACT_AXIS_HEIGHT can't fit tick labels and shows a single `[0, max]`
+// right-aligned; a full axis goes right when grouped, so it clears the group
+// label chips, and left otherwise.
+export function CoverageScaleBars({
   sections,
   ticks,
   left,
+  grouped,
+  canvasWidth,
 }: {
   sections: RenderSection[]
   ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
   left: number
+  grouped: boolean
+  canvasWidth: number
 }) {
   return (
     <>
@@ -240,19 +253,22 @@ function CoverageScaleBars({
         section.coverageHeight < COMPACT_AXIS_HEIGHT ? (
           <text
             key={sectionKey(section.groupKey)}
-            x={left}
+            x={rightAxisLabelX(canvasWidth)}
             y={section.coverageTop + 10}
             fontSize={9}
             fontFamily="sans-serif"
+            textAnchor="end"
           >
             {compactAxisLabel(ticks.items.at(-1)?.value ?? 0)}
           </text>
         ) : (
           <g
             key={sectionKey(section.groupKey)}
-            transform={`translate(${left}, ${section.coverageTop})`}
+            transform={`translate(${
+              grouped ? rightAxisSpineX(canvasWidth) : leftAxisSpineX(left)
+            }, ${section.coverageTop})`}
           >
-            <YScaleBar ticks={ticks} orientation="left" />
+            <YScaleBar ticks={ticks} orientation={grouped ? 'right' : 'left'} />
           </g>
         ),
       )}
