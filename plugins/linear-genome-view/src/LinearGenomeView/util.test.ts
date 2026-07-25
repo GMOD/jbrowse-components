@@ -2,10 +2,12 @@ import {
   getScalebarRefNameLabels,
   groupContiguousBlocks,
   makeBlockTicks,
+  makeOverviewTickLabels,
   makeOverviewTicks,
   makeTicks,
   regionMoveActions,
   stickyBlockIndex,
+  tickLabelWidth,
 } from './util.ts'
 
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -57,6 +59,103 @@ describe('makeOverviewTicks', () => {
     // block narrower than one majorPitch with no multiple inside
     const ticks = makeOverviewTicks(1_100_000, 1_900_000, SCALE, false)
     expect(ticks).toEqual([])
+  })
+})
+
+describe('makeOverviewTickLabels', () => {
+  // one whole 10Mb region filling the overview: ticks every 1Mb / 200px
+  const wide = { start: 0, end: 10_000_000, widthPx: 2000 }
+
+  test('a wide block numbers every tick that fits inside it', () => {
+    const labels = makeOverviewTickLabels({
+      block: wide,
+      bpPerPx: SCALE,
+      refNameLabelPx: 0,
+    })
+    // the 10M tick sits exactly on the right edge, so its label would overrun
+    expect(labels.map(l => l.label)).toEqual([
+      '1M',
+      '2M',
+      '3M',
+      '4M',
+      '5M',
+      '6M',
+      '7M',
+      '8M',
+      '9M',
+    ])
+    expect(labels.map(l => l.offsetPx)).toEqual([
+      200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800,
+    ])
+  })
+
+  test('the refName label at the left edge wins over a tick underneath it', () => {
+    const { offsetPx } = makeOverviewTickLabels({
+      block: wide,
+      bpPerPx: SCALE,
+      refNameLabelPx: 0,
+    })[0]!
+    const labels = makeOverviewTickLabels({
+      block: wide,
+      bpPerPx: SCALE,
+      refNameLabelPx: offsetPx + 1,
+    })
+    expect(labels.map(l => l.label)).toEqual([
+      '2M',
+      '3M',
+      '4M',
+      '5M',
+      '6M',
+      '7M',
+      '8M',
+      '9M',
+    ])
+  })
+
+  test('a narrow block holding one lone number shows none', () => {
+    // 4Mb of the region, wide enough for the 1M tick label to fit (it clears
+    // widthPx by more than tickLabelWidth) but with no second tick to pair it
+    const labelWidth = tickLabelWidth('1M')
+    const widthPx = 200 + labelWidth + 10
+    expect(
+      makeOverviewTickLabels({
+        block: { start: 0, end: widthPx * SCALE, widthPx },
+        bpPerPx: SCALE,
+        refNameLabelPx: 0,
+      }),
+    ).toEqual([])
+  })
+
+  test('a block too narrow for any tick shows none', () => {
+    expect(
+      makeOverviewTickLabels({
+        block: { start: 1_100_000, end: 1_900_000, widthPx: 160 },
+        bpPerPx: SCALE,
+        refNameLabelPx: 0,
+      }),
+    ).toEqual([])
+  })
+
+  test('reversed block numbers from the right', () => {
+    const labels = makeOverviewTickLabels({
+      block: { ...wide, reversed: true },
+      bpPerPx: SCALE,
+      refNameLabelPx: 0,
+    })
+    expect(labels.map(l => l.label)).toEqual([
+      '9M',
+      '8M',
+      '7M',
+      '6M',
+      '5M',
+      '4M',
+      '3M',
+      '2M',
+      '1M',
+    ])
+    expect(labels.map(l => l.offsetPx)).toEqual([
+      200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800,
+    ])
   })
 })
 

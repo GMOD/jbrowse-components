@@ -1,6 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { TICK_LABEL_FONT_SIZE } from '../util.ts'
+
 import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
@@ -21,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
   },
   tickLabel: {
-    fontSize: 11,
+    fontSize: TICK_LABEL_FONT_SIZE,
     zIndex: 1,
     lineHeight: 'normal',
     pointerEvents: 'none',

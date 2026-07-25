@@ -1,6 +1,7 @@
 import {
   UnknownRefNameError,
   assembleLocString,
+  getTickDisplayStr,
   measureText,
   parseLocString,
 } from '@jbrowse/core/util'
@@ -280,13 +281,16 @@ export function labelFitsInBlock(
   return leftPx >= 0 && leftPx + labelWidth <= widthPx
 }
 
+/** Font size of coordinate tick labels on the scalebar and overview scalebar. */
+export const TICK_LABEL_FONT_SIZE = 11
+
 /**
- * On-screen width of a coordinate tick label: the 11px text plus 2px of
- * horizontal padding on each side. Single-sourced so the HTML scalebar and the
- * SVG export agree on when a label is too wide to fit inside its block.
+ * On-screen width of a coordinate tick label: the text plus 2px of horizontal
+ * padding on each side. Single-sourced so the HTML scalebar and the SVG export
+ * agree on when a label is too wide to fit inside its block.
  */
 export function tickLabelWidth(label: string) {
-  return measureText(label, 11) + 4
+  return measureText(label, TICK_LABEL_FONT_SIZE) + 4
 }
 
 /** Font size of the bold overview-scalebar refName label, drawn at the left
@@ -307,6 +311,46 @@ export function overviewRefNameLabelWidth(refName: string) {
     measureText(refName, REF_NAME_LABEL_FONT_SIZE) +
     REF_NAME_LABEL_INSET_PX
   )
+}
+
+/**
+ * A block needs at least this many coordinate labels to be worth numbering. The
+ * overview's tick pitch comes from the bpPerPx of the whole displayed-region set,
+ * so a block much narrower than that pitch still catches a tick or two: in a
+ * whole-genome overview every chromosome ends up with a single lone number
+ * jammed against the next chromosome's refName. One coordinate conveys no scale
+ * on its own — needing two means narrow blocks show just their refName, and only
+ * blocks with room for a real ruler get numbers.
+ */
+const MIN_OVERVIEW_TICK_LABELS = 2
+
+/**
+ * Coordinate labels drawn inside one overview-scalebar block: tick text plus its
+ * x within the block. Labels that can't be drawn whole between the block's bold
+ * refName label and its right edge are dropped by the same
+ * tickLabelWidth/labelFitsInBlock test the main scalebar and SVG export use; if
+ * fewer than MIN_OVERVIEW_TICK_LABELS survive, the block goes unnumbered.
+ */
+export function makeOverviewTickLabels({
+  block,
+  bpPerPx,
+  refNameLabelPx,
+}: {
+  block: { start: number; end: number; reversed?: boolean; widthPx: number }
+  bpPerPx: number
+  refNameLabelPx: number
+}) {
+  const { start, end, reversed, widthPx } = block
+  const labels = makeOverviewTicks(start, end, bpPerPx, reversed).flatMap(
+    ({ genomicCoord, offsetPx }) => {
+      const label = getTickDisplayStr(genomicCoord, bpPerPx)
+      const fits =
+        offsetPx >= refNameLabelPx &&
+        labelFitsInBlock(offsetPx, tickLabelWidth(label), widthPx)
+      return fits ? [{ genomicCoord, offsetPx, label }] : []
+    },
+  )
+  return labels.length < MIN_OVERVIEW_TICK_LABELS ? [] : labels
 }
 
 /**
