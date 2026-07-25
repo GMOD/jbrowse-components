@@ -206,23 +206,21 @@ calls `model.startRenderingBackend(newBackend)`. The mixin sees
 `currentRenderingBackend`. Both autoruns re-fire against the new backend. No
 special code path.
 
-Two things make a **WebGL** loss more than a rebuild. It is silent — calls on a
-lost context are no-ops that never throw, so nothing else routes to `renderError`
-and the canvas just holds stale pixels — and it is unfixable in place, because
-`getContext('webgl2')` keeps handing back that same lost context until the
-browser fires `webglcontextrestored`. So the hook waits one grace window for that
-restore (which recovers with nothing user-visible) and otherwise reports
-`createGpuContextLostError()` into `renderError`: that phase unmounts the canvas,
-which is both what frees the context for the rest of the page and what makes the
-remount able to get a live one. Bounded auto-recovery then clears it (2 attempts,
-exponential backoff) and stops at the manual Retry.
+A **WebGL** loss is more than a rebuild, on two counts. It is silent (calls on a
+lost context are no-ops that never throw, so nothing routes to `renderError` and
+the canvas holds stale pixels), and it is unfixable in place
+(`getContext('webgl2')` keeps handing back that same lost context). So the hook
+waits a grace window for `webglcontextrestored`, which recovers invisibly, and
+otherwise reports `createGpuContextLostError()` into `renderError` — the phase
+that unmounts the canvas, freeing the context for the page and letting the remount
+get a live one. Bounded auto-recovery then clears it (2 attempts, exponential
+backoff) and stops at the manual Retry.
 
-Navigating away is not one of these losses: `pagehide` already tears the backend
-down, and it also drops any pending report, because on a bfcache freeze the timer
-thaws *after* `pageshow` rebuilt the backend and would banner a working canvas. A
-loss while the tab is merely hidden (memory pressure, mobile) does report and
-auto-recover in the background — the user comes back to a redrawn track, or to a
-banner with Retry, rather than to a permanently blank one.
+Navigating away is not one of these: `pagehide` tears the backend down and drops
+any pending report, since a bfcache freeze thaws the timer *after* `pageshow`
+rebuilt the backend. A loss while the tab is merely hidden does report and
+auto-recover in the background, so the user returns to a redrawn track or a Retry
+banner rather than a permanently blank one.
 
 The cause is usually **page-wide**: Chrome allows ~16 live WebGL contexts and we
 create one per display canvas, so past the cap it force-loses the oldest and
@@ -236,17 +234,16 @@ button is scoped to context-loss errors (an over-allocation error's remedy is to
 zoom in, not to change backend).
 
 **Every re-init needs a canvas element that never held a context**, verified in
-Chrome: `getContext('webgl2')` on a lost element returns the same lost context
-(and the HAL ctor then throws in shader compile, since `getShaderParameter`
-reports null), _and_ `getContext('2d')` returns **null** on any element that once
-had WebGL — so even the Canvas2D fallback can't bind there, turning a recoverable
-loss into "Canvas 2D context not available". DisplayChrome consumers get a fresh
-element for free (the `renderError` phase unmounts the canvas). The two
-drop-to-primitive consumers keep their canvas mounted through an error by design
-(ADR-025's mount-lifetime rule, written for a _live_ context), so they take
-`canvasKey` off the hook and put it on `<canvas key={canvasKey}>` — dotplot's
-`DotplotView.tsx` and synteny's `LevelSyntenyCanvas.tsx`. Any new
-`useRenderingBackend` consumer that renders its own banner must do the same.
+Chrome: `getContext('webgl2')` returns the same lost context (the HAL ctor then
+throws in shader compile, `getShaderParameter` reporting null), _and_
+`getContext('2d')` returns **null** on any element that once had WebGL — so not
+even the Canvas2D fallback can bind there, turning a recoverable loss into
+"Canvas 2D context not available". DisplayChrome consumers get a fresh element
+free, since `renderError` unmounts the canvas. The drop-to-primitive consumers
+keep theirs mounted through an error by design (ADR-025's mount-lifetime rule,
+written for a _live_ context), so they put the hook's `canvasKey` on
+`<canvas key=…>`: dotplot's `DotplotView.tsx`, synteny's `LevelSyntenyCanvas.tsx`.
+Any new consumer rendering its own banner must too.
 
 **Tab visibility.** `useTabVisibilityRerender` calls `model.renderNow()` on
 `visibilitychange`, bumping `renderTick`. WebGPU swap-chain textures are reissued

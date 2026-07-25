@@ -791,13 +791,12 @@ of the three worked, along with your browser, operating system and graphics
 card. Graphics errors are printed to the browser's developer console, so include
 anything there.
 
-One case has a fix rather than a workaround. With many views open at once, the
-browser can hit its limit on live WebGL contexts (Chrome allows about 16) and
-take one back from whichever track had it, which shows up as a "WebGL context
-lost" banner on that track. Retry gets it back if another view has since freed
-capacity, and the banner's **Use Canvas2D** button switches drawing to software
-for the rest of the session, which is slower on dense data but unaffected by how
-many views are open. Closing views you aren't using also releases contexts.
+One case has a real fix. With many views open, the browser can hit its limit on
+live WebGL contexts (Chrome allows about 16) and take one back from a track, which
+shows as a "WebGL context lost" banner there. Retry gets it back if another view
+has since freed capacity, and the banner's **Use Canvas2D** button switches
+drawing to software for the rest of the session: slower on dense data, unaffected
+by how many views are open. Closing views you aren't using also frees contexts.
 
 ### Why is my track slow
 

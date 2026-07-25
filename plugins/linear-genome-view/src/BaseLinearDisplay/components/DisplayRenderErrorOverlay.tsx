@@ -11,12 +11,10 @@ import { observer } from 'mobx-react'
 // early-return. Standardizes the width fallback and retry wrapping so the GPU
 // displays can't drift on it.
 //
-// A lost WebGL context gets one extra action: retrying only helps if GPU capacity
-// has since freed, so the banner also offers the remedy that always works —
-// turning the GPU off for the page so every backend built from then on is the
-// Canvas2D one. Page-wide rather than per-display because the cause is page-wide
-// (a browser cap of ~16 live WebGL contexts, shared by every view), and it stays
-// hidden once the GPU is already off, where it would be a no-op.
+// A lost context gets one extra action: retry only helps if GPU capacity has
+// freed, so the banner also offers the remedy that always works. Page-wide
+// because the cause is (a browser cap of ~16 live WebGL contexts, shared by every
+// view), and hidden once the GPU is off, where it would be a no-op.
 const DisplayRenderErrorOverlay = observer(function DisplayRenderErrorOverlay({
   error,
   onRetry,

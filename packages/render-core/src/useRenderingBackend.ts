@@ -17,21 +17,15 @@ import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 const MAX_CONTEXT_RECOVER_ATTEMPTS = 2
 const CONTEXT_RECOVER_BASE_MS = 1000
 
-// A lost context is reported as `renderError` rather than left to bleed pixels,
-// because a lost context is silent AND unfixable in place: WebGL calls on it are
-// no-ops (they never throw, so nothing else routes to renderError — the canvas
-// just holds stale or blank pixels), and `getContext('webgl2')` keeps returning
-// that same lost context, so re-initializing on the same canvas element can't
-// help. `renderError` is the only state that unmounts the canvas, so it is also
-// the mechanism that gets a fresh element — and, under context exhaustion, hands
-// the context back to the rest of the page.
+// A lost context reports itself because nothing else will: calls on it are
+// silent no-ops, and it can't be re-acquired on its element (see `canvasKey`
+// below). `renderError` is the only state that unmounts the canvas, so it's also
+// the mechanism that gets a fresh one.
 //
-// The report waits one grace window first. This is NOT a cap on how long
-// recovery may take (nothing is aborted when it fires): it's a race against
-// `webglcontextrestored`, which the browser fires within a frame or two for the
-// recoverable causes (GPU process crash, driver reset) and recovers with no
-// banner at all. Reporting immediately would flash a banner on every display in
-// the page for those.
+// The report waits out a grace window first — a race against
+// `webglcontextrestored`, which lands within a frame or two for the recoverable
+// causes (GPU crash, driver reset) and needs no banner at all. Nothing is
+// aborted when the window expires, so this is not a readiness cap.
 const CONTEXT_LOST_REPORT_GRACE_MS = 400
 
 const CONTEXT_LOST_MESSAGE =
@@ -39,11 +33,10 @@ const CONTEXT_LOST_MESSAGE =
   'usually because too many GPU-rendered views are open at once.'
 
 /**
- * A WebGL context loss the browser did not restore. Flagged (rather than
- * identified by message text or `instanceof`) so the error UI can offer the one
- * remedy specific to it — switching the page to Canvas2D rendering — without
- * offering it for unrelated render errors, whose remedies differ (an
- * over-large-allocation error says to zoom in).
+ * Flagged rather than matched by message or `instanceof`, so the error UI can
+ * offer the remedy specific to a loss (switch the page to Canvas2D) without
+ * offering it for render errors whose remedy differs (an over-allocation says to
+ * zoom in).
  */
 export function createGpuContextLostError() {
   return Object.assign(new Error(CONTEXT_LOST_MESSAGE), {
@@ -153,8 +146,8 @@ export function useRenderingBackend<
   useEffect(() => {
     if (canvas) {
       const onLost = (e: Event) => {
-        // preventDefault is what permits `webglcontextrestored` at all, so it
-        // stays; the grace timer below is the wait for that event.
+        // preventDefault is what permits `webglcontextrestored` at all; the timer
+        // below is the wait for it
         e.preventDefault()
         contextLostRef.current = true
         clearTimeout(lossReportTimerRef.current)
@@ -166,9 +159,9 @@ export function useRenderingBackend<
         }, CONTEXT_LOST_REPORT_GRACE_MS)
       }
       const onRestored = () => {
-        // browser recovered on its own: cancel the pending report + any backoff,
-        // then reset and rebuild (every GL object made against the old context is
-        // dead even though `isContextLost()` now reads false)
+        // browser recovered on its own: cancel pending timers, reset, rebuild
+        // (every GL object from the old context is dead even though
+        // `isContextLost()` now reads false)
         clearTimeout(lossReportTimerRef.current)
         lossReportTimerRef.current = undefined
         clearTimeout(recoverTimerRef.current)
@@ -180,10 +173,9 @@ export function useRenderingBackend<
       canvas.addEventListener('webglcontextlost', onLost)
       canvas.addEventListener('webglcontextrestored', onRestored)
       return () => {
-        // Drop a report still inside its grace window: with this canvas gone
-        // there is nothing left to recover (the next mount brings a fresh
-        // element), and `renderError` outranks every other phase — a late report
-        // would replace a legitimate too-large banner with a GPU error.
+        // Drop a report still in its grace window: nothing left to recover, and
+        // `renderError` outranks every other phase, so a late one would replace a
+        // legitimate too-large banner with a GPU error.
         clearTimeout(lossReportTimerRef.current)
         lossReportTimerRef.current = undefined
         canvas.removeEventListener('webglcontextlost', onLost)
@@ -242,9 +234,8 @@ export function useRenderingBackend<
     const handleGlobalPageHide = () => {
       rendererRef.current?.dispose()
       rendererRef.current = null
-      // A loss reported here would be about a backend we are tearing down anyway,
-      // and on a bfcache freeze the timer thaws AFTER pageshow has rebuilt one —
-      // banner on a working canvas. The teardown below is the report.
+      // On a bfcache freeze this timer thaws AFTER pageshow rebuilt the backend,
+      // bannering a working canvas.
       clearTimeout(lossReportTimerRef.current)
       lossReportTimerRef.current = undefined
       // Also clear the model's backend reference — not just dispose the GPU
@@ -349,14 +340,12 @@ export function useRenderingBackend<
   // standalone consumers (dotplot, synteny) that render their own banner;
   // DisplayChrome reads `model.renderError` directly.
   //
-  // `canvasKey` belongs on those same standalone consumers' `<canvas key=…>`.
-  // Every re-init needs a canvas element that has never held a context: a lost
-  // WebGL context is never replaced on its element (`getContext('webgl2')` keeps
-  // returning the lost one), and the Canvas2D fallback can't bind there either
-  // (`getContext('2d')` returns null on an element that once had WebGL), so
-  // reusing the element turns a recoverable loss into
-  // "Canvas 2D context not available". DisplayChrome consumers get this for free:
-  // the `renderError` phase unmounts the canvas, and the remount is a new element.
+  // `canvasKey` goes on those same consumers' `<canvas key=…>`. A re-init needs
+  // an element that never held a context: `getContext('webgl2')` keeps returning
+  // the lost one, and `getContext('2d')` returns null on any element that once
+  // had WebGL, so reusing it turns a recoverable loss into "Canvas 2D context not
+  // available". DisplayChrome consumers get this free — the `renderError` phase
+  // unmounts the canvas and the remount is a new element.
   return {
     canvas,
     canvasRef,
