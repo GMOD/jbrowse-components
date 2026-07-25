@@ -296,7 +296,7 @@ describe('JBrowseWebSessionModel', () => {
       )
 
       // the flat composite key holds a literal NUL (`\0`) delimiter; it must
-      // survive JSON.stringify (escaped as  ) / JSON.parse intact
+      // survive JSON.stringify (escaped as \u0000) / JSON.parse intact
       const raw = localStorage.getItem('jbrowsePreferences')
       expect(raw).toContain('\\u0000')
 
