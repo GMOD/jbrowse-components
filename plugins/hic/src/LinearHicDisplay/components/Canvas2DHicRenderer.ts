@@ -4,6 +4,7 @@ import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRende
 import { makeHicFillStyleLut, mapHicCount } from './colorRamp.ts'
 
 import type {
+  HicDrawState,
   HicRenderState,
   HicRenderingBackend,
   HicUploadData,
@@ -16,12 +17,17 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * ctx.transform stack. Adjacent rects share grid-aligned edges and tile
  * seamlessly — the path-based diamond approach left thin AA seams between
  * neighboring bins.
+ *
+ * Call order is load-bearing and matches hic.slang: the rotation applies to the
+ * bin first, the `yScalar` squash to the already-rotated triangle. `SvgCanvas`
+ * composes its CTM the same way, so `viewScale !== viewScale * yScalar` (any
+ * fit-to-height export) lands on the diagonal — see svgExportGeometry.test.ts.
  */
 export function drawHicBlocks(
   ctx: Ctx2D,
   data: HicUploadData,
   fillStyleLut: (t: number) => string | undefined,
-  state: HicRenderState,
+  state: HicDrawState,
 ) {
   const { yScalar, colorMaxScore, useLogScale, viewScale, viewOffsetX } = state
   const { positions, counts, numContacts, binWidth } = data

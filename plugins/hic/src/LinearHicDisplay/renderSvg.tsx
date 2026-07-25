@@ -63,7 +63,6 @@ function HicSvgBody({
     return null
   }
 
-  const { positions, counts, numContacts, binWidth } = rpcData
   const visibleWidth = view.width
   const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
@@ -75,8 +74,8 @@ function HicSvgBody({
 
   // Reuse the model's renderState so the export shares one source of truth for
   // the transform and color params with the on-screen render (handles
-  // scrolled-left-of-genome and stale zoom); yScalar and the canvas dims are the
-  // export-specific overrides.
+  // scrolled-left-of-genome and stale zoom); yScalar is the export-specific
+  // override.
   return (
     <>
       <SvgClipRect
@@ -89,17 +88,10 @@ function HicSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            drawHicBlocks(
-              ctx,
-              { positions, counts, numContacts, binWidth },
-              fillStyleLut,
-              {
-                ...renderState,
-                yScalar,
-                canvasWidth: visibleWidth,
-                canvasHeight: height,
-              },
-            )
+            drawHicBlocks(ctx, rpcData, fillStyleLut, {
+              ...renderState,
+              yScalar,
+            })
           }}
         />
       </SvgClipRect>

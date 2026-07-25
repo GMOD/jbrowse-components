@@ -170,3 +170,51 @@ describe('negative scale', () => {
     )
   })
 })
+
+// The CTM composes like CanvasRenderingContext2D's: the last transform call
+// applies to the point first. Only hic rotates today, and it is also the only
+// caller whose scale is non-uniform — the combination where the composition
+// order is observable at all.
+describe('rotation', () => {
+  // The rect is emitted at local 0,0, so the matrix' translation IS where its
+  // origin corner lands.
+  function corner(svg: string) {
+    const m = /matrix\(([^)]*)\)/.exec(svg)![1]!.split(' ').map(Number)
+    return [m[4]!, m[5]!]
+  }
+
+  test('scale applies to the rotated point, not the other way round', () => {
+    const ctx = new SvgCanvas()
+    ctx.scale(1, 2)
+    ctx.rotate(-Math.PI / 4)
+    ctx.fillRect(100, 100, 10, 10)
+
+    // (100,100) rotates onto the x-axis, so doubling y must leave it there.
+    const [x, y] = corner(ctx.getSerializedSvg())
+    expect(x).toBeCloseTo(Math.SQRT2 * 100, 6)
+    expect(y).toBeCloseTo(0, 6)
+  })
+
+  test('translate after rotate moves along the rotated axes', () => {
+    const ctx = new SvgCanvas()
+    ctx.rotate(-Math.PI / 2)
+    ctx.translate(10, 0)
+    ctx.fillRect(0, 0, 1, 1)
+
+    const [x, y] = corner(ctx.getSerializedSvg())
+    expect(x).toBeCloseTo(0, 6)
+    expect(y).toBeCloseTo(-10, 6)
+  })
+
+  test('a right-angle rotation is carried, not dropped', () => {
+    const ctx = new SvgCanvas()
+    ctx.rotate(Math.PI / 2)
+    ctx.fillRect(0, 0, 4, 2)
+
+    // Exact multiples of 90° used to take the unrotated branch, emitting a
+    // 4x2 rect where a 2x4 one belongs.
+    const svg = ctx.getSerializedSvg()
+    expect(svg).toContain('width="4" height="2"')
+    expect(svg).toContain('matrix(')
+  })
+})

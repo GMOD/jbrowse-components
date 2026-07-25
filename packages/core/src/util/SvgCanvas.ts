@@ -11,11 +11,12 @@ interface SavedState {
   lineJoin: CanvasLineJoin
   lineDash: number[]
   globalCompositeOperation: GlobalCompositeOperation
-  tx: number
-  ty: number
-  sx: number
-  sy: number
-  rotation: number
+  a: number
+  b: number
+  c: number
+  d: number
+  e: number
+  f: number
   // Number of `<g clip-path="…">` groups opened since this save() — closed
   // on restore(). Lets clip() be properly scoped to save/restore brackets,
   // matching the CanvasRenderingContext2D semantics.
@@ -64,25 +65,52 @@ export class SvgCanvas {
   globalCompositeOperation: GlobalCompositeOperation = 'source-over'
 
   private lineDash: number[] = []
-  private tx = 0
-  private ty = 0
-  private sx = 1
-  private sy = 1
-  private rotation = 0
+  // The CTM, as the SVG `matrix(a b c d e f)` affine:
+  //   x' = a*x + c*y + e      y' = b*x + d*y + f
+  // A full matrix rather than the separate translate/scale/rotate scalars this
+  // used to keep, because those composed in the wrong order: canvas
+  // `translate; scale; rotate` means rotate-then-scale (the last call applies
+  // first), while the scalars applied scale first. Identical for a uniform
+  // scale, but hic's fit-to-height triangle scales y and x differently, so its
+  // export came out tilted off the diagonal (proven in
+  // plugins/hic/.../svgExportGeometry.test.ts).
+  private a = 1
+  private b = 0
+  private c = 0
+  private d = 1
+  private e = 0
+  private f = 0
 
-  private transformPoint(x: number, y: number): [number, number] {
-    const sx = x * this.sx
-    const sy = y * this.sy
-    if (this.rotation === 0) {
-      return [sx + this.tx, sy + this.ty]
-    }
-    const cos = Math.cos(this.rotation)
-    const sin = Math.sin(this.rotation)
-    return [sx * cos - sy * sin + this.tx, sx * sin + sy * cos + this.ty]
+  // No rotation/skew term, so a rect stays a rect and `x/y/width/height` can
+  // express it. Every caller but hic stays here.
+  private get axisAligned() {
+    return this.b === 0 && this.c === 0
   }
 
+  private transformPoint(x: number, y: number): [number, number] {
+    return [this.a * x + this.c * y + this.e, this.b * x + this.d * y + this.f]
+  }
+
+  // Axis-aligned only — a rotated CTM shares its width between both axes, and
+  // the callers that combine the two emit the matrix instead of pre-sizing.
   private transformSize(w: number, h: number): [number, number] {
-    return [w * Math.abs(this.sx), h * Math.abs(this.sy)]
+    return [w * Math.abs(this.a), h * Math.abs(this.d)]
+  }
+
+  // Places a shape's local origin at `x,y` under the current CTM, keeping only
+  // the linear part in the matrix. The caller then emits the shape at local
+  // 0,0.
+  //
+  // Folding the origin into the translation this way is what keeps the export's
+  // 2-decimal `transform` rounding (wrapSvgExport) harmless: a/b/c/d are
+  // unitless multipliers, so rounding them displaces a point in proportion to
+  // its coordinate — 0.005 of error across a 1000px layer is 5px. Rounded
+  // translations are plain pixels, and the leftover rounding of a/b/c/d then
+  // only perturbs the shape's own width and height (sub-0.05px for a bin).
+  private originMatrixAttr(x: number, y: number) {
+    const { a, b, c, d } = this
+    const [tx, ty] = this.transformPoint(x, y)
+    return ` transform="matrix(${a} ${b} ${c} ${d} ${tx} ${ty})"`
   }
 
   // Rects arrive as origin + size, but a negative scale flips which corner the
@@ -94,13 +122,10 @@ export class SvgCanvas {
   // negative. A no-op for positive scales (every caller today), which is why
   // this was never noticed.
   //
-  // Only correct while `rotation === 0`. A negative scale also negates the
-  // rotation angle, and `fillRect` still emits `rotate(+this.rotation)`, so a
-  // mirrored *and* rotated rect lands somewhere else entirely (measured: a 10px
-  // square under `translate(200,0); scale(-1,1); rotate(-45°)` emits at
-  // (200, 28.3) where it belongs at x≈165..179). No caller combines the two
-  // today. Fix this before adding one — mirroring the data instead, and keeping
-  // the scale positive, avoids the question (see hic's reversed regions).
+  // Axis-aligned CTMs only — callers reach this through the `axisAligned`
+  // branches, and a rotated/skewed CTM goes through `originMatrixAttr` instead
+  // (which handles mirroring for free, since the matrix transforms the rect's
+  // own geometry).
   //
   // A negative *size* argument (`fillRect(x, y, -w, h)`, which a real canvas
   // treats as the same rect anchored at `x-w`) is NOT normalized here — SVG
@@ -110,8 +135,8 @@ export class SvgCanvas {
   // same convention that keeps reversed blocks correct.
   private transformRect(x: number, y: number, w: number, h: number) {
     const [tx, ty] = this.transformPoint(
-      this.sx < 0 ? x + w : x,
-      this.sy < 0 ? y + h : y,
+      this.a < 0 ? x + w : x,
+      this.d < 0 ? y + h : y,
     )
     const [tw, th] = this.transformSize(w, h)
     return [tx, ty, tw, th] as const
@@ -171,11 +196,12 @@ export class SvgCanvas {
       lineJoin: this.lineJoin,
       lineDash: [...this.lineDash],
       globalCompositeOperation: this.globalCompositeOperation,
-      tx: this.tx,
-      ty: this.ty,
-      sx: this.sx,
-      sy: this.sy,
-      rotation: this.rotation,
+      a: this.a,
+      b: this.b,
+      c: this.c,
+      d: this.d,
+      e: this.e,
+      f: this.f,
       groupsToClose: 0,
     })
   }
@@ -196,69 +222,74 @@ export class SvgCanvas {
       this.lineJoin = s.lineJoin
       this.lineDash = s.lineDash
       this.globalCompositeOperation = s.globalCompositeOperation
-      this.tx = s.tx
-      this.ty = s.ty
-      this.sx = s.sx
-      this.sy = s.sy
-      this.rotation = s.rotation
+      this.a = s.a
+      this.b = s.b
+      this.c = s.c
+      this.d = s.d
+      this.e = s.e
+      this.f = s.f
     }
   }
 
+  // translate/scale/rotate/transform all right-multiply the CTM, matching
+  // CanvasRenderingContext2D: the most recently applied transform is the
+  // innermost one, so a later call affects the coordinate space of the calls
+  // before it and NOT vice versa.
   translate(x: number, y: number) {
-    if (this.rotation === 0) {
-      this.tx += x * this.sx
-      this.ty += y * this.sy
-    } else {
-      const cos = Math.cos(this.rotation)
-      const sin = Math.sin(this.rotation)
-      const dx = x * this.sx
-      const dy = y * this.sy
-      this.tx += dx * cos - dy * sin
-      this.ty += dx * sin + dy * cos
-    }
+    this.e += this.a * x + this.c * y
+    this.f += this.b * x + this.d * y
   }
 
   scale(x: number, y: number) {
-    this.sx *= x
-    this.sy *= y
+    this.a *= x
+    this.b *= x
+    this.c *= y
+    this.d *= y
   }
 
   rotate(angle: number) {
-    this.rotation += angle
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    const { a, b, c, d } = this
+    this.a = a * cos + c * sin
+    this.b = b * cos + d * sin
+    this.c = c * cos - a * sin
+    this.d = d * cos - b * sin
   }
 
   resetTransform() {
-    this.tx = 0
-    this.ty = 0
-    this.sx = 1
-    this.sy = 1
-    this.rotation = 0
+    this.a = 1
+    this.b = 0
+    this.c = 0
+    this.d = 1
+    this.e = 0
+    this.f = 0
   }
 
   setTransform(
     a: number,
     b: number,
-    _c: number,
+    c: number,
     d: number,
     e: number,
     f: number,
   ) {
-    this.sx = a
-    this.sy = d
-    this.rotation = Math.atan2(b, a)
-    this.tx = e
-    this.ty = f
+    this.a = a
+    this.b = b
+    this.c = c
+    this.d = d
+    this.e = e
+    this.f = f
   }
 
-  transform(
-    _a: number,
-    _b: number,
-    _c: number,
-    _d: number,
-    _e: number,
-    _f: number,
-  ) {
-    // simplified: only commonly used via save/translate/scale/rotate
+  transform(a: number, b: number, c: number, d: number, e: number, f: number) {
+    const { a: a0, b: b0, c: c0, d: d0 } = this
+    this.a = a0 * a + c0 * b
+    this.b = b0 * a + d0 * b
+    this.c = a0 * c + c0 * d
+    this.d = b0 * c + d0 * d
+    this.e += a0 * e + c0 * f
+    this.f += b0 * e + d0 * f
   }
 
   setLineDash(segments: number[]) {
@@ -270,15 +301,18 @@ export class SvgCanvas {
   }
 
   fillRect(x: number, y: number, w: number, h: number) {
-    const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
-    if (this.rotation !== 0 && this.rotation % (Math.PI / 2) !== 0) {
-      const deg = (this.rotation * 180) / Math.PI
-      this.parts.push(
-        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" ${this.paintAttr('fill', this.fillStyle)} transform="rotate(${deg} ${tx} ${ty})"/>`,
-      )
-    } else {
+    if (this.axisAligned) {
+      const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
       this.parts.push(
         `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" ${this.paintAttr('fill', this.fillStyle)}/>`,
+      )
+    } else {
+      // Under rotation with a non-uniform scale the rect is a parallelogram, so
+      // pre-transformed x/y/width/height can't describe it. Emit the local size
+      // and let the matrix place and shear it — exact for any affine, and
+      // adjacent rects still share edges (no AA seams between hic bins).
+      this.parts.push(
+        `<rect width="${w}" height="${h}" ${this.paintAttr('fill', this.fillStyle)}${this.originMatrixAttr(x, y)}/>`,
       )
     }
   }
@@ -288,10 +322,16 @@ export class SvgCanvas {
   }
 
   strokeRect(x: number, y: number, w: number, h: number) {
-    const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
-    this.parts.push(
-      `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}/>`,
-    )
+    if (this.axisAligned) {
+      const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
+      this.parts.push(
+        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}/>`,
+      )
+    } else {
+      this.parts.push(
+        `<rect width="${w}" height="${h}" fill="none"${this.strokeAttrs()}${this.originMatrixAttr(x, y)}/>`,
+      )
+    }
   }
 
   beginPath() {
@@ -361,8 +401,18 @@ export class SvgCanvas {
   }
 
   rect(x: number, y: number, w: number, h: number) {
-    const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
-    this.pathData += `M${tx},${ty}h${tw}v${th}h${-tw}Z`
+    if (this.axisAligned) {
+      const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
+      this.pathData += `M${tx},${ty}h${tw}v${th}h${-tw}Z`
+    } else {
+      // Path data carries no transform of its own, so a rotated CTM has to be
+      // baked into the four corners.
+      const [x0, y0] = this.transformPoint(x, y)
+      const [x1, y1] = this.transformPoint(x + w, y)
+      const [x2, y2] = this.transformPoint(x + w, y + h)
+      const [x3, y3] = this.transformPoint(x, y + h)
+      this.pathData += `M${x0},${y0}L${x1},${y1}L${x2},${y2}L${x3},${y3}Z`
+    }
   }
 
   closePath() {

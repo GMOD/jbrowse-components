@@ -1,13 +1,19 @@
 import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
-export interface HicRenderState {
+// What painting a bin actually depends on. Kept separate from the canvas dims
+// so `drawHicBlocks` can't be handed a mismatched pair — the SVG export draws
+// into a layer of its own size and has no canvas to size.
+export interface HicDrawState {
   yScalar: number
-  canvasWidth: number
-  canvasHeight: number
   colorMaxScore: number
   useLogScale: boolean
   viewScale: number
   viewOffsetX: number
+}
+
+export interface HicRenderState extends HicDrawState {
+  canvasWidth: number
+  canvasHeight: number
 }
 
 // `binWidth` rides with the data, not the frame state: it's the px size the

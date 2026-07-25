@@ -373,12 +373,17 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #method
        * Width of the SVG legend (consumed by SVGLinearGenomeView). Returns 0
-       * when no legend will be drawn so the export framework can omit space.
+       * when the legend is off so the export framework can omit the space.
+       *
+       * Deliberately NOT gated on `hasLegendData` too: SVGLinearGenomeView maxes
+       * this across tracks *before* awaiting each `renderSvg`, so on a headless
+       * export (jbrowse-img — the fetch is a debounced autorun) the data hasn't
+       * landed yet and a data-dependent answer reserved nothing, leaving the
+       * legend to float over the matrix. Reserving on the setting alone costs an
+       * unused strip only when the track loads empty or errors.
        */
       svgLegendWidth(): number {
-        return self.showLegend && self.hasLegendData
-          ? GRADIENT_LEGEND_SVG_AREA_WIDTH
-          : 0
+        return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
       },
     }))
     .actions(self => ({
