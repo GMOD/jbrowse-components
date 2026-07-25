@@ -14,11 +14,11 @@ A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
 related (strains or accessions of one species), the most convenient source is a
 single all-vs-all PAF, with every genome aligned to every other. This tutorial
-builds a four-strain _E. coli_ pangenome view from one such file.
+builds a five-strain _E. coli_ pangenome view from one such file.
 
 Every figure below links to the live session that produced it.
 
-This same four-strain view also builds in Python or R: a `synteny_view` inside
+This same five-strain view also builds in Python or R: a `synteny_view` inside
 `JBrowseApp` ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or
 `JBrowseRApp` ([JBrowseR](/docs/jbrowser)) stacks the strains from one
 all-vs-all PAF, using the same hosted data as this tutorial.
@@ -44,7 +44,7 @@ Naming) names every sequence `sample#haplotype#contig`, e.g. `K12#1#chr`. It's
 how pangenome tools tell which genome a sequence belongs to, and later on the
 adapter uses that `sample` prefix to classify each PAF record.
 
-First obtain each strain's genome FASTA. This example uses four complete NCBI
+First obtain each strain's genome FASTA. This example uses five complete NCBI
 RefSeq assemblies, fetched with the NCBI
 [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
 CLI (a `strain accession` table keeps the short names we use throughout):
@@ -62,41 +62,47 @@ K12     GCF_000005845.2
 Sakai   GCF_000008865.2
 CFT073  GCF_000007445.1
 NCTC86  GCF_002007705.1
+IAI39   GCF_000026345.1
 EOF
 ```
 
 `gff3` pulls each strain's annotation down in the same call, and
 [gene tracks](#add-gene-tracks) use it further below.
 
-Those four FASTAs become the JBrowse assemblies as-is. The PanSN names exist
+Those five FASTAs become the JBrowse assemblies as-is. The PanSN names exist
 only inside the PAF, so make a separate concatenated copy for minimap2 rather
 than renaming the originals. The haplotype is always `1` here, since these are
 haploid bacterial assemblies:
 
 ```bash
-for strain in K12 Sakai CFT073 NCTC86; do
+for strain in K12 Sakai CFT073 NCTC86 IAI39; do
   # '>chr' -> '>K12#1#chr'
   awk -v s="$strain" '/^>/{print ">" s "#1#chr"; next} {print}' "$strain.fa"
 done > all.fa
 
-minimap2 -c -x asm20 all.fa all.fa > all_vs_all.paf
+minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
-`-c` emits the base-level CIGAR the linear synteny view needs. Self-alignments
-are kept deliberately: they let the
-[one-vs-all](#one-strain-against-all-the-others) mode below show a strain's own
-repeats (rRNA operons, IS elements), and the adapter drops only the degenerate
-self-diagonal, so they cost nothing. Add `-X` for a strictly pairwise file, at
-the price of that paralogy.
+`-c` emits the base-level CIGAR the linear synteny view needs.
 
-## Set up the four assemblies
+`-X` is not optional here, and it does the opposite of what its name suggests.
+Each sequence's best hit is its own perfect diagonal, and that hit outranks
+every cross-strain alignment as a secondary, so without `-X` minimap2 reports
+one row per genome: a five-line PAF and an empty synteny view. `-X` skips those
+diagonals, and the reciprocal copy of each pair with them, leaving every
+cross-strain pair once. It does **not** remove paralogy: a match between two
+different loci in one genome is not a self-diagonal, so it survives, which is
+what lets the [one-vs-all](#one-strain-against-all-the-others) mode below draw a
+strain's own repeats (rRNA operons, IS elements) as its own lane.
+
+## Set up the five assemblies
 
 The stacked view has one row per strain, so each strain FASTA must be a JBrowse
 assembly whose name matches an entry in the track's `assemblyNames`. Compress
 and index each one, then load it:
 
 ```bash
-for strain in K12 Sakai CFT073 NCTC86; do
+for strain in K12 Sakai CFT073 NCTC86 IAI39; do
   bgzip -f $strain.fa
   samtools faidx $strain.fa.gz    # writes the .fai and .gzi JBrowse needs
   jbrowse add-assembly $strain.fa.gz --name $strain --load copy
@@ -125,11 +131,11 @@ pair:
   "type": "SyntenyTrack",
   "trackId": "ecoli_ava",
   "name": "E. coli pangenome (all-vs-all PAF)",
-  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
     "type": "AllVsAllPAFAdapter",
     "uri": "all_vs_all.paf",
-    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
 }
 ```
@@ -139,22 +145,25 @@ If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
 PanSN prefix is `K12`, use `{ "Ecoli_K12": "K12" }`).
 
 To add the track from the command line instead of editing the config by hand,
-pass `--adapterType` explicitly, since the `.paf` extension alone would
-otherwise be read as a pairwise `PAFAdapter`:
+spell the adapter out in `--config`. A `.paf` extension on its own is inferred
+as the pairwise `PAFAdapter`, which reads only the first two assembly names and
+drops every other strain's blocks. `--config` **replaces** the inferred adapter
+rather than merging into it, so `uri` has to be restated alongside the type:
 
 ```bash
-jbrowse add-track all_vs_all.paf --adapterType AllVsAllPAFAdapter \
-  --trackId ecoli_ava -a K12,Sakai,CFT073,NCTC86 --load copy
+jbrowse add-track all_vs_all.paf \
+  --config '{"adapter":{"type":"AllVsAllPAFAdapter","uri":"all_vs_all.paf","assemblyNames":["K12","Sakai","CFT073","NCTC86","IAI39"]}}' \
+  --trackId ecoli_ava -a K12,Sakai,CFT073,NCTC86,IAI39 --load copy
 ```
 
-Both the track and the adapter get all four `assemblyNames`. Unlike a pairwise
+Both the track and the adapter get all five `assemblyNames`. Unlike a pairwise
 PAF track, where `-a` is `query,target`, order does not matter here: one
 all-vs-all file backs every pair, so `-a` is simply the full set of assemblies
 it covers.
 
 ### Haplotype-resolved genomes
 
-These four strains are haploid, so each PanSN prefix is a whole sample and `K12`
+These five strains are haploid, so each PanSN prefix is a whole sample and `K12`
 covers everything named `K12#1#...`. A haplotype-resolved pangenome normally
 loads each haplotype as its own JBrowse assembly, and then an assembly maps to a
 `sample#haplotype` prefix rather than to a sample:
@@ -202,7 +211,7 @@ jbrowse make-pif all_vs_all.paf
 
 ```bash
 jbrowse add-track all_vs_all.pif.gz --adapterType AllVsAllIndexedPAFAdapter \
-  -a CFT073,K12,NCTC86,Sakai --load copy
+  -a CFT073,IAI39,K12,NCTC86,Sakai --load copy
 ```
 
 Everything else about the track is unchanged, only the `adapter` block differs
@@ -212,7 +221,7 @@ from the un-indexed version above:
 {
   "type": "AllVsAllIndexedPAFAdapter",
   "uri": "all_vs_all.pif.gz",
-  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
 }
 ```
 
@@ -224,14 +233,14 @@ Mb (not an issue for _E. coli_).
 
 ## Stacking the genomes
 
-With the track in your config, you can stack the four strains from the UI, or
+With the track in your config, you can stack the five strains from the UI, or
 declaratively so the view opens on load.
 
 ### From the UI
 
 Open a linear synteny view (**Add → Linear synteny view**) to reach the import
 form. It opens in **Quick start**, which launches straight from a pre-configured
-synteny track: because `ecoli_ava` lists all four assemblies, you don't have to
+synteny track: because `ecoli_ava` lists all five assemblies, you don't have to
 build the rows by hand. Choose it and each assembly it lists becomes a row, one
 per strain, with that one track wired up to back every band. Click **Launch**
 and you have the stacked view.
@@ -241,12 +250,12 @@ button between each pair to pick its track) and inherits whatever Quick start
 had selected, but for an all-vs-all track Quick start already does all of this,
 so reach for Manual only when you want to start from a track and then adjust it.
 
-<Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its four assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
+<Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its five assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
 ### Declaratively with defaultSession
 
 To open the stacked view automatically on load, add a top-level `defaultSession`
-key to your `config.json` holding a `LinearSyntenyView` snapshot. Four rows
+key to your `config.json` holding a `LinearSyntenyView` snapshot. Five rows
 means three bands, so `tracks` has three entries, all served by the same track:
 
 ```json
@@ -261,7 +270,8 @@ means three bands, so `tracks` has three entries, all served by the same track:
             { "assembly": "K12" },
             { "assembly": "Sakai" },
             { "assembly": "CFT073" },
-            { "assembly": "NCTC86" }
+            { "assembly": "NCTC86" },
+            { "assembly": "IAI39" }
           ],
           "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
           "drawCurves": false,
@@ -285,7 +295,7 @@ The row order here is a free choice. Unlike a reference-anchored `.blocks`
 table, an all-vs-all file is a complete graph, so every adjacent pair you happen
 to stack is a direct alignment rather than a transitive link.
 
-<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all four strains, and the gaps are strain-specific islands." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all five, and the gaps are strain-specific islands. The bottom band is the one with structure: IAI39 carries five inversions over 50 kb against the others, and each draws as a crossing." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
 The gaps in those ribbons are where the strains actually differ. Sakai's largest
 carry its prophage Shiga-toxin genes, CFT073's are its own pathogenicity
@@ -301,7 +311,7 @@ assembly, and the plasmid features have to be dropped rather than renamed, since
 the assembly kept only the chromosome:
 
 ```bash
-for strain in K12 Sakai CFT073 NCTC86; do
+for strain in K12 Sakai CFT073 NCTC86 IAI39; do
   # the chromosome is the FASTA's first record, whose accession is the seqid to keep
   acc=$(awk '/^>/{print substr($1, 2); exit}' "$strain"/ncbi_dataset/data/*/*.fna)
   # -F'\t': without it, awk also splits on the spaces inside GFF attributes
@@ -382,8 +392,8 @@ bash scripts/build_ecoli_pangenome_synteny.sh   # builds ./ecoli_pangenome_build
 npx --yes serve ecoli_pangenome_build/jbrowse2  # then open the printed URL
 ```
 
-It downloads the four RefSeq genomes, self-aligns them into the all-vs-all PAF,
-downloads JBrowse, and writes a `config.json` with the four assemblies, the
+It downloads the five RefSeq genomes, self-aligns them into the all-vs-all PAF,
+downloads JBrowse, and writes a `config.json` with the five assemblies, the
 per-strain gene tracks, the all-vs-all synteny track, and a default session that
 opens on the stacked view. It needs the NCBI
 [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
@@ -400,7 +410,7 @@ For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 whole-genome structure (inversions, translocations) that the stacked ribbons
 compress into crossings.
 
-**Scale it up.** Four strains fit in memory comfortably, but a real pangenome of
+**Scale it up.** Five strains fit in memory comfortably, but a real pangenome of
 hundreds does not. [Index it with `make-pif`](#large-files-index-with-make-pif)
 and switch to `AllVsAllIndexedPAFAdapter`, as above.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the E. coli pangenome-graph demo shown in
-# website/docs/tutorials/pangenome.md: build a pggb graph from four strains and
+# website/docs/tutorials/pangenome.md: build a pggb graph from five strains and
 # load its linear projections into a runnable JBrowse — the all-vs-all synteny
 # (wfmash PAF), the pangenome variants (`pggb -V`), the whole-genome multiple
 # alignment (`pggb -M`, re-rooted on K12 as a MAF), the pangenome depth (`odgi
@@ -11,7 +11,7 @@
 # graph genome view opens: a pggb window cut with `odgi extract`, and a
 # minigraph rGFA window cut with `gfatools view -R`.
 #
-# It downloads the same four RefSeq E. coli chromosomes as the all-vs-all synteny
+# It downloads the same five RefSeq E. coli chromosomes as the all-vs-all synteny
 # tutorial, PanSN-names a concatenated copy, runs pggb, converts each output to
 # the format its JBrowse track type reads, and writes a config.json with the four
 # assemblies, per-strain gene tracks, the five graph-derived tracks, and a
@@ -42,7 +42,7 @@ cd "$OUTDIR"
 export TMPDIR="${TMPDIR:-$PWD/tmp}"
 mkdir -p "$TMPDIR"
 
-STRAINS="K12 Sakai CFT073 NCTC86"
+STRAINS="K12 Sakai CFT073 NCTC86 IAI39"
 REF=K12   # the strain the VCF and MAF are projected onto
 
 # Pin the pggb image by tag (pggb's dated build tag, not :latest) so re-running
@@ -83,6 +83,7 @@ K12     GCF_000005845.2
 Sakai   GCF_000008865.2
 CFT073  GCF_000007445.1
 NCTC86  GCF_002007705.1
+IAI39   GCF_000026345.1
 STRAINS_TBL
 
 # ── PanSN-name (sample#haplotype#contig) a concatenated copy for pggb ─────────
@@ -184,7 +185,7 @@ in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 
 # positions live in the P/W lines), so a window has to be cut out of the graph:
 # extract -E takes every node between the first and last in the range, sort -O
 # compacts the node ids, view -g writes GFA. Keep it small: at base resolution
-# a few hundred bp between four strains already carries a dozen bubbles.
+# a few hundred bp between five strains already carries a dozen bubbles.
 OG=$(ls pggb/*.smooth.final.og)
 in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o - \
   | odgi sort -i - -o - -O \
@@ -202,7 +203,7 @@ for strain in $STRAINS; do
 done
 PANSN_FA=$(for strain in $STRAINS; do printf '/data/%s.pansn.fa ' "$strain"; done)
 # tmp + mv so an interrupted run leaves no half-written graph for the next one
-# to skip over (minigraph is the slow step here, a few minutes on four genomes).
+# to skip over (minigraph is the slow step here, a few minutes on five genomes).
 if [ ! -f ecoli_minigraph.rgfa ]; then
   in_cactus bash -c "minigraph -cxggs -t $(nproc) $PANSN_FA" > ecoli_minigraph.rgfa.tmp
   mv ecoli_minigraph.rgfa.tmp ecoli_minigraph.rgfa
@@ -349,7 +350,7 @@ with open(path, 'w') as fh:
 PY
 
 # ── Default session: all four projections ─────────────────────────────────────
-# view 1 stacks the four strains for the synteny projection; view 2 is the K12
+# view 1 stacks the five strains for the synteny projection; view 2 is the K12
 # reference lane with the depth, variant, and MAF projections beneath the genes.
 cat > session.json <<'JSON'
 {
@@ -362,9 +363,10 @@ cat > session.json <<'JSON'
           { "assembly": "K12" },
           { "assembly": "Sakai" },
           { "assembly": "CFT073" },
-          { "assembly": "NCTC86" }
+          { "assembly": "NCTC86" },
+          { "assembly": "IAI39" }
         ],
-        "tracks": [["ecoli_pggb_ava"], ["ecoli_pggb_ava"], ["ecoli_pggb_ava"]],
+        "tracks": [["ecoli_pggb_ava"], ["ecoli_pggb_ava"], ["ecoli_pggb_ava"], ["ecoli_pggb_ava"]],
         "drawCurves": false,
         "minAlignmentLength": 10000
       }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the E. coli Minigraph-Cactus pangenome-graph demo shown in
-# website/docs/tutorials/pangenome_cactus.md: build a graph from four strains
+# website/docs/tutorials/pangenome_cactus.md: build a graph from five strains
 # with `cactus-pangenome` and load its linear projections into a runnable
 # JBrowse. The projections: all-vs-all synteny (halSynteny from the HAL),
 # pangenome variants (`--vcf`), the whole-genome multiple alignment (the HAL,
@@ -11,7 +11,7 @@
 # (E. coli KTa004, ENA DRR063408) through the graph with `--giraffe`/`vg giraffe`
 # and surjects them onto K12, and copies the `--viz` odgi 1D raster as a figure.
 #
-# It downloads the same four RefSeq E. coli chromosomes as the pggb tutorial
+# It downloads the same five RefSeq E. coli chromosomes as the pggb tutorial
 # (build_ecoli_pangenome_graph.sh), so the two demos are a direct pggb-vs-MC
 # comparison on identical input. Everything is pinned (fixed RefSeq accessions,
 # pinned cactus image + parameters), so re-running reproduces the same graph.
@@ -40,7 +40,7 @@ cd "$OUTDIR"
 export TMPDIR="${TMPDIR:-$PWD/tmp}"
 mkdir -p "$TMPDIR"
 
-STRAINS="K12 Sakai CFT073 NCTC86"
+STRAINS="K12 Sakai CFT073 NCTC86 IAI39"
 REF=K12          # the strain the VCF, MAF, and depth are projected onto
 REFPATH="K12#0#chr"
 
@@ -74,6 +74,7 @@ K12     GCF_000005845.2
 Sakai   GCF_000008865.2
 CFT073  GCF_000007445.1
 NCTC86  GCF_002007705.1
+IAI39   GCF_000026345.1
 STRAINS_TBL
 
 # ── Build the graph with cactus-pangenome (Minigraph-Cactus) ──────────────────
@@ -105,7 +106,7 @@ printf 'chr\t%s\n' "$REFLEN" > chrom.sizes
 # halSynteny keeps the query on '+' and flips only the target strand, so the PAF
 # strand is the 2nd char of PSL col 9 (`++` -> '+', `+-` -> '-').
 : > ecoli_cactus_ava.paf
-gen_pair() { # query target  (all 6 unordered pairs, target = the earlier strain)
+gen_pair() { # query target
   local q="$1" t="$2"
   in_cactus halSynteny --queryGenome "$q" --targetGenome "$t" \
     /data/mc/ecoli.full.hal "/data/hs_${t}_${q}.psl"
@@ -114,12 +115,20 @@ gen_pair() { # query target  (all 6 unordered pairs, target = the earlier strain
        print qn, $11, $12, $13, strand, tn, $15, $16, $17, $1, ($13 - $12), 255 }' \
     "hs_${t}_${q}.psl" >> ecoli_cactus_ava.paf
 }
-gen_pair Sakai  K12
-gen_pair CFT073 K12
-gen_pair NCTC86 K12
-gen_pair CFT073 Sakai
-gen_pair NCTC86 Sakai
-gen_pair NCTC86 CFT073
+# Every unordered pair once, target = the strain earlier in $STRAINS. Derived
+# rather than listed: the pair count is quadratic (4 strains 6 pairs, 5 strains
+# 10), so a hand-written list silently omits every pair involving a strain added
+# to $STRAINS later.
+i=0
+for t in $STRAINS; do
+  i=$((i + 1)); j=0
+  for q in $STRAINS; do
+    j=$((j + 1))
+    if [ "$j" -gt "$i" ]; then
+      gen_pair "$q" "$t"
+    fi
+  done
+done
 
 # ── Projection 2: pangenome variants (cactus-pangenome's --vcf) ───────────────
 # cactus deconstructs the graph against K12 into mc/ecoli.vcf.gz. Its CHROM is
@@ -240,8 +249,8 @@ done < graph_landmarks.tsv
 convert ecoli_cactus_graph.png "${ARGS[@]}" ecoli_cactus_graph_boxes.png
 
 # ── Projection 5: map a new isolate's short reads through the graph ────────────
-# Unlike every projection above (which re-plots the graph's own four genomes),
-# this maps a FIFTH sample that is not in the graph. --giraffe made cactus emit
+# Unlike every projection above (which re-plots the graph's own genomes), this
+# maps a sample that is NOT in the graph at all. --giraffe made cactus emit
 # vg giraffe's indexes (mc/ecoli.d2.gbz + .dist/.min/.zipcodes). Map E. coli
 # KTa004 (ENA DRR063408, Illumina MiSeq) through the whole pangenome, then surject
 # the graph alignment onto K12 as a plain BAM: a read over a non-K12 allele still
@@ -386,9 +395,10 @@ cat > session.json <<'JSON'
           { "assembly": "K12" },
           { "assembly": "Sakai" },
           { "assembly": "CFT073" },
-          { "assembly": "NCTC86" }
+          { "assembly": "NCTC86" },
+          { "assembly": "IAI39" }
         ],
-        "tracks": [["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"]],
+        "tracks": [["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"]],
         "drawCurves": false,
         "minAlignmentLength": 10000
       }

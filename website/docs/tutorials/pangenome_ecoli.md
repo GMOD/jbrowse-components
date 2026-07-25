@@ -1,7 +1,7 @@
 ---
 title: Pangenome (pggb)
 description:
-  Build a four-strain pggb pangenome graph and load its linear projections plus
+  Build a five-strain pggb pangenome graph and load its linear projections plus
   the graph itself in JBrowse
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
@@ -27,8 +27,8 @@ lands on JBrowse track types you already have:
 | Whole-genome alignment | The multiple alignment, column by column                    | `pggb -M`, `hal2maf` + `taffy`                           | [MAF track](/docs/user_guides/maf_track)                           |
 | Pangenome depth        | How many genomes cover each reference base (core/accessory) | `odgi depth`                                             | [quantitative track](/docs/config_guides/quantitative_track)       |
 
-This tutorial builds a four-strain _E. coli_ pangenome with pggb and loads all
-four projections. It uses the same four genomes as the
+This tutorial builds a five-strain _E. coli_ pangenome with pggb and loads all
+four projections. It uses the same five genomes as the
 [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny), which builds
 the synteny projection alone from a plain minimap2 alignment. Here that same
 projection falls out of the graph, alongside the variant and MAF projections a
@@ -54,11 +54,11 @@ Python ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or R
 
 pggb takes one FASTA of all the genomes,
 [PanSN](https://github.com/pangenome/PanSN-spec)-named `sample#haplotype#contig`
-so it can tell them apart. Concatenate the four strains (haplotype `1`, since
+so it can tell them apart. Concatenate the five strains (haplotype `1`, since
 these are haploid bacterial assemblies) and index the result:
 
 ```bash
-for strain in K12 Sakai CFT073 NCTC86; do
+for strain in K12 Sakai CFT073 NCTC86 IAI39; do
   awk -v s="$strain" '/^>/{print ">" s "#1#chr"; next} {print}' "$strain.fa"
 done > all.fa
 bgzip all.fa
@@ -77,15 +77,15 @@ in_pggb() {
     ghcr.io/pangenome/pggb:202603141454453ade6b "$@"
 }
 
-in_pggb pggb -i /data/all.fa.gz -o /data/pggb -n 4 -c 3 -p 90 -s 5000 -V K12 -M -t 16
+in_pggb pggb -i /data/all.fa.gz -o /data/pggb -n 5 -c 4 -p 90 -s 5000 -V K12 -M -t 16
 ```
 
 Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
 reproducible.
 
 `-n` is the number of haplotypes, `-p` the minimum alignment identity, `-s` the
-segment length. `-p 90 -s 5000` suits a bacterial pangenome. `-c 3` is the one
-easy flag to miss: pggb's separate `-c, --n-mappings` defaults to `1`, so `-n 4`
+segment length. `-p 90 -s 5000` suits a bacterial pangenome. `-c 4` is the one
+easy flag to miss: pggb's separate `-c, --n-mappings` defaults to `1`, so `-n 5`
 alone keeps only each segment's single best match (one other genome), which
 builds an under-connected all-vs-all graph that crashes smoothxg during graph
 prep. Set `-c` to the number of haplotypes minus one so every segment maps to
@@ -106,7 +106,7 @@ depth projection reads the graph itself).
 The projections are builder-agnostic. **Minigraph-Cactus** (`cactus-pangenome`)
 emits a VCF with `--vcf`, a GFA with `--gfa`, and a HAL by default; the
 [Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus) builds this same
-four-strain demo that way and loads the same four projections.
+five-strain demo that way and loads the same four projections.
 **progressiveCactus** produces a HAL. `hal2maf` turns it into the MAF and
 `halSynteny` into a PSL/PAF for the synteny projection. **odgi** projects any
 graph to the synteny PAF with `odgi untangle -i graph.og -r <ref> -p`.
@@ -166,14 +166,14 @@ Open a **Graph genome view** (Add, then Graph genome view) and load
 `https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_subgraph.gfa`.
 
 Keep the window small, because a pggb graph is fragmented at base resolution:
-between four _E. coli_ strains a few hundred bp already carries a dozen bubbles.
+between five _E. coli_ strains a few hundred bp already carries a dozen bubbles.
 Node lengths are scaled the way Bandage scales them, derived per graph so the
 mean drawn node lands at a usable size. That is what keeps a 1 bp SNP allele and
 a 164 bp backbone segment on one picture, with the SNP alleles as the specks, in
 proportion. A few hundred bp is what makes that structure legible, not what the
 view can load.
 
-<Figure caption="A 400 bp slice of the four-strain graph (K12:1,004,500-1,004,961) in the Bandage force-directed layout: the axis is graph structure, not K12 coordinates. A pggb GFA tags no segment with a stable position, so nothing here can be lined up under a linear view; the only coordinates in the file are inside the path names. Node color is depth, how many of the four strains traverse that node, so the backbone runs yellow where all four share it and blue where only two do, and each eye-shaped bubble is one site where the strains diverge. This is the structure the projections below re-express as a variant column, a synteny break, or a coverage dip." src="/img/pangenome/local_subgraph.png" />
+<Figure caption="A 400 bp slice of the five-strain graph (K12:1,004,500-1,004,961), 54 nodes over 5 paths. The layout is set to Anchored, but a pggb GFA tags no segment with a stable position, so there is nothing to anchor to and what you get is graph structure rather than K12 coordinates: the only coordinates in the file are inside the path names. Node color is depth, how many of the five strains traverse that node, so the shared backbone runs yellow and green and the short divergent segments strung along it are darker. This is the structure the projections below re-express as a variant column, a synteny break, or a coverage dip." src="/img/pangenome/local_subgraph.png" />
 
 ### rGFA graphs carry their own coordinates
 
@@ -188,9 +188,9 @@ offset there, and its rank, so the graph states its own reference backbone. The
 [HPRC tutorial](/docs/tutorials/pangenome_hprc#regular-gfa-vs-rgfa) shows those
 three tags on a real segment line.
 
-Build one from the same four strains. minigraph takes its stable names from the
+Build one from the same five strains. minigraph takes its stable names from the
 input FASTA headers, so give it the PanSN-named records rather than the
-per-strain files (whose contig is called `chr` in all four), otherwise every
+per-strain files (whose contig is called `chr` in all five), otherwise every
 segment lands on an ambiguous `chr` that no later command can query by strain.
 minigraph and `gfatools` are not in the pggb image but are in the cactus one
 that the [Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus) uses, so
@@ -202,7 +202,7 @@ in_cactus() {
     quay.io/comparative-genomics-toolkit/cactus:v3.2.1 "$@"
 }
 
-for strain in K12 Sakai CFT073 NCTC86; do
+for strain in K12 Sakai CFT073 NCTC86 IAI39; do
   in_cactus samtools faidx /data/all.fa.gz "$strain#1#chr" > "$strain.pansn.fa"
 done
 
@@ -229,7 +229,7 @@ less fragmented than a pggb one, since it records structural variation rather
 than every SNP, so a legible window is hundreds of kb rather than hundreds of
 bp.
 
-<Figure caption="The same four-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout. The indexed figure further down puts a linear view of the same window above this layout." src="/img/pangenome/graph_rgfa.png" />
+<Figure caption="The same five-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout. The indexed figure further down puts a linear view of the same window above this layout." src="/img/pangenome/graph_rgfa.png" />
 
 The rank-ladder layout above is anchored to K12, so it lines up with a linear
 view of the same window. The toolbar's **Layout** dropdown trades that
@@ -248,7 +248,7 @@ is unavailable for a plain GFA such as the pggb subgraph above.
 Cutting a slice per window is fine for one look at one region. To browse the
 whole graph instead, index it once with
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-(98 kb of index for this four-strain graph) and load the two files as one
+(98 kb of index for this five-strain graph) and load the two files as one
 `FeatureTrack` on K12:
 
 ```bash
@@ -319,12 +319,12 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 }
 ```
 
-Stack the four strains in a linear synteny view exactly as the
+Stack the five strains in a linear synteny view exactly as the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
 describes. The PanSN `sample#` prefix on every PAF record is how the adapter
 maps a record to its strain.
 
-<Figure caption="The all-vs-all synteny projection: the four strains stacked K12 to NCTC86, a ribbon between each adjacent pair drawn from the graph's wfmash PAF. Continuous diagonal ribbons are shared backbone, and the crossings and gaps are where the strains rearrange or carry accessory sequence." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="The all-vs-all synteny projection: the five strains stacked K12 to IAI39, a ribbon between each adjacent pair drawn from the graph's wfmash PAF. Continuous diagonal ribbons are shared backbone, and the crossings and gaps are where the strains rearrange or carry accessory sequence." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
 ## Pangenome variants projection
 
@@ -410,13 +410,7 @@ taffy index -i ecoli_pggb.taf.gz                        # -> .taf.gz.tai
 }
 ```
 
-<Figure caption="The graph's whole-genome alignment projected onto K12: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12. This shared-backbone window has all four strains aligning continuously, so each strain's mismatch columns read as SNP divergence from K12. NCTC86 carries small insertions relative to K12 (the boxed runs)." src="/img/pangenome/maf.png" />
-
-NCTC86 draws reverse-strand here because the hosted graph was built from
-GCF_003697165.2, which is stored in the opposite orientation to the
-GCF_002007705.1 NCTC86 this config loads. That is an accession mismatch pending
-a rebuild, not an inversion: against the loaded assembly K12 and NCTC86 align
-96.1% forward, like every other pair.
+<Figure caption="The graph's whole-genome alignment projected onto K12: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12. This shared-backbone window has all five strains aligning continuously, so each strain's mismatch columns read as SNP divergence from K12. NCTC86 is the closest to K12 and its row is nearly bare; IAI39 carries insertions relative to K12 (the boxed runs)." src="/img/pangenome/maf.png" />
 
 The `samples` list fixes the row order and labels. Supply an `nhLocation` Newick
 tree instead to draw the rows as a dendrogram. The
@@ -476,7 +470,7 @@ stretches the variant and MAF projections zoom into. (Collapsed repeats can push
 a window above the strain count, so read the signal as relative, not an exact
 genome tally.)
 
-<Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near 4 (all four strains traverse the graph there, so the sequence is core) and drops toward 1 over the accessory stretches private to fewer strains." src="/img/pangenome/depth.png" />
+<Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near 5 (every strain traverses the graph there, so the sequence is core) and drops toward 1 over the accessory stretches private to fewer strains." src="/img/pangenome/depth.png" />
 
 ### Per-strain presence
 
@@ -544,7 +538,7 @@ odgi ships its own one-line renderer,
 the four projections above, because it draws the graph the way the graph is
 stored, which is exactly what makes a pangenome graph hard to read at first.
 
-<Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, filled where the strain traverses the graph and white where it does not (accessory sequence). The axis is graph node order (the pangenome sequence), not K12 coordinates, so nothing lines up with a gene or a chromosome position. The four JBrowse projections re-plot this same presence/absence on K12's coordinates instead." src="/img/pangenome/graph.png" />
+<Figure caption="The same five-strain graph drawn by odgi viz: one row per strain, filled where the strain traverses the graph and white where it does not (accessory sequence). The axis is graph node order (the pangenome sequence), not K12 coordinates, so nothing lines up with a gene or a chromosome position. The four JBrowse projections re-plot this same presence/absence on K12's coordinates instead." src="/img/pangenome/graph.png" />
 
 `odgi viz` gives one row per strain, as the MAF and per-strain-presence tracks
 do. But its horizontal axis is the graph's node order (the "pangenome sequence",

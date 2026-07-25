@@ -92,7 +92,8 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: '806,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 440,
+    // one row per sample plus the coverage band; five samples now
+    viewportHeight: 530,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -158,7 +159,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_pggb_pav',
               type: 'MultiLinearWiggleDisplay',
-              height: 240,
+              height: 320,
             },
           ],
         },
@@ -167,7 +168,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: 'per-strain presence',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 400,
+    viewportHeight: 530,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

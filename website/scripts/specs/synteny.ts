@@ -304,33 +304,48 @@ export const syntenySpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearSyntenyView',
+            // IAI39 goes last on purpose. The other four are near-colinear
+            // with each other (every pair >92% forward), so bands 1-3 are the
+            // shared-backbone picture and the bottom band is the only one with
+            // real structure: IAI39 carries five inversions over 50 kb against
+            // K12, the largest 281 kb and 350 kb, which draw as two clean X
+            // crossings rather than as noise.
             views: [
               { assembly: 'K12' },
               { assembly: 'Sakai' },
               { assembly: 'CFT073' },
               { assembly: 'NCTC86' },
+              { assembly: 'IAI39' },
             ],
-            // one all-vs-all track backs every band (lists all four assemblies)
-            tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
+            // one all-vs-all track backs every band (lists all five assemblies)
+            tracks: [
+              ['ecoli_ava'],
+              ['ecoli_ava'],
+              ['ecoli_ava'],
+              ['ecoli_ava'],
+            ],
             drawCurves: false,
             colorBy: 'default',
             // drop short minimap2 alignments so the shared backbone reads as
             // clean ribbons instead of a dense noise band
             minAlignmentLength: 10000,
+            levelHeights: [110, 110, 110, 110],
             // No autoDiagonalize. It reorders and flips a level's lower axis,
             // and neither lever applies: each assembly is a single contig, so
-            // there is nothing to reorder, and every pair is >92% forward-strand
-            // (K12-Sakai 0.03 reverse bp, CFT073-NCTC86 0.07), so nothing to
-            // flip either — tested, the render is unchanged. The slant is not a
-            // rearrangement to correct: each row spans its own whole genome
-            // across the same pixel width, and the genomes differ in length
-            // (K-12 4.64 Mb vs Sakai 5.50 Mb), so a colinear alignment has to
-            // draw as a diagonal. Rotating the circular genomes to a common
-            // origin at build time is the only thing that would change it.
+            // there is nothing to reorder, and the flip is per-axis rather than
+            // per-block, so it cannot help a row whose inversions are internal
+            // (IAI39) — tested, the render is unchanged. The slant is not a
+            // rearrangement to correct either: each row spans its own whole
+            // genome across the same pixel width, and the genomes differ in
+            // length (K-12 4.64 Mb vs Sakai 5.50 Mb), so a colinear alignment
+            // has to draw as a diagonal.
           },
         ],
       },
     ),
+    // five rows and four 110px bands, sized to them (the four-row version was
+    // 800, and a row costs ~175 including its header)
+    viewportHeight: 1030,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
