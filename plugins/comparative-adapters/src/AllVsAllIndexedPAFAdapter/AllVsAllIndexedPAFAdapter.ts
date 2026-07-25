@@ -5,7 +5,7 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-import { panSNContig, panSNMatchesPrefix, panSNPrefixes } from '../pansn.ts'
+import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
@@ -14,10 +14,10 @@ import {
   readPifLines,
   resolveCoarseTier,
   resolvePanSNPrefix,
+  sideDraws,
 } from '../util.ts'
 
 import type { PifLine } from '../util.ts'
-
 import type { AllVsAllIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -25,25 +25,27 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-// One-vs-all draws every mate, including same-sample paralogy: make-pif's
-// double-emit already keys each locus on its own contig, so viewing chr1
-// returns the chr1-anchored row and viewing chr2 the chr2-anchored row
-// (distinct fileOffsets = distinct ids). A synteny band narrows to its pair via
-// targetAssemblyName, which also drops paralogy. A degenerate self-diagonal
-// (the SAME sequence aligned to itself at the same coords) is skipped — tested
-// on the full PanSN names, since `grape#1#chr1` vs `grape#2#chr1` shares sample
-// and stripped contig yet is a real hap1-vs-hap2 alignment, and two samples
-// sharing a contig name (both `chr1`) can align at identical coords in a
-// conserved region. Mirrors AllVsAllPAFAdapter.
-function drawsHere(line: PifLine, targetPrefix: string | undefined) {
-  const selfDiagonal =
-    line.indexedName.slice(1) === line.mateName &&
-    line.mateStart === line.indexedStart &&
-    line.mateEnd === line.indexedEnd
-  return (
-    !selfDiagonal &&
-    (targetPrefix === undefined ||
-      panSNMatchesPrefix(line.mateName, targetPrefix))
+// The `sideDraws` gate over a PIF row, which is already oriented to the
+// perspective it is indexed under. One-vs-all draws every mate, including
+// same-sample paralogy: make-pif's double-emit already keys each locus on its
+// own contig, so viewing chr1 returns the chr1-anchored row and viewing chr2 the
+// chr2-anchored row (distinct fileOffsets = distinct ids).
+function drawsHere(
+  line: PifLine,
+  anchorPrefix: string | undefined,
+  targetPrefix: string | undefined,
+) {
+  return sideDraws(
+    {
+      refName: line.indexedRefName,
+      start: line.indexedStart,
+      end: line.indexedEnd,
+      mateRefName: line.mateName,
+      mateStart: line.mateStart,
+      mateEnd: line.mateEnd,
+    },
+    anchorPrefix,
+    targetPrefix,
   )
 }
 
@@ -188,7 +190,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
               statusCallback: slot(),
               stopTokenCheck,
               lineCallback: (parsed, fileOffset) => {
-                if (drawsHere(parsed, targetPrefix)) {
+                if (drawsHere(parsed, anchorPrefix, targetPrefix)) {
                   observer.next(
                     makeIndexedSyntenyFeature({
                       line: parsed,

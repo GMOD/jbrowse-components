@@ -10,11 +10,12 @@ import {
   makeSyntenyFeature,
   orientPafRecord,
 } from '../PAFAdapter/util.ts'
-import { panSNContig, panSNMatchesPrefix } from '../pansn.ts'
+import { panSNContig } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
   resolvePanSNPrefix,
+  sideDraws,
 } from '../util.ts'
 
 import type { AllVsAllPAFAdapterConfig } from './configSchema.ts'
@@ -72,31 +73,25 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     return { records, sidesByContig }
   }
 
+  // Exactly the contigs `getFeatures` can emit for: the same `sideDraws` gate
+  // over the same per-contig index, so a contig is reported iff some side filed
+  // under it draws. Answering it from the index rather than a fresh scan also
+  // lets each contig stop at its first drawing side.
   async getRefNames(opts: BaseOptions = {}) {
-    const { assemblyName, targetAssemblyName } = opts
-    const { records } = await this.setup(opts)
-    const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
-    const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
-    const set = new Set<string>()
-    // Mirror the getFeatures gate: report the anchor-side contig of every side
-    // that draws. One-vs-all (no target) reports every anchor contig, including
-    // those whose only mate is the same sample (paralogy). A supplied
-    // targetAssemblyName (two-row synteny band) narrows to that single pair,
-    // which also drops paralogy contigs (mate = same sample, not the target).
-    for (const r of records) {
-      for (const flip of [true, false]) {
-        const sideName = flip ? r.qname : r.tname
-        const mateName = flip ? r.tname : r.qname
-        if (
-          panSNMatchesPrefix(sideName, anchorPrefix) &&
-          (targetPrefix === undefined ||
-            panSNMatchesPrefix(mateName, targetPrefix))
-        ) {
-          set.add(panSNContig(sideName))
-        }
-      }
-    }
-    return [...set]
+    const { records, sidesByContig } = await this.setup(opts)
+    const anchorPrefix = resolvePanSNPrefix(this, opts.assemblyName)
+    const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
+    return [...sidesByContig]
+      .filter(([, sides]) =>
+        sides.some(({ index, flip }) =>
+          sideDraws(
+            orientPafRecord(records[index]!, flip),
+            anchorPrefix,
+            targetPrefix,
+          ),
+        ),
+      )
+      .map(([contig]) => contig)
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
@@ -113,38 +108,16 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
       // A cross-sample record has exactly one anchor side, so it emits once. A
       // same-sample (paralogy) record — e.g. a segmental duplication — has BOTH
       // sides on the anchor, so it draws at each of its two loci with a distinct
-      // id (index*2 + side). One-vs-all (no targetAssemblyName) draws every
-      // mate, listed or not (labelled by assembly if listed, else its bare PanSN
-      // prefix); a two-row synteny band narrows to its pair, which also excludes
-      // paralogy since the mate is the same sample, not the other band.
+      // id (index*2 + side).
       for (const { index, flip } of sidesByContig.get(qref) ?? []) {
         const r = records[index]!
-        const {
-          refName: sideName,
-          start,
-          end,
-          mateRefName: mateName,
-          mateStart,
-          mateEnd,
-        } = orientPafRecord(r, flip)
+        const side = orientPafRecord(r, flip)
+        const { start, end, mateRefName, mateStart, mateEnd } = side
 
-        // A degenerate self-diagonal is the SAME sequence aligned to itself at
-        // the same coords (minimap2 without -X emits one per sequence); drop it
-        // from both sides. The test is on the full PanSN names, not
-        // sample+stripped-contig: `grape#1#chr1` vs `grape#2#chr1` shares both
-        // of those yet is a real hap1-vs-hap2 alignment, and two samples that
-        // share a contig name (both `chr1`) can align at identical coords in a
-        // conserved region.
-        const selfDiagonal =
-          r.qname === r.tname && r.qstart === r.tstart && r.qend === r.tend
-
-        const drawsHere =
-          !selfDiagonal &&
-          panSNMatchesPrefix(sideName, anchorPrefix) &&
-          (targetPrefix === undefined ||
-            panSNMatchesPrefix(mateName, targetPrefix))
-
-        if (drawsHere && doesIntersect2(qstart, qend, start, end)) {
+        if (
+          sideDraws(side, anchorPrefix, targetPrefix) &&
+          doesIntersect2(qstart, qend, start, end)
+        ) {
           const { extra, strand } = r
           observer.next(
             makeSyntenyFeature({
@@ -159,8 +132,8 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
               mate: {
                 start: mateStart,
                 end: mateEnd,
-                refName: panSNContig(mateName),
-                assemblyName: assemblyForPanSNName(asmByPrefix, mateName),
+                refName: panSNContig(mateRefName),
+                assemblyName: assemblyForPanSNName(asmByPrefix, mateRefName),
               },
             }),
           )

@@ -280,6 +280,45 @@ test('getRefNames one-vs-all includes paralogy contigs (chr2/chr3 have only grap
   expect([...names].sort()).toEqual(['chr1', 'chr2', 'chr3'])
 })
 
+// getRefNames and getFeatures run one `sideDraws` gate, so a reported contig
+// always has at least one feature. A contig whose only row is a degenerate
+// self-diagonal (minimap2 without -X emits one per sequence) is the case that
+// used to slip through: getFeatures dropped it, getRefNames did not.
+test('getRefNames drops a contig whose only alignment is a self-diagonal', async () => {
+  const pafLocation = writePaf([
+    'grape#1#chr1\t1000\t100\t200\t+\tpeach#1#G1\t1000\t300\t400\t90\t100\t60',
+    'grape#1#chrSelf\t1000\t0\t500\t+\tgrape#1#chrSelf\t1000\t0\t500\t500\t500\t60',
+  ])
+  const adapter = makeAdapter(['grape', 'peach'], {}, pafLocation)
+  const names = await adapter.getRefNames({ assemblyName: 'grape' })
+  expect([...names].sort()).toEqual(['chr1'])
+  expect(
+    await feats(adapter, {
+      refName: 'chrSelf',
+      start: 0,
+      end: 1000,
+      assemblyName: 'grape',
+    }),
+  ).toEqual([])
+})
+
+test('every contig getRefNames reports yields at least one feature', async () => {
+  const adapter = makeAdapter(['grape', 'peach'])
+  const names = await adapter.getRefNames({ assemblyName: 'grape' })
+  for (const refName of names) {
+    expect(
+      (
+        await feats(adapter, {
+          refName,
+          start: 0,
+          end: 1000,
+          assemblyName: 'grape',
+        })
+      ).length,
+    ).toBeGreaterThan(0)
+  }
+})
+
 // realistic fixture: volvox is aligned to both volvox_ins and volvox_del; a
 // plain LGV (no targetAssemblyName) on volvox is exactly the one-vs-all case.
 test('real all-vs-all fixture: volvox LGV draws against both other samples', async () => {

@@ -160,7 +160,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
               line: parsed,
               fileOffset,
               assemblyName,
-              refName: parsed.indexedName.slice(1), // strip q/t prefix
+              refName: parsed.indexedRefName,
               mate: {
                 start: parsed.mateStart,
                 end: parsed.mateEnd,

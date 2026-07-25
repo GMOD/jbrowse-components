@@ -4,12 +4,12 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { collectLines, getAssemblyNamesFromConf, parsePAFLine } from '../util.ts'
 import {
-  loadPafRecords,
-  makeSyntenyFeature,
-  orientPafRecord,
-} from './util.ts'
+  collectLines,
+  getAssemblyNamesFromConf,
+  parsePAFLine,
+} from '../util.ts'
+import { loadPafRecords, makeSyntenyFeature, orientPafRecord } from './util.ts'
 
 import type { PAFRecord } from './util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'

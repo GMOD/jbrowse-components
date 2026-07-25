@@ -8,15 +8,15 @@ import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
-import { panSNPrefixes } from './pansn.ts'
+import { panSNMatchesPrefix, panSNPrefixes } from './pansn.ts'
 
 import type { BareFeature } from './mcscanUtil.ts'
-import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { StatusCallback } from '@jbrowse/core/util'
+import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 // assemblyNames is ordered [query, target]: index 0 is the PAF/delta/chain
@@ -240,6 +240,10 @@ export function parsePifLine(line: string) {
   const r = parsePAFLine(line)
   return {
     indexedName: r.qname,
+    // The tier letter stripped once, here, where it is what column 1 means —
+    // rather than at each read site, which is where a `.slice(1)` is easy to
+    // forget and impossible to tell from an off-by-one.
+    indexedRefName: r.qname.slice(1),
     indexedStart: r.qstart,
     indexedEnd: r.qend,
     mateName: r.tname,
@@ -252,6 +256,65 @@ export function parsePifLine(line: string) {
 
 /** A PIF row parsed into its anchor/mate roles — see {@link parsePifLine}. */
 export type PifLine = ReturnType<typeof parsePifLine>
+
+/**
+ * Whether an all-vs-all row is a degenerate self-diagonal: the SAME sequence
+ * aligned to itself at the same coordinates, which minimap2 emits once per
+ * sequence unless run with `-X`. Dropped from both of its sides.
+ *
+ * The test is on the full PanSN names, not sample + stripped contig:
+ * `grape#1#chr1` vs `grape#2#chr1` shares both of those yet is a real
+ * hap1-vs-hap2 alignment, and two samples that share a contig name (both
+ * `chr1`) can align at identical coordinates in a conserved region. Shared by
+ * the in-memory and indexed all-vs-all adapters so that reasoning lives once.
+ */
+export function isSelfDiagonal(a: {
+  refName: string
+  start: number
+  end: number
+  mateRefName: string
+  mateStart: number
+  mateEnd: number
+}) {
+  return (
+    a.refName === a.mateRefName &&
+    a.start === a.mateStart &&
+    a.end === a.mateEnd
+  )
+}
+
+/**
+ * Whether one side of an all-vs-all record draws in the current query.
+ *
+ * `anchorPrefix` is the assembly being viewed and `targetPrefix` the assembly on
+ * the other band of a two-row synteny view, or `undefined` for the one-vs-all
+ * case a plain linear view asks for — which draws every mate, listed as an
+ * assembly or not. Narrowing to a target also excludes same-sample paralogy,
+ * since there the mate is the anchor's own sample rather than the other band.
+ *
+ * One predicate so `getFeatures` and `getRefNames` cannot answer it differently:
+ * a contig reported as having data but yielding no features is exactly the
+ * divergence this prevents.
+ */
+export function sideDraws(
+  side: {
+    refName: string
+    start: number
+    end: number
+    mateRefName: string
+    mateStart: number
+    mateEnd: number
+  },
+  anchorPrefix: string | undefined,
+  targetPrefix: string | undefined,
+) {
+  return (
+    !isSelfDiagonal(side) &&
+    panSNMatchesPrefix(side.refName, anchorPrefix) &&
+    (targetPrefix === undefined ||
+      panSNMatchesPrefix(side.mateRefName, targetPrefix))
+  )
+}
 
 /**
  * Minimal structural view of `@gmod/tabix`'s `TabixIndexedFile.getLines`, so
