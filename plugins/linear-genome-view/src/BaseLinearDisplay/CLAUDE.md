@@ -46,6 +46,18 @@ double-installing all five autoruns (masked by the `isLoading`/stale guards, but
 wasteful). Just define `afterAttach` and let the auto-chain run the base. Proven
 in `models/afterAttachAutoChain.test.ts`.
 
+**A super-captured view is called bare, so the base must not read siblings off
+`this`.** `const superX = self.x` then `superX()` invokes it with no receiver,
+so a base that reaches a sibling view as `this.sibling` gets `undefined` and
+throws — for a view, MST's `self` closure is the only receiver you can rely on.
+Inside one `.views()` block `self` isn't yet typed with that block's own members
+(sibling getters don't resolve), which is what pushes authors to `this` in the
+first place; the fix is to move the overridable view into its own later
+`.views()` block, placed after everything it reads, so `self.sibling` both
+typechecks and survives being called bare. `LinearAlignmentsDisplay.rpcProps`
+sits in its own block for exactly this reason — it read `this.sortTag`, and
+`LGVSyntenyDisplay`'s override made every synteny fetch throw.
+
 `onDisplayedRegionsChange(self, clear, name?)` (exported helper, NOT a 5th
 installed autorun) is opt-in for per-region state keyed by
 `displayedRegionIndex` that must survive `clearAllRpcData` — chromosome nav
