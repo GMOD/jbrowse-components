@@ -13,6 +13,7 @@ export {
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
+  waitForViewPhases,
 } from './waits.ts'
 export {
   BASE_CHROME_ARGS,

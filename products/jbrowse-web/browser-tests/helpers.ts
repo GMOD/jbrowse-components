@@ -2,6 +2,7 @@ import {
   delay,
   encodeSessionSpec,
   waitForLoadingComplete,
+  waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
@@ -86,6 +87,9 @@ export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
 }
 
 export async function waitForDataLoaded(page: Page, timeout = 60000) {
+  // A view still waiting on its assembly has no displays mounted, so it raises no
+  // overlay at all and every wait below reads "loaded" through it
+  await waitForViewPhases(page, timeout)
   // Wait for loading overlay to appear (briefly) then disappear.
   // Use a short timeout since fast-loading data may never show the overlay.
   try {

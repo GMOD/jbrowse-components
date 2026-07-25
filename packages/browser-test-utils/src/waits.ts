@@ -162,3 +162,19 @@ export async function waitForDisplayPhases(page: Page, timeoutMs: number) {
     )
     .catch(() => {})
 }
+
+// The view-level counterpart: ViewContainer publishes `data-view-phase` from the
+// view model's own phase, and `loading` means the view is still waiting on its
+// assembly (or on init's navigation) and has mounted no displays at all. Every
+// display-level wait above is silent in that state — there is nothing to be
+// loading yet — so a capture taken then lands on a bare spinner.
+//
+// NOT best-effort, unlike its neighbours: a view that never leaves `loading` has
+// no content to fall through to, so the timeout IS the diagnosis and the caller
+// should surface it.
+export function waitForViewPhases(page: Page, timeoutMs: number) {
+  return page.waitForFunction(
+    () => document.querySelector('[data-view-phase="loading"]') === null,
+    { timeout: timeoutMs, polling: 500 },
+  )
+}

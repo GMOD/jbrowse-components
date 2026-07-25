@@ -90,7 +90,9 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   }
   return (
     <div className={classes.rubberbandContainer}>
-      {model.initialized ? (
+      {model.showLoading ? (
+        <LoadingEllipses variant="h6" />
+      ) : (
         <>
           {model.showHeader ? <Header model={model} /> : null}
           <MultiLevelRubberband
@@ -102,8 +104,6 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
             <BreakpointSplitViewOverlay model={model} />
           </div>
         </>
-      ) : (
-        <LoadingEllipses variant="h6" />
       )}
     </div>
   )

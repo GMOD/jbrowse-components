@@ -158,6 +158,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Spinner instead of content, i.e. sub-views exist but haven't loaded their
+       * assemblies yet. Named to match LGV/dotplot/synteny/circular, which is what
+       * ViewContainer reads to publish `data-view-phase`.
+       */
+      get showLoading() {
+        return this.hasSomethingToShow && !this.initialized
+      },
+
+      /**
+       * #getter
        */
       get showImportForm() {
         return !this.hasSomethingToShow

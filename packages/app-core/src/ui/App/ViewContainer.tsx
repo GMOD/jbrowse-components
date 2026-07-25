@@ -27,6 +27,17 @@ function viewHeight(view: AbstractViewModel) {
     : ESTIMATED_VIEW_HEIGHT
 }
 
+// Every view that waits on something before it can mount content (LGV, dotplot,
+// synteny, circular, breakpoint-split — all of which paint a spinner in place of
+// their whole body meanwhile) models that wait as `showLoading`. Views without
+// the getter are mounted content the moment they render.
+//
+// Two values, not one per render branch: an import form is finished content, not
+// a pending state, so it reports ready like anything else.
+function viewPhase(view: AbstractViewModel) {
+  return 'showLoading' in view && view.showLoading === true ? 'loading' : 'ready'
+}
+
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     margin: theme.spacing(0.5),
@@ -87,6 +98,11 @@ const ViewContainer = observer(function ViewContainer({
       elevation={12}
       className={viewContainerClassName}
       data-testid={`view-container-${view.id}`}
+      // the view-level counterpart of DisplayChrome's data-display-phase: while
+      // this reads `loading` the view has no displays mounted, so every
+      // display-level readiness signal is silent and a capture taken now lands on
+      // a bare spinner (see waitForViewPhases in @jbrowse/browser-test-utils)
+      data-view-phase={viewPhase(view)}
     >
       <ViewHeader
         view={view}

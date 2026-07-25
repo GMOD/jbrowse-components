@@ -180,12 +180,17 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: CLUSTERED,
+    // same as the recurrence spec below: networkidle0 can't land inside
+    // puppeteer's fixed 60s navigation timeout while the 5.7MB BED streams
+    waitUntil: 'domcontentloaded',
     // by far the heaviest spec here: the whole-genome view pulls essentially the
     // entire 5.7MB BED before it can build the 1104-row matrix and cluster it.
-    // 180s captured it twice and then timed out on a third run, so give it room.
-    // The zoomed ERBB2 spec below fetches one 1.5Mb window and is nowhere near
-    // this bound.
-    readyTimeout: 420000,
+    // 180s captured it twice and then timed out on a third run; 420s then timed
+    // out too, with the debug dump showing the dendrogram painting seconds after
+    // the wait gave up — the fetch+cluster is genuinely minutes here and the cap
+    // was just under it. The zoomed ERBB2 spec below fetches one 1.5Mb window and
+    // is nowhere near this bound.
+    readyTimeout: 900000,
     viewportWidth: 1900,
     viewportHeight: 900,
     settleMs: 20000,
@@ -349,10 +354,17 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // Nothing to gate on beyond the generator's own waits (loading overlay
-    // quiesced + displays painted): there is no clustering here, and the ruler
-    // reads bare contig names in this config, so a 'chr1' text gate never
-    // matches. The stack still pulls the whole 5.7MB BED before it paints.
+    // No spec-specific gate: there is no clustering here, and the ruler reads
+    // bare contig names in this config, so a 'chr1' text gate never matches. The
+    // generator's own data-view-phase wait covers the part that used to slip
+    // through — a cold remote assembly fetch outlasting readiness + settle and
+    // capturing the pre-init spinner.
+    //
+    // networkidle0 can't be reached inside puppeteer's 60s navigation timeout
+    // while the whole 5.7MB BED is streaming, and that timeout is not
+    // configurable per spec — so hand off to the readiness waits at
+    // domcontentloaded instead.
+    waitUntil: 'domcontentloaded',
     readyTimeout: 300000,
     viewportWidth: 1900,
     // Review asked to increase the browser height so the cohort heatmap isn't

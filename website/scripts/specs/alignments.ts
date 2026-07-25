@@ -189,12 +189,21 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // click the boxed item to actually enable soft clipping; the menu closes
-        // on click, so the result frame shows the soft-clipped reads with no menu
+        // click the boxed item to actually enable soft clipping. It's a
+        // promotable toggle with keepMenuOpen, so the menu stays up after the
+        // click — Escape dismisses it for the result frame.
         actions: [
           { type: 'click', text: 'Show soft clipping' },
+          // two levels to dismiss: the "Show..." submenu, then the track menu
+          { type: 'press', key: 'Escape' },
+          { type: 'press', key: 'Escape' },
           { type: 'waitForText', text: 'Show soft clipping', hidden: true },
-          { type: 'hover', from: { x: 200, y: 100 } },
+          { type: 'waitForText', text: 'Show...', hidden: true },
+          // the track menu icon keeps focus after the menu closes, so its
+          // "Track settings" tooltip stays up; a click on empty page below the
+          // view blurs it and parks the cursor away from any read
+          { type: 'click', selector: 'body' },
+          { type: 'hover', from: { x: 550, y: 605 } },
           { type: 'delay', ms: 2500 },
         ],
       },
@@ -258,9 +267,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
-      // The flag/tag dialog lives under the "Filter by..." submenu.
-      ...menuCascade(['Filter by...', 'Edit filters...']),
-      { type: 'click', text: 'Edit filters...' },
+      // "Filter by..." is a single item, not a submenu — it opens the
+      // flag/tag/read-name dialog directly (menus/filters.ts).
+      { type: 'waitForText', text: 'Filter by...' },
+      { type: 'click', text: 'Filter by...' },
+      { type: 'waitForText', text: 'Filter options' },
       { type: 'delay', ms: 1000 },
     ],
   },

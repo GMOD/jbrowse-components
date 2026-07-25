@@ -15,6 +15,7 @@ import {
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
+  waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
@@ -201,6 +202,12 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
     spec.readySelector,
   ].filter((s): s is string => s !== undefined)
   try {
+    // first: while a view reads data-view-phase=loading it has mounted no
+    // displays, so the spec's own ready selector and every display-level signal
+    // below are all silent, and a capture would land on a bare spinner
+    if (!spec.allowUnsettled) {
+      await waitForViewPhases(page, readyTimeout)
+    }
     for (const selector of readySelectors) {
       await waitForVisible(page, selector, { timeout: readyTimeout })
     }
@@ -304,6 +311,16 @@ async function assertRenderSettled(page: Page, spec: BrowserScreenshotSpec) {
     }
     const found: { kind: string; text: string }[] = []
 
+    // a view still waiting on its assembly / init navigation paints a spinner in
+    // place of its whole body (ViewContainer: data-view-phase)
+    for (const el of document.querySelectorAll('[data-view-phase="loading"]')) {
+      if (isVisible(el)) {
+        found.push({
+          kind: 'view-loading',
+          text: (el as HTMLElement).innerText.slice(0, 200),
+        })
+      }
+    }
     // loading overlay (LoadingOverlay: data-testid="loading-overlay")
     for (const el of document.querySelectorAll(
       '[data-testid="loading-overlay"]',
@@ -401,7 +418,11 @@ async function captureUrl(page: Page, spec: SessionUrlSpec, port: number) {
     waitUntil:
       spec.waitUntil ??
       (spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0'),
-    timeout: 60000,
+    // networkidle0 can't be reached while a spec's data is still streaming, so a
+    // fixed 60s here failed the heavy tcga specs as a *navigation* timeout —
+    // nothing to do with the page being broken. A spec that already declares it
+    // needs longer to be ready gets the same room for its navigation.
+    timeout: Math.max(60000, spec.readyTimeout ?? 0),
   })
 
   await waitForReady(page, spec)
@@ -901,6 +922,14 @@ async function main() {
   const buildLaunchOptions = (useFirefox: boolean) => ({
     headless: !headed,
     defaultViewport,
+    // Puppeteer's default 180s protocolTimeout applies to every CDP call, and a
+    // renderer busy rasterizing a 1104-row whole-genome canvas can starve the
+    // main thread past it. The tcga cohort spec then failed with "Waiting for
+    // selector … failed" and an EMPTY debug dump over a fully painted page —
+    // the app was fine, the protocol call gave up. Deliberately above the
+    // longest spec readyTimeout so a real hang still fails as a ready timeout,
+    // with a debug frame, rather than as an opaque protocol error.
+    protocolTimeout: 1200000,
     ...(useFirefox
       ? {
           browser: 'firefox' as const,
