@@ -442,7 +442,7 @@ function markPageAlive(page: Page) {
 // Fail if the document we readied is not the document we are about to shoot.
 // A renderer crash or an app reload gives Chrome a brand-new frame, and the
 // readiness waits happily pass on it a second time, so the capture lands on a
-// bare "Loading" panel — that is how a blank tcga/cnv_recurrence_genome frame
+// bare "Loading" panel — that is how a blank whole-genome TCGA cohort frame
 // got committed over a good one. `assertRenderSettled` can't be relied on to
 // catch it: it runs before the reload can happen, and the post-reload page is
 // briefly indistinguishable from a slow first paint.

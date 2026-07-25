@@ -16,7 +16,7 @@ kind: every primary tumor in a TCGA project stacked as its own row, so a
 copy-number change shared across the cohort reads as a vertical stripe running
 down hundreds of samples.
 
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile. Blue is loss, red is gain, on the caller's log2 ratio. Recurrent events read as vertical stripes through the stack; whole rows tending red or blue are the heavily aneuploid tumors that clustering groups together." src="/img/tcga/cohort_cnv_genome.png" />
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track; whole rows tending red or blue are the heavily aneuploid tumors that clustering groups together. Four recurrent loci are labeled." src="/img/tcga/cohort_cnv_genome.png" />
 
 ## What you need
 
@@ -184,11 +184,9 @@ navigate. Left to autoscale, a quiet window would rescale to its own noise and
 read like a peak. `posColor`/`negColor` reuse the stack's amplification and
 deep-loss colors, so the two tracks agree by eye.
 
-Placed above the stack, each peak sits over a stripe and puts a number on it: 1q
-gained in 58.9% of tumors at its peak, 16q lost in 46.4%, the 100kb bin over
-ERBB2 gained in 19.2%.
-
-<Figure caption="TCGA-BRCA gain (red, up) and loss (blue, down) frequency per 100kb above the same 1104-tumor stack, both whole-genome. Every peak in the top track is a stripe in the bottom one, and only the top track carries a count: 1q gained in 58.9% of tumors, 8q24 in 49.7%, 16q lost in 46.4%. The axis is pinned at plus or minus 100% of the cohort." src="/img/tcga/cnv_recurrence_genome.png" />
+Placed above the stack, as in the figure at the top of this page, each peak sits
+over a stripe and puts a number on it: 1q gained in 58.9% of tumors at its peak,
+16q lost in 46.4%, the 100kb bin over ERBB2 gained in 19.2%.
 
 This is a frequency plot, not
 [GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41): there is no background

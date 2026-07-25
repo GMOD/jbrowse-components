@@ -4,7 +4,7 @@
 // spec by name, so a figure that takes minutes to render can be explained
 // instead of guessed at.
 //
-//   node scripts/profile-spec.ts tcga/cnv_recurrence_genome [--out=<dir>]
+//   node scripts/profile-spec.ts tcga/cohort_cnv_genome [--out=<dir>]
 //
 // The timeline is the point: each milestone is a real readiness signal, so the
 // gaps between them attribute the wall clock to a phase (assembly load, fetch +

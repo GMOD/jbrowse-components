@@ -149,17 +149,26 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
 // capture on real completion rather than on a duration guess.
 const CLUSTERED = '[data-testid="tree_sidebar_dendrogram"]'
 
+// Where the cohort stack's first row lands in the capture, measured off the
+// rendered figure. The callouts below sit at offsets from it, so the two
+// track heights above the stack are the only thing that has to be kept in
+// sync with the annotation coordinates.
+const STACK_TOP = 335
+
 export const tcgaSpecs: ScreenshotSpec[] = [
   // The cohort view: every TCGA-BRCA primary tumor as one 1px row across the
-  // whole genome, clustered so tumors with similar profiles sit together.
-  // Recurrent events read as vertical stripes down the stack: blue at 9p21
-  // (CDKN2A) and 10q23 (PTEN), red at 17q12 (ERBB2), 8q24 (MYC) and 11q13
-  // (CCND1). This is the figure the tutorial is built around.
+  // whole genome, clustered so tumors with similar profiles sit together, under
+  // the cohort's own gain/loss frequency. Recurrent events read as vertical
+  // stripes down the stack — blue at 9p21 (CDKN2A) and 10q23 (PTEN), red at
+  // 17q12 (ERBB2), 8q24 (MYC) and 11q13 (CCND1) — and every peak in the top
+  // track is one of those stripes, with a number on it that the stack alone
+  // can't give. This is the figure the tutorial is built around; it replaces a
+  // separate unclustered recurrence figure that showed the same two tracks.
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_genome',
     url: kgUrl({
-      sessionTracks: [TCGA_BRCA_CNV_TRACK],
+      sessionTracks: [TCGA_BRCA_RECURRENCE_TRACK, TCGA_BRCA_CNV_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -167,6 +176,12 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           displayedRegionNames: HG38_MAIN_CHROMS,
           trackLabels: 'offset',
           tracks: [
+            {
+              trackId: 'tcga_brca_cnv_recurrence',
+              type: 'LinearWiggleDisplay',
+              // same height the tutorial's own displayDefaults use
+              height: 120,
+            },
             {
               trackId: 'tcga_brca_cnv',
               type: 'LinearMultiRowFeatureDisplay',
@@ -180,8 +195,8 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: CLUSTERED,
-    // same as the recurrence spec below: networkidle0 can't land inside
-    // puppeteer's fixed 60s navigation timeout while the 5.7MB BED streams
+    // networkidle0 can't land inside puppeteer's fixed 60s navigation timeout
+    // while the 5.7MB BED streams
     waitUntil: 'domcontentloaded',
     // by far the heaviest spec here: the whole-genome view pulls essentially the
     // entire 5.7MB BED before it can build the 1104-row matrix and cluster it.
@@ -192,7 +207,10 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // See agent-docs/reference/SCREENSHOT_PERF.md.
     readyTimeout: 900000,
     viewportWidth: 1900,
-    viewportHeight: 900,
+    // tall enough for the whole 760px stack below the 120px frequency track:
+    // the review's "the heatmap is sliced at the bottom edge" was this figure's
+    // 900px viewport cutting the last ~60 rows
+    viewportHeight: 1120,
     settleMs: 20000,
     // 1104 rows floored to 1px: sub-pixel row-boundary jitter between runs, so
     // the gate sits above the default
@@ -209,54 +227,54 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         x: 790,
-        y: 725,
+        y: STACK_TOP + 532,
         fontSize: 20,
         maxWidth: 200,
         text: 'MYC (8q24)',
       },
       {
         type: 'arrow',
-        from: { x: 930, y: 712 },
-        to: { x: wgX('8', 127735434), y: 615 },
+        from: { x: 930, y: STACK_TOP + 519 },
+        to: { x: wgX('8', 127735434), y: STACK_TOP + 422 },
       },
       {
         type: 'text',
         x: 930,
-        y: 838,
+        y: STACK_TOP + 645,
         fontSize: 20,
         maxWidth: 200,
         text: 'CDKN2A (9p21)',
       },
       {
         type: 'arrow',
-        from: { x: 1000, y: 820 },
-        to: { x: wgX('9', 21967752), y: 650 },
+        from: { x: 1000, y: STACK_TOP + 627 },
+        to: { x: wgX('9', 21967752), y: STACK_TOP + 457 },
       },
       {
         type: 'text',
         x: 1090,
-        y: 725,
+        y: STACK_TOP + 532,
         fontSize: 20,
         maxWidth: 200,
         text: 'CCND1 (11q13)',
       },
       {
         type: 'arrow',
-        from: { x: 1150, y: 712 },
-        to: { x: wgX('11', 69641156), y: 615 },
+        from: { x: 1150, y: STACK_TOP + 519 },
+        to: { x: wgX('11', 69641156), y: STACK_TOP + 422 },
       },
       {
         type: 'text',
         x: 1450,
-        y: 725,
+        y: STACK_TOP + 532,
         fontSize: 20,
         maxWidth: 200,
         text: 'ERBB2 (17q12)',
       },
       {
         type: 'arrow',
-        from: { x: 1515, y: 712 },
-        to: { x: wgX('17', 39688094), y: 615 },
+        from: { x: 1515, y: STACK_TOP + 519 },
+        to: { x: wgX('17', 39688094), y: STACK_TOP + 422 },
       },
     ],
   },
@@ -320,70 +338,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight: 900,
     settleMs: 15000,
-    diffThreshold: 0.02,
-  },
-
-  // The recurrence track over the same stack, both whole-genome: every peak in
-  // the top track is a stripe in the bottom one, and the top track is the only
-  // one of the two that can say how many tumors. Deliberately NOT clustered —
-  // the stack is here as the thing the frequencies summarize, and the ordering
-  // would go unused. (Clustering itself is cheap — @gmod/hclust measures 0.4s on
-  // these 1104 rows; what makes the clustered sibling slow is software
-  // rasterization, see agent-docs/reference/SCREENSHOT_PERF.md.)
-  {
-    mode: 'url',
-    name: 'tcga/cnv_recurrence_genome',
-    url: kgUrl({
-      sessionTracks: [TCGA_BRCA_RECURRENCE_TRACK, TCGA_BRCA_CNV_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          displayedRegionNames: HG38_MAIN_CHROMS,
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'tcga_brca_cnv_recurrence',
-              type: 'LinearWiggleDisplay',
-              height: 180,
-            },
-            {
-              trackId: 'tcga_brca_cnv',
-              type: 'LinearMultiRowFeatureDisplay',
-              height: 560,
-            },
-          ],
-        },
-      ],
-    }),
-    // No spec-specific gate: there is no clustering here, and the ruler reads
-    // bare contig names in this config, so a 'chr1' text gate never matches. The
-    // generator's own data-view-phase wait covers the part that used to slip
-    // through — a cold remote assembly fetch outlasting readiness + settle and
-    // capturing the pre-init spinner.
-    //
-    // networkidle0 can't be reached inside puppeteer's 60s navigation timeout
-    // while the whole 5.7MB BED is streaming, and that timeout is not
-    // configurable per spec — so hand off to the readiness waits at
-    // domcontentloaded instead.
-    waitUntil: 'domcontentloaded',
-    readyTimeout: 300000,
-    viewportWidth: 1900,
-    // Review asked to increase the browser height so the cohort heatmap isn't
-    // sliced at the bottom edge, and the truncation is real. Left at 860 because
-    // this figure does not survive a taller viewport: at 1200 the render fails
-    // with "frame got detached", i.e. Chrome tore down and recreated the frame.
-    // rowHeight 0 auto-fits all 1104 rows to the display height, so a taller
-    // track means a taller canvas for the same rows, and past ~860 the renderer
-    // dies. Once it does, the readiness waits can pass a second time on the
-    // fresh document and the capture lands on a bare "Loading" panel — that is
-    // how a blank frame once got committed over this figure. generate-screenshots
-    // now refuses to write in that case (assertSamePageAsReady), so the failure
-    // is loud, but the height still can't go up until the crash itself is fixed.
-    viewportHeight: 860,
-    settleMs: 20000,
-    // 1104 rows floored to 1px alias differently run to run, same as the
-    // clustered genome figure above
     diffThreshold: 0.02,
   },
 ]

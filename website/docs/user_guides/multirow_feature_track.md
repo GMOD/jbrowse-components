@@ -100,7 +100,7 @@ segment mean copy number:
 }
 ```
 
-<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by a jexl expression binning the caller's log2 ratio: blue loss, red gain. Recurrent events read as vertical stripes through the stack." />
+<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by a jexl expression binning the caller's log2 ratio: blue loss, red gain. Recurrent events read as vertical stripes through the stack, under a wiggle track of the same cohort's gain/loss frequency." />
 
 **Show legend** in the track menu keys the colors actually present, and the
 **Categories** submenu beside it hides individual categories, so you can drop
