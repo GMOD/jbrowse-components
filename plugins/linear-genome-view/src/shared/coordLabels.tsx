@@ -1,9 +1,10 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material'
 
-// half the space reserved for a guide label, so it stays inside the view near
-// the edges. this is the only thing lost by not using a popper
-const HALF_LABEL_WIDTH = 60
+// roughly how wide a coordinate label is. the guide clamps itself half of this
+// from either border, and a rubberband label that would hang off a border goes
+// inside its edge instead — the popper's `preventOverflow`, without the popper
+export const LABEL_WIDTH = 100
 
 const useStyles = makeStyles()(theme => ({
   // zero height so it takes no flow space while sticking with the scalebar.
@@ -32,6 +33,12 @@ const useStyles = makeStyles()(theme => ({
   rightOfEdge: {
     left: '100%',
     marginLeft: 2,
+  },
+  insideLeftEdge: {
+    left: 0,
+  },
+  insideRightEdge: {
+    right: 0,
   },
 }))
 
@@ -67,8 +74,8 @@ export function GuideLabel({
 }) {
   const { classes } = useStyles()
   const clampedX = Math.min(
-    Math.max(coordX, HALF_LABEL_WIDTH),
-    viewWidth - HALF_LABEL_WIDTH,
+    Math.max(coordX, LABEL_WIDTH / 2),
+    viewWidth - LABEL_WIDTH / 2,
   )
   return (
     <div className={classes.anchor} style={anchorStyle(stickyTop)}>
@@ -84,22 +91,42 @@ export function GuideLabel({
 
 /**
  * The bp coordinates of a rubberband selection, one label just outside each edge
- * of the span. Renders inside the span, so the edges are its own box.
+ * of the span. Renders inside the span, so the edges are its own box. A label
+ * with no room outside its edge flips inside instead, which is why the span it
+ * has to fit in is a prop.
  */
 export function SpanEdgeLabels({
   stickyTop,
   left,
   right,
+  insideLeft,
+  insideRight,
 }: {
   stickyTop: number | undefined
   left: React.ReactNode
   right: React.ReactNode
+  insideLeft: boolean
+  insideRight: boolean
 }) {
   const { classes, cx } = useStyles()
   return (
     <div className={classes.anchor} style={anchorStyle(stickyTop)}>
-      <div className={cx(classes.label, classes.leftOfEdge)}>{left}</div>
-      <div className={cx(classes.label, classes.rightOfEdge)}>{right}</div>
+      <div
+        className={cx(
+          classes.label,
+          insideLeft ? classes.insideLeftEdge : classes.leftOfEdge,
+        )}
+      >
+        {left}
+      </div>
+      <div
+        className={cx(
+          classes.label,
+          insideRight ? classes.insideRightEdge : classes.rightOfEdge,
+        )}
+      >
+        {right}
+      </div>
     </div>
   )
 }

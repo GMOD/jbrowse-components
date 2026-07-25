@@ -44,6 +44,7 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
           <RubberbandSpan
             left={rubberband.left}
             width={rubberband.width}
+            viewWidth={model.width}
             stickyTop={stickyViewHeaders ? rubberbandTop : undefined}
             leftLabel={stringify(rubberband.leftBpOffset)}
             rightLabel={stringify(rubberband.rightBpOffset)}

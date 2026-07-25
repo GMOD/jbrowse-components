@@ -63,6 +63,7 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
           size={<PerLevelRows rows={numOfBpSelected.map(getBpDisplayStr)} />}
           width={width}
           left={left}
+          viewWidth={Math.min(...model.views.map(view => view.width))}
           stickyTop={undefined}
         />
       ) : null}

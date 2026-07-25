@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha } from '@mui/material'
 
-import { SpanEdgeLabels } from './coordLabels.tsx'
+import { LABEL_WIDTH, SpanEdgeLabels } from './coordLabels.tsx'
 
 const useStyles = makeStyles()(theme => ({
   rubberband: {
@@ -27,6 +27,7 @@ const useStyles = makeStyles()(theme => ({
 export default function RubberbandSpan({
   left,
   width,
+  viewWidth,
   stickyTop,
   leftLabel,
   rightLabel,
@@ -34,12 +35,16 @@ export default function RubberbandSpan({
 }: {
   left: number
   width: number
+  viewWidth: number
   stickyTop: number | undefined
   leftLabel: React.ReactNode
   rightLabel: React.ReactNode
   size?: React.ReactNode
 }) {
   const { classes } = useStyles()
+  // a label only moves inside its edge when the span can hold it, so a sliver of
+  // a selection at a view border keeps both labels outside and takes the clip
+  const fitsInside = width > LABEL_WIDTH
   return (
     <div
       className={classes.rubberband}
@@ -51,6 +56,8 @@ export default function RubberbandSpan({
         stickyTop={stickyTop}
         left={leftLabel}
         right={rightLabel}
+        insideLeft={fitsInside && left < LABEL_WIDTH}
+        insideRight={fitsInside && left + width > viewWidth - LABEL_WIDTH}
       />
       {size ? (
         <Typography

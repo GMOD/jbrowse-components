@@ -132,6 +132,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
           rightLabel={stringify(pxToBp(overview, rightPx - cytobandOffset))}
           width={rightPx - leftPx}
           left={leftPx}
+          viewWidth={overview.width}
           stickyTop={undefined}
         />
       ) : null}

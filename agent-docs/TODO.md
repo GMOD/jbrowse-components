@@ -164,14 +164,3 @@ labels will overflow the boxes laid out for them.
 
 No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
 per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
-
-## Rubberband labels near a view edge run off it
-
-`SpanEdgeLabels` (`plugins/linear-genome-view/src/shared/coordLabels.tsx`) hangs
-one label just outside each edge of the selection, so a drag that starts at the
-left edge or ends at the right edge pushes that label off-screen. The popper
-these replaced didn't handle it either (`preventOverflow` had nowhere to shift
-it), so this is a standing limitation, not a regression. The fix is to flip a
-label inside its edge when the span is wide enough to hold it — a threshold on
-the span width, no measurement needed. `GuideLabel` in the same file clamps
-instead, which works because it's one centered label, not a pair.
