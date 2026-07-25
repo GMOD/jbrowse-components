@@ -21,6 +21,7 @@ const IntronActionButtons = observer(function IntronActionButtons({
   handleClose,
   trackId,
   soloFeatureId,
+  label,
 }: {
   view: LinearGenomeViewModel
   transcripts: Feature[]
@@ -31,6 +32,7 @@ const IntronActionButtons = observer(function IntronActionButtons({
   handleClose: () => void
   trackId: string
   soloFeatureId: string | undefined
+  label: string
 }) {
   // undefined while the window-size field is invalid; both buttons disable and
   // the click handlers no-op, so neither action runs with a bad padding.
@@ -45,12 +47,11 @@ const IntronActionButtons = observer(function IntronActionButtons({
           flip,
           trackId,
           soloFeatureId,
+          label,
         }
-  const run = (
-    action: (a: NonNullable<typeof args>) => void | Promise<void>,
-  ) => {
+  const run = (action: (a: NonNullable<typeof args>) => void) => {
     if (args) {
-      void runIntronAction(view, () => action(args), handleClose)
+      runIntronAction(view, () => action(args), handleClose)
     }
   }
   return (

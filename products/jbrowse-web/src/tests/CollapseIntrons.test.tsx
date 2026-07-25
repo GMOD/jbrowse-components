@@ -28,7 +28,7 @@ test('collapse introns on gene feature', async () => {
   fireEvent.contextMenu(label)
 
   fireEvent.click(await findByText('Collapse introns', ...opts))
-  await findByText('Select transcript to collapse', ...opts)
+  await findByText('Collapse introns of EDEN', ...opts)
   fireEvent.click(await findByText('Open in new view', ...opts))
 
   await waitFor(
@@ -65,7 +65,7 @@ test('collapse introns dialog shows transcript table', async () => {
   fireEvent.contextMenu(label)
 
   fireEvent.click(await findByText('Collapse introns', ...opts))
-  await findByText('Select transcript to collapse', ...opts)
+  await findByText('Collapse introns of EDEN', ...opts)
 
   const showButton = await screen.findByRole('button', {
     name: /Show all transcripts/,

@@ -40,6 +40,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   assembly,
   handleClose,
   featureId,
+  featureName,
   trackId,
 }: {
   view: LinearGenomeViewModel
@@ -47,6 +48,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   assembly: Assembly
   handleClose: () => void
   featureId: string
+  featureName: string
   trackId: string
 }) {
   const { classes } = useStyles()
@@ -78,7 +80,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
       onClose={() => {
         handleClose()
       }}
-      title="Select transcript to collapse"
+      title={`Collapse introns of ${featureName}`}
     >
       <DialogContent>
         <DialogContentText component="div">
@@ -162,6 +164,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           handleClose={handleClose}
           trackId={trackId}
           soloFeatureId={soloFeatureId}
+          label={featureName}
         />
         <Button
           onClick={() => {

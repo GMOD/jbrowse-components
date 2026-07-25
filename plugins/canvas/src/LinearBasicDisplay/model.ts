@@ -12,6 +12,7 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import SegmentIcon from '@mui/icons-material/Segment'
 
+import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
 import { radioSubMenu } from './baseModelHelpers.ts'
@@ -334,9 +335,19 @@ export default function stateModelFactory(
                       handleClose,
                       assembly,
                       featureId,
+                      // names the resulting view; the clicked feature, not
+                      // transcripts[0], since the default action collapses the
+                      // union of all its transcripts
+                      featureName: getFeatureName(fullFeature) ?? 'feature',
                       trackId,
                     },
                   ])
+                } else {
+                  // silently doing nothing here reads as a broken menu item
+                  session.notify(
+                    "Could not resolve this view's assembly, which is needed to clamp the collapsed regions",
+                    'warning',
+                  )
                 }
               },
             },

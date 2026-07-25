@@ -1,29 +1,25 @@
 import { hasIntrons } from './util.ts'
 
+import type { Feature } from '@jbrowse/core/util'
+
 function mockFeature(
   subfeatures: { type: string; start: number; end: number }[],
-) {
+): Feature {
   return {
-    get: (key: string) => {
-      if (key === 'subfeatures') {
-        return subfeatures.map(sf => ({
-          get: (k: string) => {
-            if (k === 'type') {
-              return sf.type
-            }
-            if (k === 'start') {
-              return sf.start
-            }
-            if (k === 'end') {
-              return sf.end
-            }
-            return undefined
-          },
-        }))
-      }
-      return undefined
-    },
-  } as any
+    get: (key: string) =>
+      key === 'subfeatures'
+        ? subfeatures.map(sf => ({
+            get: (k: string) =>
+              k === 'type'
+                ? sf.type
+                : k === 'start'
+                  ? sf.start
+                  : k === 'end'
+                    ? sf.end
+                    : undefined,
+          }))
+        : undefined,
+  } as unknown as Feature
 }
 
 describe('hasIntrons', () => {
@@ -32,7 +28,7 @@ describe('hasIntrons', () => {
   })
 
   it('returns false for transcript with no subfeatures', () => {
-    const transcript = { get: () => undefined } as any
+    const transcript = { get: () => undefined } as unknown as Feature
     expect(hasIntrons([transcript])).toBe(false)
   })
 

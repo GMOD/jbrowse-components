@@ -116,6 +116,7 @@ const TranscriptTable = observer(function TranscriptTable({
                   handleClose={handleClose}
                   trackId={trackId}
                   soloFeatureId={soloFeatureId}
+                  label={row.name}
                 />
               </TableCell>
             </TableRow>

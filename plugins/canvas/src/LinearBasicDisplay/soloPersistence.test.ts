@@ -186,6 +186,7 @@ describe('buildCollapsedViewSnapshot', () => {
       flip: false,
       trackId: 'test_track',
       soloFeatureId,
+      label: 'myGene',
     }
   }
 
@@ -196,7 +197,7 @@ describe('buildCollapsedViewSnapshot', () => {
     expect(snap.displayedRegions).toHaveLength(2)
     expect(snap.displayedRegions[0]).toMatchObject({ refName: 'ctgA' })
     expect(snap.bpPerPx).toBeGreaterThan(0)
-    expect(snap.displayName).toContain('(introns collapsed)')
+    expect(snap.displayName).toBe('myGene (introns collapsed)')
   })
 
   it('strips track/display ids so the snapshot re-adds without collision', () => {

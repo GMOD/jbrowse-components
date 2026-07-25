@@ -2,7 +2,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
 import {
   getSubfeatures,
   isCDS,
@@ -25,23 +24,32 @@ export function featureHasExonsOrCDS(feature: Feature) {
   return getSubfeatures(feature).some(isExonOrCDS)
 }
 
+function exonIntervals(transcripts: Feature[]) {
+  return getExonsAndCDS(transcripts).map(f => ({
+    start: f.get('start'),
+    end: f.get('end'),
+  }))
+}
+
+// A transcript is a feature carrying exon/CDS children, so a clicked
+// transcript is used as-is and a clicked gene contributes its transcript
+// subfeatures. Subfeatures without exon/CDS children (a bare tRNA, a
+// pseudogenic_transcript with no children) are dropped: they hold no interval
+// to collapse, so offering one as a transcript row could only produce an empty
+// region set. Same filter core's featureTypeUtil.getTranscripts applies for the
+// sequence panel.
 export function getTranscripts(feature?: Feature): Feature[] {
   if (!feature) {
     return []
   }
-  return featureHasExonsOrCDS(feature) ? [feature] : getSubfeatures(feature)
+  return featureHasExonsOrCDS(feature)
+    ? [feature]
+    : getSubfeatures(feature).filter(featureHasExonsOrCDS)
 }
 
 export function hasIntrons(transcripts: Feature[]) {
-  const subs = getExonsAndCDS(transcripts)
-  if (subs.length < 2) {
-    return false
-  }
-  const merged = mergeIntervals(
-    subs.map(f => ({ start: f.get('start'), end: f.get('end') })),
-    0,
-  )
-  return merged.length > 1
+  const intervals = exonIntervals(transcripts)
+  return intervals.length > 1 && mergeIntervals(intervals, 0).length > 1
 }
 
 /**
@@ -191,20 +199,23 @@ interface ViewState {
  * centered and filling ~90% of the viewport width. Mirrors the view's
  * `showAllRegions` action (SHOW_ALL_REGIONS_FILL=0.9), but is computed up front
  * so a freshly-created view renders at the right zoom without a flash.
+ * `minBpPerPx` is the target view's zoom floor, applied here for the same
+ * reason maxBpPerPx applies it: a few tiny exons at window size 0 would
+ * otherwise seed a bpPerPx the view's own zoom controls can't reproduce.
  */
 export function calculateInitialViewState(
   regions: { start: number; end: number }[],
   viewWidth: number,
+  minBpPerPx: number,
 ): ViewState {
   const totalBp = regions.reduce((sum, r) => sum + (r.end - r.start), 0)
-  const bpPerPx = totalBp / (viewWidth * 0.9)
-  const offsetPx = Math.round(-0.05 * viewWidth)
-  return { bpPerPx, offsetPx }
-}
-
-function transcriptLabel(transcripts: Feature[]) {
-  const f = transcripts[0]
-  return (f ? getFeatureName(f) : undefined) ?? 'feature'
+  const bpPerPx = Math.max(minBpPerPx, totalBp / (viewWidth * 0.9))
+  return {
+    bpPerPx,
+    // same centering as the view's getCenteredOffsetPx: half the content width
+    // minus half the viewport
+    offsetPx: Math.round(totalBp / bpPerPx / 2 - viewWidth / 2),
+  }
 }
 
 function buildMergedRegions({
@@ -224,11 +235,17 @@ function buildMergedRegions({
     // silent return here would close it as if the collapse had succeeded.
     throw new Error('Could not determine the feature refName')
   }
+  const intervals = exonIntervals(transcripts)
+  if (intervals.length === 0) {
+    // An empty region set would blank the target view: the in-place path drops
+    // it back to the import form, and the new-view path mints bpPerPx=0. Also
+    // surfaced by runIntronAction, which keeps the dialog open.
+    throw new Error('No exons or CDS found to collapse')
+  }
   const refName = assembly.getCanonicalRefName2(r0)
   const bounds = assembly.regions?.find(r => r.refName === refName)
-  const subs = getExonsAndCDS(transcripts)
   const genomicRegions = buildCollapsedRegions({
-    intervals: subs.map(f => ({ start: f.get('start'), end: f.get('end') })),
+    intervals,
     padding,
     refName,
     assemblyName: assembly.name,
@@ -243,7 +260,9 @@ function buildMergedRegions({
 
 // Shared args for the two intron actions. `soloFeatureId` (set when the dialog's
 // "Show only this feature" box is checked) isolates the resulting view's track
-// to that feature; `trackId` locates the display to isolate.
+// to that feature; `trackId` locates the display to isolate. `label` names the
+// new view — the clicked feature for the whole-gene action, the row's transcript
+// for a single-transcript action.
 interface IntronActionArgs {
   view: LinearGenomeViewModel
   transcripts: Feature[]
@@ -252,6 +271,7 @@ interface IntronActionArgs {
   flip: boolean
   trackId: string
   soloFeatureId: string | undefined
+  label: string
 }
 
 export function replaceIntrons({
@@ -298,15 +318,15 @@ export function replaceIntrons({
 }
 
 // Run a collapse/replace action, close the dialog on success, and surface any
-// failure through the session notifier. Accepts sync or async actions so both
-// intron buttons ("Replace", "Open in new view") share one path.
-export async function runIntronAction(
+// failure through the session notifier. Shared by both intron buttons
+// ("Replace", "Open in new view").
+export function runIntronAction(
   view: LinearGenomeViewModel,
-  action: () => void | Promise<void>,
+  action: () => void,
   handleClose: () => void,
 ) {
   try {
-    await action()
+    action()
     handleClose()
   } catch (e) {
     getSession(view).notifyError(`${e}`, e)
@@ -327,6 +347,7 @@ export function buildCollapsedViewSnapshot({
   flip,
   trackId,
   soloFeatureId,
+  label,
 }: IntronActionArgs) {
   const mergedRegions = buildMergedRegions({
     transcripts,
@@ -336,8 +357,13 @@ export function buildCollapsedViewSnapshot({
   })
   // the target view doesn't exist yet, so its zoom/offset must be precomputed
   // into the snapshot (unlike replaceIntrons, which calls showAllRegions on the
-  // live view) to avoid a layout flash on first render.
-  const initialState = calculateInitialViewState(mergedRegions, view.width)
+  // live view) to avoid a layout flash on first render. The new view inherits
+  // this one's width and zoom floor.
+  const initialState = calculateInitialViewState(
+    mergedRegions,
+    view.width,
+    view.minBpPerPx,
+  )
   const { id, ...rest } = getSnapshot(view)
   const tracks =
     soloFeatureId === undefined
@@ -346,7 +372,7 @@ export function buildCollapsedViewSnapshot({
   return {
     ...rest,
     tracks: stripTrackIds(tracks),
-    displayName: `${transcriptLabel(transcripts)} (introns collapsed)`,
+    displayName: `${label} (introns collapsed)`,
     displayedRegions: mergedRegions,
     bpPerPx: initialState.bpPerPx,
     offsetPx: initialState.offsetPx,
