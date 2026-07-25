@@ -78,6 +78,15 @@ session restore that uses a non-store plugin, which trains people to click
 through — a worse outcome than the hole it closes. If desktop ever gains a
 "remember this file" notion, revisit.
 
+Which makes **argv classification part of this gate**, not a detail below it. A
+launch argument routed to the file branch takes the ungated path above, so
+`isProtocolUrl` must claim every form of the scheme a page can hand the OS — it
+originally matched only `jbrowse://`, and `jbrowse:x/../../Downloads/evil.jbrowse`
+(a valid URI, delivered verbatim by the NSIS `"%1"` key and the `.desktop` `%U`)
+fell through to `path.resolve` and reopened an arbitrary local config with neither
+prompt. Regression test: `launchTarget.test.ts`, "an authority-less link cannot
+traverse into a local file to open".
+
 ### What this does not decide
 
 This is a mitigation, not the fix. It narrows *which configs* can reach

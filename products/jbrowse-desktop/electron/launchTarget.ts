@@ -61,8 +61,17 @@ export function parseProtocolUrl(input: string): string | undefined {
 
 // URL schemes are case-insensitive, and Windows hands the link back with
 // whatever casing the caller wrote, so match the scheme without regard to case.
+//
+// Matched on the bare scheme, not `jbrowse://`: `jbrowse:open?url=…` (no
+// authority) is an equally valid URI that parseProtocolUrl reads fine, and
+// Windows/Linux hand the link to argv verbatim (`"%1"` from the NSIS registry
+// key, `%U` from the .desktop file). A form this predicate misses is not
+// rejected — it falls through to the file branch below, where path.resolve on a
+// payload like `jbrowse:x/../../../Downloads/evil.jbrowse` climbs back out to an
+// arbitrary local config, opened with neither the link confirmation prompt nor
+// the plugin-trust gate a remote config gets.
 export function isProtocolUrl(arg: string) {
-  return arg.toLowerCase().startsWith(`${JBROWSE_PROTOCOL}://`)
+  return arg.toLowerCase().startsWith(`${JBROWSE_PROTOCOL}:`)
 }
 
 /**

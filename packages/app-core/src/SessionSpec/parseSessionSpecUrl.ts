@@ -53,8 +53,15 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   const params = linkParams(url)
   const session = params.get('session')
   if (!session) {
+    // A `?hubURL=` link legitimately carries no session: it's a track hub, which
+    // jbrowse-web turns into a session connection (loadHubSpec) rather than a
+    // spec. Name that case instead of sending someone to look for a
+    // `session=spec-` param a perfectly good hub link was never going to have.
+    const hubURL = params.get('hubURL')
     throw new Error(
-      'That link has no session in it. Copy a JBrowse Web link that contains "&session=spec-...".',
+      hubURL
+        ? `That is a track hub link (${hubURL}), not a session link. Add the hub through File → "Open connection..." instead.`
+        : 'That link has no session in it. Copy a JBrowse Web link that contains "&session=spec-...".',
     )
   }
   if (!session.startsWith('spec-')) {
@@ -90,8 +97,15 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   return {
     // a relative config (e.g. `test_data/volvox/config.json`) is served by the
     // instance the link points at, so resolve it there rather than handing back
-    // a path nothing outside that instance could fetch
-    configUrl: config ? new URL(config, url.href).href : undefined,
+    // a path nothing outside that instance could fetch.
+    //
+    // `config=none` is jbrowse-web's "load no config at all" sentinel
+    // (SessionLoader.fetchConfig), and the form a self-contained spec link has to
+    // take — omitting `config` entirely makes web fall back to its own
+    // config.json. Treated as no config here, not resolved, which would hand the
+    // caller `<instance>/none` to fetch.
+    configUrl:
+      config && config !== 'none' ? new URL(config, url.href).href : undefined,
     spec,
     sessionName: params.get('sessionName') ?? undefined,
   }

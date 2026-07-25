@@ -31,6 +31,16 @@ test('a spec with no config is allowed (self-contained sessionAssemblies)', () =
   expect(spec).toEqual(SPEC)
 })
 
+// config=none is how a self-contained link is actually written — omitting config
+// makes jbrowse-web fall back to its own config.json. Resolving it would hand the
+// caller `<instance>/none` to fetch, failing a link that needs no config at all.
+test('treats config=none as no config, not a relative path', () => {
+  const { configUrl } = parseSessionSpecUrl(
+    `https://jbrowse.org/code/jb2/main/?config=none&session=${encoded}`,
+  )
+  expect(configUrl).toBeUndefined()
+})
+
 test('parses a hash-form link (jbrowse-web puts inline sessions in the hash)', () => {
   const { configUrl, spec, sessionName } = parseSessionSpecUrl(
     `https://jbrowse.org/code/jb2/main/#config=test_data/volvox/config.json&session=${encoded}&sessionName=Fig`,
@@ -62,6 +72,18 @@ test('rejects a link with no session', () => {
   expect(() =>
     parseSessionSpecUrl('https://jbrowse.org/code/jb2/main/?config=x.json'),
   ).toThrow(/no session in it/)
+})
+
+// a hub link having no session is not the user pasting the wrong thing, so
+// "go find a session=spec- link" is the wrong advice for it
+test('points a track hub link at the connection route instead', () => {
+  expect(() =>
+    parseSessionSpecUrl(
+      'https://jbrowse.org/code/jb2/main/?hubURL=https://example.com/hub.txt&config=none',
+    ),
+  ).toThrow(
+    /track hub link \(https:\/\/example\.com\/hub\.txt\).*Open connection/,
+  )
 })
 
 test('allows a deliberately empty views list (the import-form figures)', () => {

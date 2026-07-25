@@ -249,6 +249,9 @@ export interface WebExportInput {
 export interface HostedBaseConfig {
   assemblies?: { name: string }[]
   tracks?: TrackSnapshot[]
+  // jbrowse-web resolves the session-share store from the config it loaded, so
+  // an export reusing this config as its base has to upload short links there
+  configuration?: { shareURL?: string }
   [key: string]: unknown
 }
 

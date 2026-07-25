@@ -17,8 +17,7 @@ import {
   loadPluginManager,
   openSpecLink,
 } from './StartScreen/util.tsx'
-import { useConfigLoad } from './useConfigLoad.ts'
-import { useSpecLinkLoad } from './useSpecLinkLoad.ts'
+import { usePluginManagerLoad } from './usePluginManagerLoad.ts'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -93,8 +92,18 @@ const LoaderContents = observer(function LoaderContents() {
     setSpecLink(undefined)
   })
 
-  useConfigLoad(config, handleSetPluginManager, handleConfigError)
-  useSpecLinkLoad(specLink, handleSetPluginManager, handleSpecLinkError)
+  usePluginManagerLoad(
+    config,
+    loadPluginManager,
+    handleSetPluginManager,
+    handleConfigError,
+  )
+  usePluginManagerLoad(
+    specLink,
+    openSpecLink,
+    handleSetPluginManager,
+    handleSpecLinkError,
+  )
 
   return pluginManager?.rootModel?.session ? (
     <JBrowse pluginManager={pluginManager} />

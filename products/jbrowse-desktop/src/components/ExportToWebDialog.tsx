@@ -67,15 +67,26 @@ async function buildExport(
   // sessionTracks config, a hosted-base track into a trackConfigDeltas entry the
   // web recipient merges — so the exported session shows what the sender saw.
   const bakedSession = bakePromotedDefaultsIntoSnapshot(session, plan.session)
-  // A short link uploads to the share server that the export TARGET
-  // (DEFAULT_WEB_BASE_URL) reads back from, which is DEFAULT_SHARE_URL — not this
-  // desktop instance's own shareURL config. Desktop never reads share links, so
-  // its own share server is irrelevant here; uploading there would just produce a
-  // link the target web instance can't resolve. The two defaults are a pair.
+  // A short link uploads to the share server that the export TARGET reads back
+  // from — never this desktop instance's own shareURL config, since Desktop never
+  // reads share links at all. That target is DEFAULT_WEB_BASE_URL loading
+  // `?config=<plan.configUrl>`, and jbrowse-web resolves the store from *that
+  // config's* configuration.shareURL (SessionLoader.fetchSharedSession). So a
+  // hosted base declaring its own share server has to win here, or the link
+  // resolves against a store the session was never uploaded to. With no hosted
+  // base (self-contained, `?config=none`) web falls back to DEFAULT_SHARE_URL, and
+  // the two defaults are a pair.
   const { sessionParam, password, plaintext } = await encodeSessionParam(
     mode,
     bakedSession,
-    { shareURL: DEFAULT_SHARE_URL, referer: DEFAULT_WEB_BASE_URL },
+    {
+      shareURL:
+        plan.strategy === 'hostedConfigBase'
+          ? // mirrors web's readConf: an explicit empty string is honored as-is
+            (baseConfig?.configuration?.shareURL ?? DEFAULT_SHARE_URL)
+          : DEFAULT_SHARE_URL,
+      referer: DEFAULT_WEB_BASE_URL,
+    },
   )
   return {
     plan,

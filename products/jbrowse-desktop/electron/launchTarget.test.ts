@@ -71,6 +71,32 @@ test('a link wins over a file, and a malformed link never falls back to one', ()
   ).toBeUndefined()
 })
 
+test('claims the authority-less jbrowse: form too', () => {
+  // `jbrowse:open?url=…` is a valid URI a page can hand the OS, and Windows /
+  // Linux pass it to argv verbatim
+  expect(
+    findLaunchTarget(
+      ['jbrowse-desktop', `jbrowse:open?url=${encodeURIComponent(webUrl)}`],
+      '/home/me',
+    ),
+  ).toEqual({ type: 'link', url: webUrl })
+})
+
+// the regression this guards: an argv payload the protocol predicate missed fell
+// through to the file branch, where path.resolve climbed out of the working
+// directory to an arbitrary local config — no link confirmation, and none of the
+// plugin vetting a remote config gets
+test('an authority-less link cannot traverse into a local file to open', () => {
+  for (const arg of [
+    'jbrowse:x/../../../../Downloads/evil.jbrowse',
+    'jbrowse:open?url=file%3A%2F%2F%2Fetc%2Fsecret.json',
+  ]) {
+    expect(findLaunchTarget(['jbrowse-desktop', arg], '/home/me/work')).toBe(
+      undefined,
+    )
+  }
+})
+
 test('recognizes the jbrowse:// scheme case-insensitively', () => {
   // URL schemes are case-insensitive and Windows preserves the caller's casing
   expect(
