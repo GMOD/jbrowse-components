@@ -482,6 +482,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // index exists for, and it is the only figure covering the indexed adapter in
   // a plain LGV. Grouped by mate assembly again, so each strain's rearrangements
   // against K-12 read as their own band instead of one merged pileup.
+  //
+  // This renders the FINE (per-row CIGAR) tier, which is correct and not worth
+  // "fixing": the hosted .pif.gz does carry a coarse tier, but coarse is served
+  // only past coarseBpPerPxThreshold (10kb/px), and K-12's whole 4.6 Mb across a
+  // 1500px capture is ~3.2kb/px. A genome this small never reaches the coarse
+  // tier at any zoom, so no E. coli figure can demonstrate it — that needs a
+  // eukaryote-scale PIF.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
