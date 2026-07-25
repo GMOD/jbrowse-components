@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import {
@@ -27,13 +31,13 @@ import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
-import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type {
   FilterStats,
   LDMethod,
   LDMetric,
   LDSnp,
 } from '../VariantRPC/getLDMatrix.ts'
+import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
 import type {
   LDRenderState,
@@ -103,46 +107,46 @@ export default function sharedModelFactory(
           self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
         },
         setLineZoneHeight(n: number) {
-          self.configuration.setSlot('lineZoneHeight', clampLineZoneHeight(n))
+          setConf(self, 'lineZoneHeight', clampLineZoneHeight(n))
         },
         setMafFilter(arg: number) {
-          self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
+          setConf(self, 'minorAlleleFrequencyFilter', arg)
         },
         setLDMetric(metric: LDMetric) {
-          self.configuration.setSlot('ldMetric', metric)
+          setConf(self, 'ldMetric', metric)
         },
         setShowLegend(show: boolean) {
-          self.configuration.setSlot('showLegend', show)
+          setConf(self, 'showLegend', show)
         },
         setShowLDTriangle(show: boolean) {
-          self.configuration.setSlot('showLDTriangle', show)
+          setConf(self, 'showLDTriangle', show)
         },
         setShowRecombination(show: boolean) {
-          self.configuration.setSlot('showRecombination', show)
+          setConf(self, 'showRecombination', show)
         },
         setFitToHeight(value: boolean) {
-          self.configuration.setSlot('fitToHeight', value)
+          setConf(self, 'fitToHeight', value)
         },
         setHweFilter(threshold: number) {
-          self.configuration.setSlot('hweFilterThreshold', threshold)
+          setConf(self, 'hweFilterThreshold', threshold)
         },
         setCallRateFilter(threshold: number) {
-          self.configuration.setSlot('callRateFilter', threshold)
+          setConf(self, 'callRateFilter', threshold)
         },
         setShowVerticalGuides(show: boolean) {
-          self.configuration.setSlot('showVerticalGuides', show)
+          setConf(self, 'showVerticalGuides', show)
         },
         setShowLabels(show: boolean) {
-          self.configuration.setSlot('showLabels', show)
+          setConf(self, 'showLabels', show)
         },
         setUseGenomicPositions(value: boolean) {
-          self.configuration.setSlot('useGenomicPositions', value)
+          setConf(self, 'useGenomicPositions', value)
         },
         setSignedLD(value: boolean) {
-          self.configuration.setSlot('signedLD', value)
+          setConf(self, 'signedLD', value)
         },
         setJexlFilters(filters: string[] | undefined) {
-          self.configuration.setSlot('jexlFilters', filters)
+          setConf(self, 'jexlFilters', filters)
         },
       }))
       // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large

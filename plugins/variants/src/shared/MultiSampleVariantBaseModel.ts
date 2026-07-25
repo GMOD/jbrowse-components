@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
@@ -642,7 +646,7 @@ export default function MultiSampleVariantBaseModelF(
          * the same pass so recoloring doesn't drop an existing grouping.
          */
         setColorBy(colorBy: string) {
-          self.configuration.setSlot('colorBy', colorBy)
+          setConf(self, 'colorBy', colorBy)
           const sources = self.sourcesVolatile
           if (sources) {
             self.layout = arrangeSources(colorBy, self.groupBy, sources)
@@ -658,7 +662,7 @@ export default function MultiSampleVariantBaseModelF(
          * doesn't drop an existing palette.
          */
         setGroupBy(groupBy: string) {
-          self.configuration.setSlot('groupBy', groupBy)
+          setConf(self, 'groupBy', groupBy)
           const sources = self.sourcesVolatile
           if (sources) {
             self.layout = arrangeSources(self.colorBy, groupBy, sources)
@@ -684,22 +688,22 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setMafFilter(arg: number) {
-          self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
+          setConf(self, 'minorAlleleFrequencyFilter', arg)
         },
         /**
          * #action
          */
         setMaxMissingnessFilter(arg: number) {
-          self.configuration.setSlot('maxMissingnessFilter', arg)
+          setConf(self, 'maxMissingnessFilter', arg)
         },
         setShowSidebarLabels(arg: boolean) {
-          self.configuration.setSlot('showSidebarLabels', arg)
+          setConf(self, 'showSidebarLabels', arg)
         },
         setShowTree(arg: boolean) {
-          self.configuration.setSlot('showTree', arg)
+          setConf(self, 'showTree', arg)
         },
         setShowBranchLength(arg: boolean) {
-          self.configuration.setSlot('showBranchLength', arg)
+          setConf(self, 'showBranchLength', arg)
         },
         // Sets `layout` and stashes the cluster tree as pending — the tree
         // only applies once the matching cellData arrives, see `setCellData`.
@@ -721,7 +725,7 @@ export default function MultiSampleVariantBaseModelF(
             self.layout = []
             self.clusterTree = undefined
           }
-          self.configuration.setSlot('renderingMode', arg)
+          setConf(self, 'renderingMode', arg)
         },
         /**
          * #action
@@ -744,7 +748,7 @@ export default function MultiSampleVariantBaseModelF(
           const oldHeight = self.height
           const newHeight = Math.max(oldHeight + distance, 20)
           const oldAvailableHeight = oldHeight - self.lineZoneHeight
-          self.configuration.setSlot('height', newHeight)
+          setConf(self, 'height', newHeight)
           if (self.rowHeight > 0 && oldAvailableHeight > 0) {
             self.rowHeight =
               (self.rowHeight * (newHeight - self.lineZoneHeight)) /
@@ -756,7 +760,7 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setReferenceDrawingMode(arg: string) {
-          self.configuration.setSlot('referenceDrawingMode', arg)
+          setConf(self, 'referenceDrawingMode', arg)
         },
         /**
          * #action
@@ -765,7 +769,7 @@ export default function MultiSampleVariantBaseModelF(
          * cells in the worker.
          */
         setFeatureColor(arg: string) {
-          self.configuration.setSlot('featureColor', arg)
+          setConf(self, 'featureColor', arg)
         },
       }))
       .views(self => ({
