@@ -827,9 +827,9 @@
   "linear_synteny_gallery": {
     "name": "linear_synteny_gallery",
     "status": "good",
-    "note": "FIXED (regression): the alignments-base refactor dropped TrackHeightMixin's per-instance `heightPreConfig` prop, so this shared session's stored LGVSyntenyDisplay heights (28/52) were discarded on load and both panels fell back to the alignments config default (250px) -> tall empty first panel. Added a sessionMigrations pass (extractInstanceHeight) routing legacy heightPreConfig onto the `height` config slot; both panels now render compact. Rebuilt jbrowse-web + regenerated.",
-    "reviewedAt": "2026-07-13T17:46:41.650Z",
-    "hash": "e1f37b45abeae20f7854739f4c6d735008499a65"
+    "note": "",
+    "reviewedAt": "2026-07-25T05:00:23.865Z",
+    "hash": "9ce13ca5cebb9f376ba74ebb06385e75d8a6efc0"
   },
   "scroll_zoom_toggle": {
     "name": "scroll_zoom_toggle",
@@ -1491,9 +1491,9 @@
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
     "status": "good",
-    "note": "DELETED (reviewer: just delete): removed spec, PNG, and the One-genome-vs-all coda section in allvsall_synteny.md. Uninformative dense pink band.",
-    "reviewedAt": "2026-07-10T18:24:01.000Z",
-    "hash": "5eec522a75467462fb856caa595f64e7cf6962ac"
+    "note": "unclear what we are looking at. needs extra annotation potentially. or see previous agent notes: DELETED (reviewer: just delete): removed spec, PNG, and the One-genome-vs-all coda section in allvsall_synteny.md. Uninformative dense pink band.",
+    "reviewedAt": "2026-07-25T05:01:23.495Z",
+    "hash": "578e9c1cc29ad6febc362fb9d085ac0875420b8a"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1681,10 +1681,10 @@
   },
   "multisv_svtype": {
     "name": "multisv_svtype",
-    "status": "good",
-    "note": "FIXED: rewrote the caption plainer (dropped the semicolon and em-dash list-dash; kept the class list as a plain colon list). Names what's shown without the AI-voice flourish.",
-    "reviewedAt": "2026-07-20T21:18:45.000Z",
-    "hash": "f6734ed89a8ac91dbea6bd069c6c873bdb253ce8"
+    "status": "bad",
+    "note": "increase browser height slightly for gene track inclusion",
+    "reviewedAt": "2026-07-25T05:00:40.856Z",
+    "hash": "23d7558495cca60b5d833d20fde9dd8e9c4b5fe0"
   },
   "scatac/alb_hepatocyte": {
     "name": "scatac/alb_hepatocyte",
@@ -1790,5 +1790,152 @@
     "note": "JBrowse half of the odgi-viz correspondence pair; same three loci as the raster, translucent so the depth track reads through.",
     "reviewedAt": "2026-07-22T22:06:27.365Z",
     "hash": "a37543d9c033e6a8c43f66f6a9d42a9b59632c1c"
+  },
+  "alignments/height_mode_fit": {
+    "name": "alignments/height_mode_fit",
+    "status": "bad",
+    "note": "this figure isn't particularly interesting unless the menu for toggling this is open (the bottom right one is my preference)",
+    "reviewedAt": "2026-07-25T04:55:36.564Z",
+    "hash": "1d985f8cb89486cadff1b4d04f034ebdd7f9e482"
+  },
+  "alignments/height_mode_fixed": {
+    "name": "alignments/height_mode_fixed",
+    "status": "bad",
+    "note": "not interesting delete",
+    "reviewedAt": "2026-07-25T04:55:40.712Z",
+    "hash": "737d2dd6eea68463abb1345f546dd221106f7190"
+  },
+  "alignments/height_modes": {
+    "name": "alignments/height_modes",
+    "status": "bad",
+    "note": "not interesting, delete",
+    "reviewedAt": "2026-07-25T04:55:47.130Z",
+    "hash": "eaf59f5bc359207021448410625982e34458181a"
+  },
+  "desktop-blat-search": {
+    "name": "desktop-blat-search",
+    "status": "bad",
+    "note": "might make dialog wider by default e.g. at least 800px or 80em",
+    "reviewedAt": "2026-07-25T04:56:03.762Z",
+    "hash": "724b0a7d3208ea6c97d62c9e8905873464b50b8a"
+  },
+  "desktop-ispcr": {
+    "name": "desktop-ispcr",
+    "status": "bad",
+    "note": "i generally prefer variant=outline textareas, try to compactify the form also",
+    "reviewedAt": "2026-07-25T04:56:35.225Z",
+    "hash": "c383884f327e42aedcdf81130de86fd4cd8cd2e2"
+  },
+  "gallery/inverted_duplication": {
+    "name": "gallery/inverted_duplication",
+    "status": "good",
+    "note": "gallery variant of inverted_duplication: no feature-details drawer, no callouts, Compact reads (featureHeight 3) + heightMode grow. Turns a 3000x3700 portrait whose signal was the bottom sixth into a 3000x1800 landscape with the whole LL/RR/split cluster visible. Super-compact (1) deliberately not used - it erases the minority color signal.",
+    "reviewedAt": "2026-07-25T00:00:00.000Z",
+    "hash": "b5d5423429d8ccc7e3fb274def68a4c5f2e625f9"
+  },
+  "genomes_synteny/launch_dialog": {
+    "name": "genomes_synteny/launch_dialog",
+    "status": "bad",
+    "note": "might want to be a multi-step screenshot showing first no dialog open, but the right click menu open, then the dialog, then the result with synteny launched e.g. genomes_synteny/launch_menu  combined figure",
+    "reviewedAt": "2026-07-25T04:57:34.124Z",
+    "hash": "9bea4d3a5c19be9b1562444d04605147ff72f621"
+  },
+  "genomes_synteny/lgv_liftover": {
+    "name": "genomes_synteny/lgv_liftover",
+    "status": "bad",
+    "note": "might be able to delete",
+    "reviewedAt": "2026-07-25T04:57:43.848Z",
+    "hash": "4f61405d3d2eaa416695eb59189354f4f4534e51"
+  },
+  "hprc2/local_ancestry": {
+    "name": "hprc2/local_ancestry",
+    "status": "bad",
+    "note": "might be interesting to cluster",
+    "reviewedAt": "2026-07-25T04:58:13.372Z",
+    "hash": "74d96dd55273273ca540efb1c6af7a2180e9ff41"
+  },
+  "hprc2/local_ancestry_clustered": {
+    "name": "hprc2/local_ancestry_clustered",
+    "status": "bad",
+    "note": "somewhat unclear clustering pattern here. is it clustering well? should we reconsider our algorithm for clustering? also, it is just big horizontal bands, not very interesting. maybe clustering can show more interesting detail",
+    "reviewedAt": "2026-07-25T04:58:54.541Z",
+    "hash": "7e25f5fa48473b222285e932893ad2fa9099cdbe"
+  },
+  "sv/read_connections": {
+    "name": "sv/read_connections",
+    "status": "bad",
+    "note": "not sure this is really gallery worthy. delete",
+    "reviewedAt": "2026-07-25T05:05:42.378Z",
+    "hash": "bb9164db19c8a73f09b463bf8fa783cadfe8f162"
+  },
+  "hprc2/mhc_clustered": {
+    "name": "hprc2/mhc_clustered",
+    "status": "bad",
+    "note": "the 'lines connecting to genome position' are jsut a solid black mass so confusing for readers. not sure if it needs 'adaptive alpha transparency' or even if this screenshot is worth doing. like, do we have a mhc bandage screenshot? why do we even like this screenshot? could consider deleting.",
+    "reviewedAt": "2026-07-25T05:00:08.042Z",
+    "hash": "77f07b69ff49bf0ae8fe4319c2dbffde787022e8"
+  },
+  "hprc2/mhc_matrix": {
+    "name": "hprc2/mhc_matrix",
+    "status": "bad",
+    "note": "see notes for hprc2/mhc_clustered ",
+    "reviewedAt": "2026-07-25T05:00:15.109Z",
+    "hash": "1101972d57a9084c7cf580b3c70f7c10363fc6f2"
+  },
+  "multirow/display_types_menu": {
+    "name": "multirow/display_types_menu",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-25T05:00:23.953Z",
+    "hash": "23c5bb82fa18ec4bd0d6ad48a9017d5a451a7e0e"
+  },
+  "pangenome_cactus/boxed_locus_synteny": {
+    "name": "pangenome_cactus/boxed_locus_synteny",
+    "status": "bad",
+    "note": "the red bands are very dark. why? also too chaotic might not be good example screenshot",
+    "reviewedAt": "2026-07-25T05:02:00.477Z",
+    "hash": "3db71052da7c2d2f676f0d086861a1f425b94df6"
+  },
+  "pangenome/graph_force": {
+    "name": "pangenome/graph_force",
+    "status": "bad",
+    "note": "unclear what 'rank' means. needs a simple explanation of it. graph by itself is also confusing. we need to see the linaergenomeview alongside this to see what is happening, ideally it is 'clear' correspondance as linearized graph",
+    "reviewedAt": "2026-07-25T05:05:15.717Z",
+    "hash": "fb1d32667d8e5ea853f7884d50d002a96fc9b45e"
+  },
+  "pangenome/graph_rgfa": {
+    "name": "pangenome/graph_rgfa",
+    "status": "bad",
+    "note": " we need to see the linaergenomeview alongside this to see what is happening, ideally it is 'clear' correspondance. ",
+    "reviewedAt": "2026-07-25T05:03:35.895Z",
+    "hash": "f4bff9155f55cf42bb27aeb75bb3dea2b98400c6"
+  },
+  "pangenome/hprc_mhc_subgraph": {
+    "name": "pangenome/hprc_mhc_subgraph",
+    "status": "bad",
+    "note": "kind of boring screenshot. delete. we are too 'comprehensive' about always showing the backbone alongside bandage, people get the point",
+    "reviewedAt": "2026-07-25T05:04:32.017Z",
+    "hash": "f754ab0bd8c6321affa2e5908c688eecbd7cf468"
+  },
+  "popgen/in2lt_per_sample": {
+    "name": "popgen/in2lt_per_sample",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-25T05:05:22.432Z",
+    "hash": "ba9822df7191edb0620e99e1fb7b780dd6507660"
+  },
+  "synteny_hg38_hs1_tnnt3": {
+    "name": "synteny_hg38_hs1_tnnt3",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-25T05:05:44.782Z",
+    "hash": "f40bbb4894c5ab97a357141b07041983e0338e47"
+  },
+  "tcga/cnv_recurrence_genome": {
+    "name": "tcga/cnv_recurrence_genome",
+    "status": "bad",
+    "note": "increase browser height",
+    "reviewedAt": "2026-07-25T05:05:54.667Z",
+    "hash": "08ed75bb447c0d8a36e6a0fef122c19385aac7b7"
   }
 }

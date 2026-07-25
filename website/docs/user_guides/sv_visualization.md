@@ -66,7 +66,7 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) shown twice: a compact overview (top frame) and the same locus at normal feature height (bottom frame). Teal RL reads (mates pointing away) flag the tandem duplication; green LL and dark blue RR same-direction reads flag the inversion. These orientation-colored reads are a minority of an otherwise concordant grey pileup, so they cluster at the breakpoints." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside. Green LL, navy RR, and magenta split reads flag the inverted segment; the duplicated copy reads out as elevated coverage and arcs. These orientation-colored reads are a minority of an otherwise concordant grey pileup, so they cluster at the breakpoints." src="/img/inverted_duplication.png" />
 
 #### Short reads vs. long reads
 

@@ -7,8 +7,8 @@ import {
   guidedDemos,
   itemGuideHref,
   itemGuideKind,
-  itemHref,
   itemLiveHref,
+  itemPrimary,
 } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
 ---
@@ -44,7 +44,7 @@ import page from '../styles/page.module.css'
                     <li>
                       <a
                         class="demo"
-                        href={itemHref(item, baseUrl)}
+                        href={itemPrimary(item, baseUrl).href}
                         title={item.description}
                       >
                         {item.label}

@@ -50,11 +50,11 @@ export function itemImg(item: GalleryItem) {
   return item.img ?? (item.spec ? `${item.spec}.png` : undefined)
 }
 
-// The live app (or external) destination for an item: a `session` override
-// wins (set precisely to point somewhere other than the spec default), then an
-// external `href`, then the spec-derived live session. Ignores `guide` — the
-// backing tutorial is surfaced as its own "read more" link on the card rather
-// than as the primary destination.
+// The live app (or external) destination for an item: an external `href` wins,
+// then a `session` override (set precisely to point somewhere other than the
+// spec default), then the spec-derived live session; `undefined` when the item
+// has no live view at all. Ignores `guide` — the backing tutorial is surfaced as
+// its own "read more" link on the card rather than as the primary destination.
 export function itemLiveHref(item: GalleryItem) {
   if (item.href) {
     return item.href
@@ -69,9 +69,12 @@ export function itemLiveHref(item: GalleryItem) {
         `gallery item "${item.label}" references unknown screenshot spec "${item.spec}" — run \`pnpm gen:gallery-links\` after editing screenshot-specs.ts`,
       )
     }
-    return url.startsWith('http') ? url : CODE_BASE + url
+    // always a relative `?config=…&session=…` query — a spec's url is what the
+    // generator opened against the local build, never an absolute URL. An
+    // absolute destination is what `href` is for.
+    return CODE_BASE + url
   }
-  return ''
+  return undefined
 }
 
 // Whether an item's backing doc is a tutorial or a user guide — the two pages
@@ -79,6 +82,13 @@ export function itemLiveHref(item: GalleryItem) {
 // the tutorials/ vs guide distinction is shared, so it lives here.
 export function itemGuideKind(item: GalleryItem) {
   return item.guide?.startsWith('tutorials/') ? 'tutorial' : 'guide'
+}
+
+// Link text, exported so the pages can't word the same destination differently.
+export const LIVE_LABEL = 'Open in JBrowse ↗'
+
+export function itemGuideLabel(item: GalleryItem) {
+  return `Read the ${itemGuideKind(item)} ↗`
 }
 
 // Docs URL for the tutorial / user guide backing an item, if it names one.
@@ -91,10 +101,15 @@ export function itemGuideHref(item: GalleryItem, baseUrl: string) {
   return `${baseUrl}/docs/${path}/${hash ? `#${hash}` : ''}`
 }
 
-// Single best destination for an item (used by the demos page's compact link
-// list): the live session if there is one, otherwise the backing guide.
-export function itemHref(item: GalleryItem, baseUrl: string) {
-  return itemLiveHref(item) || itemGuideHref(item, baseUrl) || ''
+// The single destination an item leads with, and the words for it: the live
+// session when there is one, else the backing doc. Both pages route through this
+// — the demos list uses just the href, the gallery lightbox uses both — so the
+// fallback order and the wording can't diverge between them.
+export function itemPrimary(item: GalleryItem, baseUrl: string) {
+  const live = itemLiveHref(item)
+  return live
+    ? { href: live, label: LIVE_LABEL }
+    : { href: itemGuideHref(item, baseUrl), label: itemGuideLabel(item) }
 }
 
 export const gallerySections: readonly GallerySection[] = [
@@ -114,7 +129,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'linear_synteny_gallery',
         guide: 'tutorials/synteny_visualization',
         description:
-          'Grape vs peach MCScan synteny at two levels at once: the coarse blocks, with the fine per-gene anchor links drawn on top of them, red for collinear and blue for inverted.',
+          "Peach Pp05 against grape chr2 with MCScan anchors: the per-gene anchor ribbons fan between the two panels, and the same anchors read as strand-colored blocks in each panel's own row — red collinear, blue inverted.",
       },
       {
         label: 'Human vs mouse synteny',
@@ -179,18 +194,11 @@ export const gallerySections: readonly GallerySection[] = [
           'The multi-sample variant display draws one row per sample straight from a multi-sample VCF — 3,202 rows here — over a 5 Mb window, colored by genotype. Carriers of a large chr19 inversion read as a solid block in the 1000 Genomes SV callset.',
       },
       {
-        label: 'Read pair and split-read connections',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd',
-        description:
-          'Curves drawn between the two ends of paired-end reads and between the pieces of a split long read, across PacBio, Illumina 2x250, and ONT ultra-long tracks at an HG002 inversion. Both breakends fall in the same window, so the connections stay in one row instead of spanning two linked panels.',
-      },
-      {
         label: 'Pair orientation coloring',
-        spec: 'inverted_duplication',
+        spec: 'gallery/inverted_duplication',
         guide: 'user_guides/sv_visualization',
         description:
-          'Read pairs colored by orientation and joined to their mates by arcs: teal RL pairs point away from each other over the duplicated copy, green LL and dark blue RR pairs run in the same direction over the inverted one. They are a minority of an otherwise grey concordant pileup, so they cluster at the breakpoints of this 1000 Genomes INVdup call.',
+          'Read pairs colored by orientation and joined to their mates by arcs: green LL, navy RR, and magenta split reads flag the inverted segment of this 1000 Genomes INVdup call, a minority signal clustered at the breakpoints of an otherwise grey concordant pileup. The duplicated copy reads out as elevated coverage and arcs rather than a read color of its own.',
       },
       {
         label: 'Tumor/normal split view',
@@ -201,16 +209,10 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Read cloud mode',
-        // Rebuilt as a session spec: the old share link saved the pre-4.4
-        // LinearReadCloudDisplay, whose settings no longer survive the unified
-        // LinearAlignmentsDisplay migration, so it opened as a plain pileup.
-        // Its ONT-UL track is dropped — 52MB over this window, past the
-        // region-size gate, so the link sat on a "too much data" banner (or a
-        // minute of downloading with forceLoad) instead of showing the cloud.
-        session:
-          '?config=test_data/config_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr1:197,745,000-197,767,000","tracks":[{"trackId":"pacbio_hg002","type":"LinearAlignmentsDisplay","readConnections":"cloud","height":260},{"trackId":"illumina_hg002","type":"LinearAlignmentsDisplay","readConnections":"cloud","readConnectionsHeight":120,"height":320}]}]}',
+        spec: 'alignments/read_cloud',
+        guide: 'user_guides/sv_visualization',
         description:
-          'The same locus in cloud mode, where each mate pair and split-read chain collapses to one mark placed by its insert size, so anomalously spaced or oriented pairs sit apart from the normal ones. PacBio and Illumina 2x250 above their pileups.',
+          'Cloud mode collapses each mate pair and split-read chain to one mark placed by its insert size, so the deletion and short-insert pairs lift off the concordant baseline instead of hiding in the pileup below. Marks are colored by insert size and orientation together.',
       },
     ],
   },
@@ -453,7 +455,7 @@ export const gallerySections: readonly GallerySection[] = [
     ],
   },
   {
-    id: 'instances',
+    id: 'hubs',
     title: 'Track hubs',
     items: [
       {

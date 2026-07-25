@@ -7,12 +7,13 @@ import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import SidebarLayout from '../layouts/SidebarLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import {
+  LIVE_LABEL,
   gallerySections,
   itemGuideHref,
-  itemGuideKind,
-  itemHref,
+  itemGuideLabel,
   itemImg,
   itemLiveHref,
+  itemPrimary,
 } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
 
@@ -40,7 +41,7 @@ const sections = gallerySections
     ...s,
     cards: s.items.flatMap(i => {
       const file = itemImg(i)
-      return file && !i.demoOnly ? [{ item: i, size: pngSize(file) }] : []
+      return file && !i.demoOnly ? [{ item: i, file, size: pngSize(file) }] : []
     }),
     links: s.items.filter(i => !itemImg(i) && !i.demoOnly),
   }))
@@ -64,16 +65,12 @@ const sections = gallerySections
             <h2 id={s.id}>{s.title}</h2>
             {s.cards.length > 0 && (
               <div class="grid">
-                {s.cards.map(({ item, size }) => {
-                  const src = `${baseUrl}/img/${itemImg(item)}`
+                {s.cards.map(({ item, file, size }) => {
+                  const src = `${baseUrl}/img/${file}`
                   const liveHref = itemLiveHref(item)
                   const guideHref = itemGuideHref(item, baseUrl)
-                  const guideLabel = `Read the ${itemGuideKind(item)} ↗`
                   // Enlarging opens the live view when there is one, else the guide.
-                  const primaryHref = liveHref || guideHref
-                  const primaryLabel = liveHref
-                    ? 'Open in JBrowse ↗'
-                    : guideLabel
+                  const primary = itemPrimary(item, baseUrl)
                   return (
                     <figure class="card">
                       <button
@@ -81,8 +78,8 @@ const sections = gallerySections
                         class="card-img-btn"
                         data-full={src}
                         data-label={item.label}
-                        data-href={primaryHref}
-                        data-open-label={primaryLabel}
+                        data-href={primary.href}
+                        data-open-label={primary.label}
                         aria-label={`Enlarge: ${item.label}`}
                       >
                         <img
@@ -104,7 +101,7 @@ const sections = gallerySections
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Open in JBrowse ↗
+                              {LIVE_LABEL}
                             </a>
                           )}
                           {guideHref && (
@@ -114,7 +111,7 @@ const sections = gallerySections
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              {guideLabel}
+                              {itemGuideLabel(item)}
                             </a>
                           )}
                         </p>
@@ -130,7 +127,7 @@ const sections = gallerySections
                 <ul class="links">
                   {s.links.map(item => (
                     <li>
-                      <a href={itemHref(item, baseUrl)}>{item.label}</a>
+                      <a href={itemPrimary(item, baseUrl).href}>{item.label}</a>
                       {item.description && <span> — {item.description}</span>}
                     </li>
                   ))}

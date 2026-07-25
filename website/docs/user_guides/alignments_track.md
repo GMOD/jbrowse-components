@@ -114,7 +114,7 @@ short-insert signal isn't washed out. See the
 [SV visualization guide](/docs/user_guides/sv_visualization) for the full color
 tables.
 
-<Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints: teal RL pairs (mates pointing away) flag the tandem duplication, while green LL and dark blue RR same-direction pairs flag the inversion." src="/img/inverted_duplication.png" />
+<Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints — green LL, navy RR, and magenta split reads over the inverted segment." src="/img/inverted_duplication.png" />
 
 ### By tag
 

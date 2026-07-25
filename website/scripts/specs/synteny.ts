@@ -137,7 +137,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // flagged). Both panels span their full assemblies at matched scale, so the
     // ribbons stay inside the view. Per-query color plus a higher alpha and a
     // taller synteny band keep the straight ribbons legible.
-    url: sessionSpec('test_data/config_dotplot.json', {
+    url: sessionSpec(DOTPLOT_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',

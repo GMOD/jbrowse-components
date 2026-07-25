@@ -426,6 +426,61 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // Gallery card for the same locus. The doc figure above is built to be read
+  // beside prose — normal read height so the minority LL/RR pairs are legible,
+  // the variant's INFO fields open, callouts naming each line of evidence. All
+  // three work against a gallery card: the drawer is ~26% of the width and
+  // overflows below the app frame, and the result is a 3000x3700 portrait PNG
+  // where the informative discordant cluster is the bottom sixth.
+  //
+  // So: no drawer, no callouts, and the Compact read preset (featureHeight 3,
+  // spacing derived to 0 — see compactnessPresets.ts) instead of 9. That is a
+  // ~3.3x shorter pileup, i.e. a landscape card at the same information. NOT
+  // Super-compact (featureHeight 1): the whole subject of the card is a minority
+  // color signal, and 1px reads erase it — the same reason the doc spec above
+  // raised the height to 9 in the first place.
+  //
+  // heightMode 'grow' rather than a guessed `height`: the discordant reads land
+  // at the BOTTOM of the pileup layout, so a track too short by any amount
+  // scrolls away exactly the thing being shown. Grow fits every row (~126 rows
+  // x 3px + coverage, well under GROW_MAX_HEIGHT 800).
+  {
+    mode: 'url',
+    name: 'gallery/inverted_duplication',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:39,658,200-39,661,800',
+          trackLabels: 'offset',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG02768.final',
+              linkedReads: 'normal',
+              readConnections: 'arc',
+              readConnectionsDown: true,
+              heightMode: 'grow',
+              coverageHeight: 120,
+              featureHeight: 3,
+              colorBy: { type: 'pairOrientation' },
+              // the legend is what makes a compact card's colors readable
+              showLegend: true,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG02768',
+    readyTimeout: 60000,
+    // must clear the grown track (~610px here), else the capture crops exactly
+    // the discordant cluster at the bottom of the layout — measured against the
+    // rendered app rather than guessed, so there is no trailing whitespace
+    viewportHeight: 900,
+    settleMs: 30000,
+  },
+
   // Same inversion, short reads vs long reads, in ONE sample (HG00151). The
   // companion to inverted_duplication: that figure shows how short paired-end
   // reads only *infer* an inversion (from discordant pair orientation + a few
