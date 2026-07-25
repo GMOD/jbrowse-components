@@ -67,14 +67,18 @@ function longestCodingTranscript(isoforms: Feature[]): {
 
   const codingCandidates = isoforms.filter(hasCodingSubfeature)
   // Rank coding isoforms by protein length; with no coding isoform at all, fall
-  // back to the widest genomic span.
+  // back to the widest genomic span. Sized once per candidate rather than inside
+  // the reduce, which would re-walk each isoform's whole subtree ~2n times.
   const [candidates, size] =
     codingCandidates.length > 0
       ? ([codingCandidates, codingLength] as const)
       : ([isoforms, (f: Feature) => f.get('end') - f.get('start')] as const)
 
-  const longest = candidates.reduce((a, b) => (size(a) > size(b) ? a : b))
-  return { result: [longest], collapsed: true }
+  // `>` not `>=`: an exact coding-length tie resolves to the later isoform, which
+  // several fixtures (DPP6) depend on.
+  const sized = candidates.map(f => ({ feature: f, size: size(f) }))
+  const longest = sized.reduce((a, b) => (a.size > b.size ? a : b))
+  return { result: [longest.feature], collapsed: true }
 }
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {

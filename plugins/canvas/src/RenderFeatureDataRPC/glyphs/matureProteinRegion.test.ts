@@ -135,6 +135,34 @@ describe('findGlyph routing for CDS', () => {
       'Box',
     )
   })
+
+  // A GenBank flatfile → GFF3 conversion inserts an mRNA between the gene and
+  // the polyprotein CDS. Dispatch only recurses through Subfeatures, so a
+  // top-level-only container test dropped every cleavage product to a flat box.
+  it('reaches a polyprotein CDS nested under an mRNA', () => {
+    const cds = viralPolyprotein([
+      'mature_protein_region_of_CDS',
+      'mature_protein_region_of_CDS',
+    ])
+    const mRNA = mockFeature({
+      type: 'mRNA',
+      start: 100,
+      end: 300,
+      subfeatures: [cds],
+    })
+    const gene = mockFeature({
+      type: 'gene',
+      start: 100,
+      end: 300,
+      subfeatures: [mRNA],
+    })
+    const layout = findGlyph(gene, config)({ feature: gene, ...args })
+    expect(layout.glyphType).toBe('Subfeatures')
+    expect(layout.children.map(c => c.glyphType)).toEqual(['Subfeatures'])
+    expect(layout.children[0]!.children.map(c => c.glyphType)).toEqual([
+      'MatureProteinRegion',
+    ])
+  })
 })
 
 describe('layoutMatureProteinRegion', () => {

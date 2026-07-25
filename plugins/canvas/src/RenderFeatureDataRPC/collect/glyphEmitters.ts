@@ -23,9 +23,10 @@ import {
   MATURE_PROTEIN_COLORS,
   MATURE_PROTEIN_COLOR_HEX,
   REPEAT_BODY_HEIGHT_FRACTION,
-  REPEAT_COLOR_MAP,
   boxColor,
   featureTooltip,
+  isRetrotransposonBody,
+  repeatSubpartColor,
   strokeColor,
 } from './glyphColors.ts'
 import { aminoAcidsByFeature, aminoAcidsInRange } from './peptideMapping.ts'
@@ -359,23 +360,22 @@ function processRepeatRegionLayout(
 
   // retrotransposon body underneath; LTRs/TSDs painted over it
   const sortedChildren = [...layout.children].sort((a, b) => {
-    const aBody = featureType(a.feature).endsWith('_retrotransposon')
-    const bBody = featureType(b.feature).endsWith('_retrotransposon')
+    const aBody = isRetrotransposonBody(featureType(a.feature))
+    const bBody = isRetrotransposonBody(featureType(b.feature))
     return aBody === bBody ? 0 : aBody ? -1 : 1
   })
 
   for (const childLayout of sortedChildren) {
     const childFeature = childLayout.feature
     const childType = featureType(childFeature)
-    const isBody = childType.endsWith('_retrotransposon')
-    const [topPx, heightPx] = isBody
+    const [topPx, heightPx] = isRetrotransposonBody(childType)
       ? centerShrink(
           baseTopPx + childLayout.y,
           childLayout.height,
           REPEAT_BODY_HEIGHT_FRACTION,
         )
       : [baseTopPx + childLayout.y, childLayout.height]
-    const color = REPEAT_COLOR_MAP[childType]
+    const color = repeatSubpartColor(childType)
 
     pushBoxRect(
       childFeature,
@@ -423,7 +423,9 @@ function processCrisprGuideLayout(
 
   pushBoxRect(feature, baseTopPx, height, flatbushIdx, ctx, collector.rects)
 
-  const pam = getSubfeatures(feature).find(f => featureType(f) === 'PAM')
+  const pam = getSubfeatures(feature).find(
+    f => featureType(f).toLowerCase() === 'pam',
+  )
   if (pam) {
     collector.rects.push({
       start: pam.get('start'),

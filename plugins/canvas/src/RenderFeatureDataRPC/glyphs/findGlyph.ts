@@ -16,6 +16,12 @@ import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+// Adapter-emitted semantic types that own a dedicated glyph, keyed lowercase.
+const TYPE_GLYPHS: Record<string, (args: LayoutArgs) => FeatureLayout> = {
+  guide_rna: layoutCrisprGuide,
+  motif: layoutMotif,
+}
+
 // Selects the layout function that best represents a feature's structure.
 // When called from layoutSubfeatures for children, pass isTopLevel=false to
 // skip container/nesting checks that only apply to root features.
@@ -36,29 +42,38 @@ export function findGlyph(
 ): (args: LayoutArgs) => FeatureLayout {
   isTopLevel ??= !feature.parent?.()
   const type = featureType(feature)
-  const hasSubfeatures = getSubfeatures(feature).length > 0
+  const subfeatures = getSubfeatures(feature)
 
   // CRISPR guide RNAs (CrisprGuideAdapter emits type 'guide_rna' with a PAM
   // subfeature and a cutSite attribute) get a dedicated protospacer+PAM+cut
-  // glyph. Type-based like the repeat_region check below, since 'guide_rna' is a
-  // specific semantic type rather than a structural shape.
-  if (type === 'guide_rna') {
-    return layoutCrisprGuide
-  }
-  // Sequence motifs (MotifListAdapter emits type 'motif', optionally carrying
-  // cutSite/cutSiteBottom) get a site box with the cut positions marked, so a
-  // restriction site reads as a cut rather than an anonymous box. Type-based
-  // for the same reason as 'guide_rna' above.
-  if (type === 'motif') {
-    return layoutMotif
+  // glyph; sequence motifs (MotifListAdapter emits type 'motif', optionally
+  // carrying cutSite/cutSiteBottom) get a site box with the cut positions
+  // marked, so a restriction site reads as a cut rather than an anonymous box.
+  // Type-based like the repeat_region check below, since these are specific
+  // semantic types rather than structural shapes — and matched
+  // case-insensitively for the same reason as isCDS/isExon (see util.ts).
+  const typeGlyph = TYPE_GLYPHS[type.toLowerCase()]
+  if (typeGlyph) {
+    return typeGlyph
   }
   if (isCDS(feature)) {
     return hasMatureProteinChildren(feature)
       ? layoutMatureProteinRegion
       : layoutBox
   }
-  if (hasSubfeatures) {
+  if (subfeatures.length > 0) {
     const { containerTypes } = config
+
+    // A CDS child that itself owns mature-protein children (a polyprotein whose
+    // cleavage products are annotated) must stack so that child can pick up
+    // MatureProteinRegion. Deliberately NOT gated on isTopLevel, unlike the
+    // container heuristics below: the same shape appears one level deeper as
+    // gene → mRNA → CDS → mat_peptide (what a GenBank flatfile conversion
+    // emits), and dispatch only recurses through layoutSubfeatures, so a
+    // top-level-only test dropped every cleavage product to a flat CDS box.
+    if (subfeatures.some(f => isCDS(f) && hasMatureProteinChildren(f))) {
+      return layoutSubfeatures
+    }
 
     // Intact transposons (repeat_region → overlapping LTR/TSD/internal parts)
     // render their subparts on one row joined by a connecting line, with no box
@@ -83,11 +98,7 @@ export function findGlyph(
     //
     //   - containerTypes: the one explicit override, for top-level types that
     //     must stack even when no structural heuristic fires; first so it wins.
-    //   - children-are-containers → stack. Checked before the CDS test so a
-    //     feature whose CDS child is itself a container (a polyprotein CDS with
-    //     mature_protein children, e.g. gene → CDS → cleavage products) stacks
-    //     and lets the CDS child pick up MatureProteinRegion, rather than
-    //     collapsing to a single flat CDS box.
+    //   - children-are-containers → stack (gene → mRNA → exon).
     //   - direct CDS child → coding transcript (its CDS children are leaves).
     if (
       isTopLevel &&

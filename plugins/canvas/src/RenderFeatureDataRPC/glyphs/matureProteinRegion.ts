@@ -54,6 +54,9 @@ export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
     matureProteins.map(child => layoutChild(child, args)),
   )
 
+  // findGlyph only routes here when hasMatureProteinChildren, but the glyph is
+  // callable directly, and a zero-height CDS would vanish rather than degrade to
+  // a plain box.
   const numRows = Math.max(1, sortedChildren.length)
   // 'below' labels need 2x row height: one half for the box, one for the label
   const perRowMultiplier = subfeatureLabels === 'below' ? 2 : 1

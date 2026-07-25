@@ -71,6 +71,24 @@ export const REPEAT_COLOR_MAP: Record<string, string> = {
   Tc1_Mariner_TIR_transposon: '#808080',
 }
 
+// Lowercased index over REPEAT_COLOR_MAP so the fill matches the same way the
+// glyph dispatch does (see isRepeatRegion / isCDS).
+const REPEAT_COLOR_BY_LOWER_TYPE = new Map(
+  Object.entries(REPEAT_COLOR_MAP).map(([type, color]) => [
+    type.toLowerCase(),
+    color,
+  ]),
+)
+
+export function repeatSubpartColor(type: string) {
+  return REPEAT_COLOR_BY_LOWER_TYPE.get(type.toLowerCase())
+}
+
+// The internal *_retrotransposon body the flanking LTRs/TSDs are painted over.
+export function isRetrotransposonBody(type: string) {
+  return type.toLowerCase().endsWith('_retrotransposon')
+}
+
 // Fraction of full height for the internal retrotransposon body so the
 // full-height LTRs/TSDs drawn on top of it remain visible as flanking caps.
 export const REPEAT_BODY_HEIGHT_FRACTION = 0.65

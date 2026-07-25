@@ -1,4 +1,4 @@
-import { getSubfeatures } from '../util.ts'
+import { featureType, getSubfeatures } from '../util.ts'
 import { layoutContainerGlyph } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
@@ -10,9 +10,11 @@ import type { Feature } from '@jbrowse/core/util'
 // subparts share one row joined by a connecting line and the parent itself gets
 // no box — so the structure stays visible instead of collapsing to a flat box.
 // See GMOD/jbrowse-components#3080.
+// Case-insensitive like isCDS/isExon: EDTA and LTR_retriever agree on the SO
+// casing, but hand-edited and converted annotations don't always.
 export function isRepeatRegion(feature: Feature) {
   return (
-    feature.get('type') === 'repeat_region' &&
+    featureType(feature).toLowerCase() === 'repeat_region' &&
     getSubfeatures(feature).length > 0
   )
 }

@@ -2,6 +2,7 @@ import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { findGlyph } from './findGlyph.ts'
+import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
@@ -109,5 +110,30 @@ describe('findGlyph structural dispatch', () => {
       subfeatures: [mockFeature({ type: 'PAM' })],
     })
     expect(findGlyph(feature, config)).toBe(layoutCrisprGuide)
+  })
+
+  // Every other type test (isCDS, isExon, isUTR, the mature-protein set) is
+  // case-insensitive; these were not, so a converted annotation writing
+  // `Repeat_region` silently fell through to Segments.
+  it('matches the semantic types case-insensitively', () => {
+    expect(findGlyph(mockFeature({ type: 'Motif' }), config)).toBe(layoutMotif)
+    expect(
+      findGlyph(
+        mockFeature({
+          type: 'Guide_RNA',
+          subfeatures: [mockFeature({ type: 'PAM' })],
+        }),
+        config,
+      ),
+    ).toBe(layoutCrisprGuide)
+    expect(
+      findGlyph(
+        mockFeature({
+          type: 'Repeat_Region',
+          subfeatures: [mockFeature({ type: 'long_terminal_repeat' })],
+        }),
+        config,
+      ),
+    ).toBe(layoutRepeatRegion)
   })
 })
