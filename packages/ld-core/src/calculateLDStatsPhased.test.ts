@@ -145,3 +145,46 @@ describe('calculateLDStatsPhasedBits', () => {
     expect(bitLD(g1, g2, samples)).toEqual(referencePhasedLD(g1, g2, samples))
   })
 })
+
+describe('packHaplotypesWithCounts allele totals', () => {
+  // Allele-level counts track the valid/alt bit planes, which include the
+  // called side of a half-call — unlike nValid, which is a whole-genotype count
+  // for HWE. Minor allele frequency reads the allele totals.
+  it.each([
+    {
+      label: 'fully called',
+      g: { a: '0|0', b: '0|1', c: '1|1' },
+      called: 6,
+      alt: 3,
+    },
+    {
+      label: 'half-call',
+      g: { a: '0|0', b: '0|0', c: '.|1' },
+      called: 5,
+      alt: 1,
+    },
+    {
+      label: 'no-call',
+      g: { a: '0|1', b: '.|.', c: '.|.' },
+      called: 2,
+      alt: 1,
+    },
+    // no '|' separator: left out of both planes, so out of both totals
+    {
+      label: 'unphased entry',
+      g: { a: '0|1', b: '0/1', c: '0|0' },
+      called: 4,
+      alt: 1,
+    },
+    {
+      label: 'multi-digit',
+      g: { a: '0|10', b: '10|10', c: '0|0' },
+      called: 6,
+      alt: 3,
+    },
+  ])('$label', ({ g, called, alt }) => {
+    const packed = packHaplotypesWithCounts(g, ['a', 'b', 'c'])
+    expect(packed.nCalledAlleles).toBe(called)
+    expect(packed.nAltAlleles).toBe(alt)
+  })
+})

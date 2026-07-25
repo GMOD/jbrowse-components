@@ -32,9 +32,15 @@ const ZERO_CODE = 48 // '0'
 const DOT_CODE = 46 // '.'
 
 /**
- * Fill `out` with encoded genotypes and return allele counts.
+ * Fill `out` with encoded genotype dosages (0/1/2, -1 missing) and return the
+ * genotype-class counts HWE needs plus the allele-level counts MAF needs.
  * Uses charCode fast path for the common 3-char diploid case ("X/Y", "X|Y")
  * to avoid split() allocation and iterator overhead.
+ *
+ * A half-call ("./1") encodes as missing, matching packHaplotypesWithCounts:
+ * the composite estimator runs on dosage, and one called allele doesn't pin the
+ * dosage down. Its called allele still counts toward the allele totals, so MAF
+ * uses every allele the file actually reports.
  */
 function fillEncoded(
   out: Int8Array,
@@ -46,6 +52,8 @@ function fillEncoded(
   let nHet = 0
   let nHomAlt = 0
   let nValid = 0
+  let nCalledAlleles = 0
+  let nAltAlleles = 0
 
   for (let i = 0; i < samples.length; i++) {
     const val = genotypes[samples[i]!]!
@@ -56,44 +64,34 @@ function fillEncoded(
       if (sep === SLASH_CODE || sep === PIPE_CODE) {
         const c0 = val.charCodeAt(0)
         const c1 = val.charCodeAt(2)
-        if (c0 === DOT_CODE) {
-          if (c1 === DOT_CODE) {
-            out[i] = -1
-          } else if (c1 === ZERO_CODE) {
-            out[i] = 0
-            nHomRef++
-            nValid++
-          } else {
-            out[i] = 1
-            nHet++
-            nValid++
+        const isAlt0 = c0 !== ZERO_CODE
+        const isAlt1 = c1 !== ZERO_CODE
+        if (c0 !== DOT_CODE) {
+          nCalledAlleles++
+          if (isAlt0) {
+            nAltAlleles++
           }
-        } else if (c1 === DOT_CODE) {
-          if (c0 === ZERO_CODE) {
-            out[i] = 0
-            nHomRef++
-            nValid++
-          } else {
-            out[i] = 1
-            nHet++
-            nValid++
+        }
+        if (c1 !== DOT_CODE) {
+          nCalledAlleles++
+          if (isAlt1) {
+            nAltAlleles++
           }
+        }
+        if (c0 === DOT_CODE || c1 === DOT_CODE) {
+          out[i] = -1
+        } else if (!isAlt0 && !isAlt1) {
+          out[i] = 0
+          nHomRef++
+          nValid++
+        } else if (isAlt0 && isAlt1) {
+          out[i] = 2
+          nHomAlt++
+          nValid++
         } else {
-          const isAlt0 = c0 !== ZERO_CODE
-          const isAlt1 = c1 !== ZERO_CODE
-          if (!isAlt0 && !isAlt1) {
-            out[i] = 0
-            nHomRef++
-            nValid++
-          } else if (isAlt0 && isAlt1) {
-            out[i] = 2
-            nHomAlt++
-            nValid++
-          } else {
-            out[i] = 1
-            nHet++
-            nValid++
-          }
+          out[i] = 1
+          nHet++
+          nValid++
         }
         continue
       }
@@ -106,17 +104,27 @@ function fillEncoded(
     for (const allele of alleles) {
       if (allele === '.') {
         uncalledCount++
-      } else if (allele !== '0') {
-        nonRefCount++
+      } else {
+        nCalledAlleles++
+        if (allele !== '0') {
+          nonRefCount++
+          nAltAlleles++
+        }
       }
     }
-    if (uncalledCount === alleles.length) {
+    if (uncalledCount > 0) {
       out[i] = -1
     } else if (nonRefCount === 0) {
       out[i] = 0
       nHomRef++
       nValid++
     } else if (nonRefCount === alleles.length) {
+      // Includes the haploid alt call: a hemizygous chrX/chrY/chrM call codes
+      // as dosage 2, the usual pseudo-diploid coding, so the composite
+      // correlation stays on one scale. The allele totals above still see it as
+      // the one allele it is, which is what a mixed-ploidy site (haploid males,
+      // diploid females) needs — dosage would weight a male's single allele
+      // twice a female's.
       out[i] = 2
       nHomAlt++
       nValid++
@@ -127,7 +135,7 @@ function fillEncoded(
     }
   }
 
-  return { nHomRef, nHet, nHomAlt, nValid }
+  return { nHomRef, nHet, nHomAlt, nValid, nCalledAlleles, nAltAlleles }
 }
 
 export type LDMetric = 'r2' | 'dprime'
@@ -425,25 +433,29 @@ export async function getLDMatrix({
     let nHet: number
     let nHomAlt: number
     let nValid: number
+    let nCalledAlleles: number
+    let nAltAlleles: number
 
     if (dataIsPhased) {
       packed = packHaplotypesWithCounts(genotypes, samples)
-      ;({ nHomRef, nHet, nHomAlt, nValid } = packed)
+      ;({ nHomRef, nHet, nHomAlt, nValid, nCalledAlleles, nAltAlleles } =
+        packed)
     } else {
       encodedSlot = encodedFlat!.subarray(
         snpIdx * nSamples,
         (snpIdx + 1) * nSamples,
       )
-      ;({ nHomRef, nHet, nHomAlt, nValid } = fillEncoded(
-        encodedSlot,
-        genotypes,
-        samples,
-        splitCache,
-      ))
+      ;({ nHomRef, nHet, nHomAlt, nValid, nCalledAlleles, nAltAlleles } =
+        fillEncoded(encodedSlot, genotypes, samples, splitCache))
     }
 
-    const altFreq = nValid > 0 ? (nHet + 2 * nHomAlt) / (2 * nValid) : 0
-    if (Math.min(altFreq, 1 - altFreq) < minorAlleleFrequencyFilter) {
+    // Over called alleles, not over 2x called genotypes: on a mixed-ploidy site
+    // a haploid call contributes one allele rather than two, and a half-call
+    // contributes the one it reports. Matches calculateMinorAlleleFrequency on
+    // biallelic sites, the only ones reaching here (multiallelic dropped above).
+    const altFreq = nCalledAlleles > 0 ? nAltAlleles / nCalledAlleles : 0
+    const maf = Math.min(altFreq, 1 - altFreq)
+    if (maf < minorAlleleFrequencyFilter) {
       filteredByMaf++
       continue
     }
@@ -467,7 +479,7 @@ export async function getLDMatrix({
       refName: feature.get('refName'),
       start: feature.get('start'),
       end: feature.get('end'),
-      maf: Math.min(altFreq, 1 - altFreq),
+      maf,
     })
 
     if (packed) {

@@ -17,6 +17,13 @@ export interface HaplotypeCounts {
   nHet: number
   nHomAlt: number
   nValid: number
+  // Allele-level totals, counted per haplotype rather than per genotype: a
+  // half-call contributes its one called allele even though it is not a valid
+  // genotype for HWE. Minor allele frequency reads these, so it matches the
+  // multi-sample displays' AN-style definition instead of assuming every
+  // counted sample carries exactly two called alleles.
+  nCalledAlleles: number
+  nAltAlleles: number
 }
 
 function popcount32(v: number) {
@@ -51,6 +58,8 @@ export function packHaplotypesWithCounts(
   let nHet = 0
   let nHomAlt = 0
   let nValid = 0
+  let nCalledAlleles = 0
+  let nAltAlleles = 0
   for (let s = 0; s < numSamples; s++) {
     const val = genotypes[samples[s]!]!
     const len = val.length
@@ -65,14 +74,18 @@ export function packHaplotypesWithCounts(
       const v1 = c1 !== DOT_CODE
       if (v0) {
         validH1[w] = validH1[w]! | bit
+        nCalledAlleles++
         if (c0 !== ZERO_CODE) {
           altH1[w] = altH1[w]! | bit
+          nAltAlleles++
         }
       }
       if (v1) {
         validH2[w] = validH2[w]! | bit
+        nCalledAlleles++
         if (c1 !== ZERO_CODE) {
           altH2[w] = altH2[w]! | bit
+          nAltAlleles++
         }
       }
       if (v0 && v1) {
@@ -103,14 +116,18 @@ export function packHaplotypesWithCounts(
     const v1 = a1 !== '.'
     if (v0) {
       validH1[w] = validH1[w]! | bit
+      nCalledAlleles++
       if (a0 !== '0') {
         altH1[w] = altH1[w]! | bit
+        nAltAlleles++
       }
     }
     if (v1) {
       validH2[w] = validH2[w]! | bit
+      nCalledAlleles++
       if (a1 !== '0') {
         altH2[w] = altH2[w]! | bit
+        nAltAlleles++
       }
     }
     if (v0 && v1) {
@@ -136,6 +153,8 @@ export function packHaplotypesWithCounts(
     nHet,
     nHomAlt,
     nValid,
+    nCalledAlleles,
+    nAltAlleles,
   }
 }
 
