@@ -6,8 +6,8 @@ description: Working the bad-status screenshot-review backlog, the regen pipelin
 # Screenshot-review handoff
 
 Working through the `bad`-status items in
-`website/scripts/screenshot-review.json` (the local, gitignored review log).
-Extract them with:
+`website/scripts/screenshot-review.json` (the review log — tracked, so verdicts
+are shared rather than local-only). Extract them with:
 
 ```bash
 jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value.note)"' \
@@ -43,6 +43,13 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
      diff, entangles with other agents' edits — see caveat below).
 
 ## Useful facts learned
+
+- **Compose parts are not review items.** A `{mode:'compose'}` figure's parts
+  (`qtl/bxd_painting_input_order` + `_sorted` → `qtl/bxd_sort_before_after`) are
+  folded into the parent's card, listed under "stacked from" with their live
+  links, so one published figure is one card. Regenerating a part with `--filter`
+  recomposes the parent automatically; a part that fails to render fails the
+  compose instead of restacking a stale half.
 
 - **jbrowse-img (CliSpec) gene tracks: use `--hub <genome> --track <trackId>`,
   NOT a raw `--gffgz <url>`.** `--hub hg38` supplies the assembly (with built-in

@@ -30,7 +30,18 @@ function buildSpecPayload() {
     // an approval/denial only resurfaces once the reviewed image changes
     const stale = isVerdictStale(verdict, imageHash(shot.name))
     const liveUrl = screenshotLiveUrls[shot.name]
-    return { ...shot, verdict, stale, ...(liveUrl ? { liveUrl } : {}) }
+    // a compose figure has no session of its own; its parts carry the live
+    // links, which is also what `<Figure links=...>` publishes for it
+    return {
+      ...shot,
+      parts: shot.parts.map(part => ({
+        ...part,
+        liveUrl: screenshotLiveUrls[part.name],
+      })),
+      verdict,
+      stale,
+      ...(liveUrl ? { liveUrl } : {}),
+    }
   })
 }
 
@@ -299,6 +310,11 @@ const PAGE = /* html */ `<!doctype html>
   .usage .caption { font-style: italic; margin-top: 2px; }
   .noref { font-size: 13px; color: #b45309; }
   .livelink { font-size: 13px; color: LinkText; align-self: flex-start; }
+  .parts { font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+  .parts > .partshead { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: GrayText; }
+  .part { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .part .partname { font-family: ui-monospace, monospace; font-size: 12px; }
+  .partstale { font-size: 13px; color: #b45309; }
   .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   button { padding: 7px 14px; border-radius: 6px; border: 1px solid ButtonBorder; background: ButtonFace; color: ButtonText; cursor: pointer; font-size: 14px; }
   button.approve { border-color: #22c55e; color: #16a34a; }
@@ -392,8 +408,12 @@ function readUrl() {
 // Diff vs origin/main, the screenshots a branch review cares about:
 // "new" = added on this branch (not on main); "changed" = on main but the
 // working-tree pixels differ (an update). \`s.changed\` is computed server-side.
+// A compose figure counts as changed when a part it stacks changed, even if the
+// stack itself wasn't recomposed — that gap is the bug the card warns about.
 const isNew = s => s.exists && !s.existsOnMain
-const isChanged = s => s.changed
+const isChanged = s => s.changed || s.parts.some(p => p.changed || isNew(p))
+// parts moved but the published stack didn't: the figure on the site is stale
+const partsAhead = s => !s.changed && !isNew(s) && isChanged(s)
 // needs review when unreviewed, or its verdict went stale because the reviewed
 // image changed since (server-computed stale flag)
 const needsReview = s => !s.verdict || s.stale
@@ -443,6 +463,30 @@ function kindPill(spec) {
     : pill('manual', 'manual')
 }
 
+// A compose figure's parts are its ingredients, not figures of their own: the
+// card above already shows the stack they add up to, so they render as a list of
+// live links (what <Figure links=...> publishes) rather than separate cards.
+function renderParts(spec) {
+  return spec.parts.length
+    ? '<div class="parts">' +
+        '<div class="partshead">stacked from</div>' +
+        spec.parts.map(p =>
+          '<div class="part">' +
+            '<span class="partname">' + esc(p.name) + '</span>' +
+            (p.exists ? '' : ' ' + pill('bad', 'image missing')) +
+            (isNew(p) ? ' ' + pill('new', 'new') : '') +
+            (p.changed ? ' ' + pill('changed', 'changed') : '') +
+            (p.liveUrl ? ' <a href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener">open live ↗</a>' : '') +
+          '</div>'
+        ).join('') +
+        (partsAhead(spec)
+          ? '<div class="partstale">⚠ a part changed but the stacked image did not — ' +
+            'rerun <code>generate-screenshots --filter ' + esc(spec.name) + '</code></div>'
+          : '') +
+      '</div>'
+    : ''
+}
+
 function imgCol(label, inner) {
   return '<div class="imgcol">' +
     '<div class="imglabel">' + label + '</div>' +
@@ -471,6 +515,7 @@ function card(spec) {
         (isNew(spec) ? ' ' + pill('new', 'new') : '') +
         (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') + '</h2>' +
       renderUsages(spec.usages) +
+      renderParts(spec) +
       (spec.liveUrl ? '<a class="livelink" href="' + esc(spec.liveUrl) + '" target="_blank" rel="noopener">Open live in JBrowse ↗</a>' : '') +
       '<input class="note" placeholder="note (optional)" value="' + esc(v ? v.note : '') + '" onchange="saveNote(this)" />' +
       '<div class="actions">' +

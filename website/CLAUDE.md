@@ -206,8 +206,8 @@ mechanisms build one content-stable stacked PNG instead:
   view props, applied via `applyInitSettings`), then a
   `{ mode: 'compose', parts: [...] }` spec stacks their committed PNGs
   `convert -append`. No menu-driving, so nothing can drift, and each part is
-  independently openable live. See `synteny_human_chimp_colored` +
-  `_transparent` → `synteny_human_chimp_cigar_modes`.
+  independently openable live. See `genomes_synteny/ribbons_default` +
+  `_curved` → `genomes_synteny/ribbon_settings`.
 - **Use `stages`** only when a state is genuinely reachable _only_ through the
   UI (a hover, a transient popover). Each stage's frame is captured and stacked;
   to toggle a menu setting, note the synteny "CIGAR display mode" control is on
@@ -220,6 +220,20 @@ _both_ states from one combined figure, `<Figure>` takes
 `links="Label=spec,Label=spec"` — each spec name resolves to its live session
 (so the links can't drift); point them at the two declarative part specs, not
 the compose spec (which has no session of its own).
+
+**A compose part is an ingredient, not a figure.** Nothing writes
+`/img/<part>.png` into a doc, so the part is only ever seen as half of the stack:
+
+- The generator recomposes the parent whenever a `--filter` selects one of its
+  parts, so `--filter <part>` can't leave the published stack showing the old
+  half. If a part fails to render in that run, the compose is failed too rather
+  than restacked from a stale image.
+- `review-screenshots-web` folds the parts into the parent's card ("stacked
+  from", with each part's live link) instead of listing them as figures of their
+  own — one card per published figure. A part that a doc _does_ reference
+  directly keeps its own card, so folding can't hide one. The card warns when a
+  part changed vs `origin/main` but the stack didn't, which means the site is
+  publishing a stale stack.
 
 **A UI-click-chain waiting on a fixed timeout is a red flag**, not just for
 before/after figures. If the spec drives a real async RPC through a dialog (open

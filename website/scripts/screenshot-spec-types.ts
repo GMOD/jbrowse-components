@@ -31,13 +31,15 @@ export interface ScreenshotAction {
   value?: string
   // for 'type': triple-click the field to select existing content first
   clear?: boolean
-  // for 'drag': start/end points in viewport CSS px (used for rubberband drags)
+  // for 'drag': start/end points in viewport CSS px (used for rubberband drags).
+  // 'click'/'rightclick'/'hover' also accept `from` alone, to act on a bare
+  // viewport coordinate (canvas-drawn features have no DOM node to target).
+  //
+  // 'scroll' takes neither: it centers the target (selector/text) in its nearest
+  // horizontally-scrollable ancestor — e.g. a wide feature bar in a horizontally
+  // scrollable alignment track that's otherwise off the right edge.
   from?: { x: number; y: number }
   to?: { x: number; y: number }
-  // for 'scroll': center the target (selector/text) in its nearest
-  // horizontally-scrollable ancestor — e.g. a wide feature bar in a
-  // horizontally scrollable alignment track that's otherwise off the right
-  // edge
 }
 
 // What an annotation attaches itself to, resolved at capture time so the
@@ -141,7 +143,11 @@ export interface ScreenshotStage {
   closeMenusFirst?: boolean
 }
 
-export interface CommonSpecFields {
+// Fields every spec shares, whatever produces its PNG. Kept apart from
+// CommonSpecFields (which is browser-capture-only) so the generator can read
+// them off a bare ScreenshotSpec without narrowing by mode first.
+export interface BaseSpecFields {
+  name: string
   // committed PNG is a hand-curated / real-human-data screenshot the spec body
   // can't reproduce; the generator skips it so a regen never clobbers it
   curated?: boolean
@@ -151,6 +157,16 @@ export interface CommonSpecFields {
   // .nih.gov). Skipped in an unfiltered run; still rendered when named in
   // --filter, so it stays regenerable on purpose rather than by luck.
   heavyNetwork?: boolean
+  // per-spec override of the content-stable diff gate (fraction of pixels in
+  // [0,1]). Raise it for specs with irreducible render jitter — remote-data
+  // timing, heavy text, animated chrome — so an unchanged capture isn't
+  // re-committed every regen. Prefer making the capture reproducible first;
+  // reach for this only when the jitter can't be designed out. Defaults to the
+  // global DEFAULT_DIFF_THRESHOLD.
+  diffThreshold?: number
+}
+
+export interface CommonSpecFields extends BaseSpecFields {
   // capture-viewport height in CSS px for this spec (default 800); raise it for
   // tall multi-row pileups so the track isn't clipped by the default viewport
   viewportHeight?: number
@@ -176,13 +192,6 @@ export interface CommonSpecFields {
   // selection; headless Firefox renders it cleanly. The CLI `--firefox` flag
   // forces every spec onto Firefox; this opts a single spec in for normal regens
   firefox?: boolean
-  // per-spec override of the content-stable diff gate (fraction of pixels in
-  // [0,1]). Raise it for specs with irreducible render jitter — remote-data
-  // timing, heavy text, animated chrome — so an unchanged capture isn't
-  // re-committed every regen. Prefer making the capture reproducible first;
-  // reach for this only when the jitter can't be designed out. Defaults to the
-  // global DEFAULT_DIFF_THRESHOLD.
-  diffThreshold?: number
   // crop the capture to this CSS-px rect (ignored by embedded specs, which
   // screenshot the component element directly)
   crop?: { x: number; y: number; width: number; height: number }
@@ -205,7 +214,6 @@ export interface CommonSpecFields {
 // declaratively via the helpers in screenshot-spec-helpers.ts.
 export interface SessionUrlSpec extends CommonSpecFields {
   mode: 'url'
-  name: string
   url: string // full query string starting with '?' or a full URL
   readyText?: string // text to wait for before settle
   readySelector?: string // CSS selector to wait for before settle
@@ -220,13 +228,11 @@ export interface SessionUrlSpec extends CommonSpecFields {
 // SVG/PNG with no browser involved, so they regenerate from plain jb2export
 // args instead of the URL-mode puppeteer machinery, and land in
 // products/jbrowse-img/img/ rather than website/static/img/.
-export interface CliSpec {
+export interface CliSpec extends BaseSpecFields {
   mode: 'cli'
-  name: string // 'jbrowse-img/<basename>'; basename matches the .png in products/jbrowse-img/img/
+  // 'jbrowse-img/<basename>'; basename matches the .png in products/jbrowse-img/img/
+  name: string
   args: string[] // jb2export args; the generator appends `--out <tmpfile>`
-  curated?: boolean
-  heavyNetwork?: boolean
-  diffThreshold?: number
 }
 
 // Render the embedded `@jbrowse/react-linear-genome-view2` component itself (not
@@ -241,7 +247,6 @@ export interface CliSpec {
 // (annotations, crop, hideSelectors, hideTooltip, stages) are ignored here.
 export interface EmbeddedSpec extends CommonSpecFields {
   mode: 'embedded'
-  name: string
   // the object passed verbatim to the UMD's `createViewState(...)` (assembly /
   // tracks / defaultSession / location). Must be plain JSON — it is serialized
   // into the harness page, so no functions / jexl callbacks.
@@ -260,11 +265,15 @@ export interface EmbeddedSpec extends CommonSpecFields {
 // independent DECLARATIVE specs (e.g. one session per setting) rather than an
 // imperative `stages` capture that drives the menu — the combined image then
 // can't drift from either state, and each state stays an openable live link.
-export interface ComposeSpec {
+//
+// A part is machinery, not a published figure: no doc references
+// `/img/<part>.png` (the doc shows the stack and reaches each state through
+// `<Figure links=...>`), so the review UI folds parts into their parent's card
+// rather than listing them as figures of their own, and the generator recomposes
+// the parent whenever a --filter selects one of its parts.
+export interface ComposeSpec extends BaseSpecFields {
   mode: 'compose'
-  name: string
   parts: string[] // spec names whose static/img PNGs are stacked, top to bottom
-  diffThreshold?: number
 }
 
 export type BrowserScreenshotSpec = SessionUrlSpec | EmbeddedSpec

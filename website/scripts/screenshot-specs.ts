@@ -1,6 +1,7 @@
 export type {
   Annotation,
   AnnotationAnchor,
+  BaseSpecFields,
   BrowserScreenshotSpec,
   CliSpec,
   CommonSpecFields,
@@ -127,9 +128,7 @@ export const screenshotSlowSpecNames = new Set(
 // interactive jbrowse.org link.
 export const screenshotSpecNames = new Set(specs.map(spec => spec.name))
 
-// Split a `--filter a,b,c` value into trimmed, non-empty tokens. Shared by the
-// generate and review scripts so `--filter`/`--exact` mean the same thing in
-// both.
+// Split a `--filter a,b,c` value into trimmed, non-empty tokens.
 export function parseFilterTokens(filter: string | undefined) {
   return filter
     ? filter

@@ -10,8 +10,12 @@ import fs from 'node:fs'
 
 // ImageMagick 7's own name for its CLI; 6 only ships the individual tools, and
 // 7 prints a deprecation warning for every `convert` invocation.
-export const IM =
-  spawnSync('magick', ['-version']).status === 0 ? 'magick' : 'convert'
+const HAS_MAGICK = spawnSync('magick', ['-version']).status === 0
+export const IM = HAS_MAGICK ? 'magick' : 'convert'
+// `identify` as a standalone binary is IM6's layout; an IM7 install can ship
+// only `magick`, where the same tool is the `magick identify` subcommand.
+const IDENTIFY_BIN = HAS_MAGICK ? 'magick' : 'identify'
+const IDENTIFY_ARGS = HAS_MAGICK ? ['identify'] : []
 
 // Percentage of the difference image a channel must exceed to count as changed —
 // the fuzz tolerance that lets sub-pixel glyph jitter through.
@@ -29,8 +33,9 @@ const DIFF_FUZZ = '5%'
 export function pngDiffFraction(a: string, b: string): number | null {
   const [sizeA, sizeB] = [a, b].map(f =>
     (
-      spawnSync('identify', ['-format', '%w %h', f], { encoding: 'utf8' })
-        .stdout || ''
+      spawnSync(IDENTIFY_BIN, [...IDENTIFY_ARGS, '-format', '%w %h', f], {
+        encoding: 'utf8',
+      }).stdout || ''
     ).trim(),
   )
   // -composite silently works over the first image's geometry when the two

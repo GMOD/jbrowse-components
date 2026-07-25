@@ -836,11 +836,12 @@ function mirrorFile(src: string, dest: string) {
 // pool so the parts are already fresh on disk; a filter that targets only the
 // compose spec recomposes from the committed parts.
 async function captureComposeSpec(spec: ComposeSpec) {
-  const partPaths = spec.parts.map(p => path.join(outDir, `${p}.png`))
-  const missing = spec.parts.filter((_, i) => !fs.existsSync(partPaths[i]!))
+  const partPath = (part: string) => path.join(outDir, `${part}.png`)
+  const missing = spec.parts.filter(part => !fs.existsSync(partPath(part)))
   if (missing.length > 0) {
     throw new Error(`missing part image(s): ${missing.join(', ')}`)
   }
+  const partPaths = spec.parts.map(partPath)
   const renderPath = tempPath('jb-compose', spec.name)
   execFileSync(IM, [...partPaths, '-append', renderPath])
   optimizePng(renderPath)
@@ -864,18 +865,36 @@ async function main() {
   // `--filter a,b,c` matches a spec when any comma-separated token matches, so
   // "re-render these few" is one invocation instead of a shell loop.
   const filterTokens = parseFilterTokens(filter)
-  const filteredSpecs = specs.filter(s =>
+  const selected = specs.filter(s =>
     matchesFilterTokens(s.name, filterTokens, exact),
   )
 
-  if (filteredSpecs.length === 0) {
+  if (selected.length === 0) {
     console.error(`No specs match filter: ${filter}`)
     process.exit(1)
   }
 
+  // The figure a doc publishes for a compose spec is the STACK, not the parts.
+  // Re-rendering a part on its own (`--filter variants/potato_missingness_before`)
+  // would leave that stack showing the old part, with nothing to say so — so pull
+  // in every compose spec whose parts this run touches.
+  const selectedNames = new Set(selected.map(s => s.name))
+  const impliedCompose = specs.filter(
+    s =>
+      s.mode === 'compose' &&
+      !selectedNames.has(s.name) &&
+      s.parts.some(p => selectedNames.has(p)),
+  )
+  const filteredSpecs = [...selected, ...impliedCompose]
+
   console.log(
     `Generating ${filteredSpecs.length} screenshot(s)${filter ? ` (filter: ${filter})` : ''}`,
   )
+  if (impliedCompose.length > 0) {
+    console.log(
+      `  + recomposing ${impliedCompose.map(s => s.name).join(', ')} (their parts are in this run)`,
+    )
+  }
 
   // Only url-mode specs pointing at a relative path need the jbrowse-web server.
   // embedded specs serve their own harness; cli specs bypass the browser; compose
@@ -1035,17 +1054,31 @@ async function main() {
   }
 
   async function runSpec(spec: ScreenshotSpec) {
-    if (spec.mode !== 'compose' && spec.curated) {
+    if (spec.curated) {
       console.log(
         `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
       )
       skipped++
       return
     }
-    if (spec.mode !== 'compose' && spec.heavyNetwork && !filterTokens.length) {
+    if (spec.heavyNetwork && !filterTokens.length) {
       console.log(
         `${progress()} ⊘ ${spec.name} (heavy remote data; name it in --filter to re-render)`,
       )
+      skipped++
+      return
+    }
+    // Stacking a part that just failed to render would publish a figure half
+    // made of a stale image, and the run would still report success.
+    const brokenParts =
+      spec.mode === 'compose'
+        ? spec.parts.filter(p => failures.some(f => f.name === p))
+        : []
+    if (brokenParts.length > 0) {
+      const error = `part(s) failed to render this run: ${brokenParts.join(', ')} — not restacking a figure from stale parts`
+      console.error(`${progress()} ✗ ${spec.name}: ${error}`)
+      failed++
+      failures.push({ name: spec.name, error })
       return
     }
     console.log(`${progress()} → ${spec.name}`)
@@ -1107,7 +1140,7 @@ async function main() {
   console.log(
     `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
       check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
-    }${skipped > 0 ? `, ${skipped} curated (skipped)` : ''}`,
+    }${skipped > 0 ? `, ${skipped} skipped (curated / heavy remote data)` : ''}`,
   )
   if (changed.length > 0) {
     printReport(
