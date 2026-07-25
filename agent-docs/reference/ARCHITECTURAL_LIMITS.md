@@ -70,9 +70,10 @@ Still exposed: tracks inside a mounted view are not virtualized, so one LGV with
 15+ GPU tracks allocates 15+ contexts.
 
 **Retire when** WebGL2 retires (RFC-001 §13a) or track-level mount/release lands.
-Cheaper interim moves, both unbuilt: measure the many-tracks-one-view case, and
-drop a display to Canvas2D after K context losses so the failure is one slow
-track instead of a wedged page.
+Measure before building either: [../TODO.md](../TODO.md) §"Measure the WebGL2
+context budget in the shape users actually hit". The other unbuilt interim move is
+dropping a display to Canvas2D after K context losses, so the failure is one slow
+track rather than a wedged page.
 
 ### WebGPU shares one device across every display
 
