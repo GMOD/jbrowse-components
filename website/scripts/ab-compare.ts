@@ -45,6 +45,8 @@ const tracks = arg(
   'tracks',
   'volvox_alignments,gff3tabix_genes,volvox_microarray',
 ).split(',')
+const portA = Number(arg('portA', '3351'))
+const portB = Number(arg('portB', '3352'))
 const VIEWPORT = { width: 1280, height: 800, deviceScaleFactor: 1 }
 
 interface Result {
@@ -112,8 +114,8 @@ async function main() {
     throw new Error('need --a=<root> --b=<root>')
   }
   const servers = [
-    await createTestServer(3351, { jbrowseWebRoot: rootA, repoRoot }),
-    await createTestServer(3352, { jbrowseWebRoot: rootB, repoRoot }),
+    await createTestServer(portA, { jbrowseWebRoot: rootA, repoRoot }),
+    await createTestServer(portB, { jbrowseWebRoot: rootB, repoRoot }),
   ]
   const browser = await launch({
     headless: true,
@@ -126,10 +128,10 @@ async function main() {
     // interleaved so machine-load drift hits both arms equally
     for (let i = 0; i < runs; i++) {
       results.a!.push(
-        await once(browser, 3351, configA, i === 0 ? `${outDir}/shot-a.png` : undefined),
+        await once(browser, portA, configA, i === 0 ? `${outDir}/shot-a.png` : undefined),
       )
       results.b!.push(
-        await once(browser, 3352, configB, i === 0 ? `${outDir}/shot-b.png` : undefined),
+        await once(browser, portB, configB, i === 0 ? `${outDir}/shot-b.png` : undefined),
       )
       process.stderr.write(`run ${i + 1}/${runs}\n`)
     }
