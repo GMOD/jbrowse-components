@@ -8,7 +8,7 @@ import type { ReducedModel } from './components/MultiSampleVariantClusterDialog/
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// The multi-sample-variant "Cluster by genotype" flavor of the shared
+// The multi-sample-variant "Cluster rows by genotype" flavor of the shared
 // declarative-clustering autorun: fires once on `runClustering: true` and runs
 // the real genotype-matrix RPC over the current view regions.
 export function getMultiSampleVariantClusterAutorun(

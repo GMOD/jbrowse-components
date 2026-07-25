@@ -14,8 +14,8 @@ import {
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
+  clusteringMenuItem,
   computeClusterHierarchy,
-  treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import {
   computeYTicks,
@@ -24,7 +24,6 @@ import {
   makeShowSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
-import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -439,52 +438,20 @@ export default function stateModelFactory(
         ]
         return [
           makeGroupedRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERING_GROUPS),
-          {
-            label: 'Clustering',
-            icon: AccountTreeIcon,
-            subMenu: [
-              {
-                label: 'Cluster rows by score...',
-                disabled: !self.renderingType.startsWith('multirow'),
-                disabledHelpText:
-                  'Only available for multi-row rendering types',
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    WiggleClusterDialog,
-                    {
-                      model: self,
-                      handleClose,
-                    },
-                  ])
+          clusteringMenuItem(self, {
+            label: 'Cluster rows by score...',
+            disabled: !self.renderingType.startsWith('multirow'),
+            disabledHelpText: 'Only available for multi-row rendering types',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                WiggleClusterDialog,
+                {
+                  model: self,
+                  handleClose,
                 },
-              },
-              {
-                label: 'Show tree',
-                type: 'checkbox',
-                checked: self.showTree,
-                disabled: !self.clusterTree,
-                disabledHelpText: 'Run clustering first',
-                onClick: () => {
-                  self.setShowTree(!self.showTree)
-                },
-              },
-              // Only meaningful with a visible tree that carries merge heights;
-              // hidden otherwise rather than shown disabled.
-              ...(self.showTree && self.treeHasBranchLengths
-                ? [treeBranchLengthMenuItem(self)]
-                : []),
-              ...(self.subtreeFilter?.length
-                ? [
-                    {
-                      label: 'Clear subtree filter',
-                      onClick: () => {
-                        self.setSubtreeFilter(undefined)
-                      },
-                    },
-                  ]
-                : []),
-            ],
-          },
+              ])
+            },
+          }),
           ...makeResolutionSubMenu(self),
           makeScoreSubMenu(self, {
             scaleType: true,

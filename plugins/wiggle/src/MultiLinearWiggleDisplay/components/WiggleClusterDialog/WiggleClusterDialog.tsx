@@ -21,7 +21,7 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
   return (
     <Dialog
       open
-      title="Cluster by score"
+      title="Cluster rows by score"
       maxWidth="xl"
       onClose={(_, reason) => {
         if (reason !== 'backdropClick') {

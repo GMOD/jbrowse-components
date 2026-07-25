@@ -10,7 +10,7 @@ import type { RpcMethodCaller } from '@jbrowse/tree-sidebar'
 export type ClusterGenotypeMatrixCaller =
   RpcMethodCaller<'MultiSampleVariantClusterGenotypeMatrix'>
 
-// The real "Cluster by genotype" -> "Run clustering" RPC, over the genotype
+// The real "Cluster rows by genotype" -> "Run clustering" RPC, over the genotype
 // matrix, extracted so it has one home: the dialog button and a declarative
 // session-triggered run (getMultiSampleVariantClusterAutorun) call the exact
 // same code rather than two copies drifting apart.

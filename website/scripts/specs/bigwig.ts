@@ -517,7 +517,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
   // . Shown in multi-row density mode across a wide hg38 window
   // (chr3:162.3-163.4 Mb, reviewer-specified), a copy-number-polymorphic region,
   // so the per-individual copy-number differences drive a meaningful clustering.
-  // Top frame: the "Cluster by score" dialog open (auto/manual mode, before).
+  // Top frame: the "Cluster rows by score" dialog open (auto/manual mode, before).
   // Bottom frame: after "Run clustering", the 104 rows are reordered by signal
   // similarity. showTree:false hides the dendrogram (only the row
   // reordering matters; a tree wrongly implies phylogeny). Combines the old
@@ -556,7 +556,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     stages: [
       {
-        // top frame: the Cluster by score dialog open, before clustering
+        // top frame: the Cluster rows by score dialog open, before clustering
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           // "Cluster rows by score..." now lives under a "Clustering" submenu

@@ -39,7 +39,7 @@ const ClusterDialog = observer(function ClusterDialog({
   return (
     <Dialog
       open
-      title="Cluster by genotype"
+      title="Cluster rows by genotype"
       onClose={(_, reason) => {
         // don't close on backdrop click
         if (reason !== 'backdropClick') {

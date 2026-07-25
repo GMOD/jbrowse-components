@@ -1,8 +1,7 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
-import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import { clusteringMenuItem } from '@jbrowse/tree-sidebar'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { radioSubMenu } from '../LinearBasicDisplay/baseModelHelpers.ts'
@@ -14,6 +13,9 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
+)
+const SetRowHeightDialog = lazy(
+  () => import('./components/SetRowHeightDialog.tsx'),
 )
 
 // Preset pixel row heights for the "Row height" menu (0 = auto-fit, handled
@@ -61,18 +63,17 @@ export function buildMultiRowTrackMenuItems(
           : 'custom'
   return [
     {
-      label: 'Sidebar with tree and labels',
+      label: 'Show sidebar with tree and labels',
       type: 'checkbox',
       checked: self.showTree,
       onClick: () => {
         self.setShowTree(!self.showTree)
       },
     },
-    treeBranchLengthMenuItem(self),
     ...(self.colorLegend.length
       ? [
           {
-            label: 'Show color legend',
+            label: 'Show legend',
             type: 'checkbox' as const,
             checked: self.showLegend,
             onClick: () => {
@@ -101,10 +102,16 @@ export function buildMultiRowTrackMenuItems(
           { value: 'fit', label: 'Squeeze to fit view' },
           { value: 'normal', label: 'Normal' },
           { value: 'compact', label: 'Compact' },
+          { value: 'custom', label: 'Custom...' },
         ],
         value => {
           if (value === 'fit') {
             self.setFitToHeight()
+          } else if (value === 'custom') {
+            getSession(self).queueDialog(handleClose => [
+              SetRowHeightDialog,
+              { model: self, handleClose },
+            ])
           } else {
             self.setRowHeight(
               value === 'compact' ? ROW_HEIGHT_COMPACT : ROW_HEIGHT_NORMAL,
@@ -123,37 +130,34 @@ export function buildMultiRowTrackMenuItems(
         ])
       },
     },
-    {
-      label: 'Cluster rows by similarity',
-      icon: AccountTreeIcon,
-      disabled: self.sourcesWithoutLayout.length < 2 || !!self.runClustering,
-      disabledHelpText:
-        self.sourcesWithoutLayout.length < 2
-          ? 'Needs at least two rows to cluster'
-          : 'Clustering…',
-      onClick: () => {
-        self.setRunClustering(true)
+    // The sidebar toggle above shows row labels with or without a tree, so it
+    // stays top-level (showTreeToggle: false) rather than moving in here.
+    clusteringMenuItem(
+      self,
+      {
+        label: 'Cluster rows by similarity',
+        disabled: self.sourcesWithoutLayout.length < 2 || !!self.runClustering,
+        disabledHelpText:
+          self.sourcesWithoutLayout.length < 2
+            ? 'Needs at least two rows to cluster'
+            : 'Clustering…',
+        onClick: () => {
+          self.setRunClustering(true)
+        },
       },
-    },
-    ...(self.clusterTree
-      ? [
-          {
-            label: 'Clear clustering (reset row order)',
-            onClick: () => {
-              self.clearLayout()
-            },
-          },
-        ]
-      : []),
-    ...(self.subtreeFilter
-      ? [
-          {
-            label: 'Clear subtree filter',
-            onClick: () => {
-              self.setSubtreeFilter(undefined)
-            },
-          },
-        ]
-      : []),
+      {
+        showTreeToggle: false,
+        extraItems: self.clusterTree
+          ? [
+              {
+                label: 'Clear clustering (reset row order)',
+                onClick: () => {
+                  self.clearLayout()
+                },
+              },
+            ]
+          : [],
+      },
+    ),
   ]
 }

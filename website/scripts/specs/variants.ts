@@ -2,6 +2,7 @@ import {
   DEMO_CONFIG,
   VOLVOX,
   lgvSession,
+  menuCascade,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
@@ -190,7 +191,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
   // Multi-sample variant clustering, two-stage figure over the volvox
   // "1000genomes vcf" track (volvox_test_vcf, real 1000-genomes sample panel —
   // reviewer asked for this instead of the synthetic multi-sample SV track).
-  // Top frame: the "Cluster by genotype" dialog open (before). Bottom frame:
+  // Top frame: the clustering dialog open (before). Bottom frame:
   // after "Run clustering", the samples are reordered by genotype similarity
   // with a dendrogram on the left. Combines the old cluster_dialog +
   // clustered_result screenshots into one multi-part figure.
@@ -213,11 +214,11 @@ export const variantsSpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
     stages: [
       {
-        // top frame: the Cluster by genotype dialog open, before clustering
+        // top frame: the clustering dialog open, before clustering
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'Cluster by genotype' },
-          { type: 'click', text: 'Cluster by genotype' },
+          ...menuCascade(['Clustering', 'Cluster rows by genotype...']),
+          { type: 'click', text: 'Cluster rows by genotype...' },
           { type: 'waitForText', text: 'Run clustering' },
         ],
       },

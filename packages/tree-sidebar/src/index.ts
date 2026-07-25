@@ -23,7 +23,10 @@ export { clusterProgressStatus } from './clusterProgressStatus.ts'
 export type { RpcMethodCaller } from './rpcMethodCaller.ts'
 export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
-export { treeBranchLengthMenuItem } from './treeMenuItems.ts'
+export {
+  clusteringMenuItem,
+  treeBranchLengthMenuItem,
+} from './treeMenuItems.ts'
 export {
   extraColumns,
   moveDown,

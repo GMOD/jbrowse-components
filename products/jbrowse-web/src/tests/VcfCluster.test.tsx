@@ -34,7 +34,8 @@ test('opens a vcf track and clusters genotypes', async () => {
   )
 
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Cluster by genotype...', ...opts))
+  fireEvent.click(await findByText('Clustering', ...opts))
+  fireEvent.click(await findByText('Cluster rows by genotype...', ...opts))
 
   const elt = await findByText('Run clustering', ...opts)
   await waitFor(() => {

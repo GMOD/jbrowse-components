@@ -311,7 +311,7 @@ function getGenotypeMapForFeature(
  * ```
  *
  * `runClustering` is a transient declarative launch spec, the same idea as
- * `LinearGenomeView`'s `init`: set it to run the real "Cluster by genotype"
+ * `LinearGenomeView`'s `init`: set it to run the real "Cluster rows by genotype"
  * RPC once automatically (no dialog) as soon as sources are available, and it
  * clears itself afterwards so a saved session never re-triggers it.
  * ```js

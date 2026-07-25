@@ -2,8 +2,7 @@ import { lazy } from 'react'
 
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
-import CategoryIcon from '@mui/icons-material/Category'
+import { clusteringMenuItem } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import HeightIcon from '@mui/icons-material/Height'
@@ -49,27 +48,6 @@ export function variantShowSubmenuItems(
         self.setShowSidebarLabels(!self.showSidebarLabels)
       },
     },
-    {
-      label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
-      type: 'checkbox',
-      checked: self.showTree,
-      disabled: !self.clusterTree,
-      disabledHelpText: 'Run clustering first',
-      onClick: () => {
-        self.setShowTree(!self.showTree)
-      },
-    },
-    treeBranchLengthMenuItem(self),
-    ...(self.subtreeFilter?.length
-      ? [
-          {
-            label: 'Clear subtree filter',
-            onClick: () => {
-              self.setSubtreeFilter(undefined)
-            },
-          },
-        ]
-      : []),
     {
       label: 'Show legend',
       type: 'checkbox',
@@ -306,9 +284,8 @@ export function variantTrackMenuItems(
         },
       ],
     },
-    {
-      label: 'Cluster by genotype...',
-      icon: CategoryIcon,
+    clusteringMenuItem(self, {
+      label: 'Cluster rows by genotype...',
       onClick: () => {
         getSession(self).queueDialog(handleClose => [
           ClusterDialog,
@@ -318,7 +295,7 @@ export function variantTrackMenuItems(
           },
         ])
       },
-    },
+    }),
     {
       label: 'Edit colors/arrangement...',
       icon: TuneIcon,
