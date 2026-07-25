@@ -107,15 +107,23 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
            * forwarding `bpPerPx` to the adapter.
            */
           rpcProps() {
-            const { coarseBpPerPxThreshold } = self.adapterConfig as {
-              coarseBpPerPxThreshold?: number
-            }
+            // via the slot path rather than `self.adapterConfig`, which is a
+            // snapshot and so carries only explicitly-set keys — the threshold
+            // read undefined for every track that leaves it at its default,
+            // which is nearly all of them, and the tier was never sent. An
+            // adapter with no tiering has no such slot and reads undefined here,
+            // which is the "send no lodMode" case.
+            const threshold: unknown = getConf(self.parentTrack, [
+              'adapter',
+              'coarseBpPerPxThreshold',
+            ])
             return {
               ...superRpcProps(),
               lodMode: resolveDisplayLodMode({
                 bpPerPx: (getContainingView(self) as LinearGenomeViewModel)
                   .bpPerPx,
-                coarseBpPerPxThreshold,
+                coarseBpPerPxThreshold:
+                  typeof threshold === 'number' ? threshold : undefined,
               }),
             }
           },
