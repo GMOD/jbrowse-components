@@ -35,7 +35,13 @@ struct Uniforms {
 
 struct VsOut {
   float4 position : SV_Position;
-  float  count    : COLOR0;
+  // The contact's raw count, constant per instance — all six vertices of the
+  // quad carry the same value, so interpolating it is a no-op the rasterizer
+  // would still set up. The count→color mapping deliberately stays in the
+  // fragment shader rather than moving to the vertex shader: bins are ~1.4 px at
+  // the auto binsize, so a full-width triangle emits several times more vertices
+  // than fragments and the math is cheaper per fragment.
+  nointerpolation float count : COLOR0;
 };
 
 [shader("vertex")]
