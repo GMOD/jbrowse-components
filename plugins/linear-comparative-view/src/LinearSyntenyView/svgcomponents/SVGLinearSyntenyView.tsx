@@ -16,7 +16,8 @@ import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
 
-// render LGV to SVG
+// render a LinearSyntenyView to SVG: N stacked genome views with the synteny
+// ribbon level for each adjacent pair between them
 export async function renderToSvg(
   model: LinearSyntenyViewModel,
   opts: ExportSvgOptions,
@@ -67,18 +68,25 @@ export async function renderToSvg(
       })),
     ),
     Promise.all(
-      levels.map(level =>
-        Promise.all(
-          // linearSyntenyDisplays' getter return type widens to any through the
-          // view's Instance type (MST drops getter types), so annotate d.
-          level.linearSyntenyDisplays.map(
-            async (d: LinearSyntenyDisplayModel) => ({
+      // linearSyntenyDisplays' getter return type widens to any through the
+      // view's Instance type (MST drops getter types), so annotate displays.
+      levels.map(async level => {
+        const displays: LinearSyntenyDisplayModel[] =
+          level.linearSyntenyDisplays
+        // one error box per level rather than per display: they all paint the
+        // same full-height band, so a per-display box would cover its siblings'
+        // ribbons. Matches LevelSyntenyCanvas's single combined banner.
+        const errors = displays.map(d => d.error).filter(e => e != null)
+        return {
+          error: errors.length > 0 ? errors.join('\n') : undefined,
+          nodes: await Promise.all(
+            displays.map(async d => ({
               key: d.id,
               node: await renderSyntenyDisplaySvg(d, opts),
-            }),
+            })),
           ),
-        ),
-      ),
+        }
+      }),
     ),
   ])
 
@@ -124,7 +132,8 @@ export async function renderToSvg(
                 width={width}
                 levelHeight={level.height}
                 trackLabelOffset={trackLabelOffset}
-                rendering={renderings[i]!}
+                rendering={renderings[i]!.nodes}
+                error={renderings[i]!.error}
                 // one legend for the whole view, in the topmost ribbon band —
                 // the same placement the on-screen LevelSection uses
                 legend={

@@ -1,4 +1,3 @@
-import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 
@@ -7,6 +6,11 @@ import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
+// One synteny track's ribbons, drawn into the band its level owns. The terminal
+// states (error) belong to the level, not to this display: every display in a
+// level paints over the same full-height band, so a per-display error box would
+// cover its siblings' ribbons. SVGSyntenyLevel owns that gate, the same way
+// LevelSyntenyCanvas shows one combined banner per level on screen.
 export async function renderSvg(
   model: LinearSyntenyDisplayModel,
   opts?: PaintLayerOpts,
@@ -24,18 +28,14 @@ export async function renderSvg(
   // Narrow the genuinely-nullable derived data (undefined until instanceData +
   // colors resolve); no data-size gate — drawSyntenyTrack draws nothing for an
   // instanceCount of 0, so an empty level paints empty naturally.
-  return (
-    <SvgChrome error={model.error} width={view.width} height={model.height}>
-      {data && params ? (
-        <PaintLayer
-          width={view.width}
-          height={model.height}
-          opts={opts}
-          paint={ctx => {
-            drawSyntenyTrack(ctx, data, params, view.width, view.overdrawPx)
-          }}
-        />
-      ) : null}
-    </SvgChrome>
-  )
+  return data && params ? (
+    <PaintLayer
+      width={view.width}
+      height={model.height}
+      opts={opts}
+      paint={ctx => {
+        drawSyntenyTrack(ctx, data, params, view.width, view.overdrawPx)
+      }}
+    />
+  ) : null
 }

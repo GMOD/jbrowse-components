@@ -186,7 +186,7 @@ export function projectCorners(
 // Ribbon perpendicular (visual) thickness in px. A steep diagonal can span
 // several px horizontally yet be razor-thin perpendicular, so keying on
 // horizontal span alone mis-measures it. Shared by the fill path (fill vs
-// centerline-stroke decision in Canvas2DSyntenyRenderer.drawInstances) and the
+// centerline-stroke decision in Canvas2DSyntenyRenderer.drawSyntenyTrack) and the
 // pick path (pickFeatureAtPoint) so "drawn as a solid fill" and "pickable" stay
 // the same boundary. Mirrors perpFactor/halfPerpW in syntenyTypes.slang's
 // fillCoverage.
@@ -198,16 +198,39 @@ export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
   return Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3)) / perpFactor
 }
 
-// Per-edge cull: drop the instance when any single edge lies entirely outside
-// the draw limits. Mirrors the viewport half of isCulled() in
+// Slack on the hull cull below, covering the widest thing a ribbon can paint
+// outside its own corners: a 1px centerline/outline stroke (±0.5px) plus the
+// browser's antialiasing of it.
+const HULL_CULL_PAD_PX = 1
+
+// Drop an instance that can't paint a visible pixel, by two independent tests.
+//
+// Hull: a ribbon's horizontal extent is bounded by its four corners (the curve
+// mode's bezier control points are the corners themselves, so the curve stays
+// within their x-hull), so a hull entirely off the canvas paints nothing. This
+// has no counterpart in syntenyTypes.slang's isCulled() and needs none — the
+// GPU rasterizer discards those triangles for free, whereas the CPU path pays
+// full path construction for each, and the SVG export pays serialization too
+// (measured on the volvox export: ~60% of the ribbon <path> elements were
+// entirely outside the level's clip rect, since overdrawPx defaults to 1000px).
+//
+// Per-edge: drop the instance when any single edge lies entirely outside the
+// overdraw band. Mirrors the viewport half of isCulled() in
 // syntenyTypes.slang — the shader also folds in the minAlignmentLength cull,
-// which here the draw/pick callers apply separately per instance. An AABB-only
+// which here the draw/pick callers apply separately per instance. A hull-only
 // check would keep drawing trapezoids that span huge horizontal travel.
-export function isEdgeCulled(
+export function isRibbonCulled(
   c: ProjectedCorners,
-  leftLimit: number,
-  rightLimit: number,
+  viewWidth: number,
+  overdrawPx: number,
 ) {
+  const hullMin = Math.min(c.sx1, c.sx2, c.sx3, c.sx4)
+  const hullMax = Math.max(c.sx1, c.sx2, c.sx3, c.sx4)
+  if (hullMax < -HULL_CULL_PAD_PX || hullMin > viewWidth + HULL_CULL_PAD_PX) {
+    return true
+  }
+  const leftLimit = -overdrawPx
+  const rightLimit = viewWidth + overdrawPx
   const topMin = Math.min(c.sx1, c.sx2)
   const topMax = Math.max(c.sx1, c.sx2)
   const botMin = Math.min(c.sx3, c.sx4)

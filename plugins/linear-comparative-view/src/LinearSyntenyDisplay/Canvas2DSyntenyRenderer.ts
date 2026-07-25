@@ -15,7 +15,7 @@ import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
   buildFeaturePath,
   computeTransform,
-  isEdgeCulled,
+  isRibbonCulled,
   makeCornerScratch,
   projectCorners,
   ribbonPerpWidth,
@@ -29,7 +29,7 @@ import type {
   SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
-import type { CanvasLike, ComputedTransform } from './syntenyRibbonPath.ts'
+import type { CanvasLike } from './syntenyRibbonPath.ts'
 
 export type { CanvasLike } from './syntenyRibbonPath.ts'
 
@@ -130,14 +130,18 @@ function resolveInstanceFill(
     : { r: r | 0, g: g | 0, b: b | 0, a: shade }
 }
 
-function drawInstances(
+// Draws in logical (CSS-px) coordinates with yTop baked into the y values, so
+// the caller's canvas transform only ever carries the device scale — the SVG
+// raster export's pre-applied ctx.scale(dpr) and the interactive backend's
+// single setTransform(dpr) both work without this function touching it.
+export function drawSyntenyTrack(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
   params: SyntenyTrackRenderParams,
-  transform: ComputedTransform,
-  leftLimit: number,
-  rightLimit: number,
+  logicalW: number,
+  overdrawPx: number,
 ) {
+  const transform = computeTransform(params, data)
   const {
     yTop,
     height,
@@ -163,7 +167,7 @@ function drawInstances(
     }
 
     const c = projectCorners(data, i, transform, scratch)
-    if (isEdgeCulled(c, leftLimit, rightLimit)) {
+    if (isRibbonCulled(c, logicalW, overdrawPx)) {
       continue
     }
 
@@ -212,6 +216,11 @@ function drawInstances(
     // while a whole-genome tangle fades instead of stacking hard
     // full-opacity lines. CIGAR keeps full alpha (indel detail stays solid; the
     // shader likewise skips the density fade for CIGAR in fillCoverage).
+    // Deliberate divergence: the clicked outline is drawn only on the fill
+    // branch. The GPU edge pass has no thinness gate, but a sub-pixel ribbon's
+    // two side edges coincide, so outlining one here would just overstrike the
+    // centerline darker — and a sub-pixel ribbon isn't pickable in the first
+    // place, so it can only be the clicked one after a zoom-out.
     const perpW = ribbonPerpWidth(c, height)
     if (perpW < 1) {
       const xt = (c.sx1 + c.sx2) * 0.5
@@ -231,28 +240,6 @@ function drawInstances(
       }
     }
   }
-}
-
-// Draws in logical (CSS-px) coordinates with yTop baked into the y values, so
-// the caller's canvas transform only ever carries the device scale — the SVG
-// raster export's pre-applied ctx.scale(dpr) and the interactive backend's
-// single setTransform(dpr) both work without this function touching it.
-export function drawSyntenyTrack(
-  ctx: CanvasLike,
-  data: SyntenyInstanceData,
-  params: SyntenyTrackRenderParams,
-  logicalW: number,
-  overdrawPx: number,
-) {
-  const transform = computeTransform(params, data)
-  drawInstances(
-    ctx,
-    data,
-    params,
-    transform,
-    -overdrawPx,
-    logicalW + overdrawPx,
-  )
 }
 
 export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {

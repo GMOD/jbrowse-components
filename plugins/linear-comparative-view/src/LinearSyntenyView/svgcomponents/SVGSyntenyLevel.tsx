@@ -1,4 +1,4 @@
-import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 
 import type { ReactNode } from 'react'
@@ -13,6 +13,7 @@ export default function SVGSyntenyLevel({
   levelHeight,
   trackLabelOffset,
   rendering,
+  error,
   legend,
 }: {
   clipId: string
@@ -20,6 +21,9 @@ export default function SVGSyntenyLevel({
   levelHeight: number
   trackLabelOffset: number
   rendering: { key: string; node: ReactNode }[]
+  // Combined across the level's displays, since they all paint the same
+  // full-height band — one error box, as LevelSyntenyCanvas shows one banner.
+  error?: unknown
   // the color-by key, floated over the band as it is on screen. Outside the
   // clip so a legend taller than a short level isn't cropped.
   legend?: ReactNode
@@ -27,9 +31,11 @@ export default function SVGSyntenyLevel({
   return (
     <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
       <SvgClipRect id={clipId} width={width} height={levelHeight}>
-        {rendering.map(({ key, node }) => (
-          <g key={key}>{node}</g>
-        ))}
+        <SvgChrome error={error} width={width} height={levelHeight}>
+          {rendering.map(({ key, node }) => (
+            <g key={key}>{node}</g>
+          ))}
+        </SvgChrome>
       </SvgClipRect>
       {legend}
     </g>

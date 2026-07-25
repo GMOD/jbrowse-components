@@ -4,7 +4,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import {
   buildFeaturePath,
   computeTransform,
-  isEdgeCulled,
+  isRibbonCulled,
   makeCornerScratch,
   projectCorners,
   ribbonPerpWidth,
@@ -104,8 +104,6 @@ export function pickFeatureAtPoint(
   pc: PickContext,
 ): SyntenyPickResult | undefined {
   const { ctx, state, regions, pickIndices, canvasLogicalWidth, x, y } = pc
-  const leftLimit = -state.overdrawPx
-  const rightLimit = canvasLogicalWidth + state.overdrawPx
   const scratch = makeCornerScratch()
 
   // Iterate tracks in reverse draw order so top-most wins.
@@ -157,11 +155,11 @@ export function pickFeatureAtPoint(
       }
 
       const c = projectCorners(data, i, transform, scratch)
-      if (isEdgeCulled(c, leftLimit, rightLimit)) {
+      if (isRibbonCulled(c, canvasLogicalWidth, state.overdrawPx)) {
         continue
       }
       // SYNC: mirrors the perpW<1 fill/stroke split in
-      // Canvas2DSyntenyRenderer.drawInstances. A ribbon thinner than 1px
+      // Canvas2DSyntenyRenderer.drawSyntenyTrack. A ribbon thinner than 1px
       // perpendicular is drawn as a 1px centerline (or faded on the GPU), not a
       // solid fill — its silhouette polygon is a sub-pixel sliver that
       // isPointInPath can't reliably hit, so it's a non-pickable line. Ribbons

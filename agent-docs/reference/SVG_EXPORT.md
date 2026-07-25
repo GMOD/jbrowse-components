@@ -253,7 +253,12 @@ same `computeSvgReady` policy:
   (`loadedFetchKey === currentFetchKey`) closes that window exactly as arc's
   signature does. It has no `regionTooLarge` state, so its `SvgChrome` is passed
   `error` only. **`SvgChrome` is not LGV-specific** — it is the terminal chrome
-  for *any* rectangular display, and synteny is the proof.
+  for *any* rectangular display, and synteny is the proof. Synteny is also the
+  one case where the chrome sits a level *above* the display: every synteny
+  display in a level paints the same full-height band, so `SVGSyntenyLevel` owns
+  one `SvgChrome` over the errors combined across the level (mirroring
+  `LevelSyntenyCanvas`'s single banner). A per-display error box would cover its
+  siblings' ribbons.
 
 ### The shared freshness name, and the shared signature compare
 

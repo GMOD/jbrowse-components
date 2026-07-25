@@ -204,6 +204,53 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
 
+  test('culls a ribbon whose whole hull sits off-canvas within the overdraw band', () => {
+    // 900px left of the canvas but well inside overdrawPx=1000, so the per-edge
+    // cull keeps it; its four corners are all off-canvas, so it cannot paint a
+    // pixel and the hull cull drops it. Regression: the SVG export serialized
+    // ~60% of its <path> elements entirely outside the level's clip rect.
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1: bpArr([-950]),
+        bp2: bpArr([-900]),
+        bp3: bpArr([-880]),
+        bp4: bpArr([-930]),
+      }),
+    )
+    renderer.render(makeState([[0, makeParams()]], 1000))
+
+    expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
+  })
+
+  test('keeps a ribbon that only reaches the canvas at one end', () => {
+    // top edge entirely off-canvas, bottom edge on it: the hull straddles the
+    // viewport, so this must still draw (it is the diagonal overdrawPx exists
+    // for).
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1: bpArr([-950]),
+        bp2: bpArr([-900]),
+        bp3: bpArr([400]),
+        bp4: bpArr([350]),
+      }),
+    )
+    renderer.render(makeState([[0, makeParams()]], 1000))
+
+    expect(pathOps.filter(op => op === 'fill')).toHaveLength(1)
+  })
+
   test('culls features outside viewport', () => {
     const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800
