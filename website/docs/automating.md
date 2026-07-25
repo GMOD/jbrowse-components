@@ -156,10 +156,13 @@ The first is GPU rendering. JBrowse renders tracks on the GPU, and headless
 Chrome has no GPU, so canvases come up blank without a software renderer. Launch
 with `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
 
-The second is knowing when a view has finished loading. JBrowse shows a
-`[data-testid="loading-overlay"]` while the session initializes, and each track
-display changes its `data-testid` from `display-<id>` to `display-<id>-done`
-once it has painted. Wait for those rather than an arbitrary element.
+The second is knowing when a view has finished loading. JBrowse publishes its
+own state onto the DOM for exactly this: a view carries
+`data-view-phase="loading"` while it is still waiting on its assembly (or on
+`init`'s navigation) and has mounted no displays yet, and each track display
+carries `data-display-phase="loading"` for the whole of its fetch. Waiting until
+neither is present reads the app's own state, rather than inferring it from
+paint flags or from status text that a hidden element may still contain.
 
 ```js
 import puppeteer from 'puppeteer'
@@ -178,34 +181,45 @@ await page.goto(
   { waitUntil: 'networkidle0' },
 )
 
-// session done initializing: the loading overlay is gone
+// every view has its assembly and has mounted its displays
 await page.waitForFunction(
-  () => !document.querySelector('[data-testid="loading-overlay"]'),
+  () => !document.querySelector('[data-view-phase="loading"]'),
 )
-// every track display has painted (testid ends in "-done")
-await page.waitForFunction(() => {
-  const displays = document.querySelectorAll('[data-testid^="display-"]')
-  const done = document.querySelectorAll('[data-testid$="-done"]')
-  return displays.length > 0 && done.length === displays.length
-})
+// every track display has finished fetching and drawing
+await page.waitForFunction(
+  () => !document.querySelector('[data-display-phase="loading"]'),
+)
 
 await page.screenshot({ path: 'view.png' })
 await browser.close()
 ```
 
+A display that ends in its "too large" or error state publishes no phase at all,
+so these waits return immediately for it. That is correct (it is finished, not
+pending), but it means the waits alone will not tell you a capture is empty:
+check the frame, or assert on something the data itself produces.
+
 For a longer-form session (multiple views, per-track display options) encode a
 full session spec rather than individual params. See the session-spec section of
 the [URL query parameter API](/docs/urlparams).
 
-This repo's own screenshot generator does all of this and handles several
-finicky details: freezing CSS animations so menus and popovers aren't caught
-mid-transition, calling `requestAnimationFrame` twice before capture so a
-freshly-composited GPU layer is actually rasterized, and using a fresh browser
-per navigation to sidestep service-worker caching. For a complete worked
-example, see
+Nearly every figure on this documentation site is produced this way. Each one is
+a declarative spec in
+[`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts)
+that names a config, a session, and what to wait for, and the generator turns it
+into the committed PNG the docs embed. That is also why most figures carry an
+"Open this view in JBrowse" link: the image and the link come from the same
+spec, so a figure can't drift from the app it depicts.
+
+That generator does everything above and handles several finicky details:
+freezing CSS animations so menus and popovers aren't caught mid-transition,
+calling `requestAnimationFrame` twice before capture so a freshly-composited GPU
+layer is actually rasterized, and using a fresh browser per navigation to
+sidestep service-worker caching. For a complete worked example, see
 [`website/scripts/generate-screenshots.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/generate-screenshots.ts)
-and the reusable wait helpers (`waitForLoadingComplete`, `waitForDisplaysDone`,
-`waitForQuiescent`) it imports from
+and the reusable wait helpers (`waitForViewPhases`, `waitForDisplayPhases`,
+`waitForDisplaysDone`, `waitForLoadingComplete`, `waitForQuiescent`) it imports
+from
 [`packages/browser-test-utils`](https://github.com/GMOD/jbrowse-components/tree/main/packages/browser-test-utils).
 
 ## See also

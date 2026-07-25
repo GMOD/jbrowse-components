@@ -125,6 +125,25 @@ screen, ready to edit in Illustrator or Inkscape. For figures you want to
 regenerate as the data changes, [@jbrowse/img](/docs/jbrowse-img) renders a view
 to SVG or PNG from the command line.
 
+### How do I automatically create screenshots
+
+If all you need is the rendered view, [@jbrowse/img](/docs/jbrowse-img) produces
+SVG, PNG or PDF from the command line with no browser involved.
+
+For a screenshot of the running app - an open menu, a hover popover, a track
+after some interaction - drive JBrowse Web with puppeteer or Playwright:
+navigate to a URL that already carries the state you want (see
+[URL parameters](/docs/urlparams)), wait for it to settle, then capture.
+[Automating JBrowse](/docs/automating#headless--puppeteer) has a worked example
+along with the two things that usually go wrong, namely that headless Chrome
+needs `--enable-unsafe-swiftshader` before GPU-rendered tracks appear, and that
+a capture taken before the displays report done comes out blank.
+
+Nearly every figure on this site is generated that way, from a declarative spec
+per image in
+[`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts),
+so the specs double as a large set of worked examples.
+
 ### What are new features in JBrowse 2
 
 See the [features page](/features/) for a full overview. Highlights include
