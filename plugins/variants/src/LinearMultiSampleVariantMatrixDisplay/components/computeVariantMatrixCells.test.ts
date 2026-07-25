@@ -33,7 +33,7 @@ describe('computeVariantMatrixCells phased genotypes', () => {
 
   test('genotypes keyed by sampleName not HP-suffixed name', () => {
     const result = computeVariantMatrixCells({
-      mafs: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'phased',
       genotypesCache: new Map(),

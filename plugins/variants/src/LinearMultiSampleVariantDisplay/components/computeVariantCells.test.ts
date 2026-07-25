@@ -34,7 +34,7 @@ describe('computeVariantCells phased genotypes', () => {
 
   test('featureGenotypeMap genotypes keyed by sampleName not HP-suffixed name', () => {
     const result = computeVariantCells({
-      mafs: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'skip',
@@ -76,7 +76,7 @@ describe('computeVariantCells phased no-call vs unphased', () => {
     const { BLACK_ABGR, NO_CALL_COLOR } =
       await import('../../shared/constants.ts')
     const result = computeVariantCells({
-      mafs: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'skip',
@@ -111,7 +111,7 @@ describe('computeVariantCells insertion bounds', () => {
       end: 101,
     })
     const result = computeVariantCells({
-      mafs: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'allele',
       referenceDrawingMode: 'skip',
@@ -134,7 +134,7 @@ describe('computeVariantCells insertion bounds', () => {
       end: 101,
     })
     const result = computeVariantCells({
-      mafs: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'allele',
       referenceDrawingMode: 'skip',
@@ -169,7 +169,7 @@ describe('computeVariantCells featureColor override', () => {
     const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
     const override = 'rgb(1,2,3)'
     const result = computeVariantCells({
-      mafs: [{ feature, mostFrequentAlt: '1' }],
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'draw',

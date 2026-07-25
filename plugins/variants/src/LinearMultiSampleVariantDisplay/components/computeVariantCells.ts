@@ -55,7 +55,7 @@ function getShapeType(featureType: string) {
 }
 
 export function computeVariantCells({
-  mafs,
+  filteredVariants,
   sources,
   renderingMode,
   referenceDrawingMode,
@@ -63,7 +63,7 @@ export function computeVariantCells({
   genotypesCache,
   report,
 }: {
-  mafs: FilteredVariant[]
+  filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode: string
@@ -80,7 +80,7 @@ export function computeVariantCells({
   const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
   const numSources = sources.length
-  const maxCells = mafs.length * numSources
+  const maxCells = filteredVariants.length * numSources
   const positions = new Uint32Array(maxCells * 2)
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint32Array(maxCells)
@@ -120,7 +120,7 @@ export function computeVariantCells({
   }
 
   let featureIdx = 0
-  for (const { feature, mostFrequentAlt } of mafs) {
+  for (const { feature, mostFrequentAlt } of filteredVariants) {
     report?.()
     const featureId = feature.id()
     const start = feature.get('start')

@@ -47,14 +47,14 @@ export interface MatrixCellData {
 }
 
 export function computeVariantMatrixCells({
-  mafs,
+  filteredVariants,
   sources,
   renderingMode,
   featureColor,
   genotypesCache,
   report,
 }: {
-  mafs: FilteredVariant[]
+  filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
   renderingMode: string
   // Optional per-variant color override (see computeVariantCells).
@@ -66,7 +66,7 @@ export function computeVariantMatrixCells({
   // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
   const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
-  const numFeatures = mafs.length
+  const numFeatures = filteredVariants.length
   const numSources = sources.length
   const maxCells = numFeatures * numSources
   const featureIndices = new Float32Array(maxCells)
@@ -100,7 +100,7 @@ export function computeVariantMatrixCells({
 
   for (let idx = 0; idx < numFeatures; idx++) {
     report?.()
-    const { feature, mostFrequentAlt } = mafs[idx]!
+    const { feature, mostFrequentAlt } = filteredVariants[idx]!
     const featureId = feature.id()
     const overrideColor = featureColor?.(feature)
     const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(

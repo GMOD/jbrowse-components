@@ -158,6 +158,31 @@ use a jexl filter (`jexl:get(feature,'end')-get(feature,'start')<N`), like the
 `maf()` / `missingness()` jexl functions in `index.ts`. `lengthCutoffFilter` was
 removed here (no UI, never set); LD keeps its functional one.
 
+## Minor allele frequency: one definition, two computations
+
+MAF is over **called** alleles — `.` is missingness, never a candidate minor
+allele nor part of the denominator (`missingness` is its own metric, the
+complement of LD's `callRateFilter`). The definition lives in
+`summarizeAlleleCounts` (`shared/minorAlleleFrequencyUtils.ts`), which yields
+MAF, missingness, the primary alt, and the called-allele total from a single
+pass; `calculateMinorAlleleFrequency` / `calculateMissingnessFrequency` (the
+`maf()` / `missingness()` jexl functions) are wrappers on it, so the two
+denominators can't drift apart again.
+
+LD computes its own, off `packHaplotypesWithCounts` / `fillEncoded`
+(`VariantRPC/getLDMatrix.ts`) rather than an allele-count Record, because it
+already walks genotypes to build the dosage encoding. It has to land on the same
+number: count **alleles** (`nAltAlleles / nCalledAlleles`), not genotype classes
+over `2 * nValid` — the latter mis-weights a mixed-ploidy site and a half-call.
+`nValid` stays a whole-genotype count because HWE and call rate need one; a
+half-call encodes as dosage-missing in both paths, since one called allele
+doesn't determine a dosage.
+
+`getFilteredVariants` filters on those thresholds and nothing else. A site with
+no called allele anywhere drops (nothing to draw); a **monomorphic** site does
+not — dropping all-ref while keeping all-alt was an asymmetry, and a MAF floor
+above 0 removes both anyway.
+
 ## Genotypes: string `genotypes` map is the only representation
 
 Features carry genotypes as a `Record<sampleName, string>`

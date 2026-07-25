@@ -1,6 +1,6 @@
 import { GENOTYPE_SPLITTER } from './constants.ts'
 
-import type VcfFeature from '../VcfFeature/index.ts'
+import type { VCFFeatureLike } from './hasProcessGenotypes.ts'
 
 // Genotype string -> allele-count utilities. Two variants exist on purpose,
 // each tuned to its execution context, NOT accidental duplication:
@@ -77,7 +77,7 @@ function buildAlleleCounts(
  * Avoids creating intermediate genotypes object.
  */
 export function calculateAlleleCountsFast(
-  feature: VcfFeature,
+  feature: VCFFeatureLike,
 ): Record<string, number> {
   const b: AlleleBuckets = {
     count0: 0,

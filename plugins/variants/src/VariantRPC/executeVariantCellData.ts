@@ -167,7 +167,7 @@ function accumulateSampleInfo(
 }
 
 function computeSampleInfo(
-  mafs: FilteredVariant[],
+  filteredVariants: FilteredVariant[],
   genotypesCache: Map<string, Record<string, string>>,
   report?: ProgressReporter,
 ) {
@@ -180,12 +180,14 @@ function computeSampleInfo(
   const svTypes = new Set<string>()
 
   // Single pass: accumulate sampleInfo/legend flags and build the simplified
-  // feature list together. Avoids a second full iteration over mafs (was a
-  // separate `mafs.map`) and lets the progress bar track the whole phase.
-  const simplifiedFeatures: SimplifiedVariantFeature[] = new Array(mafs.length)
-  for (let featureIdx = 0; featureIdx < mafs.length; featureIdx++) {
+  // feature list together. Avoids a second full iteration over the filtered
+  // variants, and lets the progress bar track the whole phase.
+  const simplifiedFeatures: SimplifiedVariantFeature[] = new Array(
+    filteredVariants.length,
+  )
+  for (let featureIdx = 0; featureIdx < filteredVariants.length; featureIdx++) {
     report?.(featureIdx)
-    const { feature } = mafs[featureIdx]!
+    const { feature } = filteredVariants[featureIdx]!
     const featureId = feature.id()
     const alt = feature.get('ALT') as string[] | undefined
     if (alt && alt.length > 1) {
@@ -283,8 +285,8 @@ export async function executeVariantCellData({
   } = args
 
   // Only regular mode consumes per-region grouping (it ships one cell blob per
-  // displayed region); matrix mode flattens back to a single `mafs` list, so
-  // skip the grouping + per-region filtering entirely for it.
+  // displayed region); matrix mode flattens back to a single flat list, so skip
+  // the grouping + per-region filtering entirely for it.
   const regionLookup =
     mode === 'regular' && displayedRegionIndices
       ? regions.map((r, i) => ({
@@ -351,10 +353,10 @@ export async function executeVariantCellData({
     stopToken,
   }
 
-  let mafs: FilteredVariant[]
-  let perRegionMafs: Map<number, FilteredVariant[]> | undefined
+  let filteredVariants: FilteredVariant[]
+  let perRegionFilteredVariants: Map<number, FilteredVariant[]> | undefined
   if (perRegionRawFeatures) {
-    perRegionMafs = await withProgress(
+    perRegionFilteredVariants = await withProgress(
       {
         ...progressOpts,
         label: 'Filtering variants',
@@ -380,15 +382,15 @@ export async function executeVariantCellData({
         return result
       },
     )
-    const allMafs: FilteredVariant[] = []
-    for (const regionMafs of perRegionMafs.values()) {
-      for (const maf of regionMafs) {
-        allMafs.push(maf)
+    const allFilteredVariants: FilteredVariant[] = []
+    for (const regionVariants of perRegionFilteredVariants.values()) {
+      for (const variant of regionVariants) {
+        allFilteredVariants.push(variant)
       }
     }
-    mafs = allMafs
+    filteredVariants = allFilteredVariants
   } else {
-    mafs = await withProgress(
+    filteredVariants = await withProgress(
       {
         ...progressOpts,
         label: 'Filtering variants',
@@ -416,8 +418,12 @@ export async function executeVariantCellData({
     svTypeColors,
     simplifiedFeatures,
   } = await withProgress(
-    { ...progressOpts, label: 'Analyzing variants', total: mafs.length },
-    report => computeSampleInfo(mafs, genotypesCache, report),
+    {
+      ...progressOpts,
+      label: 'Analyzing variants',
+      total: filteredVariants.length,
+    },
+    report => computeSampleInfo(filteredVariants, genotypesCache, report),
   )
   const hasSvType = Object.keys(svTypeColors).length > 0
 
@@ -450,16 +456,20 @@ export async function executeVariantCellData({
 
   if (mode === 'regular') {
     const perRegionCellData = await withProgress(
-      { ...progressOpts, label: 'Computing variant cells', total: mafs.length },
+      {
+        ...progressOpts,
+        label: 'Computing variant cells',
+        total: filteredVariants.length,
+      },
       report => {
-        if (perRegionMafs) {
+        if (perRegionFilteredVariants) {
           // one shared reporter spans all regions: it owns the running counter,
           // so per-region calls accumulate into one global bar with no offset
           // bookkeeping
           const result: Record<number, VariantCellData> = {}
-          for (const [regionNum, regionMafs] of perRegionMafs) {
+          for (const [regionNum, regionMafs] of perRegionFilteredVariants) {
             result[regionNum] = computeVariantCells({
-              mafs: regionMafs,
+              filteredVariants: regionMafs,
               sources: effectiveSources,
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
@@ -472,7 +482,7 @@ export async function executeVariantCellData({
         }
         return {
           0: computeVariantCells({
-            mafs,
+            filteredVariants,
             sources: effectiveSources,
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
@@ -535,11 +545,11 @@ export async function executeVariantCellData({
       {
         ...progressOpts,
         label: 'Computing variant matrix cells',
-        total: mafs.length,
+        total: filteredVariants.length,
       },
       report =>
         computeVariantMatrixCells({
-          mafs,
+          filteredVariants,
           sources: effectiveSources,
           renderingMode,
           featureColor: featureColorFn,

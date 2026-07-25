@@ -2,63 +2,81 @@ import {
   calculateAlleleCounts,
   calculateAlleleCountsFast,
 } from './alleleCounts.ts'
+import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 
-import type VcfFeature from '../VcfFeature/index.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
-export function calculateMinorAlleleFrequency(
+export interface AlleleSummary {
+  // Frequency of the second-most-common allele among *called* alleles (the VCF
+  // AN definition). No-call '.' is not an allele: it is excluded from both the
+  // minor-allele candidacy and the denominator, or on sites where no-calls
+  // outnumber the true minor allele the returned frequency is actually the
+  // missingness fraction. Missingness is its own metric below.
+  minorAlleleFrequency: number
+  // Fraction of all alleles that are no-call ('.'); high on sparse multi-sample
+  // panels where many samples lack a genotype at a site. This is the complement
+  // of the LD display's `callRateFilter` (call rate === 1 - missingness); the
+  // two display families expose the same concept under different names.
+  missingness: number
+  // Most common non-ref allele index. It only ever selects "primary alt" vs
+  // "other alt" coloring (getAlleleColor / getPhasedColor), so a site carrying
+  // no alt allele reports '1': no cell there holds an alt to compare against.
+  mostFrequentAlt: string
+  // Called (non-'.') alleles across every sample. 0 means the site has no
+  // genotype data at all — every sample no-call, or a sites-only VCF.
+  calledAlleleCount: number
+}
+
+// One pass over the allele counts yields everything the filter chokepoint and
+// the jexl functions need. Kept as a single implementation because the MAF and
+// missingness denominators have to stay in lockstep about '.'.
+export function summarizeAlleleCounts(
   alleleCounts: Record<string, number>,
-) {
+): AlleleSummary {
   let firstMax = 0
   let secondMax = 0
-  let total = 0
+  let altMax = 0
+  let called = 0
+  let missing = 0
+  let mostFrequentAlt = '1'
   for (const key in alleleCounts) {
-    // No-call '.' is not an allele: it must be excluded from both the
-    // minor-allele candidacy and the denominator, or on sites where no-calls
-    // outnumber the true minor allele the returned frequency is actually the
-    // missingness fraction. No-call fraction is measured separately by
-    // calculateMissingnessFrequency / the missingness filter.
-    if (key !== '.') {
-      const count = alleleCounts[key]!
-      total += count
+    const count = alleleCounts[key]!
+    if (key === '.') {
+      missing += count
+    } else {
+      called += count
       if (count > firstMax) {
         secondMax = firstMax
         firstMax = count
       } else if (count > secondMax) {
         secondMax = count
       }
+      if (key !== '0' && count > altMax) {
+        altMax = count
+        mostFrequentAlt = key
+      }
     }
   }
-  return secondMax / (total || 1)
+  const total = called + missing
+  return {
+    minorAlleleFrequency: called > 0 ? secondMax / called : 0,
+    missingness: total > 0 ? missing / total : 0,
+    mostFrequentAlt,
+    calledAlleleCount: called,
+  }
 }
 
-// Fraction of alleles that are no-call ('.'); high on sparse multi-sample
-// panels where many samples lack a genotype at a site. This is the complement
-// of the LD display's `callRateFilter` (call rate === 1 - missingness); the two
-// display families expose the same concept under different names and dialogs.
+export function calculateMinorAlleleFrequency(
+  alleleCounts: Record<string, number>,
+) {
+  return summarizeAlleleCounts(alleleCounts).minorAlleleFrequency
+}
+
 export function calculateMissingnessFrequency(
   alleleCounts: Record<string, number>,
 ) {
-  let total = 0
-  for (const key in alleleCounts) {
-    total += alleleCounts[key]!
-  }
-  const missing = alleleCounts['.'] ?? 0
-  return missing / (total || 1)
-}
-
-function getMostFrequentAlt(alleleCounts: Record<string, number>) {
-  let mostFrequentAlt
-  let max = 0
-  for (const alt in alleleCounts) {
-    const altCount = alleleCounts[alt]!
-    if (alt !== '.' && alt !== '0' && altCount > max) {
-      mostFrequentAlt = alt
-      max = altCount
-    }
-  }
-  return mostFrequentAlt
+  return summarizeAlleleCounts(alleleCounts).missingness
 }
 
 export interface FilteredVariant {
@@ -74,13 +92,16 @@ function computeAlleleCounts(
   genotypesCache?: Map<string, Record<string, string>>,
 ) {
   let alleleCounts: Record<string, number>
-  if ('processGenotypes' in feature) {
-    alleleCounts = calculateAlleleCountsFast(feature as VcfFeature)
+  if (hasProcessGenotypes(feature)) {
+    alleleCounts = calculateAlleleCountsFast(feature)
   } else {
     const featureId = feature.id()
     let genotypes = genotypesCache?.get(featureId)
     if (!genotypes) {
-      genotypes = feature.get('genotypes') as Record<string, string>
+      // A sites-only VCF has no genotypes field at all; normalize to {} so the
+      // cache never hands a later consumer an undefined it has to re-guard.
+      genotypes =
+        (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
       genotypesCache?.set(featureId, genotypes)
     }
     alleleCounts = calculateAlleleCounts(genotypes)
@@ -109,18 +130,23 @@ export function getFilteredVariants({
 }) {
   const results: FilteredVariant[] = []
   const missingnessCeiling = maxMissingnessFilter ?? 1
-  const filterMissingness = missingnessCeiling < 1
 
   for (const feature of features) {
     if (!filterChain || filterChain.passes(feature)) {
-      const alleleCounts = computeAlleleCounts(feature, genotypesCache)
-      const mostFrequentAlt = getMostFrequentAlt(alleleCounts)
+      const {
+        minorAlleleFrequency,
+        missingness,
+        mostFrequentAlt,
+        calledAlleleCount,
+      } = summarizeAlleleCounts(computeAlleleCounts(feature, genotypesCache))
+      // A site with no called allele anywhere has no cell to draw, so it drops
+      // regardless of the thresholds. A monomorphic site does *not*: with the
+      // filters off it is a real row of the file, and dropping the all-ref case
+      // while keeping the all-alt one was an asymmetry, not a filter decision.
       if (
-        mostFrequentAlt !== undefined &&
-        calculateMinorAlleleFrequency(alleleCounts) >=
-          minorAlleleFrequencyFilter &&
-        (!filterMissingness ||
-          calculateMissingnessFrequency(alleleCounts) <= missingnessCeiling)
+        calledAlleleCount > 0 &&
+        minorAlleleFrequency >= minorAlleleFrequencyFilter &&
+        missingness <= missingnessCeiling
       ) {
         results.push({ feature, mostFrequentAlt })
       }

@@ -2,12 +2,12 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
 import { resolveSampleName } from '../shared/getSources.ts'
+import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   MISSING,
   readPhasedAlleleIndicators,
 } from './genotypeMatrixEncoding.ts'
-import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -82,7 +82,7 @@ export async function getPhasedGenotypeMatrix({
     statusCallback,
     () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
   )
-  const mafs = getFilteredVariants({
+  const filteredVariants = getFilteredVariants({
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
     filterChain: filters,
@@ -95,11 +95,12 @@ export async function getPhasedGenotypeMatrix({
     }),
   })
 
-  // Pre-size each haplotype row to mafs.length and assign by feature index.
+  // Pre-size each haplotype row to the filtered-variant count and assign by
+  // feature index.
   // Float32 because a haplotype with nothing to say (no-call, unphased call,
   // sample absent) has to be NaN rather than a value on the allele scale — see
   // genotypeMatrixEncoding.ts.
-  const numFeatures = mafs.length
+  const numFeatures = filteredVariants.length
   const rows: Record<string, Float32Array> = {}
   const rowArrays = rowSpecs.map(spec => {
     const arr = new Float32Array(numFeatures)
@@ -112,8 +113,10 @@ export async function getPhasedGenotypeMatrix({
   // sample-array position, no genotypes Record and no substring per call. This
   // path matters more here than there — phased mode builds twice the rows.
   const sampleNames =
-    mafs.length > 0
-      ? ((mafs[0]!.feature.get('sampleNames') as string[] | undefined) ?? [])
+    filteredVariants.length > 0
+      ? ((filteredVariants[0]!.feature.get('sampleNames') as
+          | string[]
+          | undefined) ?? [])
       : []
   const samplesLen = sampleNames.length
   const sampleIdxByKey = new Map<string, number>()
@@ -150,7 +153,7 @@ export async function getPhasedGenotypeMatrix({
     stopTokenCheck,
   })
   for (let f = 0; f < numFeatures; f++) {
-    const feature = mafs[f]!.feature
+    const feature = filteredVariants[f]!.feature
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
       // Reset first: @gmod/vcf skips the callback for a sample whose FORMAT
       // fields stop before GT, which would otherwise leave the previous

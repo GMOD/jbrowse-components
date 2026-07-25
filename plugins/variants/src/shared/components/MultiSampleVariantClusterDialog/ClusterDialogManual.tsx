@@ -84,8 +84,8 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
       return rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
         regions: view.dynamicBlocks.contentBlocks,
         sources: sourcesBase ?? [],
-        minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
-        maxMissingnessFilter: maxMissingnessFilter ?? 1,
+        minorAlleleFrequencyFilter,
+        maxMissingnessFilter,
         filters,
         adapterConfig,
         renderingMode,

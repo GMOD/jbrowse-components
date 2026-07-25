@@ -11,8 +11,11 @@ export interface ReducedModel {
   // What both clustering paths cluster, so a re-run inside a filtered clade
   // resolves that clade rather than the whole cohort.
   sourcesBase?: ProcessedSource[]
-  minorAlleleFrequencyFilter?: number
-  maxMissingnessFilter?: number
+  // Always resolved off a config slot with a default (0 / 1), so both clustering
+  // entry points forward the display's real thresholds rather than restating
+  // "off" defaults of their own.
+  minorAlleleFrequencyFilter: number
+  maxMissingnessFilter: number
   filters?: SerializableFilterChain
   adapterConfig: AnyConfigurationModel
   renderingMode: string

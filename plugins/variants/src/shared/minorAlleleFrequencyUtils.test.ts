@@ -6,6 +6,7 @@ import {
   calculateMinorAlleleFrequency,
   calculateMissingnessFrequency,
   getFilteredVariants,
+  summarizeAlleleCounts,
 } from './minorAlleleFrequencyUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -377,6 +378,37 @@ describe('getFilteredVariants', () => {
     expect(result).toHaveLength(0)
   })
 
+  it('keeps monomorphic sites when the MAF filter is off, ref and alt alike', () => {
+    // Both are MAF 0 with nothing to threshold on. Keeping the all-alt site and
+    // dropping the all-ref one would be an asymmetry, not a filter decision.
+    const features = [
+      createMockFeature('allRef', 100, 101, { s1: '0/0', s2: '0/0' }),
+      createMockFeature('allAlt', 200, 201, { s1: '1/1', s2: '1/1' }),
+    ]
+
+    const result = getFilteredVariants({
+      features,
+      minorAlleleFrequencyFilter: 0,
+    })
+
+    expect(result.map(r => r.feature.id())).toEqual(['allRef', 'allAlt'])
+    // An all-ref site has no alt allele to name, and nothing that reads
+    // mostFrequentAlt has an alt cell to compare it against
+    expect(result[0]!.mostFrequentAlt).toBe('1')
+  })
+
+  it('drops a site with no called allele in any sample', () => {
+    const features = [
+      createMockFeature('noCalls', 100, 101, { s1: './.', s2: './.' }),
+      // sites-only VCF row: no genotypes field at all
+      createMockFeature('sitesOnly', 200, 201, {}),
+    ]
+
+    expect(
+      getFilteredVariants({ features, minorAlleleFrequencyFilter: 0 }),
+    ).toHaveLength(0)
+  })
+
   it('keeps variant at exact MAF threshold', () => {
     // MAF exactly 0.2
     // Actually need MAF = 0.2: 2 alt out of 10
@@ -499,6 +531,38 @@ describe('getFilteredVariants', () => {
         maxMissingnessFilter: 0.4,
       }),
     ).toHaveLength(1)
+  })
+})
+
+describe('summarizeAlleleCounts', () => {
+  it('reports MAF, missingness and the primary alt off one pass', () => {
+    // 0:5, 1:3, 2:1 called (9), 3 no-call (12 alleles total)
+    expect(summarizeAlleleCounts({ '0': 5, '1': 3, '2': 1, '.': 3 })).toEqual({
+      minorAlleleFrequency: 3 / 9,
+      missingness: 3 / 12,
+      mostFrequentAlt: '1',
+      calledAlleleCount: 9,
+    })
+  })
+
+  it('names the most frequent alt even when ref is not the major allele', () => {
+    const { mostFrequentAlt, minorAlleleFrequency } = summarizeAlleleCounts({
+      '0': 1,
+      '1': 2,
+      '2': 7,
+    })
+    expect(mostFrequentAlt).toBe('2')
+    // second-most-common called allele is 1's 2 of 10
+    expect(minorAlleleFrequency).toBe(0.2)
+  })
+
+  it('reports zero counts for an empty site', () => {
+    expect(summarizeAlleleCounts({})).toEqual({
+      minorAlleleFrequency: 0,
+      missingness: 0,
+      mostFrequentAlt: '1',
+      calledAlleleCount: 0,
+    })
   })
 })
 

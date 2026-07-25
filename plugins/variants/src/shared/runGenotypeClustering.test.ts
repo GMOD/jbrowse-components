@@ -20,6 +20,8 @@ const regions = [
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
     layout: [],
+    minorAlleleFrequencyFilter: 0,
+    maxMissingnessFilter: 1,
     sourcesBase: [
       { name: 'sampleA', sampleName: 'sampleA' },
       { name: 'sampleB', sampleName: 'sampleB' },
@@ -79,7 +81,7 @@ describe('runGenotypeClustering', () => {
     )
   })
 
-  it('passes through explicit filter values instead of the RPC defaults', async () => {
+  it('passes through the display filter values', async () => {
     const model = makeModel({
       minorAlleleFrequencyFilter: 0.05,
       maxMissingnessFilter: 0.2,

@@ -47,8 +47,8 @@ export async function runGenotypeClustering({
       {
         regions,
         sources: sourcesBase,
-        minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
-        maxMissingnessFilter: maxMissingnessFilter ?? 1,
+        minorAlleleFrequencyFilter,
+        maxMissingnessFilter,
         filters,
         adapterConfig,
         stopToken,
