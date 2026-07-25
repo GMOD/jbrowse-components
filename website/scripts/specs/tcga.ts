@@ -356,13 +356,16 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     viewportWidth: 1900,
     // Review asked to increase the browser height so the cohort heatmap isn't
-    // sliced at the bottom edge, and the truncation is real. Left at 860 on
-    // purpose: raising it re-runs a capture that has NO data-derived
-    // readySelector (see the note above — there is nothing to gate on, and the
-    // stack pulls 5.7MB before it paints), and at 1200 the generator committed a
-    // bare "Loading" frame. Gate this spec on a data-derived element first, then
-    // retune the height; a taller viewport on a race-prone capture just makes the
-    // bad frame bigger.
+    // sliced at the bottom edge, and the truncation is real. Left at 860 because
+    // this figure does not survive a taller viewport: at 1200 the render fails
+    // with "frame got detached", i.e. Chrome tore down and recreated the frame.
+    // rowHeight 0 auto-fits all 1104 rows to the display height, so a taller
+    // track means a taller canvas for the same rows, and past ~860 the renderer
+    // dies. Once it does, the readiness waits can pass a second time on the
+    // fresh document and the capture lands on a bare "Loading" panel — that is
+    // how a blank frame once got committed over this figure. generate-screenshots
+    // now refuses to write in that case (assertSamePageAsReady), so the failure
+    // is loud, but the height still can't go up until the crash itself is fixed.
     viewportHeight: 860,
     settleMs: 20000,
     // 1104 rows floored to 1px alias differently run to run, same as the

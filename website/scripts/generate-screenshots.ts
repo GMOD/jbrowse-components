@@ -405,6 +405,41 @@ async function captureUrl(page: Page, spec: SessionUrlSpec, port: number) {
   })
 
   await waitForReady(page, spec)
+  await markPageAlive(page)
+}
+
+// Liveness token for assertSamePageAsReady below. Set once the page is ready,
+// checked immediately before every screenshot.
+const ALIVE_TOKEN = '__jbShotAlive'
+
+function markPageAlive(page: Page) {
+  return page.evaluate(token => {
+    Object.assign(window, { [token]: true })
+  }, ALIVE_TOKEN)
+}
+
+// Fail if the document we readied is not the document we are about to shoot.
+// A renderer crash or an app reload gives Chrome a brand-new frame, and the
+// readiness waits happily pass on it a second time, so the capture lands on a
+// bare "Loading" panel — that is how a blank tcga/cnv_recurrence_genome frame
+// got committed over a good one. `assertRenderSettled` can't be relied on to
+// catch it: it runs before the reload can happen, and the post-reload page is
+// briefly indistinguishable from a slow first paint.
+//
+// A `window` token rather than the `framenavigated` event on purpose: JBrowse
+// rewrites its own URL through history.replaceState as the session changes,
+// which fires that event on every spec and would fail all of them. A
+// same-document rewrite leaves the token in place; only a real document swap
+// clears it.
+async function assertSamePageAsReady(page: Page, spec: BrowserScreenshotSpec) {
+  const alive = await page.evaluate(token => token in window, ALIVE_TOKEN)
+  if (!alive) {
+    throw new Error(
+      `page reloaded between readiness and capture (${spec.name}) — the renderer ` +
+        `most likely crashed, so the frame being captured is a fresh, still-loading ` +
+        `document rather than the view that was waited on. Nothing was written.`,
+    )
+  }
 }
 
 // Kill CSS transitions and animations for the whole capture session, installed
@@ -460,6 +495,8 @@ async function shoot(
     await clearAnnotations(page)
   }
   await waitForRasterize(page)
+  // last gate before anything is written: same document we readied?
+  await assertSamePageAsReady(page, spec)
   const clip = spec.crop
   await page.screenshot(clip ? { path: file, clip } : { path: file })
 }
