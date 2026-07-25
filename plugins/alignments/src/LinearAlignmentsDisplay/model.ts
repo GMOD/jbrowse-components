@@ -68,6 +68,7 @@ import {
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { ColorScheme } from './constants.ts'
+import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
   anyRegionTruncated,
   groupMaxY,
@@ -992,6 +993,18 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Whether each group draws as a single row, its overlap depth carried by
+         * the tint layer rather than by stacking. Gated on the grouping actually
+         * being honored (`prefersOffset`), so the slot can be a track-config
+         * default without an ungrouped view silently flattening its whole pileup
+         * onto one row.
+         */
+        get collapseGroupRows(): boolean {
+          return this.prefersOffset && getConf(self, 'collapseGroupRows')
+        },
+
+        /**
          * #method
          * Whether a stacked group's pileup is collapsed to just its coverage.
          */
@@ -1228,6 +1241,7 @@ export default function stateModelFactory(
             showLinkedReadLines: self.showLinkedReadLines,
             colorBy: this.colorBy,
             colorTagMap: self.colorTagMap,
+            collapseGroupRows: this.collapseGroupRows,
           }
         },
 
@@ -1524,6 +1538,13 @@ export default function stateModelFactory(
             readConnectionsHeight: self.readConnectionsHeight,
             hasSashimiBand: self.belowCoverageBands.hasSashimiBand,
             sashimiHeight: self.sashimiArcsHeight,
+            // Only when the chips are actually drawn — an ungrouped display
+            // reserves nothing, so its geometry is untouched. `hasNamedGroups`
+            // rather than the `showsGroupLabels` getter, which lives in a later
+            // .views block; both read the same predicate so they can't drift.
+            minSectionHeight: hasNamedGroups(self.groupOrder)
+              ? GROUP_LABEL_HEIGHT
+              : 0,
           })
         },
 
@@ -2092,6 +2113,7 @@ export default function stateModelFactory(
             colors: palette,
             linkedReads: self.linkedReads,
             showLinkedReadLines: self.showLinkedReadLines,
+            collapseGroupRows: self.collapseGroupRows,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             colorSupplementaryChains: self.colorSupplementaryChains,
             readConnectionsLineWidth: self.readConnectionsLineWidth,
@@ -2510,6 +2532,19 @@ export default function stateModelFactory(
           setGroupBy(groupBy?: GroupBy) {
             self.configuration.setSlot('groupBy', groupBy ?? null)
             self.collapsedGroups.clear()
+            self.groupMaxHeightOverrides.clear()
+            self.scrollTop = 0
+          },
+
+          /**
+           * #action
+           * Draw each group as one row (overlap depth shows as tint shading)
+           * rather than as its own stack. Clears the per-group height overrides:
+           * an override means "this lane opted out of the collapse", which is
+           * meaningless once every lane is a stack again.
+           */
+          setCollapseGroupRows(flag: boolean) {
+            self.configuration.setSlot('collapseGroupRows', flag)
             self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
           },

@@ -8,6 +8,7 @@ import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { getOrCreate } from '../shared/util.ts'
+import { mergeSpans, overlapIntervals } from './spanOverlaps.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 
@@ -128,49 +129,6 @@ export function chainLayoutMaxY(
   return withReads.length === 0
     ? 0
     : computeMultiRegionChainLayout(withReads, maxRows).maxY
-}
-
-export interface Span {
-  start: number
-  end: number
-}
-
-// Genomic intervals where spans on one shared row overlap. Sweeps spans in
-// start order tracking the running max end; each span beginning before that end
-// contributes its intersection with the already-covered region. Pure and
-// position-only, so it's unit-testable independent of PileupDataResult.
-export function overlapIntervals(spans: Span[]): Span[] {
-  const sorted = [...spans].sort((a, b) => a.start - b.start)
-  const out: Span[] = []
-  let runningMaxEnd = sorted[0]?.end ?? 0
-  for (let i = 1; i < sorted.length; i++) {
-    const { start, end } = sorted[i]!
-    const overlapEnd = Math.min(end, runningMaxEnd)
-    if (start < overlapEnd) {
-      out.push({ start, end: overlapEnd })
-    }
-    runningMaxEnd = Math.max(runningMaxEnd, end)
-  }
-  return out
-}
-
-// Collapse a set of spans into their disjoint union, merging any that overlap or
-// touch. overlapIntervals can emit several intervals that themselves overlap
-// (3+ reads in one chain), and the tint overlay alpha-blends — without merging,
-// multiply-covered spans would blend twice and render as darker patches. Union
-// gives one uniform tint over "where reads overlap".
-export function mergeSpans(spans: Span[]): Span[] {
-  const sorted = [...spans].sort((a, b) => a.start - b.start)
-  const out: Span[] = []
-  for (const span of sorted) {
-    const last = out[out.length - 1]
-    if (last && span.start <= last.end) {
-      last.end = Math.max(last.end, span.end)
-    } else {
-      out.push({ ...span })
-    }
-  }
-  return out
 }
 
 // Map of chain index → the read indices belonging to that chain in this region.

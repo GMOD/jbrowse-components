@@ -116,6 +116,12 @@ export interface SectionBandOpts {
   readConnectionsHeight?: number
   hasSashimiBand?: boolean
   sashimiHeight?: number
+  // Floor on the distance to the next section's top, so a section shorter than
+  // its own label chip still leaves room for it (the chip is anchored at the
+  // section top, so without this consecutive chips overlap). Only the stacking
+  // advance is padded — `pileupHeight` stays the drawn row extent, so the pad
+  // reads as space below the lane rather than as clickable/paintable pileup.
+  minSectionHeight?: number
 }
 
 // Stack sections top-to-bottom, each reserving its own coverage -> arcs ->
@@ -158,7 +164,10 @@ export function computeStackedSections(
     })
     const pileupTop = coverageTop + stack.pileupTop
     const pileupHeight = g.maxY * opts.rowHeight
-    top = pileupTop + pileupHeight
+    top = Math.max(
+      pileupTop + pileupHeight,
+      coverageTop + (opts.minSectionHeight ?? 0),
+    )
     return {
       groupKey: g.key,
       label: g.label,

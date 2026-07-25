@@ -57,6 +57,10 @@ export interface RenderState {
   // True when bezier connections are on AND linkedReads === 'off' (pileup).
   // Chain layout has its own connecting-line pass, so this is never needed there.
   showLinkedReadLines: boolean
+  // Each group drawn as one row, so features that would have stacked share it.
+  // The overlap tint is what makes that depth readable, hence a second reason
+  // (besides chain mode) for that layer to draw.
+  collapseGroupRows: boolean
   flipStrandLongReadChains: boolean
   // Opt-in legacy behavior: paint paired supplementary chains a flat
   // supplementary color (hides pair orientation). Off by default.
@@ -201,11 +205,15 @@ export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
   return { top: 0, height: bandH - state.coverageYOffset, down: false }
 }
 
-// Whether to draw the mate-overlap hatching pass. Shared by both renderers so
-// the gate can't drift between them. Only meaningful in a linked-reads layout,
-// and suppressed below 3px row height where the hatching is sub-pixel noise.
+// Whether to draw the overlap tint pass. Shared by both renderers so the gate
+// can't drift between them. Meaningful in the two layouts that put more than one
+// feature on a row — a linked-reads chain, or a collapsed group — and suppressed
+// below 3px row height where the tint is sub-pixel noise.
 export function shouldDrawOverlaps(state: RenderState) {
-  return state.linkedReads !== 'off' && state.featureHeight >= 3
+  return (
+    (state.linkedReads !== 'off' || state.collapseGroupRows) &&
+    state.featureHeight >= 3
+  )
 }
 
 // Sub-pixel alpha blend: lerp between `base` (full-row coverage) and 1 using

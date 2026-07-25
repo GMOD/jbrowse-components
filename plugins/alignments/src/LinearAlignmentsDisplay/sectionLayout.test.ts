@@ -329,3 +329,39 @@ test('buildSectionRenders: no arc band reserved => arcBand undefined', () => {
       .arcBand,
   ).toBeUndefined()
 })
+
+// One-row-per-group layouts make sections shorter than their own label chips,
+// which are anchored at each section's top. Without a floor the chips stack on
+// top of each other and every label but the last is unreadable.
+test('minSectionHeight floors the advance to the next section, not the pileup', () => {
+  const { sections, contentHeight } = computeStackedSections(
+    [
+      { key: 'a', label: 'a', maxY: 1 },
+      { key: 'b', label: 'b', maxY: 1 },
+      { key: 'c', label: 'c', maxY: 1 },
+    ],
+    {
+      coverageHeight: 0,
+      showCoverage: false,
+      rowHeight: 8,
+      minSectionHeight: 16,
+    },
+  )
+  expect(sections.map(s => [s.pileupTop, s.pileupHeight])).toEqual([
+    [0, 8],
+    [16, 8],
+    [32, 8],
+  ])
+  expect(contentHeight).toBe(48)
+})
+
+test('minSectionHeight is inert once a section is taller than it', () => {
+  const tall = [
+    { key: 'a', label: 'a', maxY: 4 },
+    { key: 'b', label: 'b', maxY: 4 },
+  ]
+  const opts = { coverageHeight: 0, showCoverage: false, rowHeight: 8 }
+  expect(
+    computeStackedSections(tall, { ...opts, minSectionHeight: 16 }),
+  ).toEqual(computeStackedSections(tall, opts))
+})

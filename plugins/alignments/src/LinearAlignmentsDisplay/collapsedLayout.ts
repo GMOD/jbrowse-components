@@ -1,0 +1,85 @@
+import { cloneWithLayout } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import { overlapIntervals } from './spanOverlaps.ts'
+
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { Span } from './spanOverlaps.ts'
+
+// Lay a group out as a single row: every feature sits on row 0 and paints over
+// the ones it overlaps, with the overlap tint layer carrying the depth. One lane
+// per group, so an all-vs-all synteny track shows one thin band per mate genome
+// instead of one stack per mate genome.
+//
+// Depth is drawn, not stacked. `overlapIntervals` emits a position covered by
+// `d` features exactly `d - 1` times (see spanOverlaps.ts), and the tint blends
+// alpha, so a segment darkens monotonically with how many alignments cover it —
+// a repeat family that hits 22 mate loci reads as one dark tick rather than 22
+// identical rectangles claiming 22 rows.
+//
+// No packing pass runs at all: `placeRect` exists to find a free row, and there
+// is only one. That also means nothing can be clipped, which is why this takes
+// no row cap.
+
+// A group is one row tall exactly when some region of it has a feature. Shared
+// by the map builder and the count-only fit-height pass so the two can't
+// disagree on a group's height.
+export function collapsedLayoutMaxY(
+  dataMap: ReadonlyMap<number, PileupDataResult>,
+) {
+  for (const data of dataMap.values()) {
+    if (data.readIds.length > 0) {
+      return 1
+    }
+  }
+  return 0
+}
+
+function readSpans({ readIds, readPositions }: PileupDataResult): Span[] {
+  return readIds.map((_, i) => ({
+    start: readPositions[i * 2]!,
+    end: readPositions[i * 2 + 1]!,
+  }))
+}
+
+// The tint instances for one region: one per (depth - 1) at each position, all
+// on row 0. Packed straight into the `overlap*` arrays the existing chain-mode
+// tint pass already renders on both backends.
+function collapsedOverlaps(data: PileupDataResult) {
+  const overlaps = overlapIntervals(readSpans(data))
+  const overlapPositions = new Uint32Array(overlaps.length * 2)
+  for (const [i, { start, end }] of overlaps.entries()) {
+    overlapPositions[i * 2] = start
+    overlapPositions[i * 2 + 1] = end
+  }
+  return { overlapPositions, overlapYs: new Uint16Array(overlaps.length) }
+}
+
+export function buildCollapsedPileupMap(
+  dataMap: ReadonlyMap<number, PileupDataResult>,
+): Map<number, PileupDataResult> {
+  const maxY = collapsedLayoutMaxY(dataMap)
+  const out = new Map<number, PileupDataResult>()
+  for (const [idx, data] of dataMap) {
+    if (data.readIds.length === 0) {
+      out.set(idx, data)
+    } else {
+      const overlaps = collapsedOverlaps(data)
+      out.set(idx, {
+        // Row 0 for every feature, by construction: an all-zero readYs is the
+        // layout, so there is no placement step that could disagree with maxY.
+        //
+        // `truncated` is the "there is more here than one row shows" signal the
+        // group label reads to offer its expand affordance — true exactly when
+        // features actually overlap, since a sparse lane loses nothing to the
+        // collapse and needs no affordance.
+        ...cloneWithLayout(
+          data,
+          new Uint16Array(data.readIds.length),
+          maxY,
+          overlaps.overlapYs.length > 0,
+        ),
+        ...overlaps,
+      })
+    }
+  }
+  return out
+}

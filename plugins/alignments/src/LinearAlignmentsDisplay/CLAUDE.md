@@ -73,6 +73,33 @@ Group keys are also the identity for the volatile per-group state
 (`collapsedGroups`, `groupMaxHeightOverrides`), which is why `setGroupBy` clears
 both — a key means something different under a new dimension.
 
+### One row per group (`collapseGroupRows`)
+
+A fourth question, orthogonal to the three above: how tall is each group?
+`collapseGroupRows` draws every group as a single row (`collapsedLayout.ts` —
+all-zero `readYs`, no packing pass, so `maxY` is 1 by construction) and puts the
+depth in the **overlap tint** instead of in the row count. `overlapIntervals`
+(`spanOverlaps.ts`) emits a position covered by `d` features exactly `d - 1`
+times, and the tint alpha-blends, so a segment darkens monotonically with depth.
+That property is why the collapsed path must NOT run `mergeSpans` — chain mode
+merges precisely to avoid it.
+
+Two things hang off this and are easy to get wrong:
+
+- **A group with a height override opts out** (`collapsesRows`). That is what
+  makes the label chip's expand affordance a true-stack toggle rather than a
+  separate mode, and it is why `truncated` is set on a collapsed group that has
+  any overlap — `truncated` is the "there is more here than is shown, offer the
+  expand" signal the chip reads, not a claim that reads were clipped.
+- **A labelled section reserves `GROUP_LABEL_HEIGHT`** (`minSectionHeight` in
+  `computeStackedSections`). Chips are anchored at their section's top, so
+  one-row sections shorter than a chip stack their chips on top of each other.
+  The floor pads only the _advance_ to the next section, never `pileupHeight`,
+  so the pad is dead space rather than clickable pileup.
+
+Chain mode never collapses: its rows are chains, and one row would drop the
+connecting lines that are the point of the mode.
+
 ## Read height vs track height: two axes, one crossover
 
 The "Read height" menu drives **two orthogonal axes**, and almost every subtle

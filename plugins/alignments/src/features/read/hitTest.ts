@@ -8,8 +8,13 @@ export function hitTestFeature(
   const { adjustedY, yWithinRow, genomicPos, row } = coords
   if (adjustedY >= 0 && yWithinRow <= featureHeight) {
     const { readPositions, readYs, readIds } = resolved.rpcData
-    const numReads = readIds.length
-    for (let i = 0; i < numReads; i++) {
+    // Backwards, so that when several features share a row the one returned is
+    // the one drawn last — i.e. the one actually under the cursor. Reads are
+    // packed in array order, so later indices paint over earlier ones. In a
+    // normal pileup at most one feature per row spans a position, which makes
+    // the direction moot; it decides the answer only where a layout puts
+    // features on a shared row (a chain, or a collapsed group).
+    for (let i = readIds.length - 1; i >= 0; i--) {
       if (readYs[i] !== row) {
         continue
       }

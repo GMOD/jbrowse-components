@@ -3,6 +3,10 @@ import {
   pileupLayoutMaxY,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import {
+  buildCollapsedPileupMap,
+  collapsedLayoutMaxY,
+} from './collapsedLayout.ts'
+import {
   attachLinkedReadLines,
   buildLaidOutChainMap,
   chainLayoutMaxY,
@@ -46,6 +50,11 @@ export interface GroupLayoutContext {
   showLinkedReadLines: boolean
   colorBy: ColorBy | undefined
   colorTagMap: Record<string, string>
+  // Draw each group as a single row, overlap depth carried by the tint layer
+  // instead of by stacking (`collapsedLayout.ts`). A group the user has sized
+  // explicitly opts back out, which is what makes the label chip's expand
+  // affordance a true-stack toggle.
+  collapseGroupRows: boolean
 }
 
 // Lay out one group's reads (Y arrays filled + linked-read lines + tag colors)
@@ -55,8 +64,16 @@ function layoutOneGroup(
   ctx: GroupLayoutContext,
   key: string,
   cap: number,
+  collapse = false,
 ): Map<number, PileupDataResult> {
   const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+  if (collapse) {
+    return overlayReadTagColors(
+      buildCollapsedPileupMap(dataMap),
+      ctx.colorBy,
+      ctx.colorTagMap,
+    )
+  }
   const base = ctx.isChainMode
     ? buildLaidOutChainMap(dataMap, cap)
     : buildLaidOutPileupMap({
@@ -80,16 +97,39 @@ function layoutOneGroup(
 export function buildLaidOutByGroup(
   ctx: GroupLayoutContext,
   maxRows: number,
-  maxRowsOverrides?: ReadonlyMap<string, number>,
+  maxRowsOverrides: ReadonlyMap<string, number> = NO_OVERRIDES,
 ): LaidOutByGroup {
   const byGroup: LaidOutByGroup = new Map()
   for (const { key } of ctx.order) {
     byGroup.set(
       key,
-      layoutOneGroup(ctx, key, maxRowsOverrides?.get(key) ?? maxRows),
+      layoutOneGroup(
+        ctx,
+        key,
+        maxRowsOverrides.get(key) ?? maxRows,
+        collapsesRows(ctx, key, maxRowsOverrides),
+      ),
     )
   }
   return byGroup
+}
+
+// Every caller passing no per-group sizes shares this, so `collapsesRows` can
+// take a required map and never has to treat "no overrides" as a missing
+// argument.
+const NO_OVERRIDES: ReadonlyMap<string, number> = new Map()
+
+// Whether a group draws as one row. An explicitly-sized group (the label chip's
+// expand, or a height drag) opts out, so that affordance reads as "expand this
+// lane into a true stack". Chain mode opts out wholesale: its rows are chains,
+// and collapsing them would drop the connecting lines that are the point of the
+// mode.
+function collapsesRows(
+  ctx: GroupLayoutContext,
+  key: string,
+  maxRowsOverrides: ReadonlyMap<string, number>,
+) {
+  return ctx.collapseGroupRows && !ctx.isChainMode && !maxRowsOverrides.has(key)
 }
 
 // Per-group row counts (maxY) only — no laid-out clones. The fit-height pass
@@ -107,16 +147,21 @@ export function layoutGroupRowCounts(
       ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
     counts.set(
       key,
-      ctx.isChainMode
-        ? chainLayoutMaxY(dataMap, maxRows)
-        : pileupLayoutMaxY({
-            dataMap,
-            sortedBy: ctx.sortedBy,
-            showSoftClipping: ctx.showSoftClipping,
-            regions: ctx.regions,
-            maxRows,
-            largeFeaturesFirst: ctx.largeFeaturesFirst,
-          }),
+      // No per-group sizes here: this pass answers "how many rows would each
+      // group take", which the caller (fit-height) asks before any override
+      // exists.
+      collapsesRows(ctx, key, NO_OVERRIDES)
+        ? collapsedLayoutMaxY(dataMap)
+        : ctx.isChainMode
+          ? chainLayoutMaxY(dataMap, maxRows)
+          : pileupLayoutMaxY({
+              dataMap,
+              sortedBy: ctx.sortedBy,
+              showSoftClipping: ctx.showSoftClipping,
+              regions: ctx.regions,
+              maxRows,
+              largeFeaturesFirst: ctx.largeFeaturesFirst,
+            }),
     )
   }
   return counts
@@ -174,9 +219,15 @@ export function layoutGroupsToViewport(
     return pass
   }
   // Only fit-budget groups take part in reclaim — collapsed groups draw no
-  // pileup and overridden groups opt out.
+  // pileup, overridden groups opt out, and a single-row group's height is fixed
+  // at one row whatever cap it is handed.
   const outcomes = ctx.order
-    .filter(g => !collapsedKeys.has(g.key) && !heightOverridesPx.has(g.key))
+    .filter(
+      g =>
+        !collapsedKeys.has(g.key) &&
+        !heightOverridesPx.has(g.key) &&
+        !collapsesRows(ctx, g.key, overrideCaps),
+    )
     .map(({ key }) => {
       const map = pass.get(key) ?? new Map<number, PileupDataResult>()
       return {

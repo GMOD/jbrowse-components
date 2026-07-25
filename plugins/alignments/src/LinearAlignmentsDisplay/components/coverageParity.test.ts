@@ -599,6 +599,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       colors: fullColors,
       linkedReads: 'off',
       showLinkedReadLines: false,
+      collapseGroupRows: false,
       flipStrandLongReadChains: true,
       colorSupplementaryChains: false,
       readConnectionsLineWidth: 1,

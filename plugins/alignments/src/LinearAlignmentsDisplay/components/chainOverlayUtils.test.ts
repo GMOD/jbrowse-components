@@ -40,6 +40,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     linkedReads: 'off',
     readConnections: 'off',
     showLinkedReadLines: false,
+    collapseGroupRows: false,
     pileupTopOffset: 50,
     coverageTopOffset: 0,
     sections: [

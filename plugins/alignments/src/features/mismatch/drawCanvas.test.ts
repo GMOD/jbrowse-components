@@ -60,6 +60,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     } as RenderState['colors'],
     linkedReads: 'off',
     showLinkedReadLines: false,
+    collapseGroupRows: false,
     flipStrandLongReadChains: false,
     colorSupplementaryChains: false,
     readConnectionsLineWidth: 1,

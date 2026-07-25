@@ -8,6 +8,7 @@ import { observer } from 'mobx-react'
 import {
   GROUP_LABEL_BG_OPACITY,
   GROUP_LABEL_FONT_SIZE,
+  GROUP_LABEL_HEIGHT,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
   groupSectionLabel,
@@ -22,7 +23,9 @@ const useStyles = makeStyles()(theme => {
     alignItems: 'center',
     padding: `0 ${GROUP_LABEL_PADDING_X}px`,
     fontSize: GROUP_LABEL_FONT_SIZE,
-    lineHeight: '14px',
+    // The same constant the section layout reserves per labelled section, so a
+    // chip can never outgrow the space left for it.
+    height: GROUP_LABEL_HEIGHT,
     color: theme.palette.text.secondary,
     background: theme.palette.background.paper,
     opacity: GROUP_LABEL_BG_OPACITY,
@@ -81,7 +84,18 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   }
   // With the pileup hidden every group's pileup height is 0, so collapse and
   // "show all"/"fit to view" have nothing to act on — render plain labels.
-  const { scrollModel: scroll, showPileup } = model
+  const { scrollModel: scroll, showPileup, collapseGroupRows } = model
+  // Collapsed lanes hide nothing — overlapping alignments are drawn as tint
+  // depth on the one row — so the affordance there is "expand this lane into a
+  // true stack", not "show what was clipped". It also goes icon-only: a
+  // one-row-per-group track exists to fit many groups on screen, and a word of
+  // button text beside every one of them covers the left of every lane.
+  const expandTitle = collapseGroupRows
+    ? 'Expand this group into a stacked layout'
+    : `Show all ${model.featureNoun}s in this group`
+  const collapseTitle = collapseGroupRows
+    ? 'Collapse this group back to one row'
+    : 'Fit group to view'
   return (
     <>
       {model.renderSections.map((section, i) => {
@@ -132,21 +146,19 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   onClick={() => {
                     model.toggleGroupExpanded(section.groupKey)
                   }}
-                  title={
-                    hasOverride
-                      ? 'Fit group to view'
-                      : `Show all ${model.featureNoun}s in this group`
-                  }
+                  title={hasOverride ? collapseTitle : expandTitle}
                 >
                   {hasOverride ? (
                     <>
                       <UnfoldLessIcon className={classes.icon} />
-                      Fit to view
+                      {collapseGroupRows ? null : 'Fit to view'}
                     </>
                   ) : (
                     <>
                       <UnfoldMoreIcon className={classes.icon} />
-                      Show all {model.featureNoun}s
+                      {collapseGroupRows
+                        ? null
+                        : `Show all ${model.featureNoun}s`}
                     </>
                   )}
                 </button>

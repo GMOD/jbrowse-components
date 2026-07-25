@@ -3,6 +3,7 @@ import { measureText } from '@jbrowse/core/util'
 import {
   GROUP_LABEL_BG_OPACITY,
   GROUP_LABEL_FONT_SIZE,
+  GROUP_LABEL_HEIGHT,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
 } from '../groupLabelStyle.ts'
@@ -26,7 +27,7 @@ export default function GroupLabelBox({
 }) {
   const fontSize = GROUP_LABEL_FONT_SIZE
   const paddingX = GROUP_LABEL_PADDING_X
-  const height = 16
+  const height = GROUP_LABEL_HEIGHT
   const width = measureText(text, fontSize) + paddingX * 2
   return (
     <g>

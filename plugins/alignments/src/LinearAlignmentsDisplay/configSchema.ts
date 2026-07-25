@@ -200,6 +200,19 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Only consulted while `groupBy` is in effect. Collapsing trades the
+       * per-group stack for one lane per group, with overlap depth carried by
+       * the tint shading instead of by row count — the compact reading for a
+       * track with many groups (an all-vs-all synteny track's mate genomes). A
+       * group expanded from its label chip opts back out and draws a true stack.
+       */
+      collapseGroupRows: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Draw each group as a single row rather than a stack',
+      },
+      /**
+       * #slot
        */
       autoscale: {
         type: 'stringEnum',
