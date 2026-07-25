@@ -32,8 +32,8 @@ Violations cause silent bugs, not crashes.
 
 Type check the touched packages, unit tests for changed paths
 (`pnpm test <path>`), a browser test when UI behavior changed
-([TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)), lint with
-`--cache --fix`. Regenerate snapshots only after a visually verified change.
+([TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)), `pnpm lint --fix`.
+Regenerate snapshots only after a visually verified change.
 Re-read the invariants above after any lifecycle or upload change.
 
 Do **not** open a PR unless asked.
