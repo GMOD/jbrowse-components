@@ -3,9 +3,11 @@ import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+import { computed } from 'mobx'
 
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
+import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -139,16 +141,23 @@ interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
  * getter (`dynamicBlocks`, `width`) before the view is initialized, and
  * re-runs automatically once it is.
  *
+ * The `rpcProps()` trigger is the *serialized* payload, matching MultiRegion's
+ * `rpcPropsCacheKey` — see `serializeRpcProps` for why observing the raw call
+ * over-triggers. Keeping the two families on one invalidation axis is the point:
+ * a global display whose `rpcProps()` reads more than it returns (HiC's
+ * `activeNormalization` consults the fetched `availableNormalizations`) would
+ * otherwise refetch where the per-region family wouldn't.
+ *
  * `rpcProps()` loop hazard: unlike MultiRegion's `SettingsInvalidate` (which
  * clears data in a *separate, undelayed* autorun and so loops synchronously if
- * `rpcProps()` reads fetch-derived state — caught by `makeSettingsLoopGuard`),
- * this autorun reads `rpcProps()` and triggers `fetch()` in the *same* debounced
- * body. A fetch-derived value in `rpcProps()` here loops on the async-fetch
- * cadence (refetch → commit → `rpcProps()` changes → reschedule after `delay` →
- * refetch), a slow network thrash rather than a synchronous freeze, so a
- * within-tick counter cannot distinguish it from legitimate rapid interaction.
- * The invariant is the same: `rpcProps()` must read only user-controlled
- * settings, never fetched data (see ARCHITECTURE.md "rpcProps() loop trap").
+ * `rpcProps()` *returns* fetch-derived state — caught by `makeSettingsLoopGuard`),
+ * this autorun reads the key and triggers `fetch()` in the *same* debounced body.
+ * A fetch-derived value in the payload here loops on the async-fetch cadence
+ * (refetch → commit → key changes → reschedule after `delay` → refetch), a slow
+ * network thrash rather than a synchronous freeze, so a within-tick counter
+ * cannot distinguish it from legitimate rapid interaction. The invariant is the
+ * same: `rpcProps()` must return only user-controlled settings, never fetched
+ * data (see ARCHITECTURE.md "rpcProps() loop trap").
  */
 export function installGlobalFetchAutorun(
   self: GlobalFetchAutorunHost,
@@ -168,6 +177,10 @@ export function installGlobalFetchAutorun(
   // `{ delay }` did. See leadingEdgeDebounce for why MobX's own `{ delay }`
   // can't do this.
   const debounce = leadingEdgeDebounce(opts.delay)
+  // a computed, not a bare call in the body: MobX then invalidates the autorun
+  // only when the serialized payload differs, exactly as MultiRegion's
+  // `rpcPropsCacheKey` getter does for `SettingsInvalidate`
+  const rpcPropsCacheKey = computed(() => serializeRpcProps(self))
   autorunOnReadyView(
     self,
     view => {
@@ -179,7 +192,7 @@ export function installGlobalFetchAutorun(
       // goes false the moment data loads.
       void view.dynamicBlocks
       void self.isMinimized
-      void self.rpcProps?.()
+      void rpcPropsCacheKey.get()
       void self.reloadCounter
 
       // The only gate here is the display's own. Each `fetch` re-checks

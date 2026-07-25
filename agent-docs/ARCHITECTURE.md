@@ -179,8 +179,9 @@ anti-flash. The stricter, staleness-aware `svgReady` is the export gate.
 
 ### The global-fetch trigger list must be read unconditionally
 
-`installGlobalFetchAutorun` reads the viewport, `isMinimized`, `rpcProps()` and
-`reloadCounter` at the top of its body, *before* the display's `shouldFetch()`
+`installGlobalFetchAutorun` reads the viewport, `isMinimized`, the
+`rpcProps()` cache key and `reloadCounter` at the top of its body, *before* the
+display's `shouldFetch()`
 gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
 every run, so a read placed inside the gate drops out of it on any run that
 decides not to fetch — and can then never wake the autorun again. Arc is the
@@ -292,7 +293,11 @@ from features; sources from clustering already carry `HP` and pass through
 unchanged.
 
 **Rule:** `rpcProps()` must contain only user-controlled settings. Never include
-`cellData`, `sampleInfo`, or any getter that reads them. See
+`cellData`, `sampleInfo`, or any getter that reads them. Both families watch the
+*serialized* payload (`serializeRpcProps`), so a fetch-derived observable merely
+consulted while building it can't loop — but one that reaches the return value
+can, and on the global family it loops on the async-fetch cadence where
+`makeSettingsLoopGuard`'s within-tick counter can't see it. See
 `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the overridable
 hook list and test-file mapping.
 
@@ -461,7 +466,10 @@ re-spread named fields. The mixin's `SettingsInvalidate` autorun looks up
 per-region display with no settings-driven refetch (e.g.
 `LinearReferenceSequenceDisplay`) can simply not define it. HiC and LD compose
 `GlobalDataDisplayMixin` rather than MultiRegion, and both *do* define
-`rpcProps()`; `installGlobalFetchAutorun` reads it directly.
+`rpcProps()`; `installGlobalFetchAutorun` observes it through the same
+`serializeRpcProps` cache key the mixin's getter uses, so the two families
+invalidate on identical grounds — the returned payload, not the observables read
+while building it.
 
 `gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle,
 multi-wiggle and MAF (and GC-content, which inherits wiggle's wholesale). HiC and

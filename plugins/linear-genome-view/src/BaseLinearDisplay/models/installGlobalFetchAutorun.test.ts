@@ -50,6 +50,10 @@ const TestDisplay = types
     isMinimized: false,
     reloadCounter: 0,
     setting: 'a',
+    // read by rpcProps() but absent from its return, the shape HiC's
+    // `activeNormalization` has (it consults the fetched
+    // `availableNormalizations`) and canvas's whole-config-snapshot build has
+    consulted: 'x',
     // stands in for arc's `dataCurrent`. MUST be observable: the bug only
     // appears once the gate closing itself re-runs the autorun, because that
     // re-run is what rebuilds the dependency set without the trigger reads. A
@@ -58,6 +62,7 @@ const TestDisplay = types
   }))
   .views(self => ({
     rpcProps() {
+      void self.consulted
       return { setting: self.setting }
     },
   }))
@@ -67,6 +72,9 @@ const TestDisplay = types
     },
     setSetting(v: string) {
       self.setting = v
+    },
+    setConsulted(v: string) {
+      self.consulted = v
     },
     setLoaded(flag: boolean) {
       self.loaded = flag
@@ -144,6 +152,19 @@ describe('installGlobalFetchAutorun', () => {
     display.setSetting('b')
     await settle()
     expect(gateCalls.count).toBeGreaterThan(before)
+  })
+
+  // the trigger is the *serialized* payload (MultiRegion's `rpcPropsCacheKey`
+  // axis), so an observable rpcProps() merely consults doesn't refetch — this is
+  // what keeps a global display off refetches the per-region family wouldn't do
+  it('ignores an observable rpcProps() reads but does not return', async () => {
+    const { display, gateCalls } = setup(() => true)
+    await settle()
+
+    const before = gateCalls.count
+    display.setConsulted('y')
+    await settle()
+    expect(gateCalls.count).toBe(before)
   })
 
   it('re-evaluates when the viewport changes after the gate has closed', async () => {

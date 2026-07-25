@@ -15,6 +15,7 @@ import { autorun, observable, untracked } from 'mobx'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 import FetchMixin from './FetchMixin.ts'
 import { checkByteEstimate } from './fetchHelpers.ts'
+import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { FetchContext } from './FetchMixin.ts'
@@ -224,22 +225,13 @@ export default function MultiRegionDisplayMixin() {
 
       /**
        * #getter
-       * The RPC cache key: the subclass's `rpcProps()` payload serialized to a
-       * string, so this getter's value is a primitive and MobX invalidates its
-       * observers only when the payload actually changed. Building the payload
-       * touches far more observables than it returns — canvas builds it from a
-       * whole config snapshot (`resolvePromotableConfigSnapshot`), which reads
-       * every slot on the display config — so an observer of the raw call would
-       * refetch on purely main-thread settings (showLabels, heightMode, a
-       * compact/normal displayMode flip) that the payload deliberately excludes.
-       * A fresh object would also never compare equal. `''` for a display with
-       * no `rpcProps` (the SettingsInvalidate autorun isn't installed there).
+       * The RPC cache key watched by `SettingsInvalidate` — the subclass's
+       * `rpcProps()` payload serialized to a string. `serializeRpcProps` owns
+       * the why; `installGlobalFetchAutorun` keys its global-family counterpart
+       * on the same function, so the two families invalidate on the same axis.
        */
       get rpcPropsCacheKey(): string {
-        // looked up dynamically: the mixin doesn't declare rpcProps on its
-        // public interface, so subclasses keep their narrow return types
-        const rpcProps = (self as { rpcProps?: () => unknown }).rpcProps
-        return rpcProps ? JSON.stringify(rpcProps.call(self)) : ''
+        return serializeRpcProps(self)
       },
     }))
     .actions(self => ({
