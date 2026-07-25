@@ -26,6 +26,15 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
   )
 }
 
-export { default as ReactComponent } from './components/WiggleComponent.tsx'
+// `lazy()`, not a static re-export: this module is reachable from the plugin
+// entry, which every product's corePlugins imports at boot, and WiggleComponent
+// reaches WiggleRenderer → GpuWiggleRenderer → shaders/wiggle.generated.ts, i.e.
+// ~20 KB of generated WGSL/GLSL source. A static re-export puts that in the
+// always-loaded chunk (and on Canvas2D users, who never compile it). The dynamic
+// import is the chunk boundary. Consumed by gccontent, whose displays render this
+// same body — see plugins/gccontent/src/LinearGCContentDisplay/index.ts.
+export const ReactComponent = lazy(
+  () => import('./components/WiggleComponent.tsx'),
+)
 export { default as modelFactory } from './model.ts'
 export { default as configSchema } from './configSchema.ts'

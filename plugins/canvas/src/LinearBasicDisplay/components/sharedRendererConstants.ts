@@ -32,7 +32,10 @@ export function canvasEdgeFlags(
 export const OVERFLOW_INDICATOR_Z_INDEX = 999
 
 // Drawing dimensions (in pixels) — authored in the shared pass-library shaders,
-// re-exported here so display-side modules import them from one place.
+// re-exported here so display-side modules import them from one place. Sourced
+// from `passes/constants.ts`, NOT `passes/index.ts`: this module is eager (layout
+// ← baseModel ← the plugin entry), and the pass barrel namespace-imports the
+// generated shader source, which would then ride into the always-loaded chunk.
 export {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
@@ -48,4 +51,4 @@ export {
   MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
-} from '../passes/index.ts'
+} from '../passes/constants.ts'

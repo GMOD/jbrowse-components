@@ -1,7 +1,6 @@
-import { lazy } from 'react'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
 import sharedGCContentConfigSchema from './sharedConfigSchema.ts'
 import stateModelReferenceSequenceF from './stateModelReferenceSequence.ts'
@@ -9,9 +8,11 @@ import stateModelTrackF from './stateModelTrack.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const LazyWiggleDisplayComponent = lazy(
-  () => import('./components/WiggleDisplayComponent.ts'),
-)
+// Both GC-content displays render the wiggle body (their models extend the wiggle
+// model factory). That export is already a `lazy()` component, so it needs no
+// local bridge module here to stay out of cold load — the boundary lives at its
+// definition site, which is the only place that can actually keep the wiggle
+// shader source out of the eager chunk.
 
 // both displays share every slot (see sharedConfigSchema); they only differ in
 // which track type they attach to and how they resolve their adapter, so the
@@ -40,7 +41,7 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
       displayName: 'GC content display',
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LazyWiggleDisplayComponent,
+      ReactComponent: LinearWiggleDisplayReactComponent,
     })
   })
 
@@ -56,7 +57,7 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
       displayName: 'GC content display',
       trackType: 'GCContentTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LazyWiggleDisplayComponent,
+      ReactComponent: LinearWiggleDisplayReactComponent,
     })
   })
 }

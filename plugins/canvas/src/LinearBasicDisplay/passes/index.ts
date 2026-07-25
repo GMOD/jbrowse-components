@@ -87,28 +87,25 @@ export const packContinuations = continuationShader.packInstances
 // All passes bind the same UBO, so any pass's size is the uniform-buffer size.
 export const FEATURE_GLYPH_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES
 
-// Minimum on-screen rect width clamp, shared by the GPU shader (where it lives)
-// and the Canvas2D draw path so both backends clamp identically.
-export const MIN_RECT_WIDTH_PX = rectShader.MIN_RECT_WIDTH_PX
-
-// Alpha floor for collapsed (width-clamped, sub-MIN_RECT_WIDTH_PX) rects so
-// dense features blend into a density texture rather than a flat block;
-// non-collapsed features stay fully opaque. Shared by the Canvas2D draw path.
-export const MIN_DENSITY_ALPHA = rectShader.MIN_DENSITY_ALPHA
-
-// Glyph draw dimensions (px). Authored in the `.slang` so the GPU shader owns
-// them; re-exported so the Canvas2D path draws matching geometry.
-export const {
+// The draw dimensions and clamps authored in the `.slang` sources (so the GPU
+// shader owns them) and shared with the Canvas2D path so both backends draw
+// matching geometry. Re-exported from `./constants.ts` rather than destructured
+// off the shader namespaces above: display-side importers must reach these
+// WITHOUT pulling in the WGSL/GLSL source strings, and that file is the
+// shader-string-free door. See its header.
+export {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
-} = chevronShader
-export const { HEAD_HALF_H_PX, STEM_HALF_H_PX, STEM_LENGTH_PX } = arrowShader
-export const {
-  CONT_TRI_W_PX,
-  CONT_TRI_HALF_H_PX,
   CONT_EDGE_MARGIN_PX,
-  CONT_TRI_GAP_PX,
   CONT_MIN_OVERHANG_PX,
-} = continuationShader
+  CONT_TRI_GAP_PX,
+  CONT_TRI_HALF_H_PX,
+  CONT_TRI_W_PX,
+  HEAD_HALF_H_PX,
+  MIN_DENSITY_ALPHA,
+  MIN_RECT_WIDTH_PX,
+  STEM_HALF_H_PX,
+  STEM_LENGTH_PX,
+} from './constants.ts'
