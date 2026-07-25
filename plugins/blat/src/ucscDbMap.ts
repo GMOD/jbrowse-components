@@ -14,3 +14,15 @@ const aliases: Record<string, string> = {
 export function assemblyToUcscDb(name: string) {
   return aliases[name] ?? name
 }
+
+// UCSC db names are a lowercase organism prefix plus a version (hg38, mm39,
+// danRer11, hs1), and GenArk accessions resolve on hgBlat directly. Neither
+// shape proves UCSC hosts the db, but a name outside both — a genome opened
+// from local files, "my_assembly" — certainly isn't one, and that is worth
+// saying before a query goes out rather than after it comes back empty.
+const UCSC_DB = /^[a-z][A-Za-z]*\d+$/
+const GENARK_ACCESSION = /^GC[AF]_\d+\.\d+$/
+
+export function looksLikeUcscDb(db: string) {
+  return UCSC_DB.test(db) || GENARK_ACCESSION.test(db)
+}

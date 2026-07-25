@@ -27,14 +27,21 @@ function isNavigableView(view: AbstractViewModel): view is NavigableView {
   )
 }
 
-// jb2hubs stamps the UCSC db on the assembly's sequence.metadata; prefer that
-// explicit value, falling back to the static alias map for assemblies whose
-// configs predate the stamp. Shared by the BLAT and in-silico PCR dialogs.
-export function resolveUcscDb(session: AbstractSessionModel, name: string) {
+// jb2hubs stamps the UCSC db on the assembly's sequence.metadata. Its presence
+// is also the one positive proof that UCSC can search the assembly, so the
+// dialogs read it directly to decide whether to warn.
+export function ucscDbStamp(session: AbstractSessionModel, name: string) {
   const assembly = session.assemblyManager.get(name)
   const stamped: string | undefined = assembly
     ? getConf(assembly, ['sequence', 'metadata', 'blatDb'])
     : undefined
+  return stamped
+}
+
+// Prefers the stamp, falling back to the static alias map for assemblies whose
+// configs predate it. Shared by the BLAT and in-silico PCR dialogs.
+export function resolveUcscDb(session: AbstractSessionModel, name: string) {
+  const stamped = ucscDbStamp(session, name)
   return stamped ? stamped : assemblyToUcscDb(name)
 }
 

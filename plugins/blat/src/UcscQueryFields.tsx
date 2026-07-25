@@ -3,8 +3,11 @@ import { useState } from 'react'
 import { AssemblySelector } from '@jbrowse/core/ui'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { Button, TextField } from '@mui/material'
+import { Alert, Button, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { looksLikeUcscDb } from './ucscDbMap.ts'
+import { ucscDbStamp } from './ucscShared.ts'
 
 import type { UcscQuery } from './useUcscQuery.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -23,6 +26,9 @@ const UcscQueryFields = observer(function UcscQueryFields({
 }) {
   const { assembly, db, urlBase, apiKey } = query
   const [showAdvanced, setShowAdvanced] = useState(false)
+  // the query is only as good as the db behind it, and nothing about a locally
+  // opened genome says UCSC has never heard of it until the request comes back
+  const searchable = !!ucscDbStamp(session, assembly) || looksLikeUcscDb(db)
   return (
     <>
       <AssemblySelector
@@ -32,6 +38,11 @@ const UcscQueryFields = observer(function UcscQueryFields({
           query.changeAssembly(arg)
         }}
       />
+      {searchable ? null : (
+        <Alert severity="warning">
+          {`${assembly} has no UCSC database, so this would search "${db}". A genome opened from your own files is not hosted at UCSC; set the database under advanced settings if one exists.`}
+        </Alert>
+      )}
       <Button
         size="small"
         style={{ alignSelf: 'flex-start' }}
