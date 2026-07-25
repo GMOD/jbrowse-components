@@ -327,3 +327,56 @@ test('real all-vs-all fixture: draws against an assembly missing from assemblyNa
   // volvox_del is absent from assemblyNames yet is still drawn, prefix-labelled
   expect(mateAsms).toEqual(['volvox_del', 'volvox_ins'])
 })
+
+// The tier the reader serves. all_vs_all.pif.gz carries both (make-pif wrote
+// uppercase Q/T rows alongside the lowercase q/t ones) and only the coarse rows
+// carry a de:f: tag, so the tag says which prefix was actually read. An LGV
+// synteny track reaches these through the alignments fetch path, which supplies
+// no bpPerPx — so `lodMode` is the only thing that can move it off the fine
+// tier there, and it had never been exercised from that direction.
+const tiersOf = (fa: Awaited<ReturnType<typeof feats>>) =>
+  new Set(fa.map(f => (f.get('de') === undefined ? 'fine' : 'coarse')))
+
+const grapeChr1 = {
+  refName: 'chr1',
+  start: 0,
+  end: 2000,
+  assemblyName: 'grape',
+}
+
+test('an explicit coarse lodMode reads the coarse tier with no bpPerPx', async () => {
+  const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1, {
+    lodMode: 'coarse',
+  })
+  expect(fa.length).toBeGreaterThan(0)
+  expect(tiersOf(fa)).toEqual(new Set(['coarse']))
+})
+
+test('an explicit fine lodMode holds the fine tier however far out the view is', async () => {
+  const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1, {
+    lodMode: 'fine',
+    bpPerPx: 1e9,
+  })
+  expect(fa.length).toBeGreaterThan(0)
+  expect(tiersOf(fa)).toEqual(new Set(['fine']))
+})
+
+// the pre-lodMode behavior of the LGV path, kept as the documented default:
+// absent both a tier and a bpPerPx, the reader stays fine
+test('no lodMode and no bpPerPx stays on the fine tier', async () => {
+  const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1)
+  expect(fa.length).toBeGreaterThan(0)
+  expect(tiersOf(fa)).toEqual(new Set(['fine']))
+})
+
+// diploid.pif.gz was made without a coarse tier, so asking for one must fall
+// back rather than query T/Q prefixes that match nothing and return zero rows
+test('asking for coarse on a file with no coarse tier still returns features', async () => {
+  const fa = await feats(
+    makeDiploidAdapter(),
+    { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grape' },
+    { lodMode: 'coarse' },
+  )
+  expect(fa.length).toBeGreaterThan(0)
+  expect(tiersOf(fa)).toEqual(new Set(['fine']))
+})
