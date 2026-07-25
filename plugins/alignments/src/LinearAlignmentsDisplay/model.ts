@@ -228,8 +228,18 @@ const AlignmentsTooltip = lazy(
 
 export { ColorScheme } from './constants.ts'
 
-// Floor for the user-resizable coverage / arc / sashimi bands, in px.
+// Floor for the user-resizable coverage / arc / sashimi bands, in px. It exists
+// so the drag handle stays grabbable, which is a constraint on dragging, not on
+// what config may declare.
 const MIN_BAND_HEIGHT = 20
+
+// So the floor never exceeds a band config already set smaller: flooring such a
+// band at MIN_BAND_HEIGHT made the first drag jump it up to 20 before honoring
+// the drag. A band at or above the floor is unaffected, and one below it can
+// still be dragged, just never smaller than it already is.
+function bandHeightFloor(current: number) {
+  return Math.min(MIN_BAND_HEIGHT, current)
+}
 
 // colorBy.type → shader colorScheme index, resolved through the shared
 // COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
@@ -2748,7 +2758,11 @@ export default function stateModelFactory(
            * #action
            */
           setCoverageHeight(height: number) {
-            setConf(self, 'coverageHeight', Math.max(MIN_BAND_HEIGHT, height))
+            setConf(
+              self,
+              'coverageHeight',
+              Math.max(bandHeightFloor(self.coverageHeight), height),
+            )
           },
 
           /**
@@ -2758,7 +2772,7 @@ export default function stateModelFactory(
             setConf(
               self,
               'readConnectionsHeight',
-              Math.max(MIN_BAND_HEIGHT, height),
+              Math.max(bandHeightFloor(self.readConnectionsHeight), height),
             )
           },
 
@@ -2769,7 +2783,7 @@ export default function stateModelFactory(
             setConf(
               self,
               'sashimiArcsHeight',
-              Math.max(MIN_BAND_HEIGHT, height),
+              Math.max(bandHeightFloor(self.sashimiArcsHeight), height),
             )
           },
 
