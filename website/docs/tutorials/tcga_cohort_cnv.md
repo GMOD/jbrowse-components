@@ -18,73 +18,24 @@ down hundreds of samples.
 
 <Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile. Blue is loss, red is gain, on the caller's log2 ratio. Recurrent events read as vertical stripes through the stack; whole rows tending red or blue are the heavily aneuploid tumors that clustering groups together." src="/img/tcga/cohort_cnv_genome.png" />
 
-The data is **open-access** GDC data: no dbGaP application, no token. The whole
-cohort is a few MB of segment calls, so there are no alignments to download and
-nothing to recompute.
-
 ## What you need
 
-- [JBrowse CLI](/docs/cli) (`@jbrowse/cli`)
-- `curl`, `python3`, and `bgzip` + `tabix` (from
-  [htslib](http://www.htslib.org/))
 - A JBrowse 2 instance to add tracks to (see the
-  [web quickstart](/docs/quickstart_web))
+  [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
+- Nothing to download. Both files are hosted, and the whole 1104-tumor cohort is
+  a few MB of segment calls:
 
-## Build the cohort file
+| File                                                                  | What                         |
+| --------------------------------------------------------------------- | ---------------------------- |
+| `https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz`                 | the segment stack            |
+| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz` | cohort gain/loss frequencies |
 
-One script does the whole data pipeline:
-[`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh)
-queries the GDC, downloads every sample's segments, and merges them into one
-indexed BED.
+Both come from **open-access** GDC data, so no dbGaP application and no token is
+involved. [Reproduce it end to end](#reproduce-it-end-to-end) below builds them
+from the GDC for any project id.
 
-```bash
-bash scripts/build_tcga_cohort_cnv.sh TCGA-BRCA
-# -> tcga_brca_cnv.bed.gz (+ .tbi)
-```
-
-Try a small cohort first to check the pipeline before committing to the full
-download:
-
-```bash
-bash scripts/build_tcga_cohort_cnv.sh TCGA-BRCA 20
-```
-
-The full TCGA-BRCA run takes about 15 minutes, almost all of it downloading, and
-produces 379,318 segments across 1104 tumors in a 5.7 MB file. Swap in any other
-project id (`TCGA-OV`, `TCGA-LUAD`, ...) for a different cohort.
-
-To skip the build entirely and just load the finished files, both are hosted
-under `https://jbrowse.org/demos/tcga/`:
-
-| File                                   | What                         |
-| -------------------------------------- | ---------------------------- |
-| `tcga_brca_cnv.bed.gz`                 | the segment stack below      |
-| `tcga_brca_cnv_recurrence.bedGraph.gz` | cohort gain/loss frequencies |
-
-## What the script is doing
-
-The pipeline itself is not the JBrowse part, but three of its steps decide
-whether the track loads at all.
-
-**It takes only open-access files.** The GDC's **Masked Copy Number Segment**
-files (Affymetrix SNP 6.0, already harmonized to GRCh38, germline CNV probes
-removed) need no dbGaP application. The query also filters to `Primary Tumor`,
-since TCGA banks a matched blood normal per case that would double the row count
-and add no somatic signal.
-
-**It reshapes `.seg` into BED.** Two conversions matter, and getting either
-wrong misplaces every feature: `.seg` names contigs bare (`1`), so the script
-adds the `chr` prefix, and `.seg` starts are 1-based inclusive against BED's
-0-based half-open, so it subtracts 1. It also keeps one file per barcode, since
-the replicate aliquots a few cases carry would otherwise land in the same row
-and paint over each other (2 of 1106 files here, leaving 1104 tumors).
-
-**It carries `Segment_Mean` through unchanged.** That is the caller's log2
-tumor/normal ratio, and it is what the track colors by. JBrowse plots what the
-caller called; it does not re-normalize.
-
-The result is a BED whose `#`-prefixed header names the extra columns, which is
-what lets the display address them by name:
+The BED is one segment call per line, with a `#`-prefixed header naming the
+columns past `end`:
 
 ```
 #chrom  start     end        name    sample             segmean
@@ -92,16 +43,13 @@ chr1    3301764   30796057   +0.15   TCGA-3C-AAAU-01A   0.1480
 chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
 ```
 
-`sample` is what splits the rows, `segmean` is what colors them.
-
-The GDC specifics are all in the script if you need to point it at other data:
-the file-listing query, and the `/data` endpoint POST that streams 150 ids back
-as one `.tar.gz` instead of fetching a thousand files one at a time.
+`sample` is a TCGA barcode and is what splits the rows; `segmean` is the
+caller's log2 tumor/normal ratio and is what colors them.
 
 ## Load it into JBrowse
 
-Add hg38. The hosted FASTA below names its contigs bare (`1`), while our BED
-uses `chr1`, so pass the alias file too and both resolve:
+Add hg38. The hosted FASTA names its contigs bare (`1`) while the BED uses
+`chr1`, so pass the alias file too and both resolve:
 
 ```bash
 export OUT=/var/www/html/jbrowse2
@@ -124,7 +72,7 @@ because the display config is the interesting part:
   "category": ["TCGA"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "tcga_brca_cnv.bed.gz"
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz"
   },
   "displays": [
     {
@@ -188,28 +136,12 @@ paints as roughly half that.
 
 ## Add a recurrence track
 
-That last paragraph is a caveat the stack cannot fix, and a second track can:
-collapse the same file into per-bin frequencies, so the count the stack blurs
-gets its own axis. `build_tcga_cohort_cnv.sh` writes it at the end of the run,
-from the BED it just built, so there is nothing extra to download:
-
-```
-tcga_brca_cnv_recurrence.bedGraph.gz    22,592 intervals, 148 KB
-```
-
-If you took the hosted BED instead of building it,
-[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
-runs that step by itself:
-
-```bash
-python3 scripts/cnv_recurrence.py tcga_brca_cnv.bed.gz tcga_brca_cnv_recurrence.bedGraph
-bgzip tcga_brca_cnv_recurrence.bedGraph
-tabix -p bed tcga_brca_cnv_recurrence.bedGraph.gz
-```
-
-Each 100kb bin gets the percent of the cohort gained and the percent lost, on
-the same log2 cutoffs the stack colors by (gain at 0.3, loss at -0.3), so a
-stripe and its peak count the same tumors:
+That caveat is one the stack cannot fix and a second track can: the same calls
+collapsed to per-bin frequencies, so the count the stack blurs gets its own
+axis. Each 100kb bin of `tcga_brca_cnv_recurrence.bedGraph.gz` carries the
+percent of the cohort gained and the percent lost, on the same log2 cutoffs the
+stack colors by (gain above 0.3, loss below -0.3), so a stripe and its peak
+count the same tumors:
 
 ```
 #chrom  start      end        gain   loss
@@ -233,7 +165,7 @@ being a special mode.
   "category": ["TCGA"],
   "adapter": {
     "type": "BedGraphTabixAdapter",
-    "uri": "tcga_brca_cnv_recurrence.bedGraph.gz"
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz"
   },
   "displayDefaults": {
     "height": 120,
@@ -251,10 +183,6 @@ the axis to the whole cohort, so a bar means the same fraction wherever you
 navigate. Left to autoscale, a quiet window would rescale to its own noise and
 read like a peak. `posColor`/`negColor` reuse the stack's amplification and
 deep-loss colors, so the two tracks agree by eye.
-
-Bins where fewer than half the cohort has any call at all are left out rather
-than drawn as zero. That only trims chromosome tips here: SNP 6.0 segments span
-centromeres, so the track has no interior gaps.
 
 Placed above the stack, each peak sits over a stripe and puts a number on it: 1q
 gained in 58.9% of tumors at its peak, 16q lost in 46.4%, the 100kb bin over
@@ -281,6 +209,50 @@ column to color by:
 [CNVkit](https://cnvkit.readthedocs.io/) `.call.cns`, ASCAT, and
 [PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple) segments
 all reshape into that shape with the same concatenate-and-tag step.
+
+## Reproduce it end to end
+
+One script builds both files for any project id, so nothing above depends on the
+hosted copies:
+[`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh).
+It needs `curl`, `python3`, and `bgzip` + `tabix` from
+[htslib](http://www.htslib.org/).
+
+```bash
+bash scripts/build_tcga_cohort_cnv.sh TCGA-BRCA 20   # 20 tumors, to test the pipeline
+bash scripts/build_tcga_cohort_cnv.sh TCGA-BRCA      # the full cohort, ~15 minutes
+# -> tcga_brca_cnv.bed.gz (+ .tbi), tcga_brca_cnv_recurrence.bedGraph.gz (+ .tbi)
+```
+
+The full run is almost entirely downloading and produces 379,318 segments across
+1104 tumors in 5.7 MB, plus 22,592 recurrence bins in 148 KB derived from that
+BED rather than re-downloaded. Swap in any other project id (`TCGA-OV`,
+`TCGA-LUAD`, ...) for a different cohort.
+
+Three of its steps decide whether the resulting track loads correctly:
+
+**It takes only open-access files.** The GDC's **Masked Copy Number Segment**
+files (Affymetrix SNP 6.0, already harmonized to GRCh38, germline CNV probes
+removed) need no dbGaP application. The query also filters to `Primary Tumor`,
+since TCGA banks a matched blood normal per case that would double the row count
+and add no somatic signal.
+
+**It reshapes `.seg` into BED.** Two conversions matter, and getting either
+wrong misplaces every feature: `.seg` names contigs bare (`1`), so the script
+adds the `chr` prefix, and `.seg` starts are 1-based inclusive against BED's
+0-based half-open, so it subtracts 1. It also keeps one file per barcode, since
+the replicate aliquots a few cases carry would otherwise land in the same row
+and paint over each other (2 of 1106 files here, leaving 1104 tumors).
+
+**It carries `Segment_Mean` through unchanged.** JBrowse plots what the caller
+called; nothing here re-normalizes it.
+
+The recurrence step is separately runnable as
+[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py),
+if you have a cohort BED already and want only the frequency file. It skips bins
+where fewer than half the cohort has any call, rather than drawing them as zero,
+which here trims only the chromosome tips: SNP 6.0 segments span centromeres, so
+the track has no interior gaps.
 
 ## Where to go next
 
