@@ -23,6 +23,7 @@ instead.
 | [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles  | WiggleCommonMixin                                   |                                                                                                      |
 | [featureUnderMouse](#volatile-featureundermouse)             | Volatiles  | WiggleCommonMixin                                   |                                                                                                      |
 | [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters    | WiggleCommonMixin                                   | Source names to include when computing the autoscale domain; `undefined` means every fetched source. |
+| [visibleScoreStats](#getter-visiblescorestats)               | Getters    | WiggleCommonMixin                                   | The visible feature arrays plus their min/max/mean/stddev, walked once.                              |
 | [visibleScoreRange](#getter-visiblescorerange)               | Getters    | WiggleCommonMixin                                   |                                                                                                      |
 | [dataRange](#getter-datarange)                               | Getters    | WiggleCommonMixin                                   | The true, unclipped `[min, max]` of the visible data.                                                |
 | [domain](#getter-domain)                                     | Getters    | WiggleCommonMixin                                   |                                                                                                      |
@@ -85,6 +86,21 @@ filter that hides sources would leave the Y-axis scaled to the hidden ones.
 
 ```ts
 type autoscaleSourceNames = Set<string> | undefined
+```
+
+#### getter: visibleScoreStats
+
+The visible feature arrays plus their min/max/mean/stddev, walked once.
+`visibleScoreRange` and `dataRange` both derive from this so the score arrays
+aren't scanned twice per domain recompute.
+
+```ts
+type visibleScoreStats =
+  | {
+      entries: { visStart: number; visEnd: number; data: WiggleSourceData }[]
+      stats: ScoreStats | undefined
+    }
+  | undefined
 ```
 
 #### getter: dataRange

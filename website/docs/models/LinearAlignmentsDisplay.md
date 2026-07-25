@@ -180,7 +180,6 @@ State model factory for LinearAlignmentsDisplay
 | [groupLayoutContext](#getter-grouplayoutcontext)                                       | Getters    | LinearAlignmentsDisplay                               | The layout mechanics (grouping, sort, soft-clip, colors) shared by the viewport fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays every group out uncapped to count rows.                                                                                                                                 |
 | [groupOrder](#getter-grouporder)                                                       | Getters    | LinearAlignmentsDisplay                               | Group keys + labels in stacking order; a single entry (key '') when ungrouped.                                                                                                                                                                                                                                                  |
 | [laidOutPileupMap](#getter-laidoutpileupmap)                                           | Getters    | LinearAlignmentsDisplay                               | Renderer-facing per-region layout.                                                                                                                                                                                                                                                                                              |
-| [sourceSections](#getter-sourcesections)                                               | Getters    | LinearAlignmentsDisplay                               | Per-section renderer input, in stacking order.                                                                                                                                                                                                                                                                                  |
 | [maxY](#getter-maxy)                                                                   | Getters    | LinearAlignmentsDisplay                               | Row count of the primary group across its regions.                                                                                                                                                                                                                                                                              |
 | [pileupTruncated](#getter-pileuptruncated)                                             | Getters    | LinearAlignmentsDisplay                               | True when the ungrouped pileup hit `maxHeight` and overflow reads were collapsed — drives the "max height reached" / "show all" banner.                                                                                                                                                                                         |
 | [rawDataByGroup](#getter-rawdatabygroup)                                               | Getters    | LinearAlignmentsDisplay                               | Raw (un-laid-out) data regrouped as group key → (region idx → data), insertion-ordered so the first key is the primary group.                                                                                                                                                                                                   |
@@ -197,10 +196,13 @@ State model factory for LinearAlignmentsDisplay
 | [coverageDisplayHeight](#getter-coveragedisplayheight)                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [sections](#getter-sections)                                                           | Getters    | LinearAlignmentsDisplay                               | Single source of all vertical band geometry, one entry per stacked group.                                                                                                                                                                                                                                                       |
 | [renderSections](#getter-rendersections)                                               | Getters    | LinearAlignmentsDisplay                               | Per-section data + content-space band tops for the overlay/hit-test pipeline (labels, highlights, hit-test).                                                                                                                                                                                                                    |
+| [sourceSections](#getter-sourcesections)                                               | Getters    | LinearAlignmentsDisplay                               | Per-section upload input, in stacking order: each section's laid-out region map + arc feed, keyed by group so the renderers can namespace HAL region keys per section.                                                                                                                                                          |
 | [bezierPairSections](#getter-bezierpairsections)                                       | Getters    | LinearAlignmentsDisplay                               | Scroll/pan-invariant half of the bezier connection overlay: the linked pairs of each section, resolved once per relayout.                                                                                                                                                                                                       |
 | [bezierConnectionColorTypes](#getter-bezierconnectioncolortypes)                       | Getters    | LinearAlignmentsDisplay                               | Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line arcs in view, the input that lets the legend list only the connection colors present.                                                                                                                                                                      |
 | [sashimiArcSections](#getter-sashimiarcsections)                                       | Getters    | LinearAlignmentsDisplay                               | Per-section sashimi arcs, in stacking order: each group's junction geometry (sashimi counts live per-group) already split into the two sub-bands, paired with their content-space tops — `coverageOverlayTop` for `up` arcs drawn over the coverage histogram, `sashimiBandTop` for `down` arcs in the reserved strip below it. |
+| [featureNoun](#getter-featurenoun)                                                     | Getters    | LinearAlignmentsDisplay                               | What one row of this pileup is called, for UI text built from the model alone (the group-label chips).                                                                                                                                                                                                                          |
 | [isGrouped](#getter-isgrouped)                                                         | Getters    | LinearAlignmentsDisplay                               | True when reads are stacked into >1 group section.                                                                                                                                                                                                                                                                              |
+| [showsGroupLabels](#getter-showsgrouplabels)                                           | Getters    | LinearAlignmentsDisplay                               | Whether the stacked section labels + dividers are drawn.                                                                                                                                                                                                                                                                        |
 | [scrollModel](#getter-scrollmodel)                                                     | Getters    | LinearAlignmentsDisplay                               | The scroll-projection inputs (`sectionScreen.ts`) every overlay needs to map a content-space Y into screen space.                                                                                                                                                                                                               |
 | [pileupViewportHeight](#getter-pileupviewportheight)                                   | Getters    | LinearAlignmentsDisplay                               | Height of the scrollable viewport.                                                                                                                                                                                                                                                                                              |
 | [pileupContentHeight](#getter-pileupcontentheight)                                     | Getters    | LinearAlignmentsDisplay                               | Total scrollable content height.                                                                                                                                                                                                                                                                                                |
@@ -225,7 +227,8 @@ State model factory for LinearAlignmentsDisplay
 | [isGroupTruncated](#method-isgrouptruncated)                                           | Methods    | LinearAlignmentsDisplay                               | True when the row cap clipped reads from a group's pileup and the user hasn't explicitly sized that group (a height drag/expand makes any truncation intentional, so it isn't flagged).                                                                                                                                         |
 | [findFeatureInRpcData](#method-findfeatureinrpcdata)                                   | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [bezierLegendItems](#method-bezierlegenditems)                                         | Methods    | LinearAlignmentsDisplay                               | Legend swatches for the linked-read connection curves, empty unless the bezier overlay is on and at least one connection is in view.                                                                                                                                                                                            |
-| [searchFeatureByID](#method-searchfeaturebyid)                                         | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
+| [groupPileupOffset](#method-grouppileupoffset)                                         | Methods    | LinearAlignmentsDisplay                               | Content-space Y of a group's pileup relative to the FIRST section's pileup top, i.e. how far a read's row shifts because its group is stacked below the others.                                                                                                                                                                 |
+| [searchFeatureByID](#method-searchfeaturebyid)                                         | Methods    | LinearAlignmentsDisplay                               | Layout rect of a read, for cross-view overlays (BreakpointSplitView's connection curves).                                                                                                                                                                                                                                       |
 | [chainIdsForRead](#method-chainidsforread)                                             | Methods    | LinearAlignmentsDisplay                               | Chain IDs sharing a QNAME with the read at `index` in `rpcData`.                                                                                                                                                                                                                                                                |
 | [getFeatureInfoById](#method-getfeatureinfobyid)                                       | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [rpcProps](#method-rpcprops)                                                           | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
@@ -248,6 +251,7 @@ State model factory for LinearAlignmentsDisplay
 | [setShowSoftClipping](#action-setshowsoftclipping)                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [setMismatchAlpha](#action-setmismatchalpha)                                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [setSortedBy](#action-setsortedby)                                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
+| [setSortSlot](#action-setsortslot)                                                     | Actions    | LinearAlignmentsDisplay                               | Commit a sort, the single place the `sortedBy` slot is written.                                                                                                                                                                                                                                                                 |
 | [setSortedByAtPosition](#action-setsortedbyatposition)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [clearSortedBy](#action-clearsortedby)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [setLargeFeaturesFirst](#action-setlargefeaturesfirst)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
@@ -329,6 +333,7 @@ State model factory for LinearAlignmentsDisplay
 | [autoHeight](#getter-autoheight)                                                       | Getters    | [HeightModeMixin](../heightmodemixin)                 | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                           |
 | [fitHeightToDisplay](#getter-fitheighttodisplay)                                       | Getters    | [HeightModeMixin](../heightmodemixin)                 | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                            |
 | [loadedRegions](#volatile-loadedregions)                                               | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                                                          |
+| [canRender](#getter-canrender)                                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                                                                               |
 | [isReady](#getter-isready)                                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                                                      |
 | [viewportWithinLoadedData](#getter-viewportwithinloadeddata)                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                                                                                          |
 | [svgReady](#getter-svgready)                                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state.                                                                                                                                                             |
@@ -610,7 +615,10 @@ type largeFeaturesFirst = boolean
 
 In-track stacked grouping dimension (undefined = ungrouped). Falls back to the
 `groupBy` config slot, so a track can be pre-grouped declaratively. Sent to the
-worker via rpcProps; the worker partitions one fetch into N sections.
+worker via rpcProps; the worker partitions one fetch into N sections. The slot
+is `frozen` (unvalidated JSON), so `normalizeGroupBy` is the chokepoint that
+keeps an unrecognized type or a tag grouping with no tag name from reaching the
+worker.
 
 ```ts
 type groupBy = GroupBy | undefined
@@ -620,6 +628,14 @@ type groupBy = GroupBy | undefined
 
 Offset the track label above the visualization when grouping, so the stacked
 group sections aren't hidden behind an overlapping label.
+
+Asks whether the grouping will be HONORED, not merely whether it is set: chain
+mode drops a per-read dimension (`groupByForMode`), and reserving label room for
+sections that then never get drawn leaves dead space above the plot. Unlike
+`showsGroupLabels` this can't read the fetched sections — the track label is
+positioned before any data arrives, and flipping once it lands would jump the
+layout — but the degradation is decidable from the two settings alone, so no
+data is needed.
 
 ```ts
 type prefersOffset = boolean
@@ -703,27 +719,11 @@ renderers to loop `sections` directly.
 type laidOutPileupMap = Map<number, PileupDataResult>
 ```
 
-#### getter: sourceSections
-
-Per-section renderer input, in stacking order. One entry per group (the single
-key '' when ungrouped). Pairs each group's laid-out region map with its key so
-the renderers can namespace HAL region keys per section. Parallel to
-`renderState.sections`.
-
-```ts
-type sourceSections = {
-  groupKey: string
-  laidOutPileupMap: Map<number, PileupDataResult>
-  arcsRpcDataMap: Map<number, ArcsUploadData>
-}[]
-```
-
 #### getter: maxY
 
 Row count of the primary group across its regions. This reads only the first
 group (`laidOutPileupMap`), so it is meaningful only on the
-single-section/ungrouped path (`searchFeatureByID` and the no-data synthetic
-section in `sections`). Grouped layout sizes each section from its own
+single-section/ungrouped path. Grouped layout sizes each section from its own
 `groupMaxY`; don't use this as a cross-group aggregate.
 
 ```ts
@@ -823,6 +823,28 @@ pipeline reduces to pre-grouping.
 type renderSections = { groupKey: string; label: string; laidOutPileupMap: Map<…>; topOffset: number; coverageTop: number; coverageHeight: number; sashimiBandTop: number; pileupHeight: number; }[]
 ```
 
+#### getter: sourceSections
+
+Per-section upload input, in stacking order: each section's laid-out region
+map + arc feed, keyed by group so the renderers can namespace HAL region keys
+per section.
+
+Both renderers pair the uploaded section `s` with the drawn section `s` by INDEX
+(`sectionRegionKey(s, regionIdx)`), so this list and `renderState.sections` must
+have the same length and order. Both now derive from `sections`, making that
+structural — deriving this one from `groupOrder` instead let the two disagree
+whenever `sections` synthesized its no-data section (0 uploaded vs 1 drawn),
+which happens on an empty grouped fetch. That mismatch was benign only because
+the per-section region lookup missed and the draw skipped.
+
+```ts
+type sourceSections = {
+  groupKey: string
+  laidOutPileupMap: Map<number, PileupDataResult>
+  arcsRpcDataMap: Map<number, ArcsUploadData>
+}[]
+```
+
 #### getter: bezierPairSections
 
 Scroll/pan-invariant half of the bezier connection overlay: the linked pairs of
@@ -879,6 +901,18 @@ type sashimiArcSections = {
 }[]
 ```
 
+#### getter: featureNoun
+
+What one row of this pileup is called, for UI text built from the model alone
+(the group-label chips). The menu builders take the same word as a call-site
+`noun` option. Subclasses that aren't showing reads override it —
+LGVSyntenyDisplay draws PAF blocks, so its chips must not offer to "show all
+reads".
+
+```ts
+type featureNoun = string
+```
+
 #### getter: isGrouped
 
 True when reads are stacked into >1 group section. Drives the scroll model:
@@ -887,6 +921,21 @@ whole coverage+pileup stack as one.
 
 ```ts
 type isGrouped = boolean
+```
+
+#### getter: showsGroupLabels
+
+Whether the stacked section labels + dividers are drawn. Deliberately NOT
+`isGrouped`: grouping that happens to yield one section (a region with reads on
+one strand, a tag with a single value) still reserves the label offset
+(`prefersOffset`) and still wants its section named and collapsible — otherwise
+it reads as an ungrouped track with mysterious blank space above it. `isGrouped`
+stays about the scroll model (>1 section scrolls coverage with its section),
+which one section doesn't change. Reads the fetched sections rather than
+`groupBy` — see `hasNamedGroups` for why the setting is the wrong signal.
+
+```ts
+type showsGroupLabels = boolean
 ```
 
 #### getter: scrollModel
@@ -1131,6 +1180,30 @@ overlay is on and at least one connection is in view.
 type bezierLegendItems = () => LegendItem[]
 ```
 
+#### method: groupPileupOffset
+
+Content-space Y of a group's pileup relative to the FIRST section's pileup top,
+i.e. how far a read's row shifts because its group is stacked below the others.
+0 for the ungrouped/first section.
+
+```ts
+type groupPileupOffset = (groupKey: string) => number
+```
+
+#### method: searchFeatureByID
+
+Layout rect of a read, for cross-view overlays (BreakpointSplitView's connection
+curves). Y is relative to the pileup's own top — the caller adds the display's
+`coverageDisplayHeight` itself (see `computeOverlayY`) — so a grouped read only
+needs its section's extra stacking offset on top of its row. Without that offset
+every read outside the first section anchored as if it were in the first one.
+
+```ts
+type searchFeatureByID = (
+  featureId: string,
+) => [number, number, number, number] | undefined
+```
+
 #### method: chainIdsForRead
 
 Chain IDs sharing a QNAME with the read at `index` in `rpcData`. Empty when the
@@ -1146,7 +1219,7 @@ type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 Track menu items
 
 ```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<…>> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -1157,8 +1230,7 @@ type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: 
 | Member                                                             | Type                                                                                                                                                          |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span id="method-legenditems">legendItems</span>                   | `() => LegendItem[]`                                                                                                                                          |
-| <span id="method-findfeatureinrpcdata">findFeatureInRpcData</span> | `(featureId: string) => { displayedRegionIndex: number; idx: number; rpcData: PileupDataResult; start: number; end: number; } \| undefined`                   |
-| <span id="method-searchfeaturebyid">searchFeatureByID</span>       | `(featureId: string) => [number, number, number, number] \| undefined`                                                                                        |
+| <span id="method-findfeatureinrpcdata">findFeatureInRpcData</span> | `(featureId: string) => { displayedRegionIndex: number; groupKey: string; idx: number; rpcData: PileupDataResult; start: number; end: number; } \| undefined` |
 | <span id="method-getfeatureinfobyid">getFeatureInfoById</span>     | `(featureId: string) => { id: string; name: string; start: number; end: number; flags: number; mapq: number; strand: number; refName: string; } \| undefined` |
 | <span id="method-rpcprops">rpcProps</span>                         | `() => {…}`                                                                                                                                                   |
 | <span id="method-contextmenuitems">contextMenuItems</span>         | `() => MenuItem[]`                                                                                                                                            |
@@ -1177,6 +1249,27 @@ an imperative setter.
 
 ```ts
 type onRegionTooLarge = () => void
+```
+
+#### action: setSortSlot
+
+Commit a sort, the single place the `sortedBy` slot is written. Also drops
+`largeFeaturesFirst`: the two are peer radios in one group ("Longest reads
+first" is the layout-order flag, a sort is the slot), so exactly one must hold
+state. Doing it here rather than at the menu means a sort that _doesn't_ land —
+no valid center line, a cancelled tag dialog — leaves the previous ordering
+intact instead of silently clearing it and unchecking every radio.
+`computeMultiRegionLayout` would tolerate both being set (an explicit sort wins
+there anyway); this keeps the menu's checkmarks honest.
+
+```ts
+type setSortSlot = (sortedBy: {
+  type: string
+  pos: number
+  refName: string
+  assemblyName: string
+  tag?: string | undefined
+}) => void
 ```
 
 #### action: setGroupBy
@@ -1592,6 +1685,21 @@ loadedRegions: observable.map<number, Region>()
 ```
 
 **Getters**
+
+#### getter: canRender
+
+The render-lifecycle precondition for every LGV display (overrides
+`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
+callbacks until the view is measured. Before that, `renderBlocks` →
+`visibleRegions` → `view.width` throws by design, and the render autorun's catch
+would show that as a GPU render-error banner. Gating here — once, for all of
+them — is what lets a display's `renderState` be a plain resolved getter and its
+render callback gate only on its own data. The render-lifecycle twin of
+`autorunOnReadyView`.
+
+```ts
+type canRender = boolean
+```
 
 #### getter: isReady
 

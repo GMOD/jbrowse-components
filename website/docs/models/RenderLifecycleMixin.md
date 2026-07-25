@@ -37,19 +37,20 @@ yet computed or no regions loaded).
 
 ## Members
 
-| Member                                                       | Kind      | Defined by           | Description                                                                                                                 |
-| ------------------------------------------------------------ | --------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| [canvasDrawn](#volatile-canvasdrawn)                         | Volatiles | RenderLifecycleMixin | flips true on first paint; read by test selectors to detect render                                                          |
-| [currentRenderingBackend](#volatile-currentrenderingbackend) | Volatiles | RenderLifecycleMixin | current backend reference, updated on context-loss recovery.                                                                |
-| [renderTick](#volatile-rendertick)                           | Volatiles | RenderLifecycleMixin | counter the render autorun observes; bumped to force a re-render                                                            |
-| [autorunsInstalled](#volatile-autorunsinstalled)             | Volatiles | RenderLifecycleMixin | guards attachRenderingBackend so the autorun pair spawns once per instance                                                  |
-| [renderError](#volatile-rendererror)                         | Volatiles | RenderLifecycleMixin | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                 |
-| [markCanvasDrawn](#action-markcanvasdrawn)                   | Actions   | RenderLifecycleMixin |                                                                                                                             |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                 | Actions   | RenderLifecycleMixin |                                                                                                                             |
-| [stopRenderingBackend](#action-stoprenderingbackend)         | Actions   | RenderLifecycleMixin |                                                                                                                             |
-| [renderNow](#action-rendernow)                               | Actions   | RenderLifecycleMixin |                                                                                                                             |
-| [setRenderError](#action-setrendererror)                     | Actions   | RenderLifecycleMixin | set/clear the render-backend error.                                                                                         |
-| [attachRenderingBackend](#action-attachrenderingbackend)     | Actions   | RenderLifecycleMixin | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend) |
+| Member                                                       | Kind      | Defined by           | Description                                                                                                                                                                                         |
+| ------------------------------------------------------------ | --------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [canvasDrawn](#volatile-canvasdrawn)                         | Volatiles | RenderLifecycleMixin | flips true on first paint; read by test selectors to detect render                                                                                                                                  |
+| [currentRenderingBackend](#volatile-currentrenderingbackend) | Volatiles | RenderLifecycleMixin | current backend reference, updated on context-loss recovery.                                                                                                                                        |
+| [renderTick](#volatile-rendertick)                           | Volatiles | RenderLifecycleMixin | counter the render autorun observes; bumped to force a re-render                                                                                                                                    |
+| [autorunsInstalled](#volatile-autorunsinstalled)             | Volatiles | RenderLifecycleMixin | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                          |
+| [renderError](#volatile-rendererror)                         | Volatiles | RenderLifecycleMixin | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                                                                                         |
+| [canRender](#getter-canrender)                               | Getters   | RenderLifecycleMixin | Overridable precondition (default true): both lifecycle autoruns skip their callback entirely while this is false, so a display never has to open its own `upload`/`render` with a readiness check. |
+| [markCanvasDrawn](#action-markcanvasdrawn)                   | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                     |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                 | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                     |
+| [stopRenderingBackend](#action-stoprenderingbackend)         | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                     |
+| [renderNow](#action-rendernow)                               | Actions   | RenderLifecycleMixin |                                                                                                                                                                                                     |
+| [setRenderError](#action-setrendererror)                     | Actions   | RenderLifecycleMixin | set/clear the render-backend error.                                                                                                                                                                 |
+| [attachRenderingBackend](#action-attachrenderingbackend)     | Actions   | RenderLifecycleMixin | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                         |
 
 <details>
 <summary>RenderLifecycleMixin - Volatiles</summary>
@@ -116,6 +117,30 @@ not React-local hook state — owns every terminal state. Read by `displayPhase`
 type renderError = undefined
 // code
 renderError: undefined
+```
+
+</details>
+
+<details>
+<summary>RenderLifecycleMixin - Getters</summary>
+
+#### getter: canRender
+
+Overridable precondition (default true): both lifecycle autoruns skip their
+callback entirely while this is false, so a display never has to open its own
+`upload`/`render` with a readiness check.
+
+The LGV mixins override it with `view.initialized`, because before the view is
+measured its geometry throws by design (`view.width`, and so `visibleRegions` /
+`trackWidthPx` with it) and a throw in either callback is routed to
+`renderError` — surfacing "not measured yet" as the GPU render-error banner.
+Because it's an observable read inside the autoruns, the pair re-fires the
+moment it flips. This is the _precondition_ axis only: whether any data has
+arrived stays the render callback's own gate (return `false` to skip a tick),
+which is why `renderState` getters can be plain resolved values.
+
+```ts
+type canRender = boolean
 ```
 
 </details>

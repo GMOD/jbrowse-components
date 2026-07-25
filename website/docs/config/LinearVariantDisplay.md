@@ -72,7 +72,8 @@ shown once, at its most specific definition.
 
 #### slot: maxHeight
 
-Maximum height of the display in pixels
+Maximum height in pixels that autogrow mode will size this display to (does not
+limit fixed or fit mode, where taller content scrolls)
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `1200` · _advanced_

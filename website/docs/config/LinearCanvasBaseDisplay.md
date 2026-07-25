@@ -46,10 +46,10 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 <details>
 <summary>Advanced slots (2)</summary>
 
-| Slot                                                   | Type     | Description                                                                                             |
-| ------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------- |
-| [maxHeight](#slot-maxheight)                           | `number` | Maximum height of the display in pixels                                                                 |
-| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity) | `number` | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value |
+| Slot                                                   | Type     | Description                                                                                                                            |
+| ------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [maxHeight](#slot-maxheight)                           | `number` | Maximum height in pixels that autogrow mode will size this display to (does not limit fixed or fit mode, where taller content scrolls) |
+| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity) | `number` | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value                                |
 
 </details>
 
@@ -58,7 +58,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: maxHeight
 
-Maximum height of the display in pixels
+Maximum height in pixels that autogrow mode will size this display to (does not
+limit fixed or fit mode, where taller content scrolls)
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `1200` · _advanced_

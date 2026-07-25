@@ -48,6 +48,7 @@ GPU-accelerated variant display with custom feature widget on click.
 | [colorsBySvType](#getter-colorsbysvtype)                               | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [colorLegendItems](#getter-colorlegenditems)                           | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [showColorLegend](#getter-showcolorlegend)                             | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [colorLegend](#getter-colorlegend)                                     | Getters    | LinearVariantDisplay                                  | This display's answer to the base's `colorLegend` chrome hook: the shared canvas body draws the key, so this display needs no component of its own (its `ReactComponent` is the one LinearBasicDisplay registers).                                                                                                                                                                                                                            |
 | [colorBySubMenuItems](#method-colorbysubmenuitems)                     | Methods    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [setColorLegendDismissed](#action-setcolorlegenddismissed)             | Actions    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [refName](#property-refname)                                           | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -76,9 +77,9 @@ GPU-accelerated variant display with custom feature widget on click.
 | [morphStartMs](#volatile-morphstartms)                                 | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [morphFromMaxY](#volatile-morphfrommaxy)                               | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [conf](#getter-conf)                                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`).                                                                                                                                                                                                                                                 |
+| [geneGlyphNotice](#getter-geneglyphnotice)                             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Overridable hook (default absent): the isoform-collapse control the shared canvas body draws in its bottom-right chip stack, or nothing when the display has no gene glyphs.                                                                                                                                                                                                                                                                  |
 | [renderState](#getter-renderstate)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [labelScrollBucket](#getter-labelscrollbucket)                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [DisplayMessageComponent](#getter-displaymessagecomponent)             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [maxHeight](#getter-maxheight)                                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [displayMode](#getter-displaymode)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [labelFontSize](#getter-labelfontsize)                                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -103,6 +104,7 @@ GPU-accelerated variant display with custom feature widget on click.
 | [soloFeatureIdSet](#getter-solofeatureidset)                           | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [layoutInputs](#getter-layoutinputs)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Layout inputs shared by the base layout and every fit-escalation layout, minus the per-config label/description reservation flags.                                                                                                                                                                                                                                                                                                            |
 | [layoutReady](#getter-layoutready)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Whether features can be laid out: data is fetched, in-bounds, and the view is measured.                                                                                                                                                                                                                                                                                                                                                       |
+| [decimatedBaseInputs](#getter-decimatedbaseinputs)                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The `decimated` rung's layout inputs minus the whitespace factor.                                                                                                                                                                                                                                                                                                                                                                             |
 | [baseLaidOutDataMap](#getter-baselaidoutdatamap)                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Full reservation (names + descriptions): rendered at fit stage `full` and in non-fit modes, and the first stack `fitStage` probes.                                                                                                                                                                                                                                                                                                            |
 | [fitLabelsOnlyLayout](#getter-fitlabelsonlylayout)                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Names reserved, descriptions dropped — the `labels` stage's stack.                                                                                                                                                                                                                                                                                                                                                                            |
 | [fitDecimatedSolved](#getter-fitdecimatedsolved)                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The `decimated` stack with its whitespace factor SOLVED to the track height.                                                                                                                                                                                                                                                                                                                                                                  |
@@ -119,6 +121,7 @@ GPU-accelerated variant display with custom feature widget on click.
 | [settledMaxY](#getter-settledmaxy)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [maxY](#getter-maxy)                                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [hasOverflow](#getter-hasoverflow)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [truncatedFeatureCount](#getter-truncatedfeaturecount)                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [contentHeight](#getter-contentheight)                                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [scrollableHeight](#getter-scrollableheight)                           | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [naturalContentHeight](#getter-naturalcontentheight)                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -133,15 +136,17 @@ GPU-accelerated variant display with custom feature widget on click.
 | [activeFilters](#method-activefilters)                                 | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The filters actually applied, as `jexl:`-prefixed expressions.                                                                                                                                                                                                                                                                                                                                                                                |
 | [rpcProps](#method-rpcprops)                                           | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [fitLayoutAt](#method-fitlayoutat)                                     | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | One fit-escalation candidate: the stack packed with the given label/description reservation, via that config's own memo instance so each keeps stable references across renders.                                                                                                                                                                                                                                                              |
+| [decimatedLayoutInputs](#method-decimatedlayoutinputs)                 | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Layout inputs for the `decimated` rung at one whitespace factor.                                                                                                                                                                                                                                                                                                                                                                              |
+| [solveLabelRoomFactor](#method-solvelabelroomfactor)                   | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The whitespace factor the `decimated` rung commits at: the smallest one whose packed stack fits `trackHeight` (smallest = most names kept), or undefined when even the most aggressive decimation overflows.                                                                                                                                                                                                                                  |
 | [getFeatureById](#method-getfeaturebyid)                               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [searchFeatureByID](#method-searchfeaturebyid)                         | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [renderSvg](#method-rendersvg)                                         | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [showSubmenuCheckboxItems](#method-showsubmenucheckboxitems)           | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [showSubmenuRadioGroups](#method-showsubmenuradiogroups)               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [showSubmenuMenuItems](#method-showsubmenumenuitems)                   | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [contextMenuItems](#method-contextmenuitems)                           | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [showSubmenuMenuItems](#method-showsubmenumenuitems)                   | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Flattened "Show..." submenu: all checkbox toggles first, then the radio groups (each under its own subHeader).                                                                                                                                                                                                                                                                                                                                |
+| [contextMenuItems](#method-contextmenuitems)                           | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The feature right-click menu (open details, zoom to, get sequence, highlight scopes, pin/solo/hide, copy).                                                                                                                                                                                                                                                                                                                                    |
 | [colorMenuItems](#method-colormenuitems)                               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Color-related track menu entries: a single "Color by..." entry whose "Solid color..." choice opens the solid+UTR color picker.                                                                                                                                                                                                                                                                                                                |
-| [featureHeightMenuItems](#method-featureheightmenuitems)               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | One "Feature height" menu with two independent radio groups, mirroring the alignments display: the size presets (how tall each feature is drawn) and, under a "Track sizing" subheader, how the track responds when there are more features than fit — scroll / expand / squeeze.                                                                                                                                                             |
+| [featureHeightMenuItems](#method-featureheightmenuitems)               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | One "Feature height" menu with two independent radio groups: the size presets and, under a "Track sizing" subheader, how the track responds when there are more features than fit.                                                                                                                                                                                                                                                            |
 | [trackMenuItems](#method-trackmenuitems)                               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [beginYMorph](#action-beginymorph)                                     | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [setMorphProgress](#action-setmorphprogress)                           | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -200,6 +205,7 @@ GPU-accelerated variant display with custom feature widget on click.
 | [adapterConfig](#getter-adapterconfig)                                 | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [isMinimized](#getter-isminimized)                                     | Getters    | [BaseDisplay](../basedisplay)                         | Returns true if the parent track is minimized.                                                                                                                                                                                                                                                                                                                                                                                                |
 | [effectiveRpcDriverName](#getter-effectiverpcdrivername)               | Getters    | [BaseDisplay](../basedisplay)                         | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                                                                                                                                                                                                                                                          |
+| [DisplayMessageComponent](#getter-displaymessagecomponent)             | Getters    | [BaseDisplay](../basedisplay)                         | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                                                                                                                                                                                    |
 | [renderingProps](#method-renderingprops)                               | Methods    | [BaseDisplay](../basedisplay)                         | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                                                                                                                                                                                                   |
 | [regionCannotBeRendered](#method-regioncannotberendered)               | Methods    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [setIgnorePromotedDefaults](#action-setignorepromoteddefaults)         | Actions    | [BaseDisplay](../basedisplay)                         | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -214,6 +220,7 @@ GPU-accelerated variant display with custom feature widget on click.
 | [autoHeight](#getter-autoheight)                                       | Getters    | [HeightModeMixin](../heightmodemixin)                 | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                                                                                                                                         |
 | [fitHeightToDisplay](#getter-fitheighttodisplay)                       | Getters    | [HeightModeMixin](../heightmodemixin)                 | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                                                                                                                                          |
 | [loadedRegions](#volatile-loadedregions)                               | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                                                                                                                                                                        |
+| [canRender](#getter-canrender)                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                                                                                                                                                                                             |
 | [isReady](#getter-isready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                                                                                                                                                                    |
 | [viewportWithinLoadedData](#getter-viewportwithinloadeddata)           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                                                                                                                                                                                                        |
 | [svgReady](#getter-svgready)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state.                                                                                                                                                                                                                                                                           |
@@ -309,6 +316,21 @@ The configuration slots for this model are documented on its
 
 <details>
 <summary>LinearVariantDisplay - Getters</summary>
+
+#### getter: colorLegend
+
+This display's answer to the base's `colorLegend` chrome hook: the shared canvas
+body draws the key, so this display needs no component of its own (its
+`ReactComponent` is the one LinearBasicDisplay registers).
+
+```ts
+type colorLegend = { items: LegendItem[]; dismiss: () => void } | undefined
+```
+
+</details>
+
+<details>
+<summary>LinearVariantDisplay - Getters (other undocumented members)</summary>
 
 | Member                                                                       | Type                            |
 | ---------------------------------------------------------------------------- | ------------------------------- |
@@ -512,6 +534,23 @@ the config typed off the concrete schema; `ConfigurationReference` erases
 type conf = ModelInstanceTypeProps<Record<…>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
+#### getter: geneGlyphNotice
+
+Overridable hook (default absent): the isoform-collapse control the shared
+canvas body draws in its bottom-right chip stack, or nothing when the display
+has no gene glyphs. Bundled — state plus the two actions — because the real
+implementation reads a `geneGlyphMode` config slot that only
+`LinearBasicDisplay`'s schema declares; the variant display shares this body and
+simply doesn't answer.
+
+Chrome a subclass owns arrives through hooks like this rather than through a
+per-subclass component, so one registered component serves every canvas-family
+display and no plugin imports another's component.
+
+```ts
+type geneGlyphNotice = GeneGlyphNotice | undefined
+```
+
 #### getter: layoutInputs
 
 Layout inputs shared by the base layout and every fit-escalation layout, minus
@@ -537,6 +576,16 @@ getters aren't read before the view is measured.
 
 ```ts
 type layoutReady = boolean
+```
+
+#### getter: decimatedBaseInputs
+
+The `decimated` rung's layout inputs minus the whitespace factor. Typed without
+`labelRoomFactor` so the solve's shared preparation provably can't depend on it
+(see createContentHeightProbe).
+
+```ts
+type decimatedBaseInputs = Omit<LayoutInputs, 'labelRoomFactor'>
 ```
 
 #### getter: baseLaidOutDataMap
@@ -570,26 +619,45 @@ a few fixed rungs — because stack height is monotone in the factor (higher
 factor drops more names → shorter), so the search keeps the SMALLEST fitting
 factor, i.e. the MOST names. It decimates by isolation, not feature
 size/"importance" (no reliable importance signal — a tiny miRNA can outrank a
-large pseudogene), so it just maximizes how many readable names fit. Both the ~8
-trial factors and the committed layout go through the same pure
-`computeLaidOutData` at a factor: the committed stack is _byte-identical_ to the
-probe that was measured against `trackHeight`, so the height the solve fits is
-exactly the height `resolveFitLadder` sees. It deliberately does NOT reuse the
-incremental memo here — the memo seeds each re-pack with the previous layout's
-rows (`captureFeatureTops`), and seeding a new factor's (different) label set
-from the old factor's rows packs the stack taller than the fresh probe, pushing
-the committed stack over `trackHeight` and making the ladder wrongly fall
-through to `bodies` (every label vanishing as the track grows). When even
-`FIT_MAX_ROOM_FACTOR` overflows, the `labels` stack is returned — it overflows
-(that is why the ladder reached this rung), so `resolveFitLadder` descends to
-`bodies`, and reusing a stack already packed spares the solve one more pack that
-would only be discarded.
+large pseudogene), so it just maximizes how many readable names fit.
+
+The trial factors are measured by `createContentHeightProbe`, which runs the
+same pack over the same raw region data but skips the clone and the per-region Y
+rewrite that `computeLaidOutData` does (~4/5 of a layout) and hoists the
+factor-invariant preparation out of the probe loop (about half of what remains).
+Only the winning factor is laid out for real. Probe and commit therefore agree
+on the height by construction — identical packing over identical inputs — which
+is what lets the ladder trust that the stack it measured is the stack it
+renders.
+
+It deliberately does NOT use the incremental memo — the memo seeds each re-pack
+with the previous layout's rows (`captureFeatureTops`), and seeding a new
+factor's (different) label set from the old factor's rows packs the stack taller
+than the fresh probe, pushing the committed stack over `trackHeight` and making
+the ladder wrongly fall through to `bodies` (every label vanishing as the track
+grows).
+
+Known cost of that choice: this is the one rung without prior-row seeding, so
+while the display sits here a zoom re-pack does not preserve top features' rows
+the way the other three rungs do. The pack is still deterministic for given
+inputs (insertion order falls back to layoutStartBp), so it is a lost stability
+guarantee, not churn. Seeding probes AND commit from the previous committed
+layout would restore it and keep the heights agreeing, but it puts a stateful
+seed underneath a control loop that picks the factor from measured heights —
+which can oscillate the factor, and flickering labels are worse than shifting
+rows.
+
+When even the solve's most aggressive factor overflows (see
+`FIT_MAX_ROOM_FACTOR` in fitLadder.ts), the `labels` stack is returned — it
+overflows (that is why the ladder reached this rung), so `resolveFitLadder`
+descends to `bodies`, and reusing a stack already packed spares the solve one
+more pack that would only be discarded.
 
 With names off entirely there is nothing to decimate — every factor packs the
 `labels` stack (see keepFeatureLabel's `showLabels` guard) — so the solve is
-skipped and that stack reused, turning the ~9 probes this rung costs into zero
-on exactly the dense tracks where the auto density gate hides names and fit mode
-is most used.
+skipped and that stack reused, turning the probes this rung costs into zero on
+exactly the dense tracks where the auto density gate hides names and fit mode is
+most used.
 
 ```ts
 type fitDecimatedSolved = Map<number, FeatureDataResult>
@@ -715,48 +783,48 @@ this so hidden names reserve nothing.
 type renderedShowLabels = boolean
 ```
 
-| Member                                                                       | Type                                                                             |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| <span id="getter-renderstate">renderState</span>                             | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }`                |
-| <span id="getter-labelscrollbucket">labelScrollBucket</span>                 | `number`                                                                         |
-| <span id="getter-displaymessagecomponent">DisplayMessageComponent</span>     | `LazyExoticComponent<({ model, }: LinearBasicDisplayComponentProps) => Element>` |
-| <span id="getter-maxheight">maxHeight</span>                                 | `any`                                                                            |
-| <span id="getter-displaymode">displayMode</span>                             | `DisplayMode`                                                                    |
-| <span id="getter-labelfontsize">labelFontSize</span>                         | `number`                                                                         |
-| <span id="getter-showlabelsmode">showLabelsMode</span>                       | `any`                                                                            |
-| <span id="getter-showlabels">showLabels</span>                               | `boolean`                                                                        |
-| <span id="getter-showdescriptions">showDescriptions</span>                   | `any`                                                                            |
-| <span id="getter-showoutline">showOutline</span>                             | `boolean`                                                                        |
-| <span id="getter-featurecolor">featureColor</span>                           | `any`                                                                            |
-| <span id="getter-utrcolor">utrColor</span>                                   | `string`                                                                         |
-| <span id="getter-colorbymode">colorByMode</span>                             | `"strand" \| "attribute" \| "solid"`                                             |
-| <span id="getter-colorbyattribute">colorByAttribute</span>                   | `string`                                                                         |
-| <span id="getter-effectiveshowdescriptions">effectiveShowDescriptions</span> | `any`                                                                            |
-| <span id="getter-selectedfeatureid">selectedFeatureId</span>                 | `string \| undefined`                                                            |
-| <span id="getter-colorbycds">colorByCDS</span>                               | `boolean`                                                                        |
-| <span id="getter-sequenceadapter">sequenceAdapter</span>                     | `any`                                                                            |
-| <span id="getter-regionkeys">regionKeys</span>                               | `Map<number, string>`                                                            |
-| <span id="getter-reversedregions">reversedRegions</span>                     | `Set<number>`                                                                    |
-| <span id="getter-pinnedfeatureidset">pinnedFeatureIdSet</span>               | `ReadonlySet<string>`                                                            |
-| <span id="getter-resolvedhighlights">resolvedHighlights</span>               | `ResolvedHighlights`                                                             |
-| <span id="getter-highlightedfeatureidset">highlightedFeatureIdSet</span>     | `ReadonlySet<string>`                                                            |
-| <span id="getter-layoutpinnedfeatureidset">layoutPinnedFeatureIdSet</span>   | `ReadonlySet<string>`                                                            |
-| <span id="getter-solofeatureidset">soloFeatureIdSet</span>                   | `ReadonlySet<string>`                                                            |
-| <span id="getter-renderdatamap">renderDataMap</span>                         | `Map<number, FeatureDataResult>`                                                 |
-| <span id="getter-settledmaxy">settledMaxY</span>                             | `number`                                                                         |
-| <span id="getter-maxy">maxY</span>                                           | `number`                                                                         |
-| <span id="getter-hasoverflow">hasOverflow</span>                             | `boolean`                                                                        |
-| <span id="getter-contentheight">contentHeight</span>                         | `number`                                                                         |
-| <span id="getter-scrollableheight">scrollableHeight</span>                   | `number`                                                                         |
-| <span id="getter-naturalcontentheight">naturalContentHeight</span>           | `number`                                                                         |
-| <span id="getter-grownheight">grownHeight</span>                             | `number`                                                                         |
-| <span id="getter-height">height</span>                                       | `number`                                                                         |
-| <span id="getter-featureidindex">featureIdIndex</span>                       | `Map<string, FlatbushItem>`                                                      |
-| <span id="getter-subfeatureidindex">subfeatureIdIndex</span>                 | `Map<string, SubfeatureInfo>`                                                    |
-| <span id="getter-hoveredfeature">hoveredFeature</span>                       | `FlatbushItem \| null`                                                           |
-| <span id="getter-hoveredsubfeature">hoveredSubfeature</span>                 | `SubfeatureInfo \| null`                                                         |
-| <span id="getter-featureitemmap">featureItemMap</span>                       | `Map<string, FeatureItemEntry>`                                                  |
-| <span id="getter-flatbushindexes">flatbushIndexes</span>                     | `Map<number, FlatbushRegionIndexes>`                                             |
+| Member                                                                       | Type                                                              |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| <span id="getter-renderstate">renderState</span>                             | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }` |
+| <span id="getter-labelscrollbucket">labelScrollBucket</span>                 | `number`                                                          |
+| <span id="getter-maxheight">maxHeight</span>                                 | `any`                                                             |
+| <span id="getter-displaymode">displayMode</span>                             | `DisplayMode`                                                     |
+| <span id="getter-labelfontsize">labelFontSize</span>                         | `number`                                                          |
+| <span id="getter-showlabelsmode">showLabelsMode</span>                       | `any`                                                             |
+| <span id="getter-showlabels">showLabels</span>                               | `boolean`                                                         |
+| <span id="getter-showdescriptions">showDescriptions</span>                   | `any`                                                             |
+| <span id="getter-showoutline">showOutline</span>                             | `boolean`                                                         |
+| <span id="getter-featurecolor">featureColor</span>                           | `any`                                                             |
+| <span id="getter-utrcolor">utrColor</span>                                   | `string`                                                          |
+| <span id="getter-colorbymode">colorByMode</span>                             | `"strand" \| "attribute" \| "solid"`                              |
+| <span id="getter-colorbyattribute">colorByAttribute</span>                   | `string`                                                          |
+| <span id="getter-effectiveshowdescriptions">effectiveShowDescriptions</span> | `any`                                                             |
+| <span id="getter-selectedfeatureid">selectedFeatureId</span>                 | `string \| undefined`                                             |
+| <span id="getter-colorbycds">colorByCDS</span>                               | `boolean`                                                         |
+| <span id="getter-sequenceadapter">sequenceAdapter</span>                     | `any`                                                             |
+| <span id="getter-regionkeys">regionKeys</span>                               | `Map<number, string>`                                             |
+| <span id="getter-reversedregions">reversedRegions</span>                     | `Set<number>`                                                     |
+| <span id="getter-pinnedfeatureidset">pinnedFeatureIdSet</span>               | `ReadonlySet<string>`                                             |
+| <span id="getter-resolvedhighlights">resolvedHighlights</span>               | `ResolvedHighlights`                                              |
+| <span id="getter-highlightedfeatureidset">highlightedFeatureIdSet</span>     | `ReadonlySet<string>`                                             |
+| <span id="getter-layoutpinnedfeatureidset">layoutPinnedFeatureIdSet</span>   | `ReadonlySet<string>`                                             |
+| <span id="getter-solofeatureidset">soloFeatureIdSet</span>                   | `ReadonlySet<string>`                                             |
+| <span id="getter-renderdatamap">renderDataMap</span>                         | `Map<number, FeatureDataResult>`                                  |
+| <span id="getter-settledmaxy">settledMaxY</span>                             | `number`                                                          |
+| <span id="getter-maxy">maxY</span>                                           | `number`                                                          |
+| <span id="getter-hasoverflow">hasOverflow</span>                             | `boolean`                                                         |
+| <span id="getter-truncatedfeaturecount">truncatedFeatureCount</span>         | `number`                                                          |
+| <span id="getter-contentheight">contentHeight</span>                         | `number`                                                          |
+| <span id="getter-scrollableheight">scrollableHeight</span>                   | `number`                                                          |
+| <span id="getter-naturalcontentheight">naturalContentHeight</span>           | `number`                                                          |
+| <span id="getter-grownheight">grownHeight</span>                             | `number`                                                          |
+| <span id="getter-height">height</span>                                       | `number`                                                          |
+| <span id="getter-featureidindex">featureIdIndex</span>                       | `Map<string, FlatbushItem>`                                       |
+| <span id="getter-subfeatureidindex">subfeatureIdIndex</span>                 | `Map<string, SubfeatureInfo>`                                     |
+| <span id="getter-hoveredfeature">hoveredFeature</span>                       | `FlatbushItem \| null`                                            |
+| <span id="getter-hoveredsubfeature">hoveredSubfeature</span>                 | `SubfeatureInfo \| null`                                          |
+| <span id="getter-featureitemmap">featureItemMap</span>                       | `Map<string, FeatureItemEntry>`                                   |
+| <span id="getter-flatbushindexes">flatbushIndexes</span>                     | `Map<number, FlatbushRegionIndexes>`                              |
 
 **Methods**
 
@@ -783,6 +851,47 @@ nothing to push.
 type fitLayoutAt = (memo: (rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>, showLabels: boolean, showDescriptions: boolean) => Map<...>
 ```
 
+#### method: decimatedLayoutInputs
+
+Layout inputs for the `decimated` rung at one whitespace factor. Every probe and
+the committed layout go through this single builder, so the stack the solve
+measures cannot differ from the stack it commits by a forgotten field.
+
+```ts
+type decimatedLayoutInputs = (labelRoomFactor: number) => LayoutInputs
+```
+
+#### method: solveLabelRoomFactor
+
+The whitespace factor the `decimated` rung commits at: the smallest one whose
+packed stack fits `trackHeight` (smallest = most names kept), or undefined when
+even the most aggressive decimation overflows. The bisection and its probe live
+in `solveLabelRoomFactor` (fitLadder.ts), next to the ladder walk they serve.
+
+```ts
+type solveLabelRoomFactor = (trackHeight: number) => number | undefined
+```
+
+#### method: showSubmenuMenuItems
+
+Flattened "Show..." submenu: all checkbox toggles first, then the radio groups
+(each under its own subHeader). Composed from the two extension points above so
+subclasses inject toggles/groups in place without rebuilding trackMenuItems from
+scratch.
+
+```ts
+type showSubmenuMenuItems = () => MenuItem[]
+```
+
+#### method: contextMenuItems
+
+The feature right-click menu (open details, zoom to, get sequence, highlight
+scopes, pin/solo/hide, copy).
+
+```ts
+type contextMenuItems = () => MenuItem[]
+```
+
 #### method: colorMenuItems
 
 Color-related track menu entries: a single "Color by..." entry whose "Solid
@@ -790,24 +899,17 @@ color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants)
 override to drop the gene-oriented UTR picker.
 
 ```ts
-type colorMenuItems = () => { label: string; icon: OverridableComponent<…> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; }[]
+type colorMenuItems = () => MenuItem[]
 ```
 
 #### method: featureHeightMenuItems
 
-One "Feature height" menu with two independent radio groups, mirroring the
-alignments display: the size presets (how tall each feature is drawn) and, under
-a "Track sizing" subheader, how the track responds when there are more features
-than fit — scroll / expand / squeeze. The two axes are orthogonal, so picking a
-size never changes the mode and vice versa. Shared by every canvas display
-(genes, variants).
+One "Feature height" menu with two independent radio groups: the size presets
+and, under a "Track sizing" subheader, how the track responds when there are
+more features than fit.
 
 ```ts
-type featureHeightMenuItems = () => {
-  label: string
-  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
-  subMenu: MenuItem[]
-}[]
+type featureHeightMenuItems = () => MenuItem[]
 ```
 
 | Member                                                                     | Type                                                                                                                                                         |
@@ -818,8 +920,6 @@ type featureHeightMenuItems = () => {
 | <span id="method-rendersvg">renderSvg</span>                               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
 | <span id="method-showsubmenucheckboxitems">showSubmenuCheckboxItems</span> | `() => MenuItem[]`                                                                                                                                           |
 | <span id="method-showsubmenuradiogroups">showSubmenuRadioGroups</span>     | `() => MenuItem[]`                                                                                                                                           |
-| <span id="method-showsubmenumenuitems">showSubmenuMenuItems</span>         | `() => MenuItem[]`                                                                                                                                           |
-| <span id="method-contextmenuitems">contextMenuItems</span>                 | `() => ({…} \| { label: string; icon: OverridableComponent<…> & { ...; }; onClick: () => void; subMenu?: undefined; } \| { ...; } \| { ...; })[]`            |
 | <span id="method-trackmenuitems">trackMenuItems</span>                     | `() => MenuItem[]`                                                                                                                                           |
 
 **Actions**
@@ -989,6 +1089,15 @@ Returns the effective RPC driver name with hierarchical fallback:
 type effectiveRpcDriverName = any
 ```
 
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead, make this return a react
+component
+
+```ts
+type DisplayMessageComponent = FC<any> | undefined
+```
+
 | Member                                                         | Type                                                                                            |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | <span id="getter-parenttrack">parentTrack</span>               | `AbstractTrackModel`                                                                            |
@@ -1116,6 +1225,21 @@ loadedRegions: observable.map<number, Region>()
 ```
 
 **Getters**
+
+#### getter: canRender
+
+The render-lifecycle precondition for every LGV display (overrides
+`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
+callbacks until the view is measured. Before that, `renderBlocks` →
+`visibleRegions` → `view.width` throws by design, and the render autorun's catch
+would show that as a GPU render-error banner. Gating here — once, for all of
+them — is what lets a display's `renderState` be a plain resolved getter and its
+render callback gate only on its own data. The render-lifecycle twin of
+`autorunOnReadyView`.
+
+```ts
+type canRender = boolean
+```
 
 #### getter: isReady
 

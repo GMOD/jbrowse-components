@@ -97,6 +97,7 @@ with optional clustering and a tree sidebar.
 | [setHeight](#action-setheight)                                         | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                   |
 | [resizeHeight](#action-resizeheight)                                   | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                   |
 | [loadedRegions](#volatile-loadedregions)                               | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                            |
+| [canRender](#getter-canrender)                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                 |
 | [isReady](#getter-isready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                        |
 | [viewportWithinLoadedData](#getter-viewportwithinloadeddata)           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                            |
 | [svgReady](#getter-svgready)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state.                                                                                               |
@@ -157,6 +158,7 @@ with optional clustering and a tree sidebar.
 | [runFetch](#action-runfetch)                                           | Actions    | [FetchMixin](../fetchmixin)                           | Run a cancel-safe fetch (cancels any prior).                                                                                                                                                                                                                      |
 | [rpcDataMap](#volatile-rpcdatamap)                                     | Volatiles  | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                   |
 | [featureUnderMouse](#volatile-featureundermouse)                       | Volatiles  | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                   |
+| [visibleScoreStats](#getter-visiblescorestats)                         | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             | The visible feature arrays plus their min/max/mean/stddev, walked once.                                                                                                                                                                                           |
 | [visibleScoreRange](#getter-visiblescorerange)                         | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                   |
 | [dataRange](#getter-datarange)                                         | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             | The true, unclipped `[min, max]` of the visible data.                                                                                                                                                                                                             |
 | [domain](#getter-domain)                                               | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                   |
@@ -290,7 +292,7 @@ type prefersOffset = boolean
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span id="method-rpcprops">rpcProps</span>             | `() => { bicolorPivot: number; resolution: number; }`                                                                                                             |
 | <span id="method-gpuprops">gpuProps</span>             | `() => { sources: Source[]; posColor: string; negColor: string; summaryScoreMode: string; renderingType: string; isDensityMode: boolean; bicolorPivot: number; }` |
-| <span id="method-trackmenuitems">trackMenuItems</span> | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; } \| { ...; })[]`          |
+| <span id="method-trackmenuitems">trackMenuItems</span> | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]`                      |
 
 </details>
 
@@ -499,6 +501,21 @@ loadedRegions: observable.map<number, Region>()
 ```
 
 **Getters**
+
+#### getter: canRender
+
+The render-lifecycle precondition for every LGV display (overrides
+`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
+callbacks until the view is measured. Before that, `renderBlocks` →
+`visibleRegions` → `view.width` throws by design, and the render autorun's catch
+would show that as a GPU render-error banner. Gating here — once, for all of
+them — is what lets a display's `renderState` be a plain resolved getter and its
+render callback gate only on its own data. The render-lifecycle twin of
+`autorunOnReadyView`.
+
+```ts
+type canRender = boolean
+```
 
 #### getter: isReady
 
@@ -1193,6 +1210,21 @@ type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 | <span id="volatile-featureundermouse">featureUnderMouse</span> | `WiggleFeatureUnderMouse \| undefined`    |
 
 **Getters**
+
+#### getter: visibleScoreStats
+
+The visible feature arrays plus their min/max/mean/stddev, walked once.
+`visibleScoreRange` and `dataRange` both derive from this so the score arrays
+aren't scanned twice per domain recompute.
+
+```ts
+type visibleScoreStats =
+  | {
+      entries: { visStart: number; visEnd: number; data: WiggleSourceData }[]
+      stats: ScoreStats | undefined
+    }
+  | undefined
+```
 
 #### getter: dataRange
 

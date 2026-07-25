@@ -99,6 +99,7 @@ ReferenceSequenceTrack
 | [setHeight](#action-setheight)                                         | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                         |
 | [resizeHeight](#action-resizeheight)                                   | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                         |
 | [loadedRegions](#volatile-loadedregions)                               | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                                                                  |
+| [canRender](#getter-canrender)                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                                                                                       |
 | [isReady](#getter-isready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                                                              |
 | [viewportWithinLoadedData](#getter-viewportwithinloadeddata)           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                                                                                                  |
 | [svgReady](#getter-svgready)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state.                                                                                                                                                                     |
@@ -161,6 +162,7 @@ ReferenceSequenceTrack
 | [rpcDataMap](#volatile-rpcdatamap)                                     | Volatiles  | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                                                                                         |
 | [featureUnderMouse](#volatile-featureundermouse)                       | Volatiles  | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                                                                                         |
 | [autoscaleSourceNames](#getter-autoscalesourcenames)                   | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             | Source names to include when computing the autoscale domain; `undefined` means every fetched source.                                                                                                                                                                                                                                    |
+| [visibleScoreStats](#getter-visiblescorestats)                         | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             | The visible feature arrays plus their min/max/mean/stddev, walked once.                                                                                                                                                                                                                                                                 |
 | [visibleScoreRange](#getter-visiblescorerange)                         | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                                                                                         |
 | [dataRange](#getter-datarange)                                         | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             | The true, unclipped `[min, max]` of the visible data.                                                                                                                                                                                                                                                                                   |
 | [domain](#getter-domain)                                               | Getters    | [WiggleCommonMixin](../wigglecommonmixin)             |                                                                                                                                                                                                                                                                                                                                         |
@@ -332,7 +334,7 @@ type gpuProps = () => { sources: {…}[]; posColor: string; negColor: string; su
 | <span id="action-setcolor">setColor</span>                           | `(color?: string \| undefined) => void`                                                                                                                      |
 | <span id="action-setposcolor">setPosColor</span>                     | `(color?: string \| undefined) => void`                                                                                                                      |
 | <span id="action-setnegcolor">setNegColor</span>                     | `(color?: string \| undefined) => void`                                                                                                                      |
-| <span id="action-fetchneeded">fetchNeeded</span>                     | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void> \| undefined`                                                                |
+| <span id="action-fetchneeded">fetchNeeded</span>                     | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                             |
 | <span id="action-rendersvg">renderSvg</span>                         | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
 | <span id="action-startrenderingbackend">startRenderingBackend</span> | `(backend: WiggleRenderingBackend) => void`                                                                                                                  |
 
@@ -518,6 +520,21 @@ loadedRegions: observable.map<number, Region>()
 ```
 
 **Getters**
+
+#### getter: canRender
+
+The render-lifecycle precondition for every LGV display (overrides
+`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
+callbacks until the view is measured. Before that, `renderBlocks` →
+`visibleRegions` → `view.width` throws by design, and the render autorun's catch
+would show that as a GPU render-error banner. Gating here — once, for all of
+them — is what lets a display's `renderState` be a plain resolved getter and its
+render callback gate only on its own data. The render-lifecycle twin of
+`autorunOnReadyView`.
+
+```ts
+type canRender = boolean
+```
 
 #### getter: isReady
 
@@ -1230,6 +1247,21 @@ filter that hides sources would leave the Y-axis scaled to the hidden ones.
 
 ```ts
 type autoscaleSourceNames = Set<string> | undefined
+```
+
+#### getter: visibleScoreStats
+
+The visible feature arrays plus their min/max/mean/stddev, walked once.
+`visibleScoreRange` and `dataRange` both derive from this so the score arrays
+aren't scanned twice per domain recompute.
+
+```ts
+type visibleScoreStats =
+  | {
+      entries: { visStart: number; visEnd: number; data: WiggleSourceData }[]
+      stats: ScoreStats | undefined
+    }
+  | undefined
 ```
 
 #### getter: dataRange

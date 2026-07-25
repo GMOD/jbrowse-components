@@ -216,7 +216,7 @@ records to SVG coordinates.
 SVG), scrollTops still read from model.
 
 ```ts
-type getTrackOverlayData = (trackId: string, yOffsetsOverride?: number[] | undefined, domYOffsets?: number[] | undefined) => {…}
+type getTrackOverlayData = (trackId: string, yOffsetsOverride?: number[] | undefined, domYOffsets?: (number | undefined)[] | undefined) => {…}
 ```
 
 </details>

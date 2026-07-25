@@ -54,7 +54,8 @@ the genome, with a feature widget on click.
 | [colorByLdToHit](#action-colorbyldtohit)                               | Actions    | LinearManhattanDisplay                                | right-click "Color by LD to this SNP": switch into LD mode and pin the index on the clicked point, so the auto-pick stops tracking the top hit.                                                                                                                                                    |
 | [useTopHitAsIndex](#action-usetophitasindex)                           | Actions    | LinearManhattanDisplay                                | release a pinned index back to auto-tracking, seeded at the current top hit (the auto-pick autorun then keeps it on the top hit as data loads)                                                                                                                                                     |
 | [clearDisplaySpecificData](#action-cleardisplayspecificdata)           | Actions    | LinearManhattanDisplay                                |                                                                                                                                                                                                                                                                                                    |
-| [fetchNeeded](#action-fetchneeded)                                     | Actions    | LinearManhattanDisplay                                | Manhattan features are 1:1 with the underlying SNPs (pre-transformed -log10 p values) and don't downsample by zoom, so we never need to refetch on bpPerPx change.                                                                                                                                 |
+| [isCacheValid](#action-iscachevalid)                                   | Actions    | LinearManhattanDisplay                                | Manhattan features are 1:1 with the underlying SNPs (pre-transformed -log10 p values) and don't downsample by zoom, so cached data is valid at any bpPerPx.                                                                                                                                        |
+| [fetchNeeded](#action-fetchneeded)                                     | Actions    | LinearManhattanDisplay                                |                                                                                                                                                                                                                                                                                                    |
 | [renderSvg](#action-rendersvg)                                         | Actions    | LinearManhattanDisplay                                |                                                                                                                                                                                                                                                                                                    |
 | [startRenderingBackend](#action-startrenderingbackend)                 | Actions    | LinearManhattanDisplay                                | identity encode — RPC result is the upload payload                                                                                                                                                                                                                                                 |
 | [id](#property-id)                                                     | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                    |
@@ -83,6 +84,7 @@ the genome, with a feature widget on click.
 | [setHeight](#action-setheight)                                         | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                    |
 | [resizeHeight](#action-resizeheight)                                   | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                    |
 | [loadedRegions](#volatile-loadedregions)                               | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                             |
+| [canRender](#getter-canrender)                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                                                  |
 | [isReady](#getter-isready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                         |
 | [viewportWithinLoadedData](#getter-viewportwithinloadeddata)           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                                                             |
 | [svgReady](#getter-svgready)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state.                                                                                                                                |
@@ -95,7 +97,6 @@ the genome, with a feature widget on click.
 | [setLoadedRegion](#action-setloadedregion)                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                          |
 | [clearAllRpcData](#action-clearallrpcdata)                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag.                                                                                                                                                                                          |
 | [invalidateLoadedRegions](#action-invalidateloadedregions)             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                                     |
-| [isCacheValid](#action-iscachevalid)                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook: return `false` to force re-fetch at the current zoom (wiggle uses this for zoom-level changes).                                                                                                                                                                                  |
 | [getByteEstimateConfig](#action-getbyteestimateconfig)                 | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook: return config to enable byte-estimate gating before fetch.                                                                                                                                                                                                                       |
 | [onRegionTooLarge](#action-onregiontoolarge)                           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (no-op base): called when `regionTooLarge` transitions to true.                                                                                                                                                                                                                   |
 | [fetchRegions](#action-fetchregions)                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating.                                                                                                                                                                                                                                                  |
@@ -456,18 +457,16 @@ auto-pick autorun then keeps it on the top hit as data loads)
 type useTopHitAsIndex = () => void
 ```
 
-#### action: fetchNeeded
+#### action: isCacheValid
 
 Manhattan features are 1:1 with the underlying SNPs (pre-transformed -log10 p
-values) and don't downsample by zoom, so we never need to refetch on bpPerPx
-change. We intentionally don't call setLoadedBpPerPx — the inherited
-isCacheValid short-circuits to true whenever loadedBpPerPx is undefined, which
-is exactly the behavior we want here.
+values) and don't downsample by zoom, so cached data is valid at any bpPerPx.
+Stated outright rather than left to `WiggleScoreConfigMixin`'s strict-equality
+version short-circuiting on an unset `loadedBpPerPx` — that made "never call
+setLoadedBpPerPx" a silent precondition of correct caching.
 
 ```ts
-type fetchNeeded = (
-  needed: { region: Region; displayedRegionIndex: number }[],
-) => Promise<void> | undefined
+type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 #### action: startRenderingBackend
@@ -491,6 +490,7 @@ type startRenderingBackend = (backend: ManhattanRenderingBackend) => void
 | <span id="action-setcolorby">setColorBy</span>                             | `(mode: "normal" \| "ld") => void`                                                                                                                           |
 | <span id="action-setindexsnp">setIndexSnp</span>                           | `(snp?: string \| undefined) => void`                                                                                                                        |
 | <span id="action-cleardisplayspecificdata">clearDisplaySpecificData</span> | `() => void`                                                                                                                                                 |
+| <span id="action-fetchneeded">fetchNeeded</span>                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                             |
 | <span id="action-rendersvg">renderSvg</span>                               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
 
 </details>
@@ -683,6 +683,21 @@ loadedRegions: observable.map<number, Region>()
 
 **Getters**
 
+#### getter: canRender
+
+The render-lifecycle precondition for every LGV display (overrides
+`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
+callbacks until the view is measured. Before that, `renderBlocks` →
+`visibleRegions` → `view.width` throws by design, and the render autorun's catch
+would show that as a GPU render-error banner. Gating here — once, for all of
+them — is what lets a display's `renderState` be a plain resolved getter and its
+render callback gate only on its own data. The render-lifecycle twin of
+`autorunOnReadyView`.
+
+```ts
+type canRender = boolean
+```
+
 #### getter: isReady
 
 true once the canvas has painted and no fetch is in flight
@@ -824,15 +839,6 @@ regionTooLarge intact
 
 ```ts
 type invalidateLoadedRegions = () => void
-```
-
-#### action: isCacheValid
-
-Overridable hook: return `false` to force re-fetch at the current zoom (wiggle
-uses this for zoom-level changes).
-
-```ts
-type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 #### action: getByteEstimateConfig
