@@ -2028,39 +2028,6 @@ export default function stateModelFactory(
           return self.sortedBy?.type === 'tag' ? self.sortedBy.tag : undefined
         },
 
-        // Fields that invalidate the fetched pileup/chain data. Worker-
-        // bound (filterBy, colorBy, …) plus the one main-thread decision
-        // field that selects between pileup and chain RPC (linkedReads).
-        // Arc-only fields (arcColorByType, drawInter, drawLongRange) are
-        // NOT here — they are tracked by the arcsRpcDataMap computed
-        // getter and do not require a refetch. Non-tag sort changes are
-        // handled main-thread by laidOutPileupMap, as is tag coloring
-        // (colorTagMap is baked into readTagColors in laidOutPileupMap, so it
-        // is intentionally NOT in rpcProps — putting it here would re-create
-        // the discover→assign→refetch feedback loop).
-        /**
-         * #method
-         */
-        rpcProps() {
-          return {
-            filterBy: self.filterBy,
-            colorBy: self.colorBy,
-            sortTag: this.sortTag,
-            groupBy: self.groupBy,
-            showSoftClipping: self.showSoftClipping,
-            // showCoverage is here (not just renderState) because the worker
-            // skips the entire coverage-band pipeline — including the per-bp GPU
-            // depth buffer that overflows the device limit at whole-chromosome
-            // scale — when the band is off. So toggling it refetches. The
-            // pileup's low-frequency fade is unaffected (see runCoveragePipeline).
-            showCoverage: self.showCoverage,
-            drawSingletons: self.drawSingletons,
-            drawProperPairs: self.drawProperPairs,
-            showOnlySplitAlignments: self.showOnlySplitAlignments,
-            linkedReads: self.linkedReads,
-          }
-        },
-
         /**
          * #getter
          */
@@ -2165,6 +2132,43 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        // Fields that invalidate the fetched pileup/chain data. Worker-
+        // bound (filterBy, colorBy, …) plus the one main-thread decision
+        // field that selects between pileup and chain RPC (linkedReads).
+        // Arc-only fields (arcColorByType, drawInter, drawLongRange) are
+        // NOT here — they are tracked by the arcsRpcDataMap computed
+        // getter and do not require a refetch. Non-tag sort changes are
+        // handled main-thread by laidOutPileupMap, as is tag coloring
+        // (colorTagMap is baked into readTagColors in laidOutPileupMap, so it
+        // is intentionally NOT in rpcProps — putting it here would re-create
+        // the discover→assign→refetch feedback loop).
+        //
+        // Lives in its own views block, after every field it reads, so it can
+        // read them off `self`: a subclass overriding it captures the base as a
+        // bare function (LGVSyntenyDisplay), which would lose a `this`.
+        /**
+         * #method
+         */
+        rpcProps() {
+          return {
+            filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            sortTag: self.sortTag,
+            groupBy: self.groupBy,
+            showSoftClipping: self.showSoftClipping,
+            // showCoverage is here (not just renderState) because the worker
+            // skips the entire coverage-band pipeline — including the per-bp GPU
+            // depth buffer that overflows the device limit at whole-chromosome
+            // scale — when the band is off. So toggling it refetches. The
+            // pileup's low-frequency fade is unaffected (see runCoveragePipeline).
+            showCoverage: self.showCoverage,
+            drawSingletons: self.drawSingletons,
+            drawProperPairs: self.drawProperPairs,
+            showOnlySplitAlignments: self.showOnlySplitAlignments,
+            linkedReads: self.linkedReads,
+          }
+        },
+
         /**
          * #getter
          */

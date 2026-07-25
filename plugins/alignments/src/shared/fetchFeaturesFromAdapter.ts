@@ -25,6 +25,7 @@ export async function fetchFeaturesFromAdapter({
   sequenceAdapter,
   region,
   filterBy,
+  lodMode,
   statusCallback,
   stopToken,
 }: {
@@ -34,6 +35,9 @@ export async function fetchFeaturesFromAdapter({
   sequenceAdapter?: Record<string, unknown>
   region: Region
   filterBy?: FilterBy
+  // Which detail tier a tiered adapter should serve. Only the synteny displays
+  // set it (a PIF has a coarse no-CIGAR tier); read adapters ignore it.
+  lodMode?: BaseOptions['lodMode']
   statusCallback: StatusCallback
   stopToken?: StopToken
 }) {
@@ -49,6 +53,7 @@ export async function fetchFeaturesFromAdapter({
   const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
     stopToken,
     filterBy,
+    lodMode,
     statusCallback,
   }
   const featuresArray = await firstValueFrom(

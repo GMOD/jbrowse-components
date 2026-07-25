@@ -8,6 +8,7 @@
  */
 
 import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -42,6 +43,14 @@ export interface RenderAlignmentDataArgs {
   // mode only — ignored in chain mode (linkedReads !== 'off'). Tier-1 refetch
   // setting (in rpcProps): changing it re-partitions, so the worker must re-run.
   groupBy?: GroupBy
+  // Which detail tier a tiered adapter should serve. Set only by the synteny
+  // displays, whose PIF adapters carry a coarse no-CIGAR tier for zoomed-out
+  // views; read adapters have no tiers and ignore it. A tier-1 refetch setting
+  // (in rpcProps): switching tiers means different rows, so the worker must
+  // re-run. Resolved to an explicit 'fine'/'coarse' rather than passed as a raw
+  // bpPerPx so the rpcProps cache key changes only when the tier actually flips,
+  // not on every zoom step.
+  lodMode?: BaseOptions['lodMode']
   linkedReads?: 'off' | 'normal'
   drawSingletons?: boolean
   drawProperPairs?: boolean

@@ -23,6 +23,7 @@ import {
   findVisibleBlockForFeature,
   getMate,
 } from './components/util.ts'
+import { resolveDisplayLodMode } from './lodMode.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
@@ -96,6 +97,30 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           }
         },
       }))
+      .views(self => {
+        const superRpcProps = self.rpcProps
+        return {
+          /**
+           * #method
+           * Adds the detail tier to the base alignments RPC payload — see
+           * `resolveDisplayLodMode` for why the display resolves it rather than
+           * forwarding `bpPerPx` to the adapter.
+           */
+          rpcProps() {
+            const { coarseBpPerPxThreshold } = self.adapterConfig as {
+              coarseBpPerPxThreshold?: number
+            }
+            return {
+              ...superRpcProps(),
+              lodMode: resolveDisplayLodMode({
+                bpPerPx: (getContainingView(self) as LinearGenomeViewModel)
+                  .bpPerPx,
+                coarseBpPerPxThreshold,
+              }),
+            }
+          },
+        }
+      })
       .views(self => ({
         /**
          * #method

@@ -466,6 +466,7 @@ export async function executeRenderAlignmentData({
     colorBy,
     sortTag,
     groupBy: groupByArg,
+    lodMode,
     showSoftClipping = false,
     showCoverage = true,
     linkedReads = 'off',
@@ -488,6 +489,7 @@ export async function executeRenderAlignmentData({
     sequenceAdapter,
     region,
     filterBy,
+    lodMode,
     statusCallback,
     stopToken,
   })
