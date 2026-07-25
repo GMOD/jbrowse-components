@@ -63,56 +63,28 @@ under `https://jbrowse.org/demos/tcga/`:
 
 ## What the script is doing
 
-You do not need this section to follow the tutorial, but you do need it to adapt
-the script to other GDC data.
+The pipeline itself is not the JBrowse part, but three of its steps decide
+whether the track loads at all.
 
-**Which data is open.** The GDC splits TCGA into two tiers. Controlled access
-needs a dbGaP application and covers raw sequence and germline calls. Open
-access needs nothing and covers the derived, summarized calls, including the
-**Masked Copy Number Segment** files used here. Those come from Affymetrix SNP
-6.0 arrays, GDC has already harmonized them to GRCh38, and "masked" means probes
-over known germline CNVs are removed, so what remains is somatic.
+**It takes only open-access files.** The GDC's **Masked Copy Number Segment**
+files (Affymetrix SNP 6.0, already harmonized to GRCh38, germline CNV probes
+removed) need no dbGaP application. The query also filters to `Primary Tumor`,
+since TCGA banks a matched blood normal per case that would double the row count
+and add no somatic signal.
 
-**Finding the files.** One API query returns every matching file id plus its
-TCGA barcode. The `Primary Tumor` filter matters: TCGA also banks a matched
-blood normal per case, which would double the file count and add no somatic
-signal.
+**It reshapes `.seg` into BED.** Two conversions matter, and getting either
+wrong misplaces every feature: `.seg` names contigs bare (`1`), so the script
+adds the `chr` prefix, and `.seg` starts are 1-based inclusive against BED's
+0-based half-open, so it subtracts 1. It also keeps one file per barcode, since
+the replicate aliquots a few cases carry would otherwise land in the same row
+and paint over each other (2 of 1106 files here, leaving 1104 tumors).
 
-```bash
-curl -s 'https://api.gdc.cancer.gov/files' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "filters": {"op":"and","content":[
-      {"op":"in","content":{"field":"cases.project.project_id","value":["TCGA-BRCA"]}},
-      {"op":"in","content":{"field":"data_type","value":["Masked Copy Number Segment"]}},
-      {"op":"in","content":{"field":"cases.samples.sample_type","value":["Primary Tumor"]}},
-      {"op":"in","content":{"field":"access","value":["open"]}}
-    ]},
-    "fields": "file_id,cases.samples.submitter_id",
-    "format": "JSON", "size": "20000"
-  }'
-```
+**It carries `Segment_Mean` through unchanged.** That is the caller's log2
+tumor/normal ratio, and it is what the track colors by. JBrowse plots what the
+caller called; it does not re-normalize.
 
-**Downloading.** The script does not fetch a thousand files one at a time. The
-GDC `/data` endpoint takes a POST of many ids and streams back one `.tar.gz`, so
-the cohort arrives in a handful of requests, in batches of 150.
-
-**Reshaping.** Each `.seg` file is a small table (`GDC_Aliquot`, `Chromosome`,
-`Start`, `End`, `Num_Probes`, `Segment_Mean`). The script concatenates them,
-tags each row with its barcode, and fixes three things along the way:
-
-- `.seg` uses bare contig names (`1`), so it adds the `chr` prefix.
-- `.seg` `Start` is 1-based inclusive; BED start is 0-based half-open, so it
-  subtracts 1.
-- A few cases carry **replicate aliquots**, two array runs sharing one barcode.
-  Left alone they land in the same row and paint over each other, so it keeps
-  one file per barcode. In TCGA-BRCA that drops 2 of 1106 files, leaving 1104
-  tumors.
-
-`Segment_Mean` is the caller's log2 tumor/normal ratio and is carried through
-unchanged. JBrowse plots what the caller called; it does not re-normalize.
-
-The result is a BED whose `#`-prefixed header names the extra columns:
+The result is a BED whose `#`-prefixed header names the extra columns, which is
+what lets the display address them by name:
 
 ```
 #chrom  start     end        name    sample             segmean
@@ -121,6 +93,10 @@ chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
 ```
 
 `sample` is what splits the rows, `segmean` is what colors them.
+
+The GDC specifics are all in the script if you need to point it at other data:
+the file-listing query, and the `/data` endpoint POST that streams 150 ids back
+as one `.tar.gz` instead of fetching a thousand files one at a time.
 
 ## Load it into JBrowse
 
