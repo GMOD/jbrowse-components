@@ -309,7 +309,7 @@ function drawContinuation(
         scrollY,
       )
       const halfH = Math.min(CONT_TRI_HALF_H_PX, region.rectHeights[i]! * 0.4)
-      const strand = region.rectStrands[i] ?? 0
+      const strand = region.rectStrands[i]!
       if (offRight) {
         const effectiveStrand = strand === 0 ? 1 : strand
         const strandMatchesEdge = Math.max(0, effectiveStrand) // edgeSide=1
@@ -376,6 +376,9 @@ export function drawFeatureBlocks(
 interface HighlightLabelContext {
   showLabels: boolean
   showDescriptions: boolean
+  // resolved label size for the display mode, so the reserved label width matches
+  // the text the export actually paints (baked widths are at the base size)
+  fontSize: number
 }
 
 function drawHighlightBox(
@@ -401,6 +404,7 @@ function drawHighlightBox(
         featureWidthPx,
         labelContext.showLabels,
         labelContext.showDescriptions,
+        labelContext.fontSize,
       )
     : 0
   // Mirror the on-screen overlay box (useOverlayElements/computeOverlayRect):

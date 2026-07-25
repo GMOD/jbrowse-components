@@ -1,5 +1,9 @@
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
+import {
+  LABEL_FONT_SIZE,
+  renderedTextWidth,
+} from '../../RenderFeatureDataRPC/constants.ts'
 import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 import type {
@@ -48,17 +52,22 @@ export function labelCullBand(
 // left-aligned to the glyph and spills rightward (see computeLabelLeftPx), so
 // every consumer that has to cover the label as well as the glyph — the hit box
 // (buildFeatureFlatbushIndex), the highlight/selection overlay, and the SVG
-// export's highlight boxes — widens by exactly this.
+// export's highlight boxes — widens by exactly this. `fontSize` is the display
+// mode's resolved label size: the baked widths are measured at the base size, so
+// a compact mode must scale them down or every one of those boxes overhangs the
+// text it is meant to cover.
 export function computeLabelExtraWidth(
   labelData: FeatureLabelData,
   featureWidthPx: number,
   showLabels = true,
   showDescriptions = true,
+  fontSize = LABEL_FONT_SIZE,
 ) {
-  return Math.max(
-    0,
-    maxLabelTextWidth(labelData, showLabels, showDescriptions) - featureWidthPx,
+  const widest = renderedTextWidth(
+    maxLabelTextWidth(labelData, showLabels, showDescriptions),
+    fontSize,
   )
+  return Math.max(0, widest - featureWidthPx)
 }
 
 export interface FeatureBoundsPx {
@@ -100,9 +109,16 @@ export function computeLabelPosition(
   label: LabelMetrics,
   padding: number,
   bounds: FeatureBoundsPx,
+  // the display mode's resolved label size; the baked textWidth is measured at
+  // the base size, and computeLabelLeftPx's fits-in-feature test and right-edge
+  // clamp both need the width the text will actually occupy
+  fontSize = LABEL_FONT_SIZE,
 ) {
   return {
-    labelX: computeLabelLeftPx(label.textWidth, bounds),
+    labelX: computeLabelLeftPx(
+      renderedTextWidth(label.textWidth, fontSize),
+      bounds,
+    ),
     labelY: bounds.featureBottomPx + label.relativeY + padding,
   }
 }
@@ -149,7 +165,11 @@ function resolveFeatureLabels(
     padding: number,
     kind: ResolvedLabel['kind'],
   ) => {
-    out.push({ label, ...computeLabelPosition(label, padding, bounds), kind })
+    out.push({
+      label,
+      ...computeLabelPosition(label, padding, bounds, fontSize),
+      kind,
+    })
   }
   if (showLabels && nameLabel) {
     add(nameLabel, LABEL_TOP_GAP_PX, 'name')

@@ -93,12 +93,13 @@ export interface FeatureDataResult {
   // unpacks with bit shifts.
   rectColors: Uint32Array
   rectStrands: Float32Array // strand direction per rect: -1, 0, or +1
-  // Worker output is fade-*eligibility*: 1 = whole-feature box glyph (variants,
-  // plain BED) that MAY fade; 0 = gene subfeature rect that never fades. Layout
-  // (applyLayoutToRegion) narrows it in place to the actual density decision — 1
-  // only when the region is in the dense-pileup regime (thousands of collapsed
-  // marks on row 0), 0 otherwise — so a sparse handful of variants stays opaque
-  // and only a genuine pileup fades to convey density.
+  // Allocated zero-filled by the worker, VALUED by the main-thread layout —
+  // `applyLayoutToRegion` writes every element from its own per-feature decision:
+  // 1 only for a feature whose sub-pixel box collapsed onto row 0 in the
+  // dense-pileup regime (thousands of such marks), 0 otherwise, so a sparse
+  // handful of variants stays opaque and only a genuine pileup fades to convey
+  // density. Fade *eligibility* lives on `FlatbushItem.densityFade` (per feature);
+  // there is deliberately no worker-side rect-level flag to disagree with it.
   rectDensityFade: Uint32Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation

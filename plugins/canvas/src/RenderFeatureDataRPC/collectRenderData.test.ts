@@ -725,8 +725,12 @@ describe('collectRenderData color-slot robustness', () => {
   })
 })
 
-describe('collectRenderData density-fade gating', () => {
-  it('flags whole-feature box glyphs (variants, plain BED) as fade-eligible', () => {
+// Fade eligibility is recorded once per FEATURE on the flatbush item. The
+// per-rect `rectDensityFade` array is allocated here but valued by the
+// main-thread layout, so it is deliberately all-zero on the way out of the
+// worker — asserting on it here would be asserting on nothing.
+describe('collectRenderData density-fade eligibility', () => {
+  it('marks whole-feature box glyphs (variants, plain BED) fade-eligible', () => {
     const feature = mockFeature({
       type: 'SNV',
       id: 'v1',
@@ -743,10 +747,11 @@ describe('collectRenderData density-fade gating', () => {
       undefined,
       jexl,
     )
-    expect([...result.rectDensityFade]).toEqual([1])
+    expect(result.flatbushItems.map(i => i.densityFade)).toEqual([true])
+    expect([...result.rectDensityFade]).toEqual([0])
   })
 
-  it('never flags gene subfeature (CDS/exon) rects as fade-eligible', () => {
+  it('never marks a transcript (CDS/exon container) fade-eligible', () => {
     const { layout } = twoExonTranscript()
     const result = collectRenderData(
       [layout],
@@ -758,7 +763,7 @@ describe('collectRenderData density-fade gating', () => {
       undefined,
       jexl,
     )
-    expect(result.rectDensityFade.length).toBeGreaterThan(0)
-    expect([...result.rectDensityFade].every(v => v === 0)).toBe(true)
+    expect(result.flatbushItems.length).toBeGreaterThan(0)
+    expect(result.flatbushItems.every(i => !i.densityFade)).toBe(true)
   })
 })

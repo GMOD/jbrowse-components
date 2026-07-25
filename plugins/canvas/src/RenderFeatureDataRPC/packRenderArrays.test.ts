@@ -11,7 +11,6 @@ function rect(start: number, end: number): RectData {
     color: 0,
     flatbushIdx: 0,
     strand: 0,
-    densityFade: false,
   }
 }
 function line(start: number, end: number): LineData {
@@ -29,8 +28,11 @@ function arrow(x: number): ArrowData {
   return { x, y: 0, height: 10, direction: 1, color: 0, flatbushIdx: 0 }
 }
 
-// All three primitive types treat the region as half-open [regionStart, regionEnd).
-test('rect/line/arrow filtering uses consistent half-open semantics', () => {
+// Spans (rect/line) use a half-open overlap test against [regionStart, regionEnd);
+// arrows are points, so both ends are inclusive — an arrow sitting exactly on
+// regionEnd is the end cap of a feature whose box was kept, so dropping it left
+// that feature stranded without its strand marker.
+test('rect/line use half-open spans; arrows keep both endpoints', () => {
   const regionStart = 100
   const regionEnd = 200
 
@@ -53,7 +55,7 @@ test('rect/line/arrow filtering uses consistent half-open semantics', () => {
     arrow(100), // at regionStart -> included
     arrow(150), // inside -> included
     arrow(199), // last bp -> included
-    arrow(200), // at regionEnd -> excluded (half-open)
+    arrow(200), // at regionEnd -> included (end cap of a kept rect)
     arrow(201), // after -> excluded
   ]
 
@@ -62,5 +64,5 @@ test('rect/line/arrow filtering uses consistent half-open semantics', () => {
   expect(packed.rectPositions.length / 2).toBe(3)
   expect(packed.linePositions.length / 2).toBe(3)
 
-  expect(Array.from(packed.arrowXs)).toEqual([100, 150, 199])
+  expect(Array.from(packed.arrowXs)).toEqual([100, 150, 199, 200])
 })

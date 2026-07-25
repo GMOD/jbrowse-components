@@ -8,9 +8,6 @@ export interface RectData {
   color: number
   strand: number
   flatbushIdx: number
-  // Whole-feature box glyphs (variants, plain BED) fade to a density texture
-  // when collapsed sub-pixel; gene subfeature rects (CDS/exon/UTR) never do.
-  densityFade: boolean
 }
 
 export interface LineData {
@@ -74,8 +71,11 @@ export function packRenderArrays(
   const visibleLines = lines.filter(
     l => l.end > regionStart && l.start < regionEnd,
   )
+  // Arrows are points, so the window test is closed at both ends to match the
+  // rects' half-open overlap test. An exclusive upper bound dropped the arrow of
+  // a forward-strand feature ending exactly at regionEnd while keeping its box.
   const visibleArrows = arrows.filter(
-    a => a.x >= regionStart && a.x < regionEnd,
+    a => a.x >= regionStart && a.x <= regionEnd,
   )
 
   const rectPositions = new Uint32Array(visibleRects.length * 2)
@@ -83,6 +83,9 @@ export function packRenderArrays(
   const rectHeights = new Float32Array(visibleRects.length)
   const rectColors = new Uint32Array(visibleRects.length)
   const rectStrands = new Float32Array(visibleRects.length)
+  // Allocated here but valued by the main-thread layout, which decides the
+  // dense-pileup regime per FEATURE (see applyLayoutToRegion) — the worker has no
+  // say, so it doesn't pretend to by writing a per-rect eligibility flag.
   const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
 
@@ -93,7 +96,6 @@ export function packRenderArrays(
     rectHeights[i] = rect.height
     rectColors[i] = rect.color
     rectStrands[i] = rect.strand
-    rectDensityFade[i] = rect.densityFade ? 1 : 0
     rectFeatureIndices[i] = rect.flatbushIdx
   }
 

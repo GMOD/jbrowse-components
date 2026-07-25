@@ -7,6 +7,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
+import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
@@ -95,7 +96,10 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     highlightedFeatureIdSet: new Set<string>(),
     renderedShowLabels: true,
     renderedShowDescriptions: true,
-    labelFontSize: 12,
+    // a real normal-mode size (labelFontSize('normal')), not an arbitrary number:
+    // label widths are baked at LABEL_FONT_SIZE and scaled to the drawn size, so
+    // the fixture has to name a size the display actually resolves to
+    labelFontSize: LABEL_FONT_SIZE,
     colorLegend: undefined,
     ...overrides,
   }
@@ -251,6 +255,46 @@ describe('renderSvg', () => {
     const html = renderResult(result)
     expect(html).toContain('x="318"')
     expect(html).toContain('width="504"')
+  })
+
+  it('scales the reserved label width to a compact mode font size', async () => {
+    // Same fixture as above, exported in superCompact (labelFontSize 7.7). The
+    // baked 500px width was measured at LABEL_FONT_SIZE, so the label paints at
+    // 500 × 7.7/11 = 350px and the box must reserve that, not the full 500:
+    // width = 160 (glyph) + 190 (overflow) + 4 (outset) = 354. Reserving 504 here
+    // drew a box half again wider than the text it was boxing.
+    const data = makeFeatureData({
+      ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
+      flatbushItems: [
+        makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
+      ],
+      floatingLabelsData: {
+        f0: {
+          featureId: 'f0',
+          minX: 400,
+          maxX: 600,
+          topY: 0,
+          featureHeight: 10,
+          nameLabel: {
+            text: 'a-very-long-gene-name',
+            relativeY: 0,
+            color: '#000',
+            textWidth: 500,
+          },
+        },
+      },
+      featureCount: 1,
+    })
+    const result = await renderSvg(
+      makeModel({
+        laidOutDataMap: new Map([[0, data]]),
+        highlightedFeatureIdSet: new Set(['f0']),
+        labelFontSize: LABEL_FONT_SIZE * 0.7,
+      }),
+    )
+    const html = renderResult(result)
+    expect(html).toContain('x="318"')
+    expect(html).toContain('width="354"')
   })
 
   it('emits no highlight box when the highlight set is empty', async () => {

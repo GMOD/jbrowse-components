@@ -122,7 +122,6 @@ export function emitCodonRects(
           : color1,
       strand,
       flatbushIdx,
-      densityFade: false,
     })
     overlayItems.push({
       startBp: aa.startBp,
@@ -148,8 +147,6 @@ export function pushBoxRect(
   // packed RGBA32 override (mature-protein palette); 0 is a valid color so the
   // guard is `=== undefined`, not a falsy/`??` check
   colorOverride?: number,
-  // only whole-feature box glyphs (not gene subfeature rects) fade when collapsed
-  densityFade = false,
 ) {
   const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
   rects.push({
@@ -163,7 +160,6 @@ export function pushBoxRect(
         : colorOverride,
     strand: feature.get('strand') ?? 0,
     flatbushIdx,
-    densityFade,
   })
 }
 

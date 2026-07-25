@@ -41,6 +41,9 @@ interface OverlayModel {
 interface HighlightModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
+  // resolved label size for the display mode; the boxes reserve label width, and
+  // baked widths are measured at the base size (see renderedTextWidth)
+  labelFontSize: number
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
@@ -320,6 +323,7 @@ export function useHighlightOverlays(
     soloApplied,
     renderedShowLabels,
     renderedShowDescriptions,
+    labelFontSize,
   } = model
   const { classes, cx } = useStyles()
 
@@ -380,6 +384,7 @@ export function useHighlightOverlays(
       featureWidthPx,
       renderedShowLabels,
       renderedShowDescriptions,
+      labelFontSize,
     )
   }
 

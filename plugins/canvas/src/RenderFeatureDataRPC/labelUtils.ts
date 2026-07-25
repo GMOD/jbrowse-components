@@ -74,13 +74,20 @@ export function readFeatureLabels(
 // the name is the feature's own name/id, never a config-jexl slot, so this pass
 // stays jexl-free.
 //
-// KNOWN LIMITATION (compact/superCompact): this reserves a raw LABEL_FONT_SIZE
-// in the worker's normal-mode units, which the main thread then scales by
-// HEIGHT_MULTIPLIERS along with all other geometry. But the label is actually
-// drawn at labelFontSize() = LABEL_FONT_SIZE × LABEL_FONT_MULTIPLIERS, which is
-// deliberately gentler than HEIGHT_MULTIPLIERS. So in compact/superCompact the
-// reserved slot (×0.6 / ×0.3) is smaller than the drawn label (×0.85 / ×0.7)
-// and `below` labels overlap the next row. Correct in normal mode (both ×1).
+// KNOWN LIMITATION (compact/superCompact), VERTICAL ONLY: this reserves a raw
+// LABEL_FONT_SIZE in the worker's normal-mode units, which the main thread then
+// scales by HEIGHT_MULTIPLIERS along with all other geometry. But the label is
+// actually drawn at labelFontSize() = LABEL_FONT_SIZE × LABEL_FONT_MULTIPLIERS,
+// which is deliberately gentler than HEIGHT_MULTIPLIERS. So in compact/
+// superCompact the reserved slot (×0.6 / ×0.3) is smaller than the drawn label
+// (×0.85 / ×0.7) and `below` labels overlap the next row. Correct in normal mode
+// (both ×1).
+//
+// The same base-vs-drawn mismatch on the HORIZONTAL axis (baked `textWidth` at
+// LABEL_FONT_SIZE vs the narrower drawn text) is already handled: every consumer
+// of a baked width scales it through `renderedTextWidth`. That fix does not carry
+// over here because a width is one multiply at the point of use, whereas this
+// height is folded into a running Y offset — see below.
 //
 // The real fix is bigger than "reserve the row on the main thread": this gap is
 // NOT a separable row. layoutSubfeatures folds totalLayoutHeight into the

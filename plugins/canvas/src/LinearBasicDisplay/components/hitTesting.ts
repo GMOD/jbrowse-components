@@ -39,6 +39,9 @@ export type FeatureItemEntry =
 export interface LabelVisibility {
   showLabels: boolean
   showDescriptions: boolean
+  // the display mode's resolved label font size, so the label-overhang part of a
+  // hit box matches the width the label actually draws at
+  fontSize: number
 }
 
 export interface FlatbushRegionIndexes {
@@ -98,6 +101,7 @@ export function buildFeatureFlatbushIndex(
           featureWidthPx,
           labels.showLabels,
           labels.showDescriptions,
+          labels.fontSize,
         ) * bpPerPx
       if (extraBp > 0) {
         if (reversed) {

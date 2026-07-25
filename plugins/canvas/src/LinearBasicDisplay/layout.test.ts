@@ -1149,6 +1149,85 @@ test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () =
   expect(topYes('mir2')).toBeGreaterThan(0)
 })
 
+test('a compact mode reserves label overhang at its own smaller font size', () => {
+  // Two labeled genes placed so their reserved name overhangs collide at the
+  // normal label size but not at superCompact's (×0.7). Widths are baked at
+  // LABEL_FONT_SIZE in the worker, so reserving the raw width in every mode held
+  // 43% more room than superCompact's text needs and pushed the second gene onto
+  // a second row — thinning rows in the mode chosen for density.
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'g1', startBp: 1000, endBp: 1070, height: 10 },
+      { featureId: 'g2', startBp: 2470, endBp: 2540, height: 10 },
+    ],
+  })
+  const label = (id: string, minX: number, maxX: number, textWidth: number) => ({
+    featureId: id,
+    minX,
+    maxX,
+    topY: 0,
+    featureHeight: 10,
+    nameLabel: { text: id, relativeY: 0, color: 'black', textWidth },
+  })
+  data.floatingLabelsData = {
+    g1: label('g1', 1000, 1070, 60),
+    g2: label('g2', 2470, 2540, 55),
+  }
+  const keys = new Map([[0, 'v:ctgA']])
+  const topIn = (mode: 'normal' | 'superCompact', id: string) =>
+    layout(new Map([[0, data]]), keys, 26, true, false, new Set(), mode)
+      .get(0)!
+      .flatbushItems.find(f => f.featureId === id)!.topPx
+
+  // 60px + padding of overhang at 11px reaches past g2's left edge -> stack
+  expect(topIn('normal', 'g2')).toBeGreaterThan(0)
+  // the same name draws 30% narrower at 7.7px, clearing g2 -> both share row 0
+  expect(topIn('superCompact', 'g1')).toBe(0)
+  expect(topIn('superCompact', 'g2')).toBe(0)
+})
+
+test('an unlabeled sub-pixel box does not collapse onto a labeled one', () => {
+  // A partially-rs-ID'd VCF at sub-pixel zoom: the named variant is held out of
+  // the collapse (its name must not pile onto row 0), so it takes a real row —
+  // and the unnamed one at the same locus therefore has to see it and stack too.
+  // Counting only wide features as "solid" left the labeled sub-pixel feature
+  // invisible to the overlap guard, so the unnamed mark pinned to row 0 and its
+  // min-width-clamped render landed on top of it.
+  const data = makeFeatureData({
+    features: [
+      {
+        featureId: 'rs123',
+        startBp: 2000,
+        endBp: 2001,
+        height: 10,
+        densityFade: true,
+      },
+      {
+        featureId: 'unnamed',
+        startBp: 2002,
+        endBp: 2003,
+        height: 10,
+        densityFade: true,
+      },
+    ],
+  })
+  data.floatingLabelsData = {
+    rs123: {
+      featureId: 'rs123',
+      minX: 2000,
+      maxX: 2001,
+      topY: 0,
+      featureHeight: 10,
+      nameLabel: { text: 'rs123', relativeY: 0, color: 'black', textWidth: 40 },
+    },
+  }
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 26, true)
+  const top = (id: string) =>
+    out.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
+  expect(top('rs123')).toBe(0)
+  expect(top('unnamed')).toBeGreaterThan(0)
+})
+
 test('a sub-pixel fade box overlapping a visible feature stacks, not overprints', () => {
   // A 1bp SNP sitting inside a wide gene box: both are density-fade boxes, but
   // only the SNP is sub-pixel. Pinning it to row 0 would draw it on top of the
@@ -1185,9 +1264,9 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
 })
 
 test('a sparse handful of collapsed sub-pixel boxes render opaque, not faded', () => {
-  // Worker emits densityFade as eligibility; layout only keeps it in the dense-
-  // pileup regime. A few collapsed variants are not that regime, so they must
-  // stay solid (visible individual features), not read as a faint 30% smear.
+  // The fixture pre-seeds rectDensityFade to 1 to prove layout owns the value: a
+  // few collapsed variants are not the dense-pileup regime, so they must stay
+  // solid (visible individual features), not read as a faint 30% smear.
   const data = makeFeatureData({
     features: Array.from({ length: 5 }, (_, i) => ({
       featureId: `snp${i}`,

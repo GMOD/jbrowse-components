@@ -1,3 +1,4 @@
+import { LABEL_FONT_SIZE } from '../../RenderFeatureDataRPC/constants.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
@@ -117,9 +118,12 @@ function buildIndexes(
   return out
 }
 
+// Normal display mode: baked label widths are measured at LABEL_FONT_SIZE, so
+// this is the identity case for the hit box's label-overhang scaling.
 const DEFAULT_LABELS: LabelVisibility = {
   showLabels: true,
   showDescriptions: false,
+  fontSize: LABEL_FONT_SIZE,
 }
 
 function hit(
@@ -462,7 +466,7 @@ test('label hit area extends past feature when showLabels is true', () => {
     [makeRegion(0, 0, 10000, 0, 800)],
     250,
     10,
-    { showLabels: true, showDescriptions: false },
+    { ...DEFAULT_LABELS, showLabels: true },
   )
   expect(result.feature).not.toBeNull()
 })
@@ -474,7 +478,7 @@ test('label hit area collapses when showLabels is false', () => {
     [makeRegion(0, 0, 10000, 0, 800)],
     250,
     10,
-    { showLabels: false, showDescriptions: false },
+    { ...DEFAULT_LABELS, showLabels: false },
   )
   expect(result.feature).toBeNull()
 })
@@ -549,8 +553,8 @@ test('subfeature label hit area is reserved when the label is present', () => {
   // 250px is past the 100bp feature but within the reserved subfeature label;
   // subfeature labels always render when present, so the width is reserved.
   const shown = hit(new Map([[0, makeDataWithSubLabel()]]), regions, 250, 10, {
+    ...DEFAULT_LABELS,
     showLabels: false,
-    showDescriptions: false,
   })
   expect(shown.feature).not.toBeNull()
 })

@@ -10,6 +10,7 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { useTheme } from '@mui/material'
 
+import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import {
   drawFeatureBlocks,
@@ -53,7 +54,15 @@ function paintLabel(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
   for (const { label, labelX, labelY } of labels) {
     if (label.isOverlay) {
       ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
-      ctx.fillRect(labelX - 1, labelY, label.textWidth + 2, fontSize + 1)
+      // The baked textWidth is measured at the base font size; scale it to what
+      // this mode draws so the backing rect hugs the text like the on-screen DOM
+      // version (a CSS background on the label div) does.
+      ctx.fillRect(
+        labelX - 1,
+        labelY,
+        renderedTextWidth(label.textWidth, fontSize) + 2,
+        fontSize + 1,
+      )
     }
     ctx.fillStyle = label.color
     ctx.fillText(label.text, labelX, labelY + fontSize)
@@ -156,6 +165,7 @@ function CanvasFeaturesSvgBody({
             {
               showLabels: model.renderedShowLabels,
               showDescriptions: model.renderedShowDescriptions,
+              fontSize,
             },
           )
         }}

@@ -1504,6 +1504,7 @@ export default function baseStateModelFactory(
           const labels = {
             showLabels: self.renderedShowLabels,
             showDescriptions: self.renderedShowDescriptions,
+            fontSize: self.labelFontSize,
           }
           const result = new Map<number, FlatbushRegionIndexes>()
           for (const [idx, data] of self.laidOutDataMap) {

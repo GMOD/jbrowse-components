@@ -1,6 +1,9 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import { LABEL_PADDING_PX } from '../RenderFeatureDataRPC/constants.ts'
+import {
+  LABEL_PADDING_PX,
+  renderedTextWidth,
+} from '../RenderFeatureDataRPC/constants.ts'
 import {
   HEIGHT_MULTIPLIERS,
   ROW_PADDING,
@@ -149,12 +152,20 @@ function strandArrowPadding(ext: {
   }
 }
 
-// Add LABEL_PADDING_PX so adjacent labels packed onto one row keep a small gap
-// and small measureText underestimates don't cause visual overlap. Keep 0 when
-// there's no label so the collapse-to-row-0 path (anyLabelRenders) and
-// empty-feature packing stay unaffected.
-function paddedLabelWidthPx(label: { textWidth: number } | undefined) {
-  return label && label.textWidth > 0 ? label.textWidth + LABEL_PADDING_PX : 0
+// The label's width as DRAWN at this mode's font size (baked widths are measured
+// at the base size — see renderedTextWidth), plus LABEL_PADDING_PX so adjacent
+// labels packed onto one row keep a small gap and small measureText
+// underestimates don't cause visual overlap. The padding is a fixed gap, so it is
+// added after the scale rather than scaled with the text. Keep 0 when there's no
+// label so the collapse-to-row-0 path (anyLabelRenders) and empty-feature packing
+// stay unaffected.
+function paddedLabelWidthPx(
+  label: { textWidth: number } | undefined,
+  labelFontPx: number,
+) {
+  return label && label.textWidth > 0
+    ? renderedTextWidth(label.textWidth, labelFontPx) + LABEL_PADDING_PX
+    : 0
 }
 
 // One reserved width per label KIND, kept separate rather than collapsed to a
@@ -176,13 +187,16 @@ function renderedLabelWidths(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
+  labelFontPx: number,
 ): LabelWidths {
   return {
-    name: showLabels ? paddedLabelWidthPx(labelData.nameLabel) : 0,
-    description: showDescriptions
-      ? paddedLabelWidthPx(labelData.descriptionLabel)
+    name: showLabels
+      ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx)
       : 0,
-    subfeature: paddedLabelWidthPx(labelData.subfeatureLabel),
+    description: showDescriptions
+      ? paddedLabelWidthPx(labelData.descriptionLabel, labelFontPx)
+      : 0,
+    subfeature: paddedLabelWidthPx(labelData.subfeatureLabel, labelFontPx),
   }
 }
 
@@ -640,6 +654,22 @@ function isSubPixelFade(
   )
 }
 
+// The px span a feature's box actually paints, widening a sub-pixel box to the
+// shader's min-draw clamp (anchored at the start, as rect.slang's
+// extendToMinWidthX does). Both sides of the density-collapse overlap test go
+// through this: comparing a candidate's clamped extent against a neighbor's RAW
+// bp span made a sub-pixel neighbor ~0px wide, so nothing ever overlapped it.
+function renderedSpanPx(
+  ext: { startBp: number; endBp: number },
+  bpPerPx: number,
+): [number, number] {
+  const startPx = ext.startBp / bpPerPx
+  return [
+    startPx,
+    Math.max(ext.endBp / bpPerPx, startPx + MIN_RECT_WIDTH_PX * 2),
+  ]
+}
+
 // Merge sorted [start,end] px intervals into a disjoint, sorted set so an
 // overlap query is a single binary search.
 function mergeIntervals(intervals: [number, number][]) {
@@ -787,10 +817,10 @@ interface PackPrep {
   // Per-side whitespace a label may overhang into. Only measured for the
   // `fitWidth` decimation; the default `all` policy keeps every name and never asks.
   overhangRoom: ReturnType<typeof labelOverhangRoomPx> | undefined
-  // Box px-spans of the visible (non-collapsing) features. A sub-pixel fade box
-  // may collapse onto row 0 only where it doesn't overlap one of these — else it
-  // must stack, or it renders on top of the visible feature (a 1bp SNP sitting
-  // inside a wide gene box is the canonical case).
+  // Box px-spans of every feature guaranteed to occupy a real row. A sub-pixel
+  // fade box may collapse onto row 0 only where it doesn't overlap one of these —
+  // else it must stack, or it renders on top of the other feature (a 1bp SNP
+  // sitting inside a wide gene box is the canonical case).
   solidSpansPx: [number, number][]
   // Features that draw at least one label under the current flags. Pre-decimation
   // on purpose: it gates the density-collapse path, which asks "does anything
@@ -830,6 +860,7 @@ function prepareRefPack(
         labelData,
         showLabels,
         showDescriptions,
+        metrics.labelFontPx,
       )
       const existing = labelInfoByFeatureId.get(targetId)
       if (existing) {
@@ -878,6 +909,19 @@ function prepareRefPack(
     }
   }
 
+  // Everything that will hold a real row, which is the collapse test below minus
+  // its own overlap clause: a wide feature, OR a sub-pixel one held out of the
+  // collapse because it carries a label. Counting the labeled sub-pixel features
+  // here is what stops an unlabeled neighbor from pinning to row 0 on top of one
+  // (a partially-rs-ID'd VCF at sub-pixel zoom: the named variant stacks, so the
+  // unnamed one must see it).
+  const solidSpansPx: [number, number][] = []
+  for (const [id, geom] of features) {
+    if (!isSubPixelFade(geom, bpPerPx) || labeledFeatureIds.has(id)) {
+      solidSpansPx.push(renderedSpanPx(geom, bpPerPx))
+    }
+  }
+
   return {
     labelInfoByFeatureId,
     features,
@@ -885,11 +929,7 @@ function prepareRefPack(
       labelDecimation === 'fitWidth'
         ? labelOverhangRoomPx(features, bpPerPx)
         : undefined,
-    solidSpansPx: mergeIntervals(
-      [...features.values()]
-        .filter(geom => !isSubPixelFade(geom, bpPerPx))
-        .map(geom => [geom.startBp / bpPerPx, geom.endBp / bpPerPx]),
-    ),
+    solidSpansPx: mergeIntervals(solidSpansPx),
     labeledFeatureIds,
   }
 }
@@ -1071,14 +1111,10 @@ function packPreparedRef(
     // dense variant pileup (all ~1px boxes) on one row instead of stacking onto
     // extra rows under pixel-precise pitchX:1 packing. But only collapse where
     // the box doesn't overlap a visible feature — its clamped render would
-    // otherwise land on top of that feature. Match the render extent to the
-    // shader's min-draw clamp (MIN_RECT_WIDTH_PX * 2, anchored at the start) so a
-    // mark abutting a visible feature stacks rather than overprinting it.
-    const boxStartPx = geom.startBp / bpPerPx
-    const boxEndPx = Math.max(
-      geom.endBp / bpPerPx,
-      boxStartPx + MIN_RECT_WIDTH_PX * 2,
-    )
+    // otherwise land on top of that feature. Both extents come from
+    // renderedSpanPx so a mark abutting another feature stacks rather than
+    // overprinting it.
+    const [boxStartPx, boxEndPx] = renderedSpanPx(geom, bpPerPx)
     // A collapsed box reserves no horizontal label space, so a labeled sub-pixel
     // feature (e.g. a miRNA gene at whole-arm zoom) must NOT collapse: its label
     // still renders at the feature's left edge, and piling several onto row 0

@@ -433,7 +433,6 @@ function processCrisprGuideLayout(
       color: CRISPR_PAM_COLOR,
       strand,
       flatbushIdx,
-      densityFade: false,
     })
     registerSubfeature(
       {
@@ -459,7 +458,6 @@ function processCrisprGuideLayout(
       color: CUT_SITE_COLOR,
       strand,
       flatbushIdx,
-      densityFade: false,
     })
   }
 
@@ -500,7 +498,6 @@ function processMotifLayout(
       color: CUT_SITE_COLOR,
       strand,
       flatbushIdx,
-      densityFade: false,
     })
   }
   const half = height / 2
@@ -514,9 +511,10 @@ function processMotifLayout(
   emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
 }
 
-// A plain leaf feature. As the top-level glyph it fades on collapse and shows a
-// strand arrow; as a stacked child of a gene (a bare feature beside the gene's
-// transcripts) it is a plain box registered as an individually hoverable/
+// A plain leaf feature. As the top-level glyph it shows a strand arrow and is the
+// one glyph layout may collapse+fade when sub-pixel (via the flatbush item's
+// densityFade below); as a stacked child of a gene (a bare feature beside the
+// gene's transcripts) it is a plain box registered as an individually hoverable/
 // selectable subfeature — mirroring the transcript and mature-protein branches
 // rather than leaving hover to fall back to the whole-gene entry.
 function emitBox(
@@ -529,16 +527,7 @@ function emitBox(
   collector: Collector,
 ) {
   const { feature, height } = layout
-  pushBoxRect(
-    feature,
-    baseTopPx,
-    height,
-    flatbushIdx,
-    ctx,
-    collector.rects,
-    undefined,
-    isRoot,
-  )
+  pushBoxRect(feature, baseTopPx, height, flatbushIdx, ctx, collector.rects)
   if (isRoot) {
     emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
   } else {
@@ -714,7 +703,9 @@ export function processFeatureRecord(
     tooltip: featureTooltip(feature, ctx),
     name,
     strand: strand !== 0 ? strand : undefined,
-    // Box is the only glyph that emits a density-fade rect (see emitBox, isRoot).
+    // Fade *eligibility*, per feature: Box is the only glyph whose top-level box
+    // layout may collapse onto row 0 and fade (see isSubPixelFade). The actual
+    // per-rect decision is layout's alone — the worker writes no rect-level flag.
     densityFade: layout.glyphType === 'Box',
   })
   const flatbushIdx = collector.flatbushItems.length - 1

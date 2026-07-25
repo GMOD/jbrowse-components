@@ -36,7 +36,7 @@ export function mockDisplayConfig(
 // fixtures never drift from the production field set (e.g. a newly added
 // rectDensityFade). Every visible-window filter passes by default.
 export function packFixtureRects(
-  features: { startBp: number; endBp: number; densityFade?: boolean }[],
+  features: { startBp: number; endBp: number }[],
 ) {
   const rects: RectData[] = features.map((f, i) => ({
     start: f.startBp,
@@ -46,7 +46,6 @@ export function packFixtureRects(
     color: 0xff_80_40_ff,
     strand: 0,
     flatbushIdx: i,
-    densityFade: f.densityFade ?? false,
   }))
   return packRenderArrays(rects, [], [], 0, Number.MAX_SAFE_INTEGER)
 }
