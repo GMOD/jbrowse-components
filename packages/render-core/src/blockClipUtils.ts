@@ -84,11 +84,21 @@ export function clipBlock(
   }
   const { scissorX, scissorEnd, scissorW } = clamp
 
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+  const regionLengthBp = block.end - block.start
+  // A degenerate block (no pixel span, or no bp span) still survives
+  // clampBlockScissor — floor/ceil widen a zero-width span straddling a pixel
+  // boundary to scissorW === 1. Dividing by it yields Infinity/NaN, which
+  // propagates through splitPositionWithFrac into every bpRangeX uniform and
+  // silently poisons the draw. Nothing is visible in a zero-width block, so
+  // skip it the same way a fully off-screen one is skipped.
+  if (fullBlockWidth <= 0 || regionLengthBp <= 0) {
+    return null
+  }
+
   const { start: pxX, width: pxW } = devicePxSpan(scissorX, scissorEnd, dpr)
   const pxH = Math.round(canvasHeight * dpr)
 
-  const fullBlockWidth = block.screenEndPx - block.screenStartPx
-  const regionLengthBp = block.end - block.start
   const bpPerPx = regionLengthBp / fullBlockWidth
   const clippedBpStart =
     block.start + (scissorX - block.screenStartPx) * bpPerPx

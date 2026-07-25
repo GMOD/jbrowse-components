@@ -1,6 +1,7 @@
 import {
   MAX_CANVAS_DIM_PX,
   devicePxSpan,
+  getDpr,
   getPreparedCanvas2D,
   makeBpMapper,
   makeCellLeftMapper,
@@ -189,4 +190,20 @@ describe('makeCellLeftMapper', () => {
       24.5,
     )
   })
+})
+
+test('syncCanvasSize keeps CSS size in step once the backing store clamps', () => {
+  const canvas = document.createElement('canvas')
+  const overCss = (MAX_CANVAS_DIM_PX + 1000) / getDpr()
+  const evenMoreCss = (MAX_CANVAS_DIM_PX + 2000) / getDpr()
+
+  syncCanvasSize(canvas, overCss, 100)
+  expect(canvas.width).toBe(MAX_CANVAS_DIM_PX)
+  expect(canvas.style.width).toBe(`${overCss}px`)
+
+  // The backing store is pinned at the clamp, so it reports no change — but the
+  // element still has to lay out at the new CSS width.
+  syncCanvasSize(canvas, evenMoreCss, 100)
+  expect(canvas.width).toBe(MAX_CANVAS_DIM_PX)
+  expect(canvas.style.width).toBe(`${evenMoreCss}px`)
 })

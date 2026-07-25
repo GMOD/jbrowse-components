@@ -89,3 +89,25 @@ test('writeBpRangeUniforms honors the reversed pivot', () => {
   const expected = Float32Array.from(bpRangeXTuple(clip, true))
   expect(Array.from(f32)).toEqual(Array.from(expected))
 })
+
+// A block with no pixel span survives clampBlockScissor — floor/ceil widen a
+// zero-width span straddling a pixel boundary to one column — and used to feed
+// Infinity/NaN straight into every bpRangeX uniform.
+test('clipBlock skips a degenerate block instead of emitting NaN uniforms', () => {
+  expect(
+    clipBlock(
+      { start: 1000, end: 2000, screenStartPx: 100.5, screenEndPx: 100.5 },
+      800,
+      100,
+      1,
+    ),
+  ).toBeNull()
+  expect(
+    clipBlock(
+      { start: 1000, end: 1000, screenStartPx: 100, screenEndPx: 200 },
+      800,
+      100,
+      1,
+    ),
+  ).toBeNull()
+})

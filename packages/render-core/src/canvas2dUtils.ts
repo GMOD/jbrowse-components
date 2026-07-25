@@ -57,8 +57,19 @@ export function syncCanvasSize(
   if (changed) {
     canvas.width = pw
     canvas.height = ph
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
+  }
+  // CSS size is set independently of `changed`: once a dimension clamps to
+  // MAX_CANVAS_DIM_PX the backing store stops tracking the CSS size, so gating
+  // the style write on the backing store froze the element at whatever CSS size
+  // it had when it first clamped. Assigning the same string is a no-op in the
+  // browser, so this costs nothing on the common path.
+  const cssWidth = `${width}px`
+  const cssHeight = `${height}px`
+  if (canvas.style.width !== cssWidth) {
+    canvas.style.width = cssWidth
+  }
+  if (canvas.style.height !== cssHeight) {
+    canvas.style.height = cssHeight
   }
   return changed
 }
@@ -142,12 +153,17 @@ export function clipBlockForCanvas(
     block.screenEndPx,
     canvasWidth,
   )
-  return clamp
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+  const bpLength = block.end - block.start
+  // Degenerate blocks are skipped, matching `clipBlock` on the GPU side —
+  // callers divide by both of these, and clampBlockScissor alone lets a
+  // zero-span block through (floor/ceil widen it to one column).
+  return clamp && fullBlockWidth > 0 && bpLength > 0
     ? {
         scissorX: clamp.scissorX,
         scissorW: clamp.scissorW,
-        fullBlockWidth: block.screenEndPx - block.screenStartPx,
-        bpLength: block.end - block.start,
+        fullBlockWidth,
+        bpLength,
       }
     : null
 }
@@ -179,8 +195,16 @@ export function spanLeft(x1: number, x2: number, width: number) {
   return x2 < x1 ? x1 - width : x1
 }
 
+// Quantize a 0..1 ramp position to a 256-entry index. Shared so the direct
+// lookup and the fillStyle LUT below can't quantize differently — a half-step
+// of drift between them shows up as a one-shade mismatch between a cell's fill
+// and the alpha read off the same ramp.
+function rampIndex(t: number) {
+  return Math.max(0, Math.min(255, Math.round(t * 255)))
+}
+
 export function lookupColorRamp(ramp: Uint8Array, t: number) {
-  const idx = Math.max(0, Math.min(255, Math.round(t * 255))) * 4
+  const idx = rampIndex(t) * 4
   return {
     r: ramp[idx]!,
     g: ramp[idx + 1]!,
@@ -197,7 +221,7 @@ export function lookupColorRamp(ramp: Uint8Array, t: number) {
 export function makeRampFillStyleLut(ramp: Uint8Array) {
   const lut: (string | undefined)[] = new Array(256)
   return (t: number) => {
-    const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
+    const idx = rampIndex(t)
     let s = lut[idx]
     if (s === undefined) {
       const o = idx * 4

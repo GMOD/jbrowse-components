@@ -105,16 +105,4 @@ export class RegionRegistry<Buf> {
       }
     }
   }
-
-  // Visit every existing buffer for `passId` across all regions. WebGPUHal
-  // uses this in uploadTexture to refresh per-region bind groups that
-  // reference the newly-uploaded texture.
-  forEachInPass(passId: string, visit: (buf: Buf, regionKey: number) => void) {
-    for (const [regionKey, region] of this.regions) {
-      const buf = region.get(passId)
-      if (buf) {
-        visit(buf, regionKey)
-      }
-    }
-  }
 }

@@ -104,24 +104,6 @@ test('prune with empty active set deletes everything', () => {
   expect(destroyed.sort()).toEqual([1, 2])
 })
 
-test('forEachInPass visits only matching passId entries', () => {
-  const { reg } = makeRegistry()
-  reg.set(0, 'foo', makeBuf(10))
-  reg.set(0, 'bar', makeBuf(11))
-  reg.set(1, 'foo', makeBuf(20))
-  reg.set(2, 'baz', makeBuf(30))
-
-  const seen: { regionKey: number; id: number }[] = []
-  reg.forEachInPass('foo', (buf, regionKey) => {
-    seen.push({ regionKey, id: buf.id })
-  })
-
-  expect(seen.sort((a, b) => a.regionKey - b.regionKey)).toEqual([
-    { regionKey: 0, id: 10 },
-    { regionKey: 1, id: 20 },
-  ])
-})
-
 test('replacing a buffer requires explicit deleteBuffer first (set does not destroy)', () => {
   const { reg, destroyed } = makeRegistry()
   reg.set(0, 'a', makeBuf(1))

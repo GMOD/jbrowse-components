@@ -100,7 +100,7 @@ documents only what bites when editing _this package_.
   stays with the caller — it's a per-plugin rule. The Canvas2D twin of
   `writeBpRangeUniforms` above.
 
-- **Min-width widening goes through `extendToMinWidth`, never
+- **Min-width widening goes through `spanLeft(x1, x2, width)`, never
   `max(minPx, abs(dx))` off `min(x1, x2)`.** Both spellings widen a sub-pixel
   mark to the floor, but only the first anchors the feature's _start_ edge the
   way the shaders' `extendToMinWidthX` does. On a reversed block `makeBpMapper`
@@ -108,10 +108,10 @@ documents only what bites when editing _this package_.
   slides the mark up to `minPx` toward the block's end — invisible on forward
   blocks, so it survives review. The canvas rect painter (2px) and the multi-row
   painter (1px) each had it. Same shape of bug as the `makeCellLeftMapper` pivot
-  below — and note the two are alternatives, not partners: a painter either
+  above — and note the two are alternatives, not partners: a painter either
   fills per-base _cells_ (`makeCellLeftMapper`, caller owns width) or a two-edge
-  _span_ widened to a floor (`extendToMinWidth`). MAF's cell painter is the
-  former, wiggle/multi-row/canvas-rect the latter.
+  _span_ widened to a floor (`spanLeft`). MAF's cell painter is the former,
+  wiggle/multi-row/canvas-rect the latter.
 - **`gpuDevice` is a shared singleton.** `getGpuDevice` serves both the HAL and
   the LD-matrix WebGPU compute path (`plugins/variants/.../getLDMatrixGPU.ts`),
   so its `?renderer=` override checks are load-bearing in both. The `.lost`

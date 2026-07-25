@@ -84,10 +84,15 @@ startRenderingBackend(backend: RenderingBackend) {
     render: b => {
       const state = self.renderState
       if (!state) return false              // renderState not ready
-      return b.renderBlocks(self.renderBlocks, state)
+      if (self.rpcDataMap.size === 0) return false   // nothing to paint yet
+      b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
+      return true
       // return true only when real content was drawn;
       // mixin calls markCanvasDrawn() → canvasDrawn flips true →
-      // isReady becomes true once isLoading also clears
+      // isReady becomes true once isLoading also clears.
+      // NB the shared per-region bases return void from renderBlocks, so the
+      // "did we paint" predicate is the model's own — only a bespoke backend
+      // (alignments) returns the boolean itself and can be forwarded directly.
     },
   })
 }

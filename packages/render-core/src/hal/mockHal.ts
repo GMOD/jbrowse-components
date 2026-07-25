@@ -1,3 +1,5 @@
+import { RegionRegistry } from './regionRegistry.ts'
+
 import type { GpuHal, PassDescriptor } from './types.ts'
 
 export interface MockCall {
@@ -5,21 +7,25 @@ export interface MockCall {
   args: unknown[]
 }
 
+interface MockBuffer {
+  data: ArrayBufferLike
+  count: number
+}
+
 export class MockHal implements GpuHal {
   calls: MockCall[] = []
 
-  private buffers = new Map<string, { data: ArrayBufferLike; count: number }>()
+  // The same registry both real HALs use, so buffer lifecycle (delete-on-empty,
+  // prune, the beginUpload/endUpload sweep) is shared code rather than a
+  // hand-rolled twin that can drift out of parity. There is nothing to free, so
+  // the destroy hook is a no-op.
+  private regions = new RegionRegistry<MockBuffer>(() => {})
   private lastUniforms: ArrayBuffer | null = null
-  private written: Set<string> | undefined
 
   // Parameter kept for parity with WebGL2Hal / WebGPUHal constructors so
   // tests can swap implementations; pass list isn't needed in the mock.
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(_passes: PassDescriptor[]) {}
-
-  private bufferKey(regionKey: number, passId: string) {
-    return `${regionKey}:${passId}`
-  }
 
   private record(method: string, ...args: unknown[]) {
     this.calls.push({ method, args })
@@ -43,58 +49,46 @@ export class MockHal implements GpuHal {
     count: number,
   ) {
     this.record('uploadBuffer', regionKey, passId, data.byteLength, count)
-    const copy = ArrayBuffer.isView(data)
-      ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
-      : data.slice(0)
-    this.buffers.set(this.bufferKey(regionKey, passId), { data: copy, count })
-    this.written?.add(this.bufferKey(regionKey, passId))
+    // Both real HALs delete the prior buffer up front and leave nothing behind
+    // on an empty upload; mirroring that here keeps `getBuffer`/`endUpload`
+    // bookkeeping honest instead of leaving a count-0 entry the GPU never has.
+    this.regions.deleteBuffer(regionKey, passId)
+    if (count > 0) {
+      const copy = ArrayBuffer.isView(data)
+        ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+        : data.slice(0)
+      this.regions.set(regionKey, passId, { data: copy, count })
+    }
   }
 
   getBufferCount(regionKey: number, passId: string) {
-    return this.buffers.get(this.bufferKey(regionKey, passId))?.count ?? 0
+    return this.regions.get(regionKey, passId)?.count ?? 0
   }
 
   deleteBuffer(regionKey: number, passId: string) {
     this.record('deleteBuffer', regionKey, passId)
-    this.buffers.delete(this.bufferKey(regionKey, passId))
+    this.regions.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {
     this.record('deleteRegion', regionKey)
-    for (const key of this.buffers.keys()) {
-      if (key.startsWith(`${regionKey}:`)) {
-        this.buffers.delete(key)
-      }
-    }
+    this.regions.deleteRegion(regionKey)
   }
 
   pruneRegions(active: Iterable<number>) {
     const activeSet = new Set(active)
     this.record('pruneRegions', [...activeSet])
-    for (const key of this.buffers.keys()) {
-      const regionKey = Number(key.slice(0, key.indexOf(':')))
-      if (!activeSet.has(regionKey)) {
-        this.buffers.delete(key)
-      }
-    }
+    this.regions.prune(activeSet)
   }
 
   beginUpload() {
     this.record('beginUpload')
-    this.written = new Set()
+    this.regions.beginUpload()
   }
 
   endUpload() {
     this.record('endUpload')
-    const written = this.written
-    this.written = undefined
-    if (written) {
-      for (const key of this.buffers.keys()) {
-        if (!written.has(key)) {
-          this.buffers.delete(key)
-        }
-      }
-    }
+    this.regions.endUpload()
   }
 
   uploadTexture(
@@ -141,7 +135,7 @@ export class MockHal implements GpuHal {
 
   dispose() {
     this.record('dispose')
-    this.buffers.clear()
+    this.regions.deleteAll()
   }
 
   // Test helpers
@@ -159,7 +153,7 @@ export class MockHal implements GpuHal {
   }
 
   getBuffer(regionKey: number, passId: string) {
-    return this.buffers.get(this.bufferKey(regionKey, passId))
+    return this.regions.get(regionKey, passId)
   }
 
   callsOf(method: string) {
@@ -168,8 +162,9 @@ export class MockHal implements GpuHal {
 
   reset() {
     this.calls = []
-    this.buffers.clear()
+    // endUpload first so an in-flight transaction doesn't survive the reset.
+    this.regions.endUpload()
+    this.regions.deleteAll()
     this.lastUniforms = null
-    this.written = undefined
   }
 }

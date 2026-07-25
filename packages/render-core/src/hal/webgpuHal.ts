@@ -54,11 +54,10 @@ function gpuBlendState(bs: BlendState): GPUBlendState {
 }
 
 // One entry per (region, pass). `dataBuffer` is the vertex buffer bound via
-// setVertexBuffer(0, ...). `bindGroup` is null if the pass requires a texture
-// that hasn't been uploaded yet; drawPass skips such entries.
+// setVertexBuffer(0, ...). Bind groups are NOT stored here — they belong to the
+// pass being drawn, not to the buffer being drawn from (see `getBindGroup`).
 interface RegionPassBuffer {
   dataBuffer: GPUBuffer
-  bindGroup: GPUBindGroup | null
   count: number
 }
 
@@ -216,6 +215,10 @@ export class WebGPUHal implements GpuHal {
   private descriptors: Map<string, PassDescriptor>
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
+  // One bind group per textured pass, built lazily by `getBindGroup` and
+  // dropped when `uploadTexture` swaps that pass's texture. Uniform-only passes
+  // are not stored here — they all share `uniformOnlyBindGroup`.
+  private passBindGroups = new Map<string, GPUBindGroup>()
   private layoutState: LayoutState
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
@@ -378,48 +381,59 @@ export class WebGPUHal implements GpuHal {
       return
     }
     const dataBuffer = createVertexBuffer(this.device, data)
-    const bindGroup = this.buildBindGroupForPass(passId)
-    this.regions.set(regionKey, passId, { dataBuffer, bindGroup, count })
+    this.regions.set(regionKey, passId, { dataBuffer, count })
   }
 
-  // Build the bind group matching the pipeline layout for `passId`. Returns
-  // null when the pass requires a texture that hasn't been uploaded yet;
-  // drawPass skips such entries and uploadTexture rebuilds them once the
-  // texture arrives. Uniform-only passes reuse `this.uniformOnlyBindGroup`
-  // (all such bind groups would be byte-identical anyway).
-  private buildBindGroupForPass(passId: string): GPUBindGroup | null {
-    const desc = this.descriptors.get(passId)
-    if (!desc) {
-      return null
-    }
-    const tb = desc.textures?.[0]
+  /**
+   * Bind group matching the pipeline layout of `passId`.
+   *
+   * Keyed on the pass being DRAWN, never on the buffer it draws from:
+   * `drawPass(a, key, b)` runs pass `a`'s pipeline over pass `b`'s vertex
+   * buffer, so the bind group has to match `a`'s layout. Caching it on the
+   * (region, `b`) buffer entry instead bound `b`'s layout to `a`'s pipeline —
+   * fine while every such pair happened to be uniform-only, a validation error
+   * (and a dropped draw) the moment one side samples a texture.
+   *
+   * Nothing in a bind group varies per region either: it references the
+   * HAL-wide uniform ring buffer plus the pass's own texture/sampler. So
+   * uniform-only passes all share `uniformOnlyBindGroup`, and a textured pass
+   * gets exactly one, cached until `uploadTexture` replaces its texture.
+   * Returns undefined when a pass needs a texture that hasn't arrived yet;
+   * drawPass skips those.
+   */
+  private getBindGroup(passId: string): GPUBindGroup | undefined {
+    const tb = this.descriptors.get(passId)?.textures?.[0]
     if (tb) {
-      const texState = this.passTextures.get(passId)
-      if (!texState) {
-        return null
+      let bindGroup = this.passBindGroups.get(passId)
+      if (!bindGroup) {
+        const texState = this.passTextures.get(passId)
+        if (texState) {
+          const { bindGroupLayout } = getOrCreateTexturedLayout(
+            this.device,
+            this.layoutState,
+          )
+          bindGroup = this.device.createBindGroup({
+            layout: bindGroupLayout,
+            entries: [
+              {
+                binding: 1,
+                resource: {
+                  buffer: this.uniformRingBuffer,
+                  offset: 0,
+                  size: this.alignedUniformSize,
+                },
+              },
+              {
+                binding: tb.textureBinding,
+                resource: texState.texture.createView(),
+              },
+              { binding: tb.samplerBinding, resource: texState.sampler },
+            ],
+          })
+          this.passBindGroups.set(passId, bindGroup)
+        }
       }
-      const { bindGroupLayout } = getOrCreateTexturedLayout(
-        this.device,
-        this.layoutState,
-      )
-      return this.device.createBindGroup({
-        layout: bindGroupLayout,
-        entries: [
-          {
-            binding: 1,
-            resource: {
-              buffer: this.uniformRingBuffer,
-              offset: 0,
-              size: this.alignedUniformSize,
-            },
-          },
-          {
-            binding: tb.textureBinding,
-            resource: texState.texture.createView(),
-          },
-          { binding: tb.samplerBinding, resource: texState.sampler },
-        ],
-      })
+      return bindGroup
     }
     return this.uniformOnlyBindGroup
   }
@@ -502,11 +516,10 @@ export class WebGPUHal implements GpuHal {
     })
     this.passTextures.set(passId, { texture, sampler })
 
-    // Rebuild bind groups for all regions whose data was uploaded before the
-    // texture arrived (they were stored with a null bind group).
-    this.regions.forEachInPass(passId, buf => {
-      buf.bindGroup = this.buildBindGroupForPass(passId)
-    })
+    // Drop the cached bind group so the next draw rebuilds it against the new
+    // texture (and so a pass drawn before its first texture arrived stops
+    // being skipped).
+    this.passBindGroups.delete(passId)
   }
 
   writeUniforms(data: ArrayBuffer) {
@@ -588,12 +601,17 @@ export class WebGPUHal implements GpuHal {
       return
     }
     const regionBuf = this.regions.get(regionKey, bufferPassId ?? passId)
-    if (!regionBuf || regionBuf.count === 0 || !regionBuf.bindGroup) {
+    if (!regionBuf || regionBuf.count === 0) {
       return
     }
 
     const desc = this.descriptors.get(passId)
     if (!desc) {
+      return
+    }
+
+    const bindGroup = this.getBindGroup(passId)
+    if (!bindGroup) {
       return
     }
 
@@ -618,7 +636,7 @@ export class WebGPUHal implements GpuHal {
       this.currentPass.setScissorRect(s.x, s.y, s.w, s.h)
     }
     this.currentPass.setPipeline(pipeline)
-    this.currentPass.setBindGroup(0, regionBuf.bindGroup, [dynamicOffset])
+    this.currentPass.setBindGroup(0, bindGroup, [dynamicOffset])
     this.currentPass.setVertexBuffer(0, regionBuf.dataBuffer)
     this.currentPass.draw(desc.verticesPerInstance, regionBuf.count)
   }
@@ -698,6 +716,7 @@ export class WebGPUHal implements GpuHal {
       ts.texture.destroy()
     }
     this.passTextures.clear()
+    this.passBindGroups.clear()
     this.msaaTexture?.destroy()
     // Release the swapchain so the browser can reclaim GPU memory immediately
     // rather than waiting for the canvas to be GC'd.
