@@ -44,10 +44,22 @@ to clear the dendrogram, so rendering labels without also rendering
 `SvgTreePath` leaves a blank reserved gutter where the on-screen tree is (the
 bug that hit `LinearMultiRowFeatureDisplay`). `SvgTreeSidebar` owns the single
 `showTree && hierarchy` gate that drives both the label offset and whether the
-tree draws, so they can't disagree. Adopted by
-`LinearMultiRowFeatureDisplay/renderSvg`, variants' `SvgVariantOverlay`, and
-`LinearMafDisplay/renderSvg`. `MultiLinearWiggleDisplay` is the one exception:
-its row labels live in `MultiWiggleSvgScales` (shared with the on-screen path,
-alongside the scalebars + overlay color legend), so it can't wrap both in
-`SvgTreeSidebar` — it keeps the split but derives the label offset and the tree
-from a single `treeShowing` local for the same guarantee.
+tree draws, so they can't disagree.
+
+A display whose sidebar draws more than a label box passes its own renderer as
+the `labels` prop instead of falling back to `SvgRowLabels` — it lands at the
+same tree-aware offset, so the gate still can't be bypassed. Variants does this
+with `MultiSampleVariantRowColors`, the component its on-screen overlay renders:
+`SvgRowLabels` knows only `labelColor`, so a "Color by → population" track
+exported without the `color` swatch column its rows are read through. Reach for
+`labels` rather than teaching `SvgRowLabels` a second drawing — a swatch column
+there would change the MAF, multirow-feature, and wiggle sidebars too, since
+their sources also carry `color`.
+
+Adopted by `LinearMultiRowFeatureDisplay/renderSvg`, variants'
+`SvgVariantOverlay`, and `LinearMafDisplay/renderSvg`.
+`MultiLinearWiggleDisplay` is the one exception: its row labels live in
+`MultiWiggleSvgScales` (shared with the on-screen path, alongside the
+scalebars + overlay color legend), so it can't wrap both in `SvgTreeSidebar` —
+it keeps the split but derives the label offset and the tree from a single
+`treeShowing` local for the same guarantee.

@@ -1,15 +1,29 @@
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
+import MultiSampleVariantRowColors from './MultiSampleVariantRowColors.tsx'
+import SvgVariantLegend from './SvgVariantLegend.tsx'
+
 import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
 import type React from 'react'
 
 // The frame both multi-sample variant SVG exports end in: the display-band clip,
-// the row content, and the tree/label sidebar. Row content and sidebar are
-// translated below `lineZoneHeight` together — the same offset the on-screen
-// canvas and `TreeSidebar` take — so a display with a connector-line zone can't
-// export its rows 20px high while its labels stay put. `lineZone` draws in that
-// top strip (the matrix display's connector lines).
+// the row content, the tree/label sidebar, and the color key. Row content and
+// sidebar are translated below `lineZoneHeight` together — the same offset the
+// on-screen canvas and `TreeSidebar` take — so a display with a connector-line
+// zone can't export its rows 20px high while its labels stay put. `lineZone`
+// draws in that top strip (the matrix display's connector lines); the legend
+// floats over the whole band, as it does on screen.
+//
+// The sidebar labels are `MultiSampleVariantRowColors`, the very component the
+// on-screen overlay renders, rather than `SvgTreeSidebar`'s default
+// `SvgRowLabels` — which knows only `labelColor` and so dropped the `color`
+// swatch column a "Color by → population" track is read through. Passing it as
+// SvgTreeSidebar's `labels` keeps the tree and the labels sharing one
+// tree-offset gate. It self-gates on `canDisplayLabels` (drawing swatches alone
+// when rows are too short to letter) and on its own source count, so unlike the
+// default path there's no row-count gate here — a single-sample track labels its
+// one row in the export exactly as it does on screen.
 const SvgVariantOverlay = ({
   model,
   idPrefix,
@@ -30,14 +44,12 @@ const SvgVariantOverlay = ({
     sources,
     effectiveRowHeight: rowHeight,
     scrollTop,
-    availableHeight,
-    canDisplayLabels,
     hierarchy,
     showTree,
+    showLegend,
     treeAreaWidth,
     lineZoneHeight,
   } = model
-  const rows = sources ?? []
   return (
     <SvgClipRect id={`${idPrefix}-${id}`} width={width} height={height}>
       {lineZone}
@@ -46,14 +58,20 @@ const SvgVariantOverlay = ({
         <SvgTreeSidebar
           showTree={showTree}
           hierarchy={hierarchy}
-          sources={rows}
+          sources={sources ?? []}
           rowHeight={rowHeight}
           treeAreaWidth={treeAreaWidth}
-          showLabels={rows.length > 1 && canDisplayLabels}
           scrollTop={scrollTop}
-          availableHeight={availableHeight}
+          labels={<MultiSampleVariantRowColors model={model} />}
         />
       </g>
+      {showLegend ? (
+        <SvgVariantLegend
+          sections={model.legendSections()}
+          canvasWidth={width}
+          maxHeight={height}
+        />
+      ) : null}
     </SvgClipRect>
   )
 }

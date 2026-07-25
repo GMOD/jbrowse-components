@@ -381,7 +381,8 @@ rasterize, drifts from on-screen output, and locks in vector output.
   the on-screen path.
 - **Shared React-SVG overlays** the on-screen view also uses (`VariantLabels`,
   `LinesConnectingMatrixToGenomicPosition`, `RecombinationTrack`,
-  `SvgRowLabels`/`SvgTreePath` from `@jbrowse/tree-sidebar`). Same component
+  `MultiSampleVariantRowColors`, `SvgRowLabels`/`SvgTreePath` from
+  `@jbrowse/tree-sidebar`). Same component
   renders on-screen + in export via an `exportSVG` prop. The heavy
   raster-friendly fill path (the matrix itself) **must** still go through
   `paintLayer`; only the overlays stay JSX.
