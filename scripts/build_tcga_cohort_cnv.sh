@@ -13,8 +13,13 @@
 # is carried through as-is, with no re-normalization: JBrowse plots what the
 # caller called.
 #
+# The cohort recurrence bedGraph is derived from that BED at the end, by
+# cnv_recurrence.py: no extra download, and it answers the question the stacked
+# figure cannot, which is what fraction of the cohort carries each event.
+#
 # Requires: curl, python3, bgzip + tabix (htslib)
 # Output:   tcga_<project>_cnv.bed.gz (+ .tbi)
+#           tcga_<project>_cnv_recurrence.bedGraph.gz (+ .tbi)
 # Runtime:  ~10-20 min for BRCA (1106 tumors), dominated by the GDC downloads
 #
 # Usage: build_tcga_cohort_cnv.sh [PROJECT] [LIMIT]
@@ -146,5 +151,15 @@ PY
 bgzip -f "$OUT.bed"
 tabix -f -p bed "$OUT.bed.gz"
 
+# The stacked track shows where events are; at 1000+ rows in a few hundred pixels
+# it cannot show how many tumors carry them. This collapses the same file into
+# per-bin gain/loss frequencies, which is that missing axis.
+echo "== summarizing cohort recurrence"
+python3 "$(dirname "$0")/cnv_recurrence.py" "$OUT.bed.gz" "${OUT}_recurrence.bedGraph"
+bgzip -f "${OUT}_recurrence.bedGraph"
+tabix -f -p bed "${OUT}_recurrence.bedGraph.gz"
+
 echo "== done: $OUT.bed.gz ($(du -h "$OUT.bed.gz" | cut -f1))"
+echo "         ${OUT}_recurrence.bedGraph.gz ($(du -h "${OUT}_recurrence.bedGraph.gz" | cut -f1))"
 echo "   upload with: aws s3 cp $OUT.bed.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
+echo "                aws s3 cp ${OUT}_recurrence.bedGraph.gz{,.tbi} s3://jbrowse.org/demos/tcga/"

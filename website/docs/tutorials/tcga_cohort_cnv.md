@@ -53,8 +53,15 @@ The full TCGA-BRCA run takes about 15 minutes, almost all of it downloading, and
 produces 379,318 segments across 1104 tumors in a 5.7 MB file. Swap in any other
 project id (`TCGA-OV`, `TCGA-LUAD`, ...) for a different cohort.
 
-To skip the build entirely and just load the finished file, it is hosted at
-`https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz`.
+To skip the build entirely and just load the finished files, all four are hosted
+under `https://jbrowse.org/demos/tcga/`:
+
+| File                                   | What                                     |
+| -------------------------------------- | ---------------------------------------- |
+| `tcga_brca_cnv.bed.gz`                 | the segment stack below                  |
+| `tcga_brca_cnv_recurrence.bedGraph.gz` | cohort gain/loss frequencies             |
+| `tcga_brca_mutations.vcf.gz`           | somatic mutations, 979 tumors            |
+| `tcga_brca_clinical.tsv`               | receptor subtype and histology per tumor |
 
 ## What the script is doing
 
@@ -209,6 +216,172 @@ the BED, ERBB2 itself is amplified (log2 > 1) in 114 of the 1104 tumors (10.3%),
 gained in a further 108 (9.8%), balanced in 756 (68.5%), and lost in 126
 (11.4%).
 
+## Add a recurrence track
+
+That last paragraph is a caveat the stack cannot fix, and a second track can:
+collapse the same file into per-bin frequencies, so the count the stack blurs
+gets its own axis. `build_tcga_cohort_cnv.sh` writes it at the end of the run,
+from the BED it just built, so there is nothing extra to download:
+
+```
+tcga_brca_cnv_recurrence.bedGraph.gz    22,592 intervals, 148 KB
+```
+
+If you took the hosted BED instead of building it,
+[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
+runs that step by itself:
+
+```bash
+python3 scripts/cnv_recurrence.py tcga_brca_cnv.bed.gz tcga_brca_cnv_recurrence.bedGraph
+bgzip tcga_brca_cnv_recurrence.bedGraph
+tabix -p bed tcga_brca_cnv_recurrence.bedGraph.gz
+```
+
+Each 100kb bin gets the percent of the cohort gained and the percent lost, on
+the same log2 cutoffs the stack colors by (gain at 0.3, loss at -0.3), so a
+stripe and its peak count the same tumors:
+
+```
+#chrom  start      end        gain   loss
+chr1    204700000  204800000  58.88  -1.36
+chr8    127600000  127800000  49.73  -0.91
+chr16   89200000   89300000   3.26   -46.38
+```
+
+Two value columns, and `BedGraphTabixAdapter` reads every column past `end` as
+its own signal, so one file carries both. Loss is written negative because a
+wiggle's `bicolorPivot` sits at 0: gains then draw up in `posColor`, losses down
+in `negColor`, and the track is the mirrored frequency plot without any of it
+being a special mode.
+
+```json
+{
+  "type": "QuantitativeTrack",
+  "trackId": "tcga_brca_cnv_recurrence",
+  "name": "TCGA-BRCA recurrence (% of 1104 tumors)",
+  "assemblyNames": ["hg38"],
+  "category": ["TCGA"],
+  "adapter": {
+    "type": "BedGraphTabixAdapter",
+    "uri": "tcga_brca_cnv_recurrence.bedGraph.gz"
+  },
+  "displayDefaults": {
+    "height": 120,
+    "posColor": "#b2182b",
+    "negColor": "#2166ac",
+    "minScore": -100,
+    "maxScore": 100
+  }
+}
+```
+
+`minScore` and `maxScore`
+([display options](/docs/config_guides/quantitative_track#display-options)) pin
+the axis to the whole cohort, so a bar means the same fraction wherever you
+navigate. Left to autoscale, a quiet window would rescale to its own noise and
+read like a peak. `posColor`/`negColor` reuse the stack's amplification and
+deep-loss colors, so the two tracks agree by eye.
+
+Bins where fewer than half the cohort has any call at all are left out rather
+than drawn as zero. That only trims chromosome tips here: SNP 6.0 segments span
+centromeres, so the track has no interior gaps.
+
+Placed above the stack, the peaks line up with the stripes and put numbers on
+them: 1q gained in 58.9% of tumors at its peak, 16q lost in 46.4%, 8q24 (MYC)
+gained in 49.7%, 8p lost in 38.7%, 11q13 (CCND1) gained in 26.1%, 9p21 (CDKN2A)
+lost in 20.6%, and the 100kb bin over ERBB2 gained in 19.2%.
+
+This is a frequency plot, not
+[GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41): there is no background
+model, no significance test, and no peak calling, and amplitude enters only
+through the gain/loss cutoff. It answers "in what fraction of the cohort", not
+"more often than chance".
+
+## Add the mutations
+
+Copy number is one of two somatic layers the GDC releases open-access for the
+same tumors. The other is point mutations, and they stack the same way: one row
+per tumor, one column per site, so a recurrent driver reads as a filled column
+instead of a stripe. A second script builds it:
+
+```bash
+bash scripts/build_tcga_somatic_mutations.sh TCGA-BRCA
+# -> tcga_brca_mutations.vcf.gz (+ .tbi), tcga_brca_clinical.tsv
+```
+
+That downloads 986 **Masked Somatic Mutation** MAFs (32 MB, ~5 minutes) and
+produces 87,574 sites across 979 primary tumors in an 8 MB VCF, plus a clinical
+TSV covering every one of those tumors.
+
+**Why a VCF.** The matrix display reads genotypes, and a MAF is the transpose of
+that: one file per tumor, listing only its mutated sites.
+[`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
+pivots them into one record per site with a genotype for every tumor. Three
+things in that step are worth knowing if you adapt it:
+
+- A tumor with no call at a site is written `0/0`. A masked MAF carries only
+  variants, no reference or coverage evidence, so `0/0` means "this MAF reports
+  no mutation here", not "sequenced and reference".
+- MAF writes indels as the changed bases alone (`-` on the other side) and VCF
+  needs the base before the event. The MAF's own `CONTEXT` column is an 11-mer
+  of reference around the site, so the anchor base is already in the file and no
+  FASTA is needed.
+- The MAF's VEP columns are carried through as an `INFO/CSQ` field in default
+  VEP field order, which is what the display's **Color by consequence impact**
+  menu item reads.
+
+**The clinical TSV.** `samplesTsvLocation` joins per-sample metadata onto the
+rows by name, which is what turns 979 barcodes into readable groups.
+[`gdc_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gdc_clinical_tsv.py)
+writes one row per primary-tumor barcode with `histology`, `er`, `pr`, `her2`,
+`subtype` and `stage`, all from the GDC's open clinical endpoint. Receptor
+status lives in `follow_ups.molecular_tests`, one row per assay, so the script
+resolves a case to positive if any assay called positive, else negative, else
+equivocal. That is a summary of the assays, not a curated clinical call. For
+TCGA-BRCA it labels the 979 tumors as 596 HR+/HER2-, 179 HER2+, 140
+triple-negative, and 64 unknown.
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "tcga_brca_mutations",
+  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
+  "assemblyNames": ["hg38"],
+  "category": ["TCGA"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "tcga_brca_mutations.vcf.gz",
+    "samplesTsvLocation": { "uri": "tcga_brca_clinical.tsv" }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "height": 500,
+      "groupBy": "subtype",
+      "colorBy": "subtype"
+    }
+  ]
+}
+```
+
+[`groupBy`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-groupby)
+makes each subtype's rows contiguous, so a mutation that concentrates in one
+subtype reads as a block rather than as scattered rows;
+[`colorBy`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-colorby)
+paints the sidebar strip with the same attribute. Any other column of the TSV
+works in either slot: `histology` against 16q loss is the other pairing this
+cohort is known for.
+
+Navigate to PIK3CA (chr3:179,148,000-179,240,000) and the hotspot columns are
+the ones that fill: H1047R in 118 of the 979 tumors, E545K in 67, E542K in 41,
+N345K in 17. AKT1 E17K reaches 24 and TP53 R175H 19, while GATA3's frameshifts
+spread over neighboring positions instead of stacking into one column. That
+spread is the general case: 87,574 sites, a median of 44 mutations per tumor,
+and only 84 sites mutated in 3 or more tumors, so most columns carry a single
+cell. Raising
+[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
+drops the singletons and leaves the recurrent columns.
+
 ## Using your own cohort
 
 Nothing here is TCGA-specific. Any caller that emits per-sample segments works;
@@ -232,11 +405,8 @@ Counts below are open files for TCGA-BRCA, checked against the API:
   It reports major and minor allele copy number separately, so it shows
   loss-of-heterozygosity, which the plain segment file above cannot: a
   copy-neutral LOH region looks balanced by total copy number but has lost a
-  parental allele.
-- **Somatic mutations** (Masked Somatic Mutation MAF, 992 files) are point
-  positions rather than segments. One row per tumor turns recurrent driver
-  mutations into vertical alignments at a single base, the mutation counterpart
-  to the CNV stripes here.
+  parental allele. Same `.seg` shape, same display, only the coloring expression
+  changes.
 - **Methylation** (Beta Value arrays, 1238 files) is probe-level with genomic
   coordinates, and loads the same way with beta as the color field.
 

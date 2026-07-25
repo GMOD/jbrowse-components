@@ -106,6 +106,81 @@ const TCGA_BRCA_CNV_TRACK = {
   ],
 }
 
+// The same 1104 tumors collapsed to per-100kb frequencies by
+// scripts/cnv_recurrence.py: two value columns, gain positive and loss negative.
+// BedGraphTabixAdapter emits one feature per value column, and the wiggle's
+// bicolor pivot at 0 splits them, so the single track draws gains up in red and
+// losses down in blue. minScore/maxScore pin the axis to the whole cohort
+// (+-100%) rather than autoscaling per view, so a bar's height means the same
+// fraction in every figure.
+const TCGA_BRCA_RECURRENCE_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'tcga_brca_cnv_recurrence',
+  name: 'TCGA-BRCA recurrence (% of 1104 tumors)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedGraphTabixAdapter',
+    bedGraphGzLocation: {
+      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'TBI',
+      location: {
+        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz.tbi',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+  displays: [
+    {
+      type: 'LinearWiggleDisplay',
+      height: 160,
+      posColor: '#b2182b',
+      negColor: '#2166ac',
+      minScore: -100,
+      maxScore: 100,
+    },
+  ],
+}
+
+// 979 of the same primary tumors, from GDC open-access Masked Somatic Mutation
+// MAFs pivoted into one multi-sample VCF by scripts/maf_to_vcf.py. The clinical
+// TSV rides on the adapter (samplesTsvLocation), which is what lets groupBy/
+// colorBy name a clinical attribute rather than a barcode.
+const TCGA_BRCA_MUTATION_TRACK = {
+  type: 'VariantTrack',
+  trackId: 'tcga_brca_mutations',
+  name: 'TCGA-BRCA somatic mutations (979 primary tumors)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: {
+      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'TBI',
+      location: {
+        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz.tbi',
+        locationType: 'UriLocation',
+      },
+    },
+    samplesTsvLocation: {
+      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv',
+      locationType: 'UriLocation',
+    },
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantMatrixDisplay',
+      height: 520,
+      groupBy: 'subtype',
+      colorBy: 'subtype',
+    },
+  ],
+}
+
 // The tree sidebar only mounts once clustering has produced a hierarchy
 // (TreeSidebar returns null on `!hierarchy`), so waiting on its canvas gates the
 // capture on real completion rather than on a duration guess.
@@ -278,5 +353,87 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     settleMs: 15000,
     diffThreshold: 0.02,
+  },
+
+  // The recurrence track over the same stack, both whole-genome: every peak in
+  // the top track is a stripe in the bottom one, and the top track is the only
+  // one of the two that can say how many tumors. Deliberately NOT clustered —
+  // the stack is here as the thing the frequencies summarize, and clustering
+  // would add three minutes of RPC to a figure that does not use the ordering.
+  {
+    mode: 'url',
+    name: 'tcga/cnv_recurrence_genome',
+    url: kgUrl({
+      sessionTracks: [TCGA_BRCA_RECURRENCE_TRACK, TCGA_BRCA_CNV_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          displayedRegionNames: HG38_MAIN_CHROMS,
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'tcga_brca_cnv_recurrence',
+              type: 'LinearWiggleDisplay',
+              height: 180,
+            },
+            {
+              trackId: 'tcga_brca_cnv',
+              type: 'LinearMultiRowFeatureDisplay',
+              height: 560,
+            },
+          ],
+        },
+      ],
+    }),
+    // no clustering to gate on, so this waits on the ruler text and settles:
+    // the stack still pulls the whole 5.7MB BED before it paints
+    readyText: 'chr1',
+    readyTimeout: 300000,
+    viewportWidth: 1900,
+    viewportHeight: 860,
+    settleMs: 20000,
+    // 1104 rows floored to 1px alias differently run to run, same as the
+    // clustered genome figure above
+    diffThreshold: 0.02,
+  },
+
+  // chr3:179.15-179.24Mb, the PIK3CA kinase and helical domains, as a mutation
+  // matrix over 979 tumors grouped and colored by clinical receptor subtype.
+  // The H1047R column (118 tumors) is the one that fills; everything around it
+  // is the private-passenger background that makes a cohort MAF mostly singleton
+  // columns. This is the figure for the clinical samples-TSV join: without it
+  // the rows are 979 barcodes in alphabetical order.
+  {
+    mode: 'url',
+    name: 'tcga/mutations_pik3ca',
+    url: kgUrl({
+      sessionTracks: [TCGA_BRCA_MUTATION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '3:179,148,000-179,240,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'MANE.GRCh38.v1.4.refseq',
+              type: 'LinearBasicDisplay',
+              height: 84,
+            },
+            {
+              trackId: 'tcga_brca_mutations',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              height: 520,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr3',
+    readyTimeout: 120000,
+    viewportWidth: 1500,
+    viewportHeight: 760,
+    settleMs: 15000,
   },
 ]
