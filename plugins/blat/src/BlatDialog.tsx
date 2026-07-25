@@ -68,6 +68,11 @@ const BlatDialog = observer(function BlatDialog({
   return (
     <Dialog
       open
+      // the sequence box is the dialog, and a pasted read or FASTA line wraps
+      // every 40-odd bases at the default 600px — wide enough to read a
+      // sequence without horizontal hunting
+      maxWidth="md"
+      fullWidth
       title="BLAT search (UCSC)"
       onClose={() => {
         handleClose()

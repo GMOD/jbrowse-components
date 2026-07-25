@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { DialogContent, TextField, Typography } from '@mui/material'
+import { Dialog, NumberTextField } from '@jbrowse/core/ui'
+import { DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import MonospaceTextField from './MonospaceTextField.tsx'
@@ -38,81 +38,97 @@ const IsPcrDialog = observer(function IsPcrDialog({
   const { db, urlBase, apiKey } = query
   const [forwardPrimer, setForwardPrimer] = useState('')
   const [reversePrimer, setReversePrimer] = useState('')
-  const [maxProductSize, setMaxProductSize] = useState(
-    String(DEFAULT_MAX_PRODUCT_SIZE),
+  // NumberTextField emits undefined for an empty or out-of-bounds entry, which
+  // is what gates submit — no local parse/validate needed
+  const [maxProductSize, setMaxProductSize] = useState<number | undefined>(
+    DEFAULT_MAX_PRODUCT_SIZE,
   )
 
   const fwd = cleanPrimer(forwardPrimer)
   const rev = cleanPrimer(reversePrimer)
-  const maxProductSizeNum = Number(maxProductSize)
-  const maxProductSizeValid =
-    Number.isFinite(maxProductSizeNum) && maxProductSizeNum > 0
   const tooShort =
     fwd.length < MINIMUM_PRIMER_LENGTH || rev.length < MINIMUM_PRIMER_LENGTH
 
   async function handleSubmit() {
-    await query.runQuery({
-      fetchFeatures: () =>
-        runUcscFetch({
-          urlBase,
-          body: buildIsPcrBody({
-            db,
-            forwardPrimer: fwd,
-            reversePrimer: rev,
-            maxProductSize: maxProductSizeNum,
-            apiKey,
+    // submit is disabled while the size is undefined, so this only narrows the
+    // type rather than guarding a reachable state
+    if (maxProductSize !== undefined) {
+      await query.runQuery({
+        fetchFeatures: () =>
+          runUcscFetch({
+            urlBase,
+            body: buildIsPcrBody({
+              db,
+              forwardPrimer: fwd,
+              reversePrimer: rev,
+              maxProductSize,
+              apiKey,
+            }),
+            parse: parseIsPcrResponse,
           }),
-          parse: parseIsPcrResponse,
-        }),
-      trackIdPrefix: 'ispcr',
-      trackName: `In-silico PCR ${new Date().toLocaleTimeString()}`,
-      emptyMessage: 'No PCR products found',
-    })
+        trackIdPrefix: 'ispcr',
+        trackName: `In-silico PCR ${new Date().toLocaleTimeString()}`,
+        emptyMessage: 'No PCR products found',
+      })
+    }
   }
 
   return (
     <Dialog
       open
+      // matches BlatDialog: wide enough that the two primers sit side by side on
+      // one row instead of stacking down a narrow column
+      maxWidth="md"
+      fullWidth
       title="In-silico PCR (UCSC)"
       onClose={() => {
         handleClose()
       }}
     >
       <DialogContent
-        style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+        style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
       >
-        <Typography>
-          Enter a forward and reverse primer to find their PCR products against
-          the UCSC in-silico PCR server. Products are added as a new track.
+        <Typography variant="body2">
+          Primer pairs are queried against the UCSC in-silico PCR server;
+          products are added as a new track.
         </Typography>
-        <MonospaceTextField
-          label="Forward primer"
-          value={forwardPrimer}
-          onChange={event => {
-            setForwardPrimer(event.target.value)
-          }}
-          placeholder="e.g. GTGACGTCGTGACCTAGG"
-        />
-        <MonospaceTextField
-          label="Reverse primer"
-          value={reversePrimer}
-          onChange={event => {
-            setReversePrimer(event.target.value)
-          }}
-          placeholder="e.g. CCTAGGTTGACGTCACGA"
-        />
-        <TextField
+        {/* the two primers are one input, so they read as one row */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <MonospaceTextField
+            label="Forward primer"
+            value={forwardPrimer}
+            onChange={event => {
+              setForwardPrimer(event.target.value)
+            }}
+            placeholder="e.g. GTGACGTCGTGACCTAGG"
+            fullWidth
+            error={fwd.length > 0 && fwd.length < MINIMUM_PRIMER_LENGTH}
+          />
+          <MonospaceTextField
+            label="Reverse primer"
+            value={reversePrimer}
+            onChange={event => {
+              setReversePrimer(event.target.value)
+            }}
+            placeholder="e.g. CCTAGGTTGACGTCACGA"
+            fullWidth
+            error={rev.length > 0 && rev.length < MINIMUM_PRIMER_LENGTH}
+          />
+        </div>
+        <NumberTextField
           label="Max product size (bp)"
-          type="number"
-          value={maxProductSize}
-          onChange={event => {
-            setMaxProductSize(event.target.value)
+          variant="outlined"
+          size="small"
+          style={{ alignSelf: 'flex-start', width: 200 }}
+          defaultValue={DEFAULT_MAX_PRODUCT_SIZE}
+          min={1}
+          onValueChange={value => {
+            setMaxProductSize(value)
           }}
-          error={!maxProductSizeValid}
-          helperText={maxProductSizeValid ? '' : 'Enter a positive number'}
+          errorText="Enter a positive number"
         />
         {tooShort && (fwd || rev) ? (
-          <Typography color="error">
+          <Typography color="error" variant="body2">
             {`Primers must be at least ${MINIMUM_PRIMER_LENGTH} bp`}
           </Typography>
         ) : null}
@@ -125,7 +141,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
       </DialogContent>
       <UcscQueryActions
         query={query}
-        submitDisabled={tooShort || !maxProductSizeValid || !db}
+        submitDisabled={tooShort || maxProductSize === undefined || !db}
         onSubmit={() => void handleSubmit()}
         onCancel={() => {
           handleClose()
