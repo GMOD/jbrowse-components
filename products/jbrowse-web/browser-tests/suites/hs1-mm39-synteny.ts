@@ -69,15 +69,21 @@ const suite: TestSuite = {
       snapshot: 'hs1-mm39-synteny-chr1-large',
       config: hs1Mm39Config,
       timeout: 120000,
-      // hs1:chr1:50-100M vs mm39:chr1:30-180M with 100k minlen keeps ribbons
-      // visible; shows viewport culling without hairballing
+      // hs1:chr1:157-207M vs mm39:chr1:129-176M — the two windows have to be
+      // syntenic to EACH OTHER or the panel renders empty and the test asserts
+      // nothing. This pair was read off the chain file: at 100k minlen it is a
+      // contiguous inverted run of seven blocks (mm39 descends as hs1 ascends),
+      // the largest 23.9Mb. Human chr1 50-100M — what this used to point at —
+      // is syntenic to mouse chr3/chr4, not mouse chr1, so it drew zero
+      // ribbons. Still a 50Mb window over the full chain file, so it exercises
+      // viewport culling without hairballing.
       view: {
         type: 'LinearSyntenyView',
         tracks: ['hs1ToMm39.over.chain.pif'],
         minAlignmentLength: 100000,
         views: [
-          { loc: 'chr1:50,000,000..100,000,000', assembly: 'hs1' },
-          { loc: 'chr1:30,000,000..180,000,000', assembly: 'mm39' },
+          { loc: 'chr1:157,000,000..207,000,000', assembly: 'hs1' },
+          { loc: 'chr1:129,000,000..176,000,000', assembly: 'mm39' },
         ],
       },
       waitTestId: 'synteny_canvas_done',
