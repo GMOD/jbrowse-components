@@ -96,12 +96,18 @@ export async function doConnect(self: ConnectionDoConnectArg) {
       }),
     )
     if (!self.silent) {
-      pluginManager.evaluateExtensionPoint('LaunchView-LinearGenomeView', {
-        session,
-        assembly: genomeName,
-        tracklist: true,
-        loc: genome.data.defaultPos,
-      })
+      // LaunchView-* is an async extension point: the sync runner would return
+      // before an async handler (or an async plugin-added one) finished, so the
+      // hub would report success while the view was still being built
+      await pluginManager.evaluateAsyncExtensionPoint(
+        'LaunchView-LinearGenomeView',
+        {
+          session,
+          assembly: genomeName,
+          tracklist: true,
+          loc: genome.data.defaultPos,
+        },
+      )
     }
   } else {
     const genomeFile = new HubFile(hubFileText).data.genomesFile
