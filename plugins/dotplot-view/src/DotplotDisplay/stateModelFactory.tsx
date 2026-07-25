@@ -180,10 +180,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
        * (see the [SVG export guide](/docs/developer_guides/svg_export)).
-       * Dotplot is non-rectangular (square canvas), so it keeps a bespoke
-       * `SVGErrorBox` error UI instead of `SvgChrome`, but it runs the same
-       * shared `computeSvgReady` policy and awaits it via the shared
-       * `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state.
+       * Runs the same shared `computeSvgReady` policy every other display does
+       * and awaits it via the shared `awaitSvgReady` — no inlined `when()`. No
+       * `regionTooLarge` state: the fetch is gated by LOD, not region size.
        * Stale-safe via `dataCurrent`: an export fired right after a
        * zoom/diagonalize reorder waits for geometry rebuilt from the fresh
        * fetch instead of exporting the stale plot.

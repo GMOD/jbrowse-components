@@ -1,4 +1,4 @@
-import { SVGErrorBox } from '@jbrowse/core/svg/SvgExport'
+import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
@@ -29,27 +29,32 @@ export async function renderSvg(
   await awaitSvgReady(model)
   const view = getContainingView(model) as AbstractViewModel & RenderSvgView
   const { viewWidth, viewHeight, dotplotRenderState } = view
-  const { geometry, error } = model
-  return error ? (
-    <SVGErrorBox error={error} width={viewWidth} height={viewHeight} />
-  ) : geometry && dotplotRenderState ? (
-    <PaintLayer
-      width={viewWidth}
-      height={viewHeight}
-      opts={opts}
-      paint={ctx => {
-        const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth } =
-          dotplotRenderState
-        drawDotplotInstances(ctx, geometry, {
-          viewBpH,
-          bpPerPxHInv,
-          viewBpV,
-          bpPerPxVInv,
-          viewWidth,
-          viewHeight,
-          lineWidth,
-        })
-      }}
-    />
-  ) : null
+  const { geometry } = model
+  // the plot area is rectangular, so the shared terminal-state chrome applies
+  // (as it does for the equally non-LGV multi-LGV synteny display). No
+  // regionTooLarge state: the dotplot gates its fetch by LOD, not region size.
+  return (
+    <SvgChrome error={model.error} width={viewWidth} height={viewHeight}>
+      {geometry && dotplotRenderState ? (
+        <PaintLayer
+          width={viewWidth}
+          height={viewHeight}
+          opts={opts}
+          paint={ctx => {
+            const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth } =
+              dotplotRenderState
+            drawDotplotInstances(ctx, geometry, {
+              viewBpH,
+              bpPerPxHInv,
+              viewBpV,
+              bpPerPxVInv,
+              viewWidth,
+              viewHeight,
+              lineWidth,
+            })
+          }}
+        />
+      ) : null}
+    </SvgChrome>
+  )
 }

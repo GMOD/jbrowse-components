@@ -37,6 +37,7 @@ export {
 } from './theme.ts'
 export { default as BaseExportSvgDialog } from './BaseExportSvgDialog.tsx'
 export type { BaseExportSvgOptions } from './BaseExportSvgDialog.tsx'
+export { default as ExportSvgDialog } from './ExportSvgDialog.tsx'
 export { useExportSvgPreference } from './useExportSvgPreference.ts'
 export { LogoFull, Logomark } from './Logo.tsx'
 export { default as AssemblySelector } from './AssemblySelector.tsx'

@@ -221,8 +221,10 @@ freshness (capture a stale viewport) — both have shipped.
   resolving on the pre-pan matrix during the debounce+RPC window, since neither
   fetch clears `rpcData` at refetch start. A display that forgets to override
   `dataCurrent` makes `svgReady` unable to resolve on a successful load, so
-  `awaitSvgReady` waits out its `SVG_READY_TIMEOUT_MS` (60s) and rejects with a
-  diagnostic rather than exporting — fail-hung over fail-stale.
+  `awaitSvgReady` never returns and the export hangs. There is no time bound on
+  that wait (`svgReady` is a terminal state, so it resolves once the fetch it
+  observes settles); a missing `dataCurrent` override shows up as an export that
+  never finishes, not as a diagnostic.
 
 The **sequence** display adds one extra terminal disjunct — it overrides
 `svgReadyExtraTerminal` to return `zoomedOut`, because zoomed past its
@@ -253,12 +255,12 @@ same `computeSvgReady` policy:
   (`loadedFetchKey === currentFetchKey`) closes that window exactly as arc's
   signature does. It has no `regionTooLarge` state, so its `SvgChrome` is passed
   `error` only. **`SvgChrome` is not LGV-specific** — it is the terminal chrome
-  for *any* rectangular display, and synteny is the proof. Synteny is also the
-  one case where the chrome sits a level *above* the display: every synteny
-  display in a level paints the same full-height band, so `SVGSyntenyLevel` owns
-  one `SvgChrome` over the errors combined across the level (mirroring
-  `LevelSyntenyCanvas`'s single banner). A per-display error box would cover its
-  siblings' ribbons.
+  for *any* rectangular display, and synteny and dotplot are the proof. Synteny
+  is also the one case where the chrome sits a level *above* the display: every
+  synteny display in a level paints the same full-height band, so
+  `SVGSyntenyLevel` owns one `SvgChrome` over the errors combined across the
+  level (mirroring `LevelSyntenyCanvas`'s single banner). A per-display error box
+  would cover its siblings' ribbons.
 
 ### The shared freshness name, and the shared signature compare
 
@@ -311,23 +313,25 @@ all, so its (correctly-fetched, un-diagonalized) data is `dataCurrent` — that
 pair makes `settled` wait for the reorder to actually run, else the capture
 times out loudly rather than commit an un-diagonalized plot.
 
-### Bespoke error UI, shared gate — no `SvgChrome`
+### Non-LGV displays: same gate, and `SvgChrome` wherever there's a box to draw
 
-The *non-rectangular* views keep their own error UI (no rectangular width/height
-axis to host a message box) but still expose a `svgReady` getter and await it via
-the shared `awaitSvgReady` — never an inlined `when()`:
+Displays outside the LGV mixins still expose a `svgReady` getter and await it via
+the shared `awaitSvgReady` — never an inlined `when()`. Both below run
+`computeSvgReady` with `regionTooLarge: false` (neither gates on region size) and
+supply their own `dataCurrent` thunk:
 
-Both still run `computeSvgReady`; they pass `regionTooLarge: false` (neither
-gates on region size) and supply their own `dataCurrent` thunk:
-
-- **dotplot**: `!!geometry && dataCurrent`, hand-rolled `SVGErrorBox` on a square
-  canvas (`dataCurrent` makes it stale-safe, matching the capture gate above).
+- **dotplot**: `!!geometry && dataCurrent` (which makes it stale-safe, matching
+  the capture gate above). Its plot area is rectangular, so it mounts the shared
+  `SvgChrome` like every other rectangular display — passing `error` only, since
+  it has no `regionTooLarge` state.
 - **circular chord**: `ready` — a chord fetch covers the whole view at once, so
-  "features arrived" is the whole freshness axis. Renders `<DisplayError>`.
+  "features arrived" is the whole freshness axis. This is the one genuinely
+  bespoke error UI (`<DisplayError>`): a radial display has no width/height box
+  to host a message rect.
 
 So the readiness gate is uniform across **every** display (LGV, arc, synteny,
-dotplot, circular) — no `renderSvg` inlines `when()` — while the error chrome
-splits: `SvgChrome` for rectangular displays, bespoke for radial/square ones.
+dotplot, circular), and so is the error chrome except for the radial one.
+`SvgChrome` is not LGV-specific — synteny and dotplot are the proof.
 
 ## paintLayer: raster-vs-vector dispatch
 
