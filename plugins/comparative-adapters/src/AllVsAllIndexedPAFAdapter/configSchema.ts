@@ -53,9 +53,10 @@ const AllVsAllIndexedPAFAdapter = ConfigurationSchema(
      * #slot
      * The assemblies this track appears on and can back synteny bands for — list
      * the assemblies you load into JBrowse. Each entry must resolve to a PanSN
-     * sample prefix present in the file. In a plain LGV the track still draws its
-     * assembly against every other sample in the file, so mates need not be
-     * listed here (unlisted mates are labelled by their PanSN prefix).
+     * sample (`grape`) or haplotype (`grape#1`) prefix present in the file. In a
+     * plain LGV the track still draws its assembly against every other sample in
+     * the file, so mates need not be listed here (unlisted mates are labelled by
+     * their PanSN prefix).
      */
     assemblyNames: {
       type: 'stringArray',
@@ -74,10 +75,13 @@ const AllVsAllIndexedPAFAdapter = ConfigurationSchema(
     },
     /**
      * #slot
-     * Maps a JBrowse assembly name to its PanSN sample prefix in the PAF, for
-     * when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1`
-     * would need `{ grape: 'Vitis_vinifera' }`). Defaults to identity: the
-     * assembly name is assumed to be the PanSN sample name.
+     * Maps a JBrowse assembly name to its PanSN prefix in the PAF, for when they
+     * differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need
+     * `{ grape: 'Vitis_vinifera' }`). The prefix may name a sample (`grape`,
+     * matching all of its haplotypes) or one haplotype (`grape#1`), so a
+     * haplotype-resolved pangenome that loads each haplotype as its own assembly
+     * maps `{ grape_hap1: 'grape#1', grape_hap2: 'grape#2' }`. Defaults to
+     * identity: the assembly name is assumed to be the PanSN sample name.
      */
     assemblyNameToPanSN: {
       type: 'frozen',

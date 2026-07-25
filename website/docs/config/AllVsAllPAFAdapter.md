@@ -52,11 +52,11 @@ on.
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                             | Type           | Description                                                                                                                                                                                  |
-| ------------------------------------------------ | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)             | `stringArray`  | The assemblies this track appears on and can back synteny bands for — list the assemblies you load into JBrowse.                                                                             |
-| [pafLocation](#slot-paflocation)                 | `fileLocation` | can be optionally gzipped                                                                                                                                                                    |
-| [assemblyNameToPanSN](#slot-assemblynametopansn) | `frozen`       | Maps a JBrowse assembly name to its PanSN sample prefix in the PAF, for when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need `{ grape: 'Vitis_vinifera' }`). |
+| Slot                                             | Type           | Description                                                                                                                                                                           |
+| ------------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)             | `stringArray`  | The assemblies this track appears on and can back synteny bands for — list the assemblies you load into JBrowse.                                                                      |
+| [pafLocation](#slot-paflocation)                 | `fileLocation` | can be optionally gzipped                                                                                                                                                             |
+| [assemblyNameToPanSN](#slot-assemblynametopansn) | `frozen`       | Maps a JBrowse assembly name to its PanSN prefix in the PAF, for when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need `{ grape: 'Vitis_vinifera' }`). |
 
 <details>
 <summary>AllVsAllPAFAdapter - Slots</summary>
@@ -65,9 +65,10 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 The assemblies this track appears on and can back synteny bands for — list the
 assemblies you load into JBrowse. Each entry must resolve to a PanSN sample
-prefix present in the file. In a plain LGV the track still draws its assembly
-against every other sample in the file, so mates need not be listed here
-(unlisted mates are labelled by their PanSN prefix).
+(`grape`) or haplotype (`grape#1`) prefix present in the file. In a plain LGV
+the track still draws its assembly against every other sample in the file, so
+mates need not be listed here (unlisted mates are labelled by their PanSN
+prefix).
 
 **Type:** `stringArray` · **Default:** `[]`
 
@@ -80,10 +81,13 @@ can be optionally gzipped
 
 #### slot: assemblyNameToPanSN
 
-Maps a JBrowse assembly name to its PanSN sample prefix in the PAF, for when
-they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need
-`{ grape: 'Vitis_vinifera' }`). Defaults to identity: the assembly name is
-assumed to be the PanSN sample name.
+Maps a JBrowse assembly name to its PanSN prefix in the PAF, for when they
+differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need
+`{ grape: 'Vitis_vinifera' }`). The prefix may name a sample (`grape`, matching
+all of its haplotypes) or one haplotype (`grape#1`), so a haplotype-resolved
+pangenome that loads each haplotype as its own assembly maps
+`{ grape_hap1: 'grape#1', grape_hap2: 'grape#2' }`. Defaults to identity: the
+assembly name is assumed to be the PanSN sample name.
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 

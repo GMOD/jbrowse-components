@@ -475,6 +475,46 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
+  // The whole-genome end of the same "One strain against all the others"
+  // section: one-vs-all zoomed all the way out over K-12's 4.6 Mb. Deliberately
+  // on ecoli_pggb_ava (AllVsAllIndexedPAFAdapter) rather than the in-memory
+  // ecoli_ava — a whole-chromosome one-vs-all is exactly the query the tabix
+  // index exists for, and it is the only figure covering the indexed adapter in
+  // a plain LGV. Grouped by mate assembly again, so each strain's rearrangements
+  // against K-12 read as their own band instead of one merged pileup.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'K12',
+            loc: 'chr:1-4,641,652',
+            tracks: [
+              {
+                trackId: 'ecoli_pggb_ava',
+                type: 'LGVSyntenyDisplay',
+                groupBy: { type: 'mateAssembly' },
+                // three mate sections of one row each — sized to them, so the
+                // figure is the bands rather than mostly empty track
+                height: 130,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    viewportHeight: 320,
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
+
   // The Linear synteny view import form for the allvsall_synteny.md "From the
   // UI" section, using the all-vs-all Quick start path. A bare LinearSyntenyView
   // session spec is rejected (needs >=2 views), so open it the way a user does:
@@ -544,19 +584,73 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // For the gallery: load the exact curated share session the reviewer wants
-  // captured verbatim (peach Pp05 vs grape chr2 with the per-gene MCScan
-  // connections + the red/blue inverted-vs-non-inverted synteny blocks). The
-  // bare ?config= url is served against the local build; the password param
-  // auto-decrypts the shared session so it loads with no interaction. The
-  // docs live-link becomes the same query on jbrowse.org/code/jb2/latest.
+  // For the gallery: peach Pp05 vs grape chr2, the per-gene MCScan anchor
+  // ribbons between them and the strand-colored synteny blocks (red collinear /
+  // blue inverted) as an LGVSyntenyDisplay row in each panel.
+  //
+  // Was the last `share-` link in the repo. Decrypting that session showed why
+  // it had to go: a frozen Apr-2021 snapshot, so the capture baked its stale
+  // "Grape vs Peach (small) 4/2/2021" session name into the title bar, and its
+  // grape panel sat at a negative offsetPx — scrolled left of the region start,
+  // leaving a grey off-region block in the corner of the figure. The locs below
+  // are read off that capture's own location boxes, so the view is the same
+  // minus the dead space; `sessionName=Screenshot` comes from sessionSpec().
+  // Strand coloring needs no slot — it's the LGVSyntenyDisplay colorBy default.
+  //
+  // As a share session this figure incidentally covered the legacy per-instance
+  // `heightPreConfig` path — an alignments-base refactor once dropped that prop,
+  // discarding the session's stored 28/52px synteny heights so both panels fell
+  // back to the 250px alignments default. Setting `height` directly here retires
+  // that incidental coverage, which is fine: extractInstanceHeight owns the
+  // migration and sessionMigrations.test.ts covers it directly (one case uses
+  // this very session's 52px value).
   {
     mode: 'url',
     name: 'linear_synteny_gallery',
-    url: '?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt',
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          drawCurves: true,
+          // both MCScan tracks on one level: the coarse anchor set plus the
+          // simple per-gene anchors drawn over it
+          tracks: [
+            ['grape_peach_synteny_mcscan', 'grape_peach_synteny_mcscan_simple'],
+          ],
+          levelHeights: [236],
+          views: [
+            {
+              assembly: 'peach',
+              loc: 'Pp05:7,380,181-14,148,567',
+              tracks: [
+                {
+                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  type: 'LGVSyntenyDisplay',
+                  height: 60,
+                },
+              ],
+            },
+            {
+              assembly: 'grape',
+              loc: 'chr2:1-7,112,179',
+              tracks: [
+                {
+                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  type: 'LGVSyntenyDisplay',
+                  height: 60,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 10000,
+    // just the app, and enough for the lower panel's own synteny row: the old
+    // capture left the bottom ~28% of the PNG blank
+    viewportHeight: 640,
   },
 
   // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the

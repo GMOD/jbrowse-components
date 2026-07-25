@@ -152,6 +152,38 @@ PAF track, where `-a` is `query,target`, order does not matter here: one
 all-vs-all file backs every pair, so `-a` is simply the full set of assemblies
 it covers.
 
+### Haplotype-resolved genomes
+
+These four strains are haploid, so each PanSN prefix is a whole sample and `K12`
+covers everything named `K12#1#...`. A haplotype-resolved pangenome normally
+loads each haplotype as its own JBrowse assembly, and then an assembly maps to a
+`sample#haplotype` prefix rather than to a sample:
+
+```json
+{
+  "type": "AllVsAllPAFAdapter",
+  "uri": "all_vs_all.paf",
+  "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
+  "assemblyNameToPanSN": {
+    "grape_hap1": "grape#1",
+    "grape_hap2": "grape#2",
+    "peach_hap1": "peach#1",
+    "peach_hap2": "peach#2"
+  }
+}
+```
+
+Both depths work and you choose per track. Map to `grape` and the sample is one
+assembly, with an alignment between its haplotypes reading as paralogy; map to
+`grape#1` and each haplotype gets its own row, so hap1 against hap2 becomes a
+synteny band in its own right. Mates are labelled at the most specific depth you
+listed, so a sample-level track still says `grape`. A prefix only matches at a
+`#` boundary, so `grape` cannot pick up `grapefruit#1#chr1`.
+
+An alignment between two haplotypes of one sample is kept even where they are
+identical: only a true self-diagonal, the same PanSN sequence against itself at
+the same coordinates, is dropped.
+
 ## Large files: index with make-pif
 
 `AllVsAllPAFAdapter` reads the whole PAF into memory, which is fine for strains
@@ -325,6 +357,13 @@ alignments: **Show... > Show coverage**, for instance, adds a histogram of how
 many other strains cover each base of the strain you are viewing.
 
 <Figure caption="K-12 against every other strain in the file, in one plain linear view grouped by mate assembly. Sakai and CFT073 both stop at 1,446,100, where K-12's phenylacetate (paa) operon begins; NCTC86 aligns straight through it in a single block. The K12 section is K-12's own paralogy." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+
+The same mode zoomed out to the whole chromosome gives a per-strain overview of
+where each one diverges. Whole-genome is where the
+[indexed adapter](#large-files-index-with-make-pif) earns its keep, since every
+band on screen is a tabix range query rather than a scan of the file:
+
+<Figure caption="K-12's whole 4.64 Mb against all three other strains at once, from the demo's tabix-indexed wfmash all-vs-all track, grouped by mate assembly. The section boundaries do not line up, so each strain breaks from the K-12 backbone in its own places." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ## Reproduce it end to end
 
