@@ -15,10 +15,59 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // bundle url — but is nondeterministic (~3% run-to-run drift from the OGDF force
 // simulation), so its spec carries a raised diffThreshold: the committed PNG is
 // only rewritten when a regen drifts past that, not on every ordinary jitter.
+
+// Ready when the layout has landed (graph-perf-stats) AND the toolbar has
+// painted. Waiting on the stats alone raced: a slow subgraph fetch could leave
+// the Layout/Color selects unpainted in the captured frame, silently committing
+// a figure with half a toolbar. `body:has(A) B` is an AND; a bare `A, B` list
+// would be a CSS OR and fire on whichever landed first.
+const TOOLBAR_READY =
+  'body:has([data-testid="graph-perf-stats"]) [data-testid="graph-layout-select"]'
+
 const CONFIG = 'test_data/graphgenomeview/config.json'
 const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
 
+// The HPRC figures take the other route into the same view: instead of a whole
+// GFA file, a GraphGenomeView carrying `loadedTrackId`/`loadedRegion` — the exact
+// snapshot the "Launch view, then Graph genome view (this region)" menu item
+// writes, so the figure documents the launch route rather than a second way in.
+// The view cuts its subgraph from the track's own tabix indexes on attach.
+const HPRC_CONFIG = 'test_data/graphgenomeview/hprc.json'
+const SEGMENTS_TRACK = 'hprc_minigraph_segments'
+const MHC_REGION = {
+  refName: 'chr6',
+  assemblyName: 'hg38',
+  start: 32500000,
+  end: 32560000,
+}
+
 export const graphSpecs: ScreenshotSpec[] = [
+  // The pggb subgraph: a plain GFA, so it has no rank tags to anchor to and the
+  // force engine is the only layout that can draw it (layoutMode 'auto' falls
+  // through to FMMM on its own). Colored by depth, how many of the four strains
+  // traverse each node. Same nondeterminism as the force spec below, hence the
+  // same raised diffThreshold.
+  {
+    mode: 'url',
+    name: 'pangenome/local_subgraph',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'GraphGenomeView',
+          gfaLocation: { uri: `${DATA}/ecoli_pggb_subgraph.gfa` },
+          colorScheme: 'depth',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 60000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    diffThreshold: 0.1,
+    viewportWidth: 1000,
+    viewportHeight: 760,
+    hideTooltip: true,
+  },
   // The four-strain minigraph (rGFA) slice in the anchored layout, colored by
   // stable rank: the rank-0 K12 backbone runs blue along the x axis at the
   // offsets its segments declare, with higher-rank alternate alleles below it.
@@ -38,7 +87,7 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="graph-genome-canvas"]',
+    readySelector: TOOLBAR_READY,
     readyTimeout: 60000,
     settleMs: 4000,
     viewportWidth: 1000,
@@ -65,13 +114,83 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="graph-perf-stats"]',
+    readySelector: TOOLBAR_READY,
     readyTimeout: 60000,
     allowUnsettled: true,
     settleMs: 8000,
     diffThreshold: 0.1,
     viewportWidth: 1000,
     viewportHeight: 640,
+    hideTooltip: true,
+  },
+  // The HPRC release-2 graph at HLA class II, anchored: the bubble and segment
+  // feature tracks in a linear view of the window, and the subgraph the launch
+  // menu cuts from that same window below it. Both come out of the two tabix
+  // indexes, so the segment ids above are the nodes below at the same offsets.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_mhc_subgraph',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,500,000-32,560,000',
+          tracks: [
+            'hg38_ncbiRefSeq_ucsc',
+            'hprc_minigraph_bubbles',
+            SEGMENTS_TRACK,
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: MHC_REGION,
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    settleMs: 4000,
+    viewportWidth: 1000,
+    viewportHeight: 1300,
+    hideTooltip: true,
+  },
+  // The same window in the force layout, the Bandage picture the graph is really
+  // about: the backbone winds through the frame and every loop off it is an
+  // alternate allele from the 464 haplotypes. FMMM again, hence diffThreshold.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_mhc_bandage',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,500,000-32,560,000',
+          tracks: [
+            'hg38_ncbiRefSeq_ucsc',
+            'hprc_minigraph_bubbles',
+            SEGMENTS_TRACK,
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: MHC_REGION,
+          layoutMode: 'force',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    diffThreshold: 0.1,
+    viewportWidth: 1000,
+    viewportHeight: 1300,
     hideTooltip: true,
   },
 ]

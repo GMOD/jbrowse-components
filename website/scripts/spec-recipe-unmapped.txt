@@ -29,8 +29,11 @@ height
 heightOverride
 jexlFiltersSetting
 layout
+layoutMode
 levelHeights
 linkedReads
+loadedRegion
+loadedTrackId
 minAlignmentLength
 numStdDev
 readConnectionsHeight

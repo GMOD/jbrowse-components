@@ -40,7 +40,8 @@ Python ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or R
 
 ## What you need
 
-- `docker`, for the pggb image (which also carries odgi)
+- `docker`, for the pggb image (which also carries odgi), plus the cactus image
+  if you build the rGFA graph below (it carries minigraph and gfatools)
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -121,11 +122,24 @@ not bundled in JBrowse Web. Its force-directed layout is computed by the
 [OGDF](https://ogdf.github.io/) FMMM layout, both GPL-licensed), loaded at
 runtime, which is why it ships on its own.
 
-The plugin is still in **beta and not published yet**, so it is not in the
-[plugin store](/docs/user_guides/plugin_store) or installable from a
-`config.json` (see [configuring plugins](/docs/config_guides/plugins)); look for
-it in both soon. Once it is installed you get the **Add, then Graph genome
-view** menu item. The projection tracks below need none of this.
+It is in **beta** and not in the [plugin store](/docs/user_guides/plugin_store)
+yet, but it is a native ES module and loads from any config today (see
+[configuring plugins](/docs/config_guides/plugins)):
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ]
+}
+```
+
+That is the build the graph figures on this page were captured with. Once it is
+installed you get the **Add, then Graph genome view** menu item. The projection
+tracks below need none of this.
 
 :::
 
@@ -169,14 +183,34 @@ subgraph has to be cut with `odgi extract` and why the layout above has to
 _infer_ a backbone by force simulation.
 
 [rGFA](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md), what minigraph
-emits, is different: every segment carries `SN` (stable sequence name), `SO`
-(offset on it) and `SR` (rank, `0` on the reference). So the graph states where
-each segment sits and which segments are the reference backbone:
+emits, is different: every segment carries the stable sequence it sits on, its
+offset there, and its rank, so the graph states its own reference backbone. The
+[HPRC tutorial](/docs/tutorials/pangenome_hprc#regular-gfa-vs-rgfa) shows those
+three tags on a real segment line.
+
+Build one from the same four strains. minigraph takes its stable names from the
+input FASTA headers, so give it the PanSN-named records rather than the
+per-strain files (whose contig is called `chr` in all four), otherwise every
+segment lands on an ambiguous `chr` that no later command can query by strain.
+minigraph and `gfatools` are not in the pggb image but are in the cactus one
+that the [Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus) uses, so
+wrap that and call it `in_cactus`:
 
 ```bash
-minigraph -cxggs -t 8 K12.fa Sakai.fa CFT073.fa NCTC86.fa > ecoli_minigraph.rgfa
-gfatools view -R "K12#1#chr:1000000-1300000" -r 1 ecoli_minigraph.rgfa \
-  > ecoli_rgfa_slice.gfa
+in_cactus() {
+  docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
+    quay.io/comparative-genomics-toolkit/cactus:v3.2.1 "$@"
+}
+
+for strain in K12 Sakai CFT073 NCTC86; do
+  in_cactus samtools faidx /data/all.fa.gz "$strain#1#chr" > "$strain.pansn.fa"
+done
+
+in_cactus bash -c "minigraph -cxggs -t 8 /data/K12.pansn.fa /data/Sakai.pansn.fa \
+  /data/CFT073.pansn.fa /data/NCTC86.pansn.fa" > ecoli_minigraph.rgfa
+
+in_cactus gfatools view -R "K12#1#chr:1000000-1300000" -r 1 \
+  /data/ecoli_minigraph.rgfa > ecoli_rgfa_slice.gfa
 ```
 
 `gfatools view -R` takes a region in those stable coordinates, so unlike plain
@@ -196,6 +230,26 @@ correspondence for the classic Bandage picture of the same subgraph
 (**Force-directed layout**):
 
 <Figure caption="The same minigraph window in the Graph genome view's force-directed (Bandage) layout, colored by stable rank. The blue rank-0 K12 backbone is placed by the force simulation rather than on the reference axis, so the higher-rank alternate alleles fall out as bubbles off it rather than rows beneath it. It is the same graph as the anchored view above, laid out by its own structure instead of by K12 coordinate." src="/img/pangenome/graph_force.png" link="" />
+
+A third mode, **Sample rows**, gives each contributing assembly its own row on
+the same reference axis, so an allele reads as "which strains carry it" rather
+than "which rank it is". Like the anchored layout it reads the rGFA tags, so it
+is unavailable for a plain GFA such as the pggb subgraph above.
+
+### Opening any locus without a slice per locus
+
+Cutting a slice per window is fine for one look at one region. To browse the
+whole graph instead, index it once with
+[`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
+and load the result as a `FeatureTrack` on K12: the segments then draw as
+features in a linear view, and **Track menu, then Launch view, then Graph genome
+view (this region)** opens the graph for whatever is on screen (up to 100 kb,
+past which the layout stops being legible and the view declines). The
+[HPRC tutorial](/docs/tutorials/pangenome_hprc#load-the-graph) walks through
+that route on the human pangenome, and it works the same on
+`ecoli_minigraph.rgfa`.
+
+<Figure caption="The indexed route on the E. coli graph: the rGFA segments as a feature track over 50 kb of K12 on top, and the graph view launched from that same window below. Both are drawn from the tabix indexes, so the segment ids in the track are the nodes in the graph, at the same offsets." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 ## All-vs-all synteny projection
 
@@ -483,8 +537,10 @@ MAF, `odgi depth`, and `odgi pav` into the projections above, downloads JBrowse,
 and writes a `config.json` with the four assemblies, per-strain gene tracks, the
 five graph-derived tracks (synteny, variants, MAF, depth, per-strain presence),
 and a default session (a stacked synteny view plus the K12 reference lane). It
-also writes the `odgi viz` graph raster (`ecoli_pggb_graph.png`). It needs the
-same tools listed under [What you need](#what-you-need).
+also writes the `odgi viz` graph raster (`ecoli_pggb_graph.png`) and the two
+graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and `ecoli_rgfa_slice.gfa`,
+which needs the cactus image for minigraph and gfatools). It needs the same
+tools listed under [What you need](#what-you-need).
 
 The all-vs-all PAF sort and bigWig conversion spill large temp files. The
 default `/tmp` is often a small in-memory tmpfs that they overflow, failing the

@@ -7,7 +7,9 @@
 # alignment (`pggb -M`, re-rooted on K12 as a MAF), the pangenome depth (`odgi
 # depth`, core vs accessory over K12 as a bigWig), and per-strain presence
 # (`odgi pav`, one bigWig per strain as a MultiWiggle). It also writes the `odgi
-# viz` graph raster as a static comparison figure.
+# viz` graph raster as a static comparison figure, and the two subgraphs the
+# graph genome view opens: a pggb window cut with `odgi extract`, and a
+# minigraph rGFA window cut with `gfatools view -R`.
 #
 # It downloads the same four RefSeq E. coli chromosomes as the all-vs-all synteny
 # tutorial, PanSN-names a concatenated copy, runs pggb, converts each output to
@@ -19,7 +21,8 @@
 # so re-running reproduces the same graph and views.
 #
 # Requires: docker (the pggb image, which also carries odgi for the depth
-#           projection), the NCBI `datasets` CLI, samtools, taffy (the
+#           projection, and the cactus image for minigraph/gfatools), the NCBI
+#           `datasets` CLI, samtools, taffy (the
 #           Cactus/taffy toolkit), bedGraphToBigWig (UCSC kentUtils), python3,
 #           bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx unless
 #           `jbrowse` is on PATH).
@@ -47,6 +50,13 @@ REF=K12   # the strain the VCF and MAF are projected onto
 # odgi ships inside this image, so the depth projection below reuses it.
 PGGB_IMAGE=ghcr.io/pangenome/pggb:202603141454453ade6b
 in_pggb() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$PGGB_IMAGE" "$@"; }
+
+# minigraph and gfatools build the rGFA counterpart of the graph (see the
+# graph-view assets section at the end). Neither is in the pggb image; the
+# Minigraph-Cactus image the sibling tutorial pins carries both, so reuse it
+# rather than asking for two more host installs.
+CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
+in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$CACTUS_IMAGE" "$@"; }
 
 # ── Fetch each genome + annotation; keep only the chromosome, renamed `chr` ────
 while read -r strain acc; do
@@ -152,6 +162,40 @@ done
 # -a 40 makes each of the (few) strain rows tall enough to read; the small -y
 # keeps the link band below them slim so the path rows dominate the figure.
 in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 260
+
+# ── Graph-view assets: two subgraphs for the Graph genome view ────────────────
+# Neither is a JBrowse track: both are GFA files the graph genome view plugin
+# opens directly, and they are what the tutorial's two graph figures show.
+#
+# A pggb GFA carries no coordinates on its segments (the only reference
+# positions live in the P/W lines), so a window has to be cut out of the graph:
+# extract -E takes every node between the first and last in the range, sort -O
+# compacts the node ids, view -g writes GFA. Keep it small: at base resolution
+# a few hundred bp between four strains already carries a dozen bubbles.
+OG=$(ls pggb/*.smooth.final.og)
+in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o - \
+  | odgi sort -i - -o - -O \
+  | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
+
+# The rGFA counterpart. minigraph tags every segment with the stable sequence it
+# sits on, its offset there and its rank, so gfatools cuts a window by reference
+# coordinate with no graph-specific extraction step, and the view draws the
+# backbone from the file instead of inferring it by force simulation.
+# minigraph reads its stable names off the input FASTA headers, so feed it the
+# PanSN records out of all.fa.gz: the per-strain files all call their contig
+# `chr`, which would leave every segment on an ambiguous `chr`.
+for strain in $STRAINS; do
+  in_cactus samtools faidx /data/all.fa.gz "${strain}#1#chr" > "${strain}.pansn.fa"
+done
+PANSN_FA=$(for strain in $STRAINS; do printf '/data/%s.pansn.fa ' "$strain"; done)
+# tmp + mv so an interrupted run leaves no half-written graph for the next one
+# to skip over (minigraph is the slow step here, a few minutes on four genomes).
+if [ ! -f ecoli_minigraph.rgfa ]; then
+  in_cactus bash -c "minigraph -cxggs -t $(nproc) $PANSN_FA" > ecoli_minigraph.rgfa.tmp
+  mv ecoli_minigraph.rgfa.tmp ecoli_minigraph.rgfa
+fi
+in_cactus gfatools view -R "${REF}#1#chr:1000000-1300000" -r 1 \
+  /data/ecoli_minigraph.rgfa > ecoli_rgfa_slice.gfa
 
 # ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ────────────────
 if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
@@ -281,3 +325,5 @@ echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
 echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
 echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz)."
+echo "For the graph genome view, load ecoli_pggb_subgraph.gfa (pggb window) or"
+echo "ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on K12 coordinates)."

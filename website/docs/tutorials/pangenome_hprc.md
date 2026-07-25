@@ -109,10 +109,23 @@ and the build date are in
 The graph genome view is a separate plugin,
 [jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
 not bundled in JBrowse Web (its force-directed layout uses the GPL-licensed
-[Bandage](https://github.com/rrwick/Bandage) engine). It is in **beta and not
-published yet**; look for it in the
-[plugin store](/docs/user_guides/plugin_store) soon. The tracks above need it
-only for the launch menu item.
+[Bandage](https://github.com/rrwick/Bandage) engine). It is in **beta** and not
+in the [plugin store](/docs/user_guides/plugin_store) yet, but it is a native ES
+module and loads from any config today (see
+[configuring plugins](/docs/config_guides/plugins)):
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ]
+}
+```
+
+The tracks above need it only for the launch menu item.
 
 :::
 

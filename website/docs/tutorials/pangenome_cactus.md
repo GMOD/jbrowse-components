@@ -133,8 +133,7 @@ record is how the adapter maps a record to its strain:
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
   "adapter": {
     "type": "AllVsAllIndexedPAFAdapter",
-    "pifGzLocation": { "uri": "ecoli_cactus_ava.pif.gz" },
-    "index": { "location": { "uri": "ecoli_cactus_ava.pif.gz.tbi" } },
+    "uri": "ecoli_cactus_ava.pif.gz",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
   }
 }
