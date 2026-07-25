@@ -3,7 +3,6 @@ import { useRef } from 'react'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -72,53 +71,6 @@ function openSyntenyFeatureWidget(
       widget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },
       extra: { level: display.level },
     },
-  )
-}
-
-// Single hover- or click-id update across all live displays in a level. Picked
-// display gets the hit's feature index; everyone else clears.
-function setIdxOnDisplays(
-  model: LinearSyntenyViewHelperModel,
-  set: (display: LinearSyntenyDisplayModel, idx: number) => void,
-  hitDisplay: LinearSyntenyDisplayModel | undefined,
-  featureIndex: number,
-) {
-  transaction(() => {
-    for (const display of model.linearSyntenyDisplays) {
-      if (isAlive(display)) {
-        set(display, display === hitDisplay ? featureIndex : -1)
-      }
-    }
-  })
-}
-
-function setHoverOnDisplays(
-  model: LinearSyntenyViewHelperModel,
-  hitDisplay: LinearSyntenyDisplayModel | undefined,
-  featureIndex: number,
-) {
-  setIdxOnDisplays(
-    model,
-    (d, idx) => {
-      d.setHoveredFeatureIdx(idx)
-    },
-    hitDisplay,
-    featureIndex,
-  )
-}
-
-function setClickedOnDisplays(
-  model: LinearSyntenyViewHelperModel,
-  hitDisplay: LinearSyntenyDisplayModel | undefined,
-  featureIndex: number,
-) {
-  setIdxOnDisplays(
-    model,
-    (d, idx) => {
-      d.setClickedFeatureIdx(idx)
-    },
-    hitDisplay,
-    featureIndex,
   )
 }
 
@@ -197,12 +149,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const coords = canvasCoords(event)
     if (coords) {
       const hit = pickAt(coords)
-      setHoverOnDisplays(model, hitDisplay(hit), hit ? hit.featureIndex : -1)
+      model.setHoveredFeature(hit?.key, hit ? hit.featureIndex : -1)
     }
   }
 
   function handleMouseLeave() {
-    setHoverOnDisplays(model, undefined, -1)
+    model.setHoveredFeature(undefined, -1)
     dragStartXRef.current = undefined
     lastDragXRef.current = undefined
   }
@@ -227,8 +179,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       return
     }
     const hit = pickAt(coords)
+    model.setClickedFeature(hit?.key, hit ? hit.featureIndex : -1)
     const display = hitDisplay(hit)
-    setClickedOnDisplays(model, display, hit ? hit.featureIndex : -1)
     if (display && hit) {
       openSyntenyFeatureWidget(display, hit.featureIndex)
     }
@@ -248,7 +200,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const feat = display?.getFeature(hit.featureIndex)
     if (display && feat) {
       // clear the hover tooltip so it doesn't stay stuck behind the menu
-      setHoverOnDisplays(model, undefined, -1)
+      model.setHoveredFeature(undefined, -1)
       display.openContextMenu({
         clientX: event.clientX,
         clientY: event.clientY,

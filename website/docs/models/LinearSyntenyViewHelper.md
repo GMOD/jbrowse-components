@@ -16,38 +16,41 @@ index, composed with the shared rendering-lifecycle state.
 
 ## Members
 
-| Member                                                       | Kind       | Defined by                                      | Description                                                                                                                 |
-| ------------------------------------------------------------ | ---------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| [id](#property-id)                                           | Properties | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [type](#property-type)                                       | Properties | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [tracks](#property-tracks)                                   | Properties | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [height](#property-height)                                   | Properties | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [level](#property-level)                                     | Properties | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [gpuRenderingBackend](#getter-gpurenderingbackend)           | Getters    | LinearSyntenyViewHelper                         | Typed accessor for the slot-mixin-owned `currentRenderingBackend`.                                                          |
-| [parentView](#getter-parentview)                             | Getters    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [assemblyNames](#getter-assemblynames)                       | Getters    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [linearSyntenyDisplays](#getter-linearsyntenydisplays)       | Getters    | LinearSyntenyViewHelper                         | All synteny displays under this level's tracks.                                                                             |
-| [numFeats](#getter-numfeats)                                 | Getters    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [settled](#getter-settled)                                   | Getters    | LinearSyntenyViewHelper                         | Canvas has painted and no display is still fetching, so what's on screen is the final settled content.                      |
-| [geometryByDisplayKey](#getter-geometrybydisplaykey)         | Getters    | LinearSyntenyViewHelper                         | Per-display GPU geometry keyed by displayKey.                                                                               |
-| [syntenyRenderState](#getter-syntenyrenderstate)             | Getters    | LinearSyntenyViewHelper                         | Aggregated per-frame render state.                                                                                          |
-| [displaysByKey](#getter-displaysbykey)                       | Getters    | LinearSyntenyViewHelper                         | Reverse lookup key → display, used to dispatch pick results.                                                                |
-| [setHeight](#action-setheight)                               | Actions    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [showTrack](#action-showtrack)                               | Actions    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [hideTrack](#action-hidetrack)                               | Actions    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [toggleTrack](#action-toggletrack)                           | Actions    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [startRenderingBackend](#action-startrenderingbackend)       | Actions    | LinearSyntenyViewHelper                         |                                                                                                                             |
-| [canvasDrawn](#volatile-canvasdrawn)                         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | flips true on first paint; read by test selectors to detect render                                                          |
-| [currentRenderingBackend](#volatile-currentrenderingbackend) | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | current backend reference, updated on context-loss recovery.                                                                |
-| [renderTick](#volatile-rendertick)                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | counter the render autorun observes; bumped to force a re-render                                                            |
-| [autorunsInstalled](#volatile-autorunsinstalled)             | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | guards attachRenderingBackend so the autorun pair spawns once per instance                                                  |
-| [renderError](#volatile-rendererror)                         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                 |
-| [markCanvasDrawn](#action-markcanvasdrawn)                   | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                             |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                             |
-| [stopRenderingBackend](#action-stoprenderingbackend)         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                             |
-| [renderNow](#action-rendernow)                               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                             |
-| [setRenderError](#action-setrendererror)                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | set/clear the render-backend error.                                                                                         |
-| [attachRenderingBackend](#action-attachrenderingbackend)     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend) |
+| Member                                                       | Kind       | Defined by                                      | Description                                                                                                                                                                                         |
+| ------------------------------------------------------------ | ---------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                           | Properties | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [type](#property-type)                                       | Properties | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [tracks](#property-tracks)                                   | Properties | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [height](#property-height)                                   | Properties | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [level](#property-level)                                     | Properties | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [gpuRenderingBackend](#getter-gpurenderingbackend)           | Getters    | LinearSyntenyViewHelper                         | Typed accessor for the slot-mixin-owned `currentRenderingBackend`.                                                                                                                                  |
+| [parentView](#getter-parentview)                             | Getters    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [assemblyNames](#getter-assemblynames)                       | Getters    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [linearSyntenyDisplays](#getter-linearsyntenydisplays)       | Getters    | LinearSyntenyViewHelper                         | All synteny displays under this level's tracks.                                                                                                                                                     |
+| [numFeats](#getter-numfeats)                                 | Getters    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [settled](#getter-settled)                                   | Getters    | LinearSyntenyViewHelper                         | Canvas has painted and no display is still fetching, so what's on screen is the final settled content.                                                                                              |
+| [geometryByDisplayKey](#getter-geometrybydisplaykey)         | Getters    | LinearSyntenyViewHelper                         | Per-display GPU geometry keyed by displayKey.                                                                                                                                                       |
+| [syntenyRenderState](#getter-syntenyrenderstate)             | Getters    | LinearSyntenyViewHelper                         | Aggregated per-frame render state.                                                                                                                                                                  |
+| [displaysByKey](#getter-displaysbykey)                       | Getters    | LinearSyntenyViewHelper                         | Reverse lookup key → display, used to dispatch pick results.                                                                                                                                        |
+| [setHeight](#action-setheight)                               | Actions    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [showTrack](#action-showtrack)                               | Actions    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [hideTrack](#action-hidetrack)                               | Actions    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [toggleTrack](#action-toggletrack)                           | Actions    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [setHoveredFeature](#action-sethoveredfeature)               | Actions    | LinearSyntenyViewHelper                         | Point the whole level's hover state at one pick hit: the display whose geometry was hit takes the instance index, every other display clears.                                                       |
+| [setClickedFeature](#action-setclickedfeature)               | Actions    | LinearSyntenyViewHelper                         | Clicked-state twin of `setHoveredFeature`.                                                                                                                                                          |
+| [startRenderingBackend](#action-startrenderingbackend)       | Actions    | LinearSyntenyViewHelper                         |                                                                                                                                                                                                     |
+| [canvasDrawn](#volatile-canvasdrawn)                         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | flips true on first paint; read by test selectors to detect render                                                                                                                                  |
+| [currentRenderingBackend](#volatile-currentrenderingbackend) | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | current backend reference, updated on context-loss recovery.                                                                                                                                        |
+| [renderTick](#volatile-rendertick)                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | counter the render autorun observes; bumped to force a re-render                                                                                                                                    |
+| [autorunsInstalled](#volatile-autorunsinstalled)             | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                          |
+| [renderError](#volatile-rendererror)                         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                                                                                         |
+| [canRender](#getter-canrender)                               | Getters    | [RenderLifecycleMixin](../renderlifecyclemixin) | Overridable precondition (default true): both lifecycle autoruns skip their callback entirely while this is false, so a display never has to open its own `upload`/`render` with a readiness check. |
+| [markCanvasDrawn](#action-markcanvasdrawn)                   | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                     |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                     |
+| [stopRenderingBackend](#action-stoprenderingbackend)         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                     |
+| [renderNow](#action-rendernow)                               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                     |
+| [setRenderError](#action-setrendererror)                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | set/clear the render-backend error.                                                                                                                                                                 |
+| [attachRenderingBackend](#action-attachrenderingbackend)     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                         |
 
 <details>
 <summary>LinearSyntenyViewHelper - Properties</summary>
@@ -136,6 +139,36 @@ type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<…>> & .
 <details>
 <summary>LinearSyntenyViewHelper - Actions</summary>
 
+#### action: setHoveredFeature
+
+Point the whole level's hover state at one pick hit: the display whose geometry
+was hit takes the instance index, every other display clears. An action rather
+than a loop in the canvas component so the N writes land in one MobX batch, and
+so the canvas never has to resolve the pick key to a display model.
+
+```ts
+type setHoveredFeature = (
+  hitKey: number | undefined,
+  featureIndex: number,
+) => void
+```
+
+#### action: setClickedFeature
+
+Clicked-state twin of `setHoveredFeature`.
+
+```ts
+type setClickedFeature = (
+  hitKey: number | undefined,
+  featureIndex: number,
+) => void
+```
+
+</details>
+
+<details>
+<summary>LinearSyntenyViewHelper - Actions (other undocumented members)</summary>
+
 | Member                                                               | Type                                              |
 | -------------------------------------------------------------------- | ------------------------------------------------- |
 | <span id="action-setheight">setHeight</span>                         | `(n: number) => void`                             |
@@ -221,6 +254,27 @@ not React-local hook state — owns every terminal state. Read by `displayPhase`
 type renderError = undefined
 // code
 renderError: undefined
+```
+
+**Getters**
+
+#### getter: canRender
+
+Overridable precondition (default true): both lifecycle autoruns skip their
+callback entirely while this is false, so a display never has to open its own
+`upload`/`render` with a readiness check.
+
+The LGV mixins override it with `view.initialized`, because before the view is
+measured its geometry throws by design (`view.width`, and so `visibleRegions` /
+`trackWidthPx` with it) and a throw in either callback is routed to
+`renderError` — surfacing "not measured yet" as the GPU render-error banner.
+Because it's an observable read inside the autoruns, the pair re-fires the
+moment it flips. This is the _precondition_ axis only: whether any data has
+arrived stays the render callback's own gate (return `false` to skip a tick),
+which is why `renderState` getters can be plain resolved values.
+
+```ts
+type canRender = boolean
 ```
 
 **Actions**

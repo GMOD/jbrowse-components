@@ -1,0 +1,175 @@
+import RemoveIcon from '@mui/icons-material/Remove'
+
+import type { CigarMode, LodMode } from './types.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
+
+// The conditional sections of the LinearSyntenyView header menu, each gated on
+// the state that gives it meaning and returning [] when inapplicable so they
+// spread cleanly into the flat list. Kept out of the model so the model's
+// `.views()` block holds only the three menu #methods themselves.
+//
+// Each takes the narrow structural slice it reads rather than the whole view
+// model: the model chain can then pass `self` with no cast, and each section
+// documents its own dependencies.
+
+interface RemoveRowModel {
+  views: unknown[]
+  removeLastRow: () => void
+}
+
+// Only terminal removal is supported (see LinearComparativeView.removeLastRow),
+// and a 2-row view has nothing to remove without collapsing to a single genome.
+export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
+  return model.views.length > 2
+    ? [
+        {
+          label: 'Remove bottom row',
+          icon: RemoveIcon,
+          onClick: () => {
+            model.removeLastRow()
+          },
+        },
+      ]
+    : []
+}
+
+interface AutoScaleModel {
+  levels: unknown[]
+  autoScaleLevelHeights: () => void
+}
+
+// Pointless with one level — auto-scale divides a fixed budget across levels.
+export function autoScaleMenuItems(model: AutoScaleModel): MenuItem[] {
+  return model.levels.length > 1
+    ? [
+        {
+          label: 'Auto-scale level heights',
+          onClick: () => {
+            model.autoScaleLevelHeights()
+          },
+        },
+      ]
+    : []
+}
+
+interface GenomeViewsModel {
+  views: { assemblyNames: string[] }[]
+  compactAllViews: () => void
+  expandAllViews: () => void
+  isViewCompact: (idx: number) => boolean
+  toggleCompactView: (idx: number) => void
+}
+
+// Per-row compact toggles, worth a submenu only once there are more rows than
+// the two a plain pairwise view has.
+export function genomeViewsMenuItems(model: GenomeViewsModel): MenuItem[] {
+  return model.views.length > 2
+    ? [
+        {
+          label: 'Genome views',
+          subMenu: [
+            {
+              label: 'Compact all views',
+              onClick: () => {
+                model.compactAllViews()
+              },
+            },
+            {
+              label: 'Expand all views',
+              onClick: () => {
+                model.expandAllViews()
+              },
+            },
+            ...model.views.map((view, idx) => ({
+              label: view.assemblyNames[0] ?? `View ${idx + 1}`,
+              type: 'checkbox' as const,
+              checked: !model.isViewCompact(idx),
+              onClick: () => {
+                model.toggleCompactView(idx)
+              },
+            })),
+          ],
+        },
+      ]
+    : []
+}
+
+interface CigarModeModel {
+  hasCigarData: boolean
+  cigarMode: CigarMode
+  setCigarMode: (arg: CigarMode) => void
+}
+
+const CIGAR_MODES: { label: string; mode: CigarMode }[] = [
+  { label: 'Colored indels', mode: 'full' },
+  { label: 'Transparent indels', mode: 'matches' },
+  { label: 'None', mode: 'off' },
+]
+
+// Gated on data, not config: coarse-tier PIF and CIGAR-less PAF have no ops to
+// display, so the whole section would be inert.
+export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
+  return model.hasCigarData
+    ? [
+        {
+          label: 'CIGAR display mode',
+          subMenu: CIGAR_MODES.map(({ label, mode }) => ({
+            label,
+            type: 'radio' as const,
+            checked: model.cigarMode === mode,
+            onClick: () => {
+              model.setCigarMode(mode)
+            },
+          })),
+        },
+      ]
+    : []
+}
+
+interface LodModel {
+  hasLodCapableAdapter: boolean
+  lodMode: LodMode
+  setLodMode: (arg: LodMode) => void
+}
+
+const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
+  {
+    label: 'Automatic (by zoom)',
+    value: 'auto',
+    helpText:
+      'Show base-level detail when zoomed in, blocks-only when zoomed out.',
+  },
+  {
+    label: 'Indels + mismatches',
+    value: 'fine',
+    helpText:
+      'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
+  },
+  {
+    label: 'Alignment blocks only',
+    value: 'coarse',
+    helpText:
+      'Skip base-level detail for speed — no indel or mismatch coloring.',
+  },
+]
+
+// Adapters without tiered storage (PAFAdapter, BlastTabularAdapter) have nothing
+// to switch between.
+export function lodMenuItems(model: LodModel): MenuItem[] {
+  return model.hasLodCapableAdapter
+    ? [
+        {
+          label: 'Level of detail',
+          subMenu: LOD_MODES.map(({ label, value, helpText }) => ({
+            helpText,
+            label,
+            type: 'radio' as const,
+            checked: model.lodMode === value,
+            onClick: () => {
+              model.setLodMode(value)
+            },
+          })),
+        },
+      ]
+    : []
+}

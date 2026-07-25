@@ -156,6 +156,34 @@ export function linearSyntenyViewHelperModelFactory(
         )
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * Point the whole level's hover state at one pick hit: the display whose
+       * geometry was hit takes the instance index, every other display clears.
+       * An action rather than a loop in the canvas component so the N writes land
+       * in one MobX batch, and so the canvas never has to resolve the pick key to
+       * a display model.
+       */
+      setHoveredFeature(hitKey: number | undefined, featureIndex: number) {
+        for (const display of self.linearSyntenyDisplays) {
+          display.setHoveredFeatureIdx(
+            display.displayKey === hitKey ? featureIndex : -1,
+          )
+        }
+      },
+      /**
+       * #action
+       * Clicked-state twin of `setHoveredFeature`.
+       */
+      setClickedFeature(hitKey: number | undefined, featureIndex: number) {
+        for (const display of self.linearSyntenyDisplays) {
+          display.setClickedFeatureIdx(
+            display.displayKey === hitKey ? featureIndex : -1,
+          )
+        }
+      },
+    }))
     .views(self => ({
       /**
        * #getter

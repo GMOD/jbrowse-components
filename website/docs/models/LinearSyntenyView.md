@@ -259,14 +259,14 @@ init: types.frozen<LinearSyntenyViewInit | undefined>()
 <details>
 <summary>LinearSyntenyView - Properties (other undocumented members)</summary>
 
-| Member                                                             | Type                                                |
-| ------------------------------------------------------------------ | --------------------------------------------------- |
-| <span id="property-type">type</span>                               | `ISimpleType<"LinearSyntenyView">`                  |
-| <span id="property-cigarmode">cigarMode</span>                     | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| <span id="property-drawcurves">drawCurves</span>                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| <span id="property-drawlocationmarkers">drawLocationMarkers</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| <span id="property-alpha">alpha</span>                             | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
-| <span id="property-colorby">colorBy</span>                         | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| Member                                                             | Type                                                                     |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| <span id="property-type">type</span>                               | `ISimpleType<"LinearSyntenyView">`                                       |
+| <span id="property-cigarmode">cigarMode</span>                     | `IOptionalIType<ISimpleType<"off" \| "full" \| "matches">, [undefined]>` |
+| <span id="property-drawcurves">drawCurves</span>                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                      |
+| <span id="property-drawlocationmarkers">drawLocationMarkers</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                      |
+| <span id="property-alpha">alpha</span>                             | `IOptionalIType<ISimpleType<number>, [undefined]>`                       |
+| <span id="property-colorby">colorBy</span>                         | `IOptionalIType<ISimpleType<string>, [undefined]>`                       |
 
 </details>
 
@@ -413,7 +413,7 @@ includes a subset of view menu options because the full list is a little
 overwhelming
 
 ```ts
-type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
+type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -451,16 +451,16 @@ type importFormRemoveRow = (pairIdx: number) => void
 | <span id="action-clearimportformsyntenytracks">clearImportFormSyntenyTracks</span> | `() => void`                                                                                                                          |
 | <span id="action-setimportformsyntenytrack">setImportFormSyntenyTrack</span>       | `(arg: number, val: ImportFormSyntenyTrack) => void`                                                                                  |
 | <span id="action-setdrawcurves">setDrawCurves</span>                               | `(arg: boolean) => void`                                                                                                              |
-| <span id="action-setcigarmode">setCigarMode</span>                                 | `(arg: "off" \| "full" \| "matches") => void`                                                                                         |
+| <span id="action-setcigarmode">setCigarMode</span>                                 | `(arg: CigarMode) => void`                                                                                                            |
 | <span id="action-setdrawlocationmarkers">setDrawLocationMarkers</span>             | `(arg: boolean) => void`                                                                                                              |
 | <span id="action-setoverdrawpx">setOverdrawPx</span>                               | `(arg: number) => void`                                                                                                               |
 | <span id="action-setalpha">setAlpha</span>                                         | `(arg: number) => void`                                                                                                               |
 | <span id="action-setminalignmentlength">setMinAlignmentLength</span>               | `(arg: number) => void`                                                                                                               |
-| <span id="action-setlodmode">setLodMode</span>                                     | `(arg: "auto" \| "fine" \| "coarse") => void`                                                                                         |
+| <span id="action-setlodmode">setLodMode</span>                                     | `(arg: LodMode) => void`                                                                                                              |
 | <span id="action-setcolorby">setColorBy</span>                                     | `(arg: "default" \| "strand" \| "query" \| "target" \| "reference" \| "identity" \| "meanQueryIdentity" \| "mappingQuality") => void` |
 | <span id="action-setshowcolorlegend">setShowColorLegend</span>                     | `(arg: boolean) => void`                                                                                                              |
 | <span id="action-setopacitybyidentity">setOpacityByIdentity</span>                 | `(arg: boolean) => void`                                                                                                              |
-| <span id="action-setfadethinalignmentsmode">setFadeThinAlignmentsMode</span>       | `(arg: "auto" \| "off" \| "on") => void`                                                                                              |
+| <span id="action-setfadethinalignmentsmode">setFadeThinAlignmentsMode</span>       | `(arg: FadeThinMode) => void`                                                                                                         |
 | <span id="action-showallregions">showAllRegions</span>                             | `() => void`                                                                                                                          |
 | <span id="action-setinit">setInit</span>                                           | `(init?: LinearSyntenyViewInit \| undefined) => void`                                                                                 |
 | <span id="action-exportsvg">exportSvg</span>                                       | `(opts: ExportSvgOptions) => Promise<void>`                                                                                           |

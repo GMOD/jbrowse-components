@@ -7,6 +7,17 @@ import type React from 'react'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
+// CIGAR display mode: 'full' colors indel wedges, 'matches' leaves indels
+// see-through (transparent), 'off' draws blocks only.
+export type CigarMode = 'off' | 'matches' | 'full'
+
+// Level-of-detail tier: 'auto' follows the adapter's bpPerPx threshold, 'fine'
+// pins the per-row CIGAR tier, 'coarse' the no-CIGAR tier.
+export type LodMode = 'auto' | 'fine' | 'coarse'
+
+// Sub-pixel width fade: 'auto' turns on once the view is dense enough to tangle.
+export type FadeThinMode = 'auto' | 'on' | 'off'
+
 export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   views: {
     loc?: string
@@ -29,9 +40,7 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // Render ribbons as bezier curves rather than straight chords. Reads much
   // better at whole-genome scale where straight crossings stack into noise.
   drawCurves?: boolean
-  // CIGAR display mode: 'full' colors indel wedges, 'matches' leaves indels
-  // see-through (transparent), 'off' draws blocks only.
-  cigarMode?: 'off' | 'matches' | 'full'
+  cigarMode?: CigarMode
   // Per-feature opacity in [0,1]. The default (0.2) is tuned for dense
   // unfiltered hairballs; whole-genome views with minAlignmentLength set
   // can use a higher value (~0.4) for stronger color.
@@ -40,7 +49,7 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // fades only once the view is dense enough to tangle; a sparse whole-genome
   // comparison (e.g. distant species, every alignment sub-pixel) stays unfaded
   // so the fade doesn't wash it out. 'on'/'off' pin it.
-  fadeThinAlignmentsMode?: 'auto' | 'on' | 'off'
+  fadeThinAlignmentsMode?: FadeThinMode
   // Deprecated: legacy boolean form of fadeThinAlignmentsMode (true -> 'on',
   // false -> 'off'). Prefer fadeThinAlignmentsMode.
   fadeThinAlignments?: boolean

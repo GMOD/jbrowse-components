@@ -1,28 +1,33 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { normalizeTrackInit } from '@jbrowse/plugin-linear-genome-view'
-import {
-  DiagonalizeProgressMixin,
-  withDiagonalizeProgress,
-} from '@jbrowse/synteny-core'
+import { types } from '@jbrowse/mobx-state-tree'
+import { DiagonalizeProgressMixin } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import RemoveIcon from '@mui/icons-material/Remove'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
-import { autorun, observable, when } from 'mobx'
+import { observable } from 'mobx'
 
 import baseModel from '../LinearComparativeView/model.ts'
-import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
+import { doAfterAttach } from './afterAttach.ts'
+import {
+  autoScaleMenuItems,
+  cigarModeMenuItems,
+  genomeViewsMenuItems,
+  lodMenuItems,
+  removeRowMenuItems,
+} from './menus.ts'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
 import type {
+  CigarMode,
   ExportSvgOptions,
+  FadeThinMode,
   ImportFormSyntenyTrack,
   LinearSyntenyViewInit,
+  LodMode,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -72,7 +77,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         cigarMode: types.stripDefault(
-          types.enumeration(['off', 'matches', 'full']),
+          // `as const` so this resolves to the CigarMode union rather than
+          // widening to `string` — the menu builders consume it as the union
+          types.enumeration(['off', 'matches', 'full'] as const),
           'full',
         ),
         /**
@@ -360,7 +367,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setCigarMode(arg: 'off' | 'matches' | 'full') {
+      setCigarMode(arg: CigarMode) {
         self.cigarMode = arg
       },
       /**
@@ -390,7 +397,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLodMode(arg: 'auto' | 'fine' | 'coarse') {
+      setLodMode(arg: LodMode) {
         self.lodMode = arg
       },
       /**
@@ -414,7 +421,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFadeThinAlignmentsMode(arg: 'auto' | 'on' | 'off') {
+      setFadeThinAlignmentsMode(arg: FadeThinMode) {
         self.fadeThinAlignmentsMode = arg
       },
       /**
@@ -456,126 +463,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             handleClose,
           },
         ])
-      }
-      // Header menu sections, each gated on the state that gives it meaning.
-      // Return [] when inapplicable so they spread cleanly into the flat list.
-      function removeRowMenuItems() {
-        return self.views.length > 2
-          ? [
-              {
-                label: 'Remove bottom row',
-                icon: RemoveIcon,
-                onClick: () => {
-                  self.removeLastRow()
-                },
-              },
-            ]
-          : []
-      }
-      function autoScaleMenuItems() {
-        return self.levels.length > 1
-          ? [
-              {
-                label: 'Auto-scale level heights',
-                onClick: () => {
-                  self.autoScaleLevelHeights()
-                },
-              },
-            ]
-          : []
-      }
-      function genomeViewsMenuItems() {
-        return self.views.length > 2
-          ? [
-              {
-                label: 'Genome views',
-                subMenu: [
-                  {
-                    label: 'Compact all views',
-                    onClick: () => {
-                      self.compactAllViews()
-                    },
-                  },
-                  {
-                    label: 'Expand all views',
-                    onClick: () => {
-                      self.expandAllViews()
-                    },
-                  },
-                  ...self.views.map((view, idx) => ({
-                    label: view.assemblyNames[0] ?? `View ${idx + 1}`,
-                    type: 'checkbox' as const,
-                    checked: !self.isViewCompact(idx),
-                    onClick: () => {
-                      self.toggleCompactView(idx)
-                    },
-                  })),
-                ],
-              },
-            ]
-          : []
-      }
-      function cigarModeMenuItems() {
-        return self.hasCigarData
-          ? [
-              {
-                label: 'CIGAR display mode',
-                subMenu: (
-                  [
-                    { label: 'Colored indels', mode: 'full' },
-                    { label: 'Transparent indels', mode: 'matches' },
-                    { label: 'None', mode: 'off' },
-                  ] as const
-                ).map(({ label, mode }) => ({
-                  label,
-                  type: 'radio' as const,
-                  checked: self.cigarMode === mode,
-                  onClick: () => {
-                    self.setCigarMode(mode)
-                  },
-                })),
-              },
-            ]
-          : []
-      }
-      function lodMenuItems() {
-        return self.hasLodCapableAdapter
-          ? [
-              {
-                label: 'Level of detail',
-                subMenu: (
-                  [
-                    {
-                      label: 'Automatic (by zoom)',
-                      value: 'auto',
-                      helpText:
-                        'Show base-level detail when zoomed in, blocks-only when zoomed out.',
-                    },
-                    {
-                      label: 'Indels + mismatches',
-                      value: 'fine',
-                      helpText:
-                        'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
-                    },
-                    {
-                      label: 'Alignment blocks only',
-                      value: 'coarse',
-                      helpText:
-                        'Skip base-level detail for speed — no indel or mismatch coloring.',
-                    },
-                  ] as const
-                ).map(({ label, value, helpText }) => ({
-                  helpText,
-                  label,
-                  type: 'radio' as const,
-                  checked: self.lodMode === value,
-                  onClick: () => {
-                    self.setLodMode(value)
-                  },
-                })),
-              },
-            ]
-          : []
       }
       return {
         /**
@@ -636,7 +523,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ])
               },
             },
-            ...removeRowMenuItems(),
+            ...removeRowMenuItems(self),
             {
               label: 'Re-order chromosomes',
               onClick: () => {
@@ -650,10 +537,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               },
               icon: ShuffleIcon,
             },
-            ...autoScaleMenuItems(),
-            ...genomeViewsMenuItems(),
-            ...cigarModeMenuItems(),
-            ...lodMenuItems(),
+            ...autoScaleMenuItems(self),
+            ...genomeViewsMenuItems(self),
+            ...cigarModeMenuItems(self),
+            ...lodMenuItems(self),
             {
               label: 'Link views',
               type: 'checkbox',
@@ -691,141 +578,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => ({
       afterAttach() {
-        // Serialize concurrent firings: dockview mount + React Strict Mode
-        // double-invoke cause width to settle in multiple steps. Each width
-        // change re-fires this autorun, and without the guard a second run's
-        // setViews() detaches the first run's view models — the first's
-        // `when(() => view.initialized)` then throws on the dead node, the
-        // catch clears init, and the import form appears.
-        let running = false
-        addDisposer(
-          self,
-          autorun(
-            async function initAutorun() {
-              const { init, width } = self
-              if (!width || !init || running) {
-                return
-              }
-              running = true
-
-              const session = getSession(self)
-              const { assemblyManager } = session
-
-              try {
-                // flag the pending reorder before any track render can paint,
-                // so `settled` (→ synteny_canvas_done) can't fire on the
-                // pre-diagonalize hairball during the view-building await window
-                // below (before awaitingAutoDiagonalize flips the canvas off)
-                if (init.autoDiagonalize) {
-                  self.setAutoDiagonalizeRequested(true)
-                }
-                const assemblies = await Promise.all(
-                  init.views.map(async v => {
-                    const asm = await assemblyManager.waitForAssembly(
-                      v.assembly,
-                    )
-                    if (!asm) {
-                      throw new Error(`Assembly ${v.assembly} failed to load`)
-                    }
-                    return asm
-                  }),
-                )
-
-                self.setViews(
-                  assemblies.map((asm, idx) => ({
-                    type: 'LinearGenomeView' as const,
-                    bpPerPx: 1,
-                    offsetPx: 0,
-                    hideHeader: true,
-                    displayedRegions: asm.regions,
-                    // trackLabels is a plain persisted prop — set it on the
-                    // snapshot directly rather than imperatively after attach
-                    ...(init.views[idx]?.trackLabels
-                      ? { trackLabels: init.views[idx].trackLabels }
-                      : {}),
-                  })),
-                )
-
-                await Promise.all(
-                  self.views.map(view => when(() => view.initialized)),
-                )
-
-                await Promise.all(
-                  init.views.map(async (viewInit, idx) => {
-                    const view = self.views[idx]
-                    if (!view) {
-                      return
-                    }
-                    if (viewInit.loc) {
-                      await view.navToLocString(viewInit.loc, viewInit.assembly)
-                    } else {
-                      view.showAllRegionsInAssembly(viewInit.assembly)
-                    }
-                    if (viewInit.tracks) {
-                      for (const track of viewInit.tracks) {
-                        const { trackId, trackSnapshot, displaySnapshot } =
-                          normalizeTrackInit(track)
-                        view.showTrack(trackId, trackSnapshot, displaySnapshot)
-                      }
-                    }
-                  }),
-                )
-
-                if (init.tracks) {
-                  for (const [i, ids] of normalizeTrackLevels(
-                    init.tracks,
-                  ).entries()) {
-                    for (const trackId of ids) {
-                      self.showTrack(trackId, i)
-                    }
-                  }
-                }
-
-                if (self.levels.length >= 4) {
-                  self.autoScaleLevelHeights()
-                }
-
-                applyInitSettings(self, init)
-
-                if (init.autoDiagonalize) {
-                  // The views are initialized and their displayedRegions are
-                  // populated by this point (above), and runDiagonalize fetches
-                  // the whole-genome alignments it needs in its own RPC — so we
-                  // diagonalize directly, no need to wait on the per-display
-                  // render fetch first. withDiagonalizeProgress drives the
-                  // reordering spinner + cancel and swallows the abort.
-                  await withDiagonalizeProgress(self, async opts => {
-                    const { runDiagonalize } =
-                      await import('./util/runDiagonalize.ts')
-                    await runDiagonalize(self, opts)
-                    // only now is the view truly diagonalized — release the
-                    // `settled` gate. If runDiagonalize threw,
-                    // withDiagonalizeProgress catches it and this line is
-                    // skipped, so `settled` stays false and the capture times
-                    // out loudly instead of committing an undiagonalized view.
-                    if (isAlive(self)) {
-                      self.setAutoDiagonalizeComplete(true)
-                    }
-                  })
-                }
-
-                self.setInit(undefined)
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
-                // Keep init on failure: a transient error (assembly not yet
-                // registered, a network blip) must stay recoverable. Clearing
-                // it here, while views is still empty, permanently strands the
-                // view on the import form with no retry. Leaving init set lets
-                // a reload re-run this autorun (init is persisted while views
-                // is empty, see postProcessSnapshot).
-              } finally {
-                running = false
-              }
-            },
-            { name: 'LinearSyntenyViewInit' },
-          ),
-        )
+        doAfterAttach(self)
       },
     }))
     .preProcessSnapshot<
