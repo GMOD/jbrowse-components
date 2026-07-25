@@ -2,7 +2,10 @@ import { SKIP, visit } from 'unist-util-visit'
 
 import { recipeButtonHtml, recipeDialogHtml } from './spec-recipe/html.ts'
 import { buildRecipe } from './spec-recipe/recipe.ts'
-import { screenshotLiveUrls } from '../../scripts/screenshot-specs.ts'
+import {
+  screenshotLiveUrls,
+  screenshotSlowSpecNames,
+} from '../../scripts/screenshot-specs.ts'
 
 import type { Image, Paragraph, Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -22,6 +25,16 @@ const liveByImg = new Map(
     { name, url },
   ]),
 )
+
+// A figure whose session pulls a huge remote file, or clusters a whole-genome
+// view, takes minutes to open in the reader's own browser. Say so on the link:
+// without it a slow session reads as a broken one, and the reader navigates away
+// during the load.
+function slowNote(name: string | undefined) {
+  return name !== undefined && screenshotSlowSpecNames.has(name)
+    ? ' <span class="figure-slow-note">(large dataset — this session takes a while to load)</span>'
+    : ''
+}
 
 function parseAttrs(str: string): Record<string, string> {
   const attrs: Record<string, string> = {}
@@ -127,13 +140,13 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
             if (help.dialog) {
               dialogs.push(help.dialog)
             }
-            return `${a(l.url, `${l.label} ↗`)}${help.button}`
+            return `${a(l.url, `${l.label} ↗`)}${help.button}${slowNote(l.name)}`
           })
           .join(' · ')
         node.value = `<figure>${a(multi[0]!.url, img)}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption>${dialogs.join('')}</figure>`
       } else if (liveUrl) {
         const help = helpFor(liveUrl, live?.name)
-        node.value = `<figure>${a(liveUrl, img)}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}${help.button}</figcaption>${help.dialog}</figure>`
+        node.value = `<figure>${a(liveUrl, img)}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
       } else {
         node.value = `<figure>${img}<figcaption>${caption}</figcaption></figure>`
       }

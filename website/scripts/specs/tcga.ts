@@ -185,11 +185,11 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     waitUntil: 'domcontentloaded',
     // by far the heaviest spec here: the whole-genome view pulls essentially the
     // entire 5.7MB BED before it can build the 1104-row matrix and cluster it.
-    // 180s captured it twice and then timed out on a third run; 420s then timed
-    // out too, with the debug dump showing the dendrogram painting seconds after
-    // the wait gave up — the fetch+cluster is genuinely minutes here and the cap
-    // was just under it. The zoomed ERBB2 spec below fetches one 1.5Mb window and
-    // is nowhere near this bound.
+    // Needs minutes under the default swiftshader rasterizer — not from fetching
+    // or clustering (2.1s and 0.4s measured) but from ~10 multi-second software
+    // GPU passes over the 1104-row canvas. Regenerate with --headed and it is
+    // ready in ~14s; the budget stays large so a headless run can still finish.
+    // See agent-docs/reference/SCREENSHOT_PERF.md.
     readyTimeout: 900000,
     viewportWidth: 1900,
     viewportHeight: 900,
@@ -326,8 +326,10 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // The recurrence track over the same stack, both whole-genome: every peak in
   // the top track is a stripe in the bottom one, and the top track is the only
   // one of the two that can say how many tumors. Deliberately NOT clustered —
-  // the stack is here as the thing the frequencies summarize, and clustering
-  // would add three minutes of RPC to a figure that does not use the ordering.
+  // the stack is here as the thing the frequencies summarize, and the ordering
+  // would go unused. (Clustering itself is cheap — @gmod/hclust measures 0.4s on
+  // these 1104 rows; what makes the clustered sibling slow is software
+  // rasterization, see agent-docs/reference/SCREENSHOT_PERF.md.)
   {
     mode: 'url',
     name: 'tcga/cnv_recurrence_genome',

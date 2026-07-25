@@ -250,6 +250,12 @@ const mdHref = isRealDoc
     margin-top: 0.5rem;
     font-size: 0.9rem;
   }
+  /* set on the live link of a figure whose session is slow to open (heavy remote
+     data or whole-genome clustering) — see slowNote in lib/remark-figure.ts */
+  .docs-content :global(.figure-slow-note) {
+    font-style: normal;
+    font-size: 0.85em;
+  }
   .docs-content :global(table) {
     border-collapse: collapse;
     width: 100%;
