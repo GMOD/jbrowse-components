@@ -17,7 +17,11 @@
 // --- Draw lifecycle ---
 export { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
 export type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
-export { useRenderingBackend } from './useRenderingBackend.ts'
+export {
+  createGpuContextLostError,
+  isGpuContextLostError,
+  useRenderingBackend,
+} from './useRenderingBackend.ts'
 export type { RenderLifecycleModel } from './useRenderingBackend.ts'
 export { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 export { ScrollLockedOverlay } from './ScrollLockedOverlay.tsx'
@@ -103,6 +107,7 @@ export type {
 export {
   getGpuDevice,
   getGpuOverride,
+  isGpuRenderingDisabled,
   onDeviceLost,
   resetGpuDeviceForTests,
   setGpuOverride,

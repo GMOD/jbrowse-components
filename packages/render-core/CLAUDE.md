@@ -32,6 +32,14 @@ neutral name (`RenderLifecycleMixin`, `PerRegionRenderingBackend`, `Canvas2D*`,
 runs the Canvas2D fallback. `useRenderingBackend` owns the whole canvas-init /
 context-loss / device-loss / pagehide / retry lifecycle.
 
+**The WebGL→Canvas2D ladder in `createGpuHal` runs at backend construction
+only.** A context lost afterwards never degrades to Canvas2D on its own, so the
+hook reports an unrestored loss as `renderError` (unmounting the canvas is the
+only way to get a live context back) and the error banner offers the page-wide
+`setGpuOverride('canvas2d')` switch. Details in
+`agent-docs/reference/GPU_RENDERING.md` "Context-loss recovery" — don't add a
+second, per-display fallback path.
+
 **Conceptual reference: `agent-docs/reference/GPU_RENDERING.md`.** This file
 documents only what bites when editing _this package_.
 

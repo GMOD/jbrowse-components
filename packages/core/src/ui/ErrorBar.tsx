@@ -4,6 +4,8 @@ import { Alert, IconButton, Tooltip } from '@mui/material'
 import { makeStyles } from '../util/tss-react/index.ts'
 import StackTraceButton from './StackTraceButton.tsx'
 
+import type { ReactNode } from 'react'
+
 const useStyles = makeStyles()({
   content: {
     wordBreak: 'break-word',
@@ -18,9 +20,13 @@ const useStyles = makeStyles()({
 export default function ErrorBar({
   error,
   onRetry,
+  extraAction,
 }: {
   error: unknown
   onRetry: () => void
+  // Remedy specific to one kind of error, shown left of the shared stack-trace
+  // and retry buttons (the GPU overlay's "switch to Canvas2D" is the only one).
+  extraAction?: ReactNode
 }) {
   const { classes } = useStyles()
   const message = `${error}`
@@ -38,6 +44,7 @@ export default function ErrorBar({
         severity="error"
         action={
           <>
+            {extraAction}
             <StackTraceButton error={error} />
             <Tooltip title="Retry">
               <IconButton

@@ -97,6 +97,16 @@ export function getGpuOverride() {
 }
 
 /**
+ * Whether the GPU is off for the whole page — either pinned by `?renderer=` at
+ * startup or switched off from a display's GPU-error banner after an
+ * unrecoverable WebGL context loss. `createGpuHal` returns null in that case, so
+ * every backend built from then on is the Canvas2D one.
+ */
+export function isGpuRenderingDisabled() {
+  return gpuOverride === 'canvas2d' || gpuOverride === 'canvas'
+}
+
+/**
  * Reset module-level singleton state. For use in tests only — clears
  * `device` and `devicePromise` so the next `getGpuDevice()` call starts
  * fresh rather than returning the cached (possibly null) promise from a

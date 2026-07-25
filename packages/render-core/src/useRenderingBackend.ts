@@ -17,6 +17,46 @@ import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 const MAX_CONTEXT_RECOVER_ATTEMPTS = 2
 const CONTEXT_RECOVER_BASE_MS = 1000
 
+// A lost context is reported as `renderError` rather than left to bleed pixels,
+// because a lost context is silent AND unfixable in place: WebGL calls on it are
+// no-ops (they never throw, so nothing else routes to renderError — the canvas
+// just holds stale or blank pixels), and `getContext('webgl2')` keeps returning
+// that same lost context, so re-initializing on the same canvas element can't
+// help. `renderError` is the only state that unmounts the canvas, so it is also
+// the mechanism that gets a fresh element — and, under context exhaustion, hands
+// the context back to the rest of the page.
+//
+// The report waits one grace window first. This is NOT a cap on how long
+// recovery may take (nothing is aborted when it fires): it's a race against
+// `webglcontextrestored`, which the browser fires within a frame or two for the
+// recoverable causes (GPU process crash, driver reset) and recovers with no
+// banner at all. Reporting immediately would flash a banner on every display in
+// the page for those.
+const CONTEXT_LOST_REPORT_GRACE_MS = 400
+
+const CONTEXT_LOST_MESSAGE =
+  'WebGL context lost. The browser reclaimed the GPU context for this display, ' +
+  'usually because too many GPU-rendered views are open at once.'
+
+/**
+ * A WebGL context loss the browser did not restore. Flagged (rather than
+ * identified by message text or `instanceof`) so the error UI can offer the one
+ * remedy specific to it — switching the page to Canvas2D rendering — without
+ * offering it for unrelated render errors, whose remedies differ (an
+ * over-large-allocation error says to zoom in).
+ */
+export function createGpuContextLostError() {
+  return Object.assign(new Error(CONTEXT_LOST_MESSAGE), {
+    gpuContextLost: true as const,
+  })
+}
+
+export function isGpuContextLostError(error: unknown) {
+  return (
+    typeof error === 'object' && error !== null && 'gpuContextLost' in error
+  )
+}
+
 function nodeAlive(model: unknown) {
   if (isStateTreeNode(model)) {
     return isAlive(model)
@@ -54,9 +94,12 @@ export interface RenderLifecycleModel<RenderingBackendType> {
  *   1. Canvas mounts → init effect calls `factory(canvas)`; on success
  *      `setRenderError(undefined)` + `startRenderingBackend(backend)`, on
  *      failure `setRenderError(error)`.
- *   2. WebGL context loss or WebGPU device loss → `contextVersion` bumps →
- *      cleanup disposes the old backend (`stopRenderingBackend`) → effect
- *      re-runs creating a fresh backend.
+ *   2. WebGL context loss → the browser gets one grace window to fire
+ *      `webglcontextrestored` (which bumps `contextVersion` → rebuild, no user-
+ *      visible state); if it doesn't, the loss is reported as `renderError`
+ *      (`createGpuContextLostError`), which unmounts the canvas and so is what
+ *      makes a fresh context obtainable at all. Bounded auto-recovery then
+ *      clears it. WebGPU device loss bumps `contextVersion` directly.
  *   3. `retry()` clears `renderError` + bumps `contextVersion` so the next
  *      mount reinitializes.
  *
@@ -96,6 +139,12 @@ export function useRenderingBackend<
   const recoverTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
+  // Pending "the browser didn't restore it" report; see
+  // CONTEXT_LOST_REPORT_GRACE_MS. Separate from recoverTimerRef because the two
+  // are different phases: this one sets renderError, that one clears it.
+  const lossReportTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
 
   const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
     setCanvas(node)
@@ -104,11 +153,24 @@ export function useRenderingBackend<
   useEffect(() => {
     if (canvas) {
       const onLost = (e: Event) => {
+        // preventDefault is what permits `webglcontextrestored` at all, so it
+        // stays; the grace timer below is the wait for that event.
         e.preventDefault()
         contextLostRef.current = true
+        clearTimeout(lossReportTimerRef.current)
+        lossReportTimerRef.current = setTimeout(() => {
+          lossReportTimerRef.current = undefined
+          if (nodeAlive(model)) {
+            model.setRenderError(createGpuContextLostError())
+          }
+        }, CONTEXT_LOST_REPORT_GRACE_MS)
       }
       const onRestored = () => {
-        // browser recovered on its own: cancel any pending backoff + reset
+        // browser recovered on its own: cancel the pending report + any backoff,
+        // then reset and rebuild (every GL object made against the old context is
+        // dead even though `isContextLost()` now reads false)
+        clearTimeout(lossReportTimerRef.current)
+        lossReportTimerRef.current = undefined
         clearTimeout(recoverTimerRef.current)
         recoverTimerRef.current = undefined
         contextLostRef.current = false
@@ -118,12 +180,18 @@ export function useRenderingBackend<
       canvas.addEventListener('webglcontextlost', onLost)
       canvas.addEventListener('webglcontextrestored', onRestored)
       return () => {
+        // Drop a report still inside its grace window: with this canvas gone
+        // there is nothing left to recover (the next mount brings a fresh
+        // element), and `renderError` outranks every other phase — a late report
+        // would replace a legitimate too-large banner with a GPU error.
+        clearTimeout(lossReportTimerRef.current)
+        lossReportTimerRef.current = undefined
         canvas.removeEventListener('webglcontextlost', onLost)
         canvas.removeEventListener('webglcontextrestored', onRestored)
       }
     }
     return undefined
-  }, [canvas])
+  }, [canvas, model])
 
   // Auto-recover a context-loss-induced error: re-init on bounded backoff. Gated
   // on `contextLostRef` so non-GPU render errors are never auto-retried, and on
@@ -153,9 +221,10 @@ export function useRenderingBackend<
     }
   })
 
-  // Clear any pending auto-recovery timer on unmount.
+  // Clear any pending loss-report / auto-recovery timer on unmount.
   useEffect(
     () => () => {
+      clearTimeout(lossReportTimerRef.current)
       clearTimeout(recoverTimerRef.current)
     },
     [],
@@ -173,6 +242,11 @@ export function useRenderingBackend<
     const handleGlobalPageHide = () => {
       rendererRef.current?.dispose()
       rendererRef.current = null
+      // A loss reported here would be about a backend we are tearing down anyway,
+      // and on a bfcache freeze the timer thaws AFTER pageshow has rebuilt one —
+      // banner on a working canvas. The teardown below is the report.
+      clearTimeout(lossReportTimerRef.current)
+      lossReportTimerRef.current = undefined
       // Also clear the model's backend reference — not just dispose the GPU
       // object. On a bfcache navigate-away the component is frozen, not
       // unmounted, so the effect cleanup never runs; leaving
@@ -257,7 +331,9 @@ export function useRenderingBackend<
   })
 
   function retry() {
-    // manual retry = fresh start: cancel pending backoff and reset the budget
+    // manual retry = fresh start: cancel pending timers and reset the budget
+    clearTimeout(lossReportTimerRef.current)
+    lossReportTimerRef.current = undefined
     clearTimeout(recoverTimerRef.current)
     recoverTimerRef.current = undefined
     contextLostRef.current = false

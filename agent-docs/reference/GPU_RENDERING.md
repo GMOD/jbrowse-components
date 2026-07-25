@@ -206,6 +206,37 @@ calls `model.startRenderingBackend(newBackend)`. The mixin sees
 `currentRenderingBackend`. Both autoruns re-fire against the new backend. No
 special code path.
 
+Two things make a **WebGL** loss more than a rebuild. It is silent — calls on a
+lost context are no-ops that never throw, so nothing else routes to `renderError`
+and the canvas just holds stale pixels — and it is unfixable in place, because
+`getContext('webgl2')` keeps handing back that same lost context until the
+browser fires `webglcontextrestored`. So the hook waits one grace window for that
+restore (which recovers with nothing user-visible) and otherwise reports
+`createGpuContextLostError()` into `renderError`: that phase unmounts the canvas,
+which is both what frees the context for the rest of the page and what makes the
+remount able to get a live one. Bounded auto-recovery then clears it (2 attempts,
+exponential backoff) and stops at the manual Retry.
+
+Navigating away is not one of these losses: `pagehide` already tears the backend
+down, and it also drops any pending report, because on a bfcache freeze the timer
+thaws *after* `pageshow` rebuilt the backend and would banner a working canvas. A
+loss while the tab is merely hidden (memory pressure, mobile) does report and
+auto-recover in the background — the user comes back to a redrawn track, or to a
+banner with Retry, rather than to a permanently blank one.
+
+The cause is usually **page-wide**: Chrome allows ~16 live WebGL contexts and we
+create one per display canvas, so past the cap it force-loses the oldest and
+recovery evicts another (see `project_workspaces_freeze_gpu_context`; view-level
+lazy mount in `useViewVisibility` is the pressure reducer). For that, the
+`renderError` banner offers `setGpuOverride('canvas2d')` — the same switch
+`?renderer=canvas2d` sets, so every backend built afterwards is the Canvas2D one.
+`isGpuRenderingDisabled()` is the single read for "GPU is off page-wide";
+`DisplayRenderErrorOverlay` hides the button when it's already true, and the
+button is scoped to context-loss errors (an over-allocation error's remedy is to
+zoom in, not to change backend). Known gap: dotplot and synteny keep their canvas
+mounted through a `renderError`, so their banner can report a loss but in-place
+retry can't clear one — they'd need a fresh canvas element.
+
 **Tab visibility.** `useTabVisibilityRerender` calls `model.renderNow()` on
 `visibilitychange`, bumping `renderTick`. WebGPU swap-chain textures are reissued
 by the `render` callback.

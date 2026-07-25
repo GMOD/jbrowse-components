@@ -1,4 +1,4 @@
-import { getGpuOverride } from '../gpuDevice.ts'
+import { getGpuOverride, isGpuRenderingDisabled } from '../gpuDevice.ts'
 import { WebGL2Hal } from './webgl2Hal.ts'
 import { WebGPUHal } from './webgpuHal.ts'
 
@@ -11,10 +11,10 @@ export async function createGpuHal(
   passes: PassDescriptor[],
   uniformByteSize: number,
 ): Promise<GpuHal | null> {
-  const override = getGpuOverride()
-  if (override === 'canvas2d' || override === 'canvas') {
+  if (isGpuRenderingDisabled()) {
     return null
   }
+  const override = getGpuOverride()
   if (override !== 'webgl') {
     try {
       const webgpu = await WebGPUHal.create(canvas, passes, uniformByteSize)

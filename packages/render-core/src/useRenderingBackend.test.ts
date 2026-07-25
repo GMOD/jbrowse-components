@@ -1,7 +1,10 @@
 import { act, renderHook } from '@testing-library/react'
 
 import { onDeviceLost } from './gpuDevice.ts'
-import { useRenderingBackend } from './useRenderingBackend.ts'
+import {
+  isGpuContextLostError,
+  useRenderingBackend,
+} from './useRenderingBackend.ts'
 
 jest.mock('./gpuDevice.ts', () => ({
   onDeviceLost: jest.fn(() => jest.fn()),
@@ -285,6 +288,91 @@ describe('useRenderingBackend', () => {
     await wait(2400)
 
     expect(factory).toHaveBeenCalledTimes(1)
+  }, 10000)
+
+  test('reports a context loss the browser never restores as renderError', async () => {
+    const factory = createMockFactory()
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+    expect(model.renderError).toBeUndefined()
+
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+    })
+    // nothing user-visible until the grace window for `webglcontextrestored`
+    // has passed
+    expect(model.renderError).toBeUndefined()
+
+    await wait(600)
+    expect(isGpuContextLostError(model.renderError)).toBe(true)
+  }, 10000)
+
+  test('stays silent when the browser restores the context in the grace window', async () => {
+    const factory = createMockFactory()
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+    })
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextrestored'))
+    })
+    await wait(600)
+
+    expect(model.renderError).toBeUndefined()
+  }, 10000)
+
+  test('does not report a context loss after the canvas unmounts', async () => {
+    const factory = createMockFactory()
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+    })
+    act(() => {
+      result.current.canvasRef(null)
+    })
+    await wait(600)
+
+    expect(model.renderError).toBeUndefined()
+  }, 10000)
+
+  test('does not report a context loss across a pagehide teardown', async () => {
+    const factory = createMockFactory()
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+      window.dispatchEvent(new Event('pagehide'))
+    })
+    await wait(600)
+
+    // bfcache thaws the timer after pageshow rebuilt the backend, so a report
+    // here would banner a working canvas
+    expect(model.renderError).toBeUndefined()
   }, 10000)
 
   test('cleans up device lost listener on unmount', () => {

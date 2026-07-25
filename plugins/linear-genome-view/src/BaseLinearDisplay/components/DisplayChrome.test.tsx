@@ -1,5 +1,10 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+import {
+  isGpuRenderingDisabled,
+  setGpuOverride,
+} from '@jbrowse/render-core/gpuDevice'
+import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
 import { act, render } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
@@ -215,4 +220,50 @@ test('tooLarge -> ready transition unmounts the banner and mounts the canvas', a
 
   await findByTestId('probe-canvas')
   expect(queryByText(/Requested too much data/)).toBeNull()
+})
+
+// The GPU-error banner's Canvas2D escape hatch. Scoped to a context loss because
+// that is the only render error Canvas2D actually remedies, and it turns the GPU
+// off page-wide (the ~16-context cap is a per-page resource), so these tests
+// restore the override afterwards.
+describe('context-lost Canvas2D escape hatch', () => {
+  afterEach(() => {
+    setGpuOverride(null)
+  })
+
+  test('offers Canvas2D for a lost context and switches the page to it', async () => {
+    const model = TestChromeModel.create({})
+    model.setRenderError(createGpuContextLostError())
+    const { findByTestId } = renderChrome(model)
+
+    const button = await findByTestId('use_canvas2d_button')
+    expect(isGpuRenderingDisabled()).toBe(false)
+
+    act(() => {
+      button.click()
+    })
+
+    expect(isGpuRenderingDisabled()).toBe(true)
+    // retry cleared the error, so the canvas is back — now on Canvas2D
+    await findByTestId('probe-canvas')
+  })
+
+  test('offers no Canvas2D switch for an unrelated render error', async () => {
+    const model = TestChromeModel.create({})
+    model.setRenderError(new Error('region too large for this GPU'))
+    const { findByTestId, queryByTestId } = renderChrome(model)
+
+    await findByTestId('reload_button')
+    expect(queryByTestId('use_canvas2d_button')).toBeNull()
+  })
+
+  test('offers no Canvas2D switch once the GPU is already off', async () => {
+    setGpuOverride('canvas2d')
+    const model = TestChromeModel.create({})
+    model.setRenderError(createGpuContextLostError())
+    const { findByTestId, queryByTestId } = renderChrome(model)
+
+    await findByTestId('reload_button')
+    expect(queryByTestId('use_canvas2d_button')).toBeNull()
+  })
 })
