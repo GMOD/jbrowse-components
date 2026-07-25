@@ -285,6 +285,12 @@ for r in 1 2; do
   zcat "reads/${READS_ACC}_$r.fastq.gz" | head -600000 | gzip > "reads/sub_$r.fastq.gz"
 done
 
+# vg refuses to map when an index is older than something it depends on, and
+# giraffe itself rewrites ecoli.d2.dist as it runs. So the FIRST run leaves .dist
+# newer than the .min/.zipcodes built from it, and a re-run of this script then
+# dies with "is newer than ... which depends on it". The indexes are fine; only
+# the mtimes are misleading, so restamp the derived ones before mapping.
+touch mc/ecoli.d2.shortread.withzip.min mc/ecoli.d2.shortread.zipcodes
 in_cactus vg giraffe -p \
   -Z /data/mc/ecoli.d2.gbz -d /data/mc/ecoli.d2.dist \
   -m /data/mc/ecoli.d2.shortread.withzip.min -z /data/mc/ecoli.d2.shortread.zipcodes \

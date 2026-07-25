@@ -26,13 +26,18 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearSyntenyView',
+          // IAI39 last, matching the pggb figure: the first four rows are the
+          // near-colinear backbone and the bottom band is the only one showing
+          // rearrangement, so the crossings are attributable to one strain.
           views: [
             { assembly: 'K12' },
             { assembly: 'Sakai' },
             { assembly: 'CFT073' },
             { assembly: 'NCTC86' },
+            { assembly: 'IAI39' },
           ],
           tracks: [
+            ['ecoli_cactus_ava'],
             ['ecoli_cactus_ava'],
             ['ecoli_cactus_ava'],
             ['ecoli_cactus_ava'],
@@ -40,9 +45,12 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           drawCurves: false,
           colorBy: 'default',
           minAlignmentLength: 10000,
+          levelHeights: [110, 110, 110, 110],
         },
       ],
     }),
+    // five rows and four 110px bands
+    viewportHeight: 1030,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
@@ -112,7 +120,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyText: '806,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 440,
+    viewportHeight: 480,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -270,7 +278,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             },
             {
               assembly: 'Sakai',
-              loc: 'chr:1,129,000-1,462,000',
+              loc: 'chr:1,128,000-1,459,000',
               tracks: [
                 {
                   trackId: 'Sakai_genes',
@@ -293,11 +301,27 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               ],
             },
             {
+              // was chr:2,972,000-3,062,000, read off the graph built on the
+              // wrong NCTC86 deposit; recomputed against the rebuilt PAF
               assembly: 'NCTC86',
-              loc: 'chr:2,972,000-3,062,000',
+              loc: 'chr:1,184,000-1,325,000',
               tracks: [
                 {
                   trackId: 'NCTC86_genes',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showDescriptions: false,
+                },
+              ],
+            },
+            {
+              // IAI39 aligns to this window on the minus strand, so its ribbon
+              // is the one that crosses
+              assembly: 'IAI39',
+              loc: 'chr:2,163,000-2,255,000',
+              tracks: [
+                {
+                  trackId: 'IAI39_genes',
                   showOnlyGenes: true,
                   displayMode: 'compact',
                   showDescriptions: false,
@@ -309,6 +333,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             ['ecoli_cactus_ava'],
             ['ecoli_cactus_ava'],
             ['ecoli_cactus_ava'],
+            ['ecoli_cactus_ava'],
           ],
           drawCurves: true,
           // colorBy and alpha are left at the view defaults ('default' / 0.2)
@@ -316,15 +341,14 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           // AVA ribbons stack several deep per band, so every band composited
           // to opaque red and the accessory gaps were the only readable thing.
           //
-          // three bands at 90px: enough for the wedges to read without the
-          // four gene rows falling off the frame
-          levelHeights: [90, 90, 90],
+          // four bands at 90px: enough for the wedges to read without the
+          // five gene rows falling off the frame
+          levelHeights: [90, 90, 90, 90],
         },
       ],
     }),
-    // 1000 clipped the bottom gene row; this fits all four rows plus the three
-    // 90px bands
-    viewportHeight: 1080,
+    // fits all five gene rows plus the four 90px bands
+    viewportHeight: 1330,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
@@ -346,9 +370,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_cactus_pav',
               type: 'MultiLinearWiggleDisplay',
-              // 3 strains: 180 gives a 60px row each, enough for the accessory
-              // dips to read without the stack dominating the frame
-              height: 180,
+              // 4 strains at 60px a row, enough for the accessory dips to read
+              // without the stack dominating the frame
+              height: 240,
             },
           ],
         },
@@ -357,9 +381,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyText: 'per-strain presence',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // 400 cut the stack off mid-strain; this fits the whole 180px stack with no
-    // trailing whitespace
-    viewportHeight: 420,
+    // fits the whole 240px stack with no trailing whitespace
+    viewportHeight: 480,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

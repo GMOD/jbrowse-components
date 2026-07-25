@@ -15,7 +15,7 @@ graph, but it works reference-first:
 chosen reference, every other sample is aligned onto it, and Cactus normalizes
 the result into a graph.
 
-This tutorial builds a graph from the **same four _E. coli_ strains** as the
+This tutorial builds a graph from the **same five _E. coli_ strains** as the
 [pggb tutorial](/docs/tutorials/pangenome_ecoli) and loads the same four linear
 projections onto the K12 reference, so the two are a side-by-side comparison of
 the builders on identical input. The pggb tutorial explains what each projection
@@ -139,17 +139,11 @@ record is how the adapter maps a record to its strain:
 }
 ```
 
-Stack the four strains in a linear synteny view exactly as the
+Stack the five strains in a linear synteny view exactly as the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
 describes.
 
-<Figure caption="The Minigraph-Cactus graph's synteny projection: the four strains stacked K12 to NCTC86, a halSynteny ribbon between each adjacent pair drawn from the graph's HAL. The continuous diagonals are shared backbone." src="/img/pangenome_cactus/synteny.png" />
-
-The NCTC86 ribbons cross because the hosted graph was built from
-GCF_003697165.2, which is stored in the opposite orientation to the
-GCF_002007705.1 NCTC86 this config loads. That is an accession mismatch pending
-a rebuild, not an inversion: against the loaded assembly K12 and NCTC86 align
-96.1% forward, like every other pair.
+<Figure caption="The Minigraph-Cactus graph's synteny projection: the five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair drawn from the graph's HAL. The continuous diagonals of the top three bands are the backbone the four closest strains share. The bottom band crosses because IAI39 carries large inversions relative to the others, the same rearrangement the pggb graph reports." src="/img/pangenome_cactus/synteny.png" />
 
 ## Pangenome variants projection
 
@@ -214,7 +208,7 @@ Load the bgzipped-TAF with a
 }
 ```
 
-<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain (K12 first), colored where each differs from K12. On this shared-backbone window all four align continuously, so the mismatch columns read as SNP divergence from K12." src="/img/pangenome_cactus/maf.png" />
+<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain (K12 first), colored where each differs from K12. On this shared-backbone window all five align continuously, so the mismatch columns read as SNP divergence from K12." src="/img/pangenome_cactus/maf.png" />
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity, and codon view, all derived from the alignment with no extra
@@ -252,7 +246,7 @@ bedGraphToBigWig ecoli_cactus_depth.bedgraph chrom.sizes ecoli_cactus_depth.bw
 Load the bigWig as a
 [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on K12.
 
-<Figure caption="odgi depth across all 4.64 Mb of K12 from the Minigraph-Cactus graph. The curve sits near 4 where all four strains traverse the graph (core sequence) and drops toward 1 over the accessory stretches private to fewer strains. At this zoom each pixel is a bigWig summary bin covering roughly 4 kb, so the shades of blue are one bin's range rather than separate signals: the palest reaches the bin's maximum depth, the mid tone its mean, the darkest its minimum. A pale column standing over a dark floor is an accessory stretch narrower than a bin." src="/img/pangenome_cactus/depth.png" />
+<Figure caption="odgi depth across all 4.64 Mb of K12 from the Minigraph-Cactus graph. The curve sits near 5 where every strain traverses the graph (core sequence) and drops toward 1 over the accessory stretches private to fewer strains. At this zoom each pixel is a bigWig summary bin covering roughly 4 kb, so the shades of blue are one bin's range rather than separate signals: the palest reaches the bin's maximum depth, the mid tone its mean, the darkest its minimum. A pale column standing over a dark floor is an accessory stretch narrower than a bin." src="/img/pangenome_cactus/depth.png" />
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
 splits that aggregate per strain. Slice each non-K12 strain's rows into its own
@@ -282,7 +276,7 @@ genome coordinate. The
 explains that trade-off in full; it applies identically here, because both
 builders produce the same kind of graph and the same odgi renders it.
 
-<Figure caption="The four-strain Minigraph-Cactus graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The three boxes mark loci carried over to the JBrowse figure below." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The three boxes mark loci carried over to the JBrowse figure below." src="/img/pangenome_cactus/graph.png" />
 
 The two axes are easiest to tell apart by putting the same loci on both. The
 three boxes above and the three bands below are the same three 100 kb stretches
@@ -300,7 +294,7 @@ dip in the depth track.
 ## Opening a boxed locus in a multi-way synteny view
 
 The depth track says a locus is accessory and the graph raster says it is wide,
-but neither says _what_ is there. The synteny projection does: stack the four
+but neither says _what_ is there. The synteny projection does: stack the five
 strains as above and zoom every row to that locus.
 
 | Box    | K12 window                | What the graph is counting                                                           |
@@ -312,19 +306,18 @@ strains as above and zoom every row to that locus.
 Each row needs its own window, because the same locus is at a different
 coordinate (and a different length) in each strain. Read them off the synteny
 PAF rather than guessing: for the blue box the K12 window's end points fall in
-halSynteny blocks that place it at Sakai `chr:1,129,000-1,462,000`, CFT073
-`chr:1,044,000-1,243,500`, and NCTC86 `chr:2,972,000-3,062,000` (reverse
-orientation, so that ribbon crosses; that window is in the graph's NCTC86, which
-is the wrong deposit per the note above, so it does not name the same locus in
-the NCTC86 you have loaded). The interactive equivalent is to navigate the K12
-row, then right-click a ribbon and pick **Center on feature**, which puts the
-row below on the matching alignment.
+halSynteny blocks that place it at Sakai `chr:1,128,000-1,459,000`, CFT073
+`chr:1,044,000-1,243,500`, NCTC86 `chr:1,184,000-1,325,000`, and IAI39
+`chr:2,163,000-2,255,000`. IAI39 is the one on the minus strand, so its is the
+ribbon that crosses. The interactive equivalent is to navigate the K12 row, then
+right-click a ribbon and pick **Center on feature**, which puts the row below on
+the matching alignment.
 
 Do not square the rows to a common width here. The span each row needs _is_ the
-result: 100 kb of K12 costs 333 kb in Sakai, 200 kb in CFT073, and 90 kb in
-NCTC86, which is the same 2 to 3 times spread the graph axis showed.
+result: 100 kb of K12 costs 331 kb in Sakai, 200 kb in CFT073, 141 kb in NCTC86
+and 92 kb in IAI39, the same 1 to 3 times spread the graph axis showed.
 
-<Figure caption="The blue box opened as a four-way synteny view, each row windowed to the sequence that aligns to K12 chr:1,000,000-1,100,000. The ribbons shear instead of running horizontal because each row spans a different amount of its own genome, and the gaps between ribbons are the accessory sequence: the widest one is Sakai's Shiga-toxin prophage, which has no K12 counterpart at all." src="/img/pangenome_cactus/boxed_locus_synteny.png" />
+<Figure caption="The blue box opened as a five-way synteny view, each row windowed to the sequence that aligns to K12 chr:1,000,000-1,100,000. The ribbons shear instead of running horizontal because each row spans a different amount of its own genome, and the gaps between ribbons are the accessory sequence: the widest one is Sakai's Shiga-toxin prophage, which has no K12 counterpart at all." src="/img/pangenome_cactus/boxed_locus_synteny.png" />
 
 The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) covers the same
 stack driven from the UI, and
@@ -341,9 +334,9 @@ bash scripts/build_ecoli_pangenome_cactus.sh   # builds ./ecoli_cactus_build/jbr
 npx --yes serve ecoli_cactus_build/jbrowse2
 ```
 
-It downloads the same four RefSeq genomes as the pggb build, runs
+It downloads the same five RefSeq genomes as the pggb build, runs
 `cactus-pangenome`, converts the HAL, VCF, `odgi depth`, and `odgi pav` into the
-projections above, downloads JBrowse, and writes a `config.json` with the four
+projections above, downloads JBrowse, and writes a `config.json` with the five
 assemblies, per-strain gene tracks, the projection tracks above, and a default
 session. It needs the same tools listed under [What you need](#what-you-need).
 
