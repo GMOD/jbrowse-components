@@ -3,8 +3,10 @@ import { enableStaticRendering } from 'mobx-react'
 
 import corePlugins from './corePlugins.ts'
 
-// static rendering is used for "SSR" style rendering which is done on the
-// worker
+// Workers fetch data; rendering happens on the main thread, and no RPC method
+// renders React. Kept as a guard: if plugin code ever pulls an observer into
+// this realm, static rendering keeps it from setting up reactions that would
+// leak here.
 enableStaticRendering(true)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

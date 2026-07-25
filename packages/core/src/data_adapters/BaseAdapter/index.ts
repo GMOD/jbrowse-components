@@ -3,7 +3,13 @@ import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { getSubAdapterType } from '../dataAdapterCache.ts'
 import type { AnyDataAdapter } from './util.ts'
 
-export * from './util.ts'
+export {
+  type AnyDataAdapter,
+  isFeatureAdapter,
+  isRefNameAliasAdapter,
+  isRegionsAdapter,
+  isTextSearchAdapter,
+} from './util.ts'
 export type * from './types.ts'
 export { BaseAdapter } from './BaseAdapter.ts'
 export { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'

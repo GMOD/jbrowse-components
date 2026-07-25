@@ -9,7 +9,30 @@ import type TrackType from './TrackType.ts'
 import type ViewType from './ViewType.ts'
 import type WidgetType from './WidgetType.ts'
 
-export * from './models/index.ts'
+export {
+  BaseConnectionModelFactory,
+  BaseDisplay,
+  type BaseDisplayModel,
+  type BaseDisplayStateModel,
+  BaseInternetAccountConfig,
+  type BaseInternetAccountModel,
+  type BaseInternetAccountStateModel,
+  type BaseTrackConfig,
+  type BaseTrackModel,
+  type BaseTrackStateModel,
+  BaseViewModel,
+  type DisplayModel,
+  type FileTypeExporter,
+  HighlightsMixin,
+  type IBaseViewModel,
+  InternetAccount,
+  addDisplayConfigMigration,
+  baseConnectionConfig,
+  createBaseTrackConfig,
+  createBaseTrackModel,
+  preprocessTrackConfigSnapshot,
+  trackConfigActions,
+} from './models/index.ts'
 
 export type PluggableElementType =
   | AdapterType

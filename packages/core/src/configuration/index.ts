@@ -14,7 +14,18 @@ export type {
   ConfigurationSlotValue,
 } from './types.ts'
 
-export * from './util.ts'
+export {
+  getConfSnapshot,
+  getConfigurationSchemaDefinition,
+  getTypeNamesFromExplicitlyTypedUnion,
+  isBareConfigurationSchemaType,
+  isConfigurationModel,
+  isConfigurationSchemaType,
+  isConstantEntry,
+  isSlotDefinitionEntry,
+  readConfObject,
+  readConfigValue,
+} from './util.ts'
 export { getConf, setConf } from './getConf.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
