@@ -23,7 +23,7 @@
 # Requires: docker (the cactus image, which also carries odgi, halSynteny,
 #           hal2maf, taffy, and vg), the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), bgzip/tabix (htslib), unzip, wget,
-#           ImageMagick (`convert`/`identify`, for the correspondence boxes),
+#           ImageMagick (`convert`/`identify`, for the correspondence band),
 #           and node (JBrowse CLI, via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_cactus.sh [outdir]
 #
@@ -189,30 +189,31 @@ done
 VIZ_X=1500   # odgi viz data width in px; the label gutter is added to the left
 in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x "$VIZ_X" -a 40 -y 20
 
-# ── Correspondence boxes: the same three loci on the graph axis and on K12 ────
+# ── Correspondence band: one locus on the graph axis and on K12 ───────────────
 # The raster's x axis is graph node order (pangenome bases), the JBrowse figures'
-# is K12 bases, so nothing lines up between them by position alone. Box three
-# loci in both, in the same three colors, and the correspondence becomes readable
-# WITHOUT pretending the axes match — each box is visibly wider on the graph axis,
-# because there the other strains' accessory sequence is counted too.
+# is K12 bases, so nothing lines up between them by position alone. Shade ONE
+# locus in both, in the same translucent gold, and the correspondence becomes
+# readable WITHOUT pretending the axes match — the band is visibly wider on the
+# graph axis, because there the other strains' accessory sequence is counted too.
+# K12 1.00-1.10 Mb is the widest of the candidate windows: 100 kb of K12 spans
+# 466 kb of pangenome, 5.1% of the graph axis against 2.2% of the K12 axis.
 #
 # The mapping is exact, not eyeballed: node ids in a cactus graph run 1..N in node
 # order, so a node's pangenome offset is the cumulative length of every lower id,
 # and walking K12's own P line gives K12 offset -> node -> pangenome offset.
 #
-# What has to hold is that a window's K12 bases land on a CONTIGUOUS run of
-# pangenome offsets, and the awk asserts exactly that, per window. It used to
-# assert the stronger property that K12's whole path is monotonic in node order,
-# which held for four strains and stops holding at five: K12's path now takes
-# exactly one backward step out of 362,720, at K12 1,652,761, jumping from
-# pangenome offset 9,198,811 back to 3,598,999 (the graph is 9,203,584 bp). One
-# discontinuity in a circular genome is an origin wrap, not a rearrangement, and
-# all three landmark windows sit on one side of it, so each still maps to a
-# contiguous interval and the boxes are still exact. Asserting globally would
-# reject a graph the figure can represent perfectly well; asserting per window
-# rejects only the case that would actually draw a wrong box.
+# What has to hold is that the window's K12 bases land on a CONTIGUOUS run of
+# pangenome offsets, and the awk asserts exactly that. It used to assert the
+# stronger property that K12's whole path is monotonic in node order, which held
+# for four strains and stops holding at five: K12's path takes exactly one
+# backward step out of 362,720, at K12 1,652,761, jumping from pangenome offset
+# 9,198,811 back to 3,598,999 (the graph is 9,203,584 bp). One discontinuity in a
+# circular genome is an origin wrap, not a rearrangement, and the landmark window
+# sits on one side of it. Asserting globally would reject a graph the figure can
+# represent perfectly well; asserting per window rejects only the case that would
+# actually draw a wrong band.
 #
-# Emits the K12 windows to graph_landmarks.tsv so
+# Emits the K12 window to graph_landmarks.tsv so
 # website/scripts/specs/pangenome_cactus.ts can highlight the identical
 # coordinates.
 in_cactus odgi view -i /data/mc/ecoli.full.og -g > full.gfa
@@ -227,42 +228,38 @@ awk -v OFS='\t' -v vizx="$VIZ_X" '
       kpos[i] = klen; pan[i] = cum[id]; slen[i] = len[id]; klen += len[id]
     }
     print "#k12_start", "k12_end", "pan_start", "pan_end", "viz_x1", "viz_x2"
-    split("1000000 2040000 3100000", starts, " ")
-    for (w = 1; w <= 3; w++) {
-      s = starts[w]; e = s + 100000
-      ps = -1; pe = -1; prev = -1
-      for (i = 1; i <= n; i++) {
-        if (kpos[i] + slen[i] > s && kpos[i] < e) {
-          if (pan[i] < prev) {
-            printf "K12 %d-%d straddles a node-order discontinuity; pick another window\n", s, e > "/dev/stderr"
-            exit 1
-          }
-          prev = pan[i]
-          if (ps < 0) ps = pan[i] + (s - kpos[i])
-          if (pe < 0 && kpos[i] + slen[i] > e) pe = pan[i] + (e - kpos[i])
+    s = 1000000; e = s + 100000
+    ps = -1; pe = -1; prev = -1
+    for (i = 1; i <= n; i++) {
+      if (kpos[i] + slen[i] > s && kpos[i] < e) {
+        if (pan[i] < prev) {
+          printf "K12 %d-%d straddles a node-order discontinuity; pick another window\n", s, e > "/dev/stderr"
+          exit 1
         }
+        prev = pan[i]
+        if (ps < 0) ps = pan[i] + (s - kpos[i])
+        if (pe < 0 && kpos[i] + slen[i] > e) pe = pan[i] + (e - kpos[i])
       }
-      print s, e, ps, pe, int(ps / total * vizx + 0.5), int(pe / total * vizx + 0.5)
     }
+    print s, e, ps, pe, int(ps / total * vizx + 0.5), int(pe / total * vizx + 0.5)
   }
 ' full.gfa > graph_landmarks.tsv
 cat graph_landmarks.tsv
 
-# Draw the boxes. The gutter is the rendered width minus the data width, so it
-# follows odgi's own label layout instead of being hardcoded.
+# Shade the band. Translucent fill rather than an outline: a 5px stroke over a
+# 40px-per-row raster of saturated magenta/green/orange reads as one more block
+# edge, which is what the review said. The gutter is the rendered width minus the
+# data width, so it follows odgi's own label layout instead of being hardcoded.
+# Gold is the identical paint the JBrowse figure's `highlight` uses, so the two
+# images are literally the same wash over the same locus. It is the one hue that
+# survives both backgrounds — this raster's magenta/green/orange rows on white,
+# and the solid dark blue of the depth track over there.
 GUT=$(( $(identify -format '%w' ecoli_cactus_graph.png) - VIZ_X ))
 H=$(identify -format '%h' ecoli_cactus_graph.png)
-set -- '#1f77b4' '#ff7f0e' '#2ca02c'
-ARGS=()
-# six columns, named by the header written above; only the first (to skip that
-# header) and the trailing pixel span are used here
-while read -r ks _ _ _ x1 x2; do
-  case "$ks" in \#*) continue;; esac
-  ARGS+=(-stroke "$1" -strokewidth 5 -fill none
-         -draw "rectangle $((GUT + x1)),1 $((GUT + x2)),$((H - 2))")
-  shift
-done < graph_landmarks.tsv
-convert ecoli_cactus_graph.png "${ARGS[@]}" ecoli_cactus_graph_boxes.png
+read -r _ _ _ _ X1 X2 < <(tail -n1 graph_landmarks.tsv)
+convert ecoli_cactus_graph.png -fill 'rgba(255,193,7,0.60)' -stroke none \
+  -draw "rectangle $((GUT + X1)),0 $((GUT + X2)),$((H - 1))" \
+  ecoli_cactus_graph_boxes.png
 
 # ── Projection 5: map a new isolate's short reads through the graph ────────────
 # Unlike every projection above (which re-plots the graph's own genomes), this

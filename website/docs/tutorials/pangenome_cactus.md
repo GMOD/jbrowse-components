@@ -170,7 +170,7 @@ on K12 and pick the matrix display (one column per variant, one row per sample):
 }
 ```
 
-<Figure caption="The Minigraph-Cactus graph's pangenome variants as a multi-sample matrix on K12, with the MAF alignment stacked below and the K12 gene lane above. Each matrix column is one variant vg deconstruct called against K12, each row one of the other four strains, each cell that strain's genotype (see the legend)." src="/img/pangenome_cactus/variant_matrix.png" />
+<Figure caption="The graph's pangenome variants on K12, one row per non-reference strain and one column per variant vg deconstruct called, with the MAF alignment below and the K12 gene lane above. IAI39 goes no-call (yellow) over the last 6 kb, and the MAF row underneath it drops out across the same stretch: that is one strain leaving the alignment, seen twice." src="/img/pangenome_cactus/variant_matrix.png" />
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display and clustering samples by
@@ -276,37 +276,38 @@ genome coordinate. The
 explains that trade-off in full; it applies identically here, because both
 builders produce the same kind of graph and the same odgi renders it.
 
-<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The three boxes mark loci carried over to the JBrowse figure below." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the JBrowse figure below." src="/img/pangenome_cactus/graph.png" />
 
-The two axes are easiest to tell apart by putting the same loci on both. The
-three boxes above and the three bands below are the same three 100 kb stretches
-of K12, in the same three colors:
+The two axes are easiest to tell apart by putting the same locus on both. The
+gold band above and the gold band below are the same 100 kb of K12,
+`chr:1,000,000-1,100,000`:
 
-<Figure caption="The same three loci on K12's coordinates, over the pangenome depth track. Each band is 100 kb (2.15% of the K12 axis) but the matching box above spans 4.4-6.2% of the graph axis, because the graph counts the other strains' accessory sequence through the same locus as well." src="/img/pangenome_cactus/graph_correspondence.png" />
+<Figure caption="The same locus on K12's coordinates, over the pangenome depth track. The band is 100 kb, 2.2% of the K12 axis, but the matching band above spans 5.1% of the graph axis, because the graph counts the other strains' accessory sequence through the same locus as well." src="/img/pangenome_cactus/graph_correspondence.png" />
 
-Every box is wider than its band, by 2 to 3 times. That difference is the whole
+The band is wider on the graph axis, by 2.4 times. That difference is the whole
 distinction: the graph axis counts pangenome bases, so a locus where the other
 strains carry sequence K12 lacks takes up more of it, while the JBrowse axis
-counts K12 bases and holds every locus to its reference width. The boxed loci
-are the three where that gap is largest, which is why each one also sits over a
-dip in the depth track.
+counts K12 bases and holds every locus to its reference width. This is the 100
+kb window where that gap is largest, which is also why it sits over a dip in the
+depth track.
 
-## Opening a boxed locus in a multi-way synteny view
+The mapping is not eyeballed. Node ids in a Cactus graph run `1..N` in node
+order, so a node's pangenome offset is the cumulative length of every lower id,
+and walking K12's own `P` line turns a K12 offset into a node and then into a
+pangenome offset. `build_ecoli_pangenome_cactus.sh` does that walk and writes
+the pixel span it implies, so both bands come from the same arithmetic.
+
+## Opening the banded locus in a multi-way synteny view
 
 The depth track says a locus is accessory and the graph raster says it is wide,
 but neither says _what_ is there. The synteny projection does: stack the five
-strains as above and zoom every row to that locus.
-
-| Box    | K12 window                | What the graph is counting                                                           |
-| ------ | ------------------------- | ------------------------------------------------------------------------------------ |
-| blue   | `chr:1,000,000-1,100,000` | Sakai's 66 kb stx2 prophage, plus an 84 kb second Sakai-only stretch                 |
-| orange | `chr:2,040,000-2,140,000` | a 33 kb K12 stretch none of the three carry, and a 171 kb CFT073-only insert         |
-| green  | `chr:3,100,000-3,200,000` | one breakpoint, three different inserts: 128 kb in CFT073, 84 kb NCTC86, 23 kb Sakai |
+strains as above and zoom every row to that locus. In `chr:1,000,000-1,100,000`
+it is Sakai's 66 kb stx2 prophage plus a second 84 kb Sakai-only stretch.
 
 Each row needs its own window, because the same locus is at a different
 coordinate (and a different length) in each strain. Read them off the synteny
-PAF rather than guessing: for the blue box the K12 window's end points fall in
-halSynteny blocks that place it at Sakai `chr:1,128,000-1,459,000`, CFT073
+PAF rather than guessing: the K12 window's end points fall in halSynteny blocks
+that place it at Sakai `chr:1,128,000-1,459,000`, CFT073
 `chr:1,044,000-1,243,500`, NCTC86 `chr:1,184,000-1,325,000`, and IAI39
 `chr:2,163,000-2,255,000`. IAI39 is the one on the minus strand, so its is the
 ribbon that crosses. The interactive equivalent is to navigate the K12 row, then
@@ -319,7 +320,7 @@ and 92 kb in IAI39, the same 1 to 3 times spread the graph axis showed.
 
 Stacked five deep the ribbons shear rather than run horizontal, which is the
 result but is also most of what a reader can take from the picture. For what is
-actually inside the blue box, the
+actually inside the band, the
 [all-vs-all tutorial's stx2 figure](/docs/tutorials/allvsall_synteny) opens the
 same locus two rows deep with the gene lane on, where the prophage reads as
 genes rather than as a gap between ribbons.

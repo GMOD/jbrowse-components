@@ -56,73 +56,60 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Projection 2: the graph's pangenome variants as a multi-sample matrix, with
-  // the MAF alignment stacked below as the base-level view the variants were
-  // decomposed from, and the K12 gene lane above for context.
+  // Projection 2: the graph's pangenome variants as a multi-sample genotype
+  // lane, with the MAF alignment stacked below as the base-level view the
+  // variants were decomposed from, and the K12 gene lane above for context.
   {
     mode: 'url',
     name: 'pangenome_cactus/variant_matrix',
     url: sessionSpec(CONFIG, {
-      // the same VCF a second time as a plain variant lane (reviewer: show the
-      // raw calls too). A view holds a track once, so the raw lane needs its own
-      // trackId; the adapter is absolute because a session track has no config
-      // baseUri to resolve against.
-      sessionTracks: [
-        {
-          type: 'VariantTrack',
-          trackId: 'ecoli_cactus_variants_raw',
-          name: 'MC graph: pangenome variants (raw calls)',
-          assemblyNames: ['K12'],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            uri: 'https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.vcf.gz',
-          },
-        },
-      ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:995,000-1,015,000',
+          // Scored from the VCF, not chosen by eye: 20 kb windows ranked on
+          // "every strain carries alt calls, some strain carries no-calls, no
+          // empty 2 kb sub-window" put chr:2,200,000-2,220,000 first — 1,337
+          // sub-100bp records, 21-60% alt in all four strains, and IAI39
+          // no-call over the last 6 kb, where the MAF row below it drops out
+          // too. The old window (995,000-1,015,000) had none of that: NCTC86
+          // was reference at 574 of 582 calls, nothing was a no-call, and 6 kb
+          // of it held only one top-level bubble, so the filtered lane went
+          // blank across it and read as a rendering hole.
+          loc: 'chr:2,200,000-2,220,000',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
-              // Unfiltered, so the nested top-level bubbles the genotype lane
-              // below filters out are still visible — as what they are, a few
-              // wide records, rather than as a wall of red genotype cells.
-              trackId: 'ecoli_cactus_variants_raw',
-              type: 'LinearVariantDisplay',
-              height: 70,
-            },
-            {
               // NOT the matrix display: the matrix packs every variant into an
-              // equal-width column, which with only three strains spends the
-              // whole lane on three fat bands and throws away where the variants
+              // equal-width column, which with only four strains spends the
+              // whole lane on four fat bands and throws away where the variants
               // actually are. This display keeps them on genomic coordinates, so
               // they line up with the gene lane above and the MAF below.
               trackId: 'ecoli_cactus_variants',
               type: 'LinearMultiSampleVariantDisplay',
-              height: 160,
-              // Cactus's VCF is nested like pggb's: chr:997,582 is a 7,086 bp
-              // top-level bubble carrying a different allele in each of the
-              // three strains (GT 1/2/3), so two of them are "other alt" and it
-              // painted 7 kb of flat dark red over the SNPs underneath. That one
-              // record IS the red block the review flagged. Filtering the
-              // genotype lane to <100 bp leaves the decomposed SNP layer, and
-              // the raw lane above still shows the bubble.
-              jexlFilters: [
-                "jexl:get(feature,'end')-get(feature,'start') < 100",
-              ],
+              height: 200,
+              // 1,341 records over 1,000 px trips the "too many features"
+              // gate, which guards against huge downloads; this window is a
+              // 30 kB tabix read.
+              forceLoad: true,
+              // Cactus's VCF is nested like pggb's: alongside the decomposed
+              // SNPs it emits top-level bubbles carrying a different allele per
+              // strain, so most of their genotypes are "other alt" and one
+              // record paints kilobases of flat dark red over the SNPs
+              // underneath. `alleleLength` rather than end-start because the
+              // four big records here are INSERTIONS (the largest 47 kb of alt
+              // against 1 bp of reference), which end-start scores as 1.
+              jexlFilters: ['jexl:alleleLength(feature) < 100'],
             },
             { trackId: 'ecoli_cactus_maf', type: 'LinearMafDisplay' },
           ],
         },
       ],
     }),
-    readyText: '1,000,000',
+    readyText: '2,204,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 820,
+    viewportHeight: 760,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -163,18 +150,23 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The JBrowse half of the odgi-viz correspondence pair. Same three loci the
-  // banded raster (pangenome_cactus/graph.png) boxes, in the same three colors,
-  // so a reader can carry a box from one figure to the other.
+  // The JBrowse half of the odgi-viz correspondence pair: the same locus the
+  // banded raster (pangenome_cactus/graph.png) shades, in the same paint, so a
+  // reader can carry the band from one figure to the other. It was three loci in
+  // three colors, which is three comparisons to make where one carries the whole
+  // point.
   //
-  // The K12 coordinates are pinned to the pinned graph (fixed RefSeq accessions
-  // + pinned cactus image, see build_ecoli_pangenome_cactus.sh), and were picked
-  // by walking the graph's own K12 path: each 100kb K12 window was scored by how
-  // much PANGENOME sequence it spans (the graph's node order is monotonic along
-  // K12, verified), and these are the three highest-scoring well-separated
-  // windows. Each is 2.15% of the K12 axis but 4.4-6.2% of the graph's, which is
-  // the entire point of the pair — same locus, visibly different width, because
-  // one axis counts K12 bases and the other counts pangenome bases.
+  // The coordinates are pinned to the pinned graph (fixed RefSeq accessions +
+  // pinned cactus image, see build_ecoli_pangenome_cactus.sh) and were picked by
+  // walking the graph's own K12 path: chr:1,000,000-1,100,000 is the 100 kb K12
+  // window spanning the most PANGENOME sequence, 466 kb of it. That is the whole
+  // point of the pair — 2.2% of the K12 axis, 5.1% of the graph's, same locus,
+  // because one axis counts K12 bases and the other counts pangenome bases.
+  //
+  // Depth is the right partner track precisely because it CANNOT show the
+  // expansion: it counts paths over K12's own nodes, and the 366 kb the other
+  // strains carry through this locus is not on any of them. That gap is what the
+  // graph axis is for.
   {
     mode: 'url',
     name: 'pangenome_cactus/graph_correspondence',
@@ -185,26 +177,17 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:1-4,641,652',
           highlight: [
-            // explicit alpha: getHighlightColor uses a user-supplied color
-            // AS-IS, so a bare hex paints an opaque bar over the depth track it
-            // is meant to point at
+            // Gold, and explicitly alpha'd: getHighlightColor uses a supplied
+            // color AS-IS, so a bare hex paints an opaque bar over the depth
+            // track it is meant to point at. Gold because the same wash has to
+            // read over two opposite backgrounds — this track's solid dark blue
+            // and the raster's saturated rows on white — and blue vanished into
+            // the first of them.
             {
               refName: 'chr',
               start: 1000000,
               end: 1100000,
-              color: 'rgba(31,119,180,0.40)',
-            },
-            {
-              refName: 'chr',
-              start: 2040000,
-              end: 2140000,
-              color: 'rgba(255,127,14,0.40)',
-            },
-            {
-              refName: 'chr',
-              start: 3100000,
-              end: 3200000,
-              color: 'rgba(44,160,44,0.40)',
+              color: 'rgba(255,193,7,0.60)',
             },
           ],
           tracks: [
