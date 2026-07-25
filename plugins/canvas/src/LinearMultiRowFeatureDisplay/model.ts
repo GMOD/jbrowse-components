@@ -829,6 +829,7 @@ export default function stateModelFactory(
         if (!info) {
           return []
         }
+        const { hit } = info
         return [
           {
             label: 'Sort rows by color here',
@@ -837,13 +838,13 @@ export default function stateModelFactory(
               self.sortRowsByValueAt(info.refName, info.pos)
             },
           },
-          ...(info.hit
+          ...(hit
             ? [
                 {
                   label: 'Open feature details',
                   icon: MenuOpenIcon,
                   onClick: () => {
-                    self.selectFeatureById(info.hit!.id, info.hit!.regionIndex)
+                    self.selectFeatureById(hit.id, hit.regionIndex)
                   },
                 },
               ]

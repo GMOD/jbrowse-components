@@ -48,12 +48,15 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     }
   }
   function onContextMenu(e: React.MouseEvent<HTMLCanvasElement>) {
-    e.preventDefault()
     const rect = e.currentTarget.getBoundingClientRect()
     const px = e.clientX - rect.left
     const p = view.pxToBp(px)
-    model.setHoveredFeature(undefined)
+    // preventDefault only when a menu actually opens, so a right-click in the
+    // inter-region gutter falls through to the browser menu instead of being a
+    // dead zone
     if (!p.oob) {
+      e.preventDefault()
+      model.setHoveredFeature(undefined)
       model.openContextMenu({
         clientX: e.clientX,
         clientY: e.clientY,

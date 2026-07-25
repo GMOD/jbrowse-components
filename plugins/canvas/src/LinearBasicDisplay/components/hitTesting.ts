@@ -151,12 +151,23 @@ function topmostMatch(indices: number[]) {
 // Codons aren't in a Flatbush index (they only exist when zoomed into
 // peptide-level CDS, so the array is bounded by what's on screen); a linear
 // scan mirrors the per-render scan in forEachRenderedPeptide. Returns the codon
-// whose genomic span contains bpPos at the row under yPos.
-function findPeptideAt(data: FeatureDataResult, bpPos: number, yPos: number) {
+// whose genomic span contains bpPos at the row under yPos, gated to codons
+// belonging to the feature the hit resolved to (aminoAcidOverlay items carry
+// their owning feature's flatbushItems index) — the same gate resolveSubfeature
+// applies, and for the same reason: the feature boxes are widened by pad and
+// label overhang, so a cursor inside one feature's padding can sit over a
+// neighbour's codons, which would then be tooltipped as this feature's residue.
+function findPeptideAt(
+  data: FeatureDataResult,
+  bpPos: number,
+  yPos: number,
+  flatbushIdx: number,
+) {
   const overlay = data.aminoAcidOverlay
   if (overlay) {
     for (const item of overlay) {
       if (
+        item.flatbushIdx === flatbushIdx &&
         bpPos >= item.startBp &&
         bpPos < item.endBp &&
         yPos >= item.topPx &&
@@ -241,7 +252,7 @@ export function performMultiRegionHitDetection(
                 yPos,
                 feature,
               ),
-              peptide: findPeptideAt(data, bpPos, yPos),
+              peptide: findPeptideAt(data, bpPos, yPos, idx),
               displayedRegionIndex: vr.displayedRegionIndex,
             }
           }

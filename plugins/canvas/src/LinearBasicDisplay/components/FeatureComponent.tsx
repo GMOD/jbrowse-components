@@ -380,9 +380,13 @@ const FeatureBody = observer(function FeatureBody({
     if (model.contextMenuInfo) {
       return
     }
-    setClientXY([e.clientX, e.clientY])
     const result = hitTestAtEvent(e)
-    if (result.feature) {
+    if (isHitFeature(result)) {
+      // Only while something is hovered: the coordinate exists to place the
+      // tooltip, which renders nothing without a hover, so tracking it over
+      // empty track would re-render this component on every mouse move for
+      // an invisible tooltip.
+      setClientXY([e.clientX, e.clientY])
       model.setHover(
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
@@ -438,11 +442,10 @@ const FeatureBody = observer(function FeatureBody({
   // Shared by the canvas and the label layer (see useFloatingLabels): whichever
   // of the two the cursor was last over, exiting it drops the hover. Stable
   // identity so a hover tick — which re-renders FeatureBody for the cursor
-  // style — doesn't force the label layer to rebuild every label.
+  // style — doesn't force the label layer to rebuild every label. clearHover
+  // itself holds the open-menu pin, so no guard here.
   const handleMouseLeave = useCallback(() => {
-    if (!model.contextMenuInfo) {
-      model.clearHover()
-    }
+    model.clearHover()
   }, [model])
 
   // setHover itself is inert while a context menu is open (it pins the hover to

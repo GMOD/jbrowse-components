@@ -1646,10 +1646,16 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        // Holds the same pin as setHover, so the box can't be dropped out from
+        // under an open menu — by a viewport shift (the clear-on-viewport-change
+        // autorun), or by the cursor leaving the canvas for the menu itself.
+        // closeContextMenu clears contextMenuInfo first, so its own call lands.
         clearHover() {
-          self.featureIdUnderMouse = null
-          self.subfeatureIdUnderMouse = null
-          self.mouseoverExtraInformation = undefined
+          if (!self.contextMenuInfo) {
+            self.featureIdUnderMouse = null
+            self.subfeatureIdUnderMouse = null
+            self.mouseoverExtraInformation = undefined
+          }
         },
 
         /**
@@ -2322,10 +2328,21 @@ export default function baseStateModelFactory(
             // already runs eagerly for every track on those same inputs.
             // autorunOnReadyView because flatbushIndexes transitively reads view
             // geometry that throws before the view is measured.
+            //
+            // The two id->item maps ride along for the same reason, and they
+            // suspend far more often than the Flatbush ones: their only readers
+            // are hoveredFeature/hoveredSubfeature, which short-circuit to null
+            // when nothing is under the cursor — so the dependency disappears on
+            // every hover-out, and the next hover-in rebuilt a Map over every
+            // laid-out feature. Drag-panning over a track hit that on every
+            // frame (the clearHover-on-viewport-change autorun below un-hovers,
+            // the next mousemove re-hovers).
             autorunOnReadyView(
               self,
               () => {
                 void self.flatbushIndexes
+                void self.featureIdIndex
+                void self.subfeatureIdIndex
               },
               { name: 'CanvasHitIndexes' },
             )

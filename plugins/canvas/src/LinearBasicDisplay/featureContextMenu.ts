@@ -153,6 +153,14 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
     { startBp, endBp, name, featureId },
   )
   return [
+    // These two deliberately stay whole-feature even when the click resolved to
+    // a subfeature, unlike Get sequence / Highlight below. They are the only way
+    // to reach the containing gene: a left-click already opens the isoform
+    // (selectFeatureById resolves the subfeature), and on a gene glyph the
+    // transcripts' hit boxes cover the whole span — introns included — so
+    // there's no pixel that means "the gene". Don't narrow them to the
+    // subfeature to match the rest of the menu; that removes the gene scope
+    // rather than adding one.
     {
       label: 'Open feature details',
       icon: MenuOpenIcon,

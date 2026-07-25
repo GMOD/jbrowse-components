@@ -67,6 +67,17 @@ describe('context menu hover pin', () => {
     expect(display.mouseoverExtraInformation).toBeUndefined()
   })
 
+  // The clear-on-viewport-change autorun and the canvas mouseleave both call
+  // clearHover with no knowledge of the menu; the pin lives in the action.
+  it('ignores a hover clear while the menu is open', () => {
+    const { display, menuTarget } = setup()
+    display.openContextMenu(menuTarget, 0, 100, 100)
+
+    display.clearHover()
+
+    expect(display.featureIdUnderMouse).toBe(menuTarget.featureId)
+  })
+
   it('releases the pin when the menu closes', () => {
     const { display, menuTarget, other } = setup()
     display.openContextMenu(menuTarget, 0, 100, 100)
