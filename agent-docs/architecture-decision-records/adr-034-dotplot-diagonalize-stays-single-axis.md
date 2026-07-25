@@ -107,6 +107,14 @@ untouched.
   fixed axis.
 - The improvement lever for a bad-looking auto-diagonalized plot is to check
   **which axis is fixed**, not to reach for a fancier algorithm.
+- **Update (2026-07):** the *reversal* half of the algorithm was since improved
+  without touching the single-axis decision above. A length-weighted strand vote
+  is a poor orientation estimator once a chromosome carries many inversions (it
+  splits near 50/50, and MCScan `strand` is a product of two gene strands), so
+  `diagonalizeRegions` now falls back to the sign of the length-weighted
+  ref-vs-query position covariance when the strand vote is not decisive. Query
+  coordinates were previously carried into the algorithm and never used. Ordering
+  on the real fixtures is unchanged.
 - **Deferred:** de-novo-assembly-vs-de-novo-assembly (neither axis pre-ordered)
   is the only case where both-axis seriation adds value — a self-consistent
   spanning order for *both* contig sets. If ever built, do it as a separate

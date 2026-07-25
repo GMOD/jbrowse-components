@@ -257,10 +257,17 @@ triplication in the grape/peach/cacao demo, where one grape chromosome maps to ~
   Wormald 1994) for the no-pinned-focus case, and/or an optional simulated-annealing
   polish on the true crossing count (AccuSyn) seeded from the barycenter layout.
 
+Already landed (2026-07): the reversal decision no longer rides on the strand vote alone
+(it falls back to the length-weighted ref-vs-query position covariance when the vote is
+within 80/20), the global input sort is gone (accumulation is per pair, so only intra-pair
+order can perturb a float sum), and the anchor/position tie-breaks are explicit refName
+comparisons instead of side effects of that sort. Orderings on real fixtures were
+unchanged; only ambiguous-vote reversals moved.
+
 Why deferred, not done: it **changes documented tie-breaking semantics**, not just adds.
 The `base-count tie` test in `diagonalize.test.ts` pins `[qY, qX, qZ]` (a tied qX snapped
-to its first-seen ref); a barycenter places qX at the centroid of both refs → `[qY, qZ,
-qX]`. The determinism invariant (result independent of input order) still holds, but the
+to the alphabetically first of the tied refs); a barycenter places qX at the centroid of
+both refs → `[qY, qZ, qX]`. The determinism invariant (result independent of input order) still holds, but the
 specific expected order changes, and whether the new layout is *visually* cleaner needs
 A/B validation across several real datasets (rebuild jbrowse-web + regenerate synteny
 screenshots), not just this one demo — where the dominant messiness is the *transitive*

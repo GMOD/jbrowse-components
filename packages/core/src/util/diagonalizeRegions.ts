@@ -24,17 +24,84 @@ export interface DiagonalizationResult {
 // (e.g. wrap checkStopToken from a worker).
 export type DiagonalizeTick = () => void
 
-// Accumulated stats for one (query chrom, reference chrom) pair.
+// Accumulated stats for one (query chrom, reference chrom) pair. `bases` and
+// `strandWeightedSum` are sums of integers, so they are exact and independent of
+// the order alignments arrive in. The alignments themselves are kept for
+// `anchorStats`, which only runs on the pair a query chromosome anchors to.
 interface PairStats {
+  refName: string
+  refIndex: number
   bases: number
-  weightedPosSum: number
   strandWeightedSum: number
+  alignments: AlignmentData[]
+}
+
+// A strand vote at least this lopsided (80% of aligned bases agreeing) decides
+// the reversal by itself. Below that the vote is unreliable: a chromosome
+// carrying many inversions splits it near 50/50, and MCScan `strand` is the
+// product of two gene strands rather than a block orientation. The ref-vs-query
+// position covariance then decides instead, which is the question reversal is
+// actually trying to answer (does the panel read monotonically along the
+// reference).
+const decisiveStrandFraction = 0.6
+
+// Position along the anchor reference chromosome, and whether the query
+// chromosome should be displayed reversed.
+//
+// Summing in a fixed intra-pair order is what makes the result deterministic:
+// the synteny worker emits alignments in nondeterministic order (features from
+// concurrently-resolved blocks are concatenated by arrival, not position) and
+// float addition is non-associative, so a varying order would perturb these sums
+// in their low bits and could flip the query-chromosome ordering on a near-tie.
+// Only intra-pair order matters, since every sum here is over one pair.
+function anchorStats({ alignments, bases, strandWeightedSum }: PairStats) {
+  alignments.sort(
+    (a, b) =>
+      a.refStart - b.refStart ||
+      a.queryStart - b.queryStart ||
+      a.refEnd - b.refEnd ||
+      a.queryEnd - b.queryEnd,
+  )
+
+  // x-axis (reference) length weights everything: consistent weighting for
+  // x-axis position and base count, matching the original jmonlong R
+  // implementation
+  let refPosSum = 0
+  let queryPosSum = 0
+  for (const aln of alignments) {
+    const alnLength = aln.refEnd - aln.refStart
+    refPosSum += ((aln.refStart + aln.refEnd) / 2) * alnLength
+    queryPosSum += ((aln.queryStart + aln.queryEnd) / 2) * alnLength
+  }
+  const refMean = refPosSum / bases
+  const queryMean = queryPosSum / bases
+
+  // length-weighted covariance of the two axes' positions, centered on the means
+  // so it stays precise at genomic magnitudes. Negative means the query runs
+  // antiparallel to the reference.
+  let covariance = 0
+  for (const aln of alignments) {
+    covariance +=
+      (aln.refEnd - aln.refStart) *
+      ((aln.refStart + aln.refEnd) / 2 - refMean) *
+      ((aln.queryStart + aln.queryEnd) / 2 - queryMean)
+  }
+
+  const strandFraction = strandWeightedSum / bases
+  return {
+    bestRefPos: refMean,
+    shouldReverse:
+      Math.abs(strandFraction) > decisiveStrandFraction || covariance === 0
+        ? strandFraction < 0
+        : covariance < 0,
+  }
 }
 
 // Groups alignments by vertical-axis (query) chromosome, accumulates total
-// aligned bases, length-weighted position, and strand per (query, reference)
-// pair. Selects the reference chromosome with the most aligned bases as the
-// best match, then sorts query chromosomes to align with that reference order.
+// aligned bases and strand per (query, reference) pair. Selects the reference
+// chromosome with the most aligned bases as the anchor, then sorts query
+// chromosomes to follow that reference's order, reversing a query chromosome
+// that runs antiparallel to its anchor.
 //
 // - refRefName:   horizontal-axis (reference) chromosome
 // - queryRefName: vertical-axis (query) chromosome
@@ -44,93 +111,86 @@ export async function diagonalizeRegions(
   currentRegions: Region[],
   onTick?: DiagonalizeTick,
 ): Promise<DiagonalizationResult> {
-  // outer key: vertical chrom; inner key: horizontal chrom
+  // first appearance wins: a refName can appear in more than one reference
+  // region, and the ordering key is where that chromosome starts on the axis
+  const refOrder = new Map<string, number>()
+  for (const [i, region] of referenceRegions.entries()) {
+    if (!refOrder.has(region.refName)) {
+      refOrder.set(region.refName, i)
+    }
+  }
+
+  // outer key: vertical chrom; inner key: horizontal chrom. Alignments to a
+  // reference chromosome the axis does not display are skipped: they can supply
+  // neither an ordering index nor a comparable position.
   const queryGroups = new Map<string, Map<string, PairStats>>()
-
-  // The synteny worker emits alignments in nondeterministic order (features
-  // from concurrently-resolved blocks are concatenated by arrival, not
-  // position). Float addition is non-associative, so a varying order would
-  // perturb each pair's `weightedPosSum` (→ `bestRefPos`) in its low bits and
-  // could flip the query-chromosome ordering on a near-tie — producing a
-  // different reshuffle each render. Sorting to a fixed total order first makes
-  // the accumulation (and thus the whole result) deterministic. Callers pass a
-  // freshly-collected array, so the copy is cheap (pointer-only) insurance
-  // against mutating caller state.
-  const sorted = [...alignments].sort(
-    (a, b) =>
-      cmpStr(a.queryRefName, b.queryRefName) ||
-      cmpStr(a.refRefName, b.refRefName) ||
-      a.refStart - b.refStart ||
-      a.queryStart - b.queryStart ||
-      a.refEnd - b.refEnd ||
-      a.queryEnd - b.queryEnd,
-  )
-
-  for (const aln of sorted) {
-    // Use x-axis (reference) length throughout: consistent weighting for
-    // x-axis position and base-count, matching the original jmonlong R
-    // implementation
-    const alnLength = aln.refEnd - aln.refStart
-
-    if (!queryGroups.has(aln.queryRefName)) {
-      queryGroups.set(aln.queryRefName, new Map())
+  for (const aln of alignments) {
+    const refIndex = refOrder.get(aln.refRefName)
+    if (refIndex !== undefined) {
+      let group = queryGroups.get(aln.queryRefName)
+      if (!group) {
+        group = new Map()
+        queryGroups.set(aln.queryRefName, group)
+      }
+      let data = group.get(aln.refRefName)
+      if (!data) {
+        data = {
+          refName: aln.refRefName,
+          refIndex,
+          bases: 0,
+          strandWeightedSum: 0,
+          alignments: [],
+        }
+        group.set(aln.refRefName, data)
+      }
+      const alnLength = aln.refEnd - aln.refStart
+      data.bases += alnLength
+      data.strandWeightedSum += (aln.strand >= 0 ? 1 : -1) * alnLength
+      data.alignments.push(aln)
     }
-    const group = queryGroups.get(aln.queryRefName)!
-
-    if (!group.has(aln.refRefName)) {
-      group.set(aln.refRefName, {
-        bases: 0,
-        weightedPosSum: 0,
-        strandWeightedSum: 0,
-      })
-    }
-    const data = group.get(aln.refRefName)!
-
-    data.bases += alnLength
-    data.weightedPosSum += ((aln.refStart + aln.refEnd) / 2) * alnLength
-    data.strandWeightedSum += (aln.strand >= 0 ? 1 : -1) * alnLength
   }
 
   onTick?.()
 
   const queryOrdering: {
     refName: string
-    bestRefName: string
+    bestRefIndex: number
     bestRefPos: number
     shouldReverse: boolean
   }[] = []
 
   for (const [verticalChrom, group] of queryGroups) {
-    let bestRefName = ''
-    let best: PairStats = { bases: 0, weightedPosSum: 0, strandWeightedSum: 0 }
-
-    for (const [horizontalChrom, data] of group) {
-      if (data.bases > best.bases) {
-        bestRefName = horizontalChrom
+    let best: PairStats | undefined
+    for (const data of group.values()) {
+      // the refName tiebreak is explicit because Map iteration follows insertion
+      // order, which follows the order alignments arrived in
+      if (
+        !best ||
+        data.bases > best.bases ||
+        (data.bases === best.bases && cmpStr(data.refName, best.refName) < 0)
+      ) {
         best = data
       }
     }
-
-    queryOrdering.push({
-      refName: verticalChrom,
-      bestRefName,
-      bestRefPos: best.weightedPosSum / best.bases,
-      shouldReverse: best.strandWeightedSum < 0,
-    })
+    // bases === 0 means every alignment was zero-length, leaving no position to
+    // order by, so such a chromosome joins the unaligned tail below
+    if (best !== undefined && best.bases > 0) {
+      queryOrdering.push({
+        refName: verticalChrom,
+        bestRefIndex: best.refIndex,
+        ...anchorStats(best),
+      })
+    }
   }
 
   onTick?.()
 
-  const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
-
-  queryOrdering.sort((a, b) => {
-    const aIdx = refOrder.get(a.bestRefName) ?? Infinity
-    const bIdx = refOrder.get(b.bestRefName) ?? Infinity
-    if (aIdx !== bIdx) {
-      return aIdx - bIdx
-    }
-    return a.bestRefPos - b.bestRefPos
-  })
+  queryOrdering.sort(
+    (a, b) =>
+      a.bestRefIndex - b.bestRefIndex ||
+      a.bestRefPos - b.bestRefPos ||
+      cmpStr(a.refName, b.refName),
+  )
 
   // group by refName: a refName can appear in more than one region (e.g. a
   // chromosome displayed in multiple regions), and all of them move together
