@@ -80,7 +80,6 @@ export {
   drawModCovSegments,
   drawSnpSegments,
   emptyCanvas2DCoverageBuffer,
-  getDevicePixelRatio,
   packCoverageBinsCanvas2D,
 } from './rendererUtils.ts'
 export type { Canvas2DCoverageBuffer } from './rendererUtils.ts'

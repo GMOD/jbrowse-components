@@ -65,6 +65,14 @@ documents only what bites when editing _this package_.
   store **and** CSS (the HAL owns its canvas). `prepareCanvas` sets only the
   backing store — React/layout owns the CSS size. Don't add CSS to
   `prepareCanvas`.
+- **Every drawing path gets its ratio from `getDpr()`, never a bare
+  `devicePixelRatio`.** It caps at `MAX_DPR` (2), so the two reads answer
+  differently on a dpr>2 device, and a canvas sized by one while its geometry is
+  computed from the other is scaled wrong. This covers shader uniforms that
+  rebuild backing-store dimensions from CSS ones, not just canvas sizing —
+  `GpuVariantMatrixRenderer`'s `devicePixelRatio` uniform is one. Reporting the
+  _device_ (analytics, error dialogs) is not a drawing path and correctly reads
+  the raw global.
 - **WebGPU uniform ring buffer.** `writeUniforms` post-increments the slot;
   `drawPass` reads slot `n-1`. Always pair one `writeUniforms` with the
   `drawPass`(es) that consume it; the per-frame cap is `MAX_UNIFORM_SLOTS`.

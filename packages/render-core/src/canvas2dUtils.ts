@@ -7,8 +7,34 @@ export interface BlockClip {
   bpLength: number
 }
 
+// Ceiling on the ratio we render at. Cost scales with the square: a dpr=3 phone
+// would allocate 9x the pixels of dpr=1 and shade 9x the fragments, for a
+// difference essentially nobody resolves past 2x. Retina (2) is the target and
+// is unaffected; only dpr>2 devices are capped.
+//
+// It also buys headroom against MAX_CANVAS_DIM_PX: a canvas has to reach 4096
+// CSS px on an axis to clamp now, instead of 2731 at dpr=3.
+export const MAX_DPR = 2
+
+/**
+ * The ratio every canvas in the app renders at, capped at {@link MAX_DPR}.
+ *
+ * Use this, never a bare `devicePixelRatio` read — the value has to agree
+ * across the backing-store sizing (`syncCanvasSize` / `prepareCanvas`), the
+ * scissor/viewport rects derived from it (`clipBlock`, alignments'
+ * `computeBlockGeom`), and any shader uniform that reconstructs backing-store
+ * dimensions from CSS ones. A call site that reads the global directly renders
+ * geometry at a different scale than the canvas it lands on.
+ *
+ * Two places legitimately want something other than this and should keep saying
+ * so explicitly: `createSvgRasterCanvas` pins 2x because export goes to a file
+ * rather than a screen, and the analytics / error-report paths read the raw
+ * global because they are reporting the device, not drawing on it.
+ */
 export function getDpr() {
-  return typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+  return typeof devicePixelRatio === 'undefined'
+    ? 1
+    : Math.min(devicePixelRatio, MAX_DPR)
 }
 
 // Conservative ceiling (physical/backing px) for a single canvas dimension.

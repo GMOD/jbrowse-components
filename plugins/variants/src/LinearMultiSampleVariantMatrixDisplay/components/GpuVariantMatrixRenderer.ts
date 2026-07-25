@@ -1,3 +1,4 @@
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { GpuGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -58,8 +59,11 @@ export class GpuVariantMatrixRenderer extends GpuGlobalRenderingBackend<
       this.uniformF32[U.rowHeight] = state.rowHeight
       this.uniformF32[U.scrollTop] = state.scrollTop
       this.uniformF32[U.flipped] = state.flipped ? 1 : 0
-      this.uniformF32[U.devicePixelRatio] =
-        typeof devicePixelRatio === 'undefined' ? 1 : devicePixelRatio
+      // Must be `getDpr()`, not a bare `devicePixelRatio` read: the shader
+      // rebuilds the backing-store width as `canvasWidth * devicePixelRatio` to
+      // snap column edges to physical pixels, so this has to be the same ratio
+      // `hal.resize` just sized the backing store with — including its cap.
+      this.uniformF32[U.devicePixelRatio] = getDpr()
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS_MAIN, REGION_KEY)

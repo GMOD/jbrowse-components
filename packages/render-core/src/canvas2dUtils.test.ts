@@ -1,5 +1,6 @@
 import {
   MAX_CANVAS_DIM_PX,
+  MAX_DPR,
   devicePxSpan,
   getDpr,
   getPreparedCanvas2D,
@@ -206,4 +207,39 @@ test('syncCanvasSize keeps CSS size in step once the backing store clamps', () =
   syncCanvasSize(canvas, evenMoreCss, 100)
   expect(canvas.width).toBe(MAX_CANVAS_DIM_PX)
   expect(canvas.style.width).toBe(`${evenMoreCss}px`)
+})
+
+describe('getDpr', () => {
+  const original = globalThis.devicePixelRatio
+
+  function setDpr(value: number) {
+    Object.defineProperty(globalThis, 'devicePixelRatio', {
+      value,
+      writable: true,
+      configurable: true,
+    })
+  }
+
+  afterEach(() => {
+    setDpr(original)
+  })
+
+  test('passes through ratios up to the cap', () => {
+    setDpr(1)
+    expect(getDpr()).toBe(1)
+    setDpr(1.5)
+    expect(getDpr()).toBe(1.5)
+    setDpr(MAX_DPR)
+    expect(getDpr()).toBe(MAX_DPR)
+  })
+
+  // Cost scales with dpr², and nobody resolves past 2x. Capping inside getDpr
+  // rather than at each call site is what keeps the backing store, the scissor
+  // rects derived from it, and the variant-matrix shader uniform on one ratio.
+  test('caps ratios above MAX_DPR', () => {
+    setDpr(3)
+    expect(getDpr()).toBe(MAX_DPR)
+    setDpr(4)
+    expect(getDpr()).toBe(MAX_DPR)
+  })
 })
