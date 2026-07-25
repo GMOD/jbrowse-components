@@ -24,6 +24,12 @@ const useStyles = makeStyles()({
     alignItems: 'center',
     gap: 20,
   },
+  // the form is a short one, so let the Select stop at a readable width instead
+  // of stretching across a wide window away from everything it controls
+  track: {
+    marginBottom: 10,
+    maxWidth: 500,
+  },
 })
 
 /**
@@ -63,7 +69,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
   const labelId = useId()
   return tracks.length ? (
     <div>
-      <FormControl fullWidth style={{ marginBottom: 10 }}>
+      <FormControl fullWidth className={classes.track}>
         <InputLabel id={labelId}>Synteny track</InputLabel>
         <Select
           labelId={labelId}
