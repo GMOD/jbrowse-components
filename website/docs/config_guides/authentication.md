@@ -15,20 +15,70 @@ configuring any of this.
 
 ## If you control the data server, you probably do not need this
 
+JBrowse has no server and no user accounts of its own. It is static files
+running in a browser, reading your data files over HTTP, so it cannot decide who
+is allowed to see a track. Whatever serves the files has to do that. Two
+consequences that catch people out:
+
+- Leaving a track out of config.json does not protect it. The browser downloads
+  config.json, so every URL in it is visible to anyone who can open the app.
+- Never put a password, token, or API key in config.json, for the same reason.
+
 The simpler setup is to put JBrowse and its data files on the same server, in
 the same site, and protect both with the login your site already has (a session
 cookie, an SSO proxy, nginx `auth_request`). The browser then sends the cookie
 with every data request by itself: no `internetAccounts` entry, and no
-credential material in your config or in a shared session. It only works when
-the app and the data are on the same origin, since that is the only place a
-browser sends the cookie.
+credential material in your config or in a shared session.
 
-`internetAccounts` is for the data you cannot put behind your own login:
-Dropbox, Google Drive, an OAuth-protected API, a portal that issues tokens.
+### What "same origin" means here
 
-[How do I put my data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login)
-in the FAQ walks through the cookie setup, what "same origin" means in practice,
-and the login-redirect failure to watch for.
+The app and the data have to be on the same **origin**: the same `https://host`
+and port. Browsers only send cookies to the origin that set them.
+
+| App at                        | Data at                    | Cookie sent          |
+| ----------------------------- | -------------------------- | -------------------- |
+| `https://mysite.org/jbrowse/` | `https://mysite.org/data/` | yes                  |
+| `https://mysite.org/jbrowse/` | `https://data.mysite.org/` | no, different origin |
+| `https://mysite.org/jbrowse/` | an S3 or other bucket URL  | no, different origin |
+
+Protect both, not just the app. A login page in front of JBrowse while the data
+folder stays world-readable protects nothing, since the file URLs are in
+config.json.
+
+### The login-page failure mode
+
+When a data request arrives without a valid login, most auth setups answer with
+the HTML of a login page. JBrowse asked for bytes of a BAM file, so instead of a
+message about logging in you get a parse error, often
+`HTTP 200 ... (should be 206 for range requests)`. Check a file directly:
+
+```bash
+curl -s -o /dev/null -D - -H 'Range: bytes=0-100' https://mysite.org/data/file.bam
+```
+
+A logged-in request should answer `206 Partial Content`. A `200` with
+`content-type: text/html`, or a redirect, is the login page. A session expiring
+while a view is open produces the same errors mid-use, which a reload resolves.
+
+### If the cookie setup does not fit
+
+In rough order of simplicity:
+
+- No server at all. [JBrowse Desktop](/docs/quickstart_desktop) reads files off
+  your own machine, so nothing is published in the first place.
+- Expiring links. S3 presigned URLs or CloudFront signed cookies are simple to
+  set up, but a link stops working when its signature expires, taking any saved
+  session or share link with it.
+- `internetAccounts` (the rest of this page), for data you do not control:
+  Dropbox, Google Drive, an OAuth-protected API, a portal that issues tokens.
+  JBrowse prompts for the credential and attaches it to requests for the domains
+  you list. It only forwards a credential the user already has, it is not an
+  access-control system, and it is more moving parts than a cookie in front of a
+  folder, so it is worth exhausting the options above first.
+
+Any setup where the data is on a different origin than the app also needs
+[CORS](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files), including
+the auth header in `Access-Control-Allow-Headers`.
 
 ## Internet accounts
 

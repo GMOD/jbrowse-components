@@ -1,6 +1,9 @@
 ---
 title: User guide
 sidebar_label: Overview
+description:
+  Index of the guides for driving JBrowse — track types, views, and the
+  rest of the app.
 ---
 
 How to drive JBrowse once it is running. New here? Start with the

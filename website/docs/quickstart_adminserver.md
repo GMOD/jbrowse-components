@@ -1,5 +1,8 @@
 ---
 title: JBrowse CLI admin server
+description:
+  Configure assemblies and tracks through a browser GUI instead of editing
+  config.json by hand
 ---
 
 :::caution

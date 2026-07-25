@@ -1,5 +1,7 @@
 ---
 title: FAQ
+description:
+  Common questions about running, configuring, and troubleshooting JBrowse 2
 ---
 
 ## Developers
@@ -292,68 +294,18 @@ text file. The rule only applies to BGZF binary files. See also
 
 ### How do I put my data behind a login
 
-JBrowse has no server and no user accounts of its own. It is static files
-running in a browser, reading your data files over HTTP, so it cannot decide who
-is allowed to see a track. Whatever serves the files has to do that. Two
-consequences that catch people out:
+JBrowse has no server and no user accounts of its own: it is static files
+reading your data over HTTP, so whatever serves the files has to decide who may
+read them. Leaving a track out of config.json does not protect it, and a
+password in config.json is public.
 
-- Leaving a track out of config.json does not protect it. The browser downloads
-  config.json, so every URL in it is visible to anyone who can open the app.
-- Never put a password, token, or API key in config.json, for the same reason.
-
-The recommended setup is to use the login your website already has. Put the
-JBrowse folder and the data files on the same server, in the same site, and
-protect both with whatever your site already uses (a session cookie, an SSO
-proxy, an nginx `auth_request`). Once a user is logged in, the browser sends the
-cookie with every request, including the ones for the BAM and its index. Nothing
-needs configuring in JBrowse, and no credentials end up in your config or in a
-shared session.
-
-The requirement is that the app and the data are on the same **origin**, meaning
-the same `https://host` and port. Browsers only send cookies to the origin that
-set them:
-
-| App at                        | Data at                    | Cookie sent          |
-| ----------------------------- | -------------------------- | -------------------- |
-| `https://mysite.org/jbrowse/` | `https://mysite.org/data/` | yes                  |
-| `https://mysite.org/jbrowse/` | `https://data.mysite.org/` | no, different origin |
-| `https://mysite.org/jbrowse/` | an S3 or other bucket URL  | no, different origin |
-
-Protect both, not just the app. A login page in front of JBrowse while the data
-folder stays world-readable protects nothing, since the file URLs are in
-config.json.
-
-The common failure mode: when a data request arrives without a valid login, most
-auth setups answer with the HTML of a login page. JBrowse asked for bytes of a
-BAM file, so instead of a message about logging in you get a parse error, often
-`HTTP 200 ... (should be 206 for range requests)`. Check a file directly with:
-
-```bash
-curl -s -o /dev/null -D - -H 'Range: bytes=0-100' https://mysite.org/data/file.bam
-```
-
-A logged-in request should answer `206 Partial Content`. A `200` with
-`content-type: text/html`, or a redirect, is the login page. Note also that a
-session expiring while a view is open produces errors mid-use, which a reload
-resolves.
-
-If that setup does not fit, in rough order of simplicity:
-
-- No server at all. [JBrowse Desktop](/docs/quickstart_desktop) reads files off
-  your own machine, so nothing is published in the first place.
-- Expiring links. S3 presigned URLs or CloudFront signed cookies are simple to
-  set up, but a link stops working when its signature expires, taking any saved
-  session or share link with it.
-- [internetAccounts](/docs/config_guides/authentication), for data you do not
-  control: Dropbox, Google Drive, an OAuth-protected API, a portal that issues
-  tokens. JBrowse prompts for the credential and attaches it to requests for the
-  domains you list. It only forwards a credential the user already has, it is
-  not an access-control system, and it is more moving parts than a cookie in
-  front of a folder, so it is worth exhausting the options above first.
-
-Any setup where the data is on a different origin than the app also needs
-[CORS](#why-do-i-get-a-cors-error-when-loading-remote-files), including the auth
-header in `Access-Control-Allow-Headers`.
+The usual answer is to put the app and the data on the same origin and protect
+both with the login your site already has, so the browser sends its cookie with
+every data request and JBrowse needs no configuration at all.
+[Authentication](/docs/config_guides/authentication) covers that setup, what
+"same origin" means in practice, the login-page-instead-of-BAM-bytes failure to
+watch for, and the fallbacks (Desktop, presigned URLs, `internetAccounts`) when
+it does not fit.
 
 ### How can I make a header on a jbrowse-web instance
 
@@ -442,46 +394,31 @@ install one into the current session without editing config.json.
 
 ### How do I change the color of a track
 
-This is one of the most common questions, and there are a few ways depending on
-how much control you want.
-
 **In the app (easiest):** open the track menu and choose **Color** to pick a
 color. This works for feature tracks (genes/BED/GFF), wiggle tracks, and
 alignments (which offer color-by schemes). The choice is saved with your
 session.
 
-**In the config:** set `color` on the display. It takes a plain CSS color, and
-it's the same `color` whether the track is a feature track or a wiggle track.
-Note color is a _display-level_ setting, so it goes inside the `displays` array,
-not at the track top level:
+**In the config:** set `color` in the track's `displayDefaults`. It takes a
+plain CSS color, and it is the same `color` whether the track is a feature track
+or a wiggle track:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "my_genes",
   "name": "Genes",
   "assemblyNames": ["hg19"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "genes.gff.gz" },
-  "displays": [
-    {
-      "type": "LinearBasicDisplay",
-      "color": "green"
-    }
-  ]
+  "displayDefaults": { "color": "green" }
 }
-```
-
-With the CLI, supply that `displays` entry via `--config`:
-
-```bash
-jbrowse add-track genes.gff.gz --load copy --config '{"displays":[{"type":"LinearBasicDisplay","color":"green"}]}'
 ```
 
 **In a URL:** set `color` in a track's `displaySnapshot` in the session spec.
 See [URL parameters](/docs/urlparams#live-example-feature-track-color).
 
-The [cookbook colors section](/docs/cookbook#colors) has copy-paste versions of
-all of these, per track type.
+The [cookbook colors section](/docs/cookbook#colors) has copy-paste versions per
+track type, including per-feature jexl callbacks.
 
 ### How do I color features by an attribute (color callback)
 
@@ -612,9 +549,7 @@ and [`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) on
 the display:
 
 ```json
-"displays": [
-  { "type": "LinearVariantDisplay", "maxFeatureScreenDensity": 0.0006 }
-]
+"displayDefaults": { "maxFeatureScreenDensity": 0.0006 }
 ```
 
 The BAM, CRAM and VCF adapters have their own `fetchSizeLimit`, and an adapter's
@@ -792,11 +727,12 @@ card. Graphics errors are printed to the browser's developer console, so include
 anything there.
 
 One case has a real fix. With many views open, the browser can hit its limit on
-live WebGL contexts (Chrome allows about 16) and take one back from a track, which
-shows as a "WebGL context lost" banner there. Retry gets it back if another view
-has since freed capacity, and the banner's **Use Canvas2D** button switches
-drawing to software for the rest of the session: slower on dense data, unaffected
-by how many views are open. Closing views you aren't using also frees contexts.
+live WebGL contexts (Chrome allows about 16) and take one back from a track,
+which shows as a "WebGL context lost" banner there. Retry gets it back if
+another view has since freed capacity, and the banner's **Use Canvas2D** button
+switches drawing to software for the rest of the session: slower on dense data,
+unaffected by how many views are open. Closing views you aren't using also frees
+contexts.
 
 ### Why is my track slow
 

@@ -27,10 +27,11 @@ canvas feature displays decide identically.
 This is the **model-side** counterpart to `DisplayChrome`: the gate's whole job
 is to feed one signal — `regionTooLarge` (on `RegionTooLargeMixin`) — which
 `DisplayChrome`'s `computeDisplayPhase` reads to render the shared
-`TooLargeMessage` banner (see `agent-docs/reference/DISPLAYCHROME.md`). A
-display opts into the whole banner story by composing this mixin (the decision)
-and rendering `DisplayChrome` (the UI) — the same "single shared layer, small
-opt-in contract" shape DisplayChrome uses for loading/error/retry.
+`TooLargeMessage` banner (see
+[DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md)).
+A display opts into the whole banner story by composing this mixin (the
+decision) and rendering `DisplayChrome` (the UI) — the same "single shared
+layer, small opt-in contract" shape DisplayChrome uses for loading/error/retry.
 
 ## Members
 

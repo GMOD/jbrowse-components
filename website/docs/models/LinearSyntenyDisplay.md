@@ -73,7 +73,7 @@ and the `renderParams` the view reads out.
 | [refetching](#getter-refetching)                               | Getters    | LinearSyntenyDisplay          | Refetch in-flight: a new fetch is running but stale ribbons are still on screen (e.g. zoom-out across a log2 bucket, region change).                                                                  |
 | [currentFetchKey](#getter-currentfetchkey)                     | Getters    | LinearSyntenyDisplay          | Fetch-input signature (region set/order, snapped fetch window, zoom bucket, CIGAR/marker draw options, LOD tier) for the view's current state — the same tracked deps the fetch autorun refetches on. |
 | [dataCurrent](#getter-datacurrent)                             | Getters    | LinearSyntenyDisplay          | True when the rendered data was fetched for the view's current inputs.                                                                                                                                |
-| [svgReady](#getter-svgready)                                   | Getters    | LinearSyntenyDisplay          | Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").                                                                                                                              |
+| [svgReady](#getter-svgready)                                   | Getters    | LinearSyntenyDisplay          | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)).                                                                |
 | [view](#getter-view)                                           | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
 | [computedColors](#getter-computedcolors)                       | Getters    | LinearSyntenyDisplay          | Main-thread-computed per-instance colors.                                                                                                                                                             |
 | [effectiveColorBy](#getter-effectivecolorby)                   | Getters    | LinearSyntenyDisplay          | The view-level colorBy resolved for this specific level.                                                                                                                                              |
@@ -292,10 +292,11 @@ type dataCurrent = boolean
 
 #### getter: svgReady
 
-Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady"). Synteny
-is not an LGV display — it composes only `BaseDisplay` with its own fetch — so
-it has no `MultiRegionDisplayMixin`/`GlobalDataDisplayMixin` `svgReady`; this is
-the equivalent. Stale-safe on both axes: `dataCurrent` closes the pre-refetch
+Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the
+[SVG export guide](/docs/developer_guides/svg_export)). Synteny is not an LGV
+display — it composes only `BaseDisplay` with its own fetch — so it has no
+`MultiRegionDisplayMixin`/`GlobalDataDisplayMixin` `svgReady`; this is the
+equivalent. Stale-safe on both axes: `dataCurrent` closes the pre-refetch
 debounce gap (stale window before `fetching` flips) and `!refetching` covers the
 in-flight RPC, so an export fired right after a zoom/pan waits for fresh ribbons
 instead of capturing stale ones. No `regionTooLarge` state (synteny never gates

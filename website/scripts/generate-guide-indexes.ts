@@ -170,6 +170,11 @@ function buildUserGuide(): string {
     '---',
     'title: User guide',
     'sidebar_label: Overview',
+    // Plain YAML scalar, so no `: ` anywhere in these descriptions — a
+    // colon-space starts a mapping key and fails the collection parse.
+    'description:',
+    '  Index of the guides for driving JBrowse — track types, views, and the',
+    '  rest of the app.',
     '---',
     '',
     'How to drive JBrowse once it is running. New here? Start with the',
@@ -191,6 +196,9 @@ function buildConfigGuide(): string {
     '---',
     'title: Config guide',
     'sidebar_label: Overview',
+    'description:',
+    '  Index of the guides for writing config.json — assemblies, tracks,',
+    '  callbacks, and deployment.',
     '---',
     '',
     'How to configure the `config.json` that drives a session. For copy-paste',
@@ -207,6 +215,9 @@ function buildDeveloperGuide(): string {
   const preamble = `---
 title: Developer guide
 sidebar_label: Overview
+description:
+  How JBrowse 2 is packaged and structured, and how to write plugins and
+  pluggable elements.
 ---
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to

@@ -123,7 +123,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Off-screen SVG export gate: "Export SVG" waits on this before drawing
+       * (see the [SVG export guide](/docs/developer_guides/svg_export)).
        * Dotplot is non-rectangular (square canvas), so it keeps a bespoke
        * `SVGErrorBox` error UI instead of `SvgChrome`, but still exposes
        * `svgReady` + awaits it via the shared `awaitSvgReady` — no inlined

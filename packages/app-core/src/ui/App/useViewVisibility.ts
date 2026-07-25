@@ -12,7 +12,8 @@ function intersectionObserverAvailable() {
  * spacer once scrolled far away. This bounds the number of simultaneously-live
  * GPU canvases/contexts — the root cause of the "workspaces freeze" with many
  * stacked views (one WebGL context per display canvas blows past the browser's
- * per-page cap; see agent-docs/workspaces-freeze-investigation.md).
+ * per-page cap; see agent-docs/reference/ARCHITECTURAL_LIMITS.md, "One WebGL2
+ * context per display canvas").
  *
  * `root: null` (viewport) is container-agnostic: it reports on-screen-ness the
  * same way whether the views scroll inside the classic container or a dockview

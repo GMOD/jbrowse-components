@@ -1,4 +1,4 @@
-import { backlinksFor, relatedGuidesFor } from './autogen-links.ts'
+import { backlinksFor } from './autogen-links.ts'
 
 import type { Heading, Link, List, ListItem, Root, RootContent } from 'mdast'
 import type { Plugin } from 'unified'
@@ -53,38 +53,39 @@ function guideListItem(ref: GuideRef): ListItem {
   }
 }
 
-function plainListItem(ref: GuideRef): ListItem {
-  return {
-    type: 'listItem',
-    spread: false,
-    children: [{ type: 'paragraph', children: [linkNode(ref)] }],
-  }
-}
-
-// Append the guides that reference this page. Reference pages
-// (config/models/api) list the guides that link to them — the backlink
-// direction the autogen otherwise lacks. Guides list sibling guides that cite
-// the same reference pages.
+// Append the guides that reference this page. This runs on reference pages
+// (config/models/api) only: the backlink direction is the one the autogen
+// lacks and nobody can hand-maintain, since a generated page is wiped on every
+// `pnpm autogen`.
+//
+// It used to also give hand-written guides a "Related guides" footer of
+// siblings citing the same reference pages. That fired on 21 of 121 guides
+// (it needs two shared citations) while all 108 guides with cross-links
+// already carry a curated "## See also" — so on 20 pages it rendered a second
+// link list right below the first, 12 of the links identical. The curated list
+// is the better one and is the convention everywhere; this now stays out of
+// its way.
 //
 // A config page's own "## Related links" section (adapter/track/display
 // cross-refs, written directly into the generated markdown — see
 // generateConfigDocs.ts) and this guide-backlink footer used to render as two
-// separate "Related links" / "Related guides" headings on the same page.
-// Merge them: on an autogen page that already has "## Related links", append
-// one "**Guide:** ..." bullet per guide to that list instead of a second
-// heading. Elsewhere (models/api pages with no cross-refs, or hand-written
-// guide pages), fall back to writing the heading + list from scratch.
+// separate headings on the same page. Merge them: on a page that already has
+// "## Related links", append one "**Guide:** ..." bullet per guide to that
+// list instead of a second heading. On models/api pages, which have no
+// cross-refs of their own, write the heading + list from scratch.
+const AUTOGEN_DIRS = new Set(['config', 'models', 'api'])
+
 const remarkRelatedGuides: Plugin<[], Root> = () => {
   return (tree, file) => {
     const id = typeof file.data.id === 'string' ? file.data.id : ''
-    const topDir = id.split('/')[0]
-    const isAutogen =
-      topDir === 'config' || topDir === 'models' || topDir === 'api'
-    const links = isAutogen ? backlinksFor(id) : relatedGuidesFor(id)
+    if (!AUTOGEN_DIRS.has(id.split('/')[0]!)) {
+      return
+    }
+    const links = backlinksFor(id)
     if (links.length === 0) {
       return
     }
-    const existingList = isAutogen ? findRelatedLinksList(tree) : undefined
+    const existingList = findRelatedLinksList(tree)
     if (existingList) {
       existingList.children.push(...links.map(guideListItem))
       return
@@ -92,15 +93,13 @@ const remarkRelatedGuides: Plugin<[], Root> = () => {
     const heading: Heading = {
       type: 'heading',
       depth: 2,
-      children: [
-        { type: 'text', value: isAutogen ? 'Related links' : 'Related guides' },
-      ],
+      children: [{ type: 'text', value: 'Related links' }],
     }
     const list: List = {
       type: 'list',
       ordered: false,
       spread: false,
-      children: links.map(isAutogen ? guideListItem : plainListItem),
+      children: links.map(guideListItem),
     }
     tree.children.push(heading, list)
   }

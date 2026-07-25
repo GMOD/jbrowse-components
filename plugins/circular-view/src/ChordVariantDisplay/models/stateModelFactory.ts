@@ -104,8 +104,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
 
       /**
        * #getter
-       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
-       * Chord displays are non-rectangular (radial), so they keep a bespoke
+       * Off-screen SVG export gate: "Export SVG" waits on this before drawing
+       * (see the [SVG export guide](/docs/developer_guides/svg_export)). Chord
+       * displays are non-rectangular (radial), so they keep a bespoke
        * `<DisplayError>` error UI instead of `SvgChrome`, but still expose
        * `svgReady` + await it via the shared `awaitSvgReady` — no inlined
        * `when()`. No `regionTooLarge` state.

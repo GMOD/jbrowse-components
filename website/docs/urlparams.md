@@ -1,6 +1,9 @@
 ---
 title: URL query parameter API
 sidebar_label: URL parameters
+description:
+  Drive JBrowse Web from the URL with loc, assembly, tracks, and the session
+  spec that launches any view type
 ---
 
 JBrowse Web supports URL parameters for initializing a session.

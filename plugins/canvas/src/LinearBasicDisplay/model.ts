@@ -44,7 +44,8 @@ const SUBFEATURE_LABEL_OPTIONS = [
  * GPU-accelerated feature display with gene-specific UI on top of the
  * shared canvas base display (`LinearCanvasBaseDisplay`). This is the GPU
  * stack — despite the name it does NOT extend `BaseLinearDisplay` (the legacy
- * block stack). See agent-docs/ARCHITECTURE.md "Display stacks".
+ * block stack). See
+ * [display stacks](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks).
  *
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into

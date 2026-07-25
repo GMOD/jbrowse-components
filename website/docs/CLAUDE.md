@@ -132,6 +132,25 @@ point at them, not re-copy their contents (which silently goes stale).
   `PluggableElement` survived — both were plausible, neither existed). `My*` is
   the reserved placeholder prefix and is skipped; the check is scoped to the
   developer guides because tutorials legitimately name genes and accessions.
+- **Write `displayDefaults`, not a `displays` array**, whenever an example only
+  sets slots on a track's default display. `config_guides/tracks.md` documents
+  the shorthand as the common case, so an example that spells out
+  `displays: [{ type: 'LinearBasicDisplay', color }]` to set one slot teaches
+  against the guide (the FAQ used to, which is how "color goes in the `displays`
+  array" and "color goes in `displayDefaults`" ended up on the site at the same
+  time). The array is correct — and required — only when the example _selects_ a
+  non-default display type (`LinearMultiSampleVariantDisplay`, `LDDisplay`,
+  `LinearPairedArcDisplay`, ...) or writes a session snapshot that needs real
+  `displayId`s. Bonus: only `displayDefaults` blocks qualify for the
+  ` ```json addtrack ` CLI tab.
+- **`user_guides/<x>.md` vs `config_guides/<x>.md`.** Eight track types have
+  both. The split is by audience, and each page owes the other the half it
+  doesn't cover: the user guide drives the **UI** (menus, what the display looks
+  like, how to read it) and shows no config JSON; the config guide shows the
+  **JSON** and links slots, and does not re-explain what the feature is or what
+  the colors mean. When a config guide starts a prose section explaining a
+  concept, that section belongs in the user guide with a link back — otherwise
+  the pair drifts into two half-copies of the same page.
 - **Cross-page anchor links:** write `/docs/page#anchor` (no slash before `#`);
   `rehypeTrailingSlash` adds the trailing slash to the path. CI validates
   fragment targets via `untitaker/hyperlink --check-anchors`.

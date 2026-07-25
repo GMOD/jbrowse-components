@@ -84,7 +84,7 @@ limits for realistic instance counts. We also tried a "shader generator" branch
 (`webgl-poc-genshaders`) that built the sources via string concatenation; its
 output was malformed.
 
-Spike results (`agent-docs/shader-codegen-spike/FINDINGS.md`) evaluated six
+Spike results (the `shader-codegen-spike` branch, since removed) evaluated six
 mature community approaches:
 
 | Approach                                                                                       | Verdict                                                                    |
@@ -325,6 +325,36 @@ infrastructure staying in place regardless.
 - **Write our own mini-compiler** (what `webgl-poc-genshaders` attempted):
   rejected; the previous attempt shipped malformed syntax and the work to get to
   parity with Slang is not repayable.
+- **A runtime "shader bits" abstraction over all three backends** (PixiJS-style
+  composable fragments, a shared geometry description, one `forEachBlock()`
+  render loop). Investigated 2026-03-26 on `webgl-poc` and rejected before this
+  ADR: PixiJS needs composable bits because it remixes dozens of features, while
+  we have a handful of fixed programs that are never remixed, so the split adds
+  indirection with no compositional payoff. Also considered and rejected there:
+  wgpu-to-WASM (~10 MB, buggy WebGL fallback), regl (WebGL only), luma.gl v9
+  (portable API but still dual shaders, no Canvas2D), gpu.js (dead, GPGPU not
+  drawing), and WebGPU Compatibility Mode (needs a secure context we can't
+  require). That investigation's conclusion was "keep three backends, share only
+  the HP math"; this ADR supersedes it by moving the duplication to build time
+  instead, which shares the whole shader body rather than 50 lines of it.
+
+### Why the backends resist a runtime abstraction
+
+The structural differences the rejected abstraction had to paper over, and which
+Slang instead absorbs at build time:
+
+| Aspect          | WebGPU                        | WebGL2                         | Canvas2D               |
+| --------------- | ----------------------------- | ------------------------------ | ---------------------- |
+| Shader language | WGSL                          | GLSL ES 3.0                    | N/A                    |
+| Instance data   | Storage buffers (interleaved) | Separate VBOs per attribute    | Plain TypedArrays      |
+| Uniforms        | Dynamic offset UBO            | Individual `gl.uniform*` calls | N/A                    |
+| Command model   | Command buffer recording      | Immediate-mode state machine   | Immediate-mode drawing |
+| Line draw       | 6 verts (thin quad)           | 2 verts (`gl.LINES`)           | `ctx.stroke()`         |
+| Colors          | f32 [0..1] in storage buffer  | Normalized UNSIGNED_BYTE       | `rgba()` strings       |
+| MSAA            | 4x with resolve texture       | None                           | N/A                    |
+
+Canvas2D is deliberately left out of the codegen for the same reason: it shares
+no shader at all, only the geometry decisions upstream of one.
 
 ## References
 
@@ -332,4 +362,3 @@ infrastructure staying in place regardless.
 - [Slang WGSL target docs](http://shader-slang.org/slang/user-guide/wgsl-target-specific)
 - [Bevy encase layout derivation](https://docs.rs/encase/) (inspired the TS
   codegen design)
-- Spike artifacts: `agent-docs/shader-codegen-spike/`

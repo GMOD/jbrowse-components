@@ -97,8 +97,8 @@ function collectListedDocSlugs(
 
 // Pages intentionally kept out of the sidebar nav but still reachable via
 // inline links from other docs (so they can't 404). quickstart_adminserver is
-// the niche admin-server GUI guide — dropped from the getting-started quickstart
-// but linked from faq.md.
+// the niche admin-server GUI guide — dropped from the getting-started
+// quickstart, reached from user_guides/basic_usage.md.
 const intentionallyUnlisted = new Set(['quickstart_adminserver'])
 
 const sidebar = JSON.parse(readFileSync(sidebarPath, 'utf8'))

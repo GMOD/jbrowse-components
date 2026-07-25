@@ -281,6 +281,33 @@ sit together:
 
 <Figure caption="The same 64-haplotype painting with the rows clustered and a dendrogram beside them. Haplotypes sharing an ancestry profile group into blocks, so the continuous PCA colors sort into bands rather than the input file's order." src="/img/hprc2/local_ancestry_clustered.png" />
 
+## Reproduce it end to end
+
+The tracks above load from files we prebuilt and host, so the tutorial needs no
+pipeline. Two scripts rebuild those files, for a different graph or a different
+chromosome and sample count:
+
+```bash
+bash scripts/build_rgfa_tabix.sh hprc-v2.0-mc-grch38.sv.gfa.gz out
+bash scripts/build_hprc2_pclai.sh out chr1 64
+```
+
+[`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
+writes the two tabix indexes `RgfaTabixAdapter` reads, straight from the gzipped
+rGFA (nothing to unpack); on the full 464-haplotype graph it turns the 842 MB
+download into about 50 MB of index in under a minute. It needs an **rGFA** -
+`sv.gfa.gz` is one, the `.gfa.gz` beside it is not (see
+[Regular GFA vs rGFA](#regular-gfa-vs-rgfa)).
+
+[`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)
+fetches the per-haplotype PCLAI BEDs, keeps the columns the painting needs, and
+concatenates them into one bgzipped, tabixed file. Both need htslib (`bgzip`,
+`tabix`) on your `PATH`.
+
+The provenance of the copies we host - source, size, exact commands, build
+date - is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside
+them.
+
 ## Structure, not sequence
 
 The graph view shows structure, not sequence. minigraph records structural

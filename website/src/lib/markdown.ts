@@ -12,6 +12,7 @@ import rehypeAdmonitions from './rehype-admonitions.ts'
 import rehypeBaseUrls from './rehype-base-urls.ts'
 import rehypeCollectToc, { type TocItem } from './rehype-collect-toc.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
+import rehypePagefindIgnore from './rehype-pagefind-ignore.ts'
 import rehypeShiki from './rehype-shiki.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import remarkAutolinkTypes from './remark-autolink-types.ts'
@@ -43,6 +44,7 @@ const processor = unified()
   .use(rehypeSlug)
   .use(rehypeCollectToc)
   .use(rehypeHeadingLinks)
+  .use(rehypePagefindIgnore)
   .use(rehypeStringify, { allowDangerousHtml: true })
 
 export async function renderMarkdown(

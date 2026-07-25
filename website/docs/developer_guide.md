@@ -1,6 +1,9 @@
 ---
 title: Developer guide
 sidebar_label: Overview
+description:
+  How JBrowse 2 is packaged and structured, and how to write plugins and
+  pluggable elements.
 ---
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to

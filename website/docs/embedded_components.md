@@ -1,5 +1,8 @@
 ---
 title: Embedded components
+description:
+  Which npm package to use to put a JBrowse view in your own app, and working
+  bundler examples for each
 ---
 
 Add a JBrowse view to your app as an npm package, or drop a single `<script>`

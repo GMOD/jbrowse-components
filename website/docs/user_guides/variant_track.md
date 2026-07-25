@@ -87,12 +87,9 @@ So a track can be colored by allele frequency without any preprocessing:
 
 ```json
 {
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "color": "jexl:maf(feature)<0.01?'#ccc':maf(feature)<0.05?'#74a9cf':'#045a8d'"
-    }
-  ]
+  "displayDefaults": {
+    "color": "jexl:maf(feature)<0.01?'#ccc':maf(feature)<0.05?'#74a9cf':'#045a8d'"
+  }
 }
 ```
 

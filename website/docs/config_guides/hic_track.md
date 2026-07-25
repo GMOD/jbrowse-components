@@ -31,12 +31,12 @@ shorthand. The longhand form uses a `hicLocation` slot. See the
 
 ## Color scheme
 
-Hi-C contact matrices are drawn with a built-in color ramp, selectable from the
-track menu via the
-[`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) slot:
-`juicebox`, `fall`, or `viridis`. Log scaling and percentile clipping are also
-slots. See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for
-the full list.
+[`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) takes
+`juicebox`, `fall`, or `viridis`. Log scaling and percentile clipping are slots
+too. See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for
+the full list, and
+[reading the contact matrix](/docs/user_guides/hic_track#reading-the-contact-matrix)
+for what the ramps show.
 
 ## Loops and interactions as arcs
 

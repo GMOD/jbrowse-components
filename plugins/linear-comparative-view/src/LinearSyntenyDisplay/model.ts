@@ -431,7 +431,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Off-screen SVG export gate: "Export SVG" waits on this before drawing
+       * (see the [SVG export guide](/docs/developer_guides/svg_export)).
        * Synteny is not an LGV display — it composes only `BaseDisplay` with its
        * own fetch — so it has no `MultiRegionDisplayMixin`/`GlobalDataDisplayMixin`
        * `svgReady`; this is the equivalent. Stale-safe on both axes: `dataCurrent`
