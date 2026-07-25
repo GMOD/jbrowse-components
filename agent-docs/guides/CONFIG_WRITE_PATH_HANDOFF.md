@@ -10,10 +10,19 @@ side is the one config mistake with no diagnostic at any layer. `setConf` was
 fixed in `4c8d5f06fd` and `LinearAlignmentsDisplay` was migrated as the proving
 ground.
 
-**Status: 68 of the 79 pinned sites are migrated** (maf, variants, canvas
-multi-row, sequence, wiggle multi, gwas). Every name typechecked, so none of
-them were broken. What remains is 11 pinned sites in hic and arc, blocked only
-by other agents' uncommitted edits, plus the widened and must-stay groups below.
+**Status: everything is migrated except 11 pinned sites in hic and arc**, which
+are blocked only by another agent's uncommitted edits. Every name typechecked,
+so none of them were broken. The widened group and the wiggle mixin are done
+too, for consistency rather than safety.
+
+That means the invariant is now greppable, which is the real payoff. Every
+`self.configuration.setSlot('literal', ...)` left in non-test source is one of
+those 11. Every other surviving `.setSlot(` writes a genuinely dynamic name
+(`tracks.ts`, `promotableDefaults.ts`, the `slotFacade`, the `target.setSlot`
+copy loop in `MultiSampleVariantBaseModel`) or writes to a config node that is
+not `self.configuration` (`loadHubSpec.ts`), so `setConf` does not apply. If
+that grep ever turns up something else, it is an unmigrated site, not a
+judgement call.
 
 ## What was wrong, and why it is worth finishing
 
@@ -65,9 +74,12 @@ three groups.
 | 1 | `plugins/arc/src/LinearPairedArcDisplay/model.ts` | blocked, dirty |
 | 1 | `plugins/arc/src/LinearArcDisplay/model.ts` | blocked, dirty |
 
-All three were still carrying another agent's uncommitted SVG-export edits when
-the rest of the sweep ran. Re-check with `git status --short` and finish them
-when clean; the recipe is unchanged and each is a one-file commit.
+All three carry parts of one in-flight refactor removing the SVG export's
+`overrideHeight` option (hic collapses `yScalarForHeight` into the `yScalar`
+getter, both arc models drop the `opts` pass-through). Committing any of them
+would publish that half-finished work. Re-check with `git status --short` and
+finish them once it lands; the recipe is unchanged and each is a one-file
+commit.
 
 Done, for reference: maf `stateModel.ts` (23), variants `LDDisplay/shared.ts`
 (14) and `MultiSampleVariantBaseModel.ts` (11), canvas
@@ -76,7 +88,7 @@ Done, for reference: maf `stateModel.ts` (23), variants `LDDisplay/shared.ts`
 `MultiLinearWiggleDisplay/model.ts` (4), gwas
 `LinearManhattanDisplay/stateModelFactory.ts` (2).
 
-### Widened, so migrating gains nothing yet (17 sites)
+### Widened, so migrating gained consistency only (17 sites, done)
 
 `plugins/canvas/src/LinearBasicDisplay/baseModel.ts` (7),
 `plugins/wiggle/src/LinearWiggleDisplay/model.ts` (4),
@@ -84,10 +96,14 @@ Done, for reference: maf `stateModel.ts` (23), variants `LDDisplay/shared.ts`
 `plugins/canvas/src/LinearBasicDisplay/model.ts` (3).
 
 These take `AnyConfigurationSchemaType`, so `ConfigurationSlotName<...>`
-resolves to `any` and `setConf` checks nothing. Migrating them is harmless and
-buys consistency, but it does not buy safety until the factory is pinned, and
+resolves to `any` and `setConf` still checks nothing in them. They were migrated
+anyway, for the greppability described at the top rather than for safety: a raw
+`setSlot` on a literal slot name is now unambiguously an unmigrated site. They
+will gain the check for free if their factory is ever pinned.
+
+**Do not pin them just to enable this.**
 `packages/core/src/configuration/CLAUDE.md` explains why wiggle and the canvas
-base deliberately stay widened. Do not pin them just to enable this.
+base deliberately stay widened.
 
 ### Must stay on raw `setSlot`
 
