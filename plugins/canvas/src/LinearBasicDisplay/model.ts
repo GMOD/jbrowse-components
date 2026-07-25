@@ -5,6 +5,7 @@ import {
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
@@ -169,11 +170,11 @@ export default function stateModelFactory(
     })
     .actions(self => ({
       setSubfeatureLabels(value: DisplayConfig['subfeatureLabels']) {
-        self.configuration.setSlot('subfeatureLabels', value)
+        setConf(self, 'subfeatureLabels', value)
       },
 
       setGeneGlyphMode(value: DisplayConfig['geneGlyphMode']) {
-        self.configuration.setSlot('geneGlyphMode', value)
+        setConf(self, 'geneGlyphMode', value)
       },
 
       dismissGeneGlyphNotice() {
@@ -185,7 +186,7 @@ export default function stateModelFactory(
       },
 
       setDisplayDirectionalChevrons(value: boolean) {
-        self.configuration.setSlot('displayDirectionalChevrons', value)
+        setConf(self, 'displayDirectionalChevrons', value)
       },
     }))
     .views(self => ({

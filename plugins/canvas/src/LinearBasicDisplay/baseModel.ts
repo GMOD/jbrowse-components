@@ -5,6 +5,7 @@ import {
   getConf,
   readConfObject,
   resolvePromotableConfigSnapshot,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -1874,14 +1875,14 @@ export default function baseStateModelFactory(
            * #action
            */
           setShowLabels(value: ShowLabelsMode) {
-            self.configuration.setSlot('showLabels', value)
+            setConf(self, 'showLabels', value)
           },
 
           /**
            * #action
            */
           setShowDescriptions(value: boolean) {
-            self.configuration.setSlot('showDescriptions', value)
+            setConf(self, 'showDescriptions', value)
           },
 
           /**
@@ -1900,10 +1901,7 @@ export default function baseStateModelFactory(
           setShowOutline(value: boolean) {
             // THEME_DERIVED_COLOR sentinel: the worker resolves it to a
             // theme-appropriate outline so it stays visible on dark tracks too.
-            self.configuration.setSlot(
-              'outlineColor',
-              value ? THEME_DERIVED_COLOR : '',
-            )
+            setConf(self, 'outlineColor', value ? THEME_DERIVED_COLOR : '')
           },
 
           /**
@@ -1913,14 +1911,14 @@ export default function baseStateModelFactory(
           // per-feature jexl color); a string sets a solid color for all
           // features. Flows to the worker via rpcProps -> displayConfig.color.
           setFeatureColor(color?: string) {
-            self.configuration.setSlot('color', color)
+            setConf(self, 'color', color)
           },
 
           /**
            * #action
            */
           setUtrColor(color?: string) {
-            self.configuration.setSlot('utrColor', color)
+            setConf(self, 'utrColor', color)
           },
 
           /**
@@ -1980,7 +1978,7 @@ export default function baseStateModelFactory(
         // strategy — fit/grow scale or accommodate whatever size this sets —
         // so it deliberately leaves heightMode untouched.
         setDisplayMode(value: DisplayMode) {
-          self.configuration.setSlot('displayMode', value)
+          setConf(self, 'displayMode', value)
         },
 
         /**
@@ -1990,7 +1988,7 @@ export default function baseStateModelFactory(
         // mutual exclusion is inherent to the single enum. The `laidOutDataMap`
         // getter does the actual fit reactively.
         setHeightMode(mode: HeightMode) {
-          self.configuration.setSlot('heightMode', mode)
+          setConf(self, 'heightMode', mode)
           // Entering a non-fixed mode (grow/fit) resets a leftover scrollTop that
           // a reconfigured height contradicts: it can strand the sticky GPU canvas
           // at an out-of-range offset (fit usually has no scroll extent — except
