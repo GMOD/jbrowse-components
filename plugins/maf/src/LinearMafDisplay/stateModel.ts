@@ -879,24 +879,17 @@ export default function stateModelFactory(
          * only height so the GPU canvas only paints the per-sample band; the
          * coverage band is drawn on a separate Canvas2D overlay above.
          */
-        get renderState(): MafGPURenderState | undefined {
+        get renderState(): MafGPURenderState {
           const view = self.lgv
-          // Return undefined only while genuinely still loading (no fetch has
-          // landed). A sample-discovery track — no configured `samples`, so rows
-          // come from whichever genomes appear in the region's blocks — yields
-          // zero sources over a region with no alignment blocks. Gating solely on
-          // `!self.sources` there kept renderState undefined after the fetch
-          // completed, so the render callback returned false, canvasDrawn never
-          // flipped, and the loading overlay spun forever. Once a region has
-          // loaded, still build a state so renderBlocks clears the canvas and
-          // canvasDrawn flips (nrow floors at 1, so the row-height math is safe
-          // with zero sources).
-          if (
-            !view.initialized ||
-            (!self.sources && self.loadedRegions.size === 0)
-          ) {
-            return undefined
-          }
+          // Resolved geometry, never undefined — every field is view/settings
+          // derived and safe with zero sources (nrow floors at 1). "No fetch has
+          // landed" is the render callback's first-paint gate (`hasFetched`), not
+          // a nullable state: a sample-discovery track — no configured `samples`,
+          // so rows come from whichever genomes appear in the region's blocks —
+          // yields zero sources over a region with no alignment blocks, and
+          // withholding a state there once the fetch completed kept the render
+          // callback returning false, so `canvasDrawn` never flipped and the
+          // loading overlay spun forever.
           return {
             canvasWidth: view.width,
             canvasHeight: self.rowsHeight,
@@ -1518,13 +1511,16 @@ export default function stateModelFactory(
               return { instanceBuffer: buffer, instanceCount: count }
             },
             b => {
-              const state = self.renderState
-              if (state) {
+              // First-paint gate: no fetch has landed yet, so skip the tick
+              // rather than flipping canvasDrawn on an empty frame. Zero sources
+              // over a loaded region is NOT this state — see renderState.
+              const hasFetched = !!self.sources || self.loadedRegions.size > 0
+              if (hasFetched) {
                 if (self.activeRowRendering === 'bases') {
                   return b.renderBlocks(
                     self.renderBlocks,
                     self.rpcDataMap,
-                    state,
+                    self.renderState,
                   )
                 } else {
                   // Zoomed out the identity plot owns the visible rows, on a
@@ -1532,7 +1528,7 @@ export default function stateModelFactory(
                   // transparent and the identity one shows through — a cleared
                   // frame nothing painted into, but still a real paint for
                   // canvasDrawn, since the rows the user sees did get drawn.
-                  b.renderBlocks([], self.rpcDataMap, state)
+                  b.renderBlocks([], self.rpcDataMap, self.renderState)
                   return true
                 }
               } else {

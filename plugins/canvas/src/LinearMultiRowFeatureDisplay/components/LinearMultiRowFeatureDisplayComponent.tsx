@@ -81,7 +81,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           onContextMenu(e)
         }}
         style={{
-          width: view.width,
+          width: view.trackWidthPx,
           height,
           position: 'absolute',
           left: 0,
@@ -104,7 +104,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             position: 'absolute',
             left: 0,
             top: 0,
-            width: view.width,
+            width: view.trackWidthPx,
             height,
             pointerEvents: 'none',
             zIndex: 2,
@@ -121,10 +121,10 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
       {/* portaled above the inter-region masks (see FloatingSvgOverlay) so the
           legend isn't buried at multi-region scale */}
       {showLegend && colorLegend.length ? (
-        <FloatingSvgOverlay width={view.width} height={height}>
+        <FloatingSvgOverlay width={view.trackWidthPx} height={height}>
           <MultiRowColorLegend
             entries={colorLegend}
-            canvasWidth={view.width}
+            canvasWidth={view.trackWidthPx}
             maxHeight={height}
             hiddenLabels={hiddenCategorySet}
             onDismiss={() => {

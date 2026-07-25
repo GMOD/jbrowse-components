@@ -28,8 +28,8 @@ export function drawLDBlocks(
   colorRamp: Uint8Array,
   state: LDRenderState,
 ) {
-  const { yScalar, signedLD, viewScale, viewOffsetX } = state
-  const { ldValues, boundaries, numCells } = data
+  const { yScalar, viewScale, viewOffsetX } = state
+  const { ldValues, boundaries, numCells, signedLD } = data
   if (numCells === 0) {
     return
   }

@@ -89,6 +89,27 @@ export function RenderLifecycleMixin() {
        */
       renderError: undefined,
     }))
+    .views(() => ({
+      /**
+       * #getter
+       * Overridable precondition (default true): both lifecycle autoruns skip
+       * their callback entirely while this is false, so a display never has to
+       * open its own `upload`/`render` with a readiness check.
+       *
+       * The LGV mixins override it with `view.initialized`, because before the
+       * view is measured its geometry throws by design (`view.width`, and so
+       * `visibleRegions` / `trackWidthPx` with it) and a throw in either callback
+       * is routed to `renderError` — surfacing "not measured yet" as the GPU
+       * render-error banner. Because it's an observable read inside the autoruns,
+       * the pair re-fires the moment it flips. This is the *precondition* axis
+       * only: whether any data has arrived stays the render callback's own gate
+       * (return `false` to skip a tick), which is why `renderState` getters can
+       * be plain resolved values.
+       */
+      get canRender(): boolean {
+        return true
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -157,7 +178,7 @@ export function RenderLifecycleMixin() {
           autorun(
             () => {
               const b = self.currentRenderingBackend as B | undefined
-              if (b === undefined) {
+              if (b === undefined || !self.canRender) {
                 return
               }
               // A throw in the upload callback (malformed worker data, a bad
@@ -190,7 +211,7 @@ export function RenderLifecycleMixin() {
             () => {
               const b = self.currentRenderingBackend as B | undefined
               void self.renderTick
-              if (b === undefined) {
+              if (b === undefined || !self.canRender) {
                 return
               }
               // A throw in the render callback (e.g. an invalid render-state

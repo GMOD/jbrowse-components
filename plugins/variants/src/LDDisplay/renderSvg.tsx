@@ -115,15 +115,18 @@ function LdSvgBody({
             height={triangleHeight}
             opts={opts}
             paint={ctx => {
-              drawLDBlocks(ctx, { ldValues, boundaries, numCells }, ramp, {
-                yScalar,
-                canvasWidth: visibleWidth,
-                canvasHeight: triangleHeight,
-                signedLD,
-                viewScale: exportViewScale,
-                viewOffsetX: exportViewOffsetX,
-                uniformW,
-              })
+              drawLDBlocks(
+                ctx,
+                { ldValues, boundaries, numCells, signedLD, uniformW },
+                ramp,
+                {
+                  yScalar,
+                  canvasWidth: visibleWidth,
+                  canvasHeight: triangleHeight,
+                  viewScale: exportViewScale,
+                  viewOffsetX: exportViewOffsetX,
+                },
+              )
             }}
           />
         </g>

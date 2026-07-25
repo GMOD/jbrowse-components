@@ -1,3 +1,5 @@
+import { getContainingView } from '@jbrowse/core/util'
+import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -5,6 +7,7 @@ import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -40,7 +43,20 @@ export default function GlobalDataDisplayMixin() {
       RenderLifecycleMixin(),
       types.model({}),
     )
-    .views(() => ({
+    .views(self => ({
+      /**
+       * #getter
+       * Same render-lifecycle precondition as MultiRegionDisplayMixin (overrides
+       * `RenderLifecycleMixin`'s default-true hook): a global display's
+       * `renderState` is still sized off view geometry (`totalWidthPx`,
+       * `dynamicBlocks`), which throws before the view is measured. Gating the
+       * autorun pair here keeps that out of every display's callbacks.
+       */
+      get canRender() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.initialized
+      },
+
       /**
        * #getter
        * Whether this display paints a canvas in its current configuration.
@@ -143,17 +159,15 @@ export function installGlobalFetchAutorun(
     name: string
   },
 ) {
-  // Leading-edge on the *first* fetch, trailing-edge (debounced) after. MobX's
-  // built-in `{ delay }` is trailing-only: it schedules even the initial run
-  // via setTimeout, so on track-open the first fetch — and thus the loading
-  // scrim's `isLoading` and the first data — waits a full `delay` for no
-  // interaction to coalesce (HiC additionally can't fetch until `CoreGetInfo`
-  // resolves, so this delay stacks on top of that RTT). `primed` flips only
-  // once a fetch has actually run, so every run before then fires immediately
-  // (a handful: view-init, resolution-list-arrives) while zoom/pan refetches
-  // after it debounce exactly as `{ delay }` did. Matters for cold-open latency
-  // and render benchmarks.
-  let primed = false
+  // Leading-edge on the *first* fetch, trailing-edge (debounced) after, so
+  // track-open doesn't spend a full `delay` waiting for no interaction to
+  // coalesce (HiC additionally can't fetch until `CoreGetInfo` resolves, so the
+  // delay would stack on that RTT). Priming only once a fetch has actually run
+  // means the handful of pre-fetch runs (view-init, resolution-list-arrives)
+  // stay immediate while zoom/pan refetches after it debounce exactly as
+  // `{ delay }` did. See leadingEdgeDebounce for why MobX's own `{ delay }`
+  // can't do this.
+  const debounce = leadingEdgeDebounce(opts.delay)
   autorunOnReadyView(
     self,
     view => {
@@ -173,17 +187,11 @@ export function installGlobalFetchAutorun(
       // callers, so repeating them would be duplication, not safety.
       if (opts.shouldFetch()) {
         opts.fetch()
-        primed = true
+        debounce.prime()
       }
     },
     {
-      scheduler: run => {
-        if (primed) {
-          setTimeout(run, opts.delay)
-        } else {
-          run()
-        }
-      },
+      scheduler: debounce.scheduler,
       name: opts.name,
     },
   )

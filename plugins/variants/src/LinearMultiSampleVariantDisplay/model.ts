@@ -1,6 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
+import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
@@ -46,11 +47,11 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
             const view = getContainingView(self) as LinearGenomeViewModel
             return view.visibleRegions
           },
+          // Resolved geometry, never undefined. "The view isn't measured yet" is
+          // the mixin-wide `canRender` gate, and "no regular-mode payload" falls
+          // out of an empty perRegionCellMap — neither is a nullable state.
           get renderState() {
             const view = getContainingView(self) as LinearGenomeViewModel
-            if (!view.initialized || self.cellData?.mode !== 'regular') {
-              return undefined
-            }
             return {
               canvasWidth: view.trackWidthPx,
               canvasHeight: self.availableHeight,
@@ -117,25 +118,24 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
       }))
       .actions(self => ({
         startRenderingBackend(backend: VariantRenderingBackend) {
+          // Same whole-map reference diff canvas uses: perRegionCellMap is one
+          // MobX computed rebuilt on any cellData change, so per-key autoruns
+          // (installPerRegionLifecycle) can't help here — they'd still track the
+          // whole computed. The helper owns the prune and the context-loss reset.
+          const syncRegions = createRegionUploadSync<
+            VariantUploadData,
+            VariantRenderingBackend
+          >()
           self.attachRenderingBackend<VariantRenderingBackend>(backend, {
             upload: b => {
-              const active: number[] = []
-              for (const [n, v] of self.perRegionCellMap) {
-                b.uploadRegion(n, v)
-                active.push(n)
-              }
-              b.pruneRegions(active)
+              syncRegions(b, self.perRegionCellMap)
             },
-            render: b => {
-              const state = self.renderState
-              return state
-                ? b.renderBlocks(
-                    self.renderBlocks,
-                    self.perRegionCellMap,
-                    state,
-                  )
-                : false
-            },
+            render: b =>
+              b.renderBlocks(
+                self.renderBlocks,
+                self.perRegionCellMap,
+                self.renderState,
+              ),
           })
         },
       }))

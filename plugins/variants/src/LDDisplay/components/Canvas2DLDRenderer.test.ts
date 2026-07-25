@@ -1,6 +1,6 @@
 import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
 
-import type { LDUploadData } from './ldRenderingBackendTypes.ts'
+import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
@@ -50,37 +50,27 @@ function makeColorRamp() {
   return ramp
 }
 
-function makeRenderState(
-  overrides?: Partial<{
-    canvasWidth: number
-    canvasHeight: number
-    yScalar: number
-    signedLD: boolean
-    viewScale: number
-    viewOffsetX: number
-    uniformW: number
-  }>,
-) {
+function makeRenderState(overrides?: Partial<LDRenderState>): LDRenderState {
   return {
     canvasWidth: 800,
     canvasHeight: 600,
     yScalar: 1,
-    signedLD: false,
     viewScale: 1,
     viewOffsetX: 0,
-    uniformW: 10,
     ...overrides,
   }
 }
 
-function makeOneCell(overrides?: {
-  boundaries?: Float32Array
-  ldValues?: Float32Array
-}): LDUploadData {
+// signedLD/uniformW describe the packed matrix, so they live on the data (see
+// LDUploadData), not the per-frame render state.
+function makeOneCell(overrides?: Partial<LDUploadData>): LDUploadData {
   return {
-    boundaries: overrides?.boundaries ?? new Float32Array([0, 10, 20]),
-    ldValues: overrides?.ldValues ?? new Float32Array([0.5]),
+    boundaries: new Float32Array([0, 10, 20]),
+    ldValues: new Float32Array([0.5]),
     numCells: 1,
+    signedLD: false,
+    uniformW: 10,
+    ...overrides,
   }
 }
 
@@ -156,8 +146,8 @@ describe('Canvas2DLDRenderer', () => {
     renderer.uploadColorRamp(makeColorRamp())
 
     renderer.render(
-      makeOneCell({ ldValues: new Float32Array([-1]) }),
-      makeRenderState({ signedLD: true }),
+      makeOneCell({ ldValues: new Float32Array([-1]), signedLD: true }),
+      makeRenderState(),
     )
 
     expect(ctx.fillStyle).toBe('rgba(0,0,0,1.000)')
@@ -169,8 +159,8 @@ describe('Canvas2DLDRenderer', () => {
     renderer.uploadColorRamp(makeColorRamp())
 
     renderer.render(
-      makeOneCell({ ldValues: new Float32Array([1]) }),
-      makeRenderState({ signedLD: true }),
+      makeOneCell({ ldValues: new Float32Array([1]), signedLD: true }),
+      makeRenderState(),
     )
 
     expect(ctx.fillStyle).toBe('rgba(255,255,255,1.000)')
@@ -182,8 +172,8 @@ describe('Canvas2DLDRenderer', () => {
     renderer.uploadColorRamp(makeColorRamp())
 
     renderer.render(
-      makeOneCell({ ldValues: new Float32Array([0.5]) }),
-      makeRenderState({ signedLD: false }),
+      makeOneCell({ ldValues: new Float32Array([0.5]), signedLD: false }),
+      makeRenderState(),
     )
 
     expect(ctx.fillStyle).toBe('rgba(128,128,128,1.000)')
@@ -198,8 +188,8 @@ describe('Canvas2DLDRenderer', () => {
     renderer.uploadColorRamp(ramp)
 
     renderer.render(
-      makeOneCell({ ldValues: new Float32Array([0]) }),
-      makeRenderState({ signedLD: false }),
+      makeOneCell({ ldValues: new Float32Array([0]), signedLD: false }),
+      makeRenderState(),
     )
 
     expect(pathOps).not.toContain('fill')

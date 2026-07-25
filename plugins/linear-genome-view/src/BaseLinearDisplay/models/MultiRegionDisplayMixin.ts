@@ -83,6 +83,22 @@ export default function MultiRegionDisplayMixin() {
     .views(self => ({
       /**
        * #getter
+       * The render-lifecycle precondition for every LGV display (overrides
+       * `RenderLifecycleMixin`'s default-true hook): don't run the upload/render
+       * callbacks until the view is measured. Before that, `renderBlocks` →
+       * `visibleRegions` → `view.width` throws by design, and the render
+       * autorun's catch would show that as a GPU render-error banner. Gating here
+       * — once, for all of them — is what lets a display's `renderState` be a
+       * plain resolved getter and its render callback gate only on its own data.
+       * The render-lifecycle twin of `autorunOnReadyView`.
+       */
+      get canRender() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.initialized
+      },
+
+      /**
+       * #getter
        * true once the canvas has painted and no fetch is in flight
        */
       get isReady() {
@@ -596,6 +612,37 @@ interface FetchEachRegionModel {
 }
 
 /**
+ * The per-region fan-out on its own, without the `fetchRegions` wrapper: issue
+ * `call` for every needed region in parallel and return the results paired with
+ * their `displayedRegionIndex`, in `needed` order. Callers get one collected
+ * array to commit from, which is what a cross-region decision needs (MAF picks
+ * the sample set from whichever region actually discovered samples).
+ *
+ * Use this only inside a `fetchRegions` work callback you already own — it does
+ * no staleness checking of its own, because the *caller* decides the
+ * granularity: {@link fetchEachRegion} guards per region so an early result
+ * still commits, while a display that commits atomically guards once around the
+ * whole batch. Prefer `fetchEachRegion` unless you need the collected array or
+ * a concurrent side-fetch under the same stop token.
+ */
+export function callEachRegion<R>(
+  needed: { region: Region; displayedRegionIndex: number }[],
+  ctx: FetchContext,
+  call: (
+    region: Region,
+    ctx: FetchContext,
+    displayedRegionIndex: number,
+  ) => Promise<R>,
+): Promise<{ displayedRegionIndex: number; result: R }[]> {
+  return Promise.all(
+    needed.map(async ({ region, displayedRegionIndex }) => ({
+      displayedRegionIndex,
+      result: await call(region, ctx, displayedRegionIndex),
+    })),
+  )
+}
+
+/**
  * Run one RPC `call` per needed region, in parallel, under a single
  * stale-guarded `fetchRegions` wrapper. Centralizes the fan-out plus the two
  * `ctx.isStale()` guards every per-region display repeated by hand: skip a
@@ -611,8 +658,9 @@ interface FetchEachRegionModel {
  * it injects there — the index is the third `call` argument, so the parallel
  * per-region fetches aggregate into one bar instead of clobbering each other).
  * A display whose fetch genuinely diverges — canvas (prune + fold a too-large
- * result), MAF (summary vs detail), alignments (chain payload) — keeps its own
- * `fetchNeeded` and calls `fetchRegions` directly instead.
+ * result), MAF (a concurrent annotation fetch + a cross-region sample pick),
+ * alignments (chain payload) — keeps its own `fetchNeeded`, calls `fetchRegions`
+ * directly, and reaches for {@link callEachRegion} for the fan-out.
  */
 export async function fetchEachRegion<R>(
   self: FetchEachRegionModel,
@@ -628,6 +676,8 @@ export async function fetchEachRegion<R>(
   },
 ) {
   await self.fetchRegions(needed, async ctx => {
+    // per-region guard, not one around the batch: a region that arrives before
+    // the user moves on still commits
     await Promise.all(
       needed.map(async ({ region, displayedRegionIndex }) => {
         const result = await opts.call(region, ctx, displayedRegionIndex)

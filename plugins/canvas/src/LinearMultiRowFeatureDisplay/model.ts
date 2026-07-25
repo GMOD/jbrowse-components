@@ -462,7 +462,11 @@ export default function stateModelFactory(
       get renderState(): MultiRowRenderState {
         const view = getContainingView(self) as LinearGenomeViewModel
         return {
-          canvasWidth: view.width,
+          // trackWidthPx, not view.width: the track container subtracts the 2px
+          // outline, and the render blocks scissored against this come from the
+          // same buildRenderBlocks every other display uses. (SVG export has no
+          // outline, so renderSvg.tsx stays on view.width.)
+          canvasWidth: view.trackWidthPx,
           canvasHeight: self.height,
           rowHeight: self.rowHeight,
           rowProportion: self.rowProportion,

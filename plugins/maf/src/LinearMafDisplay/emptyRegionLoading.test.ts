@@ -203,17 +203,22 @@ afterEach(() => {
 
 describe('LinearMafDisplay zero-block loading', () => {
   // Regression: a sample-discovery MAF track (no configured `samples`) over a
-  // region with no alignment blocks resolves to zero sources. renderState used
-  // to gate on `!self.sources` alone, so after the fetch completed it stayed
-  // undefined, the render callback returned false, canvasDrawn never flipped,
-  // and the loading overlay spun forever. Once a region has loaded, renderState
-  // must resolve so the canvas clears and the display settles.
-  it('renderState resolves after a fetch that returns no blocks/samples', async () => {
+  // region with no alignment blocks resolves to zero sources. The render
+  // callback's first-paint gate must therefore key off "a region has loaded",
+  // not off `sources` — gating on `!self.sources` alone kept the callback
+  // returning false after the fetch completed, so canvasDrawn never flipped and
+  // the loading overlay spun forever. Once a region has loaded the callback runs
+  // and the canvas clears, even with nothing to draw.
+  it('releases the first-paint gate after a fetch that returns no blocks/samples', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyMafResult())
     const { display } = createDisplay()
 
-    expect(display.renderState).toBeUndefined()
+    // the gate, as the render callback spells it
+    expect(!!display.sources || display.loadedRegions.size > 0).toBe(false)
+    // ...and the state it feeds the backend is resolved throughout, so nothing
+    // downstream has to re-encode "not ready" as a missing render state
+    expect(display.renderState).toBeDefined()
 
     jest.advanceTimersByTime(700)
     await waitFor(() => {
@@ -221,6 +226,7 @@ describe('LinearMafDisplay zero-block loading', () => {
     })
 
     expect(display.sources).toBeUndefined()
+    expect(!!display.sources || display.loadedRegions.size > 0).toBe(true)
     expect(display.renderState).toBeDefined()
   })
 })

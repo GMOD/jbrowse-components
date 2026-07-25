@@ -65,11 +65,11 @@ export default function stateModelFactory(
          * every time any tracked observable (cellData, scrollTop, rowHeight,
          * canvas width, …) changes.
          */
+        // Resolved geometry, never undefined: whether a matrix-mode payload
+        // exists is the render callback's gate (it already passes `null` data),
+        // not a nullable state.
         get renderState() {
           const view = getContainingView(self) as LinearGenomeViewModel
-          if (self.cellData?.mode !== 'matrix') {
-            return undefined
-          }
           return {
             // Same rounded width the canvas, hit-test, and connector lines use,
             // so cells/lines/clicks stay pixel-aligned.
@@ -101,14 +101,20 @@ export default function stateModelFactory(
                 b.uploadData(cellData)
               }
             },
+            // A monolithic backend's `render` returns void, so the "did real
+            // content reach the canvas" answer has to come from here — unlike a
+            // per-region `renderBlocks`, which answers it itself (ADR-009). Skip
+            // the tick rather than paint an empty frame: painting one flips
+            // `canvasDrawn`, and the loading scrim and every `-done` selector key
+            // off that, so the first snapshot would catch a blank canvas.
             render: b => {
-              const state = self.renderState
               const { cellData } = self
-              if (!state) {
+              if (cellData?.mode === 'matrix') {
+                b.render(cellData, self.renderState)
+                return true
+              } else {
                 return false
               }
-              b.render(cellData?.mode === 'matrix' ? cellData : null, state)
-              return true
             },
           })
         },

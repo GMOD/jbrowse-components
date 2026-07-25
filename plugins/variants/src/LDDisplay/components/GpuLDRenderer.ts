@@ -110,7 +110,7 @@ export class GpuLDRenderer
     this.hal.uploadTexture(PASS_GENOMIC, colors, 256, 1)
   }
 
-  render(_data: LDUploadData | null, state: LDRenderState) {
+  render(data: LDUploadData | null, state: LDRenderState) {
     const { canvasWidth, canvasHeight } = state
 
     this.hal.resize(canvasWidth, canvasHeight)
@@ -119,14 +119,17 @@ export class GpuLDRenderer
     const hasMain = this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
     const hasGenomic = this.hal.getBufferCount(REGION_KEY, PASS_GENOMIC) > 0
 
-    if (hasMain || hasGenomic) {
+    // signedLD/uniformW come from the payload the buffers were packed from, so
+    // an uploaded buffer with no current data draws nothing rather than coloring
+    // by a stand-in convention.
+    if (data && (hasMain || hasGenomic)) {
       this.uniformF32[U.canvasSize] = canvasWidth
       this.uniformF32[U.canvasSize + 1] = canvasHeight
       this.uniformF32[U.yScalar] = state.yScalar
       this.uniformF32[U.viewScale] = state.viewScale
       this.uniformF32[U.viewOffsetX] = state.viewOffsetX
-      this.uniformU32[UU.signedLd] = state.signedLD ? 1 : 0
-      this.uniformF32[U.uniformW] = state.uniformW
+      this.uniformU32[UU.signedLd] = data.signedLD ? 1 : 0
+      this.uniformF32[U.uniformW] = data.uniformW
 
       this.hal.writeUniforms(this.uniformData)
       if (hasMain) {

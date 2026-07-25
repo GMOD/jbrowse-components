@@ -21,6 +21,7 @@ import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
+import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type {
@@ -30,7 +31,10 @@ import type {
   LDSnp,
 } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
-import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
+import type {
+  LDRenderState,
+  LDRenderingBackend,
+} from './components/ldRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -387,12 +391,12 @@ export default function sharedModelFactory(
          * autorun — every change to any tracked observable (view.bpPerPx,
          * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
          */
-        get renderState() {
+        // Resolved geometry, never undefined: it's pure view/settings state, and
+        // "no data yet" is the render callback's gate. The two data-derived
+        // fields (signedLD, uniformW) ride with the payload instead — see
+        // LDUploadData.
+        get renderState(): LDRenderState {
           const view = getContainingView(self) as LinearGenomeViewModel
-          const data = self.rpcData
-          if (!data) {
-            return undefined
-          }
           const { scale, viewOffsetX } = this.renderTransform
           const canvasWidth = Math.round(
             view.dynamicBlocks.totalWidthPxWithoutBorders,
@@ -403,10 +407,8 @@ export default function sharedModelFactory(
             canvasHeight: self.fitToHeight
               ? this.ldCanvasHeight
               : canvasWidth / 2,
-            signedLD: data.signedLD,
             viewScale: scale,
             viewOffsetX,
-            uniformW: data.uniformW,
           }
         },
 
@@ -472,37 +474,24 @@ export default function sharedModelFactory(
           self.attachRenderingBackend<LDRenderingBackend>(backend, {
             upload: b => {
               const d = self.rpcData
-              if (!d) {
-                return
+              if (d) {
+                b.uploadData(toLDUploadData(d))
+                b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
               }
-              b.uploadData({
-                ldValues: d.ldValues,
-                boundaries: d.boundaries,
-                numCells: d.numCells,
-                positions: d.positions,
-                cellSizes: d.cellSizes,
-              })
-              b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
             },
+            // Gates on the data, not on a nullable render state: a monolithic
+            // `render` returns void, so this callback owns the "did real content
+            // reach the canvas" answer, and painting an empty frame would flip
+            // `canvasDrawn` before the first matrix arrives (see the matrix
+            // display for the same note).
             render: b => {
-              const state = self.renderState
-              if (!state) {
+              const d = self.rpcData
+              if (d) {
+                b.render(toLDUploadData(d), self.renderState)
+                return true
+              } else {
                 return false
               }
-              const d = self.rpcData
-              b.render(
-                d
-                  ? {
-                      ldValues: d.ldValues,
-                      boundaries: d.boundaries,
-                      numCells: d.numCells,
-                      positions: d.positions,
-                      cellSizes: d.cellSizes,
-                    }
-                  : null,
-                state,
-              )
-              return true
             },
           })
         },
