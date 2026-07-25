@@ -6,15 +6,16 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // Every BreakpointSplitView snapshot property (showIntraviewLinks,
 // interactiveOverlay, linkViews, showHeader, ...) minus the ones the launcher controls
-// itself: `type` is fixed, `id` is assigned by addView, and `views`/`init` are
-// replaced by the declarative loc-based `views` below (resolved async in the
-// view's afterAttach). Deriving from the model snapshot keeps this in lockstep
-// with the model — any view prop is settable declaratively, fully type-checked.
+// itself: `type` is fixed, and `views`/`init` are replaced by the declarative
+// loc-based `views` below (resolved async in the view's afterAttach). `id` stays,
+// so a session spec can pin the created view's id. Deriving from the model
+// snapshot keeps this in lockstep with the model — any view prop is settable
+// declaratively, fully type-checked.
 type BreakpointSplitViewSnapshot = SnapshotIn<BreakpointViewStateModel>
 
 export interface LaunchBreakpointSplitViewArgs extends Omit<
   BreakpointSplitViewSnapshot,
-  'type' | 'id' | 'views' | 'init'
+  'type' | 'views' | 'init'
 > {
   session: AbstractSessionModel
   views: BreakpointSplitViewInitView[]

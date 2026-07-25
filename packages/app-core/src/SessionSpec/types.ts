@@ -15,6 +15,10 @@ export interface ViewSpec {
   // optional explicit view id so another view in the spec can reference it
   // (e.g. a connected MsaView pointing at this view via connectedViewId)
   id?: string
+  // title shown in the view header / workspace tab, instead of the assembly
+  // names a view falls back to. Applied by loadSessionSpec for every view type
+  // rather than by each launcher, since it is a base view prop.
+  displayName?: string
   tracks?: TrackInit[]
   assembly: string
   loc?: string

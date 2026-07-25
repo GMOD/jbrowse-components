@@ -6,6 +6,21 @@ import {
 import type { DockviewLayoutNode } from '../DockviewLayout/index.ts'
 import type { LayoutNode, ViewSpec } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+// A spec `layout` needs both session mixins that own workspaces state:
+// DockviewLayoutMixin's `setInit` and MultipleViewsSessionMixin's
+// `setUseWorkspaces`. A session without them (an embedded product) can't honor a
+// layout, which is worth saying rather than throwing mid-load.
+interface SessionWithWorkspaceLayout {
+  setUseWorkspaces: (useWorkspaces: boolean) => void
+  setInit: (init: DockviewLayoutNode | undefined) => void
+}
+function isSessionWithWorkspaceLayout(
+  session: AbstractSessionModel,
+): session is AbstractSessionModel & SessionWithWorkspaceLayout {
+  return 'setInit' in session && 'setUseWorkspaces' in session
+}
 
 // Convert LayoutNode (view indices into the spec's `views` array) to
 // DockviewLayoutNode (view IDs). `viewIds` is indexed the same as that spec
@@ -32,6 +47,22 @@ function convertLayoutNode(
     }
   }
   return {}
+}
+
+// A layout index is a position in the spec's `views` array, so one past the end
+// (or negative) is an authoring slip that would otherwise silently drop that
+// view from the layout, or, if every index in a panel is bad, leave an empty
+// panel with no clue why.
+function outOfRangeLayoutIndices(
+  node: LayoutNode,
+  viewCount: number,
+): number[] {
+  return [
+    ...(node.views?.filter(idx => idx < 0 || idx >= viewCount) ?? []),
+    ...(node.children?.flatMap(child =>
+      outOfRangeLayoutIndices(child, viewCount),
+    ) ?? []),
+  ]
 }
 
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
@@ -74,10 +105,13 @@ export async function loadSessionSpec(
       }
     }
 
-    // a view type with no registered LaunchView-<type> extension point (a
-    // typo, or a plugin that wasn't loaded) makes evaluateAsyncExtensionPoint
-    // a silent no-op, leaving an empty session with no diagnostic
-    const unknownViewTypes = [
+    // a view type with no registered LaunchView-<type> extension point makes
+    // evaluateAsyncExtensionPoint a silent no-op, leaving an empty session with
+    // no diagnostic. Two different causes, so two messages: the view type is
+    // unknown here at all (a typo, or a plugin that wasn't loaded), or it exists
+    // but nothing taught it how to launch from a spec, which the spec author
+    // can't fix, only the view's plugin can.
+    const notLaunchable = [
       ...new Set(
         views.flatMap(view =>
           pluginManager.extensionPoints.has(`LaunchView-${view.type}`)
@@ -86,9 +120,19 @@ export async function loadSessionSpec(
         ),
       ),
     ]
-    if (unknownViewTypes.length) {
-      rootModel.session?.notifyError(
-        `Unknown view type(s) in session spec: ${unknownViewTypes.join(', ')}. The plugin providing the view may be missing, or the type may be misspelled.`,
+    // the record's `has`, not getElementType, which throws on an unregistered
+    // name rather than returning undefined
+    const viewTypes = pluginManager.getElementTypeRecord('view')
+    const unknown = notLaunchable.filter(type => !viewTypes.has(type))
+    const noLauncher = notLaunchable.filter(type => viewTypes.has(type))
+    if (unknown.length) {
+      session?.notifyError(
+        `Unknown view type(s) in session spec: ${unknown.join(', ')}. The plugin providing the view may be missing, or the type may be misspelled.`,
+      )
+    }
+    if (noLauncher.length) {
+      session?.notifyError(
+        `View type(s) ${noLauncher.join(', ')} cannot be launched from a session spec: no LaunchView extension point is registered for them.`,
       )
     }
 
@@ -101,11 +145,12 @@ export async function loadSessionSpec(
     // now already exists. `type` is the dispatch key, not view init data:
     // forwarding it would land in the view's declarative init blob and trip the
     // spurious "init ignored unknown key(s): type" warning meant to catch typos.
-    const sessionViews = () =>
-      (rootModel.session as unknown as { views?: { id: string }[] }).views ?? []
+    // `displayName` is applied here rather than forwarded because it is a base
+    // view prop every view type has, so one path covers all of them (including
+    // plugin-provided types whose launcher never heard of it).
     const createdViewIds: (string | undefined)[] = []
-    for (const { type, ...view } of views) {
-      const before = new Set(sessionViews().map(v => v.id))
+    for (const { type, displayName, ...view } of views) {
+      const before = new Set(session?.views.map(v => v.id))
       // Strict so a launch handler that throws (missing/invalid assembly,
       // unresolved track, ...) surfaces as a snackbar instead of being swallowed
       // by the plain extension-point runner, which would leave a silent empty
@@ -116,30 +161,37 @@ export async function loadSessionSpec(
           `LaunchView-${type}`,
           {
             ...view,
-            session: rootModel.session,
+            session,
           },
         )
       } catch (e) {
         console.error(e)
-        rootModel.session?.notifyError(`Failed to launch ${type} view: ${e}`, e)
+        session?.notifyError(`Failed to launch ${type} view: ${e}`, e)
       }
-      createdViewIds.push(sessionViews().find(v => !before.has(v.id))?.id)
+      const created = session?.views.find(v => !before.has(v.id))
+      if (created && displayName) {
+        created.setDisplayName(displayName)
+      }
+      createdViewIds.push(created?.id)
     }
 
-    // Apply layout if specified
-    if (layout) {
-      // Cast through unknown since AbstractSessionModel doesn't include workspace types
-      const session = rootModel.session as unknown as {
-        setUseWorkspaces: (value: boolean) => void
-        setInit: (init: DockviewLayoutNode | undefined) => void
+    if (layout && session) {
+      const badIndices = outOfRangeLayoutIndices(layout, views.length)
+      if (badIndices.length) {
+        session.notifyError(
+          `Session spec layout references view index ${badIndices.join(', ')}, but the spec has ${views.length} view(s).`,
+        )
       }
-
-      // Enable workspaces mode for this session only — a spec URL shouldn't
-      // rewrite the visitor's own preference
-      session.setUseWorkspaces(true)
-
-      // Convert layout from view indices to view IDs and set init
-      session.setInit(convertLayoutNode(layout, createdViewIds))
+      if (isSessionWithWorkspaceLayout(session)) {
+        // Enable workspaces mode for this session only — a spec URL shouldn't
+        // rewrite the visitor's own preference
+        session.setUseWorkspaces(true)
+        session.setInit(convertLayoutNode(layout, createdViewIds))
+      } else {
+        session.notifyError(
+          'Session spec has a "layout", but this application does not support workspace layouts',
+        )
+      }
     }
   } catch (e) {
     console.error(e)

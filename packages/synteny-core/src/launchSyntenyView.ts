@@ -4,13 +4,23 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 // fewer than two views, then open the view with its assembled init block. Kept
 // in one place so the "needs at least 2 views" contract and the addView call
 // stay identical between the linear and dotplot launchers.
-export function launchSyntenyView<T extends { views: unknown[] }>(
-  session: AbstractSessionModel,
-  viewType: string,
-  init: T,
-) {
+//
+// `id` is the spec's optional view-id pin, passed top-level so MST's optional
+// identifier honors it (undefined falls back to an auto-generated id). It must
+// not ride inside `init`, where the view's init autorun would ignore it.
+export function launchSyntenyView<T extends { views: unknown[] }>({
+  session,
+  viewType,
+  init,
+  id,
+}: {
+  session: AbstractSessionModel
+  viewType: string
+  init: T
+  id?: string
+}) {
   if (init.views.length < 2) {
     throw new Error(`${viewType} requires at least 2 views to be specified`)
   }
-  return session.addView(viewType, { init })
+  return session.addView(viewType, { id, init })
 }

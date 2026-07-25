@@ -9,6 +9,9 @@ import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 export interface LaunchLinearSyntenyViewArgs extends SyntenyViewSharedInit {
   session: AbstractSessionModel
+  // optional explicit view id, so another view in the same session spec can
+  // reference this one
+  id?: string
   // a bare trackId string, or { trackId, displaySnapshot, trackSnapshot } to
   // configure the per-panel track (matches LinearSyntenyViewInit.views).
   // optional: the extension point receives untrusted runtime spec data, so a
@@ -43,11 +46,12 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
     // views/tracks and the remaining init fields (colorBy, autoDiagonalize,
     // levelHeights, ...) forward verbatim; tracks is one entry per level, with a
     // flat string[] as shorthand for "all on level 0".
-    const { session, views = [], tracks = [], ...rest } = args
-    launchSyntenyView(session, 'LinearSyntenyView', {
-      views,
-      tracks: normalizeTrackLevels(tracks),
-      ...rest,
+    const { session, id, views = [], tracks = [], ...rest } = args
+    launchSyntenyView({
+      session,
+      id,
+      viewType: 'LinearSyntenyView',
+      init: { views, tracks: normalizeTrackLevels(tracks), ...rest },
     })
     return args
   })

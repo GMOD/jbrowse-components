@@ -6,6 +6,9 @@ import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 export interface LaunchDotplotViewArgs extends SyntenyViewSharedInit {
   session: AbstractSessionModel
+  // optional explicit view id, so another view in the same session spec can
+  // reference this one
+  id?: string
   // optional: the extension point receives untrusted runtime spec data, so a
   // malformed spec can omit it — the handler guards and reports a clear error
   views?: {
@@ -35,8 +38,13 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
     // views/tracks and the remaining init fields (colorBy, autoDiagonalize,
     // highlight, ...) forward verbatim; each is guarded on undefined by the
     // init autorun.
-    const { session, views = [], tracks = [], ...rest } = args
-    launchSyntenyView(session, 'DotplotView', { views, tracks, ...rest })
+    const { session, id, views = [], tracks = [], ...rest } = args
+    launchSyntenyView({
+      session,
+      id,
+      viewType: 'DotplotView',
+      init: { views, tracks, ...rest },
+    })
     return args
   })
 }

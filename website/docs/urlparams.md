@@ -283,6 +283,12 @@ The `views` array accepts multiple views opened simultaneously. Each can specify
 the whole genome. Different view types accept different params: dotplot, for
 example, takes two assemblies.
 
+Two fields work on every view type: `displayName` sets the title shown in the
+view header (and on its workspace tab, see
+[tiled views](#tiled-views--workspaces)), and `id` pins the created view's id so
+another view in the same spec can point at it (e.g. an MsaView's
+`connectedViewId`).
+
 When `loc` is omitted, `displayedRegionNames` restricts the whole-genome
 overview to a subset of the assembly's chromosomes, in the order given (handy
 for dropping unplaced/alt contigs, or reordering). Names resolve through the

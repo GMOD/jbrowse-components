@@ -6,6 +6,9 @@ export interface LaunchSpreadsheetViewArgs {
   assembly: string
   uri: string
   fileType?: string
+  // optional explicit view id, so another view in the same session spec can
+  // reference this one
+  id?: string
 }
 
 declare module '@jbrowse/core/PluginManager' {
@@ -20,11 +23,12 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SpreadsheetView | async | Programmatically launch a spreadsheet view */
   pluginManager.addToExtensionPoint('LaunchView-SpreadsheetView', args => {
-    const { session, assembly, uri, fileType } = args
+    const { session, id, assembly, uri, fileType } = args
     // only carry an init when there's a file to import; a bare launch should
     // land on the import form rather than auto-importing an empty location
     // (which surfaces a spurious "invalid fileLocation" error)
     session.addView('SpreadsheetView', {
+      id,
       ...(uri ? { init: { assembly, uri, fileType } } : {}),
     })
     return args
