@@ -4,26 +4,18 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { resolveSampleName } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import { classifyGenotypeDosage } from '../shared/parseGenotypeDosage.ts'
+import { MISSING } from './genotypeMatrixEncoding.ts'
+import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 
 import type { Source } from '../shared/types.ts'
-import type { GenotypeCallback } from '@gmod/vcf'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type {
-  Feature,
   LastStopTokenCheck,
   Region,
   StatusCallback,
 } from '@jbrowse/core/util'
-
-interface VCFFeatureLike extends Feature {
-  processGenotypes(cb: GenotypeCallback): void
-}
-
-function hasProcessGenotypes(f: Feature): f is VCFFeatureLike {
-  return typeof (f as Partial<VCFFeatureLike>).processGenotypes === 'function'
-}
 
 export async function getGenotypeMatrix({
   pluginManager,
@@ -88,14 +80,16 @@ export async function getGenotypeMatrix({
   })
 
   // Pre-size each row to mafs.length and assign by feature index — eliminates
-  // dynamic-growth reallocs vs push, and Int8 fits dosage values {-1,0,1,2}
-  // exactly. rowArrays parallels `resolved` so the inner loop writes to a
-  // direct reference rather than a string-keyed Record lookup per cell.
+  // dynamic-growth reallocs vs push. Float32 rather than a packed integer type
+  // because a no-call has to be NaN, not a value on the dosage scale (see
+  // genotypeMatrixEncoding.ts). rowArrays parallels `resolved` so the inner
+  // loop writes to a direct reference rather than a string-keyed Record lookup
+  // per cell.
   const numFeatures = mafs.length
-  const rows: Record<string, Int8Array> = {}
-  const rowArrays: Int8Array[] = []
+  const rows: Record<string, Float32Array> = {}
+  const rowArrays: Float32Array[] = []
   for (const r of resolved) {
-    const arr = new Int8Array(numFeatures)
+    const arr = new Float32Array(numFeatures)
     rows[r.name] = arr
     rowArrays.push(arr)
   }
@@ -132,21 +126,25 @@ export async function getGenotypeMatrix({
   for (let f = 0; f < numFeatures; f++) {
     const feature = mafs[f]!.feature
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
-      let i = 0
-      feature.processGenotypes((str, start, end) => {
-        if (used[i]) {
-          dosages[i] = classifyGenotypeDosage(str, start, end)
+      // Reset first: @gmod/vcf skips the callback for a sample whose FORMAT
+      // fields stop before GT, which would otherwise leave the previous
+      // feature's dosage standing in that slot.
+      dosages.fill(-1)
+      feature.processGenotypes((str, start, end, sampleIdx) => {
+        if (used[sampleIdx]) {
+          dosages[sampleIdx] = classifyGenotypeDosage(str, start, end)
         }
-        i++
       })
       for (let k = 0; k < rowArrays.length; k++) {
         const idx = resolvedSampleIdx[k]!
-        rowArrays[k]![f] = idx === -1 ? -1 : dosages[idx]!
+        const dosage = idx === -1 ? -1 : dosages[idx]!
+        rowArrays[k]![f] = dosage === -1 ? MISSING : dosage
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
       for (let k = 0; k < resolved.length; k++) {
-        rowArrays[k]![f] = classifyGenotypeDosage(genotypes[resolved[k]!.key]!)
+        const dosage = classifyGenotypeDosage(genotypes[resolved[k]!.key] ?? '')
+        rowArrays[k]![f] = dosage === -1 ? MISSING : dosage
       }
     }
     report(f)

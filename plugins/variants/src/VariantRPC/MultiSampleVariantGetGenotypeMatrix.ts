@@ -1,7 +1,7 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
+import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
 
 import type { GetGenotypeMatrixArgs } from './types.ts'
 
@@ -9,7 +9,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiSampleVariantGetGenotypeMatrix: {
       args: GetGenotypeMatrixArgs
-      return: Record<string, Int8Array>
+      // NaN marks a no-call; see genotypeMatrixEncoding.ts
+      return: Record<string, Float32Array>
     }
   }
 }
@@ -23,7 +24,7 @@ export class MultiSampleVariantGetGenotypeMatrix extends RpcMethodTypeWithFilter
       rpcDriverClassName,
     )
     const stopTokenCheck = createStopTokenChecker(deserializedArgs.stopToken)
-    return getGenotypeMatrix({
+    return buildGenotypeMatrix({
       pluginManager: this.pluginManager,
       args: { ...deserializedArgs, stopTokenCheck },
     })

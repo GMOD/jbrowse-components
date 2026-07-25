@@ -3,6 +3,8 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
 import { resolveSampleName } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
+import { MISSING, readPhasedAlleleIndicators } from './genotypeMatrixEncoding.ts'
+import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -80,19 +82,53 @@ export async function getPhasedGenotypeMatrix({
   })
 
   // Pre-size each haplotype row to mafs.length and assign by feature index.
-  // Int16 is wide enough for VCF allele indices including pathological
-  // multi-allelic sites, well past Int8's 127-allele cap.
+  // Float32 because a haplotype with nothing to say (no-call, unphased call,
+  // sample absent) has to be NaN rather than a value on the allele scale — see
+  // genotypeMatrixEncoding.ts.
   const numFeatures = mafs.length
-  const rows: Record<string, Int16Array> = {}
-  const rowArraysBySrc: Int16Array[][] = resolved.map(r => {
-    const arrs: Int16Array[] = []
+  const rows: Record<string, Float32Array> = {}
+  const rowArraysBySrc: Float32Array[][] = resolved.map(r => {
+    const arrs: Float32Array[] = []
     for (let hp = 0; hp < r.maxPloidy; hp++) {
-      const arr = new Int16Array(numFeatures)
+      const arr = new Float32Array(numFeatures)
       rows[`${r.name} HP${hp}`] = arr
       arrs.push(arr)
     }
     return arrs
   })
+
+  // Mirrors getGenotypeMatrix's fast path: iterate genotypes via
+  // processGenotypes into a reusable per-sample scratch buffer indexed by
+  // sample-array position, no genotypes Record and no substring per call. This
+  // path matters more here than there — phased mode builds twice the rows.
+  const sampleNames =
+    mafs.length > 0
+      ? ((mafs[0]!.feature.get('sampleNames') as string[] | undefined) ?? [])
+      : []
+  const samplesLen = sampleNames.length
+  const sampleIdxByKey = new Map<string, number>()
+  for (let i = 0; i < samplesLen; i++) {
+    sampleIdxByKey.set(sampleNames[i]!, i)
+  }
+  let maxPloidy = 1
+  for (const r of resolved) {
+    if (r.maxPloidy > maxPloidy) {
+      maxPloidy = r.maxPloidy
+    }
+  }
+  const used = new Uint8Array(samplesLen)
+  const resolvedSampleIdx = resolved.map(r => {
+    const idx = sampleIdxByKey.get(r.key) ?? -1
+    if (idx !== -1) {
+      used[idx] = 1
+    }
+    return idx
+  })
+  // Per-sample haplotype indicators for the feature being read, laid out
+  // [sample0 hp0..hpN, sample1 hp0..hpN, ...]. One flat buffer rather than a
+  // subarray view per sample, which would allocate inside the hot loop.
+  const indicators = new Float32Array(samplesLen * maxPloidy)
+  const scratch = new Float32Array(maxPloidy)
 
   const report = createProgressReporter({
     label: 'Building genotype matrix',
@@ -102,21 +138,46 @@ export async function getPhasedGenotypeMatrix({
   })
   for (let f = 0; f < numFeatures; f++) {
     const feature = mafs[f]!.feature
-    const genotypes = feature.get('genotypes') as Record<string, string>
-    for (let k = 0; k < resolved.length; k++) {
-      const r = resolved[k]!
-      const val = genotypes[r.key]!
-      const arrs = rowArraysBySrc[k]!
-      if (val.includes('|')) {
-        const alleles = val.split('|')
-        for (let hp = 0; hp < r.maxPloidy; hp++) {
-          const allele = alleles[hp]
-          const value = allele === '.' || allele === undefined ? -1 : +allele
-          arrs[hp]![f] = value
+    if (hasProcessGenotypes(feature) && samplesLen > 0) {
+      // Reset first: @gmod/vcf skips the callback for a sample whose FORMAT
+      // fields stop before GT, which would otherwise leave the previous
+      // feature's alleles standing in that slot.
+      indicators.fill(MISSING)
+      feature.processGenotypes((str, start, end, sampleIdx) => {
+        if (used[sampleIdx]) {
+          readPhasedAlleleIndicators(
+            str,
+            start,
+            end,
+            indicators,
+            sampleIdx * maxPloidy,
+            maxPloidy,
+          )
         }
-      } else {
-        for (let hp = 0; hp < r.maxPloidy; hp++) {
-          arrs[hp]![f] = -1
+      })
+      for (let k = 0; k < resolved.length; k++) {
+        const idx = resolvedSampleIdx[k]!
+        const arrs = rowArraysBySrc[k]!
+        const base = idx * maxPloidy
+        for (let hp = 0; hp < arrs.length; hp++) {
+          arrs[hp]![f] = idx === -1 ? MISSING : indicators[base + hp]!
+        }
+      }
+    } else {
+      const genotypes = feature.get('genotypes') as Record<string, string>
+      for (let k = 0; k < resolved.length; k++) {
+        const val = genotypes[resolved[k]!.key]
+        const arrs = rowArraysBySrc[k]!
+        readPhasedAlleleIndicators(
+          val ?? '',
+          0,
+          val?.length ?? 0,
+          scratch,
+          0,
+          maxPloidy,
+        )
+        for (let hp = 0; hp < arrs.length; hp++) {
+          arrs[hp]![f] = scratch[hp]!
         }
       }
     }

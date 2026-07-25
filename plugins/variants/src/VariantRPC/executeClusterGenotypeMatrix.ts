@@ -5,8 +5,8 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { clusterProgressStatus } from '@jbrowse/tree-sidebar'
 
-import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
-import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
+import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
+import { imputeMissingToSiteMean } from './genotypeMatrixEncoding.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -35,18 +35,16 @@ export async function executeClusterGenotypeMatrix({
     sampleInfo?: Record<string, SampleInfo>
   }
 }) {
-  const { renderingMode, sampleInfo, stopToken } = args
-  const stopTokenCheck = createStopTokenChecker(stopToken)
-  const argsWithCheck = { ...args, stopTokenCheck }
-  const matrix =
-    renderingMode === 'phased' && sampleInfo
-      ? await getPhasedGenotypeMatrix({
-          pluginManager,
-          args: { ...argsWithCheck, sampleInfo },
-        })
-      : await getGenotypeMatrix({ pluginManager, args: argsWithCheck })
+  const stopTokenCheck = createStopTokenChecker(args.stopToken)
+  const matrix = await buildGenotypeMatrix({
+    pluginManager,
+    args: { ...args, stopTokenCheck },
+  })
   const result = await clusterObject({
-    data: matrix,
+    // hclust rejects non-finite input outright, so the no-calls the builders
+    // mark with NaN have to become numbers here. Site-mean imputation makes
+    // them contribute nothing to the distance rather than dominating it.
+    data: imputeMissingToSiteMean(matrix),
     onProgress: p => {
       args.statusCallback(clusterProgressStatus(p))
     },

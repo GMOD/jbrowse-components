@@ -21,13 +21,14 @@ interface BaseVariantRpcArgs {
 
 export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
-}
-
-export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
-  statusCallback: (status: RpcStatus) => void
-  sources: Source[]
+  // Which matrix to build: 'phased' means one row per haplotype, which needs
+  // per-sample ploidy from `sampleInfo`. Anything else means one row per sample.
   renderingMode?: string
   sampleInfo?: Record<string, SampleInfo>
+}
+
+export interface ClusterGenotypeMatrixArgs extends GetGenotypeMatrixArgs {
+  statusCallback: (status: RpcStatus) => void
 }
 
 export interface GetCellDataArgs extends BaseVariantRpcArgs {

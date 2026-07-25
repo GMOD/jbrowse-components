@@ -1,54 +1,147 @@
-// Note: These tests would require mocking the adapter infrastructure.
-// Below are test cases that describe expected behavior.
+import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
+
+import type { Feature } from '@jbrowse/core/util'
+
+const mockGetFeatures = jest.fn()
+
+jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
+  getFeatureAdapterOrThrow: () =>
+    Promise.resolve({ getFeaturesInMultipleRegionsArray: mockGetFeatures }),
+}))
+
+// A feature carrying only the genotypes Record, i.e. the fallback path taken by
+// any adapter that isn't @gmod/vcf-backed.
+function makeFeature(id: string, genotypes: Record<string, string>): Feature {
+  const data: Record<string, unknown> = { genotypes }
+  return {
+    id: () => id,
+    get: (key: string) => data[key],
+    parent: () => undefined,
+    children: () => undefined,
+    tags: () => Object.keys(data),
+    toJSON: () => data,
+  } as unknown as Feature
+}
+
+async function build({
+  features,
+  sources,
+  sampleInfo,
+}: {
+  features: Feature[]
+  sources: { name: string }[]
+  sampleInfo: Record<string, { isPhased: boolean; maxPloidy: number }>
+}) {
+  mockGetFeatures.mockResolvedValue(features)
+  return getPhasedGenotypeMatrix({
+    // the mocked getFeatureAdapterOrThrow ignores it
+    pluginManager: undefined as never,
+    args: {
+      adapterConfig: undefined as never,
+      sessionId: 'test',
+      regions: [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'test' }],
+      sources,
+      minorAlleleFrequencyFilter: 0,
+      maxMissingnessFilter: 1,
+      sampleInfo,
+    },
+  })
+}
+
+const diploid = { isPhased: true, maxPloidy: 2 }
 
 describe('getPhasedGenotypeMatrix', () => {
-  // Test case descriptions for expected behavior:
+  test('emits one row per haplotype, in sample then HP order', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '0|1', HG002: '1|1' })],
+      sources: [{ name: 'HG001' }, { name: 'HG002' }],
+      sampleInfo: { HG001: diploid, HG002: diploid },
+    })
+    expect(Object.keys(rows)).toEqual([
+      'HG001 HP0',
+      'HG001 HP1',
+      'HG002 HP0',
+      'HG002 HP1',
+    ])
+  })
 
-  test.todo('creates row for each haplotype based on maxPloidy')
-  // Given sources: [{name: 'HG001'}, {name: 'HG002'}]
-  // And sampleInfo: {HG001: {maxPloidy: 2}, HG002: {maxPloidy: 2}}
-  // Matrix should have keys: ['HG001 HP0', 'HG001 HP1', 'HG002 HP0', 'HG002 HP1']
+  test('splits a phased genotype across its haplotype rows', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '0|1' })],
+      sources: [{ name: 'HG001' }],
+      sampleInfo: { HG001: diploid },
+    })
+    expect([...rows['HG001 HP0']!]).toEqual([0])
+    expect([...rows['HG001 HP1']!]).toEqual([1])
+  })
 
-  test.todo('uses actual allele numbers for phased genotypes')
-  // Given genotype '0|1' for a variant
-  // HG001 HP0 should have value 0
-  // HG001 HP1 should have value 1
+  test('collapses every alt to one indicator', async () => {
+    // '1|2' used to write the raw allele indices 1 and 2, which under a
+    // Euclidean metric made allele 2 twice as far from the reference as
+    // allele 1 — allele indices are categories, not quantities.
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '1|2' })],
+      sources: [{ name: 'HG001' }],
+      sampleInfo: { HG001: diploid },
+    })
+    expect([...rows['HG001 HP0']!]).toEqual([1])
+    expect([...rows['HG001 HP1']!]).toEqual([1])
+  })
 
-  test.todo('handles multi-allelic variants')
-  // Given genotype '1|2' for a variant
-  // HG001 HP0 should have value 1
-  // HG001 HP1 should have value 2
+  test('marks an unphased call missing on both haplotypes', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '0/1', HG002: '0|1' })],
+      sources: [{ name: 'HG001' }, { name: 'HG002' }],
+      sampleInfo: { HG001: diploid, HG002: diploid },
+    })
+    expect([...rows['HG001 HP0']!]).toEqual([NaN])
+    expect([...rows['HG001 HP1']!]).toEqual([NaN])
+  })
 
-  test.todo('treats unphased genotypes as missing (-1)')
-  // Given genotype '0/1' (unphased, using /)
-  // HG001 HP0 should have value -1
-  // HG001 HP1 should have value -1
+  test('keeps the called side of a partially uncalled genotype', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '.|1', HG002: '0|1' })],
+      sources: [{ name: 'HG001' }, { name: 'HG002' }],
+      sampleInfo: { HG001: diploid, HG002: diploid },
+    })
+    expect([...rows['HG001 HP0']!]).toEqual([NaN])
+    expect([...rows['HG001 HP1']!]).toEqual([1])
+  })
 
-  test.todo('treats uncalled alleles as missing (-1)')
-  // Given genotype '.|1'
-  // HG001 HP0 should have value -1
-  // HG001 HP1 should have value 1
+  test('honors per-sample ploidy', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '0|1', HG002: '0|1|1' })],
+      sources: [{ name: 'HG001' }, { name: 'HG002' }],
+      sampleInfo: {
+        HG001: diploid,
+        HG002: { isPhased: true, maxPloidy: 3 },
+      },
+    })
+    expect(Object.keys(rows)).toHaveLength(5)
+    expect([...rows['HG002 HP2']!]).toEqual([1])
+  })
 
-  test.todo('handles variable ploidy across samples')
-  // Given sampleInfo: {HG001: {maxPloidy: 2}, HG002: {maxPloidy: 3}}
-  // Matrix should have 5 rows total
+  test('marks a sample absent from the VCF missing', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '0|1' })],
+      sources: [{ name: 'HG001' }, { name: 'MISSING_SAMPLE' }],
+      sampleInfo: { HG001: diploid, MISSING_SAMPLE: diploid },
+    })
+    expect([...rows['MISSING_SAMPLE HP0']!]).toEqual([NaN])
+    expect([...rows['MISSING_SAMPLE HP1']!]).toEqual([NaN])
+  })
+
+  test('keeps rows aligned to the feature order', async () => {
+    const rows = await build({
+      features: [
+        makeFeature('v1', { HG001: '0|1' }),
+        makeFeature('v2', { HG001: '1|1' }),
+        makeFeature('v3', { HG001: '0|1' }),
+      ],
+      sources: [{ name: 'HG001' }],
+      sampleInfo: { HG001: diploid },
+    })
+    expect([...rows['HG001 HP0']!]).toEqual([0, 1, 0])
+    expect([...rows['HG001 HP1']!]).toEqual([1, 1, 1])
+  })
 })
-
-// Example of what a full integration test might look like:
-// describe('getPhasedGenotypeMatrix integration', () => {
-//   test('builds correct matrix from VCF features', async () => {
-//     const mockFeature = {
-//       get: (key: string) => {
-//         if (key === 'genotypes') {
-//           return {
-//             'HG001': '0|1',
-//             'HG002': '1|0',
-//           }
-//         }
-//       }
-//     }
-//     // ... setup mock adapter that returns mockFeature
-//     // ... call getPhasedGenotypeMatrix
-//     // ... assert matrix values
-//   })
-// })

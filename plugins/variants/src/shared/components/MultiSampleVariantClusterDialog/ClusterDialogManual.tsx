@@ -53,7 +53,10 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
     'cluster-showAdvanced',
     false,
   )
-  const [clusterMethod, setClusterMethod] = useState('single')
+  // 'average' (UPGMA) is what the built-in "Run clustering" uses, so the
+  // default here reproduces it rather than quietly returning a different tree
+  // from the same dialog.
+  const [clusterMethod, setClusterMethod] = useState('average')
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
@@ -65,20 +68,27 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
     async () => {
       const { rpcManager } = getSession(model)
       const {
-        sourcesWithoutLayout,
+        sourcesVolatile,
         minorAlleleFrequencyFilter,
         maxMissingnessFilter,
         filters,
         adapterConfig,
+        renderingMode,
+        sampleInfo,
       } = model
       const sessionId = getRpcSessionId(model)
+      // Same sources the auto path sends: the un-expanded list, since the
+      // phased matrix does its own haplotype expansion. Passing the already
+      // expanded `sourcesWithoutLayout` would ask for HP rows of HP rows.
       return rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
         regions: view.dynamicBlocks.contentBlocks,
-        sources: sourcesWithoutLayout ?? [],
+        sources: sourcesVolatile ?? [],
         minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
         maxMissingnessFilter: maxMissingnessFilter ?? 1,
         filters,
         adapterConfig,
+        renderingMode,
+        sampleInfo,
       })
     },
   )
@@ -154,6 +164,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
                 <Typography variant="h6">Advanced options</Typography>
                 <RadioGroup>
                   {Object.entries({
+                    average: 'Average (UPGMA, matches "Run clustering")',
                     single: 'Single',
                     complete: 'Complete',
                   }).map(([key, val]) => (
