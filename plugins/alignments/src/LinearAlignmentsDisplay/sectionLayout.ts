@@ -59,6 +59,23 @@ export function computeBandStack(s: BandStackInput) {
   return { arcsBandTop, sashimiBandTop, pileupTop }
 }
 
+// Whether the paired-end arcs reserve a band of their own rather than overlaying
+// the coverage histogram: down mode always, up mode only when there is no
+// coverage band to overlay. The single spelling of that rule — both
+// `belowCoverageBandsGeometry` (sticky geometry, resize handles, fit budget) and
+// `computeStackedSections` (per-section stacking) read it, and `computeArcBand`,
+// which decides where the arcs actually draw, must agree with both.
+export function reservesArcsBand(s: {
+  readConnections: ReadConnectionsMode
+  readConnectionsDown?: boolean
+  showCoverage: boolean
+}) {
+  return (
+    s.readConnections !== 'off' &&
+    ((s.readConnectionsDown ?? false) || !s.showCoverage)
+  )
+}
+
 // Resolve which of the below-coverage bands are present and their stacked tops,
 // from the raw display settings. Single source of truth shared by the
 // `belowCoverageBands` getter (sticky-coverage geometry, resize handles) and the
@@ -80,11 +97,8 @@ export interface BelowCoverageBandsInput {
 }
 
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
-  const arcsOn = s.readConnections !== 'off'
   const coverageBand = s.showCoverage ? s.coverageHeight : 0
-  // Arcs reserve their own band whenever they aren't overlaying the coverage
-  // histogram: down mode always, and up mode when coverage is hidden.
-  const hasArcsBand = arcsOn && (s.readConnectionsDown || !s.showCoverage)
+  const hasArcsBand = reservesArcsBand(s)
   const hasSashimiBand =
     s.showSashimiArcs && s.showCoverage && s.hasSashimiDownArcs
   const stack = computeBandStack({
@@ -135,14 +149,7 @@ export function computeStackedSections(
 ): SectionsLayout {
   const showCoverage = opts.showCoverage ?? true
   const coverageBand = showCoverage ? opts.coverageHeight : 0
-  const arcsHeight = opts.readConnectionsHeight ?? 0
   const readConnections = opts.readConnections ?? 'off'
-  const arcsOn = readConnections !== 'off'
-  // Reserve a dedicated arcs band only when arcs don't overlay coverage: down
-  // mode always, up mode only when there's no coverage band to overlay.
-  // Mirrors `computeArcBand` + `belowCoverageBands`.
-  const hasArcsBand =
-    arcsOn && ((opts.readConnectionsDown ?? false) || !showCoverage)
   const arcBand = computeArcBand({
     showCoverage,
     coverageHeight: opts.coverageHeight,
@@ -151,17 +158,23 @@ export function computeStackedSections(
     readConnectionsDown: opts.readConnectionsDown,
     readConnectionsHeight: opts.readConnectionsHeight,
   })
+  // Band heights are display-global, so every section reserves the same stack —
+  // hoisted out of the loop below, which only advances `coverageTop`.
+  const stack = computeBandStack({
+    coverageHeight: coverageBand,
+    hasArcsBand: reservesArcsBand({
+      readConnections,
+      readConnectionsDown: opts.readConnectionsDown,
+      showCoverage,
+    }),
+    arcsHeight: opts.readConnectionsHeight ?? 0,
+    hasSashimiBand: opts.hasSashimiBand ?? false,
+    sashimiHeight: opts.sashimiHeight ?? 0,
+  })
 
   let top = 0
   const sections = groups.map(g => {
     const coverageTop = top
-    const stack = computeBandStack({
-      coverageHeight: coverageBand,
-      hasArcsBand,
-      arcsHeight,
-      hasSashimiBand: opts.hasSashimiBand ?? false,
-      sashimiHeight: opts.sashimiHeight ?? 0,
-    })
     const pileupTop = coverageTop + stack.pileupTop
     const pileupHeight = g.maxY * opts.rowHeight
     top = Math.max(

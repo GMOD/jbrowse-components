@@ -282,7 +282,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'boolean',
         defaultValue: false,
         description:
-          'Show low-frequency mismatches (below the SNP-calling threshold) in the coverage track',
+          'Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the `filterMismatchesByFrequency` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline)',
+        advanced: true,
       },
       /**
        * #slot

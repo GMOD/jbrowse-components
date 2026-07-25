@@ -293,18 +293,31 @@ export function performHitTest(
     } else if (coords.adjustedY >= 0 && coords.yWithinRow <= featureHeight) {
       // When zoomed out, surface features that are still visually significant.
       // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
-      // spacing doesn't produce false hits.
+      // spacing doesn't produce false hits. `featureHit` is attached here just
+      // as in the zoomed-in branch: without it a right-click on a zoomed-out
+      // insertion/deletion loses the read's own menu items and a hover drops the
+      // chain highlight, purely because of zoom.
       const largeInsertionHit = hitTestLargeInsertion(
         resolved,
         coords,
         featureHeight,
       )
       if (largeInsertionHit) {
-        return { type: 'cigar', hit: largeInsertionHit, resolved }
+        return {
+          type: 'cigar',
+          hit: largeInsertionHit,
+          featureHit: hitTestFeature(resolved, coords, featureHeight),
+          resolved,
+        }
       }
       const gapHit = hitTestGap(resolved, coords)
       if (gapHit && (gapHit.length ?? 0) >= bpPerPx) {
-        return { type: 'cigar', hit: gapHit, resolved }
+        return {
+          type: 'cigar',
+          hit: gapHit,
+          featureHit: hitTestFeature(resolved, coords, featureHeight),
+          resolved,
+        }
       }
     }
 

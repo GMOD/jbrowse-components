@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { SvgColorLegend, createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -18,6 +18,7 @@ import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { sectionKey } from './components/sectionScreen.ts'
+import { COMPACT_AXIS_HEIGHT, compactAxisLabel } from './coverageAxisStyle.ts'
 import { groupSectionLabel } from './groupLabelStyle.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { buildSectionRenders } from './sectionLayout.ts'
@@ -167,13 +168,63 @@ function AlignmentsSvgBody({
           theme={theme}
         />
       ) : null}
+      {model.showLegend ? (
+        <ColorKey
+          model={model}
+          canvasWidth={canvasWidth}
+          maxHeight={displayHeight}
+        />
+      ) : null}
     </>
+  )
+}
+
+// The same color key the display shows on screen (`LegendHost` /
+// `FloatingLegend`). Without it an exported figure has colored reads and nothing
+// saying what the colors mean — decisive for color-by-tag and
+// color-by-modification, where the swatches are the only decoder. Vector, via
+// the shared `SvgColorLegend` the canvas and HiC exports already use, and
+// floated over the right edge of the plot so it lands where the on-screen legend
+// does. No `onDismiss`: an exported legend can't be clicked.
+//
+// On screen the read fills and the connection curves split into two titled
+// sections. Here that becomes one flat list with a color-less heading row,
+// emitted only when both vocabularies are present — the same condition
+// `LegendHost` uses to decide between its sectioned and untitled forms.
+function ColorKey({
+  model,
+  canvasWidth,
+  maxHeight,
+}: {
+  model: LinearAlignmentsDisplayModel
+  canvasWidth: number
+  maxHeight: number
+}) {
+  const connectionItems = model.bezierLegendItems()
+  const entries = [
+    ...model.legendItems().map((item, i) => ({ key: `read-${i}`, ...item })),
+    ...(connectionItems.length > 0
+      ? [
+          { key: 'connections-heading', label: 'Read connections' },
+          ...connectionItems.map((item, i) => ({ key: `conn-${i}`, ...item })),
+        ]
+      : []),
+  ]
+  return (
+    <SvgColorLegend
+      entries={entries}
+      canvasWidth={canvasWidth}
+      maxHeight={maxHeight}
+      testid="alignments-color-legend"
+    />
   )
 }
 
 // One left-orientation coverage y-axis per stacked section's coverage band.
 // Export is always at scrollTop 0, so each `coverageTop` is the section's final
-// y — mirrors the on-screen `CoverageAxisHost`.
+// y — mirrors the on-screen `CoverageAxisHost`, including its compact fallback:
+// a band under COMPACT_AXIS_HEIGHT can't fit tick labels, so both paths show a
+// single `[0, max]` instead of a crammed scale bar.
 function CoverageScaleBars({
   sections,
   ticks,
@@ -185,14 +236,26 @@ function CoverageScaleBars({
 }) {
   return (
     <>
-      {sections.map(section => (
-        <g
-          key={sectionKey(section.groupKey)}
-          transform={`translate(${left}, ${section.coverageTop})`}
-        >
-          <YScaleBar ticks={ticks} orientation="left" />
-        </g>
-      ))}
+      {sections.map(section =>
+        section.coverageHeight < COMPACT_AXIS_HEIGHT ? (
+          <text
+            key={sectionKey(section.groupKey)}
+            x={left}
+            y={section.coverageTop + 10}
+            fontSize={9}
+            fontFamily="sans-serif"
+          >
+            {compactAxisLabel(ticks.items.at(-1)?.value ?? 0)}
+          </text>
+        ) : (
+          <g
+            key={sectionKey(section.groupKey)}
+            transform={`translate(${left}, ${section.coverageTop})`}
+          >
+            <YScaleBar ticks={ticks} orientation="left" />
+          </g>
+        ),
+      )}
     </>
   )
 }

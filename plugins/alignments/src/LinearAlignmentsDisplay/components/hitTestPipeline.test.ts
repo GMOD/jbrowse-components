@@ -162,6 +162,27 @@ describe('gap hit — zoomed-out pileup', () => {
     expect(result.type).toBe('none')
   })
 
+  // The zoomed-out branch used to omit featureHit, so a right-click on a
+  // deletion lost the read's own menu items and a hover dropped the chain
+  // highlight purely because of zoom level. It must carry the read like the
+  // zoomed-in branch does.
+  it('attaches the underlying read to a zoomed-out deletion hit', () => {
+    const resolved = makeResolved({
+      gapPositions: new Uint32Array([9500, 10500]),
+      gapYs: new Uint16Array([0]),
+      gapTypes: new Uint8Array([0]),
+      readPositions: new Uint32Array([9000, 11000]),
+      readYs: new Uint16Array([0]),
+      readIds: ['read1'],
+    })
+    const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.featureHit).toEqual({ id: 'read1', index: 0 })
+      expect(contextMenuFieldsForHit(result).featureId).toBe('read1')
+    }
+  })
+
   it('returns cigar hit for a skip wider than 1px', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9000, 11000]),

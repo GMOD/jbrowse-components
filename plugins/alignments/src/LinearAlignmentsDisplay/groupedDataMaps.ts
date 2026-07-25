@@ -48,9 +48,8 @@ export function someGroupData(
 }
 
 // True when any loaded region/group has a sashimi junction passing
-// `minSashimiScore`. Shared by the `hasSashimiArcs` getter and the
-// fit-to-viewport band-overhead calc, which runs in an earlier `.views` block
-// than that getter and so can't read it.
+// `minSashimiScore`. The 'down' arm of `anyGroupHasSashimiDownArcs` below;
+// exported for its own unit tests.
 export function anyGroupHasSashimi(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   minSashimiScore: number,
@@ -110,21 +109,6 @@ export interface GroupId {
   label: string
 }
 
-// Ordered, de-duplicated group identities across every fetched region, sorted
-// (untagged-key '' last) by the same `compareGroupKeys` the worker's per-region
-// partition uses. Group membership, order, and labels are a property of the
-// *fetch*, not of layout — deriving them straight from `rpcDataMap` keeps the
-// order stable across every main-thread relayout (sortedBy / softclip /
-// per-group height drag) and gives the whole model one source of truth for it,
-// rather than recomputing it inside the layout pass (`buildLaidOutByGroup`) and
-// again as `buildRawDataByGroup`'s key order.
-//
-// The explicit re-sort is load-bearing across regions: the worker sorts each
-// region's groups on its own, but a plain first-seen merge would order the
-// union by which region first exhibited each key. A group absent from an early
-// region (e.g. a chromosome with only reverse-strand reads) would then sort
-// ahead of one it should follow — and an untagged group could escape last —
-// purely from fetch layout. Sorting the merged set restores the intended order.
 // Whether the fetch actually produced NAMED sections, i.e. whether to draw the
 // section labels + dividers. Deliberately reads the data, not the `groupBy`
 // setting: an ungrouped fetch is one group keyed '' with an empty label, and chain
@@ -140,6 +124,21 @@ export function hasNamedGroups(order: readonly GroupId[]) {
   return order.some(g => g.label !== '')
 }
 
+// Ordered, de-duplicated group identities across every fetched region, sorted
+// (untagged-key '' last) by the same `compareGroupKeys` the worker's per-region
+// partition uses. Group membership, order, and labels are a property of the
+// *fetch*, not of layout — deriving them straight from `rpcDataMap` keeps the
+// order stable across every main-thread relayout (sortedBy / softclip /
+// per-group height drag) and gives the whole model one source of truth for it,
+// rather than recomputing it inside the layout pass (`buildLaidOutByGroup`) and
+// again as `buildRawDataByGroup`'s key order.
+//
+// The explicit re-sort is load-bearing across regions: the worker sorts each
+// region's groups on its own, but a plain first-seen merge would order the
+// union by which region first exhibited each key. A group absent from an early
+// region (e.g. a chromosome with only reverse-strand reads) would then sort
+// ahead of one it should follow — and an untagged group could escape last —
+// purely from fetch layout. Sorting the merged set restores the intended order.
 export function orderedGroups(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
 ): GroupId[] {

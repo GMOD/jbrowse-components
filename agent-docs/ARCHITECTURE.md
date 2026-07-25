@@ -457,11 +457,14 @@ re-encode only; `bicolorPivot` change → worker output differs → `rpcProps()`
 refetch.
 
 Derived region maps apply when upload needs whole fresh per-region payloads, not
-just encoder parameters. Alignments' `laidOutPileupMap` returns shallow clones of
-`rpcDataMap` entries with freshly-allocated Y arrays from main-thread layout (+
-connecting-line / Flatbush in chain mode). Raw `rpcDataMap` is never mutated. Use
-derived maps when settings change the shape/contents of per-region data; use
-`gpuProps()` for scalars fed to an encoder.
+just encoder parameters. Alignments' `laidOutByGroup` returns, per group, shallow
+clones of that group's `rpcDataMap` entries with freshly-allocated Y arrays from
+main-thread layout (+ connecting-line / Flatbush in chain mode); `sourceSections`
+pairs each with its arc feed and is what the upload callback iterates.
+(`laidOutPileupMap` is now just the first group of that map, kept for the
+single-section consumers.) Raw `rpcDataMap` is never mutated. Use derived maps
+when settings change the shape/contents of per-region data; use `gpuProps()` for
+scalars fed to an encoder.
 
 ### Theme-derived render inputs are session getters, not pushed volatiles
 
@@ -520,10 +523,18 @@ region and refetches stale ones.
 - Don't destructure model methods; call on the model.
 - Don't use `useMemo` for observable-dependent values; use a cached MST view.
 - Don't mutate per-region values in place; emit fresh objects.
-- Don't cache per-region data on a renderer class (`private regions = new
-  Map<number, ...>()`). The model's `rpcDataMap` / `laidOutDataMap` is the single
-  source of truth; pass it into `renderBlocks(blocks, regions, state)`. For GPU
-  buffer lifecycle delegate to `hal.pruneRegions(active)`.
+- Don't make a renderer class the *owner* of per-region data. The model's
+  `rpcDataMap` / `laidOutDataMap` is the single source of truth. Most displays
+  pass it in per frame — `renderBlocks(blocks, regions, state)` — and that is the
+  default to reach for. A renderer-held `private regions` map is legal only when
+  it is written **exclusively by the upload callback** and never mutated in
+  place: `RenderLifecycleMixin` bumps `renderTick` after every upload, so the
+  render autorun re-fires and the cache cannot stale. Alignments is the one
+  display built that way (`sync(sources)` on both its GPU and Canvas2D backends,
+  because the GPU side must hold buffers anyway and the two share one
+  `AlignmentsRenderingBackend` interface). What is still forbidden is a cache
+  populated from anywhere else, or one whose entries get patched in place. For
+  GPU buffer lifecycle delegate to `hal.pruneRegions(active)`.
 - Don't add or redefine volatiles/actions owned by the slot mixin (`canvasDrawn`,
   `renderTick`, `currentRenderingBackend`, `renderError`, `markCanvasDrawn`,
   `resetCanvasDrawn`, `renderNow`, `setRenderError`, `stopRenderingBackend`, etc.)

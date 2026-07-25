@@ -171,10 +171,14 @@ function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
 
 interface FetchFeatureDetailsSelf {
   adapterConfig: Record<string, unknown>
-  loadedRegions: ReadonlyMap<number, Region>
-  getFeatureInfoById: (
-    id: string,
-  ) => { refName: string; start: number; end: number } | undefined
+  getFeatureInfoById: (id: string) =>
+    | {
+        refName: string
+        assemblyName: string
+        start: number
+        end: number
+      }
+    | undefined
 }
 
 async function fetchFeatureDetails(
@@ -186,17 +190,15 @@ async function fetchFeatureDetails(
   if (!info) {
     return undefined
   }
-  const loaded = [...self.loadedRegions.values()].find(
-    r => r.refName === info.refName,
-  )
-  if (!loaded) {
-    throw new Error(`no loaded region found for refName ${info.refName}`)
-  }
+  // refName + assemblyName come from the loaded region the read was fetched
+  // from (see getFeatureInfoById), so there's nothing to look up here — the old
+  // refName scan over loadedRegions could pick a different region's assembly and
+  // threw on the one it couldn't resolve.
   const region = {
     refName: info.refName,
+    assemblyName: info.assemblyName,
     start: info.start,
     end: info.end,
-    assemblyName: loaded.assemblyName,
   }
   const sequenceAdapter = getSequenceAdapter(session, region)
   const sessionId = getRpcSessionId(self)
@@ -1174,6 +1176,23 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The fields `computeArcBand` reads. One source so the drawn arc band
+         * (`sections`/`buildSectionRenders`) and the insert-size ruler that must
+         * land on its apexes (`insertSizeTicks`) can't be assembled differently.
+         */
+        get arcBandInput() {
+          return {
+            showCoverage: self.showCoverage,
+            coverageHeight: self.coverageHeight,
+            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+            readConnections: self.readConnections,
+            readConnectionsDown: self.readConnectionsDown,
+            readConnectionsHeight: self.readConnectionsHeight,
+          }
+        },
+
+        /**
+         * #getter
          * Inputs to `belowCoverageBandsGeometry` — the below-coverage band
          * settings plus whether any sashimi junction is present. Defined here
          * (an earlier .views block than `belowCoverageBands`) so the fit-budget
@@ -1360,9 +1379,10 @@ export default function stateModelFactory(
           // fetched reads carry the assembly-canonical name (e.g. `1`). Pass the
           // assembly's normalizer so a same-chr split junction to an SA segment
           // isn't misclassified inter-chromosomal.
-          const assembly = getSession(self).assemblyManager.get(
-            self.loadedRegions.values().next().value?.assemblyName ?? '',
-          )
+          const firstRegion = self.loadedRegions.values().next().value
+          const assembly = firstRegion
+            ? getSession(self).assemblyManager.get(firstRegion.assemblyName)
+            : undefined
           const settings = {
             colorByType: self.arcColorByType,
             cloud: self.readConnections === 'cloud',
@@ -1529,13 +1549,8 @@ export default function stateModelFactory(
                   maxY: groupMaxYFor(key),
                 }))
           return computeStackedSections(groups, {
-            coverageHeight: self.coverageHeight,
+            ...self.arcBandInput,
             rowHeight: self.rowHeight,
-            showCoverage: self.showCoverage,
-            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-            readConnections: self.readConnections,
-            readConnectionsDown: self.readConnectionsDown,
-            readConnectionsHeight: self.readConnectionsHeight,
             hasSashimiBand: self.belowCoverageBands.hasSashimiBand,
             sashimiHeight: self.sashimiArcsHeight,
             // Only when the chips are actually drawn — an ungrouped display
@@ -1967,13 +1982,17 @@ export default function stateModelFactory(
           return name === undefined ? [] : (self.chainIdMap.get(name) ?? [])
         },
 
+        // refName/assemblyName come from `loadedRegions` — the region this read
+        // was actually fetched from — rather than from `view.displayedRegions`,
+        // which needs a sentinel for a since-changed index and carries no
+        // assembly, leaving `fetchFeatureDetails` to re-find one by refName.
         getFeatureInfoById(featureId: string) {
           const hit = self.findFeatureInRpcData(featureId)
-          if (!hit) {
+          const region = hit && self.loadedRegions.get(hit.displayedRegionIndex)
+          if (!hit || !region) {
             return undefined
           }
-          const { displayedRegionIndex, idx, rpcData, start, end } = hit
-          const view = getContainingView(self) as LGV
+          const { idx, rpcData, start, end } = hit
           const flags = rpcData.readFlags[idx]
           return {
             id: featureId,
@@ -1983,8 +2002,8 @@ export default function stateModelFactory(
             flags,
             mapq: rpcData.readMapqs[idx],
             strand: flags !== undefined && flags & 16 ? -1 : 1,
-            refName:
-              view.displayedRegions[displayedRegionIndex]?.refName ?? 'unknown',
+            refName: region.refName,
+            assemblyName: region.assemblyName,
           }
         },
       }))
@@ -2154,14 +2173,7 @@ export default function stateModelFactory(
           // arcsYDomainBp is only set in read-cloud mode, so this runs only then.
           // The ruler reuses the arcs' own band geometry so ticks land on the
           // arc apexes (see insertSizeTicks.ts / features/arcs/drawCanvas.ts).
-          const band = computeArcBand({
-            showCoverage: self.showCoverage,
-            coverageHeight: self.coverageHeight,
-            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-            readConnections: self.readConnections,
-            readConnectionsDown: self.readConnectionsDown,
-            readConnectionsHeight: self.readConnectionsHeight,
-          })
+          const band = computeArcBand(self.arcBandInput)
           if (!band) {
             return undefined
           }
