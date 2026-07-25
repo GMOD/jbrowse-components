@@ -35,19 +35,15 @@ export default function stateModelFactory(
       )
       // Remap the old type literal on active (view-level) display instances. The
       // DisplayType `aliases` only covers the track *config*; the view's display
-      // union dispatches on the raw `type`, so it needs this rewrite too. A
-      // `lineZoneHeight` left over from when it was an instance property is
-      // dropped: it's a config slot now (like `height`), and a display snapshot
-      // can't write the track config, so the zone returns to the configured
-      // height rather than half-restoring.
-      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
-        const { lineZoneHeight, ...rest } = snap ?? {}
-        return snap === undefined
-          ? snap
-          : rest.type === 'LinearVariantMatrixDisplay'
-            ? { ...rest, type: 'LinearMultiSampleVariantMatrixDisplay' }
-            : rest
-      })
+      // union dispatches on the raw `type`, so it needs this rewrite too.
+      // Nothing to do for the `lineZoneHeight` an older session may carry here:
+      // MST ignores a snapshot key with no matching property, and it's a config
+      // slot now (like `height`), so the zone resolves to the configured height.
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+        snap?.type === 'LinearVariantMatrixDisplay'
+          ? { ...snap, type: 'LinearMultiSampleVariantMatrixDisplay' }
+          : snap,
+      )
       .views(self => ({
         /**
          * #getter
