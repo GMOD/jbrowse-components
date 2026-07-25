@@ -17,6 +17,15 @@ import fetch from './cliFetch.ts' // ✓ Correct
 
 This applies to all files including utils, commands, types, and helpers.
 
+The exception is code in other packages that the CLI calls into:
+`@jbrowse/text-indexing-core` uses global `fetch` on purpose, because the same
+module runs in the desktop indexing worker. `jest.mock('../cliFetch')` does not
+intercept it, and the CLI test files carry an `@jest-environment node` docblock,
+which also opts them out of `config/jest/fetchMockAfterEnv.js` — so an inert
+`mockFetch` there means the test silently hits the real network. Use
+`mockGlobalFetch` from `testUtil.ts` for anything reached through
+text-indexing-core.
+
 ## Synteny `--assemblyNames` order is query,target (reverse of aligner args)
 
 For synteny tracks (`PAFAdapter`, `DeltaAdapter`, `ChainAdapter`),

@@ -176,39 +176,51 @@ export async function openWebStream(filePath: string) {
   return handle.readableWebStream() as ReadableStream<Uint8Array>
 }
 
-export function mockFetch(
-  mockOrHandler:
-    | MockFetchResponse
-    | ((
-        url: string,
-      ) => MockFetchResponse | Promise<MockFetchResponse> | undefined),
-) {
+type MockFetchHandler =
+  | MockFetchResponse
+  | ((url: string) => MockFetchResponse | Promise<MockFetchResponse> | undefined)
+
+async function resolveMock(handler: MockFetchHandler, urlStr: string) {
+  const response =
+    typeof handler === 'function' ? await handler(urlStr) : handler
+
+  if (!response) {
+    throw new Error(`Unexpected fetch to ${urlStr}`)
+  }
+
+  return {
+    ok: response.ok ?? true,
+    status: response.status ?? (response.ok === false ? 500 : 200),
+    statusText: response.statusText ?? '',
+    headers: new Headers(response.headers),
+    json: async () => response.json,
+    arrayBuffer: async () => response.arrayBuffer,
+    text: async () => '',
+    body: response.body ?? null,
+  } as unknown as Response
+}
+
+export function mockFetch(mockOrHandler: MockFetchHandler) {
   const cliFetch = require('./cliFetch.ts').default as jest.MockedFunction<
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     typeof import('./cliFetch.ts').default
   >
 
-  cliFetch.mockImplementation(async (url: string | URL) => {
-    const urlStr = url.toString()
-    const response =
-      typeof mockOrHandler === 'function'
-        ? await mockOrHandler(urlStr)
-        : mockOrHandler
-
-    if (!response) {
-      throw new Error(`Unexpected fetch to ${urlStr}`)
-    }
-
-    return {
-      ok: response.ok ?? true,
-      status: response.status ?? (response.ok === false ? 500 : 200),
-      statusText: response.statusText ?? '',
-      headers: new Headers(response.headers),
-      json: async () => response.json,
-      arrayBuffer: async () => response.arrayBuffer,
-      body: response.body ?? null,
-    } as unknown as Response
-  })
+  cliFetch.mockImplementation((url: string | URL) =>
+    resolveMock(mockOrHandler, url.toString()),
+  )
 
   return cliFetch
+}
+
+// Stubs the global fetch. Needed for code reached through
+// @jbrowse/text-indexing-core, which deliberately uses global fetch rather than
+// cliFetch so the same module works in the desktop indexing worker. Restore
+// with jest.restoreAllMocks().
+export function mockGlobalFetch(mockOrHandler: MockFetchHandler) {
+  return jest
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation((url: RequestInfo | URL) =>
+      resolveMock(mockOrHandler, url.toString()),
+    )
 }

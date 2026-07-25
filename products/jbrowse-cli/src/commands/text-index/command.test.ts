@@ -8,13 +8,15 @@ import path from 'node:path'
 
 import {
   dataDir,
-  mockFetch,
+  mockGlobalFetch,
   openWebStream,
   runCommand,
   runInTmpDir,
 } from '../../testUtil.ts'
 
-jest.mock('../../cliFetch')
+afterEach(() => {
+  jest.restoreAllMocks()
+})
 
 const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(
@@ -169,7 +171,7 @@ test('indexes a local gz gff3 file', async () => {
 })
 test('indexes a remote gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch(async () => ({
+    mockGlobalFetch(async () => ({
       body: await openWebStream(dataDir('volvox.sort.gff3.gz')),
     }))
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
@@ -184,7 +186,7 @@ test('indexes a remote gz gff3 file', async () => {
 
 test('indexes a remote non-gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch(async () => ({
+    mockGlobalFetch(async () => ({
       body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
     }))
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
@@ -215,7 +217,7 @@ test('indexes multiple local gff3 files', async () => {
 
 test('indexes multiple remote gff3 file', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch(async url => {
+    mockGlobalFetch(async url => {
       if (url.includes('volvox.sort.gff3.gz')) {
         return { body: await openWebStream(dataDir('volvox.sort.gff3.gz')) }
       }
@@ -235,7 +237,7 @@ test('indexes multiple remote gff3 file', async () => {
 
 test('indexes a remote and a local file', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch(async () => ({
+    mockGlobalFetch(async () => ({
       body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
     }))
     const gff3File = dataDir('volvox.sort.gff3.gz')
@@ -393,11 +395,6 @@ describe('real HTTP server integration', () => {
   })
 
   test('indexes a remote gz gff3 file from real HTTP server', async () => {
-    // Unmock cliFetch for this test to use real fetch
-    const originalFetch = jest.requireActual('../../cliFetch.ts').default
-    const cliFetch = require('../../cliFetch.ts').default
-    cliFetch.mockImplementation(originalFetch)
-
     await runInTmpDir(async ctx => {
       const config = {
         assemblies: [

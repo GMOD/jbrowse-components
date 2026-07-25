@@ -53,7 +53,6 @@ const baseConfig = {
     '<rootDir>/config/jest/resizeObserver.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
-  testTimeout: 15000,
 }
 
 export default {
@@ -65,6 +64,9 @@ export default {
   // capping memory regardless of the per-suite leak.
   maxWorkers: '50%',
   workerIdleMemoryLimit: '1500MB',
+  // must live at the root: jest drops testTimeout from entries in `projects`,
+  // so a copy inside baseConfig silently leaves every test on the 5s default
+  testTimeout: 15000,
   projects: [
     {
       // Root-level integration test
