@@ -350,7 +350,7 @@ in the file at once.
 
 This one-vs-all mode is looser about `assemblyNames` than the stacked view is. A
 mate the track does not list still draws, labelled by its bare PanSN prefix, so
-a plain view of K12 can show all three other strains without loading them as
+a plain view of K12 can show all four other strains without loading them as
 assemblies. A strain's own paralogy draws as well, since a same-sample alignment
 between two loci is a real alignment: view one copy and you see the link to the
 other, and a tandem pair on one contig draws at both ends. Clicking a feature

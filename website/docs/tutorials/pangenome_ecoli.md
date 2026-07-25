@@ -329,7 +329,7 @@ maps a record to its strain.
 ## Pangenome variants projection
 
 `pggb -V K12` writes a VCF of every variant the graph decomposes against the K12
-path, genotyped across the other three strains, the pangenome as a table of
+path, genotyped across the other four strains, the pangenome as a table of
 differences. Its `CHROM` is the PanSN reference path (`K12#1#chr`), so rename it
 to match the K12 assembly's reference sequence name (`chr`), then bgzip and
 tabix:

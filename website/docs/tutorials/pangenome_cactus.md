@@ -149,8 +149,8 @@ describes.
 
 `--vcf` decomposes the graph against the K12 reference with
 [`vg deconstruct`](https://github.com/vgteam/vg), genotyped across the other
-three strains. Unlike `pggb -V`, its `CHROM` is already the reference contig
-(`chr`) and its samples are the three non-reference strains, so it loads
+four strains. Unlike `pggb -V`, its `CHROM` is already the reference contig
+(`chr`) and its samples are the four non-reference strains, so it loads
 unchanged: no rename, just the `.gz` and `.tbi` Cactus already wrote.
 
 Load `mc/ecoli.vcf.gz` as a [`VariantTrack`](/docs/config_guides/variant_track)
@@ -170,7 +170,7 @@ on K12 and pick the matrix display (one column per variant, one row per sample):
 }
 ```
 
-<Figure caption="The Minigraph-Cactus graph's pangenome variants as a multi-sample matrix on K12, with the MAF alignment stacked below and the K12 gene lane above. Each matrix column is one variant vg deconstruct called against K12, each row one of the other three strains, each cell that strain's genotype (see the legend)." src="/img/pangenome_cactus/variant_matrix.png" />
+<Figure caption="The Minigraph-Cactus graph's pangenome variants as a multi-sample matrix on K12, with the MAF alignment stacked below and the K12 gene lane above. Each matrix column is one variant vg deconstruct called against K12, each row one of the other four strains, each cell that strain's genotype (see the legend)." src="/img/pangenome_cactus/variant_matrix.png" />
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display and clustering samples by
