@@ -128,11 +128,13 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
             },
             render: b => {
               const state = self.renderState
-              if (!state) {
-                return false
-              }
-              b.renderBlocks(self.renderBlocks, self.perRegionCellMap, state)
-              return true
+              return state
+                ? b.renderBlocks(
+                    self.renderBlocks,
+                    self.perRegionCellMap,
+                    state,
+                  )
+                : false
             },
           })
         },

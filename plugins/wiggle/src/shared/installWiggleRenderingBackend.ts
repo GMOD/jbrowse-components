@@ -25,9 +25,8 @@ interface WiggleLifecycleModel extends LifecycleHost {
 
 // Wire a wiggle-family display's per-region streamed upload/render lifecycle:
 // encode each region via buildSourceRenderData(gpuProps) and draw the encoded
-// map every frame. `rpcDataMap.size === 0` keeps the loading overlay up until
-// the first fetch lands; once loaded, renderState is always a real-or-stub
-// state, so an empty region paints a cleared canvas (flipping canvasDrawn).
+// map every frame. The backend answers whether anything painted, which keeps the
+// loading overlay up until the first fetch lands.
 export function installWiggleRenderingBackend(
   self: WiggleLifecycleModel,
   backend: WiggleRenderingBackend,
@@ -37,12 +36,7 @@ export function installWiggleRenderingBackend(
     self.rpcDataMap,
     backend,
     data => buildSourceRenderData(data, self.gpuProps()),
-    (b, encoded) => {
-      if (self.rpcDataMap.size === 0) {
-        return false
-      }
-      b.renderBlocks(self.renderBlocks, encoded, self.renderState)
-      return true
-    },
+    (b, encoded) =>
+      b.renderBlocks(self.renderBlocks, encoded, self.renderState),
   )
 }

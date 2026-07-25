@@ -43,11 +43,25 @@ export interface PerRegionRenderingBackend<
 > {
   uploadRegion(displayedRegionIndex: number, data: UploadData): void
   pruneRegions(activeRegions: Iterable<number>): void
+  /**
+   * Paint one frame and report whether real content reached the canvas. The
+   * render callback forwards this straight to `RenderLifecycleMixin`, which
+   * flips `canvasDrawn` (the loading scrim, the `-done` testid, every browser
+   * test's wait) only on `true` — so a tick that drew nothing must answer
+   * `false` rather than let a display assert doneness over an empty canvas.
+   *
+   * The two bases answer at different precision on purpose. GPU knows exactly
+   * ("a `drawRegion` ran", after the region-absent and offscreen-clip guards);
+   * Canvas2D delegates clipping to the plugin's `drawXxxBlocks` and so answers
+   * "some block had region data", which is the same for every case a display
+   * can distinguish and avoids re-running `clipBlockForCanvas` purely for a
+   * predicate.
+   */
   renderBlocks(
     blocks: Block[],
     regions: ReadonlyMap<number, RenderData>,
     state: RenderState,
-  ): void
+  ): boolean
   dispose(): void
 }
 
@@ -82,9 +96,10 @@ export abstract class Canvas2DPerRegionRenderingBackend<
     blocks: Block[],
     regions: ReadonlyMap<number, RenderData>,
     state: RenderState,
-  ): void {
+  ): boolean {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     this.draw(blocks, regions, state)
+    return blocks.some(block => regions.has(block.displayedRegionIndex))
   }
 
   /**
@@ -132,9 +147,10 @@ export abstract class GpuPerRegionRenderingBackend<
     blocks: Block[],
     regions: ReadonlyMap<number, RenderData>,
     state: RenderState,
-  ): void {
+  ): boolean {
     const { canvasWidth, canvasHeight } = state
     const dpr = getDpr()
+    let painted = false
     this.hal.resize(canvasWidth, canvasHeight)
     // Always pair beginFrame/endFrame so the canvas clears to transparent even
     // when every block is skipped (e.g. all regions pruned by a density gate).
@@ -147,12 +163,14 @@ export abstract class GpuPerRegionRenderingBackend<
           this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
           this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
           this.drawRegion(block, clip, region, state)
+          painted = true
         }
       }
     }
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
+    return painted
   }
 
   /**

@@ -44,6 +44,16 @@ The backend is the authoritative source of "is there anything to draw" — it ow
 the regions map. The model layer must not duplicate that check (e.g. by reading
 `loadedRegions.size`) because that leaks fetch-layer knowledge into the GPU layer.
 
+**Extended to the shared per-region bases.** This ADR was written against
+alignments' bespoke backend, and for a long time that was the only backend
+honoring it: `PerRegionRenderingBackend.renderBlocks` and both its bases returned
+`void`, so every per-region display hand-wrote the predicate this ADR forbids.
+They now return the boolean too — `GpuPerRegionRenderingBackend` reports whether
+a `drawRegion` ran, `Canvas2DPerRegionRenderingBackend` whether any block had
+region data (it delegates clipping to the plugin's `drawXxxBlocks`, so it cannot
+answer more precisely without re-running the clip purely for a predicate). That
+asymmetry is deliberate and pinned by `perRegionRenderingBackend.test.ts`.
+
 ### `clearAllRpcData` resets `canvasDrawn`
 
 `MultiRegionDisplayMixin.clearAllRpcData` calls `self.resetCanvasDrawn()`.

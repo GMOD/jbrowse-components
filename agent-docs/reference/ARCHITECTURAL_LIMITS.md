@@ -171,11 +171,22 @@ Two things that already coalesce correctly, so don't "fix" them:
   `requestAnimationFrame` (`useWheelScroll`, `usePointerDrag`, `useRafCommit`),
   so a gesture commits at most once per frame.
 
-**Retire when** `renderBlocks` reports whether it painted (§"Did we paint?"
-below; one work item retires both entries) and the render callbacks stop reading
-`rpcDataMap.size` to decide. That read is the only reason the render autorun
-observes the data map, so dropping it makes `renderTick` the single redraw
-channel and the double draw disappears with it.
+**Half the retire condition has landed, and it has not been re-measured.**
+`renderBlocks` now reports whether it painted, and every per-region render
+callback that used to gate on `rpcDataMap.size` (`LinearBasicDisplay`, Manhattan,
+wiggle) forwards that boolean instead. One reader survives on purpose:
+`LinearAlignmentsDisplay` keeps `self.rpcDataMap.size === 0` because its backend
+answers off a group's laid-out map, and a grouped fetch over a region with no
+reads partitions to zero groups — so the backend's boolean alone would leave the
+overlay up forever. That display therefore still observes the data map, and the
+double draw should still be expected there.
+
+**Retire when** the 4-regions-in-separate-actions measurement above is rerun
+against the current callbacks and shows 4 uploads / 4 renders for a display that
+no longer reads the data map. Until someone does that, treat the count as
+unknown rather than fixed — the reasoning says `renderTick` is now the single
+redraw channel for those displays, but reasoning is what the original
+measurement contradicted.
 
 A frame scheduler on the render autorun (`autorun(fn, { scheduler })`) coalesces
 identically and was measured to work, but it papers over the duplicated predicate
@@ -316,33 +327,6 @@ global-fetch helper reads unconditionally, a required `rpcProps` (or an explicit
 `afterAttach` assertion that warns when a display composing the gate mixin still
 resolves `derivedRegionTooLargeEnabled` false. `makeSettingsLoopGuard` is this
 move already applied to the `rpcProps` loop trap. Generalize it.
-
-### "Did we paint?" is asserted by each display, not answered by the backend
-
-**Status:** Open.
-
-`canvasDrawn` gates the loading scrim, the `-done` testid, and every browser
-test's wait, and it comes from the render callback's boolean. A **missing** return
-is already a compile error (`noImplicitReturns: true`, callback typed
-`=> boolean`), so that half needs no vigilance. The gap is upstream:
-`PerRegionRenderingBackend.renderBlocks` and both its bases return `void`, so
-every per-region display hand-writes the predicate ahead of an unconditional
-`return true` — and they disagree. `LinearBasicDisplay`, Manhattan and wiggle gate
-on `rpcDataMap.size === 0`; `LinearMultiRowFeatureDisplay` and
-`LinearMultiSampleVariantDisplay` gate on nothing, so they flip `canvasDrawn` on
-a tick that drew nothing. On screen that is masked because `isReady` also requires
-`!isLoading`, but the `-done` selector fires early.
-
-The answer exists exactly where it is discarded:
-`GpuPerRegionRenderingBackend.renderBlocks` already skips blocks with no region
-data and blocks clipped offscreen.
-
-**Retire when** `renderBlocks` returns that boolean and the per-display
-predicates are deleted. The work item, with the per-display audit and the
-Canvas2D-asymmetry question to settle first, is [../TODO.md](../TODO.md) §"Make
-`renderBlocks` return whether anything painted". A HAL draw-call counter warning
-in dev when `render` returned `true` with zero draws is the belt-and-braces
-version.
 
 ### The plugin ABI is unversioned and the surface is unbounded
 

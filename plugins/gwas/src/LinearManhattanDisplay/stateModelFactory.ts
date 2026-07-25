@@ -546,16 +546,12 @@ export function stateModelFactory(
           self.rpcDataMap,
           backend,
           data => data,
-          b => {
-            // size === 0 gates first paint until data lands (keep the loading
-            // overlay up); once loaded, renderState is always a real-or-stub
-            // state, so an empty region paints a cleared canvas.
-            if (self.rpcDataMap.size === 0) {
-              return false
-            }
-            b.renderBlocks(self.renderBlocks, self.rpcDataMap, self.renderState)
-            return true
-          },
+          b =>
+            b.renderBlocks(
+              self.renderBlocks,
+              self.rpcDataMap,
+              self.renderState,
+            ),
         )
       },
     }))

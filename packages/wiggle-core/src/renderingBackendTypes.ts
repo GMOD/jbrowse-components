@@ -41,10 +41,11 @@ export interface SourceRenderData {
 export interface WiggleRenderingBackend {
   uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]): void
   pruneRegions(activeRegions: number[]): void
+  /** See `PerRegionRenderingBackend.renderBlocks` — true iff content painted. */
   renderBlocks(
     blocks: RenderBlock[],
     regions: ReadonlyMap<number, SourceRenderData[]>,
     renderState: WiggleGPURenderState,
-  ): void
+  ): boolean
   dispose(): void
 }

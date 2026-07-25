@@ -750,10 +750,12 @@ export default function stateModelFactory(
             )
             return { instanceBuffer: buffer, instanceCount: count }
           },
-          b => {
-            b.renderBlocks(self.renderBlocks, self.rpcDataMap, self.renderState)
-            return true
-          },
+          b =>
+            b.renderBlocks(
+              self.renderBlocks,
+              self.rpcDataMap,
+              self.renderState,
+            ),
         )
       },
     }))

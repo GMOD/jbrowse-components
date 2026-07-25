@@ -140,3 +140,32 @@ with the on-screen renderer — different bicolor handling, different Y-axis
 offsets, different bezier curves, different palettes, each plugin its own flavor.
 That pattern is gone: SVG export now runs the same Canvas2D draw functions the
 on-screen path uses, through `paintLayer`. See `reference/SVG_EXPORT.md`.
+
+## Each display asserted its own "did we paint?" (closed)
+
+`PerRegionRenderingBackend.renderBlocks` and both its bases used to return
+`void`, so every per-region display hand-wrote a predicate ahead of an
+unconditional `return true` — and they disagreed. `LinearBasicDisplay`, Manhattan
+and wiggle gated on `rpcDataMap.size === 0`; `LinearMultiRowFeatureDisplay` and
+`LinearMultiSampleVariantDisplay` gated on nothing, so they flipped `canvasDrawn`
+on a tick that drew nothing. On screen that was masked (`isReady` also requires
+`!isLoading`), but the `-done` testid fired early — which is the root cause the
+per-display workarounds in `guides/SCREENSHOT_CAPTURE_RACE.md` were built to
+dodge, each new display having to reinvent a data-derived readiness selector.
+
+`renderBlocks` now returns the boolean and the callbacks forward it. The two
+bases answer at deliberately different precision: GPU knows exactly ("a
+`drawRegion` ran", after the region-absent and offscreen-clip guards), Canvas2D
+answers "some block had region data" because it delegates clipping to the
+plugin's `drawXxxBlocks`. `perRegionRenderingBackend.test.ts` pins both, including
+a case asserting the two agree everywhere Canvas2D can see.
+
+Two callbacks keep a guard, for reasons the backend cannot see — don't "simplify"
+either into a bare forward:
+
+- **`LinearAlignmentsDisplay`** keeps `rpcDataMap.size === 0`. Its backend answers
+  off a group's laid-out map, and a grouped fetch over a region with no reads
+  partitions to zero groups, so the map is empty even though the fetch finished.
+- **`LinearMafDisplay`** returns `true` after deliberately rendering zero blocks:
+  zoomed out, the identity plot owns the visible rows on a sibling canvas, so the
+  cleared GPU frame is still a real paint.

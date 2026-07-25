@@ -329,13 +329,10 @@ export function modelFactory(
           self.sequenceData,
           backend,
           data => data,
-          (b, regions) => {
-            if (self.zoomedOut) {
-              return false
-            }
-            b.renderBlocks(self.renderBlocks, regions, self.renderState)
-            return true
-          },
+          (b, regions) =>
+            self.zoomedOut
+              ? false
+              : b.renderBlocks(self.renderBlocks, regions, self.renderState),
         )
       },
       async fetchNeeded(

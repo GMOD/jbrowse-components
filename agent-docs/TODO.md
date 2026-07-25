@@ -18,38 +18,22 @@ description: Action items to build or fix, the current backlog. Read when pickin
   similar displays). `plugins/canvas` already has `hideFeature`
   (`LinearBasicDisplay/baseModel.ts`) to copy.
 
-## Make `renderBlocks` return whether anything painted
+## Re-measure the per-region double draw
 
-The work item behind the "Did we paint?" entry in
-[reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md), which has
-the diagnosis. It retires a **second** entry there, "Every region arrival draws
-twice": `rpcDataMap.size` in the render callback is the only reason the render
-autorun observes the data map, so deleting these predicates leaves `renderTick`
-as the single redraw channel and the pre-upload draw goes with it.
+`renderBlocks` now reports whether it painted and the `rpcDataMap.size`
+predicates are gone from the per-region render callbacks (the work item that
+used to live here). What was *not* redone is the measurement that motivated it:
+[reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md)
+§"Every region arrival draws twice" recorded 4 regions arriving in separate
+actions producing 4 uploads and **8** renders, and that count is now unknown
+rather than known-fixed.
 
-Per-display audit of the predicate each model hand-writes today:
-
-| Display | Predicate ahead of `return true` |
-| --- | --- |
-| `LinearBasicDisplay` (`plugins/canvas`) | `renderDataMap.size === 0` |
-| `LinearManhattanDisplay` | `rpcDataMap.size === 0` |
-| wiggle / multi-wiggle | `rpcDataMap.size === 0` |
-| `LinearReferenceSequenceDisplay` | `zoomedOut` |
-| `LinearMafDisplay` | `!renderState` only |
-| `LinearMultiRowFeatureDisplay` | none |
-| `LinearMultiSampleVariantDisplay` | none |
-| `LinearAlignmentsDisplay` | forwards its own backend's boolean (the shape to copy) |
-
-Open question to settle first: `GpuPerRegionRenderingBackend.renderBlocks` can
-answer exactly ("a `drawRegion` ran"), but `Canvas2DPerRegionRenderingBackend`
-delegates clipping to the plugin's `drawXxxBlocks`, so it can only answer "some
-block had region data" without re-running `clipBlockForCanvas` purely for the
-predicate. Decide whether that asymmetry is acceptable or whether `draw` should
-also return the boolean.
-
-Getting a predicate wrong strands a display on the loading scrim and unit tests
-won't catch it, so land it behind the browser differential run
-(`products/jbrowse-web/browser-tests/compare-backends.ts`).
+Rerun it against `RenderLifecycleMixin` + `installPerRegionLifecycle` with a
+display that no longer reads the data map (wiggle or Manhattan), counting upload
+and render callback invocations. 4/4 retires the entry; anything else says
+`renderTick` is not the single redraw channel and the reasoning in that entry is
+wrong. Note `LinearAlignmentsDisplay` deliberately still observes `rpcDataMap`
+(zero-group grouped fetch), so it is not the display to measure.
 
 ## Measure the WebGL2 context budget in the shape users actually hit
 

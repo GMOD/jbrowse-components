@@ -1519,18 +1519,25 @@ export default function stateModelFactory(
             },
             b => {
               const state = self.renderState
-              if (!state) {
+              if (state) {
+                if (self.activeRowRendering === 'bases') {
+                  return b.renderBlocks(
+                    self.renderBlocks,
+                    self.rpcDataMap,
+                    state,
+                  )
+                } else {
+                  // Zoomed out the identity plot owns the visible rows, on a
+                  // sibling canvas. Render no blocks so this canvas clears to
+                  // transparent and the identity one shows through — a cleared
+                  // frame nothing painted into, but still a real paint for
+                  // canvasDrawn, since the rows the user sees did get drawn.
+                  b.renderBlocks([], self.rpcDataMap, state)
+                  return true
+                }
+              } else {
                 return false
               }
-              // When the identity plot is the active rows rendering (zoomed out),
-              // render no blocks so the GPU canvas clears to transparent and the
-              // identity canvas drawn over it is the only thing visible.
-              b.renderBlocks(
-                self.activeRowRendering === 'bases' ? self.renderBlocks : [],
-                self.rpcDataMap,
-                state,
-              )
-              return true
             },
           )
         },

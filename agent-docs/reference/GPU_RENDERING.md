@@ -84,15 +84,18 @@ startRenderingBackend(backend: RenderingBackend) {
     render: b => {
       const state = self.renderState
       if (!state) return false              // renderState not ready
-      if (self.rpcDataMap.size === 0) return false   // nothing to paint yet
-      b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
-      return true
-      // return true only when real content was drawn;
-      // mixin calls markCanvasDrawn() → canvasDrawn flips true →
+      return b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
+      // renderBlocks answers "did real content reach the canvas"; forward it.
+      // On true the mixin calls markCanvasDrawn() → canvasDrawn flips true →
       // isReady becomes true once isLoading also clears.
-      // NB the shared per-region bases return void from renderBlocks, so the
-      // "did we paint" predicate is the model's own — only a bespoke backend
-      // (alignments) returns the boolean itself and can be forwarded directly.
+      //
+      // Don't re-derive that answer here (`rpcDataMap.size === 0` and friends).
+      // Per ADR-009 the backend owns it: it holds the regions map, and a
+      // model-side predicate both duplicates it and drifts — the two displays
+      // that gated on nothing used to flip canvasDrawn over a blank canvas.
+      // Add a guard only for something the backend genuinely cannot see, and
+      // say what that is (alignments' zero-group grouped fetch, MAF's
+      // identity-plot frame — both in HISTORICAL.md).
     },
   })
 }
