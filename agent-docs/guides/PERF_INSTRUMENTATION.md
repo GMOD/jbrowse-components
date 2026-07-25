@@ -297,6 +297,38 @@ wash (3430 vs 3534 ms to settled): the boots overlap, so they are not on the
 wall-clock critical path, and heavy datasets are where the pool earns its keep.
 The live lever is bundle *content* — see below.
 
+## The SharedArrayBuffer stop-token path does work — it just never runs
+
+`stopToken.ts` prefers an atomic flag in a `SharedArrayBuffer` and falls back to
+a revocable blob URL the worker probes by **synchronous XHR**. Only the fallback
+ever runs in practice, because SAB needs `crossOriginIsolated` and nothing sets
+COOP/COEP (see `agent-docs/OTHER_IDEAS.md` for why that is deliberate and not
+fixable for an embeddable library).
+
+`node website/scripts/coi-probe.ts [--coi]` serves the build with and without
+`Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy:
+require-corp` and checks the observable consequences. Verified July 2026 — with
+isolation on, the fast path engages correctly end to end:
+
+| | no COOP/COEP | with COOP/COEP |
+| --- | --- | --- |
+| `crossOriginIsolated` | false | true |
+| blob URLs created (fallback tokens) | 3 | **0** |
+| SharedArrayBuffers reaching workers | 0 | **3** |
+| `blob:` sync-XHR probes in workers | 0 | 0 |
+| displays painted / page errors | 5 / 0 | 5 / 0 |
+
+The SAB survives the RPC argument serialization intact (it arrives as a real
+`SharedArrayBuffer`, not a mangled object), which is the part most likely to
+have rotted silently.
+
+But it buys nothing measurable: interleaved, 5 runs each, time-to-settled medians
+are **1933 ms without isolation vs 1917 ms with**. The 19–48 ms of `checkStopToken`
+self time per worker that shows up in a CPU profile is real, and it is still
+below the wall-clock noise floor. So the fallback being the only live path is
+not costing users anything worth a deployment constraint that would break
+cross-origin data fetching.
+
 ## Getting UI code out of the RPC workers
 
 Nothing in a worker renders React, yet **2.2 MB of the 6.35 MB of module bytes
