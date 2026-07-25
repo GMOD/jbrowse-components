@@ -356,7 +356,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             x: 610,
             y: 250,
             maxWidth: 330,
-            text: 'Sorted: reads carrying each base at ctgA:14,481 now stack into one block — here the A-reads run down the center column.',
+            text: 'Reads sorted by base at this column',
           },
           { type: 'arrow', from: { x: 605, y: 258 }, to: { x: 565, y: 235 } },
         ],

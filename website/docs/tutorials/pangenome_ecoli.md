@@ -340,8 +340,8 @@ tabix -p vcf ecoli_pggb.vcf.gz
 ```
 
 Load it as a [`VariantTrack`](/docs/config_guides/variant_track) on K12 and pick
-the matrix display, which lays out one column per variant and one row per
-sample:
+the multi-sample display, which draws one row per sample with each variant at
+its genomic position:
 
 ```json
 {
@@ -353,16 +353,16 @@ sample:
     "type": "VcfTabixAdapter",
     "uri": "ecoli_pggb.vcf.gz"
   },
-  "displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
+  "displays": [{ "type": "LinearMultiSampleVariantDisplay" }]
 }
 ```
 
 Stacking the MAF alignment (the whole-genome alignment projection, below) over
-the same window turns the matrix from a standalone summary into something you
-can check: each band of shared or absent genotype sits directly above the
+the same window turns the variant rows from a standalone summary into something
+you can check: each band of shared or absent genotype sits directly above the
 per-strain alignment it was decomposed from.
 
-<Figure caption="The graph's pangenome variants as a multi-sample matrix on the K12 reference, with the MAF alignment stacked below and the K12 gene lane (elfC, ycbU, pyrD…) above. Each matrix column is one variant the graph called, each row one of the other three strains, each cell that strain's genotype (see the legend)." src="/img/pangenome/variant_matrix.png" />
+<Figure caption="The graph's pangenome variants on the K12 reference, one row per strain, with the MAF alignment stacked below and the K12 gene lane (elfC, ycbU, pyrD…) above. Each colored column is a variant the graph called, colored by that strain's genotype (see the legend)." src="/img/pangenome/variant_matrix.png" />
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and
@@ -562,7 +562,7 @@ node-order axis away, re-drawing everything on K12's actual coordinates:
 - the **per-strain presence** track is its filled-vs-gap rows, windowed.
 - the **MAF** track is those same rows at single-base resolution, colored by
   mismatch.
-- the **variant matrix** is the points where the rows branch, one column each.
+- the **variant track** is the points where the rows branch, one column each.
 
 So `odgi viz` answers "what does the graph look like". JBrowse answers "what
 does the graph say about this reference, here, beside the genes." The node-order

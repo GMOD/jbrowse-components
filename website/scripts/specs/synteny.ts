@@ -424,7 +424,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         from: { x: 560, y: 360 },
+        // stop short of the stx2B label instead of landing on top of it — the
+        // box below marks the gene itself
         anchor: { text: 'stx2B' },
+        dx: -45,
+        dy: -28,
       },
       {
         type: 'box',
@@ -800,8 +804,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Show...' },
       { type: 'waitForText', text: 'Show curved lines' },
     ],
+    // box the two controls the section asks the reader to change, rather than
+    // labelling the frame "As it opens" (which said nothing about the menu)
     annotations: [
-      { type: 'text', x: 24, y: 56, fontSize: 22, text: 'As it opens' },
+      {
+        type: 'text',
+        x: 24,
+        y: 56,
+        fontSize: 22,
+        text: 'Straight ribbons, colored indels',
+      },
+      { type: 'box', anchor: { text: 'CIGAR display mode' } },
+      { type: 'box', anchor: { text: 'Show curved lines' } },
     ],
   },
   {

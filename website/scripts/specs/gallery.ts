@@ -197,6 +197,9 @@ export const gallerySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'gallery/nanopore_methylation',
     url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"20:18,503,000-18,509,000","type":"LinearGenomeView","tracks":["cpgisland_ucsc_hg38",{"trackId":"human_chr20_mod_call_5mC_5hmC_CG_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"methylation"}}}]}]}',
+    // the remote CRAM's first fetch takes long enough that settleMs alone once
+    // committed a loading screen; wait on the pileup canvas actually drawing
+    readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
     settleMs: 15000,
     viewportHeight: 600,
