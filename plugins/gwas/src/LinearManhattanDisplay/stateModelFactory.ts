@@ -36,7 +36,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun, observable } from 'mobx'
 
-import TooltipComponent from './components/TooltipComponent.tsx'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -132,12 +131,6 @@ export function stateModelFactory(
        */
       get prefersOffset() {
         return true
-      },
-      /**
-       * #getter
-       */
-      get TooltipComponent() {
-        return TooltipComponent
       },
       /**
        * #getter

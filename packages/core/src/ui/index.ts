@@ -88,7 +88,10 @@ export { default as SettingsChangesTable } from './SettingsChangesTable.tsx'
 export { default as ActionLink } from './ActionLink.tsx'
 export { default as ExternalLink } from './ExternalLink.tsx'
 export { default as SanitizedHTML } from './SanitizedHTML.tsx'
-export { default as BaseTooltip } from './BaseTooltip.tsx'
+// BaseTooltip is deliberately NOT re-exported here: it reaches @floating-ui
+// (~266KB), and this barrel is imported by eager plugin entries, so the
+// re-export alone held that dependency on the startup path. Every consumer
+// deep-imports '@jbrowse/core/ui/BaseTooltip' instead.
 export { default as PluggableComponent } from './PluggableComponent.tsx'
 export type {
   BaseMenuItem,

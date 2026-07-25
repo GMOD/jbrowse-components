@@ -1,8 +1,8 @@
+import { lazy } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import NotesIcon from '@mui/icons-material/Notes'
-
-import ConsensusSequenceDialog from './ConsensusSequenceDialog.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -11,6 +11,12 @@ import type {
   ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+
+// plugin install() runs at startup, so a static import would put the dialog
+// (and the MUI Slider it uses) in the first-paint bundle
+const ConsensusSequenceDialog = lazy(
+  () => import('./ConsensusSequenceDialog.tsx'),
+)
 
 interface DisplayLike {
   type: string

@@ -215,6 +215,9 @@ async function fetchFeatureDetails(
   return new SimpleFeature(feature)
 }
 
+// lazy so this eager state model does not pull the tooltip's @floating-ui
+// dependency onto the startup path; the consumer renders it inside a Suspense
+// boundary (AlignmentsDisplayComponent)
 const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
 )

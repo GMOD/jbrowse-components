@@ -1,5 +1,3 @@
-import uFuzzy from '@leeoniya/ufuzzy'
-
 import { readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 
@@ -14,8 +12,6 @@ import type BaseResult from './BaseResults.ts'
 export interface SearchScope {
   assemblyName: string
 }
-
-const uf = new uFuzzy({})
 
 export default class TextSearchManager {
   adapterCache = new QuickLRU<string, BaseTextSearchAdapter>({
@@ -99,7 +95,7 @@ export default class TextSearchManager {
   async search(args: BaseTextSearchArgs, searchScope: SearchScope) {
     const adapters = await this.loadTextSearchAdapters(searchScope)
     const results = await Promise.all(adapters.map(a => a.searchIndex(args)))
-    return this.sortResults({ args, results: results.flat() })
+    return await this.sortResults({ args, results: results.flat() })
   }
 
   // Ranks, never filters: the adapters have already decided what matches, and
@@ -107,13 +103,20 @@ export default class TextSearchManager {
   // multi-word query hits e.g. the description while the display string is just
   // the gene name). uFuzzy floats the results whose display string matches the
   // query to the top and the rest keep their adapter order behind them.
-  sortResults({
+  //
+  // uFuzzy is imported here rather than at the top of the file so its 26KB stay
+  // out of the startup bundle: TextSearchManager is constructed by BaseRootModel
+  // on every page load, but nothing ranks results until the user searches.
+  async sortResults({
     results,
     args,
   }: {
     results: BaseResult[]
     args: BaseTextSearchArgs
   }) {
+    const { default: uFuzzy } = await import('@leeoniya/ufuzzy')
+    const uf = new uFuzzy({})
+
     // this code sample relatively unmodified from
     // https://github.com/leeoniya/uFuzzy?tab=readme-ov-file#example
     const haystack = results.map(r => r.getDisplayString())
