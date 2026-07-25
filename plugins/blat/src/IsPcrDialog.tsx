@@ -67,8 +67,8 @@ const IsPcrDialog = observer(function IsPcrDialog({
             parse: parseIsPcrResponse,
           }),
         trackIdPrefix: 'ispcr',
-        trackName: `In-silico PCR ${new Date().toLocaleTimeString()}`,
-        emptyMessage: 'No PCR products found',
+        trackName: `PCR ${fwd.slice(0, 10)}…/${rev.slice(0, 10)}…`,
+        emptyMessage: `No PCR products found in ${db}`,
       })
     }
   }

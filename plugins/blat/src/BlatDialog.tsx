@@ -11,21 +11,17 @@ import UcscQueryStatus from './UcscQueryStatus.tsx'
 import {
   DEFAULT_BLAT_URL,
   MAXIMUM_BLAT_LENGTH,
+  MAXIMUM_BLAT_QUERIES,
   MINIMUM_BLAT_LENGTH,
   buildBlatBody,
+  fastaRecordCount,
   parseBlatResponse,
+  queryLabel,
+  stripFasta,
 } from './blatQuery.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-function stripFasta(seq: string) {
-  return seq
-    .split('\n')
-    .filter(line => !line.startsWith('>'))
-    .join('')
-    .replaceAll(/\s/g, '')
-}
 
 const BlatDialog = observer(function BlatDialog({
   session,
@@ -42,26 +38,32 @@ const BlatDialog = observer(function BlatDialog({
   const { db, urlBase, apiKey } = query
   const [seq, setSeq] = useState('')
 
-  const cleanSeq = stripFasta(seq)
-  const tooShort = cleanSeq.length < MINIMUM_BLAT_LENGTH
-  const tooLong = cleanSeq.length > MAXIMUM_BLAT_LENGTH
+  const residues = stripFasta(seq)
+  const queryCount = fastaRecordCount(seq)
+  const tooShort = residues.length < MINIMUM_BLAT_LENGTH
+  const tooLong = residues.length > MAXIMUM_BLAT_LENGTH
+  const tooMany = queryCount > MAXIMUM_BLAT_QUERIES
   const seqError = tooLong
-    ? `Sequence is ${cleanSeq.length.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_LENGTH.toLocaleString()} bp`
-    : tooShort && cleanSeq
-      ? `Sequence must be at least ${MINIMUM_BLAT_LENGTH} bp`
-      : ''
+    ? `Sequence is ${residues.length.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_LENGTH.toLocaleString()} bp`
+    : tooMany
+      ? `${queryCount} sequences; UCSC BLAT is limited to ${MAXIMUM_BLAT_QUERIES} per query`
+      : tooShort && residues
+        ? `Sequence must be at least ${MINIMUM_BLAT_LENGTH} bp`
+        : ''
 
   async function handleSubmit() {
+    const label = queryLabel(seq)
     await query.runQuery({
       fetchFeatures: () =>
         runUcscFetch({
           urlBase,
-          body: buildBlatBody({ db, seq: cleanSeq, apiKey }),
+          body: buildBlatBody({ db, seq: seq.trim(), apiKey }),
           parse: parseBlatResponse,
         }),
       trackIdPrefix: 'blat',
-      trackName: `BLAT ${new Date().toLocaleTimeString()}`,
-      emptyMessage: 'No BLAT hits found',
+      trackName:
+        queryCount > 1 ? `BLAT ${label} +${queryCount - 1}` : `BLAT ${label}`,
+      emptyMessage: `No BLAT hits found in ${db}`,
     })
   }
 
@@ -91,11 +93,11 @@ const BlatDialog = observer(function BlatDialog({
           minRows={6}
           maxRows={14}
           autoFocus
-          placeholder="Paste a DNA sequence or FASTA to search against the UCSC BLAT server"
+          placeholder="Paste a DNA sequence or FASTA to locate it in the genome"
           error={!!seqError}
           helperText={
             seqError ||
-            'DNA or FASTA, up to 25 kb. Results are added as a new track.'
+            'DNA, or FASTA with up to 25 records, 25 kb total. Hits are added as a track and the view jumps to the best one.'
           }
         />
         <UcscQueryFields
@@ -107,7 +109,7 @@ const BlatDialog = observer(function BlatDialog({
       </DialogContent>
       <UcscQueryActions
         query={query}
-        submitDisabled={tooShort || tooLong || !db}
+        submitDisabled={tooShort || tooLong || tooMany || !db}
         onSubmit={() => void handleSubmit()}
         onCancel={() => {
           handleClose()

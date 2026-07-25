@@ -11,6 +11,7 @@ import {
   APP_BINARY,
   REPO_ROOT,
   cleanupUI,
+  clearInput,
   clickButton,
   createDriver,
   delay,
@@ -28,9 +29,17 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = resolve(__dirname, '../../../website/static/img')
 const DATA_PORT = 9444
+const BLAT_PORT = 9445
+
+// `--only <substring>` still walks the whole flow but writes only the matching
+// figures, so regenerating one image can't churn the others with re-encoded
+// pixels (unlike the web generator, this harness has no content-stable gate).
+const onlyIndex = process.argv.indexOf('--only')
+const ONLY = onlyIndex === -1 ? '' : process.argv[onlyIndex + 1]!
 
 let chromedriverProcess: ChildProcess | null = null
 let dataServer: http.Server | null = null
+let blatServer: http.Server | null = null
 let driver: WebDriver | null = null
 
 async function capture(
@@ -38,10 +47,14 @@ async function capture(
   name: string,
   dir = OUT_DIR,
 ): Promise<void> {
-  const png = await driver.takeScreenshot()
-  const out = resolve(dir, name)
-  writeFileSync(out, Buffer.from(png, 'base64'))
-  console.log(`  ✓ wrote ${out}`)
+  if (ONLY && !name.includes(ONLY)) {
+    console.log(`  ≈ skipped ${name} (--only ${ONLY})`)
+  } else {
+    const png = await driver.takeScreenshot()
+    const out = resolve(dir, name)
+    writeFileSync(out, Buffer.from(png, 'base64'))
+    console.log(`  ✓ wrote ${out}`)
+  }
 }
 
 // The Add-track stepper renders one button (testid addTrackNextButton) per step,
@@ -76,6 +89,63 @@ async function freezeAnimations(driver: WebDriver): Promise<void> {
   `)
 }
 
+const SAMPLE_SEQ = 'CACGTGACTGAGGCTTGATCCGGATTACAGTGCCATTGACCTGAAGTTCAGG'
+
+// A stand-in hgBlat. Public UCSC BLAT sits behind a Cloudflare CAPTCHA and
+// needs an account apiKey, so a result figure can't be captured against it;
+// pointing the dialog's "BLAT server URL" field here instead exercises the real
+// request → parse → on-the-fly track → navigate path with only UCSC's server
+// substituted. The body is a genuine hgBlat output=json response shape: a
+// strong 147bp hit over hg19 TP53 and a weaker partial hit on chr6.
+const MOCK_BLAT_RESPONSE = JSON.stringify({
+  track: 'blat',
+  genome: 'hg19',
+  fields: [
+    'matches',
+    'misMatches',
+    'repMatches',
+    'nCount',
+    'qNumInsert',
+    'qBaseInsert',
+    'tNumInsert',
+    'tBaseInsert',
+    'strand',
+    'qName',
+    'qSize',
+    'qStart',
+    'qEnd',
+    'tName',
+    'tSize',
+    'tStart',
+    'tEnd',
+    'blockCount',
+    'blockSizes',
+    'qStarts',
+    'tStarts',
+  ],
+  blat: [
+    // prettier-ignore
+    [145, 2, 0, 0, 0, 0, 0, 0, '+', 'YourSeq', 147, 0, 147, 'chr17', 81195210, 7579838, 7579985, 1, '147', '0', '7579838'],
+    // prettier-ignore
+    [61, 9, 0, 0, 1, 3, 1, 12, '-', 'YourSeq', 147, 20, 90, 'chr6', 171115067, 36646200, 36646282, 2, '40,30', '20,63', '36646200,36646252'],
+  ],
+})
+
+async function startMockBlatServer(port: number): Promise<http.Server> {
+  const server = http.createServer((_req, res) => {
+    // hgBlat serves its JSON body under a text/html content-type
+    res.setHeader('Content-Type', 'text/html')
+    res.end(MOCK_BLAT_RESPONSE)
+  })
+  await new Promise<void>((done, fail) => {
+    server.on('error', fail)
+    server.listen(port, '127.0.0.1', () => {
+      done()
+    })
+  })
+  return server
+}
+
 // BLAT and in-silico PCR (blat plugin, a desktop core plugin) query UCSC by
 // assembly, so demonstrate them on a real UCSC assembly: launch the seeded hg19
 // favorite from the start screen, capture both Tools-menu dialogs in their
@@ -106,9 +176,7 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
     10000,
   )
   await blatSeqInput.click()
-  await blatSeqInput.sendKeys(
-    'CACGTGACTGAGGCTTGATCCGGATTACAGTGCCATTGACCTGAAGTTCAGG',
-  )
+  await blatSeqInput.sendKeys(SAMPLE_SEQ)
   await delay(500)
   await capture(driver, 'desktop-blat-search.png')
   await cleanupUI(driver)
@@ -121,6 +189,42 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   await delay(500)
   await capture(driver, 'desktop-ispcr.png')
   await cleanupUI(driver)
+
+  // The result of a search is a track plus a navigation, so capture the state
+  // after submitting: the hits as an on-the-fly track with the view sitting on
+  // the best one. Submitted against the stand-in server (see MOCK_BLAT_RESPONSE).
+  console.log('Capturing BLAT results...')
+  await openMenuItem(driver, 'Tools', 'BLAT search')
+  await findByText(driver, 'BLAT search (UCSC)')
+  await delay(500)
+  const resultSeqInput = await driver.wait(
+    until.elementLocated(By.css('textarea:not([aria-hidden="true"])')),
+    10000,
+  )
+  await resultSeqInput.click()
+  await resultSeqInput.sendKeys(SAMPLE_SEQ)
+  await clickButton(driver, 'Show advanced settings')
+  const urlField = await driver.wait(
+    until.elementLocated(
+      By.xpath("//label[contains(., 'BLAT server URL')]/following::input[1]"),
+    ),
+    10000,
+  )
+  await clearInput(driver, urlField)
+  await urlField.sendKeys(`http://127.0.0.1:${BLAT_PORT}/hgBlat`)
+  await clickButton(driver, 'Submit')
+
+  // done when the view has navigated to the best hit, which is also what the
+  // figure is meant to show — no fixed-timeout guess at when the query landed
+  await driver.wait(async () => {
+    const box = await driver.findElement(
+      By.css('input[placeholder="Search for location"]'),
+    )
+    const locstring = await box.getAttribute('value')
+    return !!locstring?.includes('chr17')
+  }, 30000)
+  await delay(3000) // let the track paint
+  await capture(driver, 'desktop-blat-results.png')
 
   console.log('Returning to start screen...')
   await openMenuItem(driver, 'File', 'Return to start screen')
@@ -146,6 +250,9 @@ async function main(): Promise<void> {
 
   console.log(`Serving ${REPO_ROOT} on http://localhost:${DATA_PORT}...`)
   dataServer = await startStaticServer(REPO_ROOT, DATA_PORT)
+
+  console.log(`Serving stand-in hgBlat on http://127.0.0.1:${BLAT_PORT}...`)
+  blatServer = await startMockBlatServer(BLAT_PORT)
 
   console.log('Starting ChromeDriver...')
   chromedriverProcess = await startChromedriver()
@@ -232,6 +339,7 @@ async function main(): Promise<void> {
     chromedriverProcess.kill('SIGKILL')
   }
   dataServer.close()
+  blatServer.close()
   await killProcesses()
   console.log('Done.')
   process.exit(0)
@@ -261,6 +369,9 @@ main().catch(async e => {
   }
   if (dataServer) {
     dataServer.close()
+  }
+  if (blatServer) {
+    blatServer.close()
   }
   await killProcesses()
   process.exit(1)

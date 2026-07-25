@@ -13,9 +13,12 @@ const UcscQueryStatus = observer(function UcscQueryStatus({
 }: {
   query: UcscQuery
 }) {
-  const { error, challenged } = query
+  const { error, challenged, notFound } = query
   return (
     <>
+      {notFound ? (
+        <Typography color="textSecondary">{notFound}</Typography>
+      ) : null}
       {error && !challenged ? <ErrorMessage error={error} /> : null}
       {challenged ? (
         <Typography>

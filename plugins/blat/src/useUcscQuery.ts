@@ -95,6 +95,9 @@ export function useUcscQuery({
   const [loading, setLoading] = useState(false)
   const [challenged, setChallenged] = useState(false)
   const [error, setError] = useState<unknown>()
+  // a query that ran fine and matched nothing is an answer, not a failure, so
+  // it stays out of `error` (which renders as a red ErrorMessage)
+  const [notFound, setNotFound] = useState('')
 
   function changeApiKey(key: string) {
     setApiKey(key)
@@ -120,13 +123,21 @@ export function useUcscQuery({
     setLoading(true)
     setError(undefined)
     setChallenged(false)
+    setNotFound('')
     try {
       const features = await fetchFeatures()
-      if (!features.length) {
-        throw new Error(emptyMessage)
+      if (features.length) {
+        await addResultTrack({
+          session,
+          assembly,
+          features,
+          trackIdPrefix,
+          trackName,
+        })
+        handleClose()
+      } else {
+        setNotFound(emptyMessage)
       }
-      addResultTrack({ session, assembly, features, trackIdPrefix, trackName })
-      handleClose()
     } catch (e) {
       console.error(e)
       if (e instanceof BlatChallengeError) {
@@ -155,6 +166,7 @@ export function useUcscQuery({
     loading,
     challenged,
     error,
+    notFound,
     setDb,
     setUrlBase,
     changeApiKey,

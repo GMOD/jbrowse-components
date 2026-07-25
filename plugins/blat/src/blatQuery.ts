@@ -15,6 +15,36 @@ function parseCommaList(value: string) {
   return value.split(',').filter(Boolean).map(Number)
 }
 
+// kent's pslCalcMilliBad with isMrna=true, which is what hgBlat's own hit table
+// reports: a target span longer than the query is an intron rather than a
+// penalty, and target inserts aren't charged. Integer-divided like the C
+// original so the percentage matches the number UCSC prints.
+function pslMilliBad({
+  matches,
+  misMatches,
+  repMatches,
+  qNumInsert,
+  qAliSize,
+  tAliSize,
+}: {
+  matches: number
+  misMatches: number
+  repMatches: number
+  qNumInsert: number
+  qAliSize: number
+  tAliSize: number
+}) {
+  const total = matches + repMatches + misMatches
+  const sizeDif = Math.max(0, qAliSize - tAliSize)
+  return Math.min(qAliSize, tAliSize) <= 0 || total === 0
+    ? 0
+    : Math.trunc(
+        (1000 *
+          (misMatches + qNumInsert + Math.round(3 * Math.log(1 + sizeDif)))) /
+          total,
+      )
+}
+
 function pslRowToFeature(
   row: (string | number)[],
   col: Record<string, number>,
@@ -32,13 +62,30 @@ function pslRowToFeature(
   const repMatches = num('repMatches')
   const qNumInsert = num('qNumInsert')
   const tNumInsert = num('tNumInsert')
+  const qStart = num('qStart')
+  const qEnd = num('qEnd')
+  const qSize = num('qSize')
   const blockSizes = parseCommaList(str('blockSizes'))
   const tStarts = parseCommaList(str('tStarts'))
 
-  // UCSC's simplified pslScore
-  const score = matches + repMatches - misMatches - qNumInsert - tNumInsert
-  const aligned = matches + repMatches + misMatches
-  const identity = aligned > 0 ? (100 * (matches + repMatches)) / aligned : 0
+  // kent's pslScore, which ranks the hit table: repeat matches count half
+  const score =
+    matches + (repMatches >> 1) - misMatches - qNumInsert - tNumInsert
+  const identity =
+    100 -
+    pslMilliBad({
+      matches,
+      misMatches,
+      repMatches,
+      qNumInsert,
+      qAliSize: qEnd - qStart,
+      tAliSize: end - start,
+    }) /
+      10
+  // how much of the submitted sequence this hit accounts for — the other half of
+  // "did my sequence map here", since a high-identity hit over 10% of the query
+  // is not the locus you were looking for
+  const coverage = qSize > 0 ? (100 * (qEnd - qStart)) / qSize : 0
 
   const uniqueId = `blat-${featureIndex}`
   const subfeatures = blockSizes.map((size, i) => ({
@@ -60,23 +107,64 @@ function pslRowToFeature(
     name: `${qName} ${identity.toFixed(1)}%`,
     score,
     identity: Number(identity.toFixed(1)),
+    coverage: Number(coverage.toFixed(1)),
     matches,
     misMatches,
+    queryName: qName,
+    queryStart: qStart,
+    queryEnd: qEnd,
+    querySize: qSize,
+    blockCount: blockSizes.length,
     subfeatures,
   }
 }
 
+// Sorted by score descending, matching the order hgBlat lists its hit table in,
+// so consumers can treat the first feature as the best placement of the query.
 export function pslToFeatures(
   data: BlatJsonResponse,
 ): SimpleFeatureSerialized[] {
   const col = Object.fromEntries(data.fields.map((f, i) => [f, i]))
-  return data.blat.map((row, i) => pslRowToFeature(row, col, i))
+  return data.blat
+    .map((row, i) => pslRowToFeature(row, col, i))
+    .sort((a, b) => Number(b.score) - Number(a.score))
 }
 
 export const MINIMUM_BLAT_LENGTH = 20
 
 // UCSC rejects queries over 25kb server-side; enforce locally for a clear message
 export const MAXIMUM_BLAT_LENGTH = 25000
+
+// hgBlat's per-submission cap on FASTA records
+export const MAXIMUM_BLAT_QUERIES = 25
+
+// residues only, for the length limits. The query itself goes to the server
+// verbatim: hgBlat parses FASTA and labels each hit with its record's name, so
+// stripping headers here would fuse a multi-record paste into one chimeric
+// query and throw away the names that tell the hits apart.
+export function stripFasta(seq: string) {
+  return seq
+    .split('\n')
+    .filter(line => !line.startsWith('>'))
+    .join('')
+    .replaceAll(/\s/g, '')
+}
+
+// hgBlat places each FASTA record separately, so records are queries
+export function fastaRecordCount(seq: string) {
+  const headers = seq.match(/^>/gm)
+  return headers ? headers.length : 1
+}
+
+// names the result track after what was searched: the first FASTA header, or
+// the leading bases of a bare sequence
+export function queryLabel(seq: string) {
+  const header = /^>\s*(\S+)/m.exec(seq)
+  const residues = stripFasta(seq)
+  return header
+    ? header[1]!
+    : residues.slice(0, 12) + (residues.length > 12 ? '…' : '')
+}
 
 export function buildBlatBody({
   db,
@@ -126,6 +214,24 @@ export function challengeError() {
   )
 }
 
+// kent CGIs report a bad db ("Can't find database …") or a server-side failure
+// by errAbort-ing into an HTML page, usually inside a <pre>. Pull that text out
+// so an assembly UCSC doesn't host says why, rather than "unexpected HTML".
+function htmlErrorMessage(text: string) {
+  const pre = /<pre[^>]*>([\S\s]*?)<\/pre>/i.exec(text)
+  return (pre ? pre[1]! : text)
+    .replaceAll(/<(script|style)[\S\s]*?<\/\1>/gi, ' ')
+    .replaceAll(/<[^>]*>/g, ' ')
+    .replaceAll('&nbsp;', ' ')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+    .slice(0, 300)
+}
+
 // hgBlat returns text/html content-type with a JSON body, and both non-match
 // errors and the Cloudflare Turnstile challenge come back as HTML pages, so we
 // parse the text ourselves and give a readable error if it isn't JSON
@@ -134,8 +240,11 @@ export function parseBlatResponse(text: string): SimpleFeatureSerialized[] {
     if (isChallengePage(text)) {
       throw challengeError()
     }
+    const message = htmlErrorMessage(text)
     throw new Error(
-      'BLAT server returned an unexpected HTML response instead of JSON',
+      message
+        ? `BLAT server error: ${message}`
+        : 'BLAT server returned an unexpected HTML response instead of JSON',
     )
   }
   const data = JSON.parse(text) as BlatJsonResponse

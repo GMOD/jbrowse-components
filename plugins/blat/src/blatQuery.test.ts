@@ -1,4 +1,11 @@
-import { pslToFeatures } from './blatQuery.ts'
+import {
+  buildBlatBody,
+  fastaRecordCount,
+  parseBlatResponse,
+  pslToFeatures,
+  queryLabel,
+  stripFasta,
+} from './blatQuery.ts'
 
 // real shape of a UCSC hgBlat output=json response
 const response = {
@@ -77,10 +84,11 @@ const response = {
   ],
 }
 
+const byRefName = (refName: string) =>
+  pslToFeatures(response).find(f => f.refName === refName)!
+
 test('parses a single-block PSL hit', () => {
-  const features = pslToFeatures(response)
-  const f = features[0]!
-  expect(f.refName).toBe('chr6')
+  const f = byRefName('chr6')
   expect(f.start).toBe(34345901)
   expect(f.end).toBe(34346047)
   expect(f.strand).toBe(1)
@@ -93,9 +101,7 @@ test('parses a single-block PSL hit', () => {
 })
 
 test('parses a multi-block hit with trailing-comma block lists', () => {
-  const features = pslToFeatures(response)
-  const f = features[1]!
-  expect(f.refName).toBe('chr17')
+  const f = byRefName('chr17')
   expect(f.strand).toBe(-1)
   expect(f.subfeatures).toHaveLength(3)
   expect(f.subfeatures!.map(s => [s.start, s.end])).toEqual([
@@ -105,9 +111,69 @@ test('parses a multi-block hit with trailing-comma block lists', () => {
   ])
 })
 
-test('computes percent identity into the name', () => {
-  const [f] = pslToFeatures(response)
-  // 133 matches / (133 + 13) = 91.1%
-  expect(f!.name).toBe('YourSeq 91.1%')
-  expect(f!.identity).toBe(91.1)
+// the leading feature is the one the view navigates to, so the order is part of
+// the contract, not a presentational detail
+test('orders hits best-first by kent pslScore', () => {
+  const features = pslToFeatures(response)
+  // chr17: 140 + 0 - 5 - 1 - 2 = 132 beats chr6: 133 - 13 = 120
+  expect(features.map(f => [f.refName, f.score])).toEqual([
+    ['chr17', 132],
+    ['chr6', 120],
+  ])
+})
+
+test('computes UCSC percent identity into the name', () => {
+  const f = byRefName('chr6')
+  // milliBad = 1000 * 13 misMatches / 146 aligned = 89 -> 100 - 8.9
+  expect(f.name).toBe('YourSeq 91.1%')
+  expect(f.identity).toBe(91.1)
+})
+
+test('charges query inserts against identity, not target span', () => {
+  const f = byRefName('chr17')
+  // the 282bp target span is an intron rather than a penalty; the single query
+  // insert is the only charge: 1000 * (5 + 1) / 145 = 41 -> 100 - 4.1
+  expect(f.identity).toBe(95.9)
+})
+
+test('reports query coverage alongside identity', () => {
+  expect(byRefName('chr6').coverage).toBe(99.3)
+  expect(byRefName('chr6').queryName).toBe('YourSeq')
+})
+
+test('surfaces a kent errAbort message from an HTML error page', () => {
+  expect(() =>
+    parseBlatResponse(
+      "<html><body><pre>Error: Can't find database volvox</pre></body></html>",
+    ),
+  ).toThrow("Can't find database volvox")
+})
+
+const multiFasta =
+  '>probeA\nACGTACGTACGTACGTACGT\n>probeB\nTTTTGGGGCCCCAAAATTTT\n'
+
+// stripping the headers and joining would submit one 40bp chimera and lose the
+// record names, so every hit would come back as an unattributable "YourSeq"
+test('submits FASTA verbatim rather than a concatenated sequence', () => {
+  const body = new URLSearchParams(
+    buildBlatBody({ db: 'hg38', seq: multiFasta }),
+  )
+  expect(body.get('userSeq')).toBe(multiFasta)
+  expect(fastaRecordCount(multiFasta)).toBe(2)
+})
+
+test('counts a bare sequence as one query', () => {
+  expect(fastaRecordCount('ACGTACGTACGTACGTACGT')).toBe(1)
+})
+
+test('measures residues without the headers', () => {
+  expect(stripFasta(multiFasta)).toHaveLength(40)
+})
+
+test('names the track after the first FASTA record', () => {
+  expect(queryLabel(multiFasta)).toBe('probeA')
+})
+
+test('names the track after the leading bases of a bare sequence', () => {
+  expect(queryLabel('ACGTACGTACGTACGTACGT')).toBe('ACGTACGTACGT…')
 })
