@@ -1262,23 +1262,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-section renderer input, in stacking order. One entry per group
-         * (the single key '' when ungrouped). Pairs each group's laid-out
-         * region map with its key so the renderers can namespace HAL region
-         * keys per section. Parallel to `renderState.sections`.
-         */
-        get sourceSections() {
-          const arcsByGroup = this.arcsByGroup
-          return this.groupOrder.map(({ key }) => ({
-            groupKey: key,
-            laidOutPileupMap: this.groupLaidOutMap(key),
-            arcsRpcDataMap:
-              arcsByGroup.get(key) ?? new Map<number, ArcsUploadData>(),
-          }))
-        },
-
-        /**
-         * #getter
          * Row count of the primary group across its regions. This reads only the
          * first group (`laidOutPileupMap`), so it is meaningful only on the
          * single-section/ungrouped path. Grouped layout sizes each section from its
@@ -1563,6 +1546,31 @@ export default function stateModelFactory(
             // the arc-resize handle can anchor per group like coverage/pileup.
             sashimiBandTop: sec.sashimiBandTop,
             pileupHeight: sec.pileupHeight,
+          }))
+        },
+
+        /**
+         * #getter
+         * Per-section upload input, in stacking order: each section's laid-out
+         * region map + arc feed, keyed by group so the renderers can namespace HAL
+         * region keys per section.
+         *
+         * Both renderers pair the uploaded section `s` with the drawn section `s`
+         * by INDEX (`sectionRegionKey(s, regionIdx)`), so this list and
+         * `renderState.sections` must have the same length and order. Both now
+         * derive from `sections`, making that structural — deriving this one from
+         * `groupOrder` instead let the two disagree whenever `sections` synthesized
+         * its no-data section (0 uploaded vs 1 drawn), which happens on an empty
+         * grouped fetch. That mismatch was benign only because the per-section
+         * region lookup missed and the draw skipped.
+         */
+        get sourceSections() {
+          const arcsByGroup = self.arcsByGroup
+          return this.renderSections.map(({ groupKey, laidOutPileupMap }) => ({
+            groupKey,
+            laidOutPileupMap,
+            arcsRpcDataMap:
+              arcsByGroup.get(groupKey) ?? new Map<number, ArcsUploadData>(),
           }))
         },
 
