@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -33,12 +33,12 @@ export default function SharedModelF(
         windowSize: number
         windowDelta: number
       }) {
-        self.configuration.setSlot('windowSize', windowSize)
-        self.configuration.setSlot('windowDelta', windowDelta)
+        setConf(self, 'windowSize', windowSize)
+        setConf(self, 'windowDelta', windowDelta)
         self.reload()
       },
       setGCMode(mode: 'content' | 'skew') {
-        self.configuration.setSlot('gcMode', mode)
+        setConf(self, 'gcMode', mode)
         self.reload()
       },
     }))
