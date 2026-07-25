@@ -19,11 +19,13 @@ matrix, with subpixel column alpha-scaling for anti-aliased parity.
 | Member                                                                   | Kind       | Defined by                                                    | Description                                                                                                                                                                                                                                                       |
 | ------------------------------------------------------------------------ | ---------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [type](#property-type)                                                   | Properties | LinearMultiSampleVariantMatrixDisplay                         |                                                                                                                                                                                                                                                                   |
-| [lineZoneHeight](#property-linezoneheight)                               | Properties | LinearMultiSampleVariantMatrixDisplay                         |                                                                                                                                                                                                                                                                   |
 | [flipped](#getter-flipped)                                               | Getters    | LinearMultiSampleVariantMatrixDisplay                         | True when every visible region is reversed (the view is horizontally flipped).                                                                                                                                                                                    |
 | [blockType](#getter-blocktype)                                           | Getters    | LinearMultiSampleVariantMatrixDisplay                         |                                                                                                                                                                                                                                                                   |
 | [prefersOffset](#getter-prefersoffset)                                   | Getters    | LinearMultiSampleVariantMatrixDisplay                         |                                                                                                                                                                                                                                                                   |
 | [renderState](#getter-renderstate)                                       | Getters    | LinearMultiSampleVariantMatrixDisplay                         | Per-frame render state for the GPU backend — the autorun reads this every time any tracked observable (cellData, scrollTop, rowHeight, canvas width, …) changes.                                                                                                  |
+| [columnGeometry](#getter-columngeometry)                                 | Getters    | LinearMultiSampleVariantMatrixDisplay                         | Column pitch and origin of the matrix in viewport pixels: `left` is where the content starts when it doesn't reach the left viewport edge (offsetPx < 0), `columnWidth` the per-column width the canvas lays out at.                                              |
+| [connectorLineCoords](#getter-connectorlinecoords)                       | Getters    | LinearMultiSampleVariantMatrixDisplay                         | The connector lines tying each matrix column to its feature's genomic position, in viewport pixels, plus the label the hover tooltip shows.                                                                                                                       |
+| [connectorLineAtScreenX](#method-connectorlineatscreenx)                 | Methods    | LinearMultiSampleVariantMatrixDisplay                         | The connector for the column under `screenX` (the crosshair), or undefined off the ends.                                                                                                                                                                          |
 | [renderSvg](#method-rendersvg)                                           | Methods    | LinearMultiSampleVariantMatrixDisplay                         |                                                                                                                                                                                                                                                                   |
 | [setLineZoneHeight](#action-setlinezoneheight)                           | Actions    | LinearMultiSampleVariantMatrixDisplay                         |                                                                                                                                                                                                                                                                   |
 | [startRenderingBackend](#action-startrenderingbackend)                   | Actions    | LinearMultiSampleVariantMatrixDisplay                         |                                                                                                                                                                                                                                                                   |
@@ -50,6 +52,7 @@ matrix, with subpixel column alpha-scaling for anti-aliased parity.
 | [svTypeColors](#getter-svtypecolors)                                     | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | The color assigned to each present SV type, built in the worker so the legend swatches match the painted cells (drives the "SV type" legend section).                                                                                                             |
 | [sampleInfo](#getter-sampleinfo)                                         | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
 | [renderingMode](#getter-renderingmode)                                   | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Returns the rendering mode config slot value                                                                                                                                                                                                                      |
+| [lineZoneHeight](#getter-linezoneheight)                                 | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Height of the connector-line zone above the rows; 0 for a display that draws variants at their genomic positions and needs no connectors.                                                                                                                         |
 | [colorBy](#getter-colorby)                                               | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | The effective sample-grouping attribute (config default or runtime override).                                                                                                                                                                                     |
 | [groupBy](#getter-groupby)                                               | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Sample-metadata attribute the rows are grouped (reordered) by; '' leaves the existing order alone.                                                                                                                                                                |
 | [featureColor](#getter-featurecolor)                                     | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Optional per-variant cell color (jexl string or CSS color) applied to alt-carrying cells; '' means default genotype coloring.                                                                                                                                     |
@@ -229,10 +232,9 @@ The configuration slots for this model are documented on its
 <details>
 <summary>LinearMultiSampleVariantMatrixDisplay - Properties</summary>
 
-| Member                                                   | Type                                                   |
-| -------------------------------------------------------- | ------------------------------------------------------ |
-| <span id="property-type">type</span>                     | `ISimpleType<"LinearMultiSampleVariantMatrixDisplay">` |
-| <span id="property-linezoneheight">lineZoneHeight</span> | `IOptionalIType<ISimpleType<number>, [undefined]>`     |
+| Member                               | Type                                                   |
+| ------------------------------------ | ------------------------------------------------------ |
+| <span id="property-type">type</span> | `ISimpleType<"LinearMultiSampleVariantMatrixDisplay">` |
 
 </details>
 
@@ -267,6 +269,29 @@ type renderState = {
 }
 ```
 
+#### getter: columnGeometry
+
+Column pitch and origin of the matrix in viewport pixels: `left` is where the
+content starts when it doesn't reach the left viewport edge (offsetPx < 0),
+`columnWidth` the per-column width the canvas lays out at. The connector lines,
+their hit-test, and the crosshair column all key off this so
+columns/lines/clicks stay pixel-aligned.
+
+```ts
+type columnGeometry = { n: number; columnWidth: number; left: number }
+```
+
+#### getter: connectorLineCoords
+
+The connector lines tying each matrix column to its feature's genomic position,
+in viewport pixels, plus the label the hover tooltip shows. A feature whose
+refName has left the view has no genomic x and is dropped rather than pinned to
+the left edge.
+
+```ts
+type connectorLineCoords = ConnectorCoord[]
+```
+
 </details>
 
 <details>
@@ -282,6 +307,21 @@ type renderState = {
 <details>
 <summary>LinearMultiSampleVariantMatrixDisplay - Methods</summary>
 
+#### method: connectorLineAtScreenX
+
+The connector for the column under `screenX` (the crosshair), or undefined off
+the ends. crosshairX picks a _screen_ column, so mirror it back to the data
+index — on a flipped view the feature drawn there is not the one at that index.
+
+```ts
+type connectorLineAtScreenX = (screenX: number) => ConnectorCoord | undefined
+```
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantMatrixDisplay - Methods (other undocumented members)</summary>
+
 | Member                                       | Type                                                                                                                                                         |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | <span id="method-rendersvg">renderSvg</span> | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
@@ -293,7 +333,7 @@ type renderState = {
 
 | Member                                                               | Type                                               |
 | -------------------------------------------------------------------- | -------------------------------------------------- |
-| <span id="action-setlinezoneheight">setLineZoneHeight</span>         | `(n: number) => number`                            |
+| <span id="action-setlinezoneheight">setLineZoneHeight</span>         | `(n: number) => void`                              |
 | <span id="action-startrenderingbackend">startRenderingBackend</span> | `(backend: VariantMatrixRenderingBackend) => void` |
 
 </details>
@@ -435,6 +475,19 @@ Returns the rendering mode config slot value
 
 ```ts
 type renderingMode = string
+```
+
+#### getter: lineZoneHeight
+
+Height of the connector-line zone above the rows; 0 for a display that draws
+variants at their genomic positions and needs no connectors. On the config
+rather than a bespoke property for the same reason `height` is (see
+TrackHeightMixin): a drag-resize outlives the display instance, so unticking and
+reticking the track keeps the zone the user set. LD declares the same slot and
+the same clamped `setConf` setter.
+
+```ts
+type lineZoneHeight = number
 ```
 
 #### getter: colorBy

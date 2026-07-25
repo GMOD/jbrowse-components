@@ -31,10 +31,11 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [referenceDrawingMode](#slot-referencedrawingmode) | `stringEnum` (draw, skip)          | A 'draw'/'skip' toggle for reference alleles, settable independent of showReferenceAlleles (the admin-config-only starting default).                                                                                                                                             |
 
 <details>
-<summary>Advanced slots (2)</summary>
+<summary>Advanced slots (3)</summary>
 
 | Slot                                                           | Type     | Description                                                                                                |
 | -------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| [lineZoneHeight](#slot-linezoneheight)                         | `number` | Height of the zone above the rows holding the lines that tie each matrix column to its genomic position.   |
 | [minorAlleleFrequencyFilter](#slot-minorallelefrequencyfilter) | `number` | Hide variants whose minor allele frequency is below this threshold                                         |
 | [maxMissingnessFilter](#slot-maxmissingnessfilter)             | `number` | Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant |
 
@@ -59,6 +60,16 @@ Show the per-sample row labels in the sidebar
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`
+
+#### slot: lineZoneHeight
+
+Height of the zone above the rows holding the lines that tie each matrix column
+to its genomic position. 0 (the default here) means no zone at all — only the
+matrix display, which lays columns out by feature index rather than at their
+genomic positions, raises it.
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
+_advanced_
 
 #### slot: showTree
 

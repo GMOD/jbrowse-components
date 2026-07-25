@@ -113,11 +113,29 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [height](#slot-height) | `number` |             |
 
 <details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                   | Type     | Description                                                                                                                                                            |
+| -------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [lineZoneHeight](#slot-linezoneheight) | `number` | Raises the shared slot's 0 default: this display lays columns out by feature index, so it needs the zone for the lines tying each column back to its genomic position. |
+
+</details>
+
+<details>
 <summary>LinearMultiSampleVariantMatrixDisplay - Slots</summary>
 
 #### slot: height
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
+
+#### slot: lineZoneHeight
+
+Raises the shared slot's 0 default: this display lays columns out by feature
+index, so it needs the zone for the lines tying each column back to its genomic
+position. Drag-resizable, like `height`.
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `20`
+· _advanced_
 
 </details>
 

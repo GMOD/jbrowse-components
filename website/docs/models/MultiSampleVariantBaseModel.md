@@ -50,7 +50,6 @@ displays: [
 | [configuration](#property-configuration)                                 | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                   |
 | [rowHeight](#property-rowheight)                                         | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                   |
 | [jexlFilters](#property-jexlfilters)                                     | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                   |
-| [lineZoneHeight](#property-linezoneheight)                               | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                   |
 | [runClustering](#property-runclustering)                                 | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                   |
 | [showLegend](#volatile-showlegend)                                       | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                   |
 | [dismissedLegendSections](#volatile-dismissedlegendsections)             | Volatiles  | MultiSampleVariantBaseModel                           | Ids of legend sections the user has individually closed (e.g. 'genotypes' / 'group'); reset when the whole legend is re-shown.                                                                                                                                    |
@@ -71,6 +70,7 @@ displays: [
 | [svTypeColors](#getter-svtypecolors)                                     | Getters    | MultiSampleVariantBaseModel                           | The color assigned to each present SV type, built in the worker so the legend swatches match the painted cells (drives the "SV type" legend section).                                                                                                             |
 | [sampleInfo](#getter-sampleinfo)                                         | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                   |
 | [renderingMode](#getter-renderingmode)                                   | Getters    | MultiSampleVariantBaseModel                           | Returns the rendering mode config slot value                                                                                                                                                                                                                      |
+| [lineZoneHeight](#getter-linezoneheight)                                 | Getters    | MultiSampleVariantBaseModel                           | Height of the connector-line zone above the rows; 0 for a display that draws variants at their genomic positions and needs no connectors.                                                                                                                         |
 | [colorBy](#getter-colorby)                                               | Getters    | MultiSampleVariantBaseModel                           | The effective sample-grouping attribute (config default or runtime override).                                                                                                                                                                                     |
 | [groupBy](#getter-groupby)                                               | Getters    | MultiSampleVariantBaseModel                           | Sample-metadata attribute the rows are grouped (reordered) by; '' leaves the existing order alone.                                                                                                                                                                |
 | [featureColor](#getter-featurecolor)                                     | Getters    | MultiSampleVariantBaseModel                           | Optional per-variant cell color (jexl string or CSS color) applied to alt-carrying cells; '' means default genotype coloring.                                                                                                                                     |
@@ -245,14 +245,13 @@ displays: [
 <details>
 <summary>MultiSampleVariantBaseModel - Properties</summary>
 
-| Member                                                   | Type                                                                   |
-| -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| <span id="property-type">type</span>                     | `ISimpleType<string>`                                                  |
-| <span id="property-configuration">configuration</span>   | `IConfigurationReference<ConfigurationSchemaType<…>>`                  |
-| <span id="property-rowheight">rowHeight</span>           | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
-| <span id="property-jexlfilters">jexlFilters</span>       | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
-| <span id="property-linezoneheight">lineZoneHeight</span> | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
-| <span id="property-runclustering">runClustering</span>   | `IMaybe<ISimpleType<boolean>>`                                         |
+| Member                                                 | Type                                                                   |
+| ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| <span id="property-type">type</span>                   | `ISimpleType<string>`                                                  |
+| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>`                  |
+| <span id="property-rowheight">rowHeight</span>         | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
+| <span id="property-jexlfilters">jexlFilters</span>     | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
+| <span id="property-runclustering">runClustering</span> | `IMaybe<ISimpleType<boolean>>`                                         |
 
 </details>
 
@@ -382,6 +381,19 @@ Returns the rendering mode config slot value
 
 ```ts
 type renderingMode = string
+```
+
+#### getter: lineZoneHeight
+
+Height of the connector-line zone above the rows; 0 for a display that draws
+variants at their genomic positions and needs no connectors. On the config
+rather than a bespoke property for the same reason `height` is (see
+TrackHeightMixin): a drag-resize outlives the display instance, so unticking and
+reticking the track keeps the zone the user set. LD declares the same slot and
+the same clamped `setConf` setter.
+
+```ts
+type lineZoneHeight = number
 ```
 
 #### getter: colorBy

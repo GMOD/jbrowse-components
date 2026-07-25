@@ -55,6 +55,7 @@ Shared state model for LD displays
 | [yScalar](#getter-yscalar)                                             | Getters    | SharedLDModel                                             | Per-frame yScalar squash factor.                                                                                                                                                                                                                                     |
 | [renderTransform](#getter-rendertransform)                             | Getters    | SharedLDModel                                             | Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test, and the matrix→genomic-position SVG lines.                                                                                                                                            |
 | [renderState](#getter-renderstate)                                     | Getters    | SharedLDModel                                             | Per-frame render state for the GPU backend.                                                                                                                                                                                                                          |
+| [connectorLineCoords](#getter-connectorlinecoords)                     | Getters    | SharedLDModel                                             | The connector lines tying each matrix column to its SNP's genomic position, in viewport pixels, plus the label the hover tooltip and `VariantLabels` show.                                                                                                           |
 | [rpcProps](#method-rpcprops)                                           | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                      |
 | [hitTest](#method-hittest)                                             | Methods    | SharedLDModel                                             | Inverse of `renderTransform` for the LD matrix: takes mouse coords (canvas-relative) and returns the LD cell under the cursor, or undefined.                                                                                                                         |
 | [filterMenuItems](#method-filtermenuitems)                             | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                      |
@@ -320,6 +321,17 @@ model.fitToHeight, rpcData contents, …) re-fires it.
 
 ```ts
 type renderState = LDRenderState
+```
+
+#### getter: connectorLineCoords
+
+The connector lines tying each matrix column to its SNP's genomic position, in
+viewport pixels, plus the label the hover tooltip and `VariantLabels` show. Only
+meaningful in index mode (genomic-positions mode already draws columns at their
+genomic x).
+
+```ts
+type connectorLineCoords = ConnectorCoord[]
 ```
 
 </details>

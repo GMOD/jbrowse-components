@@ -151,6 +151,16 @@ Show the per-sample row labels in the sidebar
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`
 
+#### slot: lineZoneHeight
+
+Height of the zone above the rows holding the lines that tie each matrix column
+to its genomic position. 0 (the default here) means no zone at all — only the
+matrix display, which lays columns out by feature index rather than at their
+genomic positions, raises it.
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
+_advanced_
+
 #### slot: showTree
 
 Show the sample clustering tree in the sidebar
