@@ -62,10 +62,20 @@ in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$
 # NCTC86 is GCF_002007705.1 (NZ_CP019778.1, 5,111,920 bp), the assembly the
 # hosted demo was built from; GCF_003697165.2 is a different deposit of the same
 # isolate (ATCC 11775, 4,903,501 bp) and would not line up with it.
+#
+# The download cache is keyed on the ACCESSION, not on the strain name, and the
+# unzip target is wiped first. Both matter: with a plain "$strain.zip" cache, an
+# edit to the table below is silently ignored on any machine that already ran
+# the script, and the stale accession's directory survives under
+# ncbi_dataset/data/ where the *.fna glob picks it up alongside the new one.
+# That is how jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_ava.pif.gz came to
+# carry the 4,903,501 bp NCTC86 while every assembly beside it is 5,111,920.
 while read -r strain acc; do
-  [ -f "$strain.zip" ] || datasets download genome accession "$acc" \
-    --include genome,gff3 --filename "$strain.zip"
-  unzip -o "$strain.zip" -d "$strain" >/dev/null
+  zip="$strain.$acc.zip"
+  [ -f "$zip" ] || datasets download genome accession "$acc" \
+    --include genome,gff3 --filename "$zip"
+  rm -rf "$strain"
+  unzip -o "$zip" -d "$strain" >/dev/null
   awk '/^>/{n++; if (n == 1) print ">chr"; next} n == 1' \
     "$strain"/ncbi_dataset/data/*/*.fna > "$strain.fa"
 done <<'STRAINS_TBL'

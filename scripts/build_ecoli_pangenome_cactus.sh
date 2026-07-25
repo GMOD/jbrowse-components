@@ -54,10 +54,19 @@ in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data --
 # NCTC86 is GCF_002007705.1 (NZ_CP019778.1, 5,111,920 bp), the assembly the
 # hosted demo was built from; GCF_003697165.2 is a different deposit of the same
 # isolate (ATCC 11775, 4,903,501 bp) and would not line up with it.
+#
+# The cache is keyed on the ACCESSION and the unzip target is wiped first, so an
+# edit to the table below takes effect on a machine that already ran this.
+# Keyed on the strain name it would not: the old zip wins, and the old
+# accession's directory survives under ncbi_dataset/data/ for the *.fna glob to
+# find. The hosted ecoli_cactus_ava.pif.gz carries the wrong (4,903,501 bp)
+# NCTC86 for exactly that reason and needs a rebuild.
 while read -r strain acc; do
-  [ -f "$strain.zip" ] || datasets download genome accession "$acc" \
-    --include genome,gff3 --filename "$strain.zip"
-  unzip -o "$strain.zip" -d "$strain" >/dev/null
+  zip="$strain.$acc.zip"
+  [ -f "$zip" ] || datasets download genome accession "$acc" \
+    --include genome,gff3 --filename "$zip"
+  rm -rf "$strain"
+  unzip -o "$zip" -d "$strain" >/dev/null
   awk '/^>/{n++; if (n == 1) print ">chr"; next} n == 1' \
     "$strain"/ncbi_dataset/data/*/*.fna > "$strain.fa"
 done <<'STRAINS_TBL'

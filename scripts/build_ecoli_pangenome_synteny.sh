@@ -31,10 +31,18 @@ cd "$OUTDIR"
 # GCF_003697165.2: that is a separate deposit of the same historical isolate
 # (ATCC 11775 / DSM 30083, 4,903,501 bp), so it would not line up with the
 # hosted PAF, PIF or graphs, or with this strain's gene track.
+#
+# The cache is keyed on the ACCESSION and the unzip target is wiped first, so
+# editing the table below actually takes effect on a machine that already ran
+# this. Keyed on the strain name it would not: the old zip wins, and the old
+# accession's directory survives under ncbi_dataset/data/ where the *.fna glob
+# below picks it up next to the new one.
 while read -r strain acc; do
-  [ -f "$strain.zip" ] || datasets download genome accession "$acc" \
-    --include genome,gff3 --filename "$strain.zip"
-  unzip -o "$strain.zip" -d "$strain" >/dev/null
+  zip="$strain.$acc.zip"
+  [ -f "$zip" ] || datasets download genome accession "$acc" \
+    --include genome,gff3 --filename "$zip"
+  rm -rf "$strain"
+  unzip -o "$zip" -d "$strain" >/dev/null
   # keep only the chromosome (the first record; the rest are plasmids) and give
   # it one short name, so every strain row reads `chr` rather than an accession
   awk '/^>/{n++; if (n == 1) print ">chr"; next} n == 1' \
