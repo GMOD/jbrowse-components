@@ -164,3 +164,8 @@ labels will overflow the boxes laid out for them.
 
 No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
 per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
+
+## Genomic w/ full introns is still rendering cds in copy sequence dialog
+
+grey out the genomic coord option instead of hide
+tooltip on verticalguide

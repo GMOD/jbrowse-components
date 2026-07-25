@@ -218,3 +218,27 @@ describe('rotation', () => {
     expect(svg).toContain('matrix(')
   })
 })
+
+describe('text baseline', () => {
+  // The halo pattern (drawPeptides) draws one string through strokeText then
+  // fillText. strokeText used to pin dominant-baseline="auto" while fillText
+  // honored textBaseline, so any non-alphabetic baseline slid the halo off the
+  // letters it backs.
+  test('strokeText and fillText resolve the same baseline', () => {
+    const ctx = new SvgCanvas()
+    ctx.textBaseline = 'middle'
+    ctx.strokeText('A', 0, 0)
+    ctx.fillText('A', 0, 0)
+
+    const baselines = [
+      ...ctx.getSerializedSvg().matchAll(/dominant-baseline="([^"]*)"/g),
+    ].map(m => m[1])
+    expect(baselines).toEqual(['middle', 'middle'])
+  })
+
+  test('the default alphabetic baseline emits auto', () => {
+    const ctx = new SvgCanvas()
+    ctx.strokeText('A', 0, 0)
+    expect(ctx.getSerializedSvg()).toContain('dominant-baseline="auto"')
+  })
+})

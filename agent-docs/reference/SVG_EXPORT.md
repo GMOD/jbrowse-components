@@ -85,7 +85,7 @@ sync body that paints. One file learned, all twelve known.
 export async function renderSvg(model, opts?) {
   await awaitSvgReady(model)
   const view = getContainingView(model) as LGV
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}

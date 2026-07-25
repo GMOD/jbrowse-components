@@ -98,9 +98,14 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
+       * both halves of a chord render: the features, and the refName map that
+       * translates the adapter's names to the assembly's. `blocksForRefs` falls
+       * back to untranslated names while the map is in flight, so an export that
+       * only waited on features could capture a figure with every chord silently
+       * dropped (whenever the adapter names differ, e.g. `1` vs `chr1`).
        */
       get ready() {
-        return self.features !== undefined
+        return self.features !== undefined && self.refNameMap !== undefined
       },
 
       /**
@@ -111,8 +116,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * `<DisplayError>` error UI instead of `SvgChrome`, but they run the same
        * shared `computeSvgReady` policy and await it via the shared
        * `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state, and a
-       * chord fetch covers the whole view at once, so `ready` (features
-       * arrived) is the whole freshness axis.
+       * chord fetch covers the whole view at once, so `ready` (features and
+       * refName map arrived) is the whole freshness axis.
        */
       get svgReady() {
         return computeSvgReady(

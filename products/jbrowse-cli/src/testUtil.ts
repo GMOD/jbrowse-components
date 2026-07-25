@@ -178,7 +178,9 @@ export async function openWebStream(filePath: string) {
 
 type MockFetchHandler =
   | MockFetchResponse
-  | ((url: string) => MockFetchResponse | Promise<MockFetchResponse> | undefined)
+  | ((
+      url: string,
+    ) => MockFetchResponse | Promise<MockFetchResponse> | undefined)
 
 async function resolveMock(handler: MockFetchHandler, urlStr: string) {
   const response =

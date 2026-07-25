@@ -8,7 +8,7 @@ import type { ChordDisplayModel } from '../../ChordRenderer/types.ts'
 export async function renderSvg(display: ChordDisplayModel) {
   await awaitSvgReady(display)
   return display.error ? (
-    <DisplayError model={display} radius={display.radiusPx} />
+    <DisplayError model={display} />
   ) : display.features ? (
     <SVChordsReactComponent display={display} />
   ) : null

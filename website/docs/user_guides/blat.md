@@ -73,10 +73,10 @@ options as BLAT search.
 
 Predicted amplicons arrive the same way BLAT hits do, as a track with the view
 navigated to the first product and the same **Search results** panel listing
-every product with its size and primer pair. Each amplicon feature spans the whole product
-and is named by its size, with the forward and reverse primer footprints as
-labelled subfeatures at either end, so you can see which primer sits where on
-both strands.
+every product with its size and primer pair. Each amplicon feature spans the
+whole product and is named by its size, with the forward and reverse primer
+footprints as labelled subfeatures at either end, so you can see which primer
+sits where on both strands.
 
 <Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19. Forward and reverse primer fields with a max product size, sharing the same assembly picker and advanced apiKey/proxy options as BLAT search."/>
 

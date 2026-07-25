@@ -24,6 +24,7 @@ export interface Block {
 
 export interface ChordDisplayModel {
   error: unknown
+  view: { offsetRadians: number }
   ready: boolean
   svgReady: boolean
   features: Feature[] | undefined

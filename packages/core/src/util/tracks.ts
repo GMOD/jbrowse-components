@@ -50,7 +50,8 @@ export function getTrackAssemblyNames(
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
-    string[] | undefined
+    | string[]
+    | undefined
   if (!trackAssemblyNames) {
     const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
       conf,
@@ -520,7 +521,8 @@ export function generateUnknownTrackConf(
 
 export function getTrackName(
   conf:
-    AnyConfigurationModel | { name?: string; type?: string; trackId?: string },
+    | AnyConfigurationModel
+    | { name?: string; type?: string; trackId?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
   const isMst = isStateTreeNode(conf)

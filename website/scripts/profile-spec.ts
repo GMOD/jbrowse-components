@@ -162,11 +162,13 @@ function attachWorkerProbes(page: Page, probes: Probe[], reqs: Req[]) {
         collectNetworkInto(session, reqs)
       })
       .catch(() => {})
-    void startProbe(session, `worker:${path.basename(worker.url())}`).then(p => {
-      if (p) {
-        probes.push(p)
-      }
-    })
+    void startProbe(session, `worker:${path.basename(worker.url())}`).then(
+      p => {
+        if (p) {
+          probes.push(p)
+        }
+      },
+    )
   })
 }
 

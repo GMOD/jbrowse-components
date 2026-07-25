@@ -1,10 +1,10 @@
-import { radToDeg } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
+import { radToDeg } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material/styles'
 import { render } from '@testing-library/react'
 
-import Ruler from './Ruler.tsx'
 import { Slice } from '../slices.ts'
+import Ruler from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
 
@@ -55,7 +55,7 @@ describe.each(Object.entries(widths))('%s labels', (_name, widthRadians) => {
     // vertical on screen (where neither orientation is upside-down)
     const angles = Array.from(
       { length: 24 },
-      (_, i) => (((i + 0.5) / 24) * 2 * Math.PI),
+      (_, i) => ((i + 0.5) / 24) * 2 * Math.PI,
     )
 
     for (const radians of angles) {

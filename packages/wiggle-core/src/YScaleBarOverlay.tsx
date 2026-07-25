@@ -1,5 +1,5 @@
-import { ONSCREEN_AXIS_LEFT_PX } from './constants.ts'
 import YScaleBar from './YScaleBar.tsx'
+import { ONSCREEN_AXIS_LEFT_PX } from './constants.ts'
 
 import type { YScaleTicks } from './index.ts'
 

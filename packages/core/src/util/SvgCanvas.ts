@@ -435,27 +435,31 @@ export class SvgCanvas {
     }
   }
 
+  // Shared by fillText and strokeText: the halo pattern draws the same string
+  // twice through both, so they must resolve the baseline identically — with
+  // strokeText pinned to "auto" a non-alphabetic textBaseline slid the halo off
+  // the letters it is meant to back.
+  private dominantBaseline() {
+    return this.textBaseline === 'middle'
+      ? 'middle'
+      : this.textBaseline === 'top' || this.textBaseline === 'hanging'
+        ? 'hanging'
+        : 'auto'
+  }
+
   fillText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
-    const anchor = this.textAnchor()
-    const baseline =
-      this.textBaseline === 'middle'
-        ? 'middle'
-        : this.textBaseline === 'top' || this.textBaseline === 'hanging'
-          ? 'hanging'
-          : 'auto'
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font)} text-anchor="${anchor}" dominant-baseline="${baseline}">${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
     )
   }
 
   strokeText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
-    const anchor = this.textAnchor()
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${anchor}">${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
     )
   }
 

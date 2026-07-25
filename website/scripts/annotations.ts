@@ -161,7 +161,9 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       // at a menu item / button without a testid).
       function domRect(anchor: NonNullable<Anchor>): Rect | undefined {
         if (anchor.selector) {
-          return document.querySelector(anchor.selector)?.getBoundingClientRect()
+          return document
+            .querySelector(anchor.selector)
+            ?.getBoundingClientRect()
         }
         if (anchor.text) {
           const want = anchor.text.trim().toLowerCase()

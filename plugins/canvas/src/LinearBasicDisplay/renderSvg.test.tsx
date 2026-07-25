@@ -357,4 +357,80 @@ describe('renderSvg', () => {
     expect(top).toContain('<rect x="80" y="0"')
     expect(scrolled).toContain('<rect x="80" y="-30"')
   })
+
+  // The DOM overlay positions a label div by its TOP at labelY with
+  // line-height 1; canvas fillText takes the baseline, so the export converts
+  // through LABEL_BASELINE_RATIO. Drawing at labelY + fontSize (the box bottom)
+  // instead put every exported label ~1.8px below where the screen shows it.
+  it('places label text on the same baseline the DOM overlay uses', async () => {
+    const data = makeFeatureData({
+      ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
+      flatbushItems: [
+        makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
+      ],
+      floatingLabelsData: {
+        f0: {
+          featureId: 'f0',
+          minX: 1400,
+          maxX: 1600,
+          topY: 0,
+          featureHeight: 10,
+          nameLabel: {
+            text: 'GENE1',
+            relativeY: 0,
+            color: '#000',
+            textWidth: 40,
+          },
+        },
+      },
+      featureCount: 1,
+    })
+    const html = renderResult(
+      await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
+    )
+    // labelY = featureBottom(10) + relativeY(0) + LABEL_TOP_GAP_PX(2) = 12,
+    // baseline = round(12 + 11 * 0.84) = 21
+    expect(html).toContain('y="21"')
+    expect(html).toContain('GENE1')
+  })
+
+  // A feature ending exactly at the region start is the normal shape at a
+  // displayed-region boundary: it is drawn entirely in the previous region and
+  // contributes no pixels here. The on-screen overlay drops it (overlayItemRect
+  // returns undefined); the export used to box it anyway, and the box's
+  // reserved label width then painted a wide phantom stripe at this region's
+  // left edge — inside the block scissor, so nothing clipped it away.
+  it('draws no highlight box for a feature that only touches the region edge', async () => {
+    const data = makeFeatureData({
+      ...packFixtureRects([{ startBp: 800, endBp: 1000 }]),
+      flatbushItems: [
+        makeFlatbushItem({ featureId: 'f0', startBp: 800, endBp: 1000 }),
+      ],
+      floatingLabelsData: {
+        f0: {
+          featureId: 'f0',
+          minX: 800,
+          maxX: 1000,
+          topY: 0,
+          featureHeight: 10,
+          nameLabel: {
+            text: 'a-very-long-gene-name',
+            relativeY: 0,
+            color: '#000',
+            textWidth: 500,
+          },
+        },
+      },
+      featureCount: 1,
+    })
+    const html = renderResult(
+      await renderSvg(
+        makeModel({
+          laidOutDataMap: new Map([[0, data]]),
+          highlightedFeatureIdSet: new Set(['f0']),
+        }),
+      ),
+    )
+    expect(html).not.toContain('rgb(255,177,29)')
+  })
 })

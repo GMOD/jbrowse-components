@@ -27,7 +27,6 @@ export interface Layout {
 export type LayoutRecord = [number, number, number, number]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
-  overrideHeight?: number
   theme?: ThemeOptions
   legendWidth?: number
   createCanvas?: (width: number, height: number) => HTMLCanvasElement

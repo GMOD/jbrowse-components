@@ -248,9 +248,23 @@ Write counterpart to `getConf`: sets a slot on a state model that has a
 `configuration.setSlot` cast so mixins whose `self` isn't typed with
 `configuration` don't each re-cast.
 
+**Prefer this over a bare `self.configuration.setSlot('x', v)`.** The constraint
+here mirrors `getConf`'s, so on a model with a concrete schema an unknown slot
+name is a compile error. The raw `setSlot` action takes a plain `string`, and a
+typo there fails _completely silently_: the assignment lands on an undeclared
+property, so nothing throws, nothing persists, and the matching `getConf` read
+keeps returning the default. That is the one config mistake with no diagnostic
+at any layer. `setSlot` itself stays untyped on purpose. The config editor's
+slot facade routes dynamic slot names through it (`configurationSchema.ts`).
+
+A wrong _value_ type still throws at runtime (MST type-checks the assignment)
+rather than at compile time. `value` is deliberately `unknown` because the
+inherit sentinel (`undefined`/`null`) is a legitimate write on every promotable
+slot, which the declared slot value type doesn't include.
+
 ```js
 // type signature
-<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…> | string = ConfigurationSlotName<…>>(model: { ...; }, slotName: SLOT, value: unknown) => void
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…> = ConfigurationSlotName<…>>(model: { ...; }, slotName: SLOT, value: unknown) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)

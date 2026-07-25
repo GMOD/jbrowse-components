@@ -59,7 +59,10 @@ const useStyles = makeStyles()(theme => ({
  *   asked for, so it does not go looking for a better row order.
  */
 type PairStatus =
-  'configured' | 'unfinishedUpload' | 'noTrackAvailable' | 'deliberateNone'
+  | 'configured'
+  | 'unfinishedUpload'
+  | 'noTrackAvailable'
+  | 'deliberateNone'
 
 function pairStatuses(
   model: LinearSyntenyViewModel,

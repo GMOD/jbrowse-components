@@ -51,7 +51,7 @@ export async function renderSvg(
 ) {
   await awaitSvgReady(self)
   const view = getContainingView(self) as LinearGenomeViewModel
-  const height = opts.overrideHeight ?? self.height
+  const height = self.height
   return (
     <SvgChrome
       error={self.error}
@@ -89,6 +89,12 @@ function MultiRowSvgBody({
           paint={ctx => {
             drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, {
               ...self.renderState,
+              // canvasWidth is the block scissor bound, so it has to be the
+              // width this layer is actually painted at. renderState carries
+              // the on-screen view.trackWidthPx (2px narrower for the track
+              // outline the export doesn't draw), which clipped the rightmost
+              // 2px column off the export.
+              canvasWidth: view.width,
               canvasHeight: height,
             })
           }}

@@ -35,7 +35,9 @@ function viewHeight(view: AbstractViewModel) {
 // Two values, not one per render branch: an import form is finished content, not
 // a pending state, so it reports ready like anything else.
 function viewPhase(view: AbstractViewModel) {
-  return 'showLoading' in view && view.showLoading === true ? 'loading' : 'ready'
+  return 'showLoading' in view && view.showLoading === true
+    ? 'loading'
+    : 'ready'
 }
 
 const useStyles = makeStyles()(theme => ({

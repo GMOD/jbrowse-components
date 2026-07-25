@@ -1,7 +1,7 @@
 import { fireEvent, render, within } from '@testing-library/react'
 
-import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 import { SequenceFeatureDetailsF } from '../model.ts'
+import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 

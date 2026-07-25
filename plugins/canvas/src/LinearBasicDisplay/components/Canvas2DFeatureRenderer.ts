@@ -12,7 +12,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import { computeOverlayRect } from './highlightUtils.ts'
+import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 import {
   CHEVRON_H_PX,
@@ -384,55 +384,63 @@ interface HighlightLabelContext {
 function drawHighlightBox(
   ctx: Ctx2D,
   item: HitItemBase,
+  block: BpRegionBounds,
   toX: BpToScreen,
   scrollY: number,
   colors: { border: string; fill: string },
   labelData: FeatureLabelData | undefined,
   labelContext: HighlightLabelContext,
 ) {
-  const x1 = toX(item.startBp)
-  const x2 = toX(item.endBp)
-  const featureWidthPx = Math.abs(x2 - x1)
-  // Reserve the floating-label width for a top-level feature so the box wraps
-  // the glyph AND its label, exactly as the on-screen searchHighlightBox does
-  // (useOverlayElements addFeatureBox/computeExtraWidth). Subfeatures pass no
-  // labelData and get 0, mirroring on-screen where kind !== 'feature' reserves
-  // nothing.
-  const extraWidth = labelData
-    ? computeLabelExtraWidth(
-        labelData,
-        featureWidthPx,
-        labelContext.showLabels,
-        labelContext.showDescriptions,
-        labelContext.fontSize,
-      )
-    : 0
-  // Mirror the on-screen overlay box (useOverlayElements/computeOverlayRect):
-  // 2px outset, top clamped into the content edge; then apply the scroll offset
-  // the on-screen ScrollLockedOverlay applies via its -scrollTop transform.
-  const box = computeOverlayRect(
-    {
-      leftPx: Math.min(x1, x2),
-      topPx: item.topPx,
-      width: featureWidthPx,
-      heightPx: item.bottomPx - item.topPx,
-    },
-    extraWidth,
-    2,
-    2,
-  )
-  const top = box.top - scrollY
-  ctx.fillStyle = colors.fill
-  ctx.fillRect(box.left, top, box.width, box.height)
-  ctx.strokeStyle = colors.border
-  ctx.lineWidth = 1
-  ctx.strokeRect(box.left, top, box.width, box.height)
+  // Region-clamped rect, same helper the on-screen overlay uses
+  // (useOverlayElements/addOverlay). Clamping matters even though the block
+  // scissor is up: a feature that merely TOUCHES this region's edge (the normal
+  // shape at a displayed-region boundary, drawn entirely in the neighbour)
+  // clamps to nothing here, and the reserved label width below would otherwise
+  // inflate it into a phantom stripe inside the scissor.
+  const rect = overlayItemRect(item, block)
+  if (rect) {
+    // Reserve the floating-label width for a top-level feature so the box wraps
+    // the glyph AND its label, exactly as the on-screen searchHighlightBox does
+    // (useOverlayElements addFeatureBox/computeExtraWidth). Measured off the
+    // feature's full width, not the clamped rect, matching computeExtraWidth.
+    // Subfeatures pass no labelData and get 0, mirroring on-screen where
+    // kind !== 'feature' reserves nothing.
+    const extraWidth = labelData
+      ? computeLabelExtraWidth(
+          labelData,
+          Math.abs(toX(item.endBp) - toX(item.startBp)),
+          labelContext.showLabels,
+          labelContext.showDescriptions,
+          labelContext.fontSize,
+        )
+      : 0
+    // Mirror the on-screen overlay box (useOverlayElements/computeOverlayRect):
+    // 2px outset, top clamped into the content edge; then apply the scroll
+    // offset the on-screen ScrollLockedOverlay applies via its -scrollTop
+    // transform.
+    const box = computeOverlayRect(rect, extraWidth, 2, 2)
+    const top = box.top - scrollY
+    ctx.fillStyle = colors.fill
+    ctx.fillRect(box.left, top, box.width, box.height)
+    ctx.strokeStyle = colors.border
+    ctx.lineWidth = 1
+    ctx.strokeRect(box.left, top, box.width, box.height)
+  }
 }
 
 // Vector post-pass for SVG export: box the resolved highlighted features the way
 // the on-screen DOM overlay does (the app canvas doesn't paint these). The
 // resolved id set already picks a top-level feature OR its subfeature, so
 // scanning both arrays and filtering by membership can't double-box.
+//
+// Deliberately the ONLY one of the four on-screen overlay kinds
+// (useHighlightOverlays) that exports. Hover, the in-progress solo collection,
+// and the selection box are all live-session UI: a figure should show the data,
+// not what the user last moused over or clicked, and a feature left selected
+// from opening its details widget would otherwise border every export until the
+// user thought to click empty space. The search highlight is the exception
+// because it is a declarative "point at this feature" request. Don't add the
+// others back without that being an explicit product decision.
 export function drawHighlightBoxes(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, FeatureDataResult>,
@@ -459,6 +467,7 @@ export function drawHighlightBoxes(
           drawHighlightBox(
             ctx,
             item,
+            block,
             toX,
             scrollY,
             colors,
@@ -473,6 +482,7 @@ export function drawHighlightBoxes(
           drawHighlightBox(
             ctx,
             item,
+            block,
             toX,
             scrollY,
             colors,

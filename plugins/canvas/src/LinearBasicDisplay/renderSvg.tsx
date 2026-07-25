@@ -10,7 +10,10 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { useTheme } from '@mui/material'
 
-import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
+import {
+  LABEL_BASELINE_RATIO,
+  renderedTextWidth,
+} from '../RenderFeatureDataRPC/constants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import {
   drawFeatureBlocks,
@@ -65,7 +68,18 @@ function paintLabel(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
       )
     }
     ctx.fillStyle = label.color
-    ctx.fillText(label.text, labelX, labelY + fontSize)
+    // labelY is the label's TOP (the DOM overlay positions the div by it), so
+    // convert to the baseline fillText wants. Alphabetic baseline rather than
+    // ctx.textBaseline = 'top': SvgCanvas maps that to dominant-baseline
+    // "hanging", which downstream SVG consumers (Inkscape, librsvg) place
+    // inconsistently, while an explicit y is portable everywhere. Rounded
+    // because SvgCanvas interpolates coordinates raw — the unrounded product
+    // serializes as y="21.240000000000002" for no visible gain.
+    ctx.fillText(
+      label.text,
+      labelX,
+      Math.round(labelY + fontSize * LABEL_BASELINE_RATIO),
+    )
   }
 }
 
@@ -77,7 +91,7 @@ export async function renderSvg(
   // whole-genome / multi-region exports aren't partially drawn.
   await awaitSvgReady(model)
   const view = getContainingView(model) as LGV
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}
@@ -120,10 +134,15 @@ function CanvasFeaturesSvgBody({
   // exports what's on screen (top viewport) rather than always the track top.
   const scrollY = model.scrollTop
   const renderBlocks = buildRenderBlocks(visibleRegions)
+  // Shared by the geometry pass and the highlight pass, so the boxes can't be
+  // scissored against a different canvas than the glyphs they wrap.
+  const renderState = { scrollY, canvasWidth, canvasHeight: height }
   const highlightColor = theme.palette.highlight.main
   const fontSize = model.labelFontSize
   const colorLegend = model.colorLegend
-  const context = {
+  // One label context for both consumers: the highlight boxes reserve exactly
+  // the label width the label pass then paints.
+  const labelContext = {
     showLabels: model.renderedShowLabels,
     showDescriptions: model.renderedShowDescriptions,
     fontSize,
@@ -140,11 +159,12 @@ function CanvasFeaturesSvgBody({
         height={height}
         opts={opts}
         paint={ctx => {
-          drawFeatureBlocks(ctx, model.laidOutDataMap, renderBlocks, {
-            scrollY,
-            canvasWidth,
-            canvasHeight: height,
-          })
+          drawFeatureBlocks(
+            ctx,
+            model.laidOutDataMap,
+            renderBlocks,
+            renderState,
+          )
         }}
       />
       {/* Highlight boxes are on-screen DOM overlays the app canvas never paints,
@@ -160,13 +180,9 @@ function CanvasFeaturesSvgBody({
             model.laidOutDataMap,
             renderBlocks,
             model.highlightedFeatureIdSet,
-            { scrollY, canvasWidth, canvasHeight: height },
+            renderState,
             highlightBoxColors(highlightColor),
-            {
-              showLabels: model.renderedShowLabels,
-              showDescriptions: model.renderedShowDescriptions,
-              fontSize,
-            },
+            labelContext,
           )
         }}
       />
@@ -184,7 +200,7 @@ function CanvasFeaturesSvgBody({
           forEachDisplayLabel(
             visibleRegions,
             model.laidOutDataMap,
-            context,
+            labelContext,
             (_, labels) => {
               paintLabel(ctx, labels, fontSize)
             },

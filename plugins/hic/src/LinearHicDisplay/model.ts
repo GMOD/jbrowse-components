@@ -248,12 +248,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         return idx === -1 ? 0 : idx
       },
       /**
-       * #method
-       * Vertical squash for an arbitrary display height. Bidirectional fill like
-       * the LD display: dragging taller than the natural triangle height
-       * stretches to fill rather than leaving a blank band below. Sole owner of
-       * the triangle-base width, so the on-screen `yScalar` and the SVG export's
-       * `overrideHeight` variant can't drift apart.
+       * #getter
+       * Vertical squash of the triangle. Bidirectional fill like the LD display:
+       * dragging taller than the natural triangle height stretches to fill
+       * rather than leaving a blank band below.
        *
        * WithoutBorders, because the base is the *content* the worker packed
        * (`regionOffsets` lays contentBlocks out contiguously). `totalWidthPx`
@@ -261,15 +259,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * scrolled left of genome start / past the end, which would overstate the
        * base and leave fit-to-height short of the display.
        */
-      yScalarForHeight(displayHeight: number) {
+      get yScalar() {
         return computeTriangleYScalar({
           fitToHeight: self.fitToHeight,
-          displayHeight,
+          displayHeight: self.height,
           triangleWidth: self.view.totalWidthPxWithoutBorders,
         })
-      },
-      get yScalar() {
-        return this.yScalarForHeight(self.height)
       },
     }))
     .views(self => ({

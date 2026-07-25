@@ -10,12 +10,16 @@ const HatchCircle = observer(function HatchCircle({
   fill,
   hatchColor,
   text,
+  textRotationDeg,
   children,
 }: {
   radius: number
   fill: string
   hatchColor: string
   text: ReactNode
+  // rotation that undoes the enclosing figure rotation, so the message reads
+  // horizontally at any view rotation
+  textRotationDeg: number
   children?: ReactNode
 }) {
   const theme = useTheme()
@@ -45,7 +49,7 @@ const HatchCircle = observer(function HatchCircle({
       <text
         x="0"
         y="0"
-        transform="rotate(90 0 0)"
+        transform={`rotate(${textRotationDeg} 0 0)`}
         dominantBaseline="middle"
         textAnchor="middle"
         fill={theme.palette.text.primary}

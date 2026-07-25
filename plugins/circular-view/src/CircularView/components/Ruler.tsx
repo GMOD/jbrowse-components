@@ -58,7 +58,7 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
   region: SliceElidedRegion
 }) {
   const theme = useTheme()
-  const radiusPx = model.radiusPx + 1
+  const { radiusPx } = model
   const { endRadians, startRadians } = slice
   const widthPx = (endRadians - startRadians) * radiusPx
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
@@ -68,7 +68,7 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
     <>
       <RulerLabel
         text={regionCount}
-        view={model}
+        offsetRadians={model.offsetRadians}
         maxWidthPx={widthPx}
         radians={centerRadians}
         radiusPx={radiusPx}
@@ -77,9 +77,9 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
       />
       <path
         d={arcPath(
-          polarToCartesian(radiusPx, startRadians),
-          polarToCartesian(radiusPx, endRadians),
-          radiusPx,
+          polarToCartesian(radiusPx + 1, startRadians),
+          polarToCartesian(radiusPx + 1, endRadians),
+          radiusPx + 1,
           largeArc,
         )}
         stroke={stripAlpha(theme.palette.text.secondary)}
@@ -92,15 +92,15 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
 })
 
 const RulerLabel = observer(function RulerLabel({
-  view,
+  offsetRadians,
   text,
   maxWidthPx,
   radians,
   radiusPx,
-  title,
+  title = text,
   color,
 }: {
-  view: CircularViewModel
+  offsetRadians: number
   text: string
   maxWidthPx: number
   radiusPx: number
@@ -108,20 +108,27 @@ const RulerLabel = observer(function RulerLabel({
   title?: string
   color: string
 }) {
-  if (!text || maxWidthPx <= 4) {
-    return null
-  }
   const textXY = polarToCartesian(radiusPx + 5, radians)
   const deg = radToDeg(radians)
   const parallel = text.length * 6.5 < maxWidthPx
-  // parallel: text along the ruler arc, centered
-  // perpendicular: text outside the arc, with anchor flipped on the bottom half
-  // so labels stay readable rather than upside-down
-  const upsideDown =
-    !parallel && radToDeg(radians + view.offsetRadians - Math.PI / 2) >= 180
-  const textAnchor = parallel ? 'middle' : upsideDown ? 'start' : 'end'
-  const rotation = parallel ? deg + 90 : upsideDown ? deg : deg + 180
-  return (
+  // the view rotates the whole figure by offsetRadians, so which half of the
+  // screen a label lands on - and therefore which way it has to be flipped to
+  // read right-side-up - depends on that rotation too. cos/sin of the on-screen
+  // angle answer that without normalizing offsetRadians, which grows without
+  // bound as the user rotates.
+  const screenRadians = radians + offsetRadians
+  const rightHalf = Math.cos(screenRadians) > 0
+  const bottomHalf = Math.sin(screenRadians) > 0
+  // parallel: text along the ruler arc, centered, flipped end-for-end on the
+  // bottom half. perpendicular: text radiating outward from the arc, flipped on
+  // the left half. Both flips keep the anchored text outside the arc.
+  const textAnchor = parallel ? 'middle' : rightHalf ? 'start' : 'end'
+  const rotation = parallel
+    ? deg + (bottomHalf ? -90 : 90)
+    : rightHalf
+      ? deg
+      : deg + 180
+  return !text || maxWidthPx <= 4 ? null : (
     <text
       x={0}
       y={0}
@@ -134,7 +141,7 @@ const RulerLabel = observer(function RulerLabel({
       fill={stripAlpha(color)}
     >
       {text}
-      <title>{title || text}</title>
+      <title>{title}</title>
     </text>
   )
 })
@@ -169,7 +176,7 @@ const RegionRulerArc = observer(function RegionRulerArc({
     <>
       <RulerLabel
         text={region.refName}
-        view={model}
+        offsetRadians={model.offsetRadians}
         maxWidthPx={widthPx}
         radians={centerRadians}
         radiusPx={radiusPx}
@@ -197,6 +204,18 @@ const Ruler = observer(function Ruler({
   ) : (
     <RegionRulerArc region={slice.region} model={model} slice={slice} />
   )
+})
+
+// the whole ideogram: shared by the on-screen view and the SVG export so the
+// two can't drift
+export const Rulers = observer(function Rulers({
+  model,
+}: {
+  model: CircularViewModel
+}) {
+  return model.staticSlices.map(slice => (
+    <Ruler key={slice.key} model={model} slice={slice} />
+  ))
 })
 
 export default Ruler

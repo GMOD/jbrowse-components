@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import Controls from './Controls.tsx'
 import ImportForm from './ImportForm.tsx'
-import Ruler from './Ruler.tsx'
+import { Rulers } from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
 
@@ -49,9 +49,7 @@ const Slices = observer(function Slices({
 }) {
   return (
     <>
-      {model.staticSlices.map(slice => (
-        <Ruler key={slice.key} model={model} slice={slice} />
-      ))}
+      <Rulers model={model} />
       {model.tracks.map(track => {
         const display = track.displays[0]
         return (

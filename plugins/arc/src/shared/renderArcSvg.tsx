@@ -6,10 +6,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Bezier-arc-overlay exception (see agent-docs/reference/SVG_EXPORT.md): arc
 // paths render as vector SVG on both the on-screen and export paths so
@@ -20,14 +17,18 @@ import type {
 //
 // Both arc displays export through here — the only difference between them is
 // which <Arcs> paints, so they pass it in.
+//
+// Takes no ExportSvgDisplayOptions: with no paintLayer there is no
+// rasterizeLayers/createCanvas to honor, and the theme arrives through the
+// export root's ThemeProvider. The displays' renderSvg actions still accept
+// opts because the export framework calls them with it.
 export async function renderArcSvg<M extends ArcDisplayModel>(
   model: M,
   Arcs: (props: { model: M; exportSVG?: boolean }) => React.ReactNode,
-  opts?: ExportSvgDisplayOptions,
 ) {
   await awaitSvgReady(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}

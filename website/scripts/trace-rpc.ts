@@ -116,7 +116,7 @@ async function main() {
         if (!listening.has(this)) {
           listening.add(this)
           this.addEventListener('message', e => {
-            record('in', (e as MessageEvent).data)
+            record('in', e.data)
           })
         }
         origPost.apply(this, args)
@@ -216,9 +216,9 @@ async function main() {
     }
     console.log(`total wall ${((Date.now() - t0) / 1000).toFixed(1)}s`)
 
-    const log = (await page.evaluate(
+    const log = await page.evaluate(
       () => (window as unknown as { __rpcLog: RpcEvent[] }).__rpcLog,
-    )) as RpcEvent[]
+    )
 
     // pair each outbound call with its first inbound reply of the same uuid
     const calls: { method: string; start: number; end: number }[] = []
@@ -253,7 +253,9 @@ async function main() {
     }
     console.log(`\nunanswered calls: ${open.size}`)
     for (const [uid, c] of open) {
-      console.log(`  ${c.method} sent at ${(c.start / 1000).toFixed(1)}s (uid ${uid})`)
+      console.log(
+        `  ${c.method} sent at ${(c.start / 1000).toFixed(1)}s (uid ${uid})`,
+      )
     }
     // wall clock with no call in flight at all
     const sorted = [...calls].sort((a, b) => a.start - b.start)
@@ -273,8 +275,7 @@ async function main() {
     for (const { url: wurl, session } of workerSessions) {
       const res = await session
         .send('Runtime.evaluate', {
-          expression:
-            `JSON.stringify({
+          expression: `JSON.stringify({
               syncXhr: globalThis.__xhr,
               fetch: globalThis.__fetch,
               blockedLag: globalThis.__lag,

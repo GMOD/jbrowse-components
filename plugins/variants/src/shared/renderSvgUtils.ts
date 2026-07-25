@@ -1,6 +1,6 @@
+import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { RowColorsModel } from './components/types.ts'
 import type { Source } from './types.ts'
-import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 

@@ -81,7 +81,10 @@ test('returning to the import form drops the cached location', () => {
     uri: 'test.vcf',
     locationType: 'UriLocation',
   })
-  model.displaySpreadsheet({ columns: [{ name: 'CHROM' }], rowSet: { rows: [] } })
+  model.displaySpreadsheet({
+    columns: [{ name: 'CHROM' }],
+    rowSet: { rows: [] },
+  })
 
   // leaving the cache behind makes afterAttach re-fetch the dismissed file on
   // the next session load

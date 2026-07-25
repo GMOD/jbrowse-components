@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { radToDeg } from '@jbrowse/core/util'
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
@@ -29,7 +30,11 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const Loading = observer(function Loading({ radius }: { radius: number }) {
+const Loading = observer(function Loading({
+  model,
+}: {
+  model: { radiusPx: number; view: { offsetRadians: number } }
+}) {
   const { classes } = useStyles()
   const theme = useTheme()
 
@@ -46,9 +51,10 @@ const Loading = observer(function Loading({ radius }: { radius: number }) {
 
   return !shown ? null : (
     <HatchCircle
-      radius={radius}
+      radius={model.radiusPx}
       fill={theme.palette.action.hover}
       hatchColor={theme.palette.action.disabledBackground}
+      textRotationDeg={-radToDeg(model.view.offsetRadians)}
       text="Loading…"
     >
       <circle

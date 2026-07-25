@@ -14,7 +14,6 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   return display.error ? (
     <DisplayError
       model={display}
-      radius={display.radiusPx}
       onClick={() => {
         display.openErrorDialog()
       }}
@@ -22,7 +21,7 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   ) : display.features ? (
     <SVChordsReactComponent display={display} />
   ) : (
-    <Loading radius={display.radiusPx} />
+    <Loading model={display} />
   )
 })
 

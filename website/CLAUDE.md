@@ -111,6 +111,7 @@ any of them. Every annotation should `anchor`, in this order of preference:
   `fracY: 0` with a `dy`: the anchor sits on the track's top edge and `dy` walks
   down from it, which keeps the offset measured against the track rather than
   against the viewport.
+
 - **`anchor: { selector }`**, then **`anchor: { text }`** for menu items and
   buttons with no testid. The text scan walks the whole document, so prefer a
   selector where one exists.

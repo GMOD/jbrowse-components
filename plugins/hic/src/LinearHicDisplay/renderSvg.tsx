@@ -24,7 +24,7 @@ export async function renderSvg(
   // holds stale rpcData until the new result commits — so exports never capture
   // a partial or stale viewport.
   await awaitSvgReady(self)
-  const height = opts.overrideHeight ?? self.height
+  const height = self.height
   return (
     <SvgChrome
       error={self.error}
@@ -66,16 +66,9 @@ function HicSvgBody({
   const visibleWidth = view.width
   const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
-  // yScalar squashes the triangle to fill the display height, so when the
-  // export overrides the height it must be recomputed against that height —
-  // renderState.yScalar is keyed to the on-screen height and would mis-size the
-  // exported triangle whenever overrideHeight differs (fit-to-height only).
-  const yScalar = self.yScalarForHeight(height)
-
   // Reuse the model's renderState so the export shares one source of truth for
-  // the transform and color params with the on-screen render (handles
-  // scrolled-left-of-genome and stale zoom); yScalar is the export-specific
-  // override.
+  // the transform, color params, and fit-to-height yScalar with the on-screen
+  // render (handles scrolled-left-of-genome and stale zoom).
   return (
     <>
       <SvgClipRect
@@ -88,10 +81,7 @@ function HicSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            drawHicBlocks(ctx, rpcData, fillStyleLut, {
-              ...renderState,
-              yScalar,
-            })
+            drawHicBlocks(ctx, rpcData, fillStyleLut, renderState)
           }}
         />
       </SvgClipRect>

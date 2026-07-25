@@ -131,9 +131,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         <ErrorBanner error={error} />
       ) : tooManyValues ? (
         <Typography variant="caption" color="error">
-          {debouncedTag} takes {values.length} distinct values here — too many to
-          stack, and each section costs its own render pass. Color reads by this
-          tag instead, or group by a low-cardinality one (HP, RG).
+          {debouncedTag} takes {values.length} distinct values here — too many
+          to stack, and each section costs its own render pass. Color reads by
+          this tag instead, or group by a low-cardinality one (HP, RG).
         </Typography>
       ) : values?.length ? (
         // At most MAX_GROUPS of them, since more than that blocks Submit above.

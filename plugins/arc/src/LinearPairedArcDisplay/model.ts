@@ -160,11 +160,13 @@ export function stateModelFactory(
       /**
        * #action
        */
+      // opts is accepted (the export framework calls every display's renderSvg
+      // with it) but unused: arc paints vector JSX, not a paintLayer.
       async renderSvg(
-        opts?: ExportSvgDisplayOptions,
+        _opts?: ExportSvgDisplayOptions,
       ): Promise<React.ReactNode> {
         const { renderArcSvg } = await import('./renderSvg.tsx')
-        return renderArcSvg(self as LinearPairedArcDisplayModel, opts)
+        return renderArcSvg(self as LinearPairedArcDisplayModel)
       },
     }))
     .views(self => {

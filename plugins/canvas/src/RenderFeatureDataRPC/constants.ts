@@ -35,3 +35,16 @@ export const MAX_DESCRIPTION_LABEL_WIDTH_PX = 200
 // backing. Not a theme token — a fixed translucent white that works over any
 // feature fill.
 export const LABEL_OVERLAY_BACKGROUND = 'rgba(255,255,255,0.65)'
+
+// Where a label's alphabetic baseline sits below the top of its box, as a
+// fraction of the font size. Labels are POSITIONED by their top edge (labelY,
+// from computeLabelPosition), which is what the on-screen DOM overlay wants: a
+// `line-height: 1` div puts the baseline at half-leading + ascent =
+// (1 - (ascent + descent))/2 + ascent below its top. For the sans-serif faces
+// in play (Roboto 0.928/0.244, Helvetica/Arial 0.905/0.212) that lands within a
+// hair of 0.84 either way. Canvas fillText takes the BASELINE, so the SVG
+// export has to convert; drawing at labelY + fontSize (the box bottom) instead
+// sat every exported label ~1.8px below its on-screen position, pushing
+// descenders out of the backing rect and eating into the row gap the packer
+// reserved.
+export const LABEL_BASELINE_RATIO = 0.84

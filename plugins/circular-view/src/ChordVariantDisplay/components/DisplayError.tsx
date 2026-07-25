@@ -1,3 +1,4 @@
+import { radToDeg } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
@@ -9,11 +10,9 @@ function truncate(str: string, max: number) {
 
 const DisplayError = observer(function DisplayError({
   model,
-  radius,
   onClick,
 }: {
-  model: { error: unknown }
-  radius: number
+  model: { error: unknown; radiusPx: number; view: { offsetRadians: number } }
   onClick?: () => void
 }) {
   const theme = useTheme()
@@ -30,9 +29,10 @@ const DisplayError = observer(function DisplayError({
       }
     >
       <HatchCircle
-        radius={radius}
+        radius={model.radiusPx}
         fill={theme.palette.error.light}
         hatchColor={theme.palette.error.main}
+        textRotationDeg={-radToDeg(model.view.offsetRadians)}
         text={onClick ? `${text} (click for details)` : text}
       />
     </g>

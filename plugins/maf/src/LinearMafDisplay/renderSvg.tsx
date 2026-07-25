@@ -55,7 +55,7 @@ export async function renderSvg(
   // capture a partial or stale viewport.
   await awaitSvgReady(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const height = opts.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}
