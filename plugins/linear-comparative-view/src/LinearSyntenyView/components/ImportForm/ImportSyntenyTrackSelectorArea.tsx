@@ -70,7 +70,6 @@ export default function ImportSyntenyTrackSelectorArea({
       />
       {choice === 'custom' ? (
         <ImportFormOpenCustomTrack
-          key={`${assembly1}-${assembly2}`}
           model={model}
           rowIndex={selectedRow}
           /** #extensionPoint LinearSyntenyView-SyntenyFileFormats | sync | Add synteny file formats to the linear synteny import form */
@@ -81,7 +80,6 @@ export default function ImportSyntenyTrackSelectorArea({
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyPreConfigured
-          key={`${assembly1}-${assembly2}`}
           model={model}
           assembly1={assembly1}
           assembly2={assembly2}

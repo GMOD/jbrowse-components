@@ -73,7 +73,6 @@ const TrackSelector = observer(function TrackSelector({
       />
       {choice === 'custom' ? (
         <ImportFormOpenCustomTrack
-          key={`${assembly1}-${assembly2}`}
           model={model}
           rowIndex={0}
           /** #extensionPoint DotplotView-SyntenyFileFormats | sync | Add synteny file formats to the dotplot import form */

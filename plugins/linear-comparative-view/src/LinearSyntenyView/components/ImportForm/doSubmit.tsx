@@ -2,6 +2,8 @@ import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { getSyntenyTracks, resolveRowTrackAction } from '@jbrowse/synteny-core'
 import { toJS } from 'mobx'
 
+import { assemblyPairAt } from '../../util/importFormRows.ts'
+
 import type { LinearSyntenyViewModel } from '../../model.ts'
 
 export function doSubmit({
@@ -28,10 +30,7 @@ export function doSubmit({
     session.notify("Can't add tracks", 'warning')
   } else {
     for (let idx = 0; idx < selectedAssemblyNames.length - 1; idx++) {
-      const pairAssemblies = [
-        selectedAssemblyNames[idx]!,
-        selectedAssemblyNames[idx + 1]!,
-      ]
+      const pairAssemblies = assemblyPairAt(selectedAssemblyNames, idx)
       const action = resolveRowTrackAction(
         model.importFormSyntenyTrackSelections[idx],
         getSyntenyTracks(session.tracks, pairAssemblies),

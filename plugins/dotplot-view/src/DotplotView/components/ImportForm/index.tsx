@@ -7,8 +7,7 @@ import {
   ImportFormModeToggle,
   dotplotAxesFromRows,
   getSyntenyTracks,
-  quickStartSyntenyTracks,
-  syntenyTrackRows,
+  useQuickStartState,
 } from '@jbrowse/synteny-core'
 import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -18,7 +17,6 @@ import TrackSelector from './TrackSelector.tsx'
 import { doSubmit } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
-import type { ImportFormMode } from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -39,29 +37,26 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const session = getSession(model)
   const { assemblyNames } = session
   const firstAssembly = assemblyNames[0] ?? ''
-  const quickTracks = quickStartSyntenyTracks(session.tracks)
-  const [mode, setMode] = useState<ImportFormMode>(
-    quickTracks.length ? 'quick' : 'manual',
-  )
-  const [quickTrackId, setQuickTrackId] = useState(
-    quickTracks[0]?.trackId ?? '',
-  )
-  // a synteny track answers in either direction, so the axes it implies are a
-  // starting point the user can flip, not a property of the track
-  const [quickSwapped, setQuickSwapped] = useState(false)
+  const quick = useQuickStartState(session.tracks)
   const [assemblyX, setAssemblyX] = useState(firstAssembly)
   const [assemblyY, setAssemblyY] = useState(firstAssembly)
   const [error, setError] = useState<unknown>()
 
-  const quickTrack = quickTracks.find(t => t.trackId === quickTrackId)
-  const trackRows = quickTrack ? syntenyTrackRows(quickTrack) : []
-  const quickRows = quickSwapped ? [...trackRows].reverse() : trackRows
-  const quickAxes = dotplotAxesFromRows(quickRows)
+  const quickAxes = dotplotAxesFromRows(quick.rows)
   const quickY = quickAxes.y ?? firstAssembly
   const quickX = quickAxes.x ?? firstAssembly
 
   const syntenyTracks = getSyntenyTracks(session.tracks, [assemblyX, assemblyY])
   const displayError = error ?? model.error
+
+  // a dotplot is one pair, so the chosen Quick start track is the selection for
+  // the form's single row
+  function applyQuickSelection() {
+    model.setImportFormSyntenyTrack(0, {
+      type: 'preConfigured',
+      value: quick.trackId,
+    })
+  }
 
   const launch = (x: string, y: string) => {
     try {
@@ -88,37 +83,33 @@ const DotplotImportForm = observer(function DotplotImportForm({
       <Paper style={{ padding: 12 }}>
         <div className={classes.toggle}>
           <ImportFormModeToggle
-            mode={mode}
+            mode={quick.mode}
             onChange={newMode => {
               // switching to Manual hands over what Quick start had set up, so
               // the axes open on the chosen track instead of resetting
-              if (newMode === 'manual' && quickTrack) {
+              if (newMode === 'manual' && quick.track) {
                 setAssemblyX(quickX)
                 setAssemblyY(quickY)
-                model.setImportFormSyntenyTrack(0, {
-                  type: 'preConfigured',
-                  value: quickTrackId,
-                })
+                applyQuickSelection()
               }
-              setMode(newMode)
+              quick.setMode(newMode)
             }}
           />
         </div>
-        {mode === 'quick' ? (
+        {quick.mode === 'quick' ? (
           <QuickStart
             model={model}
-            tracks={quickTracks}
-            trackId={quickTrackId}
-            rows={quickRows}
-            onChange={setQuickTrackId}
+            tracks={quick.quickTracks}
+            trackId={quick.trackId}
+            rows={quick.rows}
+            onChange={newTrackId => {
+              quick.setTrackId(newTrackId)
+            }}
             onSwap={() => {
-              setQuickSwapped(!quickSwapped)
+              quick.swap()
             }}
             onLaunch={() => {
-              model.setImportFormSyntenyTrack(0, {
-                type: 'preConfigured',
-                value: quickTrackId,
-              })
+              applyQuickSelection()
               launch(quickX, quickY)
             }}
           />

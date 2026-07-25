@@ -3,26 +3,18 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { prepareDiagonalizeAdapter } from '@jbrowse/synteny-core'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-
-export interface RunDotplotDiagonalizeResult {
-  totalReordered: number
-  totalReversed: number
-}
-
-export interface RunDotplotDiagonalizeOpts {
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
-}
+import type {
+  DiagonalizeRunOpts,
+  DiagonalizeStats,
+} from '@jbrowse/synteny-core'
 
 // Wraps the DiagonalizeDotplot RPC + region apply step in a shape both the
 // menu dialog and the init autorun can call. Caller is responsible for
 // gating the canvas / loading UI; this just runs.
 export async function runDotplotDiagonalize(
   model: DotplotViewModel,
-  opts: RunDotplotDiagonalizeOpts = {},
-): Promise<RunDotplotDiagonalizeResult | undefined> {
+  opts: DiagonalizeRunOpts = {},
+): Promise<DiagonalizeStats | undefined> {
   const display = model.tracks[0]?.displays[0]
   if (display) {
     // Reuse the same rpcSessionId the display renders with (it lives on the

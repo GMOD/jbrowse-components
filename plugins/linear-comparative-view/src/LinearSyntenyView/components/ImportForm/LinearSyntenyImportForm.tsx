@@ -3,11 +3,7 @@ import { useState } from 'react'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  ImportFormModeToggle,
-  quickStartSyntenyTracks,
-  syntenyTrackRows,
-} from '@jbrowse/synteny-core'
+import { ImportFormModeToggle, useQuickStartState } from '@jbrowse/synteny-core'
 import { Container } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -17,7 +13,6 @@ import QuickStart from './QuickStart.tsx'
 import { doSubmit } from './doSubmit.tsx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type { ImportFormMode } from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -53,16 +48,7 @@ const LinearSyntenyViewImportForm = observer(
     // mode doesn't open on a same-assembly pair (which is flagged as needing a
     // self-alignment track)
     const secondAssemblyName = assemblyNames[1] ?? defaultAssemblyName
-    const quickTracks = quickStartSyntenyTracks(session.tracks)
-    const [mode, setMode] = useState<ImportFormMode>(
-      quickTracks.length ? 'quick' : 'manual',
-    )
-    const [quickTrackId, setQuickTrackId] = useState(
-      quickTracks[0]?.trackId ?? '',
-    )
-    // a synteny track answers in either direction, so the row order it implies
-    // is a starting point the user can flip, not a property of the track
-    const [quickSwapped, setQuickSwapped] = useState(false)
+    const quick = useQuickStartState(session.tracks)
     const [selectedRow, setSelectedRow] = useState(0)
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
       defaultAssemblyName,
@@ -70,18 +56,14 @@ const LinearSyntenyViewImportForm = observer(
     ])
     const [error, setError] = useState<unknown>()
 
-    const quickTrack = quickTracks.find(t => t.trackId === quickTrackId)
-    const trackRows = quickTrack ? syntenyTrackRows(quickTrack) : []
-    const quickRows = quickSwapped ? [...trackRows].reverse() : trackRows
-
     // the chosen track backs every adjacent band: a pairwise track has one pair,
     // an all-vs-all track has one per adjacent row
-    function applyQuickSelections(rows: string[], trackId: string) {
+    function applyQuickSelections() {
       model.clearImportFormSyntenyTracks()
-      for (let idx = 0; idx < rows.length - 1; idx++) {
+      for (let idx = 0; idx < quick.rows.length - 1; idx++) {
         model.setImportFormSyntenyTrack(idx, {
           type: 'preConfigured',
-          value: trackId,
+          value: quick.trackId,
         })
       }
     }
@@ -107,32 +89,34 @@ const LinearSyntenyViewImportForm = observer(
         {error ? <ErrorBanner error={error} /> : null}
         <div className={classes.toggle}>
           <ImportFormModeToggle
-            mode={mode}
+            mode={quick.mode}
             onChange={newMode => {
               // switching to Manual hands over what Quick start had set up, so
               // the rows open on the chosen track instead of resetting
-              if (newMode === 'manual' && quickTrack) {
-                setSelectedAssemblyNames(quickRows)
+              if (newMode === 'manual' && quick.track) {
+                setSelectedAssemblyNames(quick.rows)
                 setSelectedRow(0)
-                applyQuickSelections(quickRows, quickTrackId)
+                applyQuickSelections()
               }
-              setMode(newMode)
+              quick.setMode(newMode)
             }}
           />
         </div>
-        {mode === 'quick' ? (
+        {quick.mode === 'quick' ? (
           <QuickStart
             model={model}
-            tracks={quickTracks}
-            trackId={quickTrackId}
-            rows={quickRows}
-            onChange={setQuickTrackId}
+            tracks={quick.quickTracks}
+            trackId={quick.trackId}
+            rows={quick.rows}
+            onChange={newTrackId => {
+              quick.setTrackId(newTrackId)
+            }}
             onSwap={() => {
-              setQuickSwapped(!quickSwapped)
+              quick.swap()
             }}
             onLaunch={() => {
-              applyQuickSelections(quickRows, quickTrackId)
-              launch(quickRows)
+              applyQuickSelections()
+              launch(quick.rows)
             }}
           />
         ) : (
@@ -155,6 +139,9 @@ const LinearSyntenyViewImportForm = observer(
                 Synteny dataset to display between row {selectedRow + 1} and{' '}
                 {selectedRow + 2}
               </div>
+              {/* the selector area holds local radio-choice state per pair, so
+              it remounts whenever the pair being configured changes — this key
+              is the only thing resetting it */}
               <ImportSyntenyTrackSelectorArea
                 key={`${selectedRow}-${selectedAssemblyNames[selectedRow]}-${selectedAssemblyNames[selectedRow + 1]}`}
                 model={model}

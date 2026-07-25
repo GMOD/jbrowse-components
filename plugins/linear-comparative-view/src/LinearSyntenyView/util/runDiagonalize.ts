@@ -4,20 +4,12 @@ import { prepareDiagonalizeAdapter } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
-import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type {
+  DiagonalizeRunOpts,
+  DiagonalizeStats,
+} from '@jbrowse/synteny-core'
 
 type Level = LinearSyntenyViewModel['levels'][number]
-
-export interface RunDiagonalizeResult {
-  totalReordered: number
-  totalReversed: number
-}
-
-export interface RunDiagonalizeOpts {
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
-}
 
 // Runs the DiagonalizeSynteny RPC (one call per level — the worker fetches the
 // alignments and runs the algorithm off the main thread, mirroring the dotplot
@@ -34,8 +26,8 @@ export interface RunDiagonalizeOpts {
 // Sugiyama layer-sweep, focus row pinned at the top).
 export async function runDiagonalize(
   model: LinearSyntenyViewModel,
-  opts: RunDiagonalizeOpts = {},
-): Promise<RunDiagonalizeResult | undefined> {
+  opts: DiagonalizeRunOpts = {},
+): Promise<DiagonalizeStats | undefined> {
   if (model.views.length < 2) {
     return undefined
   }

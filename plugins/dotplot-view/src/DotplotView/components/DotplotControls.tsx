@@ -18,8 +18,8 @@ import DotplotSettingsPopover from './DotplotSettingsPopover.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 
-const DiagonalizationProgressDialog = lazy(
-  () => import('./DiagonalizationProgressDialog.tsx'),
+const ReorderChromosomesDialog = lazy(
+  () => import('./ReorderChromosomesDialog.tsx'),
 )
 
 const useStyles = makeStyles()({
@@ -108,7 +108,7 @@ const DotplotControls = observer(function DotplotControls({
             icon: ShuffleIcon,
             onClick: () => {
               session.queueDialog(handleClose => [
-                DiagonalizationProgressDialog,
+                ReorderChromosomesDialog,
                 {
                   handleClose,
                   model,

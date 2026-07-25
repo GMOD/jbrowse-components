@@ -60,6 +60,11 @@ export { default as HelpTooltip } from './HelpTooltip.tsx'
 export { default as OpacitySlider } from './OpacitySlider.tsx'
 export { default as RefetchIndicator } from './RefetchIndicator.tsx'
 export { default as DiagonalizeLoadingScreen } from './DiagonalizeLoadingScreen.tsx'
+export { default as DiagonalizeDialog } from './DiagonalizeDialog.tsx'
+export type {
+  DiagonalizeRunOpts,
+  DiagonalizeStats,
+} from './diagonalizeTypes.ts'
 export { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
 export { default as MinLengthSlider } from './MinLengthSlider.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
@@ -77,6 +82,7 @@ export {
 export { default as ImportFormModeToggle } from './ImportFormModeToggle.tsx'
 export type { ImportFormMode } from './ImportFormModeToggle.tsx'
 export { default as QuickStartPanel } from './QuickStartPanel.tsx'
+export { useQuickStartState } from './useQuickStartState.ts'
 export { default as PreConfiguredSyntenyTrackSelect } from './PreConfiguredSyntenyTrackSelect.tsx'
 export { planSyntenyChain } from './planSyntenyChain.ts'
 export { resolveRowTrackAction } from './resolveRowTrackAction.ts'

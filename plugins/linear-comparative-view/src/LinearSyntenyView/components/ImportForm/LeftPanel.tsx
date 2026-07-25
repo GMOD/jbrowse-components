@@ -4,15 +4,16 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   getConnectedAssemblies,
   getSyntenyTracks,
-  pickSyntenyTrackId,
   planSyntenyChain,
-  sameAssemblySet,
+  resolveRowTrackAction,
 } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { assemblyPairAt, planRowRemoval } from '../../util/importFormRows.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -39,48 +40,43 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Whether the row pair still needs the user's attention before launch.
-// - explicit "none": deliberately no track, fine.
-// - "New track" (userOpened): fine only once a file is chosen and its baked
-//   assemblies still match the pair; a pending or stranded upload is flagged.
-// - untouched / preConfigured: fine as long as a synteny track exists for the
-//   pair, since doSubmit auto-picks (the pick if still valid, else the first).
-function rowNeedsConfiguration(
+// Whether each row pair still needs the user's attention before launch: it does
+// unless launching would actually apply a track. An explicit "none" is a
+// deliberate no-track and so never needs attention; every other case defers to
+// the same resolveRowTrackAction call doSubmit makes, so the warning icon and
+// what launch really does can't drift apart. That covers a pending or stranded
+// upload (a userOpened whose baked assemblies no longer match the pair) and a
+// pair with no pre-configured track to auto-pick.
+function rowsNeedingConfiguration(
   model: LinearSyntenyViewModel,
   session: AbstractSessionModel,
   selectedAssemblyNames: string[],
-  idx: number,
 ) {
-  const pairAssemblies = [
-    selectedAssemblyNames[idx]!,
-    selectedAssemblyNames[idx + 1]!,
-  ]
-  const selection = model.importFormSyntenyTrackSelections[idx]
-  if (selection?.type === 'userOpened') {
+  return selectedAssemblyNames.slice(0, -1).map((_, idx) => {
+    const pairAssemblies = assemblyPairAt(selectedAssemblyNames, idx)
+    const selection = model.importFormSyntenyTrackSelections[idx]
     return (
-      !selection.value ||
-      !sameAssemblySet(selection.value.assemblyNames, pairAssemblies)
+      selection?.type !== 'none' &&
+      !resolveRowTrackAction(
+        selection,
+        getSyntenyTracks(session.tracks, pairAssemblies),
+        pairAssemblies,
+      )
     )
-  }
-  if (selection?.type === 'none') {
-    return false
-  }
-  const picked = selection?.type === 'preConfigured' ? selection.value : ''
-  return !pickSyntenyTrackId(
-    picked,
-    getSyntenyTracks(session.tracks, pairAssemblies),
-  )
+  })
 }
 
 const AssemblyRows = observer(function AssemblyRows({
   selectedRow,
   selectedAssemblyNames,
+  needsConfigByPair,
   setSelectedRow,
   setSelectedAssemblyNames,
   model,
 }: {
   selectedRow: number
   selectedAssemblyNames: string[]
+  needsConfigByPair: boolean[]
   setSelectedRow: (idx: number) => void
   setSelectedAssemblyNames: (assemblies: string[]) => void
   model: LinearSyntenyViewModel
@@ -88,21 +84,18 @@ const AssemblyRows = observer(function AssemblyRows({
   const { classes } = useStyles()
   const session = getSession(model)
   function removeRow(idx: number) {
-    const rowCount = selectedAssemblyNames.length
-    // the pair-selection that disappears is the pair below this row, except for
-    // the last row, whose only pair is the one above it
-    model.importFormRemoveRow(Math.min(idx, rowCount - 2))
+    const { removedPair, nextSelectedPair } = planRowRemoval({
+      rowCount: selectedAssemblyNames.length,
+      removedRow: idx,
+      selectedPair: selectedRow,
+    })
+    model.importFormRemoveRow(removedPair)
     setSelectedAssemblyNames(selectedAssemblyNames.filter((_, i) => i !== idx))
-    // keep the arrow on the same pair — a removal above it shifts its index
-    // down — then clamp into the new pair range [0, rowCount - 3]
-    const shifted = idx < selectedRow ? selectedRow - 1 : selectedRow
-    setSelectedRow(Math.min(shifted, rowCount - 3))
+    setSelectedRow(nextSelectedPair)
   }
   return selectedAssemblyNames.map((assemblyName, idx) => {
     const isPairRow = idx !== selectedAssemblyNames.length - 1
-    const needsConfig =
-      isPairRow &&
-      rowNeedsConfiguration(model, session, selectedAssemblyNames, idx)
+    const needsConfig = needsConfigByPair[idx] === true
     // a self-alignment pair is valid, but only if a synteny track references the
     // assembly against itself; call it out so an unsatisfied same-assembly pair
     // doesn't read like the generic "pick a track" warning
@@ -195,12 +188,15 @@ const LeftPanel = observer(function LeftPanel({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const canLaunch = selectedAssemblyNames
-    .slice(0, -1)
-    .every(
-      (_, i) =>
-        !rowNeedsConfiguration(model, session, selectedAssemblyNames, i),
-    )
+  // computed once for the whole panel: the per-row warning icons and the Launch
+  // button are two views of the same answer, and each entry costs a scan of the
+  // session's tracks
+  const needsConfigByPair = rowsNeedingConfiguration(
+    model,
+    session,
+    selectedAssemblyNames,
+  )
+  const canLaunch = needsConfigByPair.every(needsConfig => !needsConfig)
 
   return (
     <>
@@ -211,6 +207,7 @@ const LeftPanel = observer(function LeftPanel({
         <AssemblyRows
           model={model}
           selectedAssemblyNames={selectedAssemblyNames}
+          needsConfigByPair={needsConfigByPair}
           setSelectedAssemblyNames={setSelectedAssemblyNames}
           selectedRow={selectedRow}
           setSelectedRow={setSelectedRow}

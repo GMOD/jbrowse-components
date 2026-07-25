@@ -16,6 +16,7 @@ import { autorun, observable, when } from 'mobx'
 import baseModel from '../LinearComparativeView/model.ts'
 import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 
+import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
 import type {
   ExportSvgOptions,
   ImportFormSyntenyTrack,
@@ -31,8 +32,8 @@ const DEFAULT_OVERDRAW_PX = 1000
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
-const DiagonalizationProgressDialog = lazy(
-  () => import('./components/DiagonalizationProgressDialog.tsx'),
+const ReorderChromosomesDialog = lazy(
+  () => import('./components/ReorderChromosomesDialog.tsx'),
 )
 const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
 
@@ -700,7 +701,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               label: 'Re-order chromosomes',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  DiagonalizationProgressDialog,
+                  ReorderChromosomesDialog,
                   {
                     handleClose,
                     model: self,
@@ -922,9 +923,11 @@ export type LinearSyntenyViewModel = Instance<LinearSyntenyViewStateModel>
  * The synteny-specific header controls (colorBy, alpha, etc.) read state that
  * only exists on a LinearSyntenyView. Gate on the MST type discriminator so a
  * plain LinearComparativeView never renders those controls against a model that
- * lacks the matching state/actions.
+ * lacks the matching state/actions. Narrowing along the compose chain and not
+ * from an arbitrary object, so the only thing unchecked is the discriminator
+ * itself, which every subclass sets to its own literal.
  */
-export function asSyntenyModel(model: { type: string }) {
+export function asSyntenyModel(model: LinearComparativeViewModel) {
   return model.type === 'LinearSyntenyView'
     ? (model as LinearSyntenyViewModel)
     : undefined
