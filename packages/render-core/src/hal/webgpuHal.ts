@@ -555,7 +555,19 @@ export class WebGPUHal implements GpuHal {
   }
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
-    if (this.canvas.width === 0 || this.canvas.height === 0) {
+    // Skip the frame entirely rather than encode one that cannot be valid.
+    // Zero-size canvas: nothing to draw. Missing MSAA target while MSAA is
+    // configured: every pipeline was built with `multisample.count = 4`, so the
+    // single-sample fallback attachment below would mismatch and every draw in
+    // the frame would be rejected. That happens after `recreateMsaaTexture`
+    // bails on an over-`maxTextureDimension2D` canvas — it has already reported
+    // through `oom`, so the user has the real message and there is nothing to
+    // gain from also spraying validation errors each frame.
+    if (
+      this.canvas.width === 0 ||
+      this.canvas.height === 0 ||
+      (MSAA_SAMPLE_COUNT > 1 && !this.msaaView)
+    ) {
       return
     }
     // Push error scopes so endFrame can report OOM/validation errors after submit.
@@ -569,8 +581,11 @@ export class WebGPUHal implements GpuHal {
     this.currentEncoder = this.device.createCommandEncoder()
     this.uniformSlot = 0
 
-    // With MSAA: render to multisampled texture, then resolve to the canvas texture.
-    // Without MSAA (MSAA_SAMPLE_COUNT === 1): render directly to the canvas texture.
+    // With MSAA: render to the multisampled texture, then resolve to the canvas
+    // texture. Without MSAA (MSAA_SAMPLE_COUNT === 1, so `msaaView` is never
+    // built): render directly to the canvas texture. The guard above is what
+    // keeps those the only two cases — a null `msaaView` while MSAA is on never
+    // reaches here.
     const clearValue = { r: clearR, g: clearG, b: clearB, a: clearA }
     this.currentPass = this.currentEncoder.beginRenderPass({
       colorAttachments: [

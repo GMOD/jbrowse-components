@@ -31,8 +31,17 @@ interface InterbaseDrawColors {
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
+// Prefer `getDpr` from `@jbrowse/render-core/canvas2dUtils` — that is the one
+// every canvas sizing path (`syncCanvasSize`, `prepareCanvas`, `clipBlock`)
+// reads, and a second helper that answers differently is how a backend ends up
+// scaled against geometry computed at another ratio. Kept only because this is
+// a published export; it has no in-tree consumers.
+//
+// The old no-window fallback was 2, which is not a device pixel ratio at all
+// but the fixed export scale (`createSvgRasterCanvas`). Anything wanting that
+// should name it, not get it from a function called getDevicePixelRatio.
 export function getDevicePixelRatio() {
-  return typeof window !== 'undefined' ? window.devicePixelRatio : 2
+  return typeof window === 'undefined' ? 1 : window.devicePixelRatio
 }
 
 export function coverageLayout(coverageHeight: number) {

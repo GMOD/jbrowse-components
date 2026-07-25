@@ -131,6 +131,18 @@ bound**, because nothing mechanical enforces it.
 used and that effective dpr is threaded through `clipBlock` instead of the free
 `getDpr()`, so a clamped canvas renders correct content at reduced resolution.
 
+That same plumbing is the only way to get a **dpr cap**, which is worth wanting
+independently. We render at the full reported ratio everywhere, so a dpr=3 device
+allocates 9x the pixels of dpr=1 and shades 9x the fragments for a difference
+most people cannot see past 2x — and it is what makes the 8192 ceiling reachable
+in the first place (capping at 2 moves it out to a 4096-CSS-px canvas). Nothing
+here argues the *true* ratio is the right number; it is just the only one
+currently expressible, because `getDpr()` is read independently at ~11 call sites
+rather than resolved once per canvas. Note the two legitimate reasons to
+deliberately diverge from the live value, so neither reads as drift:
+`createSvgRasterCanvas` pins 2x because export goes to file, not screen, and
+tests pin 1 for deterministic output.
+
 ### Every region arrival draws twice, the first draw pre-upload
 
 **Status:** Open. Low severity, invisible to the user, retired by a queued fix.
