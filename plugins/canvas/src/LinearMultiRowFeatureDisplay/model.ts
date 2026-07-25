@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   getConf,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -563,13 +564,13 @@ export default function stateModelFactory(
        * #action
        */
       setRowHeight(n: number) {
-        self.configuration.setSlot('rowHeight', n)
+        setConf(self, 'rowHeight', n)
       },
       /**
        * #action
        */
       setShowLegend(f: boolean) {
-        self.configuration.setSlot('showLegend', f)
+        setConf(self, 'showLegend', f)
       },
       /**
        * #action
@@ -591,13 +592,13 @@ export default function stateModelFactory(
        * #action
        */
       setShowTree(f: boolean) {
-        self.configuration.setSlot('showTree', f)
+        setConf(self, 'showTree', f)
       },
       /**
        * #action
        */
       setShowBranchLength(f: boolean) {
-        self.configuration.setSlot('showBranchLength', f)
+        setConf(self, 'showBranchLength', f)
       },
       /**
        * #action
@@ -701,15 +702,9 @@ export default function stateModelFactory(
        */
       setHeight(newHeight: number) {
         if (self.rowHeightSetting === 0) {
-          self.configuration.setSlot(
-            'height',
-            Math.max(newHeight, MIN_DISPLAY_HEIGHT),
-          )
+          setConf(self, 'height', Math.max(newHeight, MIN_DISPLAY_HEIGHT))
         } else {
-          self.configuration.setSlot(
-            'rowHeight',
-            Math.max(1, newHeight / self.nrow),
-          )
+          setConf(self, 'rowHeight', Math.max(1, newHeight / self.nrow))
         }
         return self.height
       },
@@ -730,11 +725,8 @@ export default function stateModelFactory(
        * makes `rowHeight` derive from it.
        */
       setFitToHeight() {
-        self.configuration.setSlot(
-          'height',
-          Math.max(self.height, MIN_DISPLAY_HEIGHT),
-        )
-        self.configuration.setSlot('rowHeight', 0)
+        setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
+        setConf(self, 'rowHeight', 0)
         self.scrollTop = 0
       },
       /**
