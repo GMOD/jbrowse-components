@@ -53,10 +53,10 @@ interface ClusteringMenuModel extends BranchLengthMenuModel {
 export function clusteringMenuItem(
   self: ClusteringMenuModel,
   runItem: MenuItem,
-  { extraItems = [], showTreeToggle = true } = {} as {
-    extraItems?: MenuItem[]
-    showTreeToggle?: boolean
-  },
+  {
+    extraItems = [],
+    showTreeToggle = true,
+  }: { extraItems?: MenuItem[]; showTreeToggle?: boolean } = {},
 ): MenuItem {
   return {
     label: 'Clustering',
