@@ -350,7 +350,10 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    viewportHeight: 720,
+    // clears the 400px matrix plus the 140px gene track: at 720 the RefSeq
+    // lane was sliced off mid-labels, cutting the genes the SV calls line up
+    // against
+    viewportHeight: 800,
     settleMs: 35000,
     hideTooltip: true,
     actions: [

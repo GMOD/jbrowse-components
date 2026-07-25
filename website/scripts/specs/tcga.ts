@@ -355,6 +355,14 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // matches. The stack still pulls the whole 5.7MB BED before it paints.
     readyTimeout: 300000,
     viewportWidth: 1900,
+    // Review asked to increase the browser height so the cohort heatmap isn't
+    // sliced at the bottom edge, and the truncation is real. Left at 860 on
+    // purpose: raising it re-runs a capture that has NO data-derived
+    // readySelector (see the note above — there is nothing to gate on, and the
+    // stack pulls 5.7MB before it paints), and at 1200 the generator committed a
+    // bare "Loading" frame. Gate this spec on a data-derived element first, then
+    // retune the height; a taller viewport on a race-prone capture just makes the
+    // bad frame bigger.
     viewportHeight: 860,
     settleMs: 20000,
     // 1104 rows floored to 1px alias differently run to run, same as the

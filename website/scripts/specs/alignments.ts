@@ -735,34 +735,18 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track sizing modes, as two declarative sessions composed into one before/
-  // after (see the website CLAUDE.md: prefer `compose` over menu-driving when
-  // each state is its own session). Same track, same locus, same 260px track
-  // height in both parts, so the ONLY difference is heightMode: `fixed` draws
-  // reads at their configured height and scrolls the overflow away, `fit`
-  // derives the height from the display so every row lands on screen. The
-  // HG002 Illumina pileup is deep enough at this locus that the contrast is
-  // unmistakable. Remote DEMO_CONFIG data, hence the long ready timeout.
-  {
-    mode: 'url',
-    name: 'alignments/height_mode_fixed',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr1:161,176,000-161,178,500',
-      tracks: [
-        {
-          trackId: 'illumina_hg002',
-          type: 'LinearAlignmentsDisplay',
-          heightMode: 'fixed',
-          height: 260,
-        },
-      ],
-    }),
-    readyText: 'HG002',
-    readyTimeout: 60000,
-    settleMs: 12000,
-    viewportHeight: 420,
-  },
+  // Fit read height, with the menu path that sets it. Was a three-spec
+  // before/after compose (fixed + fit, stacked): review rejected all three as
+  // "not interesting" and asked for the toggling menu to be open instead, and
+  // looking at that figure the call is obvious — two 260px pileups of the same
+  // grey HG002 Illumina reads differ only in whether the overflow is behind a
+  // scrollbar, which is nearly invisible at figure scale, while two full app
+  // chromes ate ~40% of the image. The prose in alignments_track.md already
+  // spells out all three modes, so the figure's job is "where do I click", the
+  // same job alignments/compact does for the size presets.
+  //
+  // Labels come from getHeightModeOptions('read') so they cannot drift from the
+  // menu; 'Track sizing' is a subheader inside the "Read height" submenu.
   {
     mode: 'url',
     name: 'alignments/height_mode_fit',
@@ -781,12 +765,15 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyText: 'HG002',
     readyTimeout: 60000,
     settleMs: 12000,
-    viewportHeight: 420,
-  },
-  {
-    mode: 'compose',
-    name: 'alignments/height_modes',
-    parts: ['alignments/height_mode_fixed', 'alignments/height_mode_fit'],
+    viewportHeight: 560,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      ...menuCascade(['Read height', 'Fit read height to display'], 800),
+    ],
+    annotations: [
+      { type: 'box', anchor: { text: 'Read height' } },
+      { type: 'box', anchor: { text: 'Fit read height to display' } },
+    ],
   },
 
   // Read connections (arc display): two-stage figure on the volvox-sv CRAM (whose

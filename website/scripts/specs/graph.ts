@@ -173,40 +173,6 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     hideTooltip: true,
   },
-  // The HPRC release-2 graph at HLA class II, anchored: the bubble and segment
-  // feature tracks in a linear view of the window, and the subgraph the launch
-  // menu cuts from that same window below it. Both come out of the two tabix
-  // indexes, so the segment ids above are the nodes below at the same offsets.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_mhc_subgraph',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:32,500,000-32,560,000',
-          tracks: [
-            'hg38_ncbiRefSeq_ucsc',
-            'hprc_minigraph_bubbles',
-            SEGMENTS_TRACK,
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: MHC_REGION,
-          colorScheme: 'stable-rank',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 90000,
-    settleMs: 4000,
-    viewportWidth: 1000,
-    viewportHeight: 1300,
-    hideTooltip: true,
-  },
   // The same window in the force layout, the Bandage picture the graph is really
   // about: the backbone winds through the frame and every loop off it is an
   // alternate allele from the 464 haplotypes. FMMM again, hence diffThreshold.

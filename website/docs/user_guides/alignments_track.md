@@ -168,7 +168,7 @@ Under the **Track sizing** subheading in the same submenu are three modes:
   growing back as it thins. Because the size is computed, no size preset reads
   as selected while fitting; picking one drops back to fixed.
 
-<Figure src="/img/alignments/height_modes.png" links="Fixed read height=alignments/height_mode_fixed,Fit read height to display=alignments/height_mode_fit" caption="The same HG002 Illumina pileup in a 260px track. Top, fixed read height: reads keep their size and most of the pileup is off-screen behind the scrollbar. Bottom, fit read height to display: the read height is derived from the track height, so every row lands on screen." />
+<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to display selected on a 260px HG002 Illumina track. Because the size is computed while fitting, none of the Normal / Compact / Super-compact presets above it read as selected." />
 
 Fit mode is the one to reach for when you care about the shape of a pileup
 rather than individual bases: drag the track taller or shorter and the reads
