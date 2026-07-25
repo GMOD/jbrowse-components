@@ -52,7 +52,7 @@ import {
   isModificationScheme,
   normalizeColorBy,
 } from '../shared/colorSchemes.ts'
-import { normalizeGroupBy } from '../shared/groupFeatures.ts'
+import { groupByForMode, normalizeGroupBy } from '../shared/groupFeatures.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
@@ -975,9 +975,17 @@ export default function stateModelFactory(
          * #getter
          * Offset the track label above the visualization when grouping, so the
          * stacked group sections aren't hidden behind an overlapping label.
+         *
+         * Asks whether the grouping will be HONORED, not merely whether it is set:
+         * chain mode drops a per-read dimension (`groupByForMode`), and reserving
+         * label room for sections that then never get drawn leaves dead space above
+         * the plot. Unlike `showsGroupLabels` this can't read the fetched sections —
+         * the track label is positioned before any data arrives, and flipping once
+         * it lands would jump the layout — but the degradation is decidable from the
+         * two settings alone, so no data is needed.
          */
         get prefersOffset() {
-          return this.groupBy !== undefined
+          return groupByForMode(this.groupBy, self.isChainMode) !== undefined
         },
 
         /**
