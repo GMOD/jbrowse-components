@@ -2372,7 +2372,7 @@ export default function stateModelFactory(
             // it and produce a sensible layout without a center line.
             const needsPos = type !== 'position' && type !== 'strand'
             if (centerLineInfo && centerLineInfo.offset >= 0) {
-              self.configuration.setSlot('sortedBy', {
+              this.setSortSlot({
                 type,
                 pos: Math.round(centerLineInfo.offset),
                 refName: centerLineInfo.refName,
@@ -2393,7 +2393,7 @@ export default function stateModelFactory(
             } else {
               const assemblyName = view.assemblyNames[0]
               if (assemblyName) {
-                self.configuration.setSlot('sortedBy', {
+                this.setSortSlot({
                   type,
                   pos: -1,
                   refName: '',
@@ -2402,6 +2402,29 @@ export default function stateModelFactory(
                 })
               }
             }
+          },
+
+          /**
+           * #action
+           * Commit a sort, the single place the `sortedBy` slot is written. Also
+           * drops `largeFeaturesFirst`: the two are peer radios in one group
+           * ("Longest reads first" is the layout-order flag, a sort is the slot),
+           * so exactly one must hold state. Doing it here rather than at the menu
+           * means a sort that *doesn't* land — no valid center line, a cancelled
+           * tag dialog — leaves the previous ordering intact instead of silently
+           * clearing it and unchecking every radio. `computeMultiRegionLayout`
+           * would tolerate both being set (an explicit sort wins there anyway);
+           * this keeps the menu's checkmarks honest.
+           */
+          setSortSlot(sortedBy: {
+            type: string
+            pos: number
+            refName: string
+            assemblyName: string
+            tag?: string
+          }) {
+            self.configuration.setSlot('largeFeaturesFirst', false)
+            self.configuration.setSlot('sortedBy', sortedBy)
           },
 
           /**
@@ -2417,13 +2440,7 @@ export default function stateModelFactory(
             const view = getContainingView(self) as LGV
             const assemblyName = view.assemblyNames[0]
             if (assemblyName) {
-              self.configuration.setSlot('sortedBy', {
-                type,
-                pos,
-                refName,
-                assemblyName,
-                tag,
-              })
+              this.setSortSlot({ type, pos, refName, assemblyName, tag })
             } else {
               getSession(self).notify(
                 'Cannot sort: no assembly loaded in this view.',

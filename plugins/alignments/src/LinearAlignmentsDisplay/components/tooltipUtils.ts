@@ -118,6 +118,20 @@ function getPairTypeDescriptions(
   return out
 }
 
+// 1-based inclusive display range for a half-open [start, end) genomic span —
+// a read, a sashimi junction's intron, an arc endpoint. Matches
+// formatCigarTooltip, the context menu's "Copy location", the SAM export, and
+// what BaseFeatureDetail shows for the same feature (it renders start + 1 off
+// the raw 0-based start). Every location a tooltip prints goes through here, so
+// a hover can't disagree by one with the click-through.
+export function formatLocationRange(
+  refName: string,
+  start: number,
+  end: number,
+) {
+  return `${refName}:${toLocale(start + 1)}-${toLocale(end)}`
+}
+
 export function formatChainTooltip(
   rpcData: PileupDataResult,
   idx: number,
@@ -130,13 +144,10 @@ export function formatChainTooltip(
   const insertSize = rpcData.readInsertSizes[idx] ?? 0
   const pairOrientation = rpcData.readPairOrientations[idx] ?? 0
 
-  const lines = [
-    `<b>${name}</b>`,
-    `${refName}:${start.toLocaleString()}-${end.toLocaleString()}`,
-  ]
+  const lines = [`<b>${name}</b>`, formatLocationRange(refName, start, end)]
 
   if (insertSize !== 0) {
-    lines.push(`Template length: ${Math.abs(insertSize).toLocaleString()}`)
+    lines.push(`Template length: ${toLocale(Math.abs(insertSize))}`)
   }
 
   const orientName = PAIR_ORIENTATION_NAMES[pairOrientation]
@@ -360,19 +371,6 @@ export function formatModificationTooltip(
   return { type: 'modification', ...hit, refName, snpBase }
 }
 
-// 1-based inclusive display range for a sashimi junction's half-open
-// [start, end) intron span. Renders `start + 1` to match formatLocation /
-// formatCigarTooltip and the detail widget (openSashimiWidget stores the raw
-// 0-based start, which BaseFeatureDetail then shows as start + 1) — so the hover
-// and the click-through can't disagree on the coordinate.
-export function formatSashimiLocation(
-  refName: string,
-  start: number,
-  end: number,
-) {
-  return `${refName}:${toLocale(start + 1)}-${toLocale(end)}`
-}
-
 export function formatSashimiTooltip(
   sashimiHit: SashimiArcHitResult,
 ): SashimiTooltipPayload {
@@ -388,23 +386,31 @@ export function formatSashimiTooltip(
   }
 }
 
+export interface TooltipFeatureInfo {
+  id: string
+  name: string
+  start: number
+  end: number
+  strand: number
+  refName: string
+}
+
+// "name chr1:1,001-1,100" for one read, shared by the plain pileup hover and the
+// bezier overlay's two-endpoint tooltip so neither re-spells the location. The
+// pileup hover appends the strand; the bezier tooltip omits it (the curve's own
+// color already encodes orientation, and two strands in one line reads as noise).
+export function formatFeatureLabel(
+  info: TooltipFeatureInfo,
+  { showStrand = false } = {},
+) {
+  const label = `${info.name || info.id} ${formatLocationRange(info.refName, info.start, info.end)}`
+  return showStrand ? `${label} (${info.strand === -1 ? '-' : '+'})` : label
+}
+
 export function formatFeatureTooltip(
   featureId: string,
-  getFeatureInfoById: (id: string) =>
-    | {
-        id: string
-        name: string
-        start: number
-        end: number
-        strand: number
-        refName: string
-      }
-    | undefined,
+  getFeatureInfoById: (id: string) => TooltipFeatureInfo | undefined,
 ) {
   const info = getFeatureInfoById(featureId)
-  if (info) {
-    const strand = info.strand === -1 ? '-' : '+'
-    return `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${strand})`
-  }
-  return undefined
+  return info ? formatFeatureLabel(info, { showStrand: true }) : undefined
 }

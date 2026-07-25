@@ -9,6 +9,7 @@ import {
   BEZIER_ARC_STROKE_WIDTH,
   computePileupBezierArcsFromModel,
 } from './pileupBezierArcs.ts'
+import { formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -24,9 +25,7 @@ function arcTooltip(
   for (const id of [arc.id1, arc.id2]) {
     const info = model.getFeatureInfoById(id)
     if (info) {
-      parts.push(
-        `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()}`,
-      )
+      parts.push(formatFeatureLabel(info))
     }
   }
   return parts.length > 0 ? `${arc.label}: ${parts.join(' → ')}` : arc.label

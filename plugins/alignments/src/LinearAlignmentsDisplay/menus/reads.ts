@@ -147,7 +147,6 @@ export function getReadsMenuItem(model: ReadsModel) {
             'read name, so it applies to a plain pileup too.',
         },
       ),
-      { type: 'divider' as const },
       getMaxHeightMenuItem(model),
     ] satisfies MenuItem[],
   }

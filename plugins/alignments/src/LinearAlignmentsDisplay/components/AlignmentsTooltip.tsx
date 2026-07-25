@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
-import { formatLenRange, formatSashimiLocation, pct } from './tooltipUtils.ts'
+import { formatLenRange, formatLocationRange, pct } from './tooltipUtils.ts'
 
 import type { TooltipPayload } from './tooltipUtils.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
@@ -356,7 +356,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             <div>
               <strong>Intron/Skip</strong>
             </div>
-            <div>Location: {formatSashimiLocation(refName, start, end)}</div>
+            <div>Location: {formatLocationRange(refName, start, end)}</div>
             <div>Length: {toLocale(end - start)} bp</div>
             <div>Reads supporting junction: {score}</div>
             <div>Strand: {strand}</div>

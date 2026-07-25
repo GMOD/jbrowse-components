@@ -99,8 +99,10 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           filterBy,
           minDepth,
           callFract,
-          ambiguityCodes,
-          hetFract,
+          // effectiveHetFract, not ambiguityCodes + hetFract: it's the only form
+          // of the two the RPC sees, so keying on the raw pair refetched an
+          // identical consensus on every drag of a disabled het slider.
+          effectiveHetFract,
           includeInsertions,
         ],
     async () => {
@@ -215,6 +217,10 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             label="Min het fraction"
             helpText="with ambiguity codes on, a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
             value={hetFract}
+            // Only reaches computeConsensus via effectiveHetFract, so with
+            // ambiguity codes off the control does nothing — say so rather than
+            // leaving it live and inert.
+            disabled={!ambiguityCodes}
             onCommit={v => {
               setHetFract(v)
             }}

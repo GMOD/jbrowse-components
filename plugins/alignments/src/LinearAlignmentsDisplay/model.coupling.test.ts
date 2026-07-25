@@ -294,10 +294,20 @@ describe('read-category toggles + filter submenu', () => {
     expect(display.drawProperPairs).toBe(false)
   })
 
-  test('"Filter by..." wraps the Edit filters dialog', () => {
+  // One item that opens the dialog directly — no single-child submenu — and its
+  // label is the only place the track chrome admits a filter is hiding reads.
+  test('"Filter by..." opens the dialog directly and counts active filters', () => {
     const display = createDisplay()
-    const filterBy = findMenu(display.trackMenuItems(), 'Filter by...')
-    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Edit filters...')).toBe(true)
+    expect(findMenu(display.trackMenuItems(), 'Filter by...')?.onClick).toEqual(
+      expect.any(Function),
+    )
+
+    display.setFilterBy({
+      ...display.filterBy,
+      readName: 'readA',
+      tagFilters: [{ tag: 'HP', value: '1' }],
+    })
+    expect(findMenu(display.trackMenuItems(), 'Filter by... (2)')).toBeDefined()
   })
 })
 

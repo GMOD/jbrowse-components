@@ -15,20 +15,27 @@ export default function FractionSlider({
   helpText,
   value,
   onCommit,
+  disabled = false,
 }: {
   label: string
   helpText: string
   value: number
   onCommit: (value: number) => void
+  disabled?: boolean
 }) {
   const [dragValue, setDragValue] = useState<number | null>(null)
   const displayed = dragValue ?? value
   return (
     <div style={{ width: 210 }}>
-      <Typography variant="caption" component="div">
+      <Typography
+        variant="caption"
+        component="div"
+        color={disabled ? 'text.disabled' : undefined}
+      >
         {label}: {displayed.toFixed(2)}
       </Typography>
       <SingleSlider
+        disabled={disabled}
         value={displayed}
         onChange={v => {
           setDragValue(v)
@@ -43,7 +50,11 @@ export default function FractionSlider({
         valueLabelDisplay="auto"
         size="small"
       />
-      <Typography variant="caption" color="text.secondary" component="div">
+      <Typography
+        variant="caption"
+        color={disabled ? 'text.disabled' : 'text.secondary'}
+        component="div"
+      >
         {helpText}
       </Typography>
     </div>

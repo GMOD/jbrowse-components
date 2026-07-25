@@ -1,4 +1,4 @@
-import { formatChainTooltip } from './tooltipUtils.ts'
+import { formatChainTooltip, formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -85,5 +85,44 @@ describe('formatChainTooltip pair anomalies', () => {
     expect(tip).toContain('Inter-chromosomal (mate on chr2)')
     expect(tip).not.toContain('Long insert size')
     expect(tip).not.toContain('facing pair')
+  })
+})
+
+describe('read tooltip location', () => {
+  // readPositions are 0-based half-open, so the hover must render start + 1 to
+  // agree with the context menu's "Copy location", the feature detail widget,
+  // and the SNP tooltip on the same read.
+  it('renders the read start 1-based', () => {
+    expect(formatChainTooltip(makeRpcData(), 0, 'chr1')).toContain(
+      'chr1:1,001-1,100',
+    )
+  })
+
+  it('formats a feature label 1-based, with the strand only when asked', () => {
+    const info = {
+      id: 'f1',
+      name: 'readA',
+      start: 1000,
+      end: 1100,
+      strand: -1,
+      refName: 'chr1',
+    }
+    expect(formatFeatureLabel(info, { showStrand: true })).toBe(
+      'readA chr1:1,001-1,100 (-)',
+    )
+    expect(formatFeatureLabel(info)).toBe('readA chr1:1,001-1,100')
+  })
+
+  it('falls back to the feature id when the read has no name', () => {
+    expect(
+      formatFeatureLabel({
+        id: 'f1',
+        name: '',
+        start: 0,
+        end: 100,
+        strand: 1,
+        refName: 'chr1',
+      }),
+    ).toBe('f1 chr1:1-100')
   })
 })

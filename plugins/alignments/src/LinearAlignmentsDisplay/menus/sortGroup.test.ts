@@ -136,13 +136,20 @@ describe('sort menu keeps the two ordering slots mutually exclusive', () => {
     expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(true)
   })
 
+  // The sort radios delegate the mutual exclusion to setSortSlot, which drops
+  // largeFeaturesFirst only as it writes the slot. Clearing it here instead would
+  // wipe the current ordering even when the sort never lands (no valid center
+  // line), leaving every radio unchecked.
   test.each([
     ['Read strand', 'strand'],
     ['Base pair', 'basePair'],
-  ])('%s clears largeFeaturesFirst then sets the sort', (label, type) => {
-    const model = makeModel({ largeFeaturesFirst: true })
-    radio(model, label).onClick()
-    expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(false)
-    expect(model.setSortedBy).toHaveBeenCalledWith(type)
-  })
+  ])(
+    '%s sets the sort without pre-clearing largeFeaturesFirst',
+    (label, type) => {
+      const model = makeModel({ largeFeaturesFirst: true })
+      radio(model, label).onClick()
+      expect(model.setSortedBy).toHaveBeenCalledWith(type)
+      expect(model.setLargeFeaturesFirst).not.toHaveBeenCalled()
+    },
+  )
 })

@@ -30,6 +30,11 @@ interface SortByModel {
 // modes use, so the two config slots never both hold state. "Start location" is
 // the default/unsorted order, so it doubles as the reset — no separate "Clear".
 //
+// Only the `length` radio clears the *other* slot from here. The sort radios
+// don't: `setSortSlot` drops `largeFeaturesFirst` as it writes `sortedBy`, so a
+// sort that never lands (no valid center line, a cancelled tag dialog) leaves the
+// current ordering alone rather than clearing it and unchecking every radio.
+//
 // Strand / base pair / tag all anchor on the read column under the view's center
 // line, so `setSortedBy` reveals the center line when applied (the label doesn't
 // need to spell out the mechanic). A base-pair sort can also come from a
@@ -74,10 +79,6 @@ export function getSortByMenuItem(
 ) {
   const noun = opts?.noun ?? 'read'
   const mode = getSortMode(model)
-  function setSort(type: string) {
-    model.setLargeFeaturesFirst(false)
-    model.setSortedBy(type)
-  }
   const items: Record<SortMode, RadioMenuItem> = {
     position: {
       label: 'Start location',
@@ -102,7 +103,7 @@ export function getSortByMenuItem(
       type: 'radio',
       checked: mode === 'strand',
       onClick: () => {
-        setSort('strand')
+        model.setSortedBy('strand')
       },
     },
     basePair: {
@@ -110,7 +111,7 @@ export function getSortByMenuItem(
       type: 'radio',
       checked: mode === 'basePair',
       onClick: () => {
-        setSort('basePair')
+        model.setSortedBy('basePair')
       },
     },
     tag: {
@@ -118,7 +119,6 @@ export function getSortByMenuItem(
       type: 'radio',
       checked: mode === 'tag',
       onClick: () => {
-        model.setLargeFeaturesFirst(false)
         getSession(model).queueDialog(handleClose => [
           SortByTagDialog,
           {

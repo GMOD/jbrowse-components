@@ -226,14 +226,24 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     model.setFilterBy({
       flagInclude,
       flagExclude,
-      readName,
+      // An empty field means "no read-name filter", so omit it rather than
+      // storing ''. Consumers test `readName !== undefined` to decide whether a
+      // filter is active (the context menu's "Clear read/tag filters"), and ''
+      // would also change `filterBy` identity and trigger a pointless refetch.
+      readName: readName === '' ? undefined : readName,
       tagFilters: tagFilters.length > 0 ? tagFilters : undefined,
     })
     handleClose()
   }
 
   return (
-    <Dialog open onClose={handleClose} title="Filter options">
+    <Dialog
+      open
+      onClose={() => {
+        handleClose()
+      }}
+      title="Filter options"
+    >
       {/* Form wrapper gives Enter-to-submit, like SubmitDialog. Reset/Cancel are
       MUI-default type="button" so they don't submit; only the primary does. */}
       <form
