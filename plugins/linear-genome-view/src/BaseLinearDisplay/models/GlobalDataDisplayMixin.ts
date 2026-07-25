@@ -134,20 +134,12 @@ interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
  * every global trigger shares the same skeleton: track the viewport,
  * minimize/expand, the `rpcProps()` cache key and `reloadCounter` so any of them
  * refires the fetch, then debounce. This helper owns that skeleton so a display
- * supplies
- * only its own `shouldFetch` gate (reading — and thereby MobX-tracking — its
- * display-specific fetch inputs) and its `fetch` action.
+ * supplies only its own `shouldFetch` gate (reading — and thereby MobX-tracking —
+ * its display-specific fetch inputs) and its `fetch` action.
  *
  * Runs through `autorunOnReadyView`, so the body never reads a throwing view
  * getter (`dynamicBlocks`, `width`) before the view is initialized, and
  * re-runs automatically once it is.
- *
- * The `rpcProps()` trigger is the *serialized* payload, matching MultiRegion's
- * `rpcPropsCacheKey` — see `serializeRpcProps` for why observing the raw call
- * over-triggers. Keeping the two families on one invalidation axis is the point:
- * a global display whose `rpcProps()` reads more than it returns (HiC's
- * `activeNormalization` consults the fetched `availableNormalizations`) would
- * otherwise refetch where the per-region family wouldn't.
  *
  * `rpcProps()` loop hazard: unlike MultiRegion's `SettingsInvalidate` (which
  * clears data in a *separate, undelayed* autorun and so loops synchronously if
@@ -178,9 +170,10 @@ export function installGlobalFetchAutorun(
   // `{ delay }` did. See leadingEdgeDebounce for why MobX's own `{ delay }`
   // can't do this.
   const debounce = leadingEdgeDebounce(opts.delay)
-  // a computed, not a bare call in the body: MobX then invalidates the autorun
-  // only when the serialized payload differs, exactly as MultiRegion's
-  // `rpcPropsCacheKey` getter does for `SettingsInvalidate`
+  // a computed, not a bare `rpcProps()` in the body: that tracks every
+  // observable the payload merely read, refetching where the per-region family
+  // wouldn't. Same axis as MultiRegion's `rpcPropsCacheKey` — see
+  // `serializeRpcProps`.
   const rpcPropsCacheKey = computed(() => serializeRpcProps(self))
   autorunOnReadyView(
     self,

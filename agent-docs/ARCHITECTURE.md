@@ -497,12 +497,13 @@ Serializing collapses both: only a change in what's returned invalidates. And it
 has to be a string rather than a `.rpcProps()` comparison, because a fresh object
 never compares equal.
 
-The inverse hazard, since `JSON.stringify` *is* the comparison: a payload field
-that doesn't survive serialization is a **silently dead cache axis** — changing it
-refetches nothing and raises no error. A class instance needs a `toJSON`
-(`SerializableFilterChain` has one, which is what makes the variant displays'
-`filters` field a real key); `undefined` drops out of the string entirely. Prefer
-primitives and plain arrays. Regression-tested in
+The inverse hazard, since `JSON.stringify` *is* the comparison: a field whose
+distinct states serialize identically is a **silently dead cache axis** — changing
+it refetches nothing and raises no error. A class instance needs a `toJSON` or it
+flattens to `{}` (`SerializableFilterChain` has one, which is what makes the
+variant displays' `filters` field a real key), and an `undefined` value drops its
+key entirely, so it can't be distinguished from a sibling state that also drops.
+Prefer primitives and plain arrays. Regression-tested in
 `installGlobalFetchAutorun.test.ts` ("ignores an observable rpcProps() reads but
 does not return"), which fails if the trigger goes back to the raw call.
 
