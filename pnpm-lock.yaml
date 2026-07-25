@@ -592,8 +592,8 @@ importers:
         specifier: workspace:^
         version: link:../text-indexing-core
       ixixx:
-        specifier: ^3.0.9
-        version: 3.0.9
+        specifier: ^3.0.10
+        version: 3.0.10
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1682,8 +1682,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.17
-        version: 3.0.17
+        specifier: ^3.0.18
+        version: 3.0.18
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1823,8 +1823,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
       ixixx:
-        specifier: ^3.0.9
-        version: 3.0.9
+        specifier: ^3.0.10
+        version: 3.0.10
       tmp:
         specifier: ^0.2.7
         version: 0.2.7
@@ -4212,8 +4212,8 @@ packages:
   '@gmod/tabix@3.4.2':
     resolution: {integrity: sha512-WDPdOL1eKUkloTH9PY5VpAIxStN+PgvhQ7Tf1pzjA5u2VTUnQyBMQix+SvOQEZrqtHOOMMlbcUeQUADvNkhLuA==}
 
-  '@gmod/trix@3.0.17':
-    resolution: {integrity: sha512-45y/VCLFFCV8qhwMBKyCpA0NO1nI81X52ETvQji3OHYB16rQXxn4tMwdQgDyatQUtVOiKg1M0FyObJMQnAkKwA==}
+  '@gmod/trix@3.0.18':
+    resolution: {integrity: sha512-xHtQ7Ah7SO9xRxYLOONvuCcL0T5nPGzhGQ2dEDIkgzERQGa2yZDPU/TGtN+SBUmztg+MHVfO9gSayNoXYOtHKA==}
 
   '@gmod/twobit@6.0.9':
     resolution: {integrity: sha512-8X0QERQbJ152ITLQEEujrYG3Ho19FOMCj4LnOkxB8A9EynNp+ensmIh4/aQAzwgtrqqzb8DOFubET6c4bVdzwA==}
@@ -7798,8 +7798,8 @@ packages:
     resolution: {integrity: sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA==}
     engines: {node: '>=8'}
 
-  ixixx@3.0.9:
-    resolution: {integrity: sha512-jMTz1b1Tcdc1UGL6MGKueGNWDSbUnHL3dKCGtziZRNBcUFa3NPouAEFKTRC6KAkWyNGH1pNXk/y0YOZ/hlz2rw==}
+  ixixx@3.0.10:
+    resolution: {integrity: sha512-+/fAuZaGvNnEsT//MojnmfzNlla2E0N4w+oLxvZ1ZDJ3+1bRu+OyAl13SmYkc+gr4oGAYzxoEtBbpCx7g1V7Vw==}
     hasBin: true
 
   jackspeak@3.4.3:
@@ -12148,7 +12148,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.0
 
-  '@gmod/trix@3.0.17': {}
+  '@gmod/trix@3.0.18': {}
 
   '@gmod/twobit@6.0.9':
     dependencies:
@@ -15957,7 +15957,7 @@ snapshots:
       html-escaper: 2.0.2
       istanbul-lib-report: 3.0.1
 
-  ixixx@3.0.9:
+  ixixx@3.0.10:
     dependencies:
       split2: 4.2.0
 
