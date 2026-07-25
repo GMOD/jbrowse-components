@@ -182,10 +182,11 @@ leaves three settings to write:
 
 ## Read it
 
-Open the track at whole-genome zoom, then run the "Cluster rows by similarity"
-action in the track menu. Clustering reorders the rows so tumors with similar
-profiles sit together, which turns a noisy stack into blocks, and draws the
-dendrogram in the sidebar (**Sidebar with tree and labels**, on by default).
+Open the track at whole-genome zoom, then run "Clustering > Cluster rows by
+similarity" action in the track menu. Clustering reorders the rows so tumors
+with similar profiles sit together, which turns a noisy stack into blocks, and
+draws the dendrogram in the sidebar (**Show sidebar with tree and labels**, on
+by default).
 
 - **Vertical blue stripes** are recurrent deletions, clearest at 9p21 (CDKN2A);
   10q23 (PTEN) is present but faint in this cohort.

@@ -88,6 +88,18 @@ modified-base workflow.
 
 <Figure caption="COLO829 tumor nanopore reads over a hypomethylated CpG island on chr20, colored by type (top) and 2-color (bottom): by-type leaves the island near-empty, 2-color fills it solid blue." src="/img/alignments/modifications2.png" />
 
+### Bisulfite and EM-seq
+
+Bisulfite (WGBS) and EM-seq reads carry no MM/ML tags: methylation is encoded in
+the C→T conversion itself. **Color by → Bisulfite / EM-seq** reads it straight
+off the aligned bases against the reference, so a plain BAM from bwameth (or any
+bisulfite-aware aligner) colors without a methylation caller. Methylated
+cytosines paint red; **Show unmethylated (blue)** paints the converted sites
+too. Pick the cytosine context (CG, CHG, or CHH) from the same submenu, which
+matters for plant genomes that methylate in all three. The
+[bisulfite tutorial](/docs/tutorials/bisulfite) runs the pipeline end to end on
+_Arabidopsis_ data.
+
 ### Pair orientation and insert size
 
 For paired-end data, **Color by → Pair orientation** and **Color by → Insert
@@ -118,7 +130,11 @@ The track menu's **Group by...** splits the pileup into one coverage+pileup
 section per value of a chosen dimension: strand, read group (RG), or any tag
 such as `HP`. Each group gets a divider label and the groups share one coverage
 scale, so they read independently. Grouping a phased BAM by `HP` turns it into
-one pileup per haplotype.
+one pileup per haplotype. Reads missing the chosen tag collect in a trailing
+"none" section rather than disappearing. Grouping costs no extra fetching (the
+worker partitions one fetch into sections), and each section's divider has a
+control to collapse it down to just its coverage, so you can fold away the
+groups you aren't reading.
 
 <Figure caption="Group by... opens a dialog where you pick the dimension (here the HP haplotype tag) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
 
@@ -126,25 +142,42 @@ one pileup per haplotype.
 
 <Figure caption="A 27 bp heterozygous deletion in HG002 ONT reads, grouped by HP into haplotype 1 (pink) and haplotype 2 (blue). The deletion-supporting reads concentrate in a single haplotype." src="/img/smalldel.png" />
 
-## Compact display
+## Read height and track sizing
 
-For a denser pileup, lower the feature height from the track menu's pileup
-settings.
+The track menu's **Read height** submenu holds two independent choices: how tall
+each read is drawn, and how the track absorbs more reads than fit.
+
+The size presets at the top are Normal, Compact, and Super-compact, plus
+**Custom...** for an exact pixel height. Each preset's trailing ⋯ control opens
+a dialog to make that height the session-wide default for alignments tracks,
+applied to future tracks and, optionally, to the ones already open.
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
 
-The **Read height** submenu offers Normal, Compact, and Super-compact presets
-(plus a custom value) for how tall each read is drawn. Each preset's trailing ⋯
-control opens a dialog to make that height the session-wide default for
-alignments tracks, applied to future tracks and, optionally, to the ones already
-open.
-
-Read height is separate from the sibling **Track sizing** submenu, which
-controls what the track does when there are more reads than fit: _scroll_ (fixed
-height), _expand_ (grow the track to show every read), or _squeeze_ (shrink
-reads to fill the current height).
-
 <Figure caption="Making Compact the default feature height. Top: the ⋯ control on the Compact preset (circled). Bottom: it opens this dialog; ticking both boxes sets Compact as the default for new alignments tracks and applies it to the two tracks already open." src="/img/feature_height_default.png" />
+
+Under the **Track sizing** subheading in the same submenu are three modes:
+
+- Fixed read height - reads keep their configured height and the pileup scrolls
+  when it overflows.
+- Fixed read height + autogrow track height - reads keep their height and the
+  track grows to hold them instead of scrolling, up to a ceiling past which it
+  scrolls again.
+- Fit read height to display - the read height is derived from the track height
+  so the whole pileup fits on screen at once, shrinking as coverage deepens and
+  growing back as it thins. Because the size is computed, no size preset reads
+  as selected while fitting; picking one drops back to fixed.
+
+<Figure src="/img/alignments/height_modes.png" links="Fixed read height=alignments/height_mode_fixed,Fit read height to display=alignments/height_mode_fit" caption="The same HG002 Illumina pileup in a 260px track. Top, fixed read height: reads keep their size and most of the pileup is off-screen behind the scrollbar. Bottom, fit read height to display: the read height is derived from the track height, so every row lands on screen." />
+
+Fit mode is the one to reach for when you care about the shape of a pileup
+rather than individual bases: drag the track taller or shorter and the reads
+re-fit to whatever height you gave it. It never draws reads taller than the
+Normal preset, so a shallow pileup in a tall track doesn't balloon, and it never
+goes below 1px per read, so an extremely deep pileup still overflows the display
+rather than vanishing. Grouping interacts with it directly: each group's
+coverage row is reserved first and only the expanded groups' rows share what's
+left, so collapsing a group gives the rest more height.
 
 ## Insertion and clipping indicators
 

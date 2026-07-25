@@ -31,7 +31,9 @@ Three ways to create one:
 - The "Add a track" form lets you paste a list of BigWig URLs, or open multiple
   BigWig files from your machine
 - The track selector lets you multi-select existing tracks and combine them into
-  a multi-quantitative track
+  a multi-quantitative track, which is how a set of per-cell-type BigWigs
+  becomes one stacked track (see the
+  [single-cell ATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk))
 - Hand-edit the config, described in the
   [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
   guide
@@ -102,7 +104,8 @@ the Methylation category (assembly hg38, chr21).
 ## Clustering rows by score
 
 Reorder subtracks by signal similarity using hierarchical clustering. From the
-track menu, select **Cluster rows by score**. A dialog opens with two modes:
+track menu, select **Clustering → Cluster rows by score...**. A dialog opens
+with two modes:
 
 - Auto mode runs hierarchical clustering (hclust via JavaScript) directly in the
   browser, sampling signal values at each pixel across the visible region.
@@ -113,7 +116,7 @@ track menu, select **Cluster rows by score**. A dialog opens with two modes:
 After clustering, the rows are reordered so that subtracks with similar signal
 profiles sit together.
 
-<Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
+<Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster rows by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
 
 The "Show tree" toggle in the track menu displays a dendrogram sidebar alongside
 the reordered rows. With the tree shown, click any internal node to collapse the
@@ -134,5 +137,6 @@ the display's full config reference.
 
 - [Quantitative track](/docs/user_guides/quantitative_track)
 - [Methylation tutorial](/docs/tutorials/methylation)
+- [Single-cell ATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk)
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
 - [Gallery: coverage, copy number, and epigenomics](/gallery/#coverage)

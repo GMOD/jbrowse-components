@@ -9,6 +9,10 @@ sequence-search servers, **BLAT search** and **In-silico PCR**. Both run against
 hosted UCSC databases (or a self-hosted mirror/proxy) and add their hits to the
 current view as a new track.
 
+The plugin ships with JBrowse Desktop, where both items are in the Tools menu
+with nothing to install. JBrowse Web does not bundle it, so the menu items are
+absent there.
+
 ## BLAT search
 
 Choose **Tools → BLAT search…**, then paste a DNA sequence (or FASTA) to align

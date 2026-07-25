@@ -140,9 +140,9 @@ the breakpoints rather than trusting the call outright. Navigate to
 `chr19:41,700,000–42,000,000` to start at its left breakpoint region.
 
 At this scale the variant track shows the inversion call as a wide bar spanning
-the region. Use the **Cluster by genotype** option in the track menu to group
-samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows, showing the
-inversion's frequency across the cohort at a glance.
+the region. Use **Clustering > Cluster rows by genotype...** in the track menu
+to group samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows, showing
+the inversion's frequency across the cohort at a glance.
 
 <Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The track selector panel on the right shows the 1000 Genomes track categories, and enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
 
@@ -194,7 +194,7 @@ For more on navigating the breakpoint split view, see
 | Per-sample genotypes    | Feature details → SAMPLES              | GT 0/0 / 0/1 / 1/1 across all 3,202 samples                  |
 | Genotype patterns       | Multi-sample display (regular)         | High-frequency vs private calls, row pattern per sample      |
 | Trio inheritance        | Trio BAM tracks + SAMPLES table        | De novo vs inherited, which parent contributed the alt       |
-| Inversion genotyping    | Cluster by genotype                    | Alt-genotype samples grouped into distinct rows              |
+| Inversion genotyping    | Cluster rows by genotype               | Alt-genotype samples grouped into distinct rows              |
 | Inversion read evidence | Pair orientation coloring, paired arcs | LL/RR pairs at breakpoints, long arcs spanning the inversion |
 | Breakpoint detail       | Breakpoint split view                  | Splines + variant call across both junctions                 |
 

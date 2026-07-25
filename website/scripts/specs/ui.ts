@@ -1660,4 +1660,31 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 700,
   },
+
+  // The "Display types" submenu on a plain BED feature track, with the
+  // multi-row display boxed: the multi-row user guide's answer to "where do I
+  // turn this on". Deliberately shot on a track still in its DEFAULT display,
+  // so the figure shows the switch being available rather than already made.
+  // Local volvox data, so no remote-fetch timeout.
+  {
+    mode: 'url',
+    name: 'multirow/display_types_menu',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: ['bedtabix_genes'],
+    }),
+    readyText: 'ctgA',
+    viewportWidth: 1000,
+    viewportHeight: 560,
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      ...menuCascade(['Display types', 'Multi-row feature display (painting)']),
+    ],
+    annotations: cascadeBoxes([
+      'Display types',
+      'Multi-row feature display (painting)',
+    ]),
+  },
 ]

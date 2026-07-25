@@ -124,3 +124,5 @@ single clade. **Clear subtree filter** restores all species.
 - [MAF track configuration](/docs/config_guides/maf_track)
 - [Linear synteny view](/docs/user_guides/linear_synteny_view)
 - [Gene track](/docs/user_guides/gene_track)
+- [Quantitative track](/docs/user_guides/quantitative_track) - phyloP/phastCons
+  conservation scores as a signal track

@@ -8,6 +8,9 @@ import { join } from 'node:path'
 import {
   CONFIG_CATEGORIES,
   DEVELOPER_CATEGORIES,
+  TUTORIAL_CATEGORIES,
+  TUTORIAL_FALLBACK,
+  TUTORIAL_ORDER,
   USER_CATEGORIES,
 } from '../src/lib/guide-categories.ts'
 import { checkOrWrite } from './check-utils.ts'
@@ -118,6 +121,50 @@ function buildTocSection(
   return lines
 }
 
+// Tutorials carry one more level of grouping than the guide dirs: they all
+// declare `guide_category: Tutorials`, so a flat list of them buries 20+ pages
+// under one heading. Split them by `tutorial_category` instead, reusing the
+// order the tutorials landing page uses so the two groupings of the same pages
+// match. (The landing page is what fails the build on an unknown category; here
+// an unrecognized one just falls into the trailing bucket.)
+function buildTutorialSection(): string[] {
+  const dir = join(docsDir, 'tutorials')
+  const rank = (slug: string) => {
+    const i = TUTORIAL_ORDER.indexOf(slug)
+    return i === -1 ? TUTORIAL_ORDER.length : i
+  }
+  const entries = readdirSync(dir)
+    .filter(f => f.endsWith('.md'))
+    .map(file => ({
+      slug: file.replace(/\.md$/, ''),
+      fm: parseFrontmatter(readFileSync(join(dir, file), 'utf8')),
+    }))
+    .filter(({ fm }) => fm.guide_category === 'Tutorials')
+    .map(({ slug, fm }) => ({
+      slug,
+      title: fm.title ?? slug,
+      category: TUTORIAL_CATEGORIES.includes(fm.tutorial_category ?? '')
+        ? fm.tutorial_category!
+        : TUTORIAL_FALLBACK,
+    }))
+    .sort(
+      (a, b) => rank(a.slug) - rank(b.slug) || a.title.localeCompare(b.title),
+    )
+
+  const lines: string[] = []
+  for (const category of [...TUTORIAL_CATEGORIES, TUTORIAL_FALLBACK]) {
+    const inCategory = entries.filter(e => e.category === category)
+    if (inCategory.length) {
+      lines.push(`### ${category}`, '')
+      for (const e of inCategory) {
+        lines.push(`- [${e.title}](/docs/tutorials/${e.slug})`)
+      }
+      lines.push('')
+    }
+  }
+  return lines.length ? ['## Tutorials', '', ...lines] : []
+}
+
 function buildUserGuide(): string {
   const lines: string[] = [
     '---',
@@ -125,10 +172,16 @@ function buildUserGuide(): string {
     'sidebar_label: Overview',
     '---',
     '',
+    'How to drive JBrowse once it is running. New here? Start with the',
+    '[JBrowse Web](/docs/quickstart_web) or',
+    '[JBrowse Desktop](/docs/quickstart_desktop) quickstart.',
+    '',
+    // tutorials/ is deliberately not passed here: its pages all share one
+    // `guide_category` and get their own subgrouped section below.
     ...buildTocSection(USER_CATEGORIES, [
       { dir: join(docsDir, 'user_guides'), urlDir: 'user_guides' },
-      { dir: join(docsDir, 'tutorials'), urlDir: 'tutorials' },
     ]),
+    ...buildTutorialSection(),
   ]
   return lines.join('\n')
 }

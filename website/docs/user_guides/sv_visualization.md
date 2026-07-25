@@ -27,29 +27,22 @@ tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
 
 ## SV signals in the alignments track
 
-The standard alignments track gives several SV-relevant signals with no extra
-steps:
+Four things a standard alignments track already shows carry most of the SV
+evidence. The [alignments track guide](/docs/user_guides/alignments_track)
+covers what each control does; here they matter for what their patterns mean.
 
-- Soft clipping - reads that extend past a breakpoint have their overhanging
-  bases soft-clipped; enabling Show soft clipping from the track menu makes
-  these bases visible at breakpoint edges
-
-<Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored bases marks where many reads terminate at a common breakpoint." src="/img/alignments_soft_clipped.png" />
-
-- Insertion/clipping indicators - a purple triangle marks positions where a
-  depth-dependent fraction of reads (roughly 30% at high coverage) carry an
-  insertion; blue/red triangles mark clipping; larger purple rectangles appear
-  for insertions >10 bp
-
-<Figure caption="Clipping and insertion indicators visible as colored vertical marks above the coverage track. The tall vertical colored lines (blue = soft clip, red = hard clip, purple = insertion) flag positions where many reads carry an SV signal, even without zooming into the pileup." src="/img/alignment_clipping_indicators.png" />
-
-- Color by pair orientation - abnormally oriented pairs produce characteristic
-  colors described in the table below
+- [Soft clipping](/docs/user_guides/alignments_track#soft-clipping) - reads that
+  extend past a breakpoint have their overhanging bases soft-clipped, so a
+  cluster of them marks a breakpoint edge
+- [Insertion and clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators) -
+  purple, blue, and red triangles above the coverage row flag insertions and
+  clips without zooming into the pileup
+- Color by pair orientation - abnormally oriented pairs produce the
+  characteristic colors in the table below
 - Color by insert size - pairs with unexpectedly large or small inserts are
   highlighted
 
-For descriptions of these features in general use, see the
-[alignments track guide](/docs/user_guides/alignments_track).
+<Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored bases marks where many reads terminate at a common breakpoint." src="/img/alignments_soft_clipped.png" />
 
 ### Pair orientation color scheme
 
@@ -99,7 +92,7 @@ light grey (normal). A separate Insert size (gradient) option shades reads
 continuously by the magnitude of the deviation. Reads with a mate on a different
 chromosome are handled separately (see the table below).
 
-With paired arcs or linked reads enabled (via Read connections in the track
+With read arcs or the read cloud enabled (via Read connections in the track
 menu), the Insert size option uses threshold-based coloring:
 
 <!-- COLOR_TABLE alignments-insert-size START -->
@@ -147,7 +140,7 @@ is a useful companion reference.
   complete drop
 - Paired reads flanking the gap colored red (larger insert than expected)
   suggest a deletion spanning the pair
-- With paired arcs enabled, unusually long arcs point to a deletion
+- With read arcs enabled, unusually long arcs point to a deletion
 
 <Figure caption="A 27 bp heterozygous deletion (orange variant bar labeled '27bp DEL' in the top track) in HG002 ONT reads. The SNP coverage panel above the pileup shows the local depth; the pileup is grouped by HP tag into stacked sections, separating haplotype 1 (pink) and haplotype 2 (blue). Supporting reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
 
@@ -183,7 +176,7 @@ in the [pair orientation section](#pair-orientation-color-scheme) above.
 - RL (teal) read pairs suggest a tandem duplication: reads appear to point away
   from each other when the duplicated segment is joined back to its origin
 - Elevated coverage over the duplicated region is another supporting signal
-- With paired arcs enabled, arcs pointing backward (upstream) across a junction
+- With read arcs enabled, arcs pointing backward (upstream) across a junction
   point to a tandem duplication
 
 The teal RL signature also appears in the inverted-duplication figure in the
@@ -191,13 +184,13 @@ The teal RL signature also appears in the inverted-duplication figure in the
 
 ### Translocation / inter-chromosomal fusion
 
-- With paired arcs or linked reads enabled, reads with mates on a different
+- With read arcs or the read cloud enabled, reads with mates on a different
   chromosome are colored purple; in the pileup they appear dark grey
 - A cluster of such reads at a locus marks one end of a translocation; open the
   [breakpoint split view](#breakpoint-split-view) from the feature details to
   see both ends at once
 
-## Paired arcs
+## Read arcs
 
 [Read arcs](/docs/user_guides/alignments_track#read-arcs) draw bezier curves
 between the ends of paired or split reads. For SVs, unusually long arcs relative
@@ -213,10 +206,6 @@ own bezier curve, colored here by pair orientation. The abnormal
 same-orientation pairs of an inverted duplication then read as a coherent bundle
 of curves rather than scattered singleton pileup rows.
 
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
-
-- HG002 deletion with Nanopore and Illumina reads in arc mode
-
 A read can look concordant (light-grey LR fill) yet still carry a dark-blue
 connector. That happens when the read itself crosses the inversion breakpoint:
 it splits into a primary and a strand-flipped supplementary alignment, and the
@@ -225,18 +214,14 @@ This is a second, independent line of evidence for the inversion, from a single
 split read rather than a pair. Hover any connector to read its classification
 (for example, _Split-read inversion_ versus _RR, both mates reverse strand_).
 
-## Linked reads
+## Read cloud
 
 [Read cloud](/docs/user_guides/alignments_track#read-cloud) stratifies reads by
 the log-scaled distance between mates, making it easy to count how many reads
 span a breakpoint and read their orientation at a glance. Chains with
 supplementary alignments are connected by an orange line.
 
-<Figure caption="Linked reads on an SV dataset: reads are drawn as horizontal lines stratified on the Y axis by the log distance between mates. The bar on the bottom row marks an abnormally large insert, flagging the structural-variant event." src="/img/alignments/read_cloud.png" />
-
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR)
-
-- inversion example in linked reads mode
+<Figure caption="Read cloud on an SV dataset: reads are drawn as horizontal lines stratified on the Y axis by the log distance between mates. The bar on the bottom row marks an abnormally large insert, flagging the structural-variant event." src="/img/alignments/read_cloud.png" />
 
 The Edit filters option in the track menu lets you show or hide proper pairs and
 singletons. The color scheme provides insert size, orientation, or combined
@@ -287,10 +272,6 @@ The header bar accepts location searches directly in either panel.
 The view also supports multi-hop events where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.
 
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca)
-
-- multi-hop split read connection in breakpoint split view
-
 ## Phasing heterozygous SVs
 
 For heterozygous SVs, confirming that supporting reads come from a single
@@ -299,23 +280,13 @@ haplotype is strong evidence for the call. If your BAM/CRAM has been haplotagged
 haplotype; the [phased trio tutorial](/docs/tutorials/analyze_trio) covers
 working with phased haplotypes end-to-end.
 
-Sort and color by the `HP` tag from the track menu. Reads from each haplotype
-cluster together, making it easy to see whether an SV is present on one or both
-haplotypes.
+Sort, color, or [group](/docs/user_guides/alignments_track#grouping-reads) by
+the `HP` tag from the track menu. Sorting and coloring cluster each haplotype's
+reads together; grouping goes further and gives each haplotype its own pileup
+section, which makes a one-sided SV unmistakable. Reads with no `HP` tag collect
+in their own section, so unphased support is visible rather than hidden.
 
 <Figure caption="Reads colored and sorted by haplotype. Coloring by the HP tag gives one color per haplotype, and sorting by the HP tag stacks each haplotype's reads into contiguous rows, making it easy to see which haplotype carries the variant." src="/img/alignments/haplotype.png" />
-
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE)
-
-- heterozygous small deletion in GIAB colored and sorted by HP tag
-
-Grouping by the `HP` tag from the track menu will split the track into separate
-sub-tracks per haplotype for an even clearer visual separation. Group by spawns
-new track instances dynamically, so sort and color is generally faster for
-initial exploration.
-
-See the [alignments track guide](/docs/user_guides/alignments_track) for more on
-sorting, coloring, and filtering by tag.
 
 ## Working with large SVs
 
@@ -337,10 +308,6 @@ inter-chromosomal SVs:
   calls
 
 <Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale without loading any reads." src="/img/cnv.png" />
-
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64)
-
-- COLO829 tumor vs normal whole-genome coverage
 
 ## Whole-genome assembly comparison
 
@@ -367,8 +334,8 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 | Pileup (default)          | Default lower panel             | Base-level detail, individual reads                |
 | Color by pair orientation | Color scheme in track menu      | Abnormal orientation patterns (RL/LL/RR)           |
 | Color by insert size      | Color scheme in track menu      | Insert size anomalies (pileup)                     |
-| Paired arcs               | Read connections in track menu  | Overview of long-range connections                 |
-| Linked reads              | Read connections in track menu  | Counting discordant pairs, orientation per read    |
+| Read arcs                 | Read connections in track menu  | Overview of long-range connections                 |
+| Read cloud                | Read connections in track menu  | Counting discordant pairs, orientation per read    |
 | Linear read vs ref        | Right-click on any read         | Complex alignment of a single long read            |
 | Breakpoint split view     | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
 | Sort/color by HP tag      | Sort/color by tag in track menu | Confirming heterozygous SVs on one haplotype       |
@@ -377,9 +344,9 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## Limitations
 
-- Read-level displays require zooming in: the pileup, paired arcs, and linked
-  reads modes only render when the view is zoomed in enough to load individual
-  reads; very large SVs can't be spanned in a single pileup view
+- Read-level displays require zooming in: the pileup, read arcs, and read cloud
+  modes only render when the view is zoomed in enough to load individual reads;
+  very large SVs can't be spanned in a single pileup view
 - Paired-end evidence is fragment-size limited: for insertions larger than the
   sequenced fragment, paired-end evidence disappears; long reads are required to
   fully resolve the inserted sequence

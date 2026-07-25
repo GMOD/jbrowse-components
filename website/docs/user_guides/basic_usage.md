@@ -114,39 +114,13 @@ assembly for the whole batch, then add them together.
 
 ## File format support
 
-The following file formats are supported in core JBrowse 2:
-
-### General
-
-- CRAM
-- BAM
-- VCF (Tabix-indexed)
-- GFF3 (Tabix-indexed)
-- BED (Tabix-indexed)
-- BigBed
-- BigWig
-- BEDPE
-- JBrowse 1 nested containment lists (NCList)
-- .hic (Hi-C contact matrix)
-
-### SV inspector
-
-- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
-
-### Synteny and dotplot
-
-- PAF (e.g. minimap2)
-- .delta (MUMmer)
-- .chain (UCSC chain)
-- .anchors / .anchors.simple (MCScan python version)
-- .out (MashMap)
-- BLAST tabular output
-
-### Sequence adapters
-
-- Indexed FASTA
-- BGZip indexed FASTA
-- 2bit
+Core JBrowse 2 reads BAM/CRAM, tabix-indexed VCF/GFF3/GTF/BED, BigWig/BigBed,
+BedGraph, BEDPE, `.hic`, MAF/BigMaf/TAF, PLINK LD, and the whole-genome
+alignment formats (PAF, MUMmer `.delta`, UCSC `.chain`, MCScan `.anchors`,
+MashMap, BLAST tabular), on assemblies stored as indexed FASTA, bgzip-indexed
+FASTA, or 2bit. The [supported file types](/docs/config_guides/file_types) table
+is the full list, with the adapter and track type each format maps to; it is
+generated from the adapters themselves, so it never goes stale.
 
 Additional data formats can be supported via plugins; check out the
 [plugin store](/docs/user_guides/plugin_store).
@@ -168,7 +142,9 @@ send to other users.
 The address-bar URL does not capture full session state, so always use the Share
 button to get a shareable link.
 
-Sharing sessions is not available for JBrowse Desktop.
+JBrowse Desktop has no Share button, since its sessions are files you can send
+directly. It can open a link someone shares with you, though, via `File` →
+`Session` → `Open JBrowse Web link...`.
 
 <Figure caption="The session share dialog, which gives you a short URL to share your session with other users." src="/img/share_button.png" />
 
@@ -234,6 +210,10 @@ session, not just the one track. Pinned defaults ride along in the session, so
 they travel with a shared session link, and every track a default affects is
 badged in the track selector. Click the pin again (or **Follow default** on a
 track) to un-pin and revert to the underlying configuration.
+
+The [display settings tutorial](/docs/tutorials/display_settings) covers the
+same settings from the other direction: as persistent defaults in `config.json`,
+and as overrides carried in a URL or an embedded session.
 
 ## Rubberband selection
 

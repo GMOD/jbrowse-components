@@ -55,6 +55,7 @@ as tracks.
 
 - [Linear synteny view](/docs/user_guides/linear_synteny_view)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny)
 - [Synteny/dotplot configuration](/docs/config_guides/synteny_track)
 - [DotplotDisplay config schema](/docs/config/dotplotdisplay)
 - [Gallery: synteny examples](/gallery/#synteny)

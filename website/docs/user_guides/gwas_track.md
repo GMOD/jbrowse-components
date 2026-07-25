@@ -12,28 +12,23 @@ LD coloring to show linkage to an index SNP.
 
 <Figure caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background." src="/img/gwas/manhattan.png" />
 
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_gwas.json)
-
 For a genome-wide example, the embedded
 [Pan-UKB GWAS example](https://jbrowse.org/storybook/lgv/pan-ukb-gwas) browses
 the full Pan-UK Biobank catalog of ~7,200 phenotypes, loading each trait's
 summary statistics straight from the Pan-UKBB public S3 bucket.
 
-## Example files
+## Example file
 
-Paste these demo URLs directly into the Add GWAS track workflow:
-
-**GWAS results** (hg19, SLE GWAS, `neg_log_pvalue` column):
+To try the workflow without preparing anything, paste this hg19 SLE GWAS summary
+statistics file (with `neg_log_pvalue` as the score column) into the Add GWAS
+track form:
 
 ```
 https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz
 ```
 
-**LD file** (PLINK `.ld`, SLE study, 1000G CEU reference panel):
-
-The LD file is bundled with the demo config. Open the
-[live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_gwas.json)
-to see an already-configured LD-colored view.
+Its matching PLINK `.ld` file (1000G CEU reference panel) is already wired up in
+the demo config, so the LD-colored view below opens ready to explore.
 
 ## Public data sources
 
@@ -61,6 +56,11 @@ chosen).
 The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld)
 shows this r² coloring running live in a React app.
+
+This is not the same feature as the LD triangle, which draws r² between every
+pair of nearby variants as a heatmap rather than coloring GWAS points against
+one index SNP, and can compute it live from phased genotypes. See the
+[linkage disequilibrium tutorial](/docs/tutorials/linkage_disequilibrium).
 
 LD data must be in PLINK `--r2` output format (`.ld` or `.ld.gz`). Generate it
 from:
@@ -94,6 +94,8 @@ as the index; right-click any point or use the track menu to change it.
 
 - [Quantitative track](/docs/user_guides/quantitative_track)
 - [Variant track](/docs/user_guides/variant_track)
+- [Linkage disequilibrium tutorial](/docs/tutorials/linkage_disequilibrium)
+- [BXD QTL mapping tutorial](/docs/tutorials/bxd_qtl)
 - [GWAS track configuration](/docs/config_guides/gwas_track)
 - [GWASAdapter config schema](/docs/config/gwasadapter)
 - [Gallery: variants and populations](/gallery/#variants)

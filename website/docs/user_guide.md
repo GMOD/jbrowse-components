@@ -3,6 +3,10 @@ title: User guide
 sidebar_label: Overview
 ---
 
+How to drive JBrowse once it is running. New here? Start with the
+[JBrowse Web](/docs/quickstart_web) or
+[JBrowse Desktop](/docs/quickstart_desktop) quickstart.
+
 ## General usage
 
 - [Basic usage](/docs/user_guides/basic_usage)
@@ -19,6 +23,7 @@ sidebar_label: Overview
 - [Hi-C track](/docs/user_guides/hic_track)
 - [MAF track](/docs/user_guides/maf_track)
 - [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
+- [Multi-row feature track](/docs/user_guides/multirow_feature_track)
 - [Multi-sample variant display](/docs/user_guides/multivariant_track)
 - [Quantitative track](/docs/user_guides/quantitative_track)
 - [Sequence track](/docs/user_guides/sequence_track)
@@ -43,26 +48,43 @@ sidebar_label: Overview
 
 ## Tutorials
 
+### Synteny & comparative genomics
+
+- [Synteny visualization (pairwise minimap2)](/docs/tutorials/synteny_visualization)
+- [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny)
 - [Synteny visualization (all-vs-all minimap2)](/docs/tutorials/allvsall_synteny)
+- [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli)
+- [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus)
+- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc)
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny)
+
+### Structural variation
+
+- [Structural variants (Cancer GIAB)](/docs/tutorials/sv_visualization_cgiab)
+- [Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples)
+- [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv)
+
+### Population genomics
+
+- [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics)
 - [Phased trio analysis](/docs/tutorials/analyze_trio)
-- [Methylation (bisulfite)](/docs/tutorials/bisulfite)
+- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium)
 - [BXD QTL mapping](/docs/tutorials/bxd_qtl)
+
+### Epigenomics & single cell
+
+- [Methylation (long-read)](/docs/tutorials/methylation)
+- [Methylation (bisulfite)](/docs/tutorials/bisulfite)
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm)
-- [CLI config for Desktop](/docs/tutorials/cli_desktop)
+- [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk)
+
+### Transcriptomics & proteins
+
+- [RNA-seq visualization](/docs/tutorials/rnaseq)
+- [Protein structures](/docs/tutorials/protein_structure)
+
+### Configuration & embedding
+
 - [Display settings](/docs/tutorials/display_settings)
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
-- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny)
-- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium)
-- [Methylation (long-read)](/docs/tutorials/methylation)
-- [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny)
-- [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus)
-- [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli)
-- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc)
-- [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics)
-- [Protein structures](/docs/tutorials/protein_structure)
-- [RNA-seq visualization](/docs/tutorials/rnaseq)
-- [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk)
-- [Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples)
-- [Structural variants (Cancer GIAB)](/docs/tutorials/sv_visualization_cgiab)
-- [Synteny visualization (pairwise minimap2)](/docs/tutorials/synteny_visualization)
-- [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv)
+- [CLI config for Desktop](/docs/tutorials/cli_desktop)

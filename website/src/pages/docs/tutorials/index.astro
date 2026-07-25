@@ -4,21 +4,19 @@ import { getCollection } from 'astro:content'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { baseUrl } from '../../../lib/base-url.ts'
 import { entrySlug } from '../../../lib/docs-sidebar.ts'
+import {
+  TUTORIAL_CATEGORIES,
+  TUTORIAL_FALLBACK,
+  TUTORIAL_ORDER,
+} from '../../../lib/guide-categories.ts'
 
 // Section order for the landing page. A tutorial declares its section via the
 // `tutorial_category` frontmatter field; anything missing or unlisted falls
 // into a trailing "More tutorials" bucket, so a new tutorial always appears
-// even before it is categorized.
-const CATEGORY_ORDER = new Set([
-  'Getting started',
-  'Synteny & comparative genomics',
-  'Structural variation',
-  'Population genomics',
-  'Epigenomics & single cell',
-  'Transcriptomics & proteins',
-  'Configuration & embedding',
-])
-const FALLBACK = 'More tutorials'
+// even before it is categorized. The order is shared with the user guide index
+// (scripts/generate-guide-indexes.ts) so the two groupings can't drift.
+const CATEGORY_ORDER = new Set(TUTORIAL_CATEGORIES)
+const FALLBACK = TUTORIAL_FALLBACK
 
 // Some docs live outside tutorials/ but belong on this landing page: the
 // quickstarts are, in practice, the first tutorials a new user follows, and the
@@ -30,40 +28,12 @@ const EXTRA_DOCS = new Map([
   ['cookbook', 'Configuration & embedding'],
 ])
 
-// Curated order within each section. Sorting alphabetically floated niche pages
-// to the top (the CLI config walkthrough once led Getting started); instead lead
-// with the most representative / beginner-friendly page. Getting started is just
-// the two quickstarts; the domain analysis sections follow; and the more
-// advanced, developer/admin-oriented configuration work (display defaults,
-// embedding, CLI-config walkthroughs) sits last in its own Configuration &
-// embedding section. Anything unlisted falls after, alphabetically.
-const ORDER = [
-  'quickstart_web',
-  'quickstart_desktop',
-  'synteny_visualization',
-  'multiway_synteny',
-  'allvsall_synteny',
-  'pangenome_ecoli',
-  'pangenome_cactus',
-  'pangenome_hprc',
-  'sv_visualization_cgiab',
-  'sv_multisamples',
-  'population_genomics',
-  'analyze_trio',
-  'linkage_disequilibrium',
-  'bxd_qtl',
-  'methylation',
-  'bisulfite',
-  'chromhmm',
-  'scatac_pseudobulk',
-  'rnaseq',
-  'protein_structure',
-  'cookbook',
-  'display_settings',
-  'embed_linear_genome_view',
-  'embedding_examples',
-  'cli_desktop',
-]
+// Curated order within each section, shared with the user guide index. Getting
+// started is just the two quickstarts; the domain analysis sections follow; and
+// the more advanced, developer/admin-oriented configuration work (display
+// defaults, embedding, CLI-config walkthroughs) sits last in its own
+// Configuration & embedding section.
+const ORDER = TUTORIAL_ORDER
 const rank = (key: string) => {
   const i = ORDER.indexOf(key)
   return i === -1 ? ORDER.length : i

@@ -21,8 +21,9 @@ since a synteny track is queryable in either direction and its listed order does
 not claim which genome belongs on top. Switch to **Manual** to select the two
 assemblies yourself and optionally add a .paf, .out (MashMap), .delta (MUMmer),
 .chain, .anchors, or .anchors.simple (MCScan) file. Manual also stacks more than
-two genomes; see [All-vs-all synteny](/docs/tutorials/allvsall_synteny) for a
-worked example.
+two genomes, from an [all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
+[MCScan ortholog table](/docs/tutorials/multiway_synteny), or a
+[pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 <Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). Its Manual mode, shown here, is where you select two different assemblies and can supply an additional file." src="/img/dotplot_add.png" />
 
@@ -75,6 +76,8 @@ the indel:
 
 - [Dotplot view](/docs/user_guides/dotplot_view)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - hosted
+  liftOver chains, nothing to set up
 - [Synteny/dotplot configuration](/docs/config_guides/synteny_track)
 - [MAF track](/docs/user_guides/maf_track)
 - [Gallery: synteny examples](/gallery/#synteny)

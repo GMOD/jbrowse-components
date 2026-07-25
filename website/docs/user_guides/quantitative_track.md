@@ -60,7 +60,9 @@ Drag the bottom edge of the track down to make it taller.
 <Figure caption="Whole-genome CNV coverage profile from a BigWig file. Each chromosome is shown as a separate region; the signal represents read depth normalized by the pipeline. Copy-number gains appear as elevated signal; losses as depressed signal." src="/img/bigwig/whole_genome_coverage.png" />
 
 For tumor vs normal comparisons using two BigWig tracks on the same Y-axis, see
-[Multi-quantitative tracks](/docs/user_guides/multiquantitative_track).
+[Multi-quantitative tracks](/docs/user_guides/multiquantitative_track). To scale
+this up to a whole cohort, one row per tumor, see the
+[TCGA cohort copy number tutorial](/docs/tutorials/tcga_cohort_cnv).
 
 Not every dip or spike is a true copy-number change. Coverage is shaped by GC
 content, mappability, repeats, PCR bias, and (when mapping a divergent strain)

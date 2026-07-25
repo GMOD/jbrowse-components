@@ -735,6 +735,60 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // Track sizing modes, as two declarative sessions composed into one before/
+  // after (see the website CLAUDE.md: prefer `compose` over menu-driving when
+  // each state is its own session). Same track, same locus, same 260px track
+  // height in both parts, so the ONLY difference is heightMode: `fixed` draws
+  // reads at their configured height and scrolls the overflow away, `fit`
+  // derives the height from the display so every row lands on screen. The
+  // HG002 Illumina pileup is deep enough at this locus that the contrast is
+  // unmistakable. Remote DEMO_CONFIG data, hence the long ready timeout.
+  {
+    mode: 'url',
+    name: 'alignments/height_mode_fixed',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr1:161,176,000-161,178,500',
+      tracks: [
+        {
+          trackId: 'illumina_hg002',
+          type: 'LinearAlignmentsDisplay',
+          heightMode: 'fixed',
+          height: 260,
+        },
+      ],
+    }),
+    readyText: 'HG002',
+    readyTimeout: 60000,
+    settleMs: 12000,
+    viewportHeight: 420,
+  },
+  {
+    mode: 'url',
+    name: 'alignments/height_mode_fit',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr1:161,176,000-161,178,500',
+      tracks: [
+        {
+          trackId: 'illumina_hg002',
+          type: 'LinearAlignmentsDisplay',
+          heightMode: 'fit',
+          height: 260,
+        },
+      ],
+    }),
+    readyText: 'HG002',
+    readyTimeout: 60000,
+    settleMs: 12000,
+    viewportHeight: 420,
+  },
+  {
+    mode: 'compose',
+    name: 'alignments/height_modes',
+    parts: ['alignments/height_mode_fixed', 'alignments/height_mode_fit'],
+  },
+
   // Read connections (arc display): two-stage figure on the volvox-sv CRAM (whose
   // discordant pairs make the arcs meaningful). Top frame: the track menu's "Read
   // connections → Show pair overlay" radio submenu with "Arcs" boxed, drawn over

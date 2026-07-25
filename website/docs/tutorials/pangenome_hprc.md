@@ -227,9 +227,9 @@ variant regardless of spacing, so the density stays legible:
 <Figure caption="The HPRC2 pangenome VCF as a genotype matrix across chr6:32,450,000-32,650,000. 464 haplotype rows against ~13,000 variant columns: blue non-reference, grey reference, yellow no-call. The vertical yellow band is a region many haplotypes could not be called against the reference; the fainter texture is shared haplotype allele state, which clustering (next) sharpens into blocks." src="/img/hprc2/mhc_matrix.png" />
 
 The banding is suggestive; clustering confirms it. From the track menu,
-**Cluster by genotype... > Run clustering** reorders the rows by genotype
-similarity and draws a dendrogram beside them. It runs in the worker, so the
-view stays responsive:
+**Clustering > Cluster rows by genotype... > Run clustering** reorders the rows
+by genotype similarity and draws a dendrogram beside them. It runs in the
+worker, so the view stays responsive:
 
 <Figure caption="The same window with the 464 haplotype rows clustered by genotype and a dendrogram in the sidebar. The diffuse banding resolves into discrete blocks, including one all-yellow group with no calls at all: haplotypes divergent enough that the graph build declined to align them to the reference here, so 'no call' is itself the finding." src="/img/hprc2/mhc_clustered.png" />
 
@@ -275,8 +275,9 @@ keeps the columns the painting needs, and writes one bgzipped, tabixed file.
 
 <Figure caption="64 HPRC2 haplotypes painted along chr1 by PCLAI local ancestry, one row per haplotype, colored by the published per-window PCA color. Most rows hold a single color end to end; a few switch color repeatedly along the chromosome, each change a recombination breakpoint between differently-inferred segments. There is no color key: the palette is a continuous interpolation of PCA position, not labeled categories." src="/img/hprc2/local_ancestry.png" />
 
-The same **Cluster by genotype... > Run clustering** menu item works here too,
-reordering the haplotype rows so ancestry-similar rows sit together:
+This display has its own clustering, **Clustering > Cluster rows by similarity**
+in the track menu, which reorders the haplotype rows so ancestry-similar rows
+sit together:
 
 <Figure caption="The same 64-haplotype painting with the rows clustered and a dendrogram beside them. Haplotypes sharing an ancestry profile group into blocks, so the continuous PCA colors sort into bands rather than the input file's order." src="/img/hprc2/local_ancestry_clustered.png" />
 

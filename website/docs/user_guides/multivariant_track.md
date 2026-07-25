@@ -235,8 +235,8 @@ track is open.
 ## Clustering samples by genotype
 
 Samples can be reordered by genotype similarity using hierarchical clustering.
-From the track menu, select **Cluster by genotype**. A dialog opens with two
-modes:
+From the track menu, select **Clustering → Cluster rows by genotype...**. A
+dialog opens with two modes:
 
 - Auto - runs hierarchical clustering (hclust via JavaScript) directly in the
   browser. Works well for a few hundred samples; larger cohorts may be slow.
@@ -247,7 +247,7 @@ modes:
 After clustering, a dendrogram appears on the left side of the track and rows
 are reordered so genotypically similar samples sit next to each other.
 
-<Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster by genotype' dialog with its auto/manual mode options. Bottom: after clustering, samples are reordered by genotype similarity with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
+<Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog with its auto/manual mode options. Bottom: after clustering, samples are reordered by genotype similarity with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
 
 Click any internal node in the dendrogram to collapse the view to that clade
 (subtree filter). Click the same node again to clear the filter and restore all
@@ -273,6 +273,8 @@ have the full field reference.
 - [Variant track](/docs/user_guides/variant_track)
 - [Phased trio analysis](/docs/tutorials/analyze_trio)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
+- [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics)
+- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium)
 - [Variant track configuration](/docs/config_guides/variant_track)
 - [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
 - [Gallery: variants and populations](/gallery/#variants)
