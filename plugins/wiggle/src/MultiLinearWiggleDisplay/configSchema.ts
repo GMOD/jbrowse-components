@@ -8,11 +8,14 @@ import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'
 // Configs are sometimes hand-authored (or copy-pasted from a single-source
 // wiggle track) with a single-source rendering name even though this display
 // only draws multi-source renderings. Map each to its closest multi-source
-// equivalent rather than throwing an opaque MST union error.
+// equivalent rather than throwing an opaque MST union error. Every value in
+// WIGGLE_RENDERING_TYPES needs an entry — a missing one is an MST validation
+// error at config load, not a silent fallback (see configSchema.test.ts).
 const SINGLE_TO_MULTI_RENDERING: Record<string, string> = {
   xyplot: 'multixyplot',
   density: 'multirowdensity',
   line: 'multiline',
+  linecenter: 'multilinecenter',
   scatter: 'multiscatter',
 }
 
