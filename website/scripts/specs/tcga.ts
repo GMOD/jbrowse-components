@@ -386,9 +386,10 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // no clustering to gate on, so this waits on the ruler text and settles:
-    // the stack still pulls the whole 5.7MB BED before it paints
-    readyText: 'chr1',
+    // Nothing to gate on beyond the generator's own waits (loading overlay
+    // quiesced + displays painted): there is no clustering here, and the ruler
+    // reads bare contig names in this config, so a 'chr1' text gate never
+    // matches. The stack still pulls the whole 5.7MB BED before it paints.
     readyTimeout: 300000,
     viewportWidth: 1900,
     viewportHeight: 860,
@@ -430,10 +431,15 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'chr3',
+    // the track label only mounts once the session's tracks are on the view, so
+    // this gates out the blank "Loading" frame a slow config fetch can otherwise
+    // leave as the capture
+    readyText: 'somatic mutations',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 760,
+    // the matrix is 520px of rows plus the gene lane, ruler and legends: at 760
+    // the last rows fell off the bottom edge
+    viewportHeight: 900,
     settleMs: 15000,
   },
 ]

@@ -291,6 +291,8 @@ them: 1q gained in 58.9% of tumors at its peak, 16q lost in 46.4%, 8q24 (MYC)
 gained in 49.7%, 8p lost in 38.7%, 11q13 (CCND1) gained in 26.1%, 9p21 (CDKN2A)
 lost in 20.6%, and the 100kb bin over ERBB2 gained in 19.2%.
 
+<Figure caption="TCGA-BRCA gain (red, up) and loss (blue, down) frequency per 100kb above the same 1104-tumor stack, both whole-genome. Every peak in the top track is a stripe in the bottom one, and only the top track carries a count: 1q gained in 58.9% of tumors, 8q24 in 49.7%, 16q lost in 46.4%. The axis is pinned at plus or minus 100% of the cohort." src="/img/tcga/cnv_recurrence_genome.png" />
+
 This is a frequency plot, not
 [GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41): there is no background
 model, no significance test, and no peak calling, and amplitude enters only
@@ -381,6 +383,8 @@ and only 84 sites mutated in 3 or more tumors, so most columns carry a single
 cell. Raising
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
 drops the singletons and leaves the recurrent columns.
+
+<Figure caption="PIK3CA across 979 primary tumors as a variant matrix, rows grouped and colored by clinical receptor subtype (the sidebar strip). The dense column near the right edge is the H1047R hotspot in 118 tumors; the scattered single cells are the private passenger mutations that most of the 87,574 sites are." src="/img/tcga/mutations_pik3ca.png" />
 
 ## Using your own cohort
 
