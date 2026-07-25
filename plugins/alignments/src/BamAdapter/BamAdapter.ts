@@ -5,7 +5,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { filterTagValue, parseSamHeader } from '../shared/util.ts'
+import {
+  filterReadFlag,
+  filterTagValue,
+  parseSamHeader,
+} from '../shared/util.ts'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
@@ -164,14 +168,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
         'Downloading alignments',
         statusCallback,
         onProgress =>
-          bam.getRecordsForRange(refName, start, end, {
-            filterBy,
-            onProgress,
-          }),
+          bam.getRecordsForRange(refName, start, end, { onProgress }),
       )
       checkStopToken(stopToken)
 
-      const { readName, tagFilters } = filterBy ?? {}
+      const {
+        readName,
+        tagFilters,
+        flagInclude = 0,
+        flagExclude = 0,
+      } = filterBy ?? {}
       // only reads lacking an MD tag need the reference, so defer loading the
       // sequence adapter (and the fetch) until we know at least one does
       const span = seqFetchSpan(records, start, end)
@@ -195,13 +201,22 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
         report => {
           for (const record of records) {
             report()
+            // Every filter is applied here rather than split with @gmod/bam,
+            // which used to take flags + a single tagFilter. That seam was also
+            // dead: normalizeFilterBy folds the legacy singular `tagFilter`
+            // into `tagFilters`, so @gmod/bam never saw one. Mirrors
+            // CramAdapter's shouldFilterRecord. Filtering here is free — this
+            // loop already visits every record to set `adapter` and resolve the
+            // reference.
+            if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
+              continue
+            }
             if (readName && record.name !== readName) {
               continue
             }
-            // @gmod/bam applies only flags + a single tagFilter; multiple tag
-            // filters are AND-ed here (excluded if any one rejects the read).
-            // getTag decodes just the one tag; record.tags would decode every
-            // unrelated tag on the read (NM/AS/ms/de/…) to test one of them.
+            // Multiple tag filters are AND-ed (excluded if any one rejects the
+            // read). getTag decodes just the one tag; record.tags would decode
+            // every unrelated tag on the read (NM/AS/ms/de/…) to test one.
             if (
               tagFilters?.some(tf =>
                 filterTagValue(record.getTag(tf.tag), tf.value),
