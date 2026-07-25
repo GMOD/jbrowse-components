@@ -592,6 +592,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // essentially the whole file, so the index saves nothing at this zoom. The
   // prose now points at the make-pif section instead of claiming the figure
   // demonstrates it.
+  //
+  // Both representations of that PAF are in ONE frame (reviewer: "would be cool
+  // to show this and the multi-way synteny in same figure, so that we could see
+  // the inversions"). The lanes live on the K-12 row of a LinearSyntenyView
+  // rather than in a separate view, so they share that row's axis with the four
+  // ribbon bands below them: IAI39's inversions are the blue stretches in the
+  // top lane AND the crossings in the bottom band, at the same x.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
@@ -602,38 +609,64 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         views: [
           {
-            type: 'LinearGenomeView',
-            assembly: 'K12',
-            loc: 'chr:1-4,641,652',
-            tracks: [
+            type: 'LinearSyntenyView',
+            views: [
               {
-                trackId: 'ecoli_ava',
-                type: 'LGVSyntenyDisplay',
-                groupBy: { type: 'mateAssembly' },
-                // Same as the zoomed figure above: the K12 lane can hold no
-                // self-alignment, so it is hidden rather than explained away.
-                hideSelfAlignments: true,
-                // Per-base mismatches are sub-pixel at 3.2kb/px — thousands of
-                // inter-strain SNPs, each drawn at a 1px floor, painted every
-                // lane a solid brown-and-purple wall and buried the block
-                // structure the figure is about. Off, the lanes read as blocks
-                // and gaps, which is what the figure is for.
-                showMismatches: false,
-                // Thicker than the default bar: at 3.2kb/px the information is
-                // the WHITE, and a 3px gap in a 7px bar is not a gap anyone
-                // sees. 14px lanes make each strain-specific stretch read.
-                featureHeight: 14,
-                // five lanes, one row each — sized to them, so the figure is
-                // the lanes rather than mostly empty track
-                height: 135,
+                assembly: 'K12',
+                loc: 'chr:1-4,641,652',
+                tracks: [
+                  {
+                    trackId: 'ecoli_ava',
+                    type: 'LGVSyntenyDisplay',
+                    groupBy: { type: 'mateAssembly' },
+                    // The K12 lane can hold no self-alignment — all_vs_all.paf
+                    // is built with `minimap2 -X`, which skips each sequence's
+                    // own diagonal — so it is hidden rather than explained away.
+                    hideSelfAlignments: true,
+                    // Per-base mismatches are sub-pixel at 3.2kb/px — thousands
+                    // of inter-strain SNPs, each drawn at a 1px floor, painted
+                    // every lane a solid brown-and-purple wall and buried the
+                    // block structure the figure is about.
+                    showMismatches: false,
+                    // Thicker than the default bar: at 3.2kb/px the information
+                    // is the WHITE, and a 3px gap in a 7px bar is not a gap
+                    // anyone sees.
+                    featureHeight: 20,
+                    height: 115,
+                  },
+                ],
               },
+              // IAI39 SECOND, not last as in the standalone multi-way figure:
+              // the bands are between adjacent rows, so this is the only order
+              // where a K12<->IAI39 band exists at all. Its crossings then sit
+              // directly under the blue stretches of the IAI39 lane above, on
+              // the same K12 axis — which is the whole reason the two
+              // representations are in one frame.
+              { assembly: 'IAI39' },
+              { assembly: 'Sakai' },
+              { assembly: 'CFT073' },
+              { assembly: 'NCTC86' },
             ],
+            tracks: [
+              ['ecoli_ava'],
+              ['ecoli_ava'],
+              ['ecoli_ava'],
+              ['ecoli_ava'],
+            ],
+            drawCurves: false,
+            // Strand, not the 'default' red the standalone multi-way figure
+            // uses, because strand is what the two halves have in common:
+            // LGVSyntenyDisplay colors its lanes by strand already, so an
+            // inversion is blue in the lane AND a blue ribbon in the band.
+            colorBy: 'strand',
+            minAlignmentLength: 10000,
+            levelHeights: [100, 100, 100, 100],
           },
         ],
       },
     ),
-    viewportHeight: 280,
-    readySelector: '[data-testid="pileup-display-done"]',
+    viewportHeight: 1030,
+    readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
   },

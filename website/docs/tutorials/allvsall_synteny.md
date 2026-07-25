@@ -381,12 +381,14 @@ strains cover each base of the strain you are viewing.
 <Figure caption="One track, one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, with the K-12 lane hidden. The shaded band is K-12's phenylacetate (paa) operon. Sakai, CFT073 and IAI39 all stop at its left edge and NCTC86 runs straight through." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 The same mode zoomed out to the whole chromosome gives a per-strain overview of
-where each one diverges. At this size the whole PAF is in memory on every pan;
-for a real pangenome, index it first with
-[make-pif](#large-files-index-with-make-pif) so each screen is a tabix range
-query instead:
+where each one diverges. Because a synteny view's rows are ordinary linear
+genome views, the lanes can sit on the K-12 row of the stack from earlier in
+this page, and then both readings of the same PAF are on one axis. At this size
+the whole PAF is in memory on every pan; for a real pangenome, index it first
+with [make-pif](#large-files-index-with-make-pif) so each screen is a tabix
+range query instead:
 
-<Figure caption="The same track and the same lanes, zoomed out to K-12's whole 4.64 Mb. The white gaps fall in different places in each lane, so each strain breaks from the K-12 backbone somewhere the others do not. The blue stretches in the IAI39 lane are its large inversions relative to K-12." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
+<Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. The white gaps in the lanes are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12 so its band is the K-12/IAI39 comparison: the blue stretches in its lane and the blue crossings in the band under them are the same inversions, once as a strand flip and once as a ribbon." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ## Reproduce it end to end
 

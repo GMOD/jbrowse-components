@@ -164,7 +164,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
         guide: 'tutorials/allvsall_synteny',
         description:
-          "The same all-vs-all track in an ordinary linear genome view instead of a synteny view: with no second row to pair against, it draws E. coli K-12's whole 4.6 Mb against every other strain at once, grouped into one labelled section per strain.",
+          "The same all-vs-all track read twice on one axis: as one-vs-all lanes in an ordinary linear view (K-12 against every other strain at once, grouped per strain) and as the ribbon bands of the stack below it. IAI39's inversions are the blue stretches in its lane and the blue crossings in its band.",
       },
       {
         label: 'Same-species dotplot',
