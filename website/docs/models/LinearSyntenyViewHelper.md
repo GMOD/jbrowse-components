@@ -83,7 +83,7 @@ type gpuRenderingBackend = SyntenyRenderingBackend | undefined
 All synteny displays under this level's tracks.
 
 ```ts
-type linearSyntenyDisplays = (ModelInstanceTypeProps<_OverrideProps<…>> & ... 9 more ... & IStateTreeNode<...>)[]
+type linearSyntenyDisplays = (ModelInstanceTypeProps<_OverrideProps<Omit<…>, { ...; }>> & ... 11 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: settled
@@ -120,7 +120,7 @@ type syntenyRenderState = SyntenyRenderState | undefined
 Reverse lookup key → display, used to dispatch pick results.
 
 ```ts
-type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<…>> & ... 9 more ... & IStateTreeNode<...>>
+type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<Omit<…>, { ...; }>> & ... 11 more ... & IStateTreeNode<...>>
 ```
 
 </details>
@@ -142,15 +142,13 @@ type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<…>> & .
 #### action: setHoveredFeature
 
 Point the whole level's hover state at one pick hit: the display whose geometry
-was hit takes the instance index, every other display clears. An action rather
-than a loop in the canvas component so the N writes land in one MobX batch, and
-so the canvas never has to resolve the pick key to a display model.
+was hit takes the instance index, every other display clears. `undefined` (a
+miss) therefore clears the level. An action rather than a loop in the canvas
+component so the N writes land in one MobX batch, and so the canvas never has to
+resolve the pick key to a display model.
 
 ```ts
-type setHoveredFeature = (
-  hitKey: number | undefined,
-  featureIndex: number,
-) => void
+type setHoveredFeature = (hit: SyntenyPickResult | undefined) => void
 ```
 
 #### action: setClickedFeature
@@ -158,10 +156,7 @@ type setHoveredFeature = (
 Clicked-state twin of `setHoveredFeature`.
 
 ```ts
-type setClickedFeature = (
-  hitKey: number | undefined,
-  featureIndex: number,
-) => void
+type setClickedFeature = (hit: SyntenyPickResult | undefined) => void
 ```
 
 </details>

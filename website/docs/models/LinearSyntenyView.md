@@ -54,14 +54,13 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [drawCIGAR](#getter-drawcigar)                                                 | Getters    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [drawCIGARMatchesOnly](#getter-drawcigarmatchesonly)                           | Getters    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | LinearSyntenyView                                       | True if any track on any level has an adapter that declares the 'lod' capability.                                                                                                                       |
-| [allSyntenyDisplays](#getter-allsyntenydisplays)                               | Getters    | LinearSyntenyView                                       | Every synteny display across every level, flattened.                                                                                                                                                    |
 | [hasCigarData](#getter-hascigardata)                                           | Getters    | LinearSyntenyView                                       | True if any currently-loaded synteny display has at least one feature with a CIGAR.                                                                                                                     |
 | [presentCigarKinds](#getter-presentcigarkinds)                                 | Getters    | LinearSyntenyView                                       | Union across every loaded synteny display of which CIGAR indel ops are actually drawn on screen.                                                                                                        |
 | [fadeThinAlignments](#getter-fadethinalignments)                               | Getters    | LinearSyntenyView                                       | Resolved fade-thin flag that every display's renderParams reads.                                                                                                                                        |
 | [anchorAssemblyName](#getter-anchorassemblyname)                               | Getters    | LinearSyntenyView                                       | The "anchor" assembly for colorBy:'reference': the assembly bordering the most synteny levels.                                                                                                          |
 | [showLoading](#getter-showloading)                                             | Getters    | LinearSyntenyView                                       | Whether to show a loading indicator instead of the import form or view                                                                                                                                  |
 | [loadingMessage](#getter-loadingmessage)                                       | Getters    | LinearSyntenyView                                       | Label for the generic loading spinner.                                                                                                                                                                  |
-| [showImportForm](#getter-showimportform)                                       | Getters    | LinearSyntenyView                                       | Whether to show the import form                                                                                                                                                                         |
+| [showImportForm](#getter-showimportform)                                       | Getters    | LinearSyntenyView                                       | Whether to show the import form.                                                                                                                                                                        |
 | [showMenuItems](#method-showmenuitems)                                         | Methods    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [headerMenuItems](#method-headermenuitems)                                     | Methods    | LinearSyntenyView                                       | includes a subset of view menu options because the full list is a little overwhelming                                                                                                                   |
 | [menuItems](#method-menuitems)                                                 | Methods    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
@@ -81,6 +80,7 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [setFadeThinAlignmentsMode](#action-setfadethinalignmentsmode)                 | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [showAllRegions](#action-showallregions)                                       | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [setInit](#action-setinit)                                                     | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [clearView](#action-clearview)                                                 | Actions    | LinearSyntenyView                                       | Also drops `init`, which `hasSomethingToShow` keys off while views is empty — leaving it set would bounce "return to import form" straight back to the loading spinner.                                 |
 | [exportSvg](#action-exportsvg)                                                 | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [id](#property-id)                                                             | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [trackSelectorType](#property-trackselectortype)                               | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
@@ -90,13 +90,18 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [views](#property-views)                                                       | Properties | [LinearComparativeView](../linearcomparativeview)       | N genome rows, with N-1 synteny `levels` between adjacent pairs.                                                                                                                                        |
 | [viewTrackConfigs](#property-viewtrackconfigs)                                 | Properties | [LinearComparativeView](../linearcomparativeview)       | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                                               |
 | [width](#volatile-width)                                                       | Volatiles  | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [volatileError](#volatile-volatileerror)                                       | Volatiles  | [LinearComparativeView](../linearcomparativeview)       | View-level failure (e.g. an `init` block that couldn't be applied).                                                                                                                                     |
 | [scrollZoom](#getter-scrollzoom)                                               | Getters    | [LinearComparativeView](../linearcomparativeview)       | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                                                                                   |
 | [initialized](#getter-initialized)                                             | Getters    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [error](#getter-error)                                                         | Getters    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [assemblyNames](#getter-assemblynames)                                         | Getters    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [allSyntenyDisplays](#getter-allsyntenydisplays)                               | Getters    | [LinearComparativeView](../linearcomparativeview)       | Every synteny display across every level, flattened.                                                                                                                                                    |
+| [syntenyWarnings](#getter-syntenywarnings)                                     | Getters    | [LinearComparativeView](../linearcomparativeview)       | Data-quality warnings raised by every synteny display, e.g. a reversed assembly row order.                                                                                                              |
 | [isViewCompact](#method-isviewcompact)                                         | Methods    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [rubberBandMenuItems](#method-rubberbandmenuitems)                             | Methods    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [reconcileLevels](#action-reconcilelevels)                                     | Actions    | [LinearComparativeView](../linearcomparativeview)       | Reconcile the levels array to the views array: exactly one synteny level per gap between adjacent views (N views -> N-1 levels).                                                                        |
 | [setWidth](#action-setwidth)                                                   | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [setError](#action-seterror)                                                   | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [setViews](#action-setviews)                                                   | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [addView](#action-addview)                                                     | Actions    | [LinearComparativeView](../linearcomparativeview)       | Push a new genome row.                                                                                                                                                                                  |
 | [removeLastRow](#action-removelastrow)                                         | Actions    | [LinearComparativeView](../linearcomparativeview)       | Drop the bottom genome row and its synteny level.                                                                                                                                                       |
@@ -107,7 +112,6 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [showTrack](#action-showtrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       | No-op for a level that doesn't exist, matching hideTrack/toggleTrack.                                                                                                                                   |
 | [hideTrack](#action-hidetrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [squareView](#action-squareview)                                               | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
-| [clearView](#action-clearview)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [toggleCompactView](#action-togglecompactview)                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [compactAllViews](#action-compactallviews)                                     | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [expandAllViews](#action-expandallviews)                                       | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
@@ -303,16 +307,6 @@ PAFAdapter, BlastTabularAdapter) have nothing to switch between.
 type hasLodCapableAdapter = boolean
 ```
 
-#### getter: allSyntenyDisplays
-
-Every synteny display across every level, flattened. One memoized getter for the
-several view-wide aggregates below, which would otherwise each re-flatten the
-levels.
-
-```ts
-type allSyntenyDisplays = any[]
-```
-
 #### getter: hasCigarData
 
 True if any currently-loaded synteny display has at least one feature with a
@@ -385,7 +379,11 @@ type loadingMessage = 'Loading' | undefined
 
 #### getter: showImportForm
 
-Whether to show the import form
+Whether to show the import form. A failed `init` counts: `init` is kept so a
+reload can retry it, but in this session there is nothing to show and no second
+attempt coming, so the form (with the error banner) is the only way forward —
+matching LGV/dotplot/circular, which also fall back to the form on error rather
+than spinning.
 
 ```ts
 type showImportForm = boolean
@@ -439,6 +437,16 @@ row-to-pair mapping lives with the React-side assembly list.
 
 ```ts
 type importFormRemoveRow = (pairIdx: number) => void
+```
+
+#### action: clearView
+
+Also drops `init`, which `hasSomethingToShow` keys off while views is empty —
+leaving it set would bounce "return to import form" straight back to the loading
+spinner.
+
+```ts
+type clearView = () => void
 ```
 
 </details>
@@ -520,6 +528,19 @@ viewTrackConfigs: types.stripDefault(
 
 **Volatiles**
 
+#### volatile: volatileError
+
+View-level failure (e.g. an `init` block that couldn't be applied). Volatile on
+purpose: a reload re-runs the init autorun from a clean slate, so a transient
+failure stays recoverable.
+
+```ts
+// type signature
+type volatileError = unknown
+// code
+volatileError: undefined as unknown
+```
+
 | Member                                 | Type                  |
 | -------------------------------------- | --------------------- |
 | <span id="volatile-width">width</span> | `number \| undefined` |
@@ -535,9 +556,29 @@ toggling it in any view applies everywhere
 type scrollZoom = boolean
 ```
 
+#### getter: allSyntenyDisplays
+
+Every synteny display across every level, flattened. One memoized getter for the
+view-wide aggregates that would otherwise each re-flatten the levels.
+
+```ts
+type allSyntenyDisplays = any[]
+```
+
+#### getter: syntenyWarnings
+
+Data-quality warnings raised by every synteny display, e.g. a reversed assembly
+row order. Surfaced by the header's warning button and its dialog, which both
+read this rather than re-deriving it.
+
+```ts
+type syntenyWarnings = SyntenyWarning[]
+```
+
 | Member                                               | Type       |
 | ---------------------------------------------------- | ---------- |
 | <span id="getter-initialized">initialized</span>     | `boolean`  |
+| <span id="getter-error">error</span>                 | `unknown`  |
 | <span id="getter-assemblynames">assemblyNames</span> | `string[]` |
 
 **Methods**
@@ -618,6 +659,7 @@ type appendRow = ({
 | Member                                                               | Type                                                                                                   |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | <span id="action-setwidth">setWidth</span>                           | `(newWidth: number) => void`                                                                           |
+| <span id="action-seterror">setError</span>                           | `(e: unknown) => void`                                                                                 |
 | <span id="action-setviews">setViews</span>                           | `(views: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<…>, { ...; }>>>[]) => void` |
 | <span id="action-setlinkviews">setLinkViews</span>                   | `(arg: boolean) => void`                                                                               |
 | <span id="action-setscrollzoom">setScrollZoom</span>                 | `(arg: boolean) => void`                                                                               |
@@ -625,7 +667,6 @@ type appendRow = ({
 | <span id="action-toggletrack">toggleTrack</span>                     | `(trackId: string, level?: any) => any`                                                                |
 | <span id="action-hidetrack">hideTrack</span>                         | `(trackId: string, level?: any) => void`                                                               |
 | <span id="action-squareview">squareView</span>                       | `() => void`                                                                                           |
-| <span id="action-clearview">clearView</span>                         | `() => void`                                                                                           |
 | <span id="action-togglecompactview">toggleCompactView</span>         | `(idx: number) => void`                                                                                |
 | <span id="action-compactallviews">compactAllViews</span>             | `() => void`                                                                                           |
 | <span id="action-expandallviews">expandAllViews</span>               | `() => void`                                                                                           |

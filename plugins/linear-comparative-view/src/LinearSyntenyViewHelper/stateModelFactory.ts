@@ -9,6 +9,7 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
+  SyntenyPickResult,
   SyntenyRenderState,
   SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
@@ -98,15 +99,15 @@ export function linearSyntenyViewHelperModelFactory(
       get parentView() {
         return getParent<ParentViewDuck>(self, 2)
       },
+      // The pair of genome rows this level draws between, or [] for a trailing
+      // level that has no row below it yet.
       get assemblyNames(): string[] {
-        const p = this.parentView
-        if (self.level + 1 >= p.views.length) {
-          return []
-        }
-        return [
-          p.views[self.level]!.assemblyNames[0] ?? '',
-          p.views[self.level + 1]!.assemblyNames[0] ?? '',
-        ]
+        const { views } = this.parentView
+        const v0 = views[self.level]
+        const v1 = views[self.level + 1]
+        return v0 && v1
+          ? [v0.assemblyNames[0] ?? '', v1.assemblyNames[0] ?? '']
+          : []
       },
       /**
        * #getter
@@ -161,14 +162,14 @@ export function linearSyntenyViewHelperModelFactory(
        * #action
        * Point the whole level's hover state at one pick hit: the display whose
        * geometry was hit takes the instance index, every other display clears.
-       * An action rather than a loop in the canvas component so the N writes land
-       * in one MobX batch, and so the canvas never has to resolve the pick key to
-       * a display model.
+       * `undefined` (a miss) therefore clears the level. An action rather than a
+       * loop in the canvas component so the N writes land in one MobX batch, and
+       * so the canvas never has to resolve the pick key to a display model.
        */
-      setHoveredFeature(hitKey: number | undefined, featureIndex: number) {
+      setHoveredFeature(hit: SyntenyPickResult | undefined) {
         for (const display of self.linearSyntenyDisplays) {
           display.setHoveredFeatureIdx(
-            display.displayKey === hitKey ? featureIndex : -1,
+            display.displayKey === hit?.key ? hit.featureIndex : -1,
           )
         }
       },
@@ -176,10 +177,10 @@ export function linearSyntenyViewHelperModelFactory(
        * #action
        * Clicked-state twin of `setHoveredFeature`.
        */
-      setClickedFeature(hitKey: number | undefined, featureIndex: number) {
+      setClickedFeature(hit: SyntenyPickResult | undefined) {
         for (const display of self.linearSyntenyDisplays) {
           display.setClickedFeatureIdx(
-            display.displayKey === hitKey ? featureIndex : -1,
+            display.displayKey === hit?.key ? hit.featureIndex : -1,
           )
         }
       },

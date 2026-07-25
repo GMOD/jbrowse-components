@@ -55,6 +55,9 @@ const LinearSyntenyViewImportForm = observer(
       secondAssemblyName,
     ])
     const [error, setError] = useState<unknown>()
+    // a failed `init` lands the view here rather than on a spinner (see
+    // showImportForm); show what went wrong instead of a bare form
+    const bannerError = error ?? model.error
 
     // the chosen track backs every adjacent band: a pairwise track has one pair,
     // an all-vs-all track has one per adjacent row
@@ -86,7 +89,7 @@ const LinearSyntenyViewImportForm = observer(
         className={classes.importFormContainer}
         data-testid="import-form"
       >
-        {error ? <ErrorBanner error={error} /> : null}
+        {bannerError ? <ErrorBanner error={bannerError} /> : null}
         <div className={classes.toggle}>
           <ImportFormModeToggle
             mode={quick.mode}

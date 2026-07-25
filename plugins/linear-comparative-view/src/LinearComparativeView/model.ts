@@ -21,6 +21,11 @@ const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
 
+export interface SyntenyWarning {
+  message: string
+  effect: string
+}
+
 /**
  * #stateModel LinearComparativeView
  */
@@ -88,6 +93,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       width: undefined as number | undefined,
+      /**
+       * #volatile
+       * View-level failure (e.g. an `init` block that couldn't be applied).
+       * Volatile on purpose: a reload re-runs the init autorun from a clean
+       * slate, so a transient failure stays recoverable.
+       */
+      volatileError: undefined as unknown,
     }))
     .views(self => ({
       /**
@@ -115,8 +127,35 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get error() {
+        return self.volatileError
+      },
+
+      /**
+       * #getter
+       */
       get assemblyNames() {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
+      },
+
+      /**
+       * #getter
+       * Every synteny display across every level, flattened. One memoized
+       * getter for the view-wide aggregates that would otherwise each
+       * re-flatten the levels.
+       */
+      get allSyntenyDisplays() {
+        return self.levels.flatMap(l => l.linearSyntenyDisplays)
+      },
+
+      /**
+       * #getter
+       * Data-quality warnings raised by every synteny display, e.g. a reversed
+       * assembly row order. Surfaced by the header's warning button and its
+       * dialog, which both read this rather than re-deriving it.
+       */
+      get syntenyWarnings(): SyntenyWarning[] {
+        return this.allSyntenyDisplays.flatMap(d => d.warnings)
       },
 
       /**
@@ -145,6 +184,12 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
+        // A snapshot can arrive with a levels array that doesn't match its
+        // views: hand-authored multi-way sessions typically write `views` and
+        // leave `levels` out entirely, which would otherwise render N-1 rows of
+        // synteny as zero or one. The actions below keep the invariant once the
+        // view is live; this is the same repair applied to what was loaded.
+        self.reconcileLevels()
         // doesn't link showTrack/hideTrack, doesn't make sense in synteny
         // views most time
         installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
@@ -182,10 +227,20 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setError(e: unknown) {
+        self.volatileError = e
+      },
+
+      /**
+       * #action
+       */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
         self.levels = cast([])
         self.reconcileLevels()
+        // rebuilding the view supersedes whatever failed last time, e.g. a
+        // re-submit from the import form after a bad init
+        self.volatileError = undefined
       },
 
       /**
@@ -290,6 +345,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       clearView() {
         self.views = cast([])
         self.levels = cast([])
+        self.volatileError = undefined
       },
       /**
        * #action
@@ -427,7 +483,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       | ({ tracks?: unknown; levels?: unknown } & Record<string, unknown>)
       | undefined
     >(snap => {
-      const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
+      // only invent a level for a legacy snapshot that actually carried
+      // top-level `tracks`; otherwise leave levels to afterAttach's
+      // reconcileLevels, which sizes it from the views
+      const {
+        tracks,
+        levels = tracks ? [{ tracks, level: 0 }] : [],
+        ...rest
+      } = snap || {}
       return {
         ...rest,
         levels,

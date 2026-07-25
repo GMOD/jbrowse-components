@@ -108,7 +108,7 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
   })
 }
 
-function setupInitAutorun(self: LinearSyntenyViewModel) {
+export function doAfterAttach(self: LinearSyntenyViewModel) {
   // Serialize concurrent firings: dockview mount + React Strict Mode
   // double-invoke cause width to settle in multiple steps. Each width change
   // re-fires this autorun, and without the guard a second run's setViews()
@@ -153,6 +153,13 @@ function setupInitAutorun(self: LinearSyntenyViewModel) {
           // import form with no retry. Leaving init set lets a reload re-run
           // this autorun (init is persisted while views is empty, see
           // postProcessSnapshot).
+          //
+          // The error itself is volatile, so it doesn't survive that reload —
+          // in this session it flips the view off the loading spinner and onto
+          // the import form, which is the only way out until then.
+          if (isAlive(self)) {
+            self.setError(e)
+          }
         } finally {
           running = false
         }
@@ -160,8 +167,4 @@ function setupInitAutorun(self: LinearSyntenyViewModel) {
       { name: 'LinearSyntenyViewInit' },
     ),
   )
-}
-
-export function doAfterAttach(self: LinearSyntenyViewModel) {
-  setupInitAutorun(self)
 }

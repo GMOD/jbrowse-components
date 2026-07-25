@@ -23,9 +23,7 @@ const SyntenyWarnings = observer(function SyntenyWarnings({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const warnings = model.levels
-    .flatMap(level => level.linearSyntenyDisplays)
-    .flatMap(display => display.warnings)
+  const { syntenyWarnings: warnings } = model
 
   return warnings.length ? (
     <Tooltip

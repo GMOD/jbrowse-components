@@ -58,3 +58,55 @@ test('multi-way LinearSyntenyView init routes tracks to per-level slots', async 
 
   expect(view.init).toBeUndefined()
 }, 40000)
+
+test('a hand-authored multi-way session sizes levels from its views', () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+
+  // three genome rows written out directly: no `init` to build them and no
+  // `levels` key, the shape a hand-authored defaultSession takes. Without the
+  // load-time reconcile this rendered a single synteny band between the first
+  // two rows and nothing between the last pair.
+  const view = session.addView('LinearSyntenyView', {
+    views: [
+      { type: 'LinearGenomeView', init: { assembly: 'volvox_del' } },
+      { type: 'LinearGenomeView', init: { assembly: 'volvox' } },
+      { type: 'LinearGenomeView', init: { assembly: 'volvox_ins' } },
+    ],
+  })
+
+  expect(view.levels.length).toBe(2)
+  expect(view.levels[0]?.level).toBe(0)
+  expect(view.levels[1]?.level).toBe(1)
+})
+
+test('a failed init lands on the import form, not a permanent spinner', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+
+  const view = session.addView('LinearSyntenyView', {
+    init: {
+      views: [{ assembly: 'no_such_assembly' }, { assembly: 'volvox' }],
+    },
+  })
+  view.setWidth(800)
+
+  await waitFor(
+    () => {
+      expect(view.error).toBeTruthy()
+    },
+    { timeout: 30000 },
+  )
+  expect(view.showLoading).toBe(false)
+  expect(view.showImportForm).toBe(true)
+  // kept so a reload can retry the init from a clean slate
+  expect(view.init).toBeDefined()
+
+  // ...and "return to import form" drops it, so the view can't bounce back to
+  // the spinner
+  view.clearView()
+  expect(view.init).toBeUndefined()
+  expect(view.showImportForm).toBe(true)
+}, 40000)

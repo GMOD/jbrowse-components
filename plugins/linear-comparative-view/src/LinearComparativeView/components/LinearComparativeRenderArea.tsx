@@ -75,7 +75,8 @@ const LevelSection = observer(function LevelSection({
   const syntenyModel = asSyntenyModel(model)
   // One legend for the whole view, hosted in the topmost synteny band (the
   // "helper" area) where the color-coded ribbons it describes are actually drawn
-  const showLegend = levelIdx === 0 && !!syntenyModel?.showColorLegend
+  const legendModel =
+    levelIdx === 0 && syntenyModel?.showColorLegend ? syntenyModel : undefined
 
   return (
     <>
@@ -84,13 +85,13 @@ const LevelSection = observer(function LevelSection({
           <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />
         </div>
-        {syntenyModel && showLegend ? (
+        {legendModel ? (
           <ColorByLegend
-            colorBy={coerceColorBy(syntenyModel.colorBy)}
-            cigarOps={syntenyModel.presentCigarKinds}
-            alpha={syntenyModel.alpha}
+            colorBy={coerceColorBy(legendModel.colorBy)}
+            cigarOps={legendModel.presentCigarKinds}
+            alpha={legendModel.alpha}
             onClose={() => {
-              syntenyModel.setShowColorLegend(false)
+              legendModel.setShowColorLegend(false)
             }}
           />
         ) : null}

@@ -149,12 +149,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const coords = canvasCoords(event)
     if (coords) {
       const hit = pickAt(coords)
-      model.setHoveredFeature(hit?.key, hit ? hit.featureIndex : -1)
+      model.setHoveredFeature(hit)
     }
   }
 
   function handleMouseLeave() {
-    model.setHoveredFeature(undefined, -1)
+    model.setHoveredFeature(undefined)
     dragStartXRef.current = undefined
     lastDragXRef.current = undefined
   }
@@ -179,7 +179,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       return
     }
     const hit = pickAt(coords)
-    model.setClickedFeature(hit?.key, hit ? hit.featureIndex : -1)
+    model.setClickedFeature(hit)
     const display = hitDisplay(hit)
     if (display && hit) {
       openSyntenyFeatureWidget(display, hit.featureIndex)
@@ -200,7 +200,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const feat = display?.getFeature(hit.featureIndex)
     if (display && feat) {
       // clear the hover tooltip so it doesn't stay stuck behind the menu
-      model.setHoveredFeature(undefined, -1)
+      model.setHoveredFeature(undefined)
       display.openContextMenu({
         clientX: event.clientX,
         clientY: event.clientY,

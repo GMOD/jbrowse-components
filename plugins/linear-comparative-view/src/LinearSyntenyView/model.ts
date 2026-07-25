@@ -220,15 +220,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Every synteny display across every level, flattened. One memoized getter
-       * for the several view-wide aggregates below, which would otherwise each
-       * re-flatten the levels.
-       */
-      get allSyntenyDisplays() {
-        return self.levels.flatMap(l => l.linearSyntenyDisplays)
-      },
-      /**
-       * #getter
        * True if any currently-loaded synteny display has at least one
        * feature with a CIGAR. Used to gate CIGAR-related menu items —
        * coarse-tier PIF files and CIGAR-less PAFs have nothing to show.
@@ -241,7 +232,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // "has CIGAR, or hasn't reported yet" — an unloaded display reads
         // undefined and counts as a maybe. No displays at all -> no maybes ->
         // false.
-        return this.allSyntenyDisplays.some(
+        return self.allSyntenyDisplays.some(
           d => d.featureData?.hasCigar ?? true,
         )
       },
@@ -252,7 +243,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * when a visible-width op of that kind is painted somewhere in the view.
        */
       get presentCigarKinds(): CigarOpMask {
-        return this.allSyntenyDisplays.reduce(
+        return self.allSyntenyDisplays.reduce(
           (mask, d) => mask | d.presentCigarKinds,
           0,
         )
@@ -272,7 +263,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get fadeThinAlignments(): boolean {
         const { fadeThinAlignmentsMode } = self
         return fadeThinAlignmentsMode === 'auto'
-          ? this.allSyntenyDisplays.some(d => d.autoFadeThinAlignments)
+          ? self.allSyntenyDisplays.some(d => d.autoFadeThinAlignments)
           : fadeThinAlignmentsMode === 'on'
       },
       /**
@@ -285,20 +276,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * so a region keeps its color as it's traced across levels.
        */
       get anchorAssemblyName() {
-        // views without an assembly yet can't be the anchor, so drop them up
-        // front rather than guarding every read below
-        const asms = self.views
-          .map(v => v.assemblyNames[0])
-          .filter(a => a !== undefined)
+        // Positional: a row that doesn't know its assembly yet contributes no
+        // adjacency, rather than being dropped so its neighbours close the gap
+        // and count as a pair they aren't.
+        const asms = self.views.map(v => v.assemblyNames[0])
         const counts = new Map<string, number>()
-        for (let i = 0; i < asms.length - 1; i++) {
-          counts.set(asms[i]!, (counts.get(asms[i]!) ?? 0) + 1)
-          counts.set(asms[i + 1]!, (counts.get(asms[i + 1]!) ?? 0) + 1)
+        for (const [i, a] of asms.entries()) {
+          const b = asms[i + 1]
+          if (a !== undefined && b !== undefined) {
+            counts.set(a, (counts.get(a) ?? 0) + 1)
+            counts.set(b, (counts.get(b) ?? 0) + 1)
+          }
         }
         let best: string | undefined
         let bestCount = -1
         for (const a of asms) {
-          const c = counts.get(a) ?? 0
+          // -1 keeps an assembly-less row from ever winning, including in the
+          // single-row case where no pair exists and every count is 0
+          const c = a === undefined ? -1 : (counts.get(a) ?? 0)
           if (c > bestCount) {
             bestCount = c
             best = a
@@ -315,7 +310,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get showLoading() {
         return (
           self.awaitingAutoDiagonalize ||
-          (!self.initialized && self.hasSomethingToShow)
+          (!self.initialized && self.hasSomethingToShow && !self.error)
         )
       },
       /**
@@ -329,10 +324,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Whether to show the import form
+       * Whether to show the import form. A failed `init` counts: `init` is kept
+       * so a reload can retry it, but in this session there is nothing to show
+       * and no second attempt coming, so the form (with the error banner) is the
+       * only way forward — matching LGV/dotplot/circular, which also fall back
+       * to the form on error rather than spinning.
        */
       get showImportForm() {
-        return !self.hasSomethingToShow
+        return !self.hasSomethingToShow || !!self.error
       },
     }))
     .actions(self => ({
@@ -439,6 +438,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.init = init
       },
     }))
+    .actions(self => {
+      const superClearView = self.clearView
+      return {
+        /**
+         * #action
+         * Also drops `init`, which `hasSomethingToShow` keys off while views is
+         * empty — leaving it set would bounce "return to import form" straight
+         * back to the loading spinner.
+         */
+        clearView() {
+          superClearView()
+          self.setInit(undefined)
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

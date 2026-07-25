@@ -11,9 +11,7 @@ const SyntenyWarningsDialog = observer(function SyntenyWarningsDialog({
   model: LinearComparativeViewModel
   handleClose: () => void
 }) {
-  const warnings = model.levels
-    .flatMap(level => level.linearSyntenyDisplays)
-    .flatMap(display => display.warnings)
+  const { syntenyWarnings: warnings } = model
   return (
     <Dialog
       open

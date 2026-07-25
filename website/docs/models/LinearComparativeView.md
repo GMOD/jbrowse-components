@@ -24,9 +24,13 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | [views](#property-views)                               | Properties | LinearComparativeView             | N genome rows, with N-1 synteny `levels` between adjacent pairs.                                                                                                          |
 | [viewTrackConfigs](#property-viewtrackconfigs)         | Properties | LinearComparativeView             | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                 |
 | [width](#volatile-width)                               | Volatiles  | LinearComparativeView             |                                                                                                                                                                           |
+| [volatileError](#volatile-volatileerror)               | Volatiles  | LinearComparativeView             | View-level failure (e.g. an `init` block that couldn't be applied).                                                                                                       |
 | [scrollZoom](#getter-scrollzoom)                       | Getters    | LinearComparativeView             | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                                                     |
 | [initialized](#getter-initialized)                     | Getters    | LinearComparativeView             |                                                                                                                                                                           |
+| [error](#getter-error)                                 | Getters    | LinearComparativeView             |                                                                                                                                                                           |
 | [assemblyNames](#getter-assemblynames)                 | Getters    | LinearComparativeView             |                                                                                                                                                                           |
+| [allSyntenyDisplays](#getter-allsyntenydisplays)       | Getters    | LinearComparativeView             | Every synteny display across every level, flattened.                                                                                                                      |
+| [syntenyWarnings](#getter-syntenywarnings)             | Getters    | LinearComparativeView             | Data-quality warnings raised by every synteny display, e.g. a reversed assembly row order.                                                                                |
 | [isViewCompact](#method-isviewcompact)                 | Methods    | LinearComparativeView             |                                                                                                                                                                           |
 | [headerMenuItems](#method-headermenuitems)             | Methods    | LinearComparativeView             | includes a subset of view menu options because the full list is a little overwhelming.                                                                                    |
 | [showMenuItems](#method-showmenuitems)                 | Methods    | LinearComparativeView             | items for the "Show..." submenu in the header.                                                                                                                            |
@@ -34,6 +38,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | [rubberBandMenuItems](#method-rubberbandmenuitems)     | Methods    | LinearComparativeView             |                                                                                                                                                                           |
 | [reconcileLevels](#action-reconcilelevels)             | Actions    | LinearComparativeView             | Reconcile the levels array to the views array: exactly one synteny level per gap between adjacent views (N views -> N-1 levels).                                          |
 | [setWidth](#action-setwidth)                           | Actions    | LinearComparativeView             |                                                                                                                                                                           |
+| [setError](#action-seterror)                           | Actions    | LinearComparativeView             |                                                                                                                                                                           |
 | [setViews](#action-setviews)                           | Actions    | LinearComparativeView             |                                                                                                                                                                           |
 | [addView](#action-addview)                             | Actions    | LinearComparativeView             | Push a new genome row.                                                                                                                                                    |
 | [removeLastRow](#action-removelastrow)                 | Actions    | LinearComparativeView             | Drop the bottom genome row and its synteny level.                                                                                                                         |
@@ -120,6 +125,24 @@ viewTrackConfigs: types.stripDefault(
 <details>
 <summary>LinearComparativeView - Volatiles</summary>
 
+#### volatile: volatileError
+
+View-level failure (e.g. an `init` block that couldn't be applied). Volatile on
+purpose: a reload re-runs the init autorun from a clean slate, so a transient
+failure stays recoverable.
+
+```ts
+// type signature
+type volatileError = unknown
+// code
+volatileError: undefined as unknown
+```
+
+</details>
+
+<details>
+<summary>LinearComparativeView - Volatiles (other undocumented members)</summary>
+
 | Member                                 | Type                  |
 | -------------------------------------- | --------------------- |
 | <span id="volatile-width">width</span> | `number \| undefined` |
@@ -138,6 +161,25 @@ toggling it in any view applies everywhere
 type scrollZoom = boolean
 ```
 
+#### getter: allSyntenyDisplays
+
+Every synteny display across every level, flattened. One memoized getter for the
+view-wide aggregates that would otherwise each re-flatten the levels.
+
+```ts
+type allSyntenyDisplays = any[]
+```
+
+#### getter: syntenyWarnings
+
+Data-quality warnings raised by every synteny display, e.g. a reversed assembly
+row order. Surfaced by the header's warning button and its dialog, which both
+read this rather than re-deriving it.
+
+```ts
+type syntenyWarnings = SyntenyWarning[]
+```
+
 </details>
 
 <details>
@@ -146,6 +188,7 @@ type scrollZoom = boolean
 | Member                                               | Type       |
 | ---------------------------------------------------- | ---------- |
 | <span id="getter-initialized">initialized</span>     | `boolean`  |
+| <span id="getter-error">error</span>                 | `unknown`  |
 | <span id="getter-assemblynames">assemblyNames</span> | `string[]` |
 
 </details>
@@ -261,6 +304,7 @@ type appendRow = ({
 | Member                                                               | Type                                                                                                   |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | <span id="action-setwidth">setWidth</span>                           | `(newWidth: number) => void`                                                                           |
+| <span id="action-seterror">setError</span>                           | `(e: unknown) => void`                                                                                 |
 | <span id="action-setviews">setViews</span>                           | `(views: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<…>, { ...; }>>>[]) => void` |
 | <span id="action-setlinkviews">setLinkViews</span>                   | `(arg: boolean) => void`                                                                               |
 | <span id="action-setscrollzoom">setScrollZoom</span>                 | `(arg: boolean) => void`                                                                               |
