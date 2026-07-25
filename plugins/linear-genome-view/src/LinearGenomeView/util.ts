@@ -10,6 +10,7 @@ import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { Region } from '@jbrowse/core/util/types'
 
 /**
  * Expand a region by a grow factor, adding padding on each side.
@@ -102,6 +103,11 @@ export function makeTicks(
   return ticks
 }
 
+/** A block's refName, or undefined for non-content (elided/padding) blocks. */
+export function getBlockRefName(block: BaseBlock) {
+  return block.type === 'ContentBlock' ? block.refName : undefined
+}
+
 /**
  * For blocks in display order, returns whether each block's refName should be
  * labeled: true only for the first block of each run of same-refName regions,
@@ -109,11 +115,6 @@ export function makeTicks(
  * collapsed introns produce many adjacent same-refName regions). Blocks whose
  * getRefName is undefined (non-content) map to false without breaking a run.
  */
-/** A block's refName, or undefined for non-content (elided/padding) blocks. */
-export function getBlockRefName(block: BaseBlock) {
-  return block.type === 'ContentBlock' ? block.refName : undefined
-}
-
 export function showRefNameLabels<T>(
   blocks: T[],
   getRefName: (block: T) => string | undefined,
@@ -135,14 +136,12 @@ export function showRefNameLabels<T>(
  * the viewport, or the first content block when none have.
  */
 export function stickyBlockIndex(blocks: BaseBlock[], offsetPx: number) {
-  let idx = blocks.findIndex(b => b.type === 'ContentBlock')
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i]!
-    if (block.type === 'ContentBlock' && block.offsetPx < offsetPx) {
-      idx = i
-    }
-  }
-  return idx
+  const scrolledOff = blocks.findLastIndex(
+    b => b.type === 'ContentBlock' && b.offsetPx < offsetPx,
+  )
+  return scrolledOff === -1
+    ? blocks.findIndex(b => b.type === 'ContentBlock')
+    : scrolledOff
 }
 
 export interface ScalebarRefNameLabel {
@@ -150,7 +149,7 @@ export interface ScalebarRefNameLabel {
   refName: string
   displayedRegionIndex: number
   transform: number
-  maxWidth: number | undefined
+  maxWidth: number
   paddingLeft: number
   text: string
 }
@@ -161,17 +160,23 @@ export interface ScalebarRefNameLabel {
  * collapsed-intron region). Sticky labels start at the viewport's left edge;
  * others start at their block's left edge.
  */
-function refLabelLayout(
-  block: ContentBlock,
-  displayedRegionIndex: number,
-  offsetPx: number,
-  regionEndPx: Map<number, number>,
-  sticky: boolean,
-) {
-  const regionEnd = regionEndPx.get(displayedRegionIndex)
+function refLabelLayout({
+  blockOffsetPx,
+  regionEnd,
+  offsetPx,
+  sticky,
+}: {
+  blockOffsetPx: number
+  // right edge of the label's region, or undefined if the caller's regionEndPx
+  // has no entry for it (impossible for a block from the same staticBlocks the
+  // map was built from) — treated the same as too-narrow: no label
+  regionEnd: number | undefined
+  offsetPx: number
+  sticky: boolean
+}) {
   const transform = sticky
     ? Math.max(0, -offsetPx)
-    : block.offsetPx - offsetPx - 1
+    : blockOffsetPx - offsetPx - 1
   // block-frame x where the label actually starts. Derived from `transform` (=
   // transform + offsetPx) so the width-to-region-end clip stays in lockstep
   // with where the label is drawn: a sticky label pins to the region's left
@@ -186,13 +191,8 @@ function refLabelLayout(
   // the divider. Sticky labels sit at the viewport's own left edge, no divider.
   const paddingLeft = sticky ? 0 : 7
   const maxWidth =
-    regionEnd === undefined
-      ? undefined
-      : regionEnd - labelStartPx - paddingLeft - 1
-  if (maxWidth !== undefined && maxWidth < 20) {
-    return undefined
-  }
-  return { transform, maxWidth, paddingLeft }
+    regionEnd === undefined ? 0 : regionEnd - labelStartPx - paddingLeft - 1
+  return maxWidth < 20 ? undefined : { transform, maxWidth, paddingLeft }
 }
 
 /**
@@ -224,17 +224,30 @@ export function getScalebarRefNameLabels({
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]!
     const sticky = i === stickyIdx
-    const show =
-      sticky || (!!block.isLeftEndOfDisplayedRegion && isRunStart[i]!)
+    // A non-sticky block starting left of the viewport is entirely off-screen:
+    // the sticky block is by definition the rightmost one starting there, so
+    // every earlier block also *ends* left of the viewport. Its label would
+    // just repeat the name the sticky label already shows, drawn off-canvas —
+    // invisible on screen (overflow:hidden) but bleeding into the margin of an
+    // SVG export, which has no such clip.
+    const runStart =
+      block.offsetPx >= offsetPx &&
+      !!block.isLeftEndOfDisplayedRegion &&
+      isRunStart[i]!
     if (
       block.type !== 'ContentBlock' ||
       block.displayedRegionIndex === undefined ||
-      !show
+      !(sticky || runStart)
     ) {
       continue
     }
     const idx = block.displayedRegionIndex
-    const layout = refLabelLayout(block, idx, offsetPx, regionEndPx, sticky)
+    const layout = refLabelLayout({
+      blockOffsetPx: block.offsetPx,
+      regionEnd: regionEndPx.get(idx),
+      offsetPx,
+      sticky,
+    })
     if (!layout) {
       continue
     }
@@ -266,6 +279,28 @@ export function regionMoveActions(idx: number, numRegions: number) {
     canMoveFarLeft: idx > 1,
     canMoveFarRight: idx < numRegions - 2,
   }
+}
+
+/**
+ * The region reorderings offered by the refName-label menu, as pure list
+ * transforms feeding setDisplayedRegions (which re-clamps bpPerPx/offsetPx for
+ * the new region set).
+ */
+export function withRegionMoved(regions: Region[], from: number, to: number) {
+  const out = [...regions]
+  const [moved] = out.splice(from, 1)
+  out.splice(to, 0, moved!)
+  return out
+}
+
+export function withRegionRemoved(regions: Region[], index: number) {
+  return regions.filter((_, i) => i !== index)
+}
+
+export function withRegionReversed(regions: Region[], index: number) {
+  return regions.map((region, i) =>
+    i === index ? { ...region, reversed: !region.reversed } : region,
+  )
 }
 
 /**

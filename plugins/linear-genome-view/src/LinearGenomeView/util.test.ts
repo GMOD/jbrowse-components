@@ -8,6 +8,9 @@ import {
   regionMoveActions,
   stickyBlockIndex,
   tickLabelWidth,
+  withRegionMoved,
+  withRegionRemoved,
+  withRegionReversed,
 } from './util.ts'
 
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -448,7 +451,7 @@ describe('getScalebarRefNameLabels', () => {
     expect(labels.map(l => l.key)).toEqual(['a'])
   })
 
-  test('scrolled past a region: run-start label offscreen-left + sticky pinned', () => {
+  test('scrolled past a region: only the sticky label, no offscreen-left twin', () => {
     const blocks = [
       refBlock({
         key: 'a',
@@ -472,12 +475,40 @@ describe('getScalebarRefNameLabels', () => {
       regionEndPx: regionEnds(blocks),
       prefix: '',
     })
-    // run-start block 'a' is pushed off the left (negative transform); block 'b'
-    // is the sticky one pinned to the viewport edge (transform 0)
+    // run-start block 'a' has scrolled entirely off the left, so its label is
+    // dropped rather than drawn off-canvas; block 'b' is the sticky one pinned
+    // to the viewport edge and already names chr1 there
     expect(labels.map(l => ({ key: l.key, transform: l.transform }))).toEqual([
-      { key: 'a', transform: -1001 },
       { key: 'b', transform: 0 },
     ])
+  })
+
+  test('a region scrolled entirely off the left drops its label, even with its own refName', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'chr2',
+        displayedRegionIndex: 1,
+        offsetPx: 800,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 900,
+      regionEndPx: regionEnds(blocks),
+      prefix: '',
+    })
+    expect(labels.map(l => l.refName)).toEqual(['chr2'])
   })
 
   test('left-overscroll (offsetPx<0) clips sticky label at its region end, not viewport', () => {
@@ -584,5 +615,43 @@ describe('regionMoveActions', () => {
       canMoveFarLeft: true,
       canMoveFarRight: true,
     })
+  })
+})
+
+describe('region list transforms', () => {
+  const regions = ['a', 'b', 'c'].map(refName => ({
+    refName,
+    start: 0,
+    end: 100,
+    assemblyName: 'volvox',
+  }))
+
+  test('withRegionMoved rotates one region into its new slot', () => {
+    expect(withRegionMoved(regions, 2, 0).map(r => r.refName)).toEqual([
+      'c',
+      'a',
+      'b',
+    ])
+    expect(withRegionMoved(regions, 0, 1).map(r => r.refName)).toEqual([
+      'b',
+      'a',
+      'c',
+    ])
+    // the source list is never mutated: the menu reads model.displayedRegions
+    expect(regions.map(r => r.refName)).toEqual(['a', 'b', 'c'])
+  })
+
+  test('withRegionRemoved drops just that index', () => {
+    expect(withRegionRemoved(regions, 1).map(r => r.refName)).toEqual([
+      'a',
+      'c',
+    ])
+  })
+
+  test('withRegionReversed flips one region and leaves the rest alone', () => {
+    const flipped = withRegionReversed(regions, 1)
+    expect(flipped.map(r => r.reversed)).toEqual([undefined, true, undefined])
+    // flipping twice returns to forward, not to `undefined`
+    expect(withRegionReversed(flipped, 1)[1]!.reversed).toBe(false)
   })
 })

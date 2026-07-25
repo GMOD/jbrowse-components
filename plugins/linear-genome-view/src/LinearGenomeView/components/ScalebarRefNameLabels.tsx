@@ -4,9 +4,16 @@ import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { getScalebarRefNameLabels, regionMoveActions } from '../util.ts'
+import {
+  getScalebarRefNameLabels,
+  regionMoveActions,
+  withRegionMoved,
+  withRegionRemoved,
+  withRegionReversed,
+} from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { ScalebarRefNameLabel } from '../util.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -59,54 +66,26 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 
   return (
     <>
-      <div>
-        {labels.map(
-          ({
-            key,
-            refName,
-            displayedRegionIndex,
-            transform,
-            maxWidth,
-            paddingLeft,
-            text,
-          }) => (
-            <span
-              key={key}
-              className={classes.refLabel}
-              style={{
-                transform: `translateX(${transform}px)`,
-                paddingLeft,
-                maxWidth,
-              }}
-              data-testid={`refLabel-${refName}`}
-              onMouseDown={() => {
-                model.setScalebarRefNameClickPending(true)
-              }}
-              onClick={e => {
-                model.setScalebarRefNameClickPending(false)
-                model.setIsScalebarRefNameMenuOpen(true)
-                setMenuState({
-                  anchorEl: e.currentTarget,
-                  refName,
-                  displayedRegionIndex,
-                })
-              }}
-            >
-              {text}
-            </span>
-          ),
-        )}
-        {/* Fallback: bare assembly name pinned far-left when no sticky label
-        carried it (e.g. the leftmost region was too narrow to label) */}
-        {showPrefixFallback ? (
-          <span
-            className={cx(classes.prefixLabel, classes.refLabel)}
-            data-testid="refLabel-prefix"
-          >
-            {prefix}
-          </span>
-        ) : null}
-      </div>
+      {labels.map(label => (
+        <RefLabel
+          key={label.key}
+          model={model}
+          label={label}
+          onOpenMenu={state => {
+            setMenuState(state)
+          }}
+        />
+      ))}
+      {/* Fallback: bare assembly name pinned far-left when no sticky label
+      carried it (e.g. the leftmost region was too narrow to label) */}
+      {showPrefixFallback ? (
+        <span
+          className={cx(classes.prefixLabel, classes.refLabel)}
+          data-testid="refLabel-prefix"
+        >
+          {prefix}
+        </span>
+      ) : null}
       {menuState ? (
         <RefNameMenu
           model={model}
@@ -120,6 +99,51 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
     </>
   )
 })
+
+// One refName label. Not an observer: `label` is already plain data computed by
+// the parent, and `model` is only used to fire actions. mouseDown flags the
+// click as starting on a label so the scalebar's rubberband hands the click to
+// this label's own onClick instead of opening the range menu.
+function RefLabel({
+  model,
+  label,
+  onOpenMenu,
+}: {
+  model: LGV
+  label: ScalebarRefNameLabel
+  onOpenMenu: (state: MenuState) => void
+}) {
+  const { classes } = useStyles()
+  const {
+    refName,
+    displayedRegionIndex,
+    transform,
+    maxWidth,
+    paddingLeft,
+    text,
+  } = label
+  return (
+    <span
+      className={classes.refLabel}
+      style={{
+        transform: `translateX(${transform}px)`,
+        paddingLeft,
+        maxWidth,
+      }}
+      data-testid={`refLabel-${refName}`}
+      onMouseDown={() => {
+        model.setScalebarRefNameClickPending(true)
+      }}
+      onClick={e => {
+        model.setScalebarRefNameClickPending(false)
+        model.setIsScalebarRefNameMenuOpen(true)
+        onOpenMenu({ anchorEl: e.currentTarget, refName, displayedRegionIndex })
+      }}
+    >
+      {text}
+    </span>
+  )
+}
 
 const RefNameMenu = observer(function RefNameMenu({
   model,
@@ -135,25 +159,12 @@ const RefNameMenu = observer(function RefNameMenu({
   const numRegions = displayedRegions.length
   const { canMoveLeft, canMoveRight, canMoveFarLeft, canMoveFarRight } =
     regionMoveActions(idx, numRegions)
-
-  function moveRegion(fromIndex: number, toIndex: number) {
-    const regions = [...displayedRegions]
-    const [removed] = regions.splice(fromIndex, 1)
-    regions.splice(toIndex, 0, removed!)
-    model.setDisplayedRegions(regions)
-  }
-
-  function removeRegion(index: number) {
-    const regions = displayedRegions.filter((_, i) => i !== index)
-    model.setDisplayedRegions(regions)
-  }
-
-  function reverseRegion(index: number) {
-    const regions = displayedRegions.map((r, i) =>
-      i === index ? { ...r, reversed: !r.reversed } : r,
-    )
-    model.setDisplayedRegions(regions)
-  }
+  const moves = [
+    { show: canMoveLeft, label: 'Move left', to: idx - 1 },
+    { show: canMoveRight, label: 'Move right', to: idx + 1 },
+    { show: canMoveFarLeft, label: 'Move to far left', to: 0 },
+    { show: canMoveFarRight, label: 'Move to far right', to: numRegions - 1 },
+  ]
 
   return (
     <Menu
@@ -175,50 +186,36 @@ const RefNameMenu = observer(function RefNameMenu({
           label: 'Actions',
           subMenu: [
             {
-              show: true,
               label: 'Reverse region',
               onClick: () => {
-                reverseRegion(idx)
+                model.setDisplayedRegions(
+                  withRegionReversed(displayedRegions, idx),
+                )
               },
             },
-            {
-              show: canMoveLeft,
-              label: 'Move left',
-              onClick: () => {
-                moveRegion(idx, idx - 1)
-              },
-            },
-            {
-              show: canMoveRight,
-              label: 'Move right',
-              onClick: () => {
-                moveRegion(idx, idx + 1)
-              },
-            },
-            {
-              show: canMoveFarLeft,
-              label: 'Move to far left',
-              onClick: () => {
-                moveRegion(idx, 0)
-              },
-            },
-            {
-              show: canMoveFarRight,
-              label: 'Move to far right',
-              onClick: () => {
-                moveRegion(idx, numRegions - 1)
-              },
-            },
-            {
-              show: numRegions > 1,
-              label: 'Remove this region from view',
-              onClick: () => {
-                removeRegion(idx)
-              },
-            },
-          ]
-            .filter(item => item.show)
-            .map(({ label, onClick }) => ({ label, onClick })),
+            ...moves
+              .filter(m => m.show)
+              .map(({ label, to }) => ({
+                label,
+                onClick: () => {
+                  model.setDisplayedRegions(
+                    withRegionMoved(displayedRegions, idx, to),
+                  )
+                },
+              })),
+            ...(numRegions > 1
+              ? [
+                  {
+                    label: 'Remove this region from view',
+                    onClick: () => {
+                      model.setDisplayedRegions(
+                        withRegionRemoved(displayedRegions, idx),
+                      )
+                    },
+                  },
+                ]
+              : []),
+          ],
         },
       ]}
     />

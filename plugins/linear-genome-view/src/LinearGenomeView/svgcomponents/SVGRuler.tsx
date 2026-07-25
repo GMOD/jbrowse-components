@@ -19,6 +19,7 @@ import {
 } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { ScalebarRefNameLabel } from '../util.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -102,35 +103,48 @@ function SVGRefNameLabels({
   })
   return (
     <>
-      {labels.map(({ key, transform, maxWidth, paddingLeft, text }) => {
-        const label = (
-          <text
-            x={paddingLeft}
-            y={fontSize}
-            fontSize={REF_NAME_LABEL_FONT_SIZE}
-            fontWeight="bold"
-            fill={fill}
-          >
-            {text}
-          </text>
-        )
-        return (
-          <g key={key} transform={`translate(${transform} 0)`}>
-            {maxWidth === undefined ? (
-              label
-            ) : (
-              <SvgClipRect
-                id={`reflabel-${model.id}-${key}`}
-                width={Math.max(maxWidth, 0)}
-                height={fontSize + 2}
-              >
-                {label}
-              </SvgClipRect>
-            )}
-          </g>
-        )
-      })}
+      {labels.map(label => (
+        <SVGRefNameLabel
+          key={label.key}
+          label={label}
+          fill={fill}
+          fontSize={fontSize}
+          clipId={`reflabel-${model.id}-${label.key}`}
+        />
+      ))}
     </>
+  )
+}
+
+// One refName label, clipped to the pixels left before its region ends so a
+// long name can't run past the region it belongs to — the vector counterpart of
+// the on-screen label's maxWidth + overflow:hidden.
+function SVGRefNameLabel({
+  label,
+  fill,
+  fontSize,
+  clipId,
+}: {
+  label: ScalebarRefNameLabel
+  fill: string
+  fontSize: number
+  clipId: string
+}) {
+  const { transform, maxWidth, paddingLeft, text } = label
+  return (
+    <g transform={`translate(${transform} 0)`}>
+      <SvgClipRect id={clipId} width={maxWidth} height={fontSize + 2}>
+        <text
+          x={paddingLeft}
+          y={fontSize}
+          fontSize={REF_NAME_LABEL_FONT_SIZE}
+          fontWeight="bold"
+          fill={fill}
+        >
+          {text}
+        </text>
+      </SvgClipRect>
+    </g>
   )
 }
 
@@ -152,8 +166,9 @@ export default function SVGRuler({
   return (
     <>
       <SVGRegionSeparators model={model} height={rulerHeight} />
-      {/* the tick frame overhangs the viewport on both sides; clip so ticks and
-      labels can't bleed into the export margin */}
+      {/* the tick and block frames overhang the viewport on both sides; clip so
+      ticks, tick numbers and refName labels can't bleed into the export margin
+      (on screen the scalebar's overflow:hidden does this) */}
       <SvgClipRect
         id={`ruler-clip-${model.id}`}
         width={model.width}
@@ -164,8 +179,8 @@ export default function SVGRuler({
           tickTopY={tickTopY}
           numbersBaselineY={numbersBaselineY}
         />
+        <SVGRefNameLabels model={model} fontSize={fontSize} />
       </SvgClipRect>
-      <SVGRefNameLabels model={model} fontSize={fontSize} />
     </>
   )
 }
