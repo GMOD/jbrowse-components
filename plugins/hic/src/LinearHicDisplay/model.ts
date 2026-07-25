@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import {
@@ -430,25 +434,25 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #action
        */
       setUseLogScale(f: boolean) {
-        self.configuration.setSlot('useLogScale', f)
+        setConf(self, 'useLogScale', f)
       },
       /**
        * #action
        */
       setUseColorPercentile(f: boolean) {
-        self.configuration.setSlot('useColorPercentile', f)
+        setConf(self, 'useColorPercentile', f)
       },
       /**
        * #action
        */
       setShowResolutionControls(f: boolean) {
-        self.configuration.setSlot('showResolutionControls', f)
+        setConf(self, 'showResolutionControls', f)
       },
       /**
        * #action
        */
       setColorScheme(f: HicColorScheme) {
-        self.configuration.setSlot('colorScheme', f)
+        setConf(self, 'colorScheme', f)
       },
       /**
        * #action
@@ -457,7 +461,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * only fires on a real user choice.
        */
       setActiveNormalization(f: string) {
-        self.configuration.setSlot('selectedNormalization', f)
+        setConf(self, 'selectedNormalization', f)
       },
       /**
        * #action
@@ -474,13 +478,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #action
        */
       setFitToHeight(arg: boolean) {
-        self.configuration.setSlot('fitToHeight', arg)
+        setConf(self, 'fitToHeight', arg)
       },
       /**
        * #action
        */
       setShowLegend(arg: boolean) {
-        self.configuration.setSlot('showLegend', arg)
+        setConf(self, 'showLegend', arg)
       },
       /**
        * #action
@@ -496,7 +500,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * Reset to pure auto-mode: bias 0, binsize follows zoom directly.
        */
       resetResolutionBias() {
-        self.configuration.setSlot('resolutionBias', 0)
+        setConf(self, 'resolutionBias', 0)
       },
       /**
        * #action
@@ -509,10 +513,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const avail = self.availableResolutions
         const idx = avail ? avail.indexOf(binSize) : -1
         if (idx !== -1) {
-          self.configuration.setSlot(
-            'resolutionBias',
-            idx - self.autoResolutionIdx,
-          )
+          setConf(self, 'resolutionBias', idx - self.autoResolutionIdx)
         }
       },
     }))

@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   getConf,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession, isFeature, openFeatureWidget } from '@jbrowse/core/util'
@@ -142,7 +143,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
        * #action
        */
       setDisplayMode(flag: string) {
-        self.configuration.setSlot('displayMode', flag)
+        setConf(self, 'displayMode', flag)
       },
     }))
     .actions(self => ({

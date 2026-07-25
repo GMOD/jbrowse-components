@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   getConf,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
@@ -139,7 +140,7 @@ export function stateModelFactory(
        * set arc stroke width; `undefined` resets to the config-slot default
        */
       setLineWidth(n?: number) {
-        self.configuration.setSlot('lineWidth', n)
+        setConf(self, 'lineWidth', n)
       },
     }))
 
