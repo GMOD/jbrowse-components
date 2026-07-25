@@ -54,14 +54,24 @@ export async function getPhasedGenotypeMatrix({
     adapterConfig,
   })
 
-  // Hoist per-source key resolution and max ploidy out of the feature loop.
-  // Build per-source resolved entries first; row buffers are pre-sized to
-  // mafs.length once mafs is fetched.
-  const resolved = sources.map(s => ({
-    name: s.name,
-    key: resolveSampleName(s),
-    maxPloidy: sampleInfo[s.name]?.maxPloidy ?? 2,
-  }))
+  // Flatten sources to one entry per output row, up front. A source that
+  // already names one haplotype ("HG001 HP0", carrying `HP`) contributes just
+  // that row and keeps its own name — that's how a re-cluster over a
+  // subtree-filtered set arrives, where one haplotype of a sample can be
+  // visible and the other not. An unexpanded sample contributes one row per
+  // haplotype under the `"<sampleName> HP<n>"` convention in
+  // shared/getSources.ts. Either way the order matches
+  // expandSourcesToHaplotypes, which is what lets the caller line the returned
+  // `order` up with its own rows.
+  const rowSpecs = sources.flatMap(s => {
+    const key = resolveSampleName(s)
+    return s.HP === undefined
+      ? Array.from(
+          { length: sampleInfo[s.name]?.maxPloidy ?? 2 },
+          (_, hp) => ({ key, hp, name: `${s.name} HP${hp}` }),
+        )
+      : [{ key, hp: s.HP, name: s.name }]
+  })
 
   const rawFeatures = await updateStatus(
     'Downloading features',
@@ -87,14 +97,10 @@ export async function getPhasedGenotypeMatrix({
   // genotypeMatrixEncoding.ts.
   const numFeatures = mafs.length
   const rows: Record<string, Float32Array> = {}
-  const rowArraysBySrc: Float32Array[][] = resolved.map(r => {
-    const arrs: Float32Array[] = []
-    for (let hp = 0; hp < r.maxPloidy; hp++) {
-      const arr = new Float32Array(numFeatures)
-      rows[`${r.name} HP${hp}`] = arr
-      arrs.push(arr)
-    }
-    return arrs
+  const rowArrays = rowSpecs.map(spec => {
+    const arr = new Float32Array(numFeatures)
+    rows[spec.name] = arr
+    return arr
   })
 
   // Mirrors getGenotypeMatrix's fast path: iterate genotypes via
@@ -110,20 +116,23 @@ export async function getPhasedGenotypeMatrix({
   for (let i = 0; i < samplesLen; i++) {
     sampleIdxByKey.set(sampleNames[i]!, i)
   }
+  // Wide enough to index every haplotype some row asks for, which for a
+  // pre-expanded source is its own HP rather than a ploidy count.
   let maxPloidy = 1
-  for (const r of resolved) {
-    if (r.maxPloidy > maxPloidy) {
-      maxPloidy = r.maxPloidy
+  for (const spec of rowSpecs) {
+    if (spec.hp + 1 > maxPloidy) {
+      maxPloidy = spec.hp + 1
     }
   }
   const used = new Uint8Array(samplesLen)
-  const resolvedSampleIdx = resolved.map(r => {
-    const idx = sampleIdxByKey.get(r.key) ?? -1
+  const rowSampleIdx = Int32Array.from(rowSpecs, spec => {
+    const idx = sampleIdxByKey.get(spec.key) ?? -1
     if (idx !== -1) {
       used[idx] = 1
     }
     return idx
   })
+  const rowHp = Int32Array.from(rowSpecs, spec => spec.hp)
   // Per-sample haplotype indicators for the feature being read, laid out
   // [sample0 hp0..hpN, sample1 hp0..hpN, ...]. One flat buffer rather than a
   // subarray view per sample, which would allocate inside the hot loop.
@@ -155,30 +164,31 @@ export async function getPhasedGenotypeMatrix({
           )
         }
       })
-      for (let k = 0; k < resolved.length; k++) {
-        const idx = resolvedSampleIdx[k]!
-        const arrs = rowArraysBySrc[k]!
-        const base = idx * maxPloidy
-        for (let hp = 0; hp < arrs.length; hp++) {
-          arrs[hp]![f] = idx === -1 ? MISSING : indicators[base + hp]!
-        }
+      for (let k = 0; k < rowArrays.length; k++) {
+        const idx = rowSampleIdx[k]!
+        rowArrays[k]![f] =
+          idx === -1 ? MISSING : indicators[idx * maxPloidy + rowHp[k]!]!
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
-      for (let k = 0; k < resolved.length; k++) {
-        const val = genotypes[resolved[k]!.key]
-        const arrs = rowArraysBySrc[k]!
-        readPhasedAlleleIndicators(
-          val ?? '',
-          0,
-          val?.length ?? 0,
-          scratch,
-          0,
-          maxPloidy,
-        )
-        for (let hp = 0; hp < arrs.length; hp++) {
-          arrs[hp]![f] = scratch[hp]!
+      // Rows of one sample are adjacent, so its genotype is scanned once and
+      // read by each of its haplotype rows.
+      let scannedKey: string | undefined
+      for (let k = 0; k < rowArrays.length; k++) {
+        const { key, hp } = rowSpecs[k]!
+        if (key !== scannedKey) {
+          const val = genotypes[key]
+          readPhasedAlleleIndicators(
+            val ?? '',
+            0,
+            val?.length ?? 0,
+            scratch,
+            0,
+            maxPloidy,
+          )
+          scannedKey = key
         }
+        rowArrays[k]![f] = scratch[hp]!
       }
     }
     report(f)

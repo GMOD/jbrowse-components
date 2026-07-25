@@ -1,6 +1,4 @@
-import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
-
-import { expandSourcesToHaplotypes } from './getSources.ts'
+import { applyClusterOrder } from './applyClusterOrder.ts'
 
 import type { ReducedModel } from './components/MultiSampleVariantClusterDialog/types.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
@@ -30,7 +28,7 @@ export async function runGenotypeClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const {
-    sourcesVolatile,
+    sourcesBase,
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
     filters,
@@ -38,14 +36,17 @@ export async function runGenotypeClustering({
     renderingMode,
     sampleInfo,
   } = model
-  if (sourcesVolatile) {
-    const isHaplotypeClustering = renderingMode === 'phased'
+  // `sourcesBase` rather than every discovered sample: it is the row set the
+  // display is actually showing, so with a subtree filter active this
+  // re-resolves the structure *within* the filtered clade instead of handing
+  // back the same whole-cohort tree.
+  if (sourcesBase) {
     const ret = await rpcManager.call(
       sessionId,
       'MultiSampleVariantClusterGenotypeMatrix',
       {
         regions,
-        sources: sourcesVolatile,
+        sources: sourcesBase,
         minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
         maxMissingnessFilter: maxMissingnessFilter ?? 1,
         filters,
@@ -56,12 +57,14 @@ export async function runGenotypeClustering({
         statusCallback,
       },
     )
-    const baseSources =
-      isHaplotypeClustering && sampleInfo
-        ? expandSourcesToHaplotypes({ sources: sourcesVolatile, sampleInfo })
-        : sourcesVolatile
     model.setLayoutAndPendingClusterTree(
-      buildClusteredLayout(baseSources, model.layout, ret.order),
+      applyClusterOrder({
+        sourcesBase,
+        layout: model.layout,
+        order: ret.order,
+        renderingMode,
+        sampleInfo,
+      }),
       ret.tree,
     )
   }

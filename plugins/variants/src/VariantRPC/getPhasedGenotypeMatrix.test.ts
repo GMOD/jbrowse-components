@@ -29,7 +29,7 @@ async function build({
   sampleInfo,
 }: {
   features: Feature[]
-  sources: { name: string }[]
+  sources: { name: string; sampleName?: string; HP?: number }[]
   sampleInfo: Record<string, { isPhased: boolean; maxPloidy: number }>
 }) {
   mockGetFeatures.mockResolvedValue(features)
@@ -129,6 +129,24 @@ describe('getPhasedGenotypeMatrix', () => {
     })
     expect([...rows['MISSING_SAMPLE HP0']!]).toEqual([NaN])
     expect([...rows['MISSING_SAMPLE HP1']!]).toEqual([NaN])
+  })
+
+  test('a source already naming one haplotype yields just that row', async () => {
+    // How a re-cluster over a subtree-filtered set arrives: the visible rows
+    // are already haplotype-expanded, and one haplotype of a sample can be
+    // visible while the other is not. Expanding again would produce
+    // "HG001 HP0 HP0".
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '0|1', HG002: '1|0' })],
+      sources: [
+        { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+        { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
+      ],
+      sampleInfo: { HG001: diploid, HG002: diploid },
+    })
+    expect(Object.keys(rows)).toEqual(['HG001 HP1', 'HG002 HP0'])
+    expect([...rows['HG001 HP1']!]).toEqual([1])
+    expect([...rows['HG002 HP0']!]).toEqual([1])
   })
 
   test('keeps rows aligned to the feature order', async () => {

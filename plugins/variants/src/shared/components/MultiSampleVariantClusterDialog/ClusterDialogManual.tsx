@@ -11,7 +11,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
-  buildClusteredLayout,
   generateClusterRScript,
   matrixToTsv,
   parseClusterOrder,
@@ -28,6 +27,8 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { applyClusterOrder } from '../../applyClusterOrder.ts'
 
 import type { ReducedModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -68,7 +69,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
     async () => {
       const { rpcManager } = getSession(model)
       const {
-        sourcesVolatile,
+        sourcesBase,
         minorAlleleFrequencyFilter,
         maxMissingnessFilter,
         filters,
@@ -77,12 +78,12 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         sampleInfo,
       } = model
       const sessionId = getRpcSessionId(model)
-      // Same sources the auto path sends: the un-expanded list, since the
-      // phased matrix does its own haplotype expansion. Passing the already
-      // expanded `sourcesWithoutLayout` would ask for HP rows of HP rows.
+      // Same rows the auto path clusters — the ones on screen. Both paths have
+      // to agree, or the order pasted back here would be indexed against a
+      // different sample set than "Run clustering" would have produced.
       return rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
         regions: view.dynamicBlocks.contentBlocks,
-        sources: sourcesVolatile ?? [],
+        sources: sourcesBase ?? [],
         minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
         maxMissingnessFilter: maxMissingnessFilter ?? 1,
         filters,
@@ -229,18 +230,19 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         <Button
           variant="contained"
           onClick={() => {
-            const { sourcesWithoutLayout } = model
-            if (sourcesWithoutLayout) {
+            const { sourcesBase, sampleInfo, renderingMode } = model
+            if (sourcesBase) {
               try {
-                // parseClusterOrder yields 1-based R indices; buildClusteredLayout
-                // (shared with the auto dialog) expects 0-based, and merges
-                // existing layout so colors/labels survive a re-cluster.
+                // parseClusterOrder yields 1-based R indices; applyClusterOrder
+                // (shared with the auto path) expects 0-based.
                 model.setLayout(
-                  buildClusteredLayout(
-                    sourcesWithoutLayout,
-                    model.layout,
-                    parseClusterOrder(paste).map(idx => idx - 1),
-                  ),
+                  applyClusterOrder({
+                    sourcesBase,
+                    layout: model.layout,
+                    order: parseClusterOrder(paste).map(idx => idx - 1),
+                    renderingMode,
+                    sampleInfo,
+                  }),
                 )
               } catch (e) {
                 console.error(e)

@@ -20,10 +20,10 @@ const regions = [
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
     layout: [],
-    sourcesVolatile: [
-      { name: 'sampleA' },
-      { name: 'sampleB' },
-      { name: 'sampleC' },
+    sourcesBase: [
+      { name: 'sampleA', sampleName: 'sampleA' },
+      { name: 'sampleB', sampleName: 'sampleB' },
+      { name: 'sampleC', sampleName: 'sampleC' },
     ],
     adapterConfig,
     renderingMode: 'alleleCount',
@@ -63,14 +63,18 @@ describe('runGenotypeClustering', () => {
       'MultiSampleVariantClusterGenotypeMatrix',
       expect.objectContaining({
         regions,
-        sources: model.sourcesVolatile,
+        sources: model.sourcesBase,
         minorAlleleFrequencyFilter: 0,
         maxMissingnessFilter: 1,
         renderingMode: 'alleleCount',
       }),
     )
     expect(model.setLayoutAndPendingClusterTree).toHaveBeenCalledWith(
-      [{ name: 'sampleC' }, { name: 'sampleA' }, { name: 'sampleB' }],
+      [
+        { name: 'sampleC', sampleName: 'sampleC' },
+        { name: 'sampleA', sampleName: 'sampleA' },
+        { name: 'sampleB', sampleName: 'sampleB' },
+      ],
       '(a,b,c);',
     )
   })
@@ -101,8 +105,8 @@ describe('runGenotypeClustering', () => {
     )
   })
 
-  it('does nothing when sourcesVolatile is not yet loaded', async () => {
-    const model = makeModel({ sourcesVolatile: undefined })
+  it('does nothing when the sources are not yet loaded', async () => {
+    const model = makeModel({ sourcesBase: undefined })
     const rpcManager = makeRpcManager(jest.fn())
 
     await runGenotypeClustering({
@@ -120,7 +124,10 @@ describe('runGenotypeClustering', () => {
 
   it('expands sources into per-haplotype rows before laying out, in phased mode', async () => {
     const model = makeModel({
-      sourcesVolatile: [{ name: 'sampleA' }, { name: 'sampleB' }],
+      sourcesBase: [
+        { name: 'sampleA', sampleName: 'sampleA' },
+        { name: 'sampleB', sampleName: 'sampleB' },
+      ],
       renderingMode: 'phased',
       sampleInfo: {
         sampleA: { isPhased: true, maxPloidy: 2 },
@@ -149,6 +156,51 @@ describe('runGenotypeClustering', () => {
         { name: 'sampleA HP0', sampleName: 'sampleA', HP: 0 },
       ],
       '(...);',
+    )
+  })
+
+  it('clusters the visible rows and keeps the hidden ones in the layout', async () => {
+    // What a subtree filter leaves: sourcesBase is the filtered set, while
+    // layout still records every row. The hidden row isn't clustered — it isn't
+    // in the tree — but dropping it from layout would erase its position and
+    // color for good once the filter is cleared.
+    const model = makeModel({
+      sourcesBase: [
+        { name: 'sampleA', sampleName: 'sampleA' },
+        { name: 'sampleB', sampleName: 'sampleB' },
+      ],
+      layout: [
+        { name: 'sampleA' },
+        { name: 'sampleB' },
+        { name: 'sampleC', color: 'red' },
+      ],
+    })
+    const rpcManager = makeRpcManager(async () => ({
+      order: [1, 0],
+      tree: '(a,b);',
+    }))
+
+    await runGenotypeClustering({
+      model,
+      rpcManager,
+      sessionId: 'session-1',
+      regions,
+      stopToken: createStopToken(),
+      statusCallback: jest.fn(),
+    })
+
+    expect(rpcManager.call).toHaveBeenCalledWith(
+      'session-1',
+      'MultiSampleVariantClusterGenotypeMatrix',
+      expect.objectContaining({ sources: model.sourcesBase }),
+    )
+    expect(model.setLayoutAndPendingClusterTree).toHaveBeenCalledWith(
+      [
+        { name: 'sampleB', sampleName: 'sampleB' },
+        { name: 'sampleA', sampleName: 'sampleA' },
+        { name: 'sampleC', color: 'red' },
+      ],
+      '(a,b);',
     )
   })
 })
