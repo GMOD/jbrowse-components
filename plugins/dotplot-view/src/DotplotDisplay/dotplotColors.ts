@@ -1,10 +1,8 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import {
-  getBlue,
-  getGreen,
-  getRed,
+  cssColorToABGR,
   packAbgr,
-  parseCssColor,
+  withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import {
   colorSchemes,
@@ -17,13 +15,12 @@ import type { Rgb, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
 
-function packColor(r: number, g: number, b: number, alpha: number) {
-  return packAbgr(r, g, b, Math.round(alpha * 255))
+function alphaByte(alpha: number) {
+  return Math.round(alpha * 255)
 }
 
-function rgbOf(css: string): Rgb {
-  const c = parseCssColor(css)
-  return [getRed(c), getGreen(c), getBlue(c)]
+function packColor(r: number, g: number, b: number, alpha: number) {
+  return packAbgr(r, g, b, alphaByte(alpha))
 }
 
 // Pack a CSS color from the shared colorSchemes at the view's alpha. Going
@@ -31,25 +28,17 @@ function rgbOf(css: string): Rgb {
 // strand/default colors from drifting off the synteny renderer's (which packs
 // the same constants via cssColorToABGR).
 function packCss(css: string, alpha: number) {
-  const [r, g, b] = rgbOf(css)
-  return packColor(r, g, b, alpha)
+  return withAbgrAlpha(cssColorToABGR(css), alphaByte(alpha))
 }
 
-// Query/target chromosome-painting palette. Drop category10's grey (#7f7f7f):
-// a grey point reads as uncolored, and a genome whose (hashed) chromosome lands
-// on that slot paints muddy grey — matches the synteny nameColorPalette so the
-// two views can't drift.
-const nameColorRgb = category10
+// Query/target chromosome-painting palette, pre-packed (alpha applied per
+// color-function build). Drop category10's grey (#7f7f7f): a grey point reads as
+// uncolored, and a genome whose (hashed) chromosome lands on that slot paints
+// muddy grey — matches the synteny nameColorPalette so the two views can't
+// drift.
+const nameColorAbgr = category10
   .filter(hex => hex.toLowerCase() !== '#7f7f7f')
-  .map(rgbOf)
-
-export function unpackColorToCSS(packed: number) {
-  const r = packed & 0xff
-  const g = (packed >>> 8) & 0xff
-  const b = (packed >>> 16) & 0xff
-  const a = (packed >>> 24) / 255
-  return `rgba(${r},${g},${b},${a})`
-}
+  .map(hex => cssColorToABGR(hex))
 
 // Bake a ramp into a 256-entry packed-ABGR LUT once per color-function build, so
 // the per-feature path (thousands of segments) is a single array index — no HSL
@@ -87,7 +76,7 @@ function nameColorFn(
   alpha: number,
   pick: (d: DotplotRpcData, i: number) => string,
 ): DotplotColorFn {
-  const palette = nameColorRgb.map(([r, g, b]) => packColor(r, g, b, alpha))
+  const palette = nameColorAbgr.map(c => withAbgrAlpha(c, alphaByte(alpha)))
   const cache = new Map<string, number>()
   return (d, i) => {
     const name = pick(d, i)

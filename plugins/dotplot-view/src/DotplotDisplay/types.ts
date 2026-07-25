@@ -1,26 +1,18 @@
+import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeaturesAndPositions.ts'
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+// What the display holds after a fetch: the RPC result minus the two
+// skipped-refName lists, which the fetch autorun consumes on arrival (to decide
+// whether the "could not be mapped" warning applies) and never stores.
+//
 // All position values are absolute genomic cumBp coordinates (uint32-scale
 // values held in Float64Array — Float32 loses precision past ~16M bp). Per
 // project rules, hi/lo splits are confined to the GPU upload boundary.
-export interface DotplotRpcData {
-  p11: Float64Array
-  p12: Float64Array
-  p21: Float64Array
-  p22: Float64Array
-  strands: Int8Array
-  starts: Uint32Array
-  ends: Uint32Array
-  parsedCigars: number[][]
-  identities: Float32Array
-  meanIdentities: Float32Array
-  mappingQuals: Float32Array
-  refNames: string[]
-  mateRefNames: string[]
-  totalFeatureCount: number
-  skippedFeatureCount: number
-}
+export type DotplotRpcData = Omit<
+  DotplotFeaturesAndPositionsResult,
+  'skippedHRefNames' | 'skippedVRefNames'
+>
 
 export interface DotplotRenderModel extends IAnyStateTreeNode {
   geometry: DotplotGeometryData | undefined

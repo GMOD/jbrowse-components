@@ -62,13 +62,31 @@ const DEFAULT_STATE: DotplotRenderState = {
 }
 
 describe('Canvas2DDotplotRenderer', () => {
+  // Segments are counted by lineTo, not by stroke: same-color runs are batched
+  // into one path, so stroke count tracks color runs (see the batching test
+  // below) while every segment still gets drawn.
   test('renders lines for uploaded geometry', () => {
-    const { canvas, strokeCalls } = createMockCanvas()
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(3))
     renderer.render(DEFAULT_STATE)
-    expect(strokeCalls.length).toBe(3)
+    expect(ctx.lineTo).toHaveBeenCalledTimes(3)
+  })
+
+  test('batches same-color segments into one path, flushing on color change', () => {
+    const { canvas, ctx, strokeCalls } = createMockCanvas()
+    const renderer = new Canvas2DDotplotRenderer(canvas)
+    renderer.resize(800, 600)
+    const geometry = makeGeometry(5)
+    // two runs: three of one color then two of another
+    geometry.colors.set([
+      0xff0000ff, 0xff0000ff, 0xff0000ff, 0xff00ff00, 0xff00ff00,
+    ])
+    renderer.uploadGeometry(0, geometry)
+    renderer.render(DEFAULT_STATE)
+    expect(ctx.lineTo).toHaveBeenCalledTimes(5)
+    expect(strokeCalls.length).toBe(2)
   })
 
   test('does nothing with zero instances', () => {
@@ -140,7 +158,7 @@ describe('Canvas2DDotplotRenderer', () => {
   })
 
   test('renders multiple tracks independently', () => {
-    const { canvas, strokeCalls } = createMockCanvas()
+    const { canvas, ctx, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(2))
@@ -149,11 +167,13 @@ describe('Canvas2DDotplotRenderer', () => {
       ...DEFAULT_STATE,
       displayKeys: [0, 1],
     })
-    expect(strokeCalls.length).toBe(5)
+    expect(ctx.lineTo).toHaveBeenCalledTimes(5)
+    // batches never span two displays, so each single-color track is one stroke
+    expect(strokeCalls.length).toBe(2)
   })
 
   test('deleteGeometry removes a track', () => {
-    const { canvas, strokeCalls } = createMockCanvas()
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(2))
@@ -163,7 +183,7 @@ describe('Canvas2DDotplotRenderer', () => {
       ...DEFAULT_STATE,
       displayKeys: [0, 1],
     })
-    expect(strokeCalls.length).toBe(3)
+    expect(ctx.lineTo).toHaveBeenCalledTimes(3)
   })
 
   // Sizing is deferred to render (prepareCanvas), so dpr is re-read every frame
@@ -191,12 +211,13 @@ describe('Canvas2DDotplotRenderer', () => {
   })
 
   test('dispose clears data so render is a no-op', () => {
-    const { canvas, strokeCalls } = createMockCanvas()
+    const { canvas, ctx, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(2))
     renderer.dispose()
     renderer.render(DEFAULT_STATE)
+    expect(ctx.lineTo).not.toHaveBeenCalled()
     expect(strokeCalls.length).toBe(0)
   })
 })

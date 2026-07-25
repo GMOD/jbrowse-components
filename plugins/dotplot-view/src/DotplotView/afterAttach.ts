@@ -4,6 +4,7 @@ import {
   parseLocString,
   selectNamedRegions,
 } from '@jbrowse/core/util'
+import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
@@ -339,6 +340,14 @@ function setupLocalStorageAutorun(self: DotplotViewModel) {
 }
 
 function setupRegionsAutorun(self: DotplotViewModel) {
+  // Leading edge, so the axes populate as soon as the assemblies and the
+  // measured width are both in — a plain `{ delay }` would defer even this
+  // first run, stalling the whole view (and the display's fetch, which waits on
+  // `initialized`) behind a timer with nothing to coalesce. The measured width
+  // is trustworthy on the first run: useWidthSetter only ever reports a
+  // laid-out, non-zero content-box width. Later runs (setAssemblyNames clears
+  // the regions to force a re-init) still debounce.
+  const debounce = leadingEdgeDebounce(1000)
   addDisposer(
     self,
     autorun(
@@ -352,9 +361,10 @@ function setupRegionsAutorun(self: DotplotViewModel) {
           self.assembliesInitialized
         ) {
           self.initializeDisplayedRegions()
+          debounce.prime()
         }
       },
-      { delay: 1000, name: 'DotplotRegions' },
+      { name: 'DotplotRegions', scheduler: debounce.scheduler },
     ),
   )
 }
@@ -364,8 +374,16 @@ function setupAspectLockAutorun(self: DotplotViewModel) {
     self,
     autorun(
       function dotplotAspectLockAutorun() {
-        if (self.lockAspectRatio) {
-          self.syncBpPerPx()
+        // The equality guard is load-bearing, not an optimization: squareView
+        // re-centers each axis, and centerAt rounds offsetPx, so calling it
+        // unconditionally would write offsetPx on every run and retrigger this
+        // autorun. Wheel zoom already keeps the axes equal; only box-zoom and
+        // other per-axis operations split them.
+        if (
+          self.lockAspectRatio &&
+          self.hview.bpPerPx !== self.vview.bpPerPx
+        ) {
+          self.squareView()
         }
       },
       { name: 'DotplotAspectLock' },

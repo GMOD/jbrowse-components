@@ -1,9 +1,4 @@
-import type { Region } from '@jbrowse/core/util'
-
-interface AxisSnap {
-  bpPerPx: number
-  displayedRegions: Region[]
-}
+import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 // Signature of the inputs a dotplot feature fetch depends on: the LOD tier plus
 // each axis's zoom and displayed-region order/orientation. When this changes —
@@ -15,10 +10,10 @@ interface AxisSnap {
 // on a plot that is still drawing yesterday's data against today's axes.
 export function dotplotFetchKey(
   lodMode: string,
-  hAxis: AxisSnap,
-  vAxis: AxisSnap,
+  hAxis: BpIndexViewSnap,
+  vAxis: BpIndexViewSnap,
 ) {
-  const axis = (a: AxisSnap) =>
+  const axis = (a: BpIndexViewSnap) =>
     `${a.bpPerPx}#${a.displayedRegions
       .map(r => `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`)
       .join('|')}`

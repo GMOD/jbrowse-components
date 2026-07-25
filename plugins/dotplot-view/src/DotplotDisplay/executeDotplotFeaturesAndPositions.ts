@@ -1,8 +1,10 @@
-import { parseCigar2 } from '@jbrowse/alignments-core'
+import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
+
+import { cigarWorthParsing } from './dotplotCigarDetail.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -26,7 +28,14 @@ export interface DotplotFeaturesAndPositionsResult {
   mappingQuals: Float32Array
   refNames: string[]
   mateRefNames: string[]
-  parsedCigars: number[][]
+  // Every feature's packed CIGAR ops concatenated into one transferable buffer,
+  // with cigarOffsets[i]..cigarOffsets[i+1] delimiting feature i (length n+1).
+  // An array-of-arrays would be structured-cloned per feature — the one thing on
+  // this payload that isn't a zero-copy transfer — and CIGAR data dwarfs
+  // everything else here. Empty slice = no CIGAR detail was worth shipping at
+  // this zoom (see dotplotCigarDetail).
+  cigarData: Uint32Array
+  cigarOffsets: Uint32Array
   totalFeatureCount: number
   skippedFeatureCount: number
   // Distinct refNames a skipped feature named that the corresponding axis does
@@ -40,6 +49,10 @@ export interface DotplotFeaturesAndPositionsResult {
   skippedHRefNames: string[]
   skippedVRefNames: string[]
 }
+
+// Shared empty slice for features whose CIGAR isn't worth parsing, so the
+// no-detail path allocates nothing.
+const EMPTY_CIGAR = new Uint32Array(0)
 
 interface FeatureMate {
   start: number
@@ -108,8 +121,9 @@ export async function executeDotplotFeaturesAndPositions({
   // (unmapped refName or unmappable position) leave no dead slots because the
   // write cursor only advances on a valid feature. The subarray'd buffers are
   // transferred whole — a zero-copy ownership move, so the trailing slack costs
-  // nothing at the RPC boundary. refNames/mateRefNames/parsedCigars are pushed
-  // (structured-cloned, not transferred) so they stay exactly n long.
+  // nothing at the RPC boundary. refNames/mateRefNames are pushed
+  // (structured-cloned, not transferred) so they stay exactly n long; CIGARs are
+  // collected per feature then concatenated into one transferable pair below.
   const count = features.length
   const p11 = new Float64Array(count)
   const p12 = new Float64Array(count)
@@ -123,7 +137,8 @@ export async function executeDotplotFeaturesAndPositions({
   const mappingQuals = new Float32Array(count)
   const refNames: string[] = []
   const mateRefNames: string[] = []
-  const parsedCigars: number[][] = []
+  const cigarChunks: Uint32Array[] = []
+  let cigarTotal = 0
 
   let n = 0
   let skippedFeatureCount = 0
@@ -188,8 +203,35 @@ export async function executeDotplotFeaturesAndPositions({
     mappingQuals[n] = (f.get('mappingQual') as number | undefined) ?? -1
     refNames.push(refName)
     mateRefNames.push(mateRefName)
-    parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
+    // Parse only what the geometry builder could actually walk at this zoom. A
+    // whole-genome PAF is mostly sub-pixel alignments whose parsed ops would be
+    // built, shipped, and then ignored.
+    const cigarStr = f.get('CIGAR') as string | undefined
+    const cigar =
+      cigarStr &&
+      cigarWorthParsing(
+        c12 - c11,
+        c22 - c21,
+        hViewSnap.bpPerPx,
+        vViewSnap.bpPerPx,
+      )
+        ? parseCigar2Typed(cigarStr)
+        : EMPTY_CIGAR
+    cigarChunks.push(cigar)
+    cigarTotal += cigar.length
     n++
+  }
+
+  // Concatenate into the flat (data, offsets) pair the result ships. Offsets are
+  // n+1 long so feature i is always cigarData.subarray(off[i], off[i+1]).
+  const cigarData = new Uint32Array(cigarTotal)
+  const cigarOffsets = new Uint32Array(n + 1)
+  let cigarWrite = 0
+  for (let i = 0; i < n; i++) {
+    const chunk = cigarChunks[i]!
+    cigarData.set(chunk, cigarWrite)
+    cigarWrite += chunk.length
+    cigarOffsets[i + 1] = cigarWrite
   }
 
   const result: DotplotFeaturesAndPositionsResult = {
@@ -205,7 +247,8 @@ export async function executeDotplotFeaturesAndPositions({
     mappingQuals: mappingQuals.subarray(0, n),
     refNames,
     mateRefNames,
-    parsedCigars,
+    cigarData,
+    cigarOffsets,
     totalFeatureCount: count,
     skippedFeatureCount,
     skippedHRefNames: [...skippedHRefNames],
@@ -223,5 +266,7 @@ export async function executeDotplotFeaturesAndPositions({
     result.identities.buffer,
     result.meanIdentities.buffer,
     result.mappingQuals.buffer,
+    result.cigarData.buffer,
+    result.cigarOffsets.buffer,
   ])
 }

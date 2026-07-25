@@ -1,6 +1,8 @@
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
-export type Coord = [number, number] | undefined
+// A plot-area pointer position in component px, as the drag handlers and the
+// coord-to-bp model actions pass it around.
+export type Coord = [number, number]
 
 export const LS_CURSOR_MODE = 'dotplot-cursorMode'
 

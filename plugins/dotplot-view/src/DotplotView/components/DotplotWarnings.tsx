@@ -1,9 +1,11 @@
 import { Suspense, lazy, useState } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { Alert, Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
+import type { TrackWarning } from './WarningDialog.tsx'
 
 // lazy components
 const WarningDialog = lazy(() => import('./WarningDialog.tsx'))
@@ -13,12 +15,24 @@ const DotplotWarnings = observer(function DotplotWarnings({
 }: {
   model: DotplotViewModel
 }) {
-  const trackWarnings = model.tracks.filter(
-    t => t.displays[0]?.warnings?.length,
-  )
   const [shown, setShown] = useState(false)
-  const [dismissedLength, setDismissedLength] = useState(0)
-  return trackWarnings.length > dismissedLength ? (
+  // Dismissal is keyed on the warning text, not on how many tracks have
+  // warnings: a count only rises, so dismissing one warning used to suppress
+  // every later one that arrived at the same count — including a genuinely
+  // different message on the same track after a refetch.
+  const [dismissedKey, setDismissedKey] = useState<string>()
+
+  // Read through dotplotDisplays (typed) rather than tracks[i].displays[0]
+  // (pluggable, so `any`), and resolve the track name here instead of in the
+  // dialog. Index-aligned with tracks by construction.
+  const rows: TrackWarning[] = model.dotplotDisplays.flatMap((display, i) =>
+    display.warnings.length
+      ? [{ name: getConf(model.tracks[i], 'name'), warnings: display.warnings }]
+      : [],
+  )
+  const warningKey = rows.flatMap(r => r.warnings.map(w => w.message)).join('|')
+
+  return warningKey && warningKey !== dismissedKey ? (
     <Alert severity="warning">
       Warnings during render{' '}
       <Button
@@ -32,7 +46,7 @@ const DotplotWarnings = observer(function DotplotWarnings({
       {shown ? (
         <Suspense fallback={null}>
           <WarningDialog
-            trackWarnings={trackWarnings}
+            trackWarnings={rows}
             handleClose={() => {
               setShown(false)
             }}
@@ -42,7 +56,7 @@ const DotplotWarnings = observer(function DotplotWarnings({
       <Button
         variant="contained"
         onClick={() => {
-          setDismissedLength(trackWarnings.length)
+          setDismissedKey(warningKey)
         }}
       >
         Dismiss

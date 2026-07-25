@@ -40,7 +40,11 @@ import type {
 } from '../DotplotDisplay/dotplotRenderingBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from './1dview.ts'
-import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
+import type {
+  Coord,
+  DotplotViewInit,
+  ImportFormSyntenyTrack,
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
@@ -56,7 +60,6 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
-type Coord = [number, number]
 type CursorMode = 'crosshair' | 'move'
 
 // Hide axis tick labels when more than this many blocks are visible — the
@@ -104,9 +107,14 @@ function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
   }
 }
 
-// defaults for postProcessSnapshot filtering
+// stripDefault baselines: a snapshot omits these unless the user changed them
 const defaultHeight = 600
 const defaultLineWidth = 2.5
+
+// Floor for the resize handle. Below this the axis borders (which floor at
+// MIN_BORDER=50 each) would eat the whole box and viewWidth/viewHeight would go
+// negative, feeding negative canvas dimensions and an inverted maxBpPerPx.
+const minHeight = 120
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -429,15 +437,19 @@ export default function stateModelFactory(pm: PluginManager) {
 
         /**
          * #getter
+         * Plot area width. Floored at 0: the axis borders have their own
+         * MIN_BORDER floor, so a container narrower than that would otherwise
+         * yield a negative canvas dimension and a negative maxBpPerPx.
          */
         get viewWidth() {
-          return self.width - self.borderX
+          return Math.max(self.width - self.borderX, 0)
         },
         /**
          * #getter
+         * Plot area height. Floored at 0, see viewWidth.
          */
         get viewHeight() {
-          return self.height - self.borderY
+          return Math.max(self.height - self.borderY, 0)
         },
         // Block-label keys whose tick labels would overlap and are hidden.
         // Cached as a view so the horizontal and vertical axis components share
@@ -609,21 +621,6 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         * Equalize hview/vview bpPerPx without recentering. Used by the
-         * aspect-lock autorun to absorb divergence from box-zoom and similar
-         * operations while preserving the user's current pan position.
-         */
-        syncBpPerPx() {
-          const { hview, vview } = self
-          if (hview.bpPerPx === vview.bpPerPx) {
-            return
-          }
-          const avg = (hview.bpPerPx + vview.bpPerPx) / 2
-          hview.setBpPerPx(avg)
-          vview.setBpPerPx(avg)
-        },
-        /**
-         * #action
          */
         setLineWidth(value: number) {
           self.lineWidth = value
@@ -655,7 +652,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         setHeight(newHeight: number) {
-          self.height = newHeight
+          self.height = Math.max(newHeight, minHeight)
           return self.height
         },
 
@@ -828,20 +825,27 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         showAllRegions() {
           const { hview, vview } = self
-          // When locked, use the larger maxBpPerPx so both assemblies fit.
-          const getMax = (v: typeof hview) =>
-            self.lockAspectRatio
-              ? Math.max(hview.maxBpPerPx, vview.maxBpPerPx)
-              : v.maxBpPerPx
-
           // Two passes: the first zoom settles bpPerPx, which the derived
           // border getters read, which shifts viewWidth/viewHeight and hence
           // maxBpPerPx; the second re-fits against the settled border. No
           // border state to set — borderX/borderY follow bpPerPx reactively.
-          hview.zoomTo(getMax(hview))
-          vview.zoomTo(getMax(vview))
-          hview.zoomTo(getMax(hview))
-          vview.zoomTo(getMax(vview))
+          for (let pass = 0; pass < 2; pass++) {
+            if (self.lockAspectRatio) {
+              // One shared bpPerPx, and it has to be the larger of the two
+              // maxima for the longer genome to fit. That legitimately exceeds
+              // the shorter axis's own maxBpPerPx, so set it directly instead of
+              // through zoomTo's per-axis clamp — clamping here left the axes
+              // unequal and made the aspect-lock autorun immediately re-square
+              // them. center() below re-derives offsetPx, so nothing is lost by
+              // skipping zoomTo's anchor arithmetic.
+              const shared = Math.max(hview.maxBpPerPx, vview.maxBpPerPx)
+              hview.setBpPerPx(shared)
+              vview.setBpPerPx(shared)
+            } else {
+              hview.zoomTo(hview.maxBpPerPx)
+              vview.zoomTo(vview.maxBpPerPx)
+            }
+          }
           vview.center()
           hview.center()
         },
@@ -964,6 +968,10 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
+         * Set both axes to the average bpPerPx (hview divided by `ratio`),
+         * re-anchoring each on the locus that was at its center. setBpPerPx
+         * alone would leave offsetPx untouched while bpPerPx changed under it,
+         * scrolling the plot; the centerAt calls are what hold it still.
          */
         applySquare(ratio: number) {
           const { hview, vview } = self
@@ -977,6 +985,12 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
+         * Equalize both axes' bpPerPx. Also what the aspect-ratio lock applies
+         * to absorb divergence from box-zoom and other per-axis operations —
+         * deliberately not clamped to either axis's own maxBpPerPx, since a
+         * shared bpPerPx that fits the larger genome necessarily exceeds the
+         * smaller axis's limit, and it converges in one step where a clamped
+         * one would ping-pong between the two maxima.
          */
         squareView() {
           this.applySquare(1)

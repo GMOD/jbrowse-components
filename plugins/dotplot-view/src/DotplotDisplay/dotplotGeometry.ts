@@ -1,15 +1,10 @@
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
+import { MIN_CIGAR_PX_WIDTH } from './dotplotCigarDetail.ts'
+
 import type { DotplotColorFn } from './dotplotColors.ts'
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-
-// Below this on-screen feature width we collapse CIGAR detail to a single
-// segment — sub-pixel CIGAR ops aren't visible anyway and skipping them
-// is the dominant frame-time win at zoomed-out views. Kept in step with
-// MIN_INDEL_PX (the per-op gate that drops sub-pixel indels within a block) so
-// small-but-visible blocks still show detail rather than being flattened.
-const MIN_CIGAR_PX_WIDTH = 2
 
 type GeometryBuffers = Omit<
   DotplotGeometryData,
@@ -70,18 +65,14 @@ export function buildLineSegments(
   baseH: number,
   baseV: number,
 ): DotplotGeometryData {
-  const { p11, p12, p21, p22, starts, ends, parsedCigars } = data
+  const { p11, p12, p21, p22, starts, ends, cigarData, cigarOffsets } = data
   const count = p11.length
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV
 
   // Upper bound: one segment per feature, plus one per CIGAR op if drawing.
-  let maxSegments = count
-  if (drawCigar) {
-    for (let i = 0; i < count; i++) {
-      maxSegments += parsedCigars[i]!.length
-    }
-  }
+  // visitCigarRenderedSegments emits at most one segment per packed op.
+  const maxSegments = count + (drawCigar ? cigarData.length : 0)
 
   const buf = allocBuffers(maxSegments)
   let n = 0
@@ -97,7 +88,8 @@ export function buildLineSegments(
     const x2 = p12[i]!
     const y1 = p21[i]!
     const y2 = p22[i]!
-    const cigar = parsedCigars[i]!
+    const cigarStart = cigarOffsets[i]!
+    const cigarEnd = cigarOffsets[i + 1]!
     const featureWidthPx = Math.max(
       Math.abs(x2 - x1) * bpPerPxHInv,
       Math.abs(y2 - y1) * bpPerPxVInv,
@@ -112,9 +104,14 @@ export function buildLineSegments(
     const rev1 = x1 < x2 ? 1 : -1
     const rev2 = y1 < y2 ? 1 : -1
 
-    if (cigar.length > 0 && drawCigar && featureWidthPx >= MIN_CIGAR_PX_WIDTH) {
+    if (
+      cigarEnd > cigarStart &&
+      drawCigar &&
+      featureWidthPx >= MIN_CIGAR_PX_WIDTH
+    ) {
       visitCigarRenderedSegments(
-        cigar,
+        // a view, not a copy — visitCigarRenderedSegments takes ArrayLike
+        cigarData.subarray(cigarStart, cigarEnd),
         x1,
         y1,
         bpPerPxH,

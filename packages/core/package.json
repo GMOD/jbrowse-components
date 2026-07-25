@@ -137,6 +137,7 @@
     "./util/layouts": "./src/util/layouts/index.ts",
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
     "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
+    "./util/leadingEdgeDebounce": "./src/util/leadingEdgeDebounce.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/makeAssembly": "./src/util/makeAssembly.ts",
     "./util/nanoid": "./src/util/nanoid.ts",
@@ -678,6 +679,10 @@
         "types": "./esm/util/layouts/placeRect.d.ts",
         "import": "./esm/util/layouts/placeRect.js"
       },
+      "./util/leadingEdgeDebounce": {
+        "types": "./esm/util/leadingEdgeDebounce.d.ts",
+        "import": "./esm/util/leadingEdgeDebounce.js"
+      },
       "./util/librpc": {
         "types": "./esm/util/librpc.d.ts",
         "import": "./esm/util/librpc.js"
@@ -1127,6 +1132,9 @@
         ],
         "util/layouts/placeRect": [
           "esm/util/layouts/placeRect.d.ts"
+        ],
+        "util/leadingEdgeDebounce": [
+          "esm/util/leadingEdgeDebounce.d.ts"
         ],
         "util/librpc": [
           "esm/util/librpc.d.ts"

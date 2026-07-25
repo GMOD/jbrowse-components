@@ -3,6 +3,7 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
+import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -77,6 +78,13 @@ export function doAfterAttach(
 ) {
   const fetch = createStopTokenRotation(self)
 
+  // Leading-edge on the first fetch, debounced after — otherwise opening a
+  // dotplot spends a full RPC_DEBOUNCE_MS before the RPC even starts, with
+  // nothing to coalesce. Priming after the fetch begins keeps the pre-init runs
+  // (view not initialized yet) on the leading edge, so the first real fetch is
+  // immediate while zoom/pan refetches debounce as before.
+  const debounce = leadingEdgeDebounce(RPC_DEBOUNCE_MS)
+
   addDisposer(
     self,
     autorun(
@@ -97,6 +105,7 @@ export function doAfterAttach(
 
         const { stopToken, isCurrent, statusCallback } = fetch.begin()
         self.setLoading(stopToken)
+        debounce.prime()
 
         try {
           const sessionId = getRpcSessionId(self)
@@ -182,7 +191,7 @@ export function doAfterAttach(
           }
         }
       },
-      { name: 'DotplotFetch', delay: RPC_DEBOUNCE_MS },
+      { name: 'DotplotFetch', scheduler: debounce.scheduler },
     ),
   )
 

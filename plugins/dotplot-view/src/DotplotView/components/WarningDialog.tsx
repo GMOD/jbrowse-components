@@ -1,12 +1,9 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DialogContent, DialogContentText } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
-
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({
   content: {
@@ -24,27 +21,21 @@ interface Warning {
   effect: string
 }
 
-interface TrackWarning {
-  configuration: AnyConfigurationModel
-  displays: {
-    warnings: Warning[]
-  }[]
+// Already flattened to (track name, its warnings) by the caller, which is what
+// knows how to reach a display's warnings.
+export interface TrackWarning {
+  name: string
+  warnings: Warning[]
 }
+
 function getTrackWarnings({
   trackWarnings,
 }: {
   trackWarnings: TrackWarning[]
 }) {
-  const rows: { name: string; message: string; effect: string; id: string }[] =
-    []
-  for (const [i, track] of trackWarnings.entries()) {
-    const name = getConf(track, 'name')
-    const warnings = track.displays[0]!.warnings
-    for (let j = 0; j < warnings.length; j++) {
-      rows.push({ name, ...warnings[j]!, id: `${i}_${j}` })
-    }
-  }
-  return rows
+  return trackWarnings.flatMap(({ name, warnings }, i) =>
+    warnings.map((w, j) => ({ name, ...w, id: `${i}_${j}` })),
+  )
 }
 
 const WarningDialog = observer(function WarningDialog({

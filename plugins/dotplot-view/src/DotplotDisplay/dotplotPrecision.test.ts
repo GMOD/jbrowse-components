@@ -21,7 +21,8 @@ function makeRpcData(
     mappingQuals: new Float32Array([-1]),
     refNames: ['chr1'],
     mateRefNames: ['chr2'],
-    parsedCigars: [[]],
+    cigarData: new Uint32Array(0),
+    cigarOffsets: new Uint32Array([0, 0]),
     totalFeatureCount: 1,
     skippedFeatureCount: 0,
   }
@@ -80,7 +81,8 @@ describe('buildLineSegments cumBp precision', () => {
       mappingQuals: new Float32Array([-1]),
       refNames: ['chr1'],
       mateRefNames: ['chr2'],
-      parsedCigars: [[M(100), D(50), M(100)]],
+      cigarData: new Uint32Array([M(100), D(50), M(100)]),
+      cigarOffsets: new Uint32Array([0, 3]),
       totalFeatureCount: 1,
       skippedFeatureCount: 0,
     }

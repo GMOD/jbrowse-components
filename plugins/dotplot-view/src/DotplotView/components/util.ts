@@ -121,6 +121,17 @@ function intervalsOverlap(a: Interval, b: Interval) {
 // Largest blocks win their slot first; each kept label reserves the LABEL_PX
 // interval ending at its on-axis position, and any later label whose interval
 // intersects a reserved one is hidden.
+//
+// `length - offsetPx + viewOffsetPx` is the vertical axis's own label position
+// (it lays out bottom-up, so this is literally `yoff` in Axes.tsx). The
+// horizontal axis passes the same expression, which is the MIRROR of where it
+// draws its labels (`b.offsetPx - offsetPx`). That is deliberate and safe for
+// the overlap test — mirroring is an isometry, so which pairs collide is
+// unchanged — but it does mean the two boundary rules below (the `end === 0`
+// force-hide and the clamp at 0) land on the right edge for the horizontal axis
+// and the top edge for the vertical one. Both are the edge where that axis's
+// text would render outside the SVG, so don't "fix" the asymmetry by making it
+// symmetric: that hides labels which currently render fine at the opposite edge.
 export function getBlockLabelKeysToHide(
   blocks: ContentBlock[],
   length: number,

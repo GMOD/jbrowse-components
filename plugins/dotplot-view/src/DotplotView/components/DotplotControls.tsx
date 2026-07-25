@@ -85,22 +85,20 @@ const DotplotControls = observer(function DotplotControls({
         menuItems={[
           {
             label: 'Square view - same bp per pixel',
-            disabled: model.lockAspectRatio,
             onClick: () => {
               model.squareView()
             },
             helpText: model.lockAspectRatio
-              ? 'Disabled while aspect ratio is locked — the lock already keeps both axes at the same bp/px.'
+              ? 'No effect while the aspect ratio is locked — the lock already keeps both axes at the same bp/px.'
               : 'Makes both views use the same zoom level (bp per pixel), adjusting to the average of each. This ensures features are displayed at comparable scales for easier visual comparison.',
           },
           {
             label: 'Rectangular view - same total bp',
-            disabled: model.lockAspectRatio,
             onClick: () => {
               model.squareViewProportional()
             },
             helpText: model.lockAspectRatio
-              ? 'Disabled while aspect ratio is locked — proportional zoom would conflict with the same-bp/px constraint.'
+              ? 'Overridden while the aspect ratio is locked — the lock re-equalizes bp/px immediately after.'
               : 'Adjusts zoom levels proportionally so both views show the same total number of base pairs. This accounts for different view widths while maintaining the same total genomic span.',
           },
           {
