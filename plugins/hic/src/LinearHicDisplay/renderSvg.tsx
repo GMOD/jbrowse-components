@@ -1,11 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
   awaitSvgReady,
-  computeTriangleYScalar,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
@@ -16,12 +14,7 @@ import {
 } from './components/colorRamp.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderSvg(
   self: LinearHicDisplayModel,
@@ -31,34 +24,38 @@ export async function renderSvg(
   // holds stale rpcData until the new result commits — so exports never capture
   // a partial or stale viewport.
   await awaitSvgReady(self)
-  const view = getContainingView(self) as LGV
   const height = opts.overrideHeight ?? self.height
   return (
     <SvgChrome
       error={self.error}
       regionTooLarge={self.regionTooLarge}
-      width={view.width}
+      width={self.view.width}
       height={height}
     >
-      <HicSvgBody self={self} view={view} height={height} opts={opts} />
+      <HicSvgBody self={self} height={height} opts={opts} />
     </SvgChrome>
   )
 }
 
 function HicSvgBody({
   self,
-  view,
   height,
   opts,
 }: {
   self: LinearHicDisplayModel
-  view: LGV
   height: number
   opts: ExportSvgDisplayOptions
 }) {
-  const { rpcData, colorScheme, showLegend, useLogScale, colorMaxScore } = self
-  const hasLegendData = self.hasLegendData
-  const renderState = self.renderState
+  const {
+    view,
+    rpcData,
+    colorScheme,
+    showLegend,
+    useLogScale,
+    colorMaxScore,
+    hasLegendData,
+    renderState,
+  } = self
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
   // this narrows the nullable fetch blob for TS only — unreachable at runtime.
   // An empty (numContacts === 0) result still paints an empty matrix.
@@ -74,11 +71,7 @@ function HicSvgBody({
   // export overrides the height it must be recomputed against that height —
   // renderState.yScalar is keyed to the on-screen height and would mis-size the
   // exported triangle whenever overrideHeight differs (fit-to-height only).
-  const yScalar = computeTriangleYScalar({
-    fitToHeight: self.fitToHeight,
-    displayHeight: height,
-    triangleWidth: view.totalWidthPx,
-  })
+  const yScalar = self.yScalarForHeight(height)
 
   // Reuse the model's renderState so the export shares one source of truth for
   // the transform and color params with the on-screen render (handles

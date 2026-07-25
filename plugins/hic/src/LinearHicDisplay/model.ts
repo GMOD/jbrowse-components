@@ -194,16 +194,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           })
         )
       },
-      /**
-       * #getter
-       * Data has arrived for the current viewport and it is genuinely empty —
-       * the file has no contacts here at this resolution (HicAdapter returns
-       * `[]` for such a region pair). Lets the UI tell "nothing to show" apart
-       * from "still fetching", which otherwise look identical: a blank track.
-       */
-      get isEmpty(): boolean {
-        return this.dataLoaded && self.rpcData?.numContacts === 0
-      },
       get colorScheme(): HicColorScheme {
         return getConf(self, 'colorScheme')
       },
@@ -212,13 +202,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       get colorMaxScore() {
         const data = self.rpcData
-        if (!data) {
-          return 0
-        }
-        if (self.useColorPercentile) {
-          return data.percentile95
-        }
-        return self.useLogScale ? data.maxScore : data.maxScore / 20
+        return data
+          ? self.useColorPercentile
+            ? data.percentile95
+            : self.useLogScale
+              ? data.maxScore
+              : data.maxScore / 20
+          : 0
       },
       /**
        * #getter
@@ -254,15 +244,29 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         }
         return idx === -1 ? 0 : idx
       },
-      get yScalar() {
-        // Bidirectional fill like the LD display: dragging taller than the
-        // natural triangle height stretches to fill rather than leaving a
-        // blank band below.
+      /**
+       * #method
+       * Vertical squash for an arbitrary display height. Bidirectional fill like
+       * the LD display: dragging taller than the natural triangle height
+       * stretches to fill rather than leaving a blank band below. Sole owner of
+       * the triangle-base width, so the on-screen `yScalar` and the SVG export's
+       * `overrideHeight` variant can't drift apart.
+       *
+       * WithoutBorders, because the base is the *content* the worker packed
+       * (`regionOffsets` lays contentBlocks out contiguously). `totalWidthPx`
+       * also counts the boundary padding blocks dynamicBlocks adds when
+       * scrolled left of genome start / past the end, which would overstate the
+       * base and leave fit-to-height short of the display.
+       */
+      yScalarForHeight(displayHeight: number) {
         return computeTriangleYScalar({
           fitToHeight: self.fitToHeight,
-          displayHeight: self.height,
-          triangleWidth: self.view.totalWidthPx,
+          displayHeight,
+          triangleWidth: self.view.totalWidthPxWithoutBorders,
         })
+      },
+      get yScalar() {
+        return this.yScalarForHeight(self.height)
       },
     }))
     .views(self => ({
@@ -439,7 +443,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setColorScheme(f?: HicColorScheme) {
+      setColorScheme(f: HicColorScheme) {
         self.configuration.setSlot('colorScheme', f)
       },
       /**
@@ -552,7 +556,14 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (resolution === undefined) {
           return
         }
-        const { bpPerPx } = view
+        // Capture the viewport this fetch is issued for. `setLastDrawnViewport`
+        // below must record *these* values, not a live re-read: `ctx.isStale()`
+        // only trips on a newer fetch or a cancel, so a pan/zoom during the RPC
+        // would otherwise stamp the new viewport onto a matrix packed for the
+        // old one — `renderTransform` would then read scale 1 and leave the
+        // stale pixels un-rescaled, and the freshness getter below (and so
+        // `svgReady`) would call them current.
+        const { bpPerPx, offsetPx } = view
         const { adapterConfig } = self
         await self.runFetch(async ctx => {
           const sessionId = getRpcSessionId(self)
@@ -576,7 +587,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             return
           }
           self.setRpcData(result)
-          self.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+          self.setLastDrawnViewport(offsetPx, bpPerPx)
         })
       },
     }))
