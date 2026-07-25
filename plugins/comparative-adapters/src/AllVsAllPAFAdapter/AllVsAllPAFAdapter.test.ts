@@ -106,6 +106,64 @@ test('hap1 vs hap2 of one sample at identical coords is not dropped as a self-di
   expect(fa.map(f => f.get('start')).sort()).toEqual([100, 100])
 })
 
+// A haplotype-resolved pangenome loads each haplotype as its own JBrowse
+// assembly, so assemblyNameToPanSN names a `sample#haplotype` prefix rather than
+// a sample. The same file still serves the sample-level configuration above.
+const diploidPaf = () =>
+  writePaf([
+    'grape#1#chr1\t1000\t100\t200\t+\tgrape#2#chr1\t1000\t100\t200\t99\t100\t60',
+    'grape#1#chr1\t1000\t700\t800\t+\tpeach#1#G1\t1000\t100\t200\t95\t100\t60',
+  ])
+
+const HAP_TO_PANSN = { grapeHap1: 'grape#1', grapeHap2: 'grape#2' }
+
+test('haplotype-level assemblies resolve to one haplotype each', async () => {
+  const fa = await feats(
+    makeAdapter(
+      ['grapeHap1', 'grapeHap2', 'peach'],
+      HAP_TO_PANSN,
+      diploidPaf(),
+    ),
+    { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grapeHap1' },
+  )
+  // only the hap1 side anchors, so the inter-haplotype block draws once rather
+  // than at both loci the way it does when both haplotypes are one assembly
+  expect(fa.map(f => f.get('start')).sort((a, b) => a - b)).toEqual([100, 700])
+  const mates = byMateRef(fa)
+  expect(mates.chr1).toMatchObject({ assemblyName: 'grapeHap2' })
+  expect(mates.G1).toMatchObject({ assemblyName: 'peach' })
+})
+
+test('haplotype-level: targetAssemblyName isolates the hap1-vs-hap2 band', async () => {
+  const fa = await feats(
+    makeAdapter(
+      ['grapeHap1', 'grapeHap2', 'peach'],
+      HAP_TO_PANSN,
+      diploidPaf(),
+    ),
+    { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grapeHap1' },
+    { targetAssemblyName: 'grapeHap2' },
+  )
+  expect(fa.length).toBe(1)
+  expect(fa[0]!.get('start')).toBe(100)
+})
+
+// a sample-level prefix must not match a longer sample name that merely starts
+// with it, which a bare startsWith would let through
+test('a sample prefix does not match a longer sample name', async () => {
+  const loc = writePaf([
+    'grape#1#chr1\t1000\t100\t200\t+\tgrapefruit#1#chr1\t1000\t100\t200\t95\t100\t60',
+  ])
+  const fa = await feats(makeAdapter(['grape', 'grapefruit'], {}, loc), {
+    refName: 'chr1',
+    start: 0,
+    end: 2000,
+    assemblyName: 'grape',
+  })
+  expect(fa.length).toBe(1)
+  expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'grapefruit' })
+})
+
 test('one-vs-all: grape draws against peach, cacao, and its own paralog', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), {
     refName: 'chr1',

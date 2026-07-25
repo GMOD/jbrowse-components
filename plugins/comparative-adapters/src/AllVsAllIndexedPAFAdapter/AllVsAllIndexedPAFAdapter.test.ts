@@ -40,15 +40,24 @@ function makeVolvoxAdapter(assemblyNames: string[]) {
 
 // diploid.pif.gz holds a hap1-vs-hap2 block at identical coords, a true
 // self-diagonal, and one cross-sample block, all anchored on grape chr1
-function makeDiploidAdapter() {
+function makeDiploidAdapter(
+  assemblyNames = ['grape', 'peach'],
+  assemblyNameToPanSN: Record<string, string> = {},
+) {
   return new Adapter(
     configSchema.create({
       pifGzLocation: loc('./test_data/diploid.pif.gz'),
       index: { location: loc('./test_data/diploid.pif.gz.tbi') },
-      assemblyNames: ['grape', 'peach'],
+      assemblyNames,
+      assemblyNameToPanSN,
     }),
   )
 }
+
+// the same diploid file read as a haplotype-resolved pangenome: each haplotype
+// is its own JBrowse assembly, mapped to a `sample#haplotype` PanSN prefix
+const HAP_ASSEMBLIES = ['grapeHap1', 'grapeHap2', 'peach']
+const HAP_TO_PANSN = { grapeHap1: 'grape#1', grapeHap2: 'grape#2' }
 
 const feats = (
   adapter: Adapter,
@@ -81,6 +90,59 @@ test('hap1 vs hap2 of one sample at identical coords is not dropped as a self-di
   expect(fa.map(f => f.get('start')).sort((a, b) => a - b)).toEqual([
     100, 100, 700,
   ])
+})
+
+// A haplotype-resolved pangenome loads each haplotype as its own assembly, so
+// the anchor prefix names a `sample#haplotype`, not a sample. Every seqid is
+// indexed under both depths, so the same file serves either configuration.
+test('haplotype-level assemblies resolve to one haplotype each', async () => {
+  const fa = await feats(makeDiploidAdapter(HAP_ASSEMBLIES, HAP_TO_PANSN), {
+    refName: 'chr1',
+    start: 0,
+    end: 2000,
+    assemblyName: 'grapeHap1',
+  })
+  // only the hap1 side anchors now, so the hap1-vs-hap2 block draws once (not
+  // once per locus as it does when both haplotypes collapse into one assembly)
+  expect(fa.map(f => f.get('start')).sort((a, b) => a - b)).toEqual([100, 700])
+  const mates = byMateRef(fa)
+  // the sibling haplotype is a listed assembly, so it is labelled as one rather
+  // than collapsing into a `grape` self-mate
+  expect(mates.chr1).toMatchObject({ assemblyName: 'grapeHap2' })
+  expect(mates.G1).toMatchObject({ assemblyName: 'peach' })
+})
+
+test('haplotype-level: the hap2 assembly anchors its own side of the same block', async () => {
+  const fa = await feats(makeDiploidAdapter(HAP_ASSEMBLIES, HAP_TO_PANSN), {
+    refName: 'chr1',
+    start: 0,
+    end: 2000,
+    assemblyName: 'grapeHap2',
+  })
+  expect(fa.length).toBe(1)
+  expect(fa[0]!.get('mate')).toMatchObject({
+    refName: 'chr1',
+    assemblyName: 'grapeHap1',
+  })
+})
+
+test('haplotype-level: targetAssemblyName isolates the hap1-vs-hap2 band', async () => {
+  const fa = await feats(
+    makeDiploidAdapter(HAP_ASSEMBLIES, HAP_TO_PANSN),
+    { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grapeHap1' },
+    { targetAssemblyName: 'grapeHap2' },
+  )
+  // the peach block is excluded by the target, leaving the inter-haplotype one
+  expect(fa.length).toBe(1)
+  expect(fa[0]!.get('start')).toBe(100)
+})
+
+test('haplotype-level getRefNames scopes to that haplotype', async () => {
+  const names = await makeDiploidAdapter(
+    HAP_ASSEMBLIES,
+    HAP_TO_PANSN,
+  ).getRefNames({ assemblyName: 'grapeHap2' })
+  expect([...names].sort()).toEqual(['chr1'])
 })
 
 test('one-vs-all: grape draws against peach, cacao, and its own paralog', async () => {

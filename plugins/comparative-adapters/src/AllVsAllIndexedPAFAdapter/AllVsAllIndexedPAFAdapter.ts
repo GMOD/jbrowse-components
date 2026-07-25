@@ -4,9 +4,10 @@ import { updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { panSNContig, panSNSample } from '../pansn.ts'
+import { panSNContig, panSNMatchesPrefix, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
+  assemblyForPanSNName,
   hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
   parsePifLine,
@@ -64,28 +65,34 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
   }
 
   // The distinct PanSN seqids (tier letter t/q/T/Q stripped, deduped across
-  // tiers) grouped sample -> contig -> seqids. One contig maps to several seqids
-  // when the sample is multi-haplotype. Built once rather than per query: a
-  // whole-genome pangenome has tens of thousands of seqids, and getRefNames and
-  // every getFeatures call — one per band, per region, per pan/zoom — would
-  // otherwise re-split and re-scan the entire contig list.
+  // tiers) grouped prefix -> contig -> seqids. Every seqid is filed under each
+  // prefix it is addressable by (`grape` and `grape#1`), so a sample-level
+  // assembly resolves to both haplotypes' seqids while a haplotype-resolved
+  // pangenome — each haplotype loaded as its own assembly via
+  // assemblyNameToPanSN — resolves to just its own. One contig therefore maps to
+  // several seqids under a sample prefix and one under a haplotype prefix. Built
+  // once rather than per query: a whole-genome pangenome has tens of thousands
+  // of seqids, and getRefNames and every getFeatures call — one per band, per
+  // region, per pan/zoom — would otherwise re-split and re-scan the entire
+  // contig list.
   private async seqIndex(opts?: BaseOptions) {
     this.seqIndexP ??= this.refSeqNames(opts)
       .then(names => {
         const index = new Map<string, Map<string, string[]>>()
         for (const seq of new Set(names.map(n => n.slice(1)))) {
-          const sample = panSNSample(seq)
           const contig = panSNContig(seq)
-          let byContig = index.get(sample)
-          if (!byContig) {
-            byContig = new Map()
-            index.set(sample, byContig)
-          }
-          const seqs = byContig.get(contig)
-          if (seqs) {
-            seqs.push(seq)
-          } else {
-            byContig.set(contig, [seq])
+          for (const prefix of panSNPrefixes(seq)) {
+            let byContig = index.get(prefix)
+            if (!byContig) {
+              byContig = new Map()
+              index.set(prefix, byContig)
+            }
+            const seqs = byContig.get(contig)
+            if (seqs) {
+              seqs.push(seq)
+            } else {
+              byContig.set(contig, [seq])
+            }
           }
         }
         return index
@@ -136,7 +143,8 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
 
       // Resolve the anchor (assembly, refName) to its PanSN seqid(s); one contig
       // can map to several when the sample is multi-haplotype.
-      const seqs = (await this.seqIndex(opts)).get(anchorPrefix)?.get(qref) ?? []
+      const seqs =
+        (await this.seqIndex(opts)).get(anchorPrefix)?.get(qref) ?? []
 
       const label = 'Downloading features'
       await updateStatus(label, statusCallback, () =>
@@ -148,7 +156,6 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
                   // The mate (columns 6/8/9) is a full PanSN name, no tier
                   // letter; split it into sample + contig.
                   const parsed = parsePifLine(line)
-                  const matePrefix = panSNSample(parsed.mateName)
                   const mateRefName = panSNContig(parsed.mateName)
 
                   // One-vs-all draws every mate, including same-sample paralogy:
@@ -170,7 +177,8 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
                     parsed.mateEnd === parsed.indexedEnd
                   const drawsHere =
                     !selfDiagonal &&
-                    (targetPrefix === undefined || matePrefix === targetPrefix)
+                    (targetPrefix === undefined ||
+                      panSNMatchesPrefix(parsed.mateName, targetPrefix))
 
                   if (drawsHere) {
                     observer.next(
@@ -183,7 +191,10 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
                           start: parsed.mateStart,
                           end: parsed.mateEnd,
                           refName: mateRefName,
-                          assemblyName: asmByPrefix[matePrefix] ?? matePrefix,
+                          assemblyName: assemblyForPanSNName(
+                            asmByPrefix,
+                            parsed.mateName,
+                          ),
                         },
                       }),
                     )

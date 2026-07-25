@@ -2,6 +2,7 @@ import { csToCigar } from '@jbrowse/cigar-utils'
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
+import { panSNPrefixes } from './pansn.ts'
 
 import type { BareFeature } from './mcscanUtil.ts'
 import type {
@@ -65,10 +66,9 @@ export function resolvePanSNPrefix(
     : (assemblyNameToPanSN(adapter)[name] ?? name)
 }
 
-// PanSN sample prefix (in the PAF) -> JBrowse assembly name, for the listed
-// assemblies. Gives a mate a friendly assembly label; a mate whose sample is not
-// a listed assembly falls back to the bare prefix (one-vs-all draws against
-// every sample in the file, listed or not).
+// PanSN prefix (in the PAF) -> JBrowse assembly name, for the listed assemblies.
+// The prefix is whatever the config named, so this map can hold sample-level
+// (`grape`) and haplotype-level (`grape#1`) keys at once.
 export function assemblyByPanSNPrefix(adapter: BaseFeatureDataAdapter) {
   const map = assemblyNameToPanSN(adapter)
   const out: Record<string, string> = {}
@@ -76,6 +76,27 @@ export function assemblyByPanSNPrefix(adapter: BaseFeatureDataAdapter) {
     out[map[asm] ?? asm] = asm
   }
   return out
+}
+
+// Give a mate a friendly assembly label. Resolves at the most specific depth the
+// config named, so a haplotype-resolved track (`grape#1` and `grape#2` loaded as
+// separate assemblies) labels each haplotype distinctly while a sample-level
+// track still labels both `grape`. A mate matching no listed assembly falls back
+// to its bare sample prefix — one-vs-all draws against every sample in the file,
+// listed or not — rather than to the haplotype, which would relabel the mates of
+// every existing sample-level track.
+export function assemblyForPanSNName(
+  asmByPrefix: Record<string, string>,
+  mateName: string,
+) {
+  const prefixes = panSNPrefixes(mateName)
+  for (let i = prefixes.length - 1; i >= 0; i--) {
+    const asm = asmByPrefix[prefixes[i]!]
+    if (asm !== undefined) {
+      return asm
+    }
+  }
+  return prefixes[0]!
 }
 
 export function parseBed(text: string) {

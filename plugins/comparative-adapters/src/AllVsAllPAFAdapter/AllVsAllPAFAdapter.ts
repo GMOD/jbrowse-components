@@ -6,9 +6,10 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { getWeightedMeans, makeSyntenyFeature } from '../PAFAdapter/util.ts'
-import { panSNContig, panSNSample } from '../pansn.ts'
+import { panSNContig, panSNMatchesPrefix } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
+  assemblyForPanSNName,
   parsePAFLine,
   resolvePanSNPrefix,
 } from '../util.ts'
@@ -19,8 +20,19 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
+// One side of one PAF record: the locus it draws at. `flip` mirrors PAFAdapter
+// (true = the PAF query/qname side is the feature), and `index` is the record's
+// position in the parsed array, which the feature id is derived from.
+interface RecordSide {
+  index: number
+  flip: boolean
+}
+
 export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllPAFAdapterConfig> {
-  private setupP?: Promise<PAFRecord[]>
+  private setupP?: Promise<{
+    records: PAFRecord[]
+    sidesByContig: Map<string, RecordSide[]>
+  }>
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -52,12 +64,33 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
       },
       opts?.statusCallback,
     )
-    return getWeightedMeans(lines)
+    const records = getWeightedMeans(lines)
+
+    // Each record is filed under the stripped contig of both of its sides, so a
+    // region query walks only the records touching that contig instead of the
+    // whole file. Keyed on the contig rather than sample+contig because the
+    // anchor prefix is a per-query input (and may name a sample or a single
+    // haplotype), while the contig is what the query's refName is matched
+    // against either way. Built once: N bands x every pan/zoom otherwise rescans
+    // every record in the file.
+    const sidesByContig = new Map<string, RecordSide[]>()
+    for (const [index, r] of records.entries()) {
+      for (const flip of [true, false]) {
+        const contig = panSNContig(flip ? r.qname : r.tname)
+        const sides = sidesByContig.get(contig)
+        if (sides) {
+          sides.push({ index, flip })
+        } else {
+          sidesByContig.set(contig, [{ index, flip }])
+        }
+      }
+    }
+    return { records, sidesByContig }
   }
 
   async getRefNames(opts: BaseOptions = {}) {
     const { assemblyName, targetAssemblyName } = opts
-    const feats = await this.setup(opts)
+    const { records } = await this.setup(opts)
     const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
     const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
     const set = new Set<string>()
@@ -66,17 +99,16 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     // those whose only mate is the same sample (paralogy). A supplied
     // targetAssemblyName (two-row synteny band) narrows to that single pair,
     // which also drops paralogy contigs (mate = same sample, not the target).
-    for (const feat of feats) {
-      const qPrefix = panSNSample(feat.qname)
-      const tPrefix = panSNSample(feat.tname)
+    for (const r of records) {
       for (const flip of [true, false]) {
-        const sidePrefix = flip ? qPrefix : tPrefix
-        const matePrefix = flip ? tPrefix : qPrefix
+        const sideName = flip ? r.qname : r.tname
+        const mateName = flip ? r.tname : r.qname
         if (
-          sidePrefix === anchorPrefix &&
-          (targetPrefix === undefined || matePrefix === targetPrefix)
+          panSNMatchesPrefix(sideName, anchorPrefix) &&
+          (targetPrefix === undefined ||
+            panSNMatchesPrefix(mateName, targetPrefix))
         ) {
-          set.add(panSNContig(flip ? feat.qname : feat.tname))
+          set.add(panSNContig(sideName))
         }
       }
     }
@@ -85,17 +117,30 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const pafRecords = await this.setup(opts)
+      const { records, sidesByContig } = await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
       const asmByPrefix = assemblyByPanSNPrefix(this)
       const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
       const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
 
-      for (let i = 0; i < pafRecords.length; i++) {
-        const r = pafRecords[i]!
-        const qPrefix = panSNSample(r.qname)
-        const tPrefix = panSNSample(r.tname)
+      // Only the sides filed under the queried contig can satisfy the
+      // `refName === qref` test, so the rest of the file is skipped outright.
+      // A cross-sample record has exactly one anchor side, so it emits once. A
+      // same-sample (paralogy) record — e.g. a segmental duplication — has BOTH
+      // sides on the anchor, so it draws at each of its two loci with a distinct
+      // id (index*2 + side). One-vs-all (no targetAssemblyName) draws every
+      // mate, listed or not (labelled by assembly if listed, else its bare PanSN
+      // prefix); a two-row synteny band narrows to its pair, which also excludes
+      // paralogy since the mate is the same sample, not the other band.
+      for (const { index, flip } of sidesByContig.get(qref) ?? []) {
+        const r = records[index]!
+        const sideName = flip ? r.qname : r.tname
+        const mateName = flip ? r.tname : r.qname
+        const start = flip ? r.qstart : r.tstart
+        const end = flip ? r.qend : r.tend
+        const mateStart = flip ? r.tstart : r.qstart
+        const mateEnd = flip ? r.tend : r.qend
 
         // A degenerate self-diagonal is the SAME sequence aligned to itself at
         // the same coords (minimap2 without -X emits one per sequence); drop it
@@ -103,61 +148,36 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
         // sample+stripped-contig: `grape#1#chr1` vs `grape#2#chr1` shares both
         // of those yet is a real hap1-vs-hap2 alignment, and two samples that
         // share a contig name (both `chr1`) can align at identical coords in a
-        // conserved region. Flip-invariant, so it is hoisted out of the loop.
+        // conserved region.
         const selfDiagonal =
           r.qname === r.tname && r.qstart === r.tstart && r.qend === r.tend
 
-        // Each side of the record where the queried assembly sits is a locus the
-        // record can draw at; the other side is the mate (flip mirrors
-        // PAFAdapter: true = the PAF query/qname side is the feature). A
-        // cross-sample record has exactly one anchor side, so it emits once. A
-        // same-sample (paralogy) record — e.g. a segmental duplication — has
-        // BOTH sides on the anchor, so it draws at each of its two loci with a
-        // distinct id (i*2 + side). One-vs-all (no targetAssemblyName) draws
-        // every mate, listed or not (labelled by assembly if listed, else its
-        // bare PanSN prefix); a two-row synteny band narrows to its pair, which
-        // also excludes paralogy since the mate is the same sample, not the
-        // other band.
-        for (const flip of [true, false]) {
-          const sidePrefix = flip ? qPrefix : tPrefix
-          const matePrefix = flip ? tPrefix : qPrefix
-          const start = flip ? r.qstart : r.tstart
-          const end = flip ? r.qend : r.tend
-          const refName = panSNContig(flip ? r.qname : r.tname)
-          const mateStart = flip ? r.tstart : r.qstart
-          const mateEnd = flip ? r.tend : r.qend
-          const mateRefName = panSNContig(flip ? r.tname : r.qname)
+        const drawsHere =
+          !selfDiagonal &&
+          panSNMatchesPrefix(sideName, anchorPrefix) &&
+          (targetPrefix === undefined ||
+            panSNMatchesPrefix(mateName, targetPrefix))
 
-          const drawsHere =
-            !selfDiagonal &&
-            sidePrefix === anchorPrefix &&
-            (targetPrefix === undefined || matePrefix === targetPrefix)
-
-          if (
-            drawsHere &&
-            refName === qref &&
-            doesIntersect2(qstart, qend, start, end)
-          ) {
-            const { extra, strand } = r
-            observer.next(
-              makeSyntenyFeature({
-                syntenyId: i * 2 + (flip ? 0 : 1),
-                assemblyName,
-                refName,
-                start,
-                end,
-                strand,
-                extra,
-                flip,
-                mate: {
-                  start: mateStart,
-                  end: mateEnd,
-                  refName: mateRefName,
-                  assemblyName: asmByPrefix[matePrefix] ?? matePrefix,
-                },
-              }),
-            )
-          }
+        if (drawsHere && doesIntersect2(qstart, qend, start, end)) {
+          const { extra, strand } = r
+          observer.next(
+            makeSyntenyFeature({
+              syntenyId: index * 2 + (flip ? 0 : 1),
+              assemblyName,
+              refName: qref,
+              start,
+              end,
+              strand,
+              extra,
+              flip,
+              mate: {
+                start: mateStart,
+                end: mateEnd,
+                refName: panSNContig(mateName),
+                assemblyName: assemblyForPanSNName(asmByPrefix, mateName),
+              },
+            }),
+          )
         }
       }
 
