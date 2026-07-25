@@ -9,6 +9,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 export interface GroupByRadioOption {
   type: GroupByType
   label: string
+  helpText?: string
 }
 
 // A dimension that activates through a custom flow rather than a direct select
@@ -58,14 +59,14 @@ export function groupByRadioMenuItem({
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
   // dismiss it.
   const radio = (
-    type: GroupByType | undefined,
-    label: string,
+    o: { type?: GroupByType; label: string; helpText?: string },
     onClick: () => void,
     keepMenuOpen?: boolean,
   ) => ({
-    label,
+    label: o.label,
+    helpText: o.helpText,
     type: 'radio' as const,
-    checked: checked === type,
+    checked: checked === o.type,
     keepMenuOpen,
     onClick,
   })
@@ -74,18 +75,17 @@ export function groupByRadioMenuItem({
     icon: WorkspacesIcon,
     type: 'subMenu' as const,
     subMenu: [
-      radio(undefined, 'None', onNone, true),
+      radio({ label: 'None' }, onNone, true),
       ...options.map(o =>
         radio(
-          o.type,
-          o.label,
+          o,
           () => {
             onSelect(o.type)
           },
           true,
         ),
       ),
-      ...extra.map(e => radio(e.type, e.label, e.onClick)),
+      ...extra.map(e => radio(e, e.onClick)),
       ...(collapseRows
         ? [
             { type: 'divider' as const },

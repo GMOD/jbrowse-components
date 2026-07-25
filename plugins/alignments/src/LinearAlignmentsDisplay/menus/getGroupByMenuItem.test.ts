@@ -99,6 +99,13 @@ test('grouping by tag checks the Tag... radio', () => {
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['Tag...'])
 })
 
+// `defaultFilterFlags` excludes 0x400, so out of the box this dimension yields
+// one "Non-duplicate" section and looks broken. Say so rather than disabling it.
+test('the duplicate radio names its dependency on the read filter', () => {
+  const item = radios(makeModel().model).find(i => i.label === 'Duplicate')!
+  expect(item.helpText).toMatch(/hidden by default/)
+})
+
 function collapseItem(model: GroupByModel) {
   return getGroupByMenuItem(model)
     .subMenu.filter(i => i.type === 'checkbox')

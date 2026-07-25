@@ -276,6 +276,10 @@ export interface GroupByDimension {
   // surfaces them itself — mateAssembly is offered by LGVSyntenyDisplay's own
   // "Group by..." radios (see its menus.ts).
   hidden?: boolean
+  // Shown under the radio when the dimension only pays off given some other
+  // setting. Preferred over disabling the radio, which would leave the user
+  // guessing at the dependency.
+  helpText?: string
   // The group-key generator for this dimension. Co-located with the metadata so
   // each dimension is defined in exactly one place — `groupKeyFor` just looks it
   // up. `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
@@ -324,6 +328,12 @@ export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
     type: 'duplicate',
     label: GROUP_BY_LABELS.duplicate,
     chainConsistent: false,
+    // `defaultFilterFlags` excludes 0x400, so duplicates never reach the display
+    // until that is relaxed — this dimension would otherwise look broken,
+    // yielding one "Non-duplicate" section however the data actually splits.
+    helpText:
+      'Duplicates are hidden by default — uncheck "Duplicate" under "Filter by" ' +
+      'to see both sections.',
     key: duplicateKey,
   },
   mapq: {
@@ -365,7 +375,10 @@ export function groupByForMode(
 // plain radios instead of the general Group-by dialog, and shouldn't re-spell
 // the labels at the call site. Mirrors pickColorOptions.
 export function pickGroupByOptions(...types: GroupByType[]) {
-  return types.map(type => ({ type, label: GROUP_BY_DIMENSIONS[type].label }))
+  return types.map(type => {
+    const { label, helpText } = GROUP_BY_DIMENSIONS[type]
+    return { type, label, helpText }
+  })
 }
 
 // Chain-aware partition for linked-reads/chain mode: reads sharing a QNAME form
