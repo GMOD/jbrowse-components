@@ -311,11 +311,14 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             ['ecoli_cactus_ava'],
           ],
           drawCurves: true,
-          colorBy: 'default',
+          // colorBy and alpha are left at the view defaults ('default' / 0.2)
+          // on purpose. An earlier alpha: 0.8 here was 4x the default, and the
+          // AVA ribbons stack several deep per band, so every band composited
+          // to opaque red and the accessory gaps were the only readable thing.
+          //
           // three bands at 90px: enough for the wedges to read without the
           // four gene rows falling off the frame
           levelHeights: [90, 90, 90],
-          alpha: 0.8,
         },
       ],
     }),
