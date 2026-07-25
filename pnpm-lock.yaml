@@ -381,8 +381,8 @@ importers:
         specifier: ^0.27.20
         version: 0.27.20(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@gmod/bgzf-filehandle':
-        specifier: ^6.2.0
-        version: 6.2.0
+        specifier: ^6.3.0
+        version: 6.3.0
       '@jbrowse/jexl':
         specifier: ^3.0.2
         version: 3.0.2
@@ -1178,8 +1178,8 @@ importers:
         specifier: ^5.13.0
         version: 5.13.0(mobx@6.16.1)
       gff-nostream:
-        specifier: ^5.0.0
-        version: 5.0.0
+        specifier: ^5.1.0
+        version: 5.1.0
       mobx:
         specifier: ^6.16.1
         version: 6.16.1
@@ -1454,8 +1454,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.2.0
-        version: 6.2.0
+        specifier: ^6.3.0
+        version: 6.3.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -4190,8 +4190,8 @@ packages:
   '@gmod/bed@2.2.6':
     resolution: {integrity: sha512-6L2EaYIHts/C3BQ4bcERUH24MPlQ2jpuq+qKWzG7ZWNOLrHx2YplYlXMuVZEiLmmiNShJnH1PFYWNGtM1QaS6Q==}
 
-  '@gmod/bgzf-filehandle@6.2.0':
-    resolution: {integrity: sha512-az2V3+hhpEUHBdJsN6SuSHu7rHFqIIssuZFeerRe8fvEcI/qW+BqB3vT5YC0CNU/SqQB8HREeWu8RoLQbmumdw==}
+  '@gmod/bgzf-filehandle@6.3.0':
+    resolution: {integrity: sha512-dsmGAGebRzOjdgIhdlq99Lr8NvpFIeAvNMG+dRaVOojML9jylrl7up3P+adD66qAbrC12qjNUSPps8CGCPhmzA==}
 
   '@gmod/cram@8.4.0':
     resolution: {integrity: sha512-KugUao+xhQtWWxIrePPrxF2GIfIG95p2oiA0jeHc2XrfP+6E8QXmbfmFi2/0IILfZ6abKS30QsZy2AzfQ1bXwQ==}
@@ -6845,8 +6845,8 @@ packages:
   electron-localshortcut@3.2.1:
     resolution: {integrity: sha512-DWvhKv36GsdXKnaFFhEiK8kZZA+24/yFLgtTwJJHc7AFgDjNRIBJZ/jq62Y/dWv9E4ypYwrVWN2bVrCYw1uv7Q==}
 
-  electron-to-chromium@1.5.395:
-    resolution: {integrity: sha512-7zt9Aw+SrmxLWLN0zhaTWZQiCdryLVrYTq5R7iZakLvi2UQPYMMsROYV/2qVCzMeCiSXHwKOU+sZ4zOVVlrtKA==}
+  electron-to-chromium@1.5.396:
+    resolution: {integrity: sha512-yHiw2Y3C3H9U6TMbOfoWK/BPreiOPXRfTWPBwQBoZG6/8TB6eOPnsy5oaRYuatR7Fw2SJ4kKforgufeo7fq0EQ==}
 
   electron-updater@6.8.9:
     resolution: {integrity: sha512-ZhVxM9iGONUpZGI1FxdMRgJjUFXi7AYGVa5PwKlO1tV1/4zDxQmfKpXOHVztKrd6L9rLcFjERvi1Mf2vxyTkig==}
@@ -7379,8 +7379,8 @@ packages:
     resolution: {integrity: sha512-7nF7C9fIPFEMHgEMEfgIlO9wDdZ8CyHw27rWciFZfHvHDReIiPhsYuzPRXsfvBCqFy1l8RRyyWV7QLM+ZhUJsQ==}
     engines: {node: '>=20.20.0'}
 
-  gff-nostream@5.0.0:
-    resolution: {integrity: sha512-IMsyRucO1e1w8MpeGSEh3mEiv8fcJDzLE6ajUq9rSzmTwlcOTi+R9cwylcoOGmB+bxxAvW1X3jOyXCecCXuVbQ==}
+  gff-nostream@5.1.0:
+    resolution: {integrity: sha512-IqACL0+4z7B0hvOjbSwrqhIEO7E9dMI+c25ccxVKaMRWZ3NFqOA0vNjjJ83e0nWi/sIy437EYpxhDXkucVZkCA==}
 
   github-from-package@0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
@@ -9864,14 +9864,14 @@ packages:
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
-  undici-types@7.28.0:
-    resolution: {integrity: sha512-LJAfY+2w6HGeT8d8J1wNQsUGUEGio6NWWpwdwurQe4f6oojzCFuGLizl1KSve4irsTxyLly1QhEeE6iapdaIvQ==}
+  undici-types@7.29.0:
+    resolution: {integrity: sha512-vamA8dGlzMwhpyYpQp9d8vka3o4D/yn5I7ez7Or+msDA4bZ8Uh+Zy91WvWf3I73gDAkFha9JcYRqm2li0Npfgg==}
 
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
-  undici@7.28.0:
-    resolution: {integrity: sha512-cRZYrTDwWznlnRiPjggAGxZXanty6M8RV1ff8Wm4LWXBp7/IG8v5DnOm74DtUBp9OONpK75YlPnIjQqX0dBDtA==}
+  undici@7.29.0:
+    resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
     engines: {node: '>=20.18.1'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
@@ -11659,7 +11659,7 @@ snapshots:
       semver: 7.8.5
       sumchecker: 3.0.1
     optionalDependencies:
-      undici: 7.28.0
+      undici: 7.29.0
     transitivePeerDependencies:
       - supports-color
 
@@ -12096,7 +12096,7 @@ snapshots:
 
   '@gmod/bam@7.3.4':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.2.0
+      '@gmod/bgzf-filehandle': 6.3.0
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.2.0
@@ -12111,7 +12111,7 @@ snapshots:
 
   '@gmod/bed@2.2.6': {}
 
-  '@gmod/bgzf-filehandle@6.2.0':
+  '@gmod/bgzf-filehandle@6.3.0':
     dependencies:
       generic-filehandle2: 2.2.0
       pako-esm2: 2.0.2
@@ -12131,7 +12131,7 @@ snapshots:
 
   '@gmod/indexedfasta@5.0.7':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.2.0
+      '@gmod/bgzf-filehandle': 6.3.0
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.0
 
@@ -12144,7 +12144,7 @@ snapshots:
   '@gmod/tabix@3.4.2':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
-      '@gmod/bgzf-filehandle': 6.2.0
+      '@gmod/bgzf-filehandle': 6.3.0
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.0
 
@@ -13406,7 +13406,7 @@ snapshots:
       '@types/node': 26.1.1
       '@types/tough-cookie': 4.0.5
       parse5: 8.0.1
-      undici-types: 7.28.0
+      undici-types: 7.29.0
 
   '@types/jsesc@2.5.1': {}
 
@@ -14238,7 +14238,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.11.1
       caniuse-lite: 1.0.30001806
-      electron-to-chromium: 1.5.395
+      electron-to-chromium: 1.5.396
       node-releases: 2.0.51
       update-browserslist-db: 1.2.3(browserslist@4.28.7)
 
@@ -14357,7 +14357,7 @@ snapshots:
       parse5: 7.3.0
       parse5-htmlparser2-tree-adapter: 7.1.0
       parse5-parser-stream: 7.1.2
-      undici: 7.28.0
+      undici: 7.29.0
       whatwg-mimetype: 4.0.0
 
   chokidar@4.0.3:
@@ -14816,7 +14816,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron-to-chromium@1.5.395: {}
+  electron-to-chromium@1.5.396: {}
 
   electron-updater@6.8.9:
     dependencies:
@@ -15481,7 +15481,7 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  gff-nostream@5.0.0: {}
+  gff-nostream@5.1.0: {}
 
   github-from-package@0.0.0: {}
 
@@ -16363,7 +16363,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.2
-      undici: 7.28.0
+      undici: 7.29.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -18482,11 +18482,11 @@ snapshots:
 
   undici-types@7.18.2: {}
 
-  undici-types@7.28.0: {}
+  undici-types@7.29.0: {}
 
   undici-types@8.3.0: {}
 
-  undici@7.28.0: {}
+  undici@7.29.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 

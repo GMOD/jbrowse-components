@@ -183,7 +183,7 @@
     "@emotion/serialize": "^1.3.3",
     "@emotion/utils": "^1.4.2",
     "@floating-ui/react": "^0.27.20",
-    "@gmod/bgzf-filehandle": "^6.2.0",
+    "@gmod/bgzf-filehandle": "^6.3.0",
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/quick-lru": "^7.3.5",
