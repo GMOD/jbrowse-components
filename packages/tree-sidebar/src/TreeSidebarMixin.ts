@@ -69,9 +69,14 @@ export function TreeSidebarMixin<
           self.clusterTree = undefined
         }
       },
+      // The subtree filter names leaves of `clusterTree` and hides rows on its
+      // own, so it goes with the tree: leaving it set hides rows against a tree
+      // that no longer exists, and the sidebar's "Clear subtree filter" is in
+      // the tree's context menu, which is gone too.
       clearLayout() {
         self.layout = []
         self.clusterTree = undefined
+        self.subtreeFilter = undefined
       },
       setClusterTree(tree?: string) {
         self.clusterTree = tree

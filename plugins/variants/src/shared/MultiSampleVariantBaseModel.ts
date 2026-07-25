@@ -696,12 +696,14 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #action
          * Restore the configured default arrangement — empties the layout
-         * and clears the cluster tree, then re-applies the `colorBy` palette
-         * if one is configured. Overrides the mixin's `clearLayout` so the
-         * user gets the same starting state they had on initial load.
+         * and clears the cluster tree plus the subtree filter that named its
+         * leaves, then re-applies the `colorBy` palette if one is configured.
+         * Overrides the mixin's `clearLayout` so the user gets the same
+         * starting state they had on initial load.
          */
         clearLayout() {
           self.clusterTree = undefined
+          self.subtreeFilter = undefined
           const sources = self.sourcesVolatile
           self.layout = sources
             ? arrangeSources(self.colorBy, self.groupBy, sources)

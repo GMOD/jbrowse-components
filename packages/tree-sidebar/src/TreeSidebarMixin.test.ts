@@ -58,3 +58,15 @@ describe('setLayout', () => {
     expect(m.clusterTree).toBe('(a,b);')
   })
 })
+
+describe('clearLayout', () => {
+  it('drops the subtree filter along with the tree it names leaves of', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b, c], '((a,b),c);')
+    m.setSubtreeFilter(['a', 'b'])
+    m.clearLayout()
+    expect(m.layout).toEqual([])
+    expect(m.clusterTree).toBeUndefined()
+    expect(m.subtreeFilter).toBeUndefined()
+  })
+})
