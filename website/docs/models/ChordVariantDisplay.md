@@ -47,7 +47,7 @@ controls how far the chords bow toward the center:
 | [features](#volatile-features)                                 | Volatiles  | ChordVariantDisplay           |                                                                                                                                        |
 | [refNameMap](#volatile-refnamemap)                             | Volatiles  | ChordVariantDisplay           |                                                                                                                                        |
 | [view](#getter-view)                                           | Getters    | ChordVariantDisplay           |                                                                                                                                        |
-| [ready](#getter-ready)                                         | Getters    | ChordVariantDisplay           |                                                                                                                                        |
+| [ready](#getter-ready)                                         | Getters    | ChordVariantDisplay           | both halves of a chord render: the features, and the refName map that translates the adapter's names to the assembly's.                |
 | [svgReady](#getter-svgready)                                   | Getters    | ChordVariantDisplay           | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)). |
 | [radiusPx](#getter-radiuspx)                                   | Getters    | ChordVariantDisplay           |                                                                                                                                        |
 | [bezierRadius](#getter-bezierradius)                           | Getters    | ChordVariantDisplay           | how far chords bow toward the center                                                                                                   |
@@ -110,6 +110,18 @@ The configuration slots for this model are documented on its
 <details>
 <summary>ChordVariantDisplay - Getters</summary>
 
+#### getter: ready
+
+both halves of a chord render: the features, and the refName map that translates
+the adapter's names to the assembly's. `blocksForRefs` falls back to
+untranslated names while the map is in flight, so an export that only waited on
+features could capture a figure with every chord silently dropped (whenever the
+adapter names differ, e.g. `1` vs `chr1`).
+
+```ts
+type ready = boolean
+```
+
 #### getter: svgReady
 
 Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the
@@ -118,7 +130,7 @@ non-rectangular (radial), so they keep a bespoke `<DisplayError>` error UI
 instead of `SvgChrome`, but they run the same shared `computeSvgReady` policy
 and await it via the shared `awaitSvgReady` — no inlined `when()`. No
 `regionTooLarge` state, and a chord fetch covers the whole view at once, so
-`ready` (features arrived) is the whole freshness axis.
+`ready` (features and refName map arrived) is the whole freshness axis.
 
 ```ts
 type svgReady = boolean
@@ -140,7 +152,6 @@ type bezierRadius = number
 | Member                                                       | Type                                                                                                                                                                         |
 | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span id="getter-view">view</span>                           | `ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<…>; displayName: IMaybe<…>; minimized: IOptionalIType<…>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>` |
-| <span id="getter-ready">ready</span>                         | `boolean`                                                                                                                                                                    |
 | <span id="getter-radiuspx">radiusPx</span>                   | `number`                                                                                                                                                                     |
 | <span id="getter-blocksforrefs">blocksForRefs</span>         | `Record<string, Block>`                                                                                                                                                      |
 | <span id="getter-selectedfeatureid">selectedFeatureId</span> | `string \| undefined`                                                                                                                                                        |

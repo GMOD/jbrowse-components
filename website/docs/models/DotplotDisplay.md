@@ -240,9 +240,9 @@ type svgReady = boolean
 <details>
 <summary>DotplotDisplay - Methods</summary>
 
-| Member                                       | Type                                                                                            |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <span id="method-rendersvg">renderSvg</span> | `(opts: ExportSvgOptions & { theme?: ThemeOptions \| undefined; }) => Promise<Element \| null>` |
+| Member                                       | Type                                                                                    |
+| -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| <span id="method-rendersvg">renderSvg</span> | `(opts: ExportSvgOptions & { theme?: ThemeOptions \| undefined; }) => Promise<Element>` |
 
 </details>
 

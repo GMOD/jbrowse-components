@@ -89,7 +89,6 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [autoscale](#slot-autoscale)                               | `stringEnum` (local, localsd)                                    | Coverage autoscale type                                                                                                                                                    |
 | [scaleType](#slot-scaletype)                               | `stringEnum` (linear, log)                                       | Coverage scale type (linear or log)                                                                                                                                        |
 | [mismatchAlpha](#slot-mismatchalpha)                       | `maybeBoolean`                                                   | Fade mismatch bases by their per-base Phred quality.                                                                                                                       |
-| [showLowFreqMismatches](#slot-showlowfreqmismatches)       | `boolean`                                                        | Show low-frequency mismatches (below the SNP-calling threshold) in the coverage track                                                                                      |
 | [showLegend](#slot-showlegend)                             | `boolean`                                                        | Show the color-scheme legend overlay                                                                                                                                       |
 | [largeFeaturesFirst](#slot-largefeaturesfirst)             | `boolean`                                                        | Lay out the widest features in the lowest pileup rows instead of by genomic start, so large alignments cluster at the top rather than interleaving with small ones.        |
 | [linkedReads](#slot-linkedreads)                           | `stringEnum` (inherit, off, normal)                              | Linked-read (barcode-chain) layout mode                                                                                                                                    |
@@ -117,19 +116,20 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [showSoftClipping](#slot-showsoftclipping)                 | `maybeBoolean`                                                   | Draw soft-clipped read portions.                                                                                                                                           |
 
 <details>
-<summary>Advanced slots (9)</summary>
+<summary>Advanced slots (10)</summary>
 
-| Slot                             | Type     | Description                                                                                                                                         |
-| -------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [maxHeight](#slot-maxheight)     | `number` | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)                                   |
-| [colorBy](#slot-colorby)         | `frozen` | Color scheme for reads                                                                                                                              |
-| [filterBy](#slot-filterby)       | `frozen` | default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400) |
-| [groupBy](#slot-groupby)         | `frozen` | In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)                                                |
-| [minScore](#slot-minscore)       | `number` | Minimum coverage depth bound                                                                                                                        |
-| [maxScore](#slot-maxscore)       | `number` | Maximum coverage depth bound                                                                                                                        |
-| [numStdDev](#slot-numstddev)     | `number` | Number of standard deviations for localsd autoscale                                                                                                 |
-| [sortedBy](#slot-sortedby)       | `frozen` | Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)                                                                  |
-| [showOutline](#slot-showoutline) | `frozen` | null = auto: outline is drawn only in chain/linked-read modes.                                                                                      |
+| Slot                                                 | Type      | Description                                                                                                                                                 |
+| ---------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [maxHeight](#slot-maxheight)                         | `number`  | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)                                           |
+| [colorBy](#slot-colorby)                             | `frozen`  | Color scheme for reads                                                                                                                                      |
+| [filterBy](#slot-filterby)                           | `frozen`  | default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)         |
+| [groupBy](#slot-groupby)                             | `frozen`  | In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)                                                        |
+| [minScore](#slot-minscore)                           | `number`  | Minimum coverage depth bound                                                                                                                                |
+| [maxScore](#slot-maxscore)                           | `number`  | Maximum coverage depth bound                                                                                                                                |
+| [numStdDev](#slot-numstddev)                         | `number`  | Number of standard deviations for localsd autoscale                                                                                                         |
+| [showLowFreqMismatches](#slot-showlowfreqmismatches) | `boolean` | Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. |
+| [sortedBy](#slot-sortedby)                           | `frozen`  | Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)                                                                          |
+| [showOutline](#slot-showoutline)                     | `frozen`  | null = auto: outline is drawn only in chain/linked-read modes.                                                                                              |
 
 </details>
 
@@ -278,11 +278,14 @@ over an on session default)
 
 #### slot: showLowFreqMismatches
 
-Show low-frequency mismatches (below the SNP-calling threshold) in the coverage
-track
+Draw sub-pixel mismatches, insertions and clip bars in the pileup at full
+opacity instead of fading the ones below the depth-dependent frequency
+threshold. Read through the `filterMismatchesByFrequency` getter, which is this
+in the polarity the renderers and hit-test take. Does not affect the coverage
+band (see runCoveragePipeline)
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
+`false` · _advanced_
 
 #### slot: showLegend
 

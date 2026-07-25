@@ -59,11 +59,10 @@ Hi-C display that renders contact matrix using WebGL
 | [colorMaxScore](#getter-colormaxscore)                                 | Getters    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
 | [hasLegendData](#getter-haslegenddata)                                 | Getters    | LinearHicDisplay                                          | Whether there's a color scale worth drawing a legend for: data loaded with a positive saturation point.                                                                                                                                                              |
 | [autoResolutionIdx](#getter-autoresolutionidx)                         | Getters    | LinearHicDisplay                                          | Index into `availableResolutions` that pure auto-mode would pick at the current zoom — largest binsize ≤ 2*bpPerPx, falling back to the finest binsize (idx 0) when nothing qualifies (very zoomed in).                                                              |
-| [yScalar](#getter-yscalar)                                             | Getters    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
+| [yScalar](#getter-yscalar)                                             | Getters    | LinearHicDisplay                                          | Vertical squash of the triangle.                                                                                                                                                                                                                                     |
 | [effectiveResolutionIdx](#getter-effectiveresolutionidx)               | Getters    | LinearHicDisplay                                          | Index actually used after applying `resolutionBias`, clamped to the valid range so a stale bias from a different zoom level can't index out of bounds.                                                                                                               |
 | [effectiveResolution](#getter-effectiveresolution)                     | Getters    | LinearHicDisplay                                          | The actual binsize to fetch at, after auto-pick + bias.                                                                                                                                                                                                              |
 | [renderTransform](#getter-rendertransform)                             | Getters    | LinearHicDisplay                                          | Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test, and SVG export.                                                                                                                                                                       |
-| [yScalarForHeight](#method-yscalarforheight)                           | Methods    | LinearHicDisplay                                          | Vertical squash for an arbitrary display height.                                                                                                                                                                                                                     |
 | [rpcProps](#method-rpcprops)                                           | Methods    | LinearHicDisplay                                          |                                                                                                                                                                                                                                                                      |
 | [hitTest](#method-hittest)                                             | Methods    | LinearHicDisplay                                          | Inverse of the render transform: takes mouse coords (canvas-relative) and returns the contact bin under the cursor, or undefined.                                                                                                                                    |
 | [renderState](#method-renderstate)                                     | Methods    | LinearHicDisplay                                          | Computed per-frame render state for the GPU backend.                                                                                                                                                                                                                 |
@@ -259,6 +258,22 @@ going sub-pixel; users who want finer can step the resolution bias down.
 type autoResolutionIdx = number
 ```
 
+#### getter: yScalar
+
+Vertical squash of the triangle. Bidirectional fill like the LD display:
+dragging taller than the natural triangle height stretches to fill rather than
+leaving a blank band below.
+
+WithoutBorders, because the base is the _content_ the worker packed
+(`regionOffsets` lays contentBlocks out contiguously). `totalWidthPx` also
+counts the boundary padding blocks dynamicBlocks adds when scrolled left of
+genome start / past the end, which would overstate the base and leave
+fit-to-height short of the display.
+
+```ts
+type yScalar = number
+```
+
 #### getter: effectiveResolutionIdx
 
 Index actually used after applying `resolutionBias`, clamped to the valid range
@@ -300,30 +315,11 @@ type renderTransform = RenderTransform
 | <span id="getter-colorscheme">colorScheme</span>                       | `"fall" \| "juicebox" \| "viridis"` |
 | <span id="getter-showlegend">showLegend</span>                         | `boolean`                           |
 | <span id="getter-colormaxscore">colorMaxScore</span>                   | `number`                            |
-| <span id="getter-yscalar">yScalar</span>                               | `number`                            |
 
 </details>
 
 <details>
 <summary>LinearHicDisplay - Methods</summary>
-
-#### method: yScalarForHeight
-
-Vertical squash for an arbitrary display height. Bidirectional fill like the LD
-display: dragging taller than the natural triangle height stretches to fill
-rather than leaving a blank band below. Sole owner of the triangle-base width,
-so the on-screen `yScalar` and the SVG export's `overrideHeight` variant can't
-drift apart.
-
-WithoutBorders, because the base is the _content_ the worker packed
-(`regionOffsets` lays contentBlocks out contiguously). `totalWidthPx` also
-counts the boundary padding blocks dynamicBlocks adds when scrolled left of
-genome start / past the end, which would overstate the base and leave
-fit-to-height short of the display.
-
-```ts
-type yScalarForHeight = (displayHeight: number) => number
-```
 
 #### method: hitTest
 
@@ -351,8 +347,15 @@ type renderState = HicRenderState
 
 #### method: svgLegendWidth
 
-Width of the SVG legend (consumed by SVGLinearGenomeView). Returns 0 when no
-legend will be drawn so the export framework can omit space.
+Width of the SVG legend (consumed by SVGLinearGenomeView). Returns 0 when the
+legend is off so the export framework can omit the space.
+
+Deliberately NOT gated on `hasLegendData` too: SVGLinearGenomeView maxes this
+across tracks _before_ awaiting each `renderSvg`, so on a headless export
+(jbrowse-img — the fetch is a debounced autorun) the data hasn't landed yet and
+a data-dependent answer reserved nothing, leaving the legend to float over the
+matrix. Reserving on the setting alone costs an unused strip only when the track
+loads empty or errors.
 
 ```ts
 type svgLegendWidth = () => number

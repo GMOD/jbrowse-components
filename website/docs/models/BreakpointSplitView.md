@@ -47,6 +47,7 @@ per-panel display options (e.g. a shorter alignments height).
 | [scrollZoom](#getter-scrollzoom)                                 | Getters    | BreakpointSplitView               | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                          |
 | [hasSomethingToShow](#getter-hassomethingtoshow)                 | Getters    | BreakpointSplitView               |                                                                                                                                                |
 | [initialized](#getter-initialized)                               | Getters    | BreakpointSplitView               |                                                                                                                                                |
+| [showLoading](#getter-showloading)                               | Getters    | BreakpointSplitView               | Spinner instead of content, i.e. sub-views exist but haven't loaded their assemblies yet.                                                      |
 | [showImportForm](#getter-showimportform)                         | Getters    | BreakpointSplitView               |                                                                                                                                                |
 | [assembly](#getter-assembly)                                     | Getters    | BreakpointSplitView               |                                                                                                                                                |
 | [matchedTracks](#getter-matchedtracks)                           | Getters    | BreakpointSplitView               | Find all track ids that match across multiple views, or return just the single view's track if only a single row is used                       |
@@ -132,6 +133,16 @@ toggling it in any view applies everywhere
 
 ```ts
 type scrollZoom = boolean
+```
+
+#### getter: showLoading
+
+Spinner instead of content, i.e. sub-views exist but haven't loaded their
+assemblies yet. Named to match LGV/dotplot/synteny/circular, which is what
+ViewContainer reads to publish `data-view-phase`.
+
+```ts
+type showLoading = boolean
 ```
 
 #### getter: matchedTracks

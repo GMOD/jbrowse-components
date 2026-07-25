@@ -176,6 +176,7 @@ State model factory for LinearAlignmentsDisplay
 | [colorLegendCategories](#getter-colorlegendcategories)                                 | Getters    | LinearAlignmentsDisplay                               | Read-color buckets actually present across the rendered reads, the single input that lets the legend list only relevant swatches (see legendUtils).                                                                                                                                                                             |
 | [colorPalette](#getter-colorpalette)                                                   | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [readCloudLegendCategories](#getter-readcloudlegendcategories)                         | Getters    | LinearAlignmentsDisplay                               | Legend categories contributed by the read-cloud endpoint squares — the arc color slots actually plotted, mapped to legend buckets.                                                                                                                                                                                              |
+| [arcBandInput](#getter-arcbandinput)                                                   | Getters    | LinearAlignmentsDisplay                               | The fields `computeArcBand` reads.                                                                                                                                                                                                                                                                                              |
 | [belowCoverageBandsInput](#getter-belowcoveragebandsinput)                             | Getters    | LinearAlignmentsDisplay                               | Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus whether any sashimi junction is present.                                                                                                                                                                                                         |
 | [laidOutByGroup](#getter-laidoutbygroup)                                               | Getters    | LinearAlignmentsDisplay                               | Per-group laid-out data: group key → (region index → laid-out data).                                                                                                                                                                                                                                                            |
 | [groupLayoutContext](#getter-grouplayoutcontext)                                       | Getters    | LinearAlignmentsDisplay                               | The layout mechanics (grouping, sort, soft-clip, colors) shared by the viewport fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays every group out uncapped to count rows.                                                                                                                                 |
@@ -675,6 +676,23 @@ legend. Empty unless in read-cloud mode with the legend shown.
 
 ```ts
 type readCloudLegendCategories = Set<ReadColorCategory>
+```
+
+#### getter: arcBandInput
+
+The fields `computeArcBand` reads. One source so the drawn arc band
+(`sections`/`buildSectionRenders`) and the insert-size ruler that must land on
+its apexes (`insertSizeTicks`) can't be assembled differently.
+
+```ts
+type arcBandInput = {
+  showCoverage: boolean
+  coverageHeight: number
+  coverageYOffset: number
+  readConnections: ReadConnectionsMode
+  readConnectionsDown: boolean
+  readConnectionsHeight: number
+}
 ```
 
 #### getter: belowCoverageBandsInput
@@ -1240,13 +1258,13 @@ type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: 
 <details>
 <summary>LinearAlignmentsDisplay - Methods (other undocumented members)</summary>
 
-| Member                                                             | Type                                                                                                                                                          |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="method-legenditems">legendItems</span>                   | `() => LegendItem[]`                                                                                                                                          |
-| <span id="method-findfeatureinrpcdata">findFeatureInRpcData</span> | `(featureId: string) => { displayedRegionIndex: number; groupKey: string; idx: number; rpcData: PileupDataResult; start: number; end: number; } \| undefined` |
-| <span id="method-getfeatureinfobyid">getFeatureInfoById</span>     | `(featureId: string) => { id: string; name: string; start: number; end: number; flags: number; mapq: number; strand: number; refName: string; } \| undefined` |
-| <span id="method-rpcprops">rpcProps</span>                         | `() => {…}`                                                                                                                                                   |
-| <span id="method-contextmenuitems">contextMenuItems</span>         | `() => MenuItem[]`                                                                                                                                            |
+| Member                                                             | Type                                                                                                                                                                                |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <span id="method-legenditems">legendItems</span>                   | `() => LegendItem[]`                                                                                                                                                                |
+| <span id="method-findfeatureinrpcdata">findFeatureInRpcData</span> | `(featureId: string) => { displayedRegionIndex: number; groupKey: string; idx: number; rpcData: PileupDataResult; start: number; end: number; } \| undefined`                       |
+| <span id="method-getfeatureinfobyid">getFeatureInfoById</span>     | `(featureId: string) => { id: string; name: string; start: number; end: number; flags: number; mapq: number; strand: number; refName: string; assemblyName: string; } \| undefined` |
+| <span id="method-rpcprops">rpcProps</span>                         | `() => {…}`                                                                                                                                                                         |
+| <span id="method-contextmenuitems">contextMenuItems</span>         | `() => MenuItem[]`                                                                                                                                                                  |
 
 </details>
 

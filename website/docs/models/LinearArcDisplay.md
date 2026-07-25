@@ -203,11 +203,11 @@ type selectedFeatureId = string | undefined
 <details>
 <summary>LinearArcDisplay - Actions</summary>
 
-| Member                                                 | Type                                                                  |
-| ------------------------------------------------------ | --------------------------------------------------------------------- |
-| <span id="action-selectfeature">selectFeature</span>   | `(feature: Feature) => void`                                          |
-| <span id="action-setdisplaymode">setDisplayMode</span> | `(flag: string) => void`                                              |
-| <span id="action-rendersvg">renderSvg</span>           | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactNode>` |
+| Member                                                 | Type                                                                   |
+| ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| <span id="action-selectfeature">selectFeature</span>   | `(feature: Feature) => void`                                           |
+| <span id="action-setdisplaymode">setDisplayMode</span> | `(flag: string) => void`                                               |
+| <span id="action-rendersvg">renderSvg</span>           | `(_opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactNode>` |
 
 </details>
 
