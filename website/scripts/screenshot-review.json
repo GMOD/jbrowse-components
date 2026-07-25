@@ -1993,8 +1993,8 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "hard to see correspondance between bandage graph and linaer genome view. need structural variant track on lineargenomeview with same color scheme as nodes in graph.",
+    "status": "good",
+    "note": "WON'T FIX (data), caption improved: a pggb GFA tags no segment with a stable position - verified, ecoli_pggb_subgraph.gfa has zero SN:Z:/SO:i:/SR:i: tags - so there is nothing for a linear view to line up with and no rank to color-match. The only coordinates in the file are inside the 4 P-line names. The caption now says that, and names the locus (K12:1,004,500-1,004,961) so a reader can open a linear view there. The rGFA figures (rgfa_subgraph_launch, hprc_mhc_bandage) are where the correspondence is real, and both now share the graph's rank colors.",
     "reviewedAt": "2026-07-25T06:04:42.152Z",
     "hash": "9eaf01c01efc6f21ace40fb690a0994b3c8398d4"
   },

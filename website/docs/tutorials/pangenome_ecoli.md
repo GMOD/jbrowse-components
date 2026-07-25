@@ -173,7 +173,7 @@ a 164 bp backbone segment on one picture, with the SNP alleles as the specks, in
 proportion. A few hundred bp is what makes that structure legible, not what the
 view can load.
 
-<Figure caption="A 400 bp slice of the four-strain graph in the Bandage force-directed layout: the axis is graph structure, not K12 coordinates. Node color is depth, how many of the four strains traverse that node, so the backbone runs yellow where all four share it and blue where only two do, and each eye-shaped bubble is one site where the strains diverge. This is the structure the projections below re-express as a variant column, a synteny break, or a coverage dip." src="/img/pangenome/local_subgraph.png" />
+<Figure caption="A 400 bp slice of the four-strain graph (K12:1,004,500-1,004,961) in the Bandage force-directed layout: the axis is graph structure, not K12 coordinates. A pggb GFA tags no segment with a stable position, so nothing here can be lined up under a linear view; the only coordinates in the file are inside the path names. Node color is depth, how many of the four strains traverse that node, so the backbone runs yellow where all four share it and blue where only two do, and each eye-shaped bubble is one site where the strains diverge. This is the structure the projections below re-express as a variant column, a synteny break, or a coverage dip." src="/img/pangenome/local_subgraph.png" />
 
 ### rGFA graphs carry their own coordinates
 
