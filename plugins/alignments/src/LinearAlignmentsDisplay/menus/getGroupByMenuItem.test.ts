@@ -3,18 +3,31 @@ import { getGroupByMenuItem } from './sortGroup.ts'
 import type { GroupByType } from '../../shared/types.ts'
 import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
 
-function makeModel(opts?: { type?: GroupByType; isChainMode?: boolean }) {
+function makeModel(opts?: {
+  type?: GroupByType
+  isChainMode?: boolean
+  collapseGroupRows?: boolean
+}) {
   const setGroupBy = jest.fn()
+  const setCollapseGroupRows = jest.fn()
   const model = {
     isChainMode: opts?.isChainMode ?? false,
     groupBy: opts?.type ? { type: opts.type } : undefined,
+    collapseGroupRows: opts?.collapseGroupRows ?? false,
     setGroupBy,
+    setCollapseGroupRows,
   }
-  return { model: model as unknown as GroupByModel, setGroupBy }
+  return {
+    model: model as unknown as GroupByModel,
+    setGroupBy,
+    setCollapseGroupRows,
+  }
 }
 
+// The dimension radios only — the trailing "One row per group" checkbox is a
+// layout toggle, not a dimension, and is asserted separately below.
 function radios(model: GroupByModel) {
-  return getGroupByMenuItem(model).subMenu
+  return getGroupByMenuItem(model).subMenu.filter(i => i.type === 'radio')
 }
 
 test('offers None, the per-read dimensions, then Tag... last', () => {
@@ -25,7 +38,7 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
     'Pair orientation',
     'Supplementary',
     'Duplicate',
-    'MAPQ (binned)',
+    'Mapping quality',
     'Tag...',
   ])
 })
@@ -84,4 +97,24 @@ test('a stored hidden dimension falls back to None', () => {
 test('grouping by tag checks the Tag... radio', () => {
   const items = radios(makeModel({ type: 'tag' }).model)
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['Tag...'])
+})
+
+function collapseItem(model: GroupByModel) {
+  return getGroupByMenuItem(model)
+    .subMenu.filter(i => i.type === 'checkbox')
+    .find(i => i.label === 'One row per group')
+}
+
+test('the one-row-per-group toggle reflects and writes the setting', () => {
+  const { model, setCollapseGroupRows } = makeModel({ collapseGroupRows: true })
+  const item = collapseItem(model)!
+  expect(item.checked).toBe(true)
+  item.onClick()
+  expect(setCollapseGroupRows).toHaveBeenCalledWith(false)
+})
+
+// A chain row is a chain; collapsing it would drop the connecting lines the
+// mode exists for, so the layout refuses to collapse there (`collapsesRows`).
+test('chain mode omits the one-row-per-group toggle', () => {
+  expect(collapseItem(makeModel({ isChainMode: true }).model)).toBeUndefined()
 })

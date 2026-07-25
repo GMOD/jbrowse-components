@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 
 import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
+import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
 
 import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -26,7 +27,9 @@ export type GroupByModel = {
   filterBy: FilterBy
   groupBy?: GroupBy
   isChainMode: boolean
+  collapseGroupRows: boolean
   setGroupBy: (groupBy?: GroupBy) => void
+  setCollapseGroupRows: (flag: boolean) => void
   setColorScheme: (colorBy: ColorBy) => void
 } & IAnyStateTreeNode
 
@@ -71,7 +74,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     )
   })
   const debouncedTag = useDebounce(groupByTag, 1000)
-  const { data: tagSet, error } = useFetch(
+  const { data: tagSet, error } = useFetch<string[]>(
     debouncedTag ? ['getUniqueTags', model, debouncedTag] : null,
     () =>
       getUniqueTags({
@@ -81,6 +84,15 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           .staticBlocks,
       }),
   )
+
+  // The fetch lags the field by the debounce, so its values describe
+  // `debouncedTag`; only trust them once it matches what Submit would apply.
+  const values = debouncedTag === groupByTag ? tagSet : undefined
+  // `tag` is the one dimension whose cardinality the data decides, so it's the
+  // one that can flood the track with sections. The values are already in hand
+  // here, so refuse at the point of choice — the worker's MAX_GROUPS cap would
+  // silently return 39 sections plus an opaque "N more values" one.
+  const tooManyValues = values !== undefined && values.length > MAX_GROUPS
 
   const handleSubmit = () => {
     model.setGroupBy({ type: 'tag', tag: groupByTag })
@@ -96,7 +108,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       open
       title="Group by tag"
       // Worker only needs a valid tag name; groupByTag holds a valid tag or ''.
-      submitDisabled={groupByTag === ''}
+      submitDisabled={groupByTag === '' || tooManyValues}
       onCancel={handleClose}
       onSubmit={handleSubmit}
     >
@@ -117,9 +129,16 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       />
       {error ? (
         <ErrorBanner error={error} />
-      ) : tagSet?.length ? (
+      ) : tooManyValues ? (
+        <Typography variant="caption" color="error">
+          {debouncedTag} takes {values.length} distinct values here — too many to
+          stack, and each section costs its own render pass. Color reads by this
+          tag instead, or group by a low-cardinality one (HP, RG).
+        </Typography>
+      ) : values?.length ? (
+        // At most MAX_GROUPS of them, since more than that blocks Submit above.
         <Typography variant="caption" color="text.secondary">
-          Found values: {tagSet.join(', ')}
+          Found values: {values.join(', ')}
         </Typography>
       ) : null}
       <div>

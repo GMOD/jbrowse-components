@@ -9,7 +9,7 @@ import {
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { GROUP_BY_LABELS } from './groupByLabels.ts'
-import { getFlags, getOrCreate } from './util.ts'
+import { getFlags, getMappingQuality, getOrCreate } from './util.ts'
 
 import type { GroupBy, GroupByType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -98,23 +98,28 @@ function mateAssemblyKey(feature: Feature): GroupKey {
     : { key: '', label: 'No mate assembly' }
 }
 
-// MAPQ bucketed into decades. SAM uses 255 for "unavailable", bucketed on its
-// own so it never blends with a real high-confidence bin. Keys stay bare decimals
-// — `compareGroupKeys` orders all-digit keys by magnitude, so no zero-padding is
-// needed to keep 0,10,...,250 ahead of the 255 unavailable bucket.
+// MAPQ bucketed by confidence, not by arithmetic decade: real MAPQ is bimodal —
+// a pile at the aligner's ceiling (60 for bwa/minimap2, 42 for bowtie2) and
+// another at 0 — so decades spent up to 26 mostly-empty sections. These are the
+// thresholds people already filter on (`samtools view -q 10` / `-q 30`), with 0
+// ("no unique placement") and SAM's 255 ("unavailable") called out on their own.
+// Ordinal keys like duplicateKey's, so the confident reads head the stack. Five
+// buckets by construction, so this dimension can't approach MAX_GROUPS.
 function mapqKey(feature: Feature): GroupKey {
-  const mapq = feature.get('score') ?? 255
-  const bin = Math.floor(mapq / 10) * 10
-  // Real MAPQ caps at 254 (255 is the separate "unavailable" bucket), so the top
-  // decade spans 250-254, not 250-259 — clamp the label's upper bound.
-  const hi = Math.min(bin + 9, 254)
+  const mapq = getMappingQuality(feature)
   return mapq === 255
-    ? { key: '255', label: 'MAPQ unavailable' }
-    : { key: String(bin), label: `MAPQ ${bin}-${hi}` }
+    ? { key: '4', label: 'MAPQ unavailable' }
+    : mapq >= 30
+      ? { key: '0', label: 'MAPQ 30+ (high confidence)' }
+      : mapq >= 10
+        ? { key: '1', label: 'MAPQ 10-29' }
+        : mapq >= 1
+          ? { key: '2', label: 'MAPQ 1-9 (low)' }
+          : { key: '3', label: 'MAPQ 0 (multi-mapping)' }
 }
 
 // All-digit key: numeric tag values (a numeric RG, a count-based tag), mapq's
-// decade bins, and the duplicate flag. Compared by magnitude below so '2'
+// confidence bins, and the duplicate flag. Compared by magnitude below so '2'
 // precedes '10' instead of code-point '10' < '2'.
 const ALL_DIGITS = /^\d+$/
 
@@ -125,6 +130,10 @@ const ALL_DIGITS = /^\d+$/
 // — a UMI-style `RX`/`MI` tag, a per-read `NM` — would pay that region-width cost
 // thousands of times over and exhaust worker memory or the GPU. Groups past the
 // cap merge into one pinned-last overflow section instead.
+//
+// The backstop, not the first line of defence: every dimension except `tag` and
+// `mateAssembly` is a closed set of at most five keys, and `tag` is refused up
+// front by GroupByDialog, which has the distinct values in hand.
 export const MAX_GROUPS = 40
 
 // The overflow bucket's key. '\0' cannot collide with a real tag value / refName,
@@ -132,7 +141,7 @@ export const MAX_GROUPS = 40
 export const OVERFLOW_GROUP_KEY = '\u0000overflow'
 
 // Named groups first, then the "untagged"/"unknown" sentinel, then the overflow
-// bucket. Both catch-alls sort after every real value regardless of its key.
+// bucket. Both catch-all methods sort after every real value regardless of its key.
 function groupKeyRank(key: string) {
   return key === '' ? 1 : key === OVERFLOW_GROUP_KEY ? 2 : 0
 }

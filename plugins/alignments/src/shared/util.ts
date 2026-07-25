@@ -13,6 +13,21 @@ export function getFlags(feature: Feature) {
   return (feature.get('flags') as number | undefined) ?? 0
 }
 
+// A feature's mapping quality; 255 is the SAM spec's "unavailable" sentinel.
+// BAM/CRAM spell it `score`; PAF/MashMap synteny features, which
+// LGVSyntenyDisplay pushes through this same pipeline, spell it `mappingQual`
+// and leave `score` unset. `score` is read first because it is a switch case on
+// BamSlightlyLazyFeature while any other field name falls through to its
+// lazily-materialized `fields` object, and this runs once per read.
+export function getMappingQuality(feature: Feature) {
+  const score = feature.get('score')
+  const mappingQual =
+    score === undefined
+      ? (feature.get('mappingQual') as number | undefined)
+      : score
+  return mappingQual ?? 255
+}
+
 // Get `key`'s entry, lazily creating + inserting it on first miss. The shared
 // shape of every "accumulate into a Map of arrays / nested Maps" pass. (The TC39
 // `Map.prototype.getOrInsertComputed` upsert proposal would fold this into one

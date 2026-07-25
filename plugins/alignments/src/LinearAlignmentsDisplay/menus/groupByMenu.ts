@@ -1,5 +1,7 @@
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
+import { checkboxItem } from './menuHelpers.ts'
+
 import type { GroupByType } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -34,18 +36,23 @@ function checkedType(
 // at a glance and a common dimension is one click away, no dialog round-trip.
 // `options` select directly via `onSelect`; `extra` radios (appended last) carry
 // their own handler, so the two displays can't drift in menu shape.
+// `collapseRows` appends the "One row per group" checkbox below the radios,
+// because it modifies them: it is how tall each group they produce is drawn, not
+// a dimension of its own.
 export function groupByRadioMenuItem({
   current,
   options,
   onSelect,
   onNone,
   extra = [],
+  collapseRows,
 }: {
   current: GroupByType | undefined
   options: GroupByRadioOption[]
   onSelect: (type: GroupByType) => void
   onNone: () => void
   extra?: GroupByRadioItem[]
+  collapseRows?: { checked: boolean; onToggle: () => void }
 }) {
   const checked = checkedType(current, [...options, ...extra])
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
@@ -79,6 +86,22 @@ export function groupByRadioMenuItem({
         ),
       ),
       ...extra.map(e => radio(e.type, e.label, e.onClick)),
+      ...(collapseRows
+        ? [
+            { type: 'divider' as const },
+            checkboxItem(
+              'One row per group',
+              collapseRows.checked,
+              collapseRows.onToggle,
+              {
+                helpText:
+                  'Draw each group as a single band, shading overlapping ' +
+                  'features darker instead of stacking them. Expand one group ' +
+                  'back to a full stack from its label.',
+              },
+            ),
+          ]
+        : []),
     ] satisfies MenuItem[],
   }
 }

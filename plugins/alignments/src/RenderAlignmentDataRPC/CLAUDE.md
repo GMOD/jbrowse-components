@@ -55,6 +55,15 @@ multimapper) never joins its primary's chain and renders standalone. This
 mirrors IGV and the connection resolver `readGroupConnections`, which also drops
 secondary.
 
+**Keep every dimension a closed set; the cap is only the backstop.** All of them
+except `tag` and `mateAssembly` yield at most five keys whatever the data —
+`mapq` bins by _confidence_ (30+ / 10-29 / 1-9 / 0 / unavailable) rather than by
+decade, since real MAPQ is bimodal at the aligner's ceiling and 0 and decades
+produced mostly-empty sections. `tag` is the one the data decides, so
+`GroupByDialog` blocks Submit and names the count, having already fetched the
+distinct values. If a new dimension can't be closed-set, gate it where its
+values are known.
+
 **Group count is capped at `MAX_GROUPS`** (`shared/groupFeatures.ts`). The spine
 runs per group, and each group's `runCoveragePipeline` allocates per-bp depth
 arrays sized to the whole region and then uploads its own per-bp GPU coverage
@@ -80,6 +89,13 @@ ungrouped (never splits). This is data-driven: the `chainConsistent` flag in
 worker guard (`isChainGroupableType`) and the group-by dialog's menu both read,
 so they can't disagree. Adding a `GroupByType` member is a compile error until
 it's classified there.
+
+Feature fields the key generators read must cover **both** worlds this pipeline
+serves, since LGVSyntenyDisplay pushes PAF blocks through it. `strandKey` reads
+`strand` rather than `SAM_FLAG_REVERSE` for that reason, and mapping quality
+goes through `getMappingQuality` (`shared/util.ts`) because BAM/CRAM spell it
+`score` while PAF/MashMap spell it `mappingQual` — reading only `score` bucketed
+every synteny block into the lone "MAPQ unavailable" section.
 
 Chain numbering (`readChainIndices` → chainIdx) is **per worker call** (per
 region _and_ per group), so the same integer means different chains across

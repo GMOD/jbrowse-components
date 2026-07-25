@@ -21,6 +21,6 @@ export const GROUP_BY_LABELS: Record<GroupByType, string> = {
   pairOrientation: 'Pair orientation',
   supplementary: 'Supplementary',
   duplicate: 'Duplicate',
-  mapq: 'MAPQ (binned)',
+  mapq: 'Mapping quality',
   mateAssembly: 'Mate assembly',
 }

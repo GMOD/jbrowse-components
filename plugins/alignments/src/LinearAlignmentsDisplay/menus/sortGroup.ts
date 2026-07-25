@@ -167,6 +167,16 @@ export function getGroupByMenuItem(model: GroupByModel) {
     onNone: () => {
       model.setGroupBy(undefined)
     },
+    // Omitted in chain mode only: a chain row is a chain, which `collapsesRows`
+    // never collapses whatever the setting says.
+    collapseRows: model.isChainMode
+      ? undefined
+      : {
+          checked: model.collapseGroupRows,
+          onToggle: () => {
+            model.setCollapseGroupRows(!model.collapseGroupRows)
+          },
+        },
     extra: [
       {
         type: 'tag',

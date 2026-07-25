@@ -103,29 +103,51 @@ test('numeric tag values order by magnitude, not code point', () => {
   expect(keys(groups)).toEqual(['1', '2', '10', ''])
 })
 
-test('mapq buckets sort numerically, not by code point', () => {
+// Confidence bins, not decades: a bwa run puts nearly every read at 60 and the
+// rest at 0, so decade bins produced mostly-empty sections. Highest confidence
+// heads the stack, "unavailable" pins last.
+test('mapq buckets by confidence, best first, unavailable last', () => {
   const features = [
-    feat('a', { score: 60 }),
+    feat('a', { score: 0 }),
     feat('b', { score: 5 }),
     feat('c', { score: 255 }),
-    // bare decimals, so a code-point sort would put '100' before '60'
-    feat('d', { score: 100 }),
+    feat('d', { score: 60 }),
+    feat('e', { score: 20 }),
   ]
   const groups = partitionFeatures(features, { type: 'mapq' })
-  expect(keys(groups)).toEqual(['0', '60', '100', '255'])
+  expect(groups.map(g => g.label)).toEqual([
+    'MAPQ 30+ (high confidence)',
+    'MAPQ 10-29',
+    'MAPQ 1-9 (low)',
+    'MAPQ 0 (multi-mapping)',
+    'MAPQ unavailable',
+  ])
 })
 
-test('mapq top decade labels 250-254, not 250-259 (255 is unavailable)', () => {
+// The bin count is fixed, so this dimension can never approach MAX_GROUPS
+// however wide the MAPQ distribution is.
+test('mapq never produces more than its five buckets', () => {
+  const features = Array.from({ length: 256 }, (_, score) =>
+    feat(`f${score}`, { score }),
+  )
+  expect(partitionFeatures(features, { type: 'mapq' })).toHaveLength(5)
+})
+
+// PAF/MashMap features spell mapping quality `mappingQual` and leave `score`
+// unset, so reading only `score` bucketed every synteny block into the single
+// "MAPQ unavailable" section — LGVSyntenyDisplay offers this dimension.
+test('mapq grouping reads the synteny mappingQual field too', () => {
   const features = [
-    feat('a', { score: 252 }),
-    feat('b', { score: 30 }),
-    feat('c', { score: 255 }),
+    feat('a', { mappingQual: 60 }),
+    feat('b', { mappingQual: 0 }),
+    feat('c', {}),
   ]
   const groups = partitionFeatures(features, { type: 'mapq' })
-  const labelFor = (key: string) => groups.find(g => g.key === key)!.label
-  expect(labelFor('250')).toBe('MAPQ 250-254')
-  expect(labelFor('30')).toBe('MAPQ 30-39')
-  expect(labelFor('255')).toBe('MAPQ unavailable')
+  expect(groups.map(g => g.label)).toEqual([
+    'MAPQ 30+ (high confidence)',
+    'MAPQ 0 (multi-mapping)',
+    'MAPQ unavailable',
+  ])
 })
 
 // Non-duplicate first, like supplementary's Primary-first — the reads that matter
