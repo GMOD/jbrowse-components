@@ -137,12 +137,17 @@ by positive control.
 These are alignments items, not config items. They belong in
 [TODO.md](../TODO.md) once that file is free of other agents' edits.
 
-- `MIN_BAND_HEIGHT` (`LinearAlignmentsDisplay/model.ts`) is enforced in the band
-  height setters but not in the `coverageHeight` / `readConnectionsHeight` /
-  `sashimiArcsHeight` getters, so a config value below 20 renders as written and
-  then jumps to 20 on the first drag. Adding the clamp to the getters changes
-  rendering for such configs, so it wants a deliberate decision rather than a
-  drive-by.
+- ~~`MIN_BAND_HEIGHT`~~ done in `9941bec10b`, but **not** by the clamp this
+  entry originally proposed. Clamping the `coverageHeight` /
+  `readConnectionsHeight` / `sashimiArcsHeight` getters would have let an
+  interaction constraint override declarative config: the constant exists so the
+  resize handle stays grabbable, and clamping the getter would have made a thin
+  band unauthorable rather than merely undraggable. Since the handles drag via
+  `set*Height(current + dy)`, the floor belongs in terms of the current height,
+  so it is now `min(20, current)` in the three setters. A band at or above 20 is
+  unaffected, which is every default and realistically every real config;
+  a smaller one keeps its height and can still be dragged, never below where it
+  already is. Covered by `bandHeight.test.ts`.
 - `LinearAlignmentsDisplay/model.ts` re-exports `getInsertionType`,
   `insertionBarWidth as getInsertionRectWidthPx`, `textWidthForNumber`,
   `InsertionType` and `Region`. Nothing in the monorepo imports any of them from
