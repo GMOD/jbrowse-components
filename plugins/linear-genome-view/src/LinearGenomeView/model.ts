@@ -41,6 +41,7 @@ import {
   cast,
   getParent,
   getSnapshot,
+  hasParent,
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -605,13 +606,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * exposing showAssemblyNameInSubviewScalebar; duck-typed rather than
        * matching a concrete view type so no upward plugin dependency is needed
        * and any container can opt in. A wrong nesting depth simply yields no
-       * prefix.
+       * prefix — hence the hasParent guard, since getParent throws (rather than
+       * returning undefined) when the view sits shallower than depth 2.
        */
       get scalebarDisplayPrefix() {
-        const parent = getParent<{
-          showAssemblyNameInSubviewScalebar?: boolean
-        }>(self, 2)
-        return parent.showAssemblyNameInSubviewScalebar
+        const parent = hasParent(self, 2)
+          ? getParent<{ showAssemblyNameInSubviewScalebar?: boolean }>(self, 2)
+          : undefined
+        return parent?.showAssemblyNameInSubviewScalebar
           ? self.assemblyDisplayNames[0]
           : undefined
       },
@@ -924,7 +926,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackMap() {
-        const map = new Map()
+        const map = new Map<string, (typeof self.tracks)[number]>()
         for (const track of self.tracks) {
           map.set(track.configuration.trackId, track)
         }
@@ -1247,7 +1249,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
+        // new regions move both bounds: zoomTo re-clamps bpPerPx into the new
+        // [minBpPerPx, maxBpPerPx], scrollTo re-clamps offsetPx into the new
+        // [minOffset, maxOffset]. scrollTo is called explicitly rather than
+        // left to zoomTo's internal scrollTo, which is skipped when bpPerPx
+        // is already in range — shrinking the region set would otherwise
+        // strand the view scrolled past the end, on blank space.
         self.zoomTo(self.bpPerPx)
+        self.scrollTo(self.offsetPx)
       },
 
       /**

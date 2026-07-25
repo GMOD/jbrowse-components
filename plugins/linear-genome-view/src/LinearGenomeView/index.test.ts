@@ -573,6 +573,32 @@ test('can navToMultiple', () => {
   expect(model.bpPerPx).toBeCloseTo(25)
 })
 
+// removing/replacing regions shrinks maxOffset; a view already scrolled past
+// the new end must be pulled back, otherwise it sits on blank space
+test('setDisplayedRegions re-clamps a now-out-of-range offsetPx', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testSetDisplayedRegionsClamp',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000 },
+  ])
+  model.setNewView(10, 1900)
+  expect(model.offsetPx).toBe(1900)
+
+  // drop ctgB: total content is now 1000px, so maxOffset is 990
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+  ])
+  expect(model.offsetPx).toBe(990)
+})
+
 // when a refName appears twice with different bounds and the navigated
 // location omits start/end, the default coords must come from the same
 // (first) occurrence that the index resolution picks, else navigation lands
