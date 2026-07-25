@@ -7,6 +7,7 @@ import { getHeightModeOptions } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
+import { capitalizeFirst } from './menuHelpers.ts'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
 import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
@@ -50,7 +51,7 @@ export function getFeatureHeightMenuItem(
   const matchesPreset = (preset: { featureHeight: number }) =>
     height === preset.featureHeight
   return {
-    label: `${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`,
+    label: `${capitalizeFirst(noun)} height`,
     icon: HeightIcon,
     type: 'subMenu' as const,
     disabled: opts?.disabled,

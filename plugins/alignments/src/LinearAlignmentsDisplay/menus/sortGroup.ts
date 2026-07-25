@@ -6,6 +6,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { GROUP_BY_DIMENSIONS } from '../../shared/groupFeatures.ts'
 import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
+import { capitalizeFirst } from './menuHelpers.ts'
 
 import type { SortedBy } from '../../shared/types.ts'
 import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
@@ -22,29 +23,24 @@ interface SortByModel {
   setLargeFeaturesFirst: (flag: boolean) => void
 }
 
-// The pileup has exactly one ordering at a time, so the sort menu is a single
-// radio group. Most modes map to a `sortedBy` type; "Longest reads first" is the
-// odd one out — it's a layout-order flag (`largeFeaturesFirst`), mutually
-// exclusive with a sort (a sort overrides it), so folding it in as a peer radio
-// keeps the group honest. Picking any mode clears whichever mechanism the other
-// modes use, so the two config slots never both hold state. "Start location" is
-// the default/unsorted order, so it doubles as the reset — no separate "Clear".
+// One ordering at a time, so a single radio group. Most modes write a `sortedBy`
+// type; "Longest reads first" is the `largeFeaturesFirst` layout flag, folded in
+// as a peer radio because it competes for the same ordering. "Start location" is
+// the unsorted default, so it doubles as the reset — no separate "Clear".
 //
-// Only the `length` radio clears the *other* slot from here. The sort radios
-// don't: `setSortSlot` drops `largeFeaturesFirst` as it writes `sortedBy`, so a
-// sort that never lands (no valid center line, a cancelled tag dialog) leaves the
-// current ordering alone rather than clearing it and unchecking every radio.
+// Only the `length` radio clears the other slot here. `setSortSlot` drops
+// `largeFeaturesFirst` as it writes `sortedBy`, so a sort that never lands (no
+// valid center line, a cancelled tag dialog) leaves the ordering alone instead of
+// unchecking every radio.
 //
-// Strand / base pair / tag all anchor on the read column under the view's center
-// line, so `setSortedBy` reveals the center line when applied (the label doesn't
-// need to spell out the mechanic). A base-pair sort can also come from a
-// context-menu "sort at position"; those interbase types keep "Base pair"
-// checked.
+// Strand / base pair / tag anchor on the center-line column, which `setSortedBy`
+// reveals when applied. Interbase types from the context menu's "sort at
+// position" keep "Base pair" checked.
 //
-// Callers pick which modes apply to their data and the noun the labels read in
-// (like pickColorOptions for the color menu): a plain alignments pileup takes
-// every mode with noun 'read'; LGVSyntenyDisplay drops base pair / tag — PAF
-// blocks carry neither per-base sequence nor SAM tags — and reads 'feature'.
+// Callers pick the applicable modes and the label noun (like pickColorOptions):
+// alignments takes every mode with 'read'; LGVSyntenyDisplay drops base pair /
+// tag — a PAF block has neither per-base sequence nor SAM tags — and uses
+// 'feature'.
 
 export type SortMode = 'position' | 'strand' | 'basePair' | 'tag' | 'length'
 
@@ -84,6 +80,7 @@ export function getSortByMenuItem(
       label: 'Start location',
       type: 'radio',
       checked: mode === 'position',
+      keepMenuOpen: true,
       onClick: () => {
         model.setLargeFeaturesFirst(false)
         model.clearSortedBy()
@@ -93,15 +90,17 @@ export function getSortByMenuItem(
       label: `Longest ${noun}s first`,
       type: 'radio',
       checked: mode === 'length',
+      keepMenuOpen: true,
       onClick: () => {
         model.clearSortedBy()
         model.setLargeFeaturesFirst(true)
       },
     },
     strand: {
-      label: `${noun.charAt(0).toUpperCase()}${noun.slice(1)} strand`,
+      label: `${capitalizeFirst(noun)} strand`,
       type: 'radio',
       checked: mode === 'strand',
+      keepMenuOpen: true,
       onClick: () => {
         model.setSortedBy('strand')
       },
@@ -110,10 +109,12 @@ export function getSortByMenuItem(
       label: 'Base pair',
       type: 'radio',
       checked: mode === 'basePair',
+      keepMenuOpen: true,
       onClick: () => {
         model.setSortedBy('basePair')
       },
     },
+    // Opens a dialog for the tag name, so this one closes the menu.
     tag: {
       label: 'Tag...',
       type: 'radio',

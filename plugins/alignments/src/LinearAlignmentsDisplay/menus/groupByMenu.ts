@@ -48,21 +48,35 @@ export function groupByRadioMenuItem({
   extra?: GroupByRadioItem[]
 }) {
   const checked = checkedType(current, [...options, ...extra])
+  // Direct selects keep the menu open; `extra` radios open a dialog, so they
+  // dismiss it.
   const radio = (
     type: GroupByType | undefined,
     label: string,
     onClick: () => void,
-  ) => ({ label, type: 'radio' as const, checked: checked === type, onClick })
+    keepMenuOpen?: boolean,
+  ) => ({
+    label,
+    type: 'radio' as const,
+    checked: checked === type,
+    keepMenuOpen,
+    onClick,
+  })
   return {
     label: 'Group by...',
     icon: WorkspacesIcon,
     type: 'subMenu' as const,
     subMenu: [
-      radio(undefined, 'None', onNone),
+      radio(undefined, 'None', onNone, true),
       ...options.map(o =>
-        radio(o.type, o.label, () => {
-          onSelect(o.type)
-        }),
+        radio(
+          o.type,
+          o.label,
+          () => {
+            onSelect(o.type)
+          },
+          true,
+        ),
       ),
       ...extra.map(e => radio(e.type, e.label, e.onClick)),
     ] satisfies MenuItem[],

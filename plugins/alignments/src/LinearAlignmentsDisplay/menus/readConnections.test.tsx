@@ -192,3 +192,15 @@ describe('promote-as-default (default for all) pin', () => {
     expect(model.readConnectionsDownDisplayTypeDefault.active).toBe(true)
   })
 })
+
+// Turning arcs on, then long-range, then inter-chromosomal is one workflow, so
+// no row here may dismiss the menu.
+test('every toggle keeps the menu open', () => {
+  const model = makeModel()
+  const rows = getReadConnectionsMenuItem(model).subMenu.flatMap(i =>
+    'subMenu' in i ? i.subMenu : [i],
+  )
+  const toggles = rows.filter(i => 'checked' in i)
+  expect(toggles.length).toBeGreaterThan(0)
+  expect(toggles.every(i => i.keepMenuOpen)).toBe(true)
+})

@@ -1,7 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
 import { lazy } from 'react'
 
-import { promotableRadioItem } from '@jbrowse/core/ui'
+import { makeSizeMenu, promotableRadioItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
@@ -14,7 +13,6 @@ import {
   DEFAULT_MODIFICATION_THRESHOLD,
   isModificationTypeVisible,
 } from '../../shared/types.ts'
-import { ModificationThresholdSlider } from './ModificationThresholdSlider.tsx'
 import { checkboxItem, radioItems } from './menuHelpers.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
@@ -241,6 +239,7 @@ function modificationsMenu(
         label: 'One color per modification type',
         helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
         checked: model.colorBy.type === 'modifications' && !byTwoColor,
+        keepMenuOpen: true,
         onClick: () => {
           patchMods(model, clearView)
         },
@@ -251,6 +250,7 @@ function modificationsMenu(
         helpText:
           'Everything the by-type view does, plus it paints the not-modified side blue instead of leaving it blank: modified sites keep their per-type colors, while low-probability and unmodified sites turn blue. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
         checked: byTwoColor,
+        keepMenuOpen: true,
         onClick: () => {
           patchMods(model, { ...clearView, ...twoColorView })
         },
@@ -287,18 +287,26 @@ function modificationsMenu(
         helpText:
           'Hides low-confidence calls in the by-type view. The 2-color view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
         subMenu: [
-          {
+          makeSizeMenu({
             label: 'threshold',
-            type: 'custom',
-            render: () => (
-              <ModificationThresholdSlider
-                initialValue={model.modificationThreshold}
-                onCommit={v => {
-                  patchMods(model, { threshold: v })
-                }}
-              />
-            ),
-          },
+            title: 'Hide calls under',
+            min: 0,
+            max: 100,
+            step: 1,
+            format: n => `${n}%`,
+            // tier-1: the threshold reaches the worker's extractModifications
+            // via rpcProps, so commit on release, not every intermediate pixel.
+            commitOnRelease: true,
+            getValue: () => model.modificationThreshold,
+            isDefault:
+              model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD,
+            onChange: v => {
+              patchMods(model, { threshold: v })
+            },
+            onReset: () => {
+              patchMods(model, { threshold: DEFAULT_MODIFICATION_THRESHOLD })
+            },
+          }),
         ],
       },
       ...(hasCytosineMeth(model)
@@ -390,6 +398,7 @@ function colorRadio(
   return promotableRadioItem({
     label,
     checked: model.colorBy.type === type,
+    keepMenuOpen: true,
     onClick: () => {
       model.setColorScheme({ type })
     },

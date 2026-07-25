@@ -1,4 +1,5 @@
 import {
+  checkboxItem,
   getMaxHeightMenuItem,
   groupByRadioMenuItem,
   pickGroupByOptions,
@@ -61,59 +62,58 @@ export function getSyntenyShowMenuItem(model: ShowModel) {
     icon: VisibilityIcon,
     type: 'subMenu' as const,
     subMenu: [
-      {
-        label: 'Show legend',
-        type: 'checkbox' as const,
-        checked: model.showLegend,
-        onClick: () => {
-          model.setShowLegend(!model.showLegend)
-        },
-      },
-      {
-        label: 'Show coverage',
-        type: 'checkbox' as const,
-        checked: model.showCoverage,
-        helpText:
-          'Draw a histogram of how deeply each reference base is covered by ' +
-          'the aligned blocks — the depth of syntenic coverage.',
-        onClick: () => {
+      checkboxItem('Show legend', model.showLegend, () => {
+        model.setShowLegend(!model.showLegend)
+      }),
+      checkboxItem(
+        'Show coverage',
+        model.showCoverage,
+        () => {
           model.setShowCoverage(!model.showCoverage)
         },
-      },
-      {
-        label: 'Show alignments',
-        type: 'checkbox' as const,
-        checked: model.showPileup,
-        helpText:
-          'Uncheck to collapse the stacked alignment blocks, leaving just ' +
-          'the coverage histogram.',
-        onClick: () => {
+        {
+          helpText:
+            'Draw a histogram of how deeply each reference base is covered by ' +
+            'the aligned blocks — the depth of syntenic coverage.',
+        },
+      ),
+      checkboxItem(
+        'Show alignments',
+        model.showPileup,
+        () => {
           model.setShowPileup(!model.showPileup)
         },
-      },
-      {
-        label: 'Show mismatches',
-        type: 'checkbox' as const,
-        checked: model.showMismatches,
-        helpText:
-          'Draw per-base differences between the two assemblies, read from ' +
-          "the alignment's cs tag or CIGAR.",
-        onClick: () => {
+        {
+          helpText:
+            'Uncheck to collapse the stacked alignment blocks, leaving just ' +
+            'the coverage histogram.',
+        },
+      ),
+      checkboxItem(
+        'Show mismatches',
+        model.showMismatches,
+        () => {
           model.setShowMismatches(!model.showMismatches)
         },
-      },
-      {
-        label: 'Show interbase indicators',
-        type: 'checkbox' as const,
-        checked: model.showInterbaseIndicators,
-        helpText:
-          'Mark insertions in the other assembly, which occupy no reference ' +
-          'base, with a between-base tick. Drawn in the coverage band, so it ' +
-          'needs "Show coverage" on.',
-        onClick: () => {
+        {
+          helpText:
+            'Draw per-base differences between the two assemblies, read from ' +
+            "the alignment's cs tag or CIGAR.",
+        },
+      ),
+      checkboxItem(
+        'Show interbase indicators',
+        model.showInterbaseIndicators,
+        () => {
           model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
         },
-      },
+        {
+          helpText:
+            'Mark insertions in the other assembly, which occupy no reference ' +
+            'base, with a between-base tick. Drawn in the coverage band, so it ' +
+            'needs "Show coverage" on.',
+        },
+      ),
       { type: 'divider' as const },
       getMaxHeightMenuItem(model),
     ] satisfies MenuItem[],

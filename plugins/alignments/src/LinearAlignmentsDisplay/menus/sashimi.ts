@@ -65,6 +65,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
               model.setShowSashimiLabels(!model.showSashimiLabels)
             },
             displayTypeDefault: model.showSashimiLabelsDisplayTypeDefault,
+            keepMenuOpen: true,
           }),
           {
             label: 'Arc placement',
@@ -73,6 +74,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
               promotableRadioItem({
                 label: option.label,
                 checked: model.sashimiArcsMode === option.value,
+                keepMenuOpen: true,
                 onClick: () => {
                   model.setSashimiArcsMode(option.value)
                 },
@@ -85,12 +87,13 @@ export function getSashimiMenuItem(model: SashimiModel) {
           makeSizeMenu({
             label: 'Filter by score',
             title: 'Min read support',
-            // read support spans small integers to thousands on deep RNA-seq,
-            // so log-scale; 0 shows every arc, including the single-read
-            // junctions the default filters out. Recomputes arcs on the main
-            // thread (tier 3), so a live onChange is fine.
+            // read support spans small integers to thousands on deep RNA-seq, so
+            // log-scale. 1 already shows every arc (filter is `count >= min` and
+            // a junction has at least one read); 0 would be a dead notch, since
+            // sliderScale('log') clamps to `Math.max(1, n)`. Recomputes arcs on
+            // the main thread (tier 3), so a live onChange is fine.
             scale: 'log',
-            min: 0,
+            min: 1,
             max: 10_000,
             format: n => `${n}`,
             getValue: () => model.minSashimiScore,

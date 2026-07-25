@@ -1,7 +1,7 @@
 import { isValidElement } from 'react'
 
 import { pickColorOptions } from '../../shared/colorSchemes.ts'
-import { getColorByMenuItem } from './colorBy.tsx'
+import { getColorByMenuItem } from './colorBy.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
@@ -321,7 +321,8 @@ describe('color by modifications menu', () => {
     expect(byLabel(model, 'Modification types')).toBeFalsy()
   })
 
-  test('the threshold slider commits a non-default value inline', () => {
+  // The threshold is the shared makeSizeMenu row, so assert through its props.
+  test('the threshold slider commits a non-default value inline, and resets', () => {
     const model = makeModModel(['m', 'h'])
     model.colorBy = { type: 'modifications' }
     const item = subMenuOf(byLabel(model, 'Probability threshold')).find(
@@ -334,12 +335,24 @@ describe('color by modifications menu', () => {
     if (!isValidElement(rendered)) {
       throw new Error('threshold slider did not render')
     }
-    const { onCommit } = rendered.props as { onCommit: (v: number) => void }
-    onCommit(80)
+    const { onChange, onReset, isDefault, commitOnRelease } =
+      rendered.props as {
+        onChange: (v: number) => void
+        onReset: () => void
+        isDefault: boolean
+        commitOnRelease: boolean
+      }
+    expect(isDefault).toBe(true)
+    expect(commitOnRelease).toBe(true)
+    onChange(80)
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { threshold: 80 },
     })
+    // Resetting writes the default, which patchMods drops so a saved session
+    // carries no redundant threshold.
+    onReset()
+    expect(model.colorBy).toEqual({ type: 'modifications', modifications: {} })
   })
 
   test('cytosine context is shown only for cytosine methylation data', () => {
