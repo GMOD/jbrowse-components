@@ -1682,6 +1682,18 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * What one row of this pileup is called, for UI text built from the
+         * model alone (the group-label chips). The menu builders take the same
+         * word as a call-site `noun` option. Subclasses that aren't showing
+         * reads override it — LGVSyntenyDisplay draws PAF blocks, so its chips
+         * must not offer to "show all reads".
+         */
+        get featureNoun() {
+          return 'read'
+        },
+
+        /**
+         * #getter
          * True when reads are stacked into >1 group section. Drives the scroll
          * model: ungrouped keeps coverage sticky (only the pileup scrolls);
          * grouped scrolls the whole coverage+pileup stack as one.

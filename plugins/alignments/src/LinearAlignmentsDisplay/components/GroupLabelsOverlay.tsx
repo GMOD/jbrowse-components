@@ -135,7 +135,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   title={
                     hasOverride
                       ? 'Fit group to view'
-                      : 'Show all reads in this group'
+                      : `Show all ${model.featureNoun}s in this group`
                   }
                 >
                   {hasOverride ? (
@@ -146,7 +146,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   ) : (
                     <>
                       <UnfoldMoreIcon className={classes.icon} />
-                      Show all reads
+                      Show all {model.featureNoun}s
                     </>
                   )}
                 </button>
