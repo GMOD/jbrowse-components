@@ -1812,15 +1812,15 @@
   },
   "desktop-blat-search": {
     "name": "desktop-blat-search",
-    "status": "bad",
-    "note": "might make dialog wider by default e.g. at least 800px or 80em",
+    "status": "good",
+    "note": "FIXED: dialog was already widened to maxWidth md (~900px, over the 800px asked for) in 879f74a43a; the committed PNG predated it. Desktop app rebuilt and the capture regenerated, so the figure now shows the wide dialog with the pasted sequence on one line.",
     "reviewedAt": "2026-07-25T04:56:03.762Z",
     "hash": "724b0a7d3208ea6c97d62c9e8905873464b50b8a"
   },
   "desktop-ispcr": {
     "name": "desktop-ispcr",
-    "status": "bad",
-    "note": "i generally prefer variant=outline textareas, try to compactify the form also",
+    "status": "good",
+    "note": "FIXED: same stale-capture case as desktop-blat-search. The form is outlined-variant monospace fields with the two primers side by side on one row and max-product-size compacted beside them (879f74a43a); regenerated against a fresh desktop build.",
     "reviewedAt": "2026-07-25T04:56:35.225Z",
     "hash": "c383884f327e42aedcdf81130de86fd4cd8cd2e2"
   },
@@ -1833,36 +1833,36 @@
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
-    "status": "bad",
-    "note": "might want to be a multi-step screenshot showing first no dialog open, but the right click menu open, then the dialog, then the result with synteny launched e.g. genomes_synteny/launch_menu  combined figure",
+    "status": "good",
+    "note": "FIXED: this is the multi-step figure asked for. genomes_synteny/launch_sequence stacks menu -> dialog -> launched synteny view, each frame labeled, with the source LGV collapsed in the last frame so the new view is on screen. lgv_liftover retired into it.",
     "reviewedAt": "2026-07-25T04:57:34.124Z",
     "hash": "9bea4d3a5c19be9b1562444d04605147ff72f621"
   },
   "genomes_synteny/lgv_liftover": {
     "name": "genomes_synteny/lgv_liftover",
-    "status": "bad",
-    "note": "might be able to delete",
+    "status": "good",
+    "note": "RETIRED: it was launch_menu minus the menu, so it is now the first frame of the genomes_synteny/launch_sequence stack. Spec, PNG and gallery link deleted.",
     "reviewedAt": "2026-07-25T04:57:43.848Z",
     "hash": "4f61405d3d2eaa416695eb59189354f4f4534e51"
   },
   "hprc2/local_ancestry": {
     "name": "hprc2/local_ancestry",
-    "status": "bad",
-    "note": "might be interesting to cluster",
+    "status": "good",
+    "note": "FIXED (legend): the clustered version already exists as the next figure in the tutorial (hprc2/local_ancestry_clustered), so this one stays as the input order it contrasts with. Both now render the color key.",
     "reviewedAt": "2026-07-25T04:58:13.372Z",
     "hash": "74d96dd55273273ca540efb1c6af7a2180e9ff41"
   },
   "hprc2/local_ancestry_clustered": {
     "name": "hprc2/local_ancestry_clustered",
-    "status": "bad",
-    "note": "add legend",
+    "status": "good",
+    "note": "FIXED: legend added via the display's own `legend` config slot (the case that slot documents: category encoded only in the block color, nothing to auto-derive from). Three entries name the PCA extremes by the sample at each - Yoruba/NA19240 teal, Kinh Vietnamese/HG02135 orange, Iberian/HG01530 violet - which are the anchors build_hprc2_pclai.sh already pins from HPRC2 Fig 1d. Declared in test_data/hprc2/config.json and in the tutorial's track JSON. Kept the paper's PCA palette rather than re-coloring: the published calls are continuous, so our own categorical palette would mean discretizing ancestry ourselves.",
     "reviewedAt": "2026-07-25T06:02:58.707Z",
     "hash": "e298247b474af6043fab574f88079460d8e683c2"
   },
   "sv/read_connections": {
     "name": "sv/read_connections",
-    "status": "bad",
-    "note": "not sure this is really gallery worthy. delete",
+    "status": "good",
+    "note": "RETIRED: already gone - no spec, no PNG, no doc usage. Stale log entry for a deleted figure.",
     "reviewedAt": "2026-07-25T05:05:42.378Z",
     "hash": "bb9164db19c8a73f09b463bf8fa783cadfe8f162"
   },
@@ -1951,29 +1951,29 @@
   },
   "genomes_synteny/ribbons_default": {
     "name": "genomes_synteny/ribbons_default",
-    "status": "bad",
-    "note": "is this part of multipart screenshot? if so i dont want to review it in isolation",
+    "status": "good",
+    "note": "FIXED: it is the top part of the genomes_synteny/ribbon_settings stack (the review UI lends a part its parent's usages, so the '(stacked into ...)' caption marks it). It now also opens View options with the Show... submenu hovered, so both settings the section names are visible in the first frame.",
     "reviewedAt": "2026-07-25T06:02:28.563Z",
     "hash": "97d756aa63033ed944ccd3d32fa55095b627926b"
   },
   "genomes_synteny/ribbons_curved": {
     "name": "genomes_synteny/ribbons_curved",
-    "status": "bad",
-    "note": "is this part of multipart screenshot? if so i dont want to review it in isolation",
+    "status": "good",
+    "note": "NOT A STANDALONE FIGURE: it is the bottom part of the genomes_synteny/ribbon_settings stack, unchanged. Review it there.",
     "reviewedAt": "2026-07-25T06:02:29.767Z",
     "hash": "9a9ee8333dd26584d77d1bfdcacf71915d0a5c8f"
   },
   "genomes_synteny/ribbon_settings": {
     "name": "genomes_synteny/ribbon_settings",
-    "status": "bad",
-    "note": "ideally show menu in first screenshot",
+    "status": "good",
+    "note": "FIXED: the first frame now has the synteny header's View options menu open with Show... hovered, so 'Show curved lines' (in the submenu) and 'CIGAR display mode' (in the parent) both appear beside the before state.",
     "reviewedAt": "2026-07-25T06:02:36.478Z",
     "hash": "417d3ae65a1609b940182119534417fbbb853696"
   },
   "genomes_synteny/launch_menu": {
     "name": "genomes_synteny/launch_menu",
-    "status": "bad",
-    "note": "is this part of multipart screenshot? if so i dont want to review it in isolation",
+    "status": "good",
+    "note": "FIXED: folded into genomes_synteny/launch_sequence, one 3-stage spec (right-click menu -> launch dialog -> the synteny view Submit opens). No longer a figure of its own, so nothing to review in isolation.",
     "reviewedAt": "2026-07-25T06:02:36.574Z",
     "hash": "85390199b1d93ff4cb2dd304e68200610c7796c9"
   },

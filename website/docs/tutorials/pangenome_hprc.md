@@ -261,7 +261,12 @@ can load it directly:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "sample"
+      "partitionField": "sample",
+      "legend": [
+        { "label": "Yoruba (NA19240)", "color": "rgb(0,232,178)" },
+        { "label": "Kinh Vietnamese (HG02135)", "color": "rgb(255,114,53)" },
+        { "label": "Iberian (HG01530)", "color": "rgb(229,161,255)" }
+      ]
     }
   ]
 }
@@ -270,12 +275,18 @@ can load it directly:
 `partitionField` assigns each feature to a row, and `rowHeight` defaults to
 auto-fit, so adding haplotypes shrinks the rows instead of overflowing the
 track.
+
+The color is a continuous PCA interpolation, so the BED carries no attribute to
+derive a key from and `legend` declares one instead. Its three entries name the
+extremes of that space by the sample sitting at each; a color between them is a
+position between them, not a fourth category.
+
 [`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)
 builds your own for a chromosome and sample count you pick
 (`bash build_hprc2_pclai.sh out chr1 64`); it fetches the per-haplotype BEDs,
 keeps the columns the painting needs, and writes one bgzipped, tabixed file.
 
-<Figure caption="64 HPRC2 haplotypes painted along chr1 by PCLAI local ancestry, one row per haplotype, colored by the published per-window PCA color. Most rows hold a single color end to end; a few switch color repeatedly along the chromosome, each change a recombination breakpoint between differently-inferred segments. There is no color key: the palette is a continuous interpolation of PCA position, not labeled categories." src="/img/hprc2/local_ancestry.png" />
+<Figure caption="64 HPRC2 haplotypes painted along chr1 by PCLAI local ancestry, one row per haplotype, colored by the published per-window PCA color. Most rows hold a single color end to end; a few switch color repeatedly along the chromosome, each change a recombination breakpoint between differently-inferred segments. The key names the three PCA extremes the palette interpolates between." src="/img/hprc2/local_ancestry.png" />
 
 This display has its own clustering, **Clustering > Cluster rows by similarity**
 in the track menu, which reorders the haplotype rows so ancestry-similar rows

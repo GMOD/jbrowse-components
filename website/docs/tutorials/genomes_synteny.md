@@ -39,26 +39,21 @@ The liftOver track is a synteny track, but in a plain linear genome view it
 draws the way an alignments track does: one feature per chain block, laid out in
 rows.
 
-<Figure caption="The hg38 to hs1 liftOver track under NCBI RefSeq genes at TNNT3. Each bar is one chain block, labeled with its score." src="/img/genomes_synteny/lgv_liftover.png" />
-
 ## Launching a synteny view
 
 Right-click any chain block and choose **Launch synteny view for this
-position**.
-
-<Figure caption="The chain block context menu. The launch item is offered only once the mate assembly (hs1) has resolved." src="/img/genomes_synteny/launch_menu.png" />
-
-The dialog that opens decides how the second panel is framed, and the defaults
-are already right for the block you clicked. The one worth understanding is
-**Use CIGAR to map the current visible region to the target**: with it, JBrowse
-walks the alignment to find the interval that actually matches what you are
-looking at, rather than framing on the whole block's endpoints.
-
-<Figure caption="The launch dialog, opened from the inverted block. Horizontally flip target is already checked because the feature is reverse-strand on hs1." src="/img/genomes_synteny/launch_dialog.png" />
-
+position**. The dialog that opens decides how the second panel is framed, and
+the defaults are already right for the block you clicked. The one worth
+understanding is **Use CIGAR to map the current visible region to the target**:
+with it, JBrowse walks the alignment to find the interval that actually matches
+what you are looking at, rather than framing on the whole block's endpoints.
 **Submit** opens a two-panel synteny view on that position, with the liftOver
-track drawn as ribbons between the panels. Set the ribbon coloring to **Strand**
-from the palette button in the synteny track header.
+track drawn as ribbons between the panels.
+
+<Figure caption="The three steps, from the liftOver track to the view. Horizontally flip target is checked for you because the clicked block is reverse-strand on hs1. The launched view carries the chain track as ribbons between the two panels and nothing else, so each panel starts empty until you add its genes." src="/img/genomes_synteny/launch_sequence.png" />
+
+Set the ribbon coloring to **Strand** from the palette button in the synteny
+track header.
 
 ## Two settings worth changing
 
@@ -71,7 +66,7 @@ Both live on the synteny view's **View options** button:
   and deletions inside each block, leaving them as see-through gaps. With strand
   coloring on, that keeps color meaning only one thing.
 
-<Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels, where the indels drop out to white and the reverse-strand segment is a single blue sweep crossing the forward-strand pink." />
+<Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings, with the menu that holds them open on top. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels, where the indels drop out to white and the reverse-strand segment is a single blue sweep crossing the forward-strand pink." />
 
 ## The rearrangement
 

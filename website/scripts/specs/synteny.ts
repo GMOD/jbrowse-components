@@ -735,6 +735,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ...TNNT3_FRAME,
     name: 'genomes_synteny/ribbons_default',
     url: tnnt3Session(),
+    // The top frame also has to answer "where are those two settings?", so it
+    // opens the header's View options menu and hovers Show... — 'Show curved
+    // lines' is in that submenu while 'CIGAR display mode' stays visible in the
+    // parent, so one frame carries both controls the section asks the reader to
+    // change. The live link still opens the plain default state.
+    actions: [
+      { type: 'click', selector: '[aria-label="View options"]' },
+      { type: 'hover', text: 'Show...' },
+      { type: 'waitForText', text: 'Show curved lines' },
+    ],
     annotations: [
       { type: 'text', x: 24, y: 56, fontSize: 22, text: 'As it opens' },
     ],
@@ -765,60 +775,28 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // genomes_synteny tutorial: the same TNNT3 comparison reached the way a
-  // reader reaches it on genomes.jbrowse.org, from a plain hg38 LGV. Loads that
-  // site's own hg38 config, so the track names, categories and menu are the
+  // genomes_synteny tutorial: the whole launch path in one figure, reached the
+  // way a reader reaches it on genomes.jbrowse.org, from a plain hg38 LGV. Loads
+  // that site's own hg38 config, so the track names, categories and menu are the
   // ones on screen there. That config declares only hg38; hs1 arrives on its
   // own because the Hubs plugin it loads answers Core-handleUnrecognizedAssembly
   // for the name the liftOver track references, and the launch menu item is
   // gated on exactly that mate assembly resolving.
   //
-  // The right-click is a viewport coordinate, not a selector: the pileup canvas
-  // fills the display's whole height, so its center lands well below the two
-  // rows of chain blocks. (400, 340) is the purple reverse-strand block, the
-  // one worth launching a synteny view on. The loc and viewport width are
-  // fixed, so the block is at that coordinate every run.
-  ...(
-    [
-      // Step 1: the liftOver track in an LGV. Each chain block is drawn as a
-      // feature, so a liftOver track reads like an alignments track until you
-      // ask it for a synteny view.
-      { name: 'genomes_synteny/lgv_liftover', height: 370, stages: undefined },
-      // Step 2: right-clicking a chain block.
-      {
-        name: 'genomes_synteny/launch_menu',
-        height: 500,
-        stages: [
-          {
-            actions: [
-              { type: 'rightclick' as const, from: { x: 400, y: 340 } },
-              { type: 'waitForText' as const, text: 'Open feature details' },
-            ],
-          },
-        ],
-      },
-      // Step 3: the dialog the item opens, which is where each panel's region
-      // is confirmed before the synteny view is created.
-      {
-        name: 'genomes_synteny/launch_dialog',
-        height: 500,
-        stages: [
-          {
-            actions: [
-              { type: 'rightclick' as const, from: { x: 400, y: 340 } },
-              {
-                type: 'click' as const,
-                text: 'Launch synteny view for this position',
-              },
-              { type: 'waitForText' as const, text: 'Launch' },
-            ],
-          },
-        ],
-      },
-    ] as const
-  ).map(({ name, height, stages }) => ({
-    mode: 'url' as const,
-    name,
+  // Three stages of one spec rather than three specs: a context menu, the dialog
+  // it opens and the view that dialog creates are each reachable only through the
+  // UI, so `compose` over declarative parts can't express them, and the reader
+  // (and the reviewer) sees the sequence as one figure instead of three
+  // near-identical frames.
+  //
+  // The right-click is a viewport coordinate, not a selector: the chain-block
+  // canvas fills the display's whole height, so its center lands well below the
+  // two rows of blocks. (400, 340) is the purple reverse-strand block, the one
+  // worth launching a synteny view on. The loc and viewport width are fixed, so
+  // the block is at that coordinate every run.
+  {
+    mode: 'url',
+    name: 'genomes_synteny/launch_sequence',
     url: sessionSpec(UCSC_HG38_CONFIG, {
       views: [
         {
@@ -835,15 +813,80 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    ...(stages ? { stages } : {}),
     viewportWidth: 1200,
-    viewportHeight: height,
+    // tall enough for the context menu in stage 1 (the binding frame) and, in
+    // stage 3, the collapsed LGV header plus the whole launched synteny view.
+    // Trimmed to the content so three stacked frames aren't mostly whitespace.
+    viewportHeight: 470,
     hideTooltip: true,
     readySelector: '[data-testid="pileup-display-done"]',
     // the UCSC hub config is ~570 tracks and pulls three remote plugins
     readyTimeout: 120000,
     settleMs: 10000,
-  })),
+    stages: [
+      {
+        actions: [
+          { type: 'rightclick', from: { x: 400, y: 340 } },
+          { type: 'waitForText', text: 'Open feature details' },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 56,
+            fontSize: 20,
+            text: 'Right-click a chain block',
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Launch synteny view for this position' },
+          // the dialog's own text, not its title: "Launch synteny view" is also
+          // the prefix of the menu item just clicked
+          {
+            type: 'waitForText',
+            text: 'Use CIGAR to map the current visible region to the target',
+          },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 56,
+            fontSize: 20,
+            text: 'Confirm how each panel is framed',
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Submit' },
+          // addView appends the synteny view below this LGV, and ViewHeader
+          // suppresses its scroll-into-view under webdriver, so collapse the LGV
+          // (first minimize_view in the DOM) to bring the new view on screen
+          { type: 'click', selector: '[data-testid="minimize_view"]' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="synteny_canvas_done"]',
+            timeout: 120000,
+          },
+          // hs1 resolves through the hub plugin and the chain track refetches at
+          // the launched view's own bpPerPx, both after the canvas first paints
+          { type: 'delay', ms: 10000 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 56,
+            fontSize: 20,
+            text: 'The synteny view it opens',
+          },
+        ],
+      },
+    ],
+  },
 
   // One dotplot per haplotype. HG008T v3.2 is haplotype-resolved, so a single
   // plot puts both haplotypes' scaffolds on one axis interleaved — every GRCh38
