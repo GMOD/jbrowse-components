@@ -18,6 +18,7 @@ import VcfAdapterF from './VcfAdapter/index.ts'
 import ExtensionPointsF from './VcfExtensionPoints/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { calculateAlleleCounts } from './shared/alleleCounts.ts'
+import { getAlleleLength } from './shared/alleleLength.ts'
 import {
   calculateMinorAlleleFrequency,
   calculateMissingnessFrequency,
@@ -95,6 +96,10 @@ export default class VariantsPlugin extends Plugin {
     // `svTypeColor` powers the one-click "Color by SV type" menu item on the
     // single-variant display (fixed class colors + copy-number rainbow).
     jexl.addFunction('svTypeColor', getVariantSvTypeColor)
+    // Longest allele in bp, so a filter can select the SV tier of a decomposed
+    // pangenome callset (`jexl:alleleLength(feature) >= 50`) without missing
+    // insertions, which consume no reference and so have a span of 1.
+    jexl.addFunction('alleleLength', getAlleleLength)
   }
 }
 
