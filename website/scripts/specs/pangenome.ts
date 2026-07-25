@@ -23,39 +23,60 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // the MAF alignment stacked below as an orthogonal view of the same window.
   // One row per non-K12 strain, each variant drawn at its genomic position and
   // colored by that strain's genotype (the per-position display, not the matrix
-  // — reviewer's call, so the columns line up with the genes and the MAF below).
-  // Runs of shared alt across CFT073/NCTC86 vs Sakai (and vice-versa) read as
-  // vertical bands — the accessory structure of the pangenome at SNP resolution.
-  // The MAF below is the same window's base-level multiple alignment, the
-  // representation the variants were decomposed from, so the variant rows can be
-  // read against the per-strain alignment they came from.
+  // — reviewer's call, so the columns line up with the genes and the MAF below;
+  // the spec was named `variant_matrix` until then, which is why the figure was
+  // read as a broken matrix). Runs of shared alt across strains read as vertical
+  // bands — the accessory structure of the pangenome at SNP resolution. The MAF
+  // below is the same window's base-level multiple alignment, the representation
+  // the variants were decomposed from, so the variant rows can be read against
+  // the per-strain alignment they came from.
+  //
+  // The window is chosen from the VCF, not by eye. Scoring every 20 kb window on
+  // "each strain carries alt calls and few no-calls" puts chr:2,120,000-2,140,000
+  // first: ~1,000 sub-100bp records with 43-57% alt per strain and under 2%
+  // no-call. The old window (995,000-1,015,000) scored badly on exactly what the
+  // review flagged as odd-looking: NCTC86 was reference at 979 of its 988 calls
+  // there (one flat grey row) and CFT073 was no-call at 411 of them (one flat
+  // yellow band), so two of the four rows carried no visible structure.
   {
     mode: 'url',
-    name: 'pangenome/variant_matrix',
+    name: 'pangenome/pangenome_variants',
     url: sessionSpec(CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:995,000-1,015,000',
+          loc: 'chr:2,120,000-2,140,000',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
               trackId: 'ecoli_pggb_variants',
               type: 'LinearMultiSampleVariantDisplay',
               height: 160,
+              // pggb's VCF is NESTED: alongside the SNPs it emits top-level
+              // bubble records thousands of bp wide (LV=0), and at this locus
+              // one of them is 7,094 bp with a different allele in all four
+              // strains (GT 1/2/3/4). Three of those are "other alt", so the
+              // record painted 7 kb of flat dark red across three rows and
+              // buried every SNP under it. Filtering to <100 bp keeps the
+              // decomposed SNP layer, which is what the figure is about.
+              jexlFilters: [
+                "jexl:get(feature,'end')-get(feature,'start') < 100",
+              ],
             },
             { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
           ],
         },
       ],
     }),
-    // interior ruler tick (the window end 1,015,000 lands at the edge and isn't
-    // rendered as a tick label; ticks fall on 4kb multiples at this zoom)
-    readyText: '1,000,000',
+    // interior ruler tick (the window edges aren't rendered as tick labels;
+    // ticks fall on 4kb multiples at this zoom)
+    readyText: '2,124,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 740,
+    // the app window ends at 681 CSS px here (four variant rows over the MAF's
+    // five), so anything taller is empty page background
+    viewportHeight: 700,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -84,6 +105,18 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           loc: 'chr:800,000-806,000',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              // the same window's variant calls above the alignment they were
+              // decomposed from (reviewer: show the evidence sources side by
+              // side). Same <100 bp filter as the variant figure, for the same
+              // nested-bubble reason.
+              trackId: 'ecoli_pggb_variants',
+              type: 'LinearMultiSampleVariantDisplay',
+              height: 120,
+              jexlFilters: [
+                "jexl:get(feature,'end')-get(feature,'start') < 100",
+              ],
+            },
             { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
           ],
         },
@@ -92,8 +125,8 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: '806,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // one row per sample plus the coverage band; five samples now
-    viewportHeight: 530,
+    // the variant lane plus one MAF row per sample and the coverage band
+    viewportHeight: 660,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

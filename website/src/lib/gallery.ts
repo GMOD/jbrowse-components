@@ -427,10 +427,10 @@ export const gallerySections: readonly GallerySection[] = [
     items: [
       {
         label: 'Graph pangenome variants',
-        spec: 'pangenome/variant_matrix',
+        spec: 'pangenome/pangenome_variants',
         guide: 'tutorials/pangenome_ecoli',
         description:
-          "A four-strain E. coli pangenome graph projected onto the K12 reference: the graph's variants with one row per strain, each column colored by that strain's genotype, with the MAF alignment stacked below and the K12 gene lane above.",
+          "A five-strain E. coli pangenome graph projected onto the K12 reference: the graph's variants with one row per strain, each column colored by that strain's genotype, with the MAF alignment stacked below and the K12 gene lane above.",
       },
       {
         label: 'Presence/absence by strain (PAV)',
