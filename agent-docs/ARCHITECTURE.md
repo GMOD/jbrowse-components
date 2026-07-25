@@ -136,6 +136,12 @@ freshness gate (`isDataCurrent` over `dotplotFetchKey` / synteny's
 `currentFetchKey`) in place of `viewportWithinLoadedData` — which is where the
 stale-capture bugs lived
 ([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) §"On-screen capture gate").
+Both scope their fetch through the shared `syntenyFetchRegions`
+(`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and
+snapped to a buffer-sized grid, so a pan inside the buffer neither refetches nor
+exposes an unfetched strip, and the freshness key stays stable across the
+gesture. Synteny scopes its query axis, dotplot its h axis; neither scopes the
+other axis, because the fetch is one-dimensional in both.
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only

@@ -8,14 +8,17 @@ import {
 } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
-import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
+import {
+  bpToCumBp,
+  buildBpRegionIndex,
+  syntenyPanBufferPx,
+} from '@jbrowse/synteny-core'
 
 import {
   MIN_CIGAR_PX_WIDTH,
   buildSyntenyGeometry,
 } from './buildSyntenyGeometry.ts'
 import { clipLargeBlockToWindow } from './clipSyntenyFeature.ts'
-import { syntenyPanBufferPx } from './syntenyFetchWindow.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'

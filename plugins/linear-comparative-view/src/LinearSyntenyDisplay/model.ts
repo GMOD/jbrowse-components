@@ -6,11 +6,11 @@ import {
   NO_CIGAR_OPS,
   coerceColorBy,
   isDataCurrent,
+  syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
-import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 
@@ -383,6 +383,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Contents, order and orientation of both connected views' displayed
+       * regions — the inputs the worker's cumBp index is built from, so a change
+       * in any of them makes held features stale. Its own getter, not inlined
+       * into `currentFetchKey`: this is O(total regions) (a whole-genome view of
+       * a scaffold-heavy assembly runs to thousands), while `currentFetchKey`'s
+       * other deps flip on every pan past the buffer and every zoom bucket. Split
+       * out, MobX memoizes it against `displayedRegions` alone instead of
+       * rebuilding the whole string per zoom step.
+       */
+      get regionSignature() {
+        const connected = this.connectedViews
+        return connected
+          ? [connected.v0, connected.v1]
+              .map(v => regionSignature(v.displayedRegions))
+              .join('_')
+          : ''
+      },
+      /**
+       * #getter
        * Fetch-input signature (region set/order, snapped fetch window, zoom
        * bucket, CIGAR/marker draw options, LOD tier) for the view's current
        * state — the same tracked deps the fetch autorun refetches on. Reactive:
@@ -393,24 +412,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * until a real fetch lands. Non-nullable so it mirrors dotplot's.
        */
       get currentFetchKey(): string {
-        const connected = this.connectedViews
         const view = this.view
-        const regionSig = connected
-          ? [connected.v0, connected.v1]
-              .map(v =>
-                v.displayedRegions
-                  .map(
-                    r =>
-                      `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`,
-                  )
-                  .join(','),
-              )
-              .join('_')
-          : ''
         return [
           this.fetchRegionsKey,
           this.bpPerPxBucketKey,
-          regionSig,
+          this.regionSignature,
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
           view.drawLocationMarkers,

@@ -1,5 +1,11 @@
 export { bpToCumBp, buildBpRegionIndex } from './bpRegionIndex.ts'
 export type { BpIndexViewSnap, BpRegionIndex } from './bpRegionIndex.ts'
+export {
+  PAN_BUFFER_PX,
+  syntenyFetchRegions,
+  syntenyPanBufferPx,
+} from './syntenyFetchWindow.ts'
+export { regionSignature } from './regionSignature.ts'
 export { extractAlignmentData } from './extractAlignmentData.ts'
 // Promoted to core (a pure signature compare, no synteny deps); re-exported here
 // so the comparative-view consumers keep importing it from @jbrowse/synteny-core.

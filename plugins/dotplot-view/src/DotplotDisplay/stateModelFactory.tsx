@@ -2,7 +2,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { isDataCurrent } from '@jbrowse/synteny-core'
+import { isDataCurrent, syntenyFetchRegions } from '@jbrowse/synteny-core'
 
 import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
@@ -14,6 +14,7 @@ import type {
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
@@ -86,13 +87,50 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * The h-axis fetch window: the visible content blocks expanded by the
+       * shared pan buffer and snapped outward to a buffer-sized grid, so a pan
+       * within the buffer neither refetches nor exposes an unfetched strip, and
+       * zoomed out it collapses to the whole displayed region. The v axis is
+       * deliberately not scoped: the fetch is one-dimensional (h regions in,
+       * every mate out), so a vertical pan needs no data the h window didn't
+       * already bring, and must never trigger a refetch.
+       *
+       * Unlike synteny, nothing culls this window again in the worker —
+       * executeDotplotFeaturesAndPositions maps every feature it is handed — so
+       * the window's only job is to be a superset of what's on screen.
+       */
+      get fetchRegions(): Region[] {
+        const { hview } = getContainingView(self) as DotplotViewModel
+        return syntenyFetchRegions({
+          visibleRegions: hview.dynamicBlocks.contentBlocks.map(b => ({
+            refName: b.refName,
+            start: b.start,
+            end: b.end,
+            assemblyName: b.assemblyName,
+            displayedRegionIndex: b.displayedRegionIndex!,
+          })),
+          displayedRegions: hview.displayedRegions,
+          width: hview.width,
+          bpPerPx: hview.bpPerPx,
+        })
+      },
+      /**
+       * #getter
        * The fetch-input signature (see fetchKey.ts) for the view's current
        * state. Reactive: recomputes when either axis's zoom or displayed-region
-       * order/orientation changes.
+       * order/orientation changes, or when a pan carries the h axis into a new
+       * snapped fetch window. As a computed it only notifies when the string
+       * itself changes, which is what lets the fetch autorun track it and stay
+       * quiet through sub-buffer pans.
        */
       get currentFetchKey(): string {
         const view = getContainingView(self) as DotplotViewModel
-        return dotplotFetchKey(view.lodMode, view.hview, view.vview)
+        return dotplotFetchKey(
+          view.lodMode,
+          view.hview,
+          view.vview,
+          this.fetchRegions,
+        )
       },
       /**
        * #getter

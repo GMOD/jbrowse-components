@@ -4,7 +4,10 @@ import {
   CIGAR_INDEL_MASK,
   CIGAR_N,
 } from '@jbrowse/cigar-utils'
-import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
+import {
+  PAN_BUFFER_PX,
+  visitCigarRenderedSegments,
+} from '@jbrowse/synteny-core'
 
 import {
   KIND_BASE,
@@ -13,7 +16,6 @@ import {
   KIND_CIGAR_N,
   KIND_MARKER,
 } from './syntenyColors.ts'
-import { PAN_BUFFER_PX } from './syntenyFetchWindow.ts'
 
 // Worker-side geometry. `colors` is injected by the main thread (computedColors
 // in the display model) and is the only field SyntenyInstanceData adds. Keeps

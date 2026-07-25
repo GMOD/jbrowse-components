@@ -274,7 +274,8 @@ loses the race with capture); warm reruns hide it, which is why it read as
 "flaky per-environment." `dataCurrent` makes the gate honest.
 
 Signatures: `dotplotFetchKey` (lodMode + per-axis bpPerPx + displayed-region
-refName/start/end/reversed); synteny composes `currentFetchKey` from its
+refName/start/end/reversed + the snapped h-axis fetch window); synteny composes
+`currentFetchKey` from its
 existing tracked-dep getters (`fetchRegionsKey`, `bpPerPxBucketKey`, region
 order, CIGAR/marker opts, LOD). Dotplot additionally keeps an
 `autoDiagonalizeRequested`/`Complete` pair: `dataCurrent` catches

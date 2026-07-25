@@ -8,9 +8,12 @@ function region(refName: string, reversed = false): Region {
 
 const h = { bpPerPx: 1, displayedRegions: [region('chr1'), region('chr2')] }
 const v = { bpPerPx: 1, displayedRegions: [region('q1'), region('q2')] }
+const win = [region('chr1')]
 
 test('identical inputs produce an identical key', () => {
-  expect(dotplotFetchKey('auto', h, v)).toBe(dotplotFetchKey('auto', h, v))
+  expect(dotplotFetchKey('auto', h, v, win)).toBe(
+    dotplotFetchKey('auto', h, v, win),
+  )
 })
 
 test('reordering an axis changes the key (the diagonalize case)', () => {
@@ -18,8 +21,8 @@ test('reordering an axis changes the key (the diagonalize case)', () => {
     bpPerPx: 1,
     displayedRegions: [region('q2'), region('q1')],
   }
-  expect(dotplotFetchKey('auto', h, v)).not.toBe(
-    dotplotFetchKey('auto', h, vReordered),
+  expect(dotplotFetchKey('auto', h, v, win)).not.toBe(
+    dotplotFetchKey('auto', h, vReordered, win),
   )
 })
 
@@ -28,17 +31,32 @@ test('flipping a region orientation changes the key (diagonalize reversal)', () 
     bpPerPx: 1,
     displayedRegions: [region('q1', true), region('q2')],
   }
-  expect(dotplotFetchKey('auto', h, v)).not.toBe(
-    dotplotFetchKey('auto', h, vFlipped),
+  expect(dotplotFetchKey('auto', h, v, win)).not.toBe(
+    dotplotFetchKey('auto', h, vFlipped, win),
   )
 })
 
 test('a zoom (bpPerPx) change changes the key', () => {
-  expect(dotplotFetchKey('auto', h, v)).not.toBe(
-    dotplotFetchKey('auto', { ...h, bpPerPx: 2 }, v),
+  expect(dotplotFetchKey('auto', h, v, win)).not.toBe(
+    dotplotFetchKey('auto', { ...h, bpPerPx: 2 }, v, win),
   )
 })
 
 test('a LOD mode change changes the key', () => {
-  expect(dotplotFetchKey('auto', h, v)).not.toBe(dotplotFetchKey('fine', h, v))
+  expect(dotplotFetchKey('auto', h, v, win)).not.toBe(
+    dotplotFetchKey('fine', h, v, win),
+  )
+})
+
+test('a pan into a new snapped fetch window changes the key', () => {
+  const panned = [{ ...region('chr1'), start: 4000, end: 8000 }]
+  expect(dotplotFetchKey('auto', h, v, win)).not.toBe(
+    dotplotFetchKey('auto', h, v, panned),
+  )
+})
+
+test('the same window on a different refName changes the key', () => {
+  expect(dotplotFetchKey('auto', h, v, win)).not.toBe(
+    dotplotFetchKey('auto', h, v, [region('chr2')]),
+  )
 })

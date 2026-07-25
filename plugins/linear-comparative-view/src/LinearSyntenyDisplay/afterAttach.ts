@@ -9,10 +9,9 @@ import {
   createStopTokenRotation,
   detectDisplayAssembliesSwapped,
   renameRegionsForAdapter,
+  syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
-
-import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'

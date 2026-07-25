@@ -16,7 +16,6 @@ import { autorun, untracked } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotColors.ts'
 import { buildLineSegments } from './dotplotGeometry.ts'
-import { dotplotFetchKey } from './fetchKey.ts'
 
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
@@ -93,15 +92,25 @@ export function doAfterAttach(
         if (!view.initialized) {
           return
         }
-        const regions = view.hview.dynamicBlocks.contentBlocks
         const { adapterConfig } = self
-        const { lodMode } = view
-        const hViewSnap = makeViewSnap(view.hview)
-        const vViewSnap = makeViewSnap(view.vview)
-        // Snapshot the fetch-input signature now, from the exact inputs this
-        // fetch uses, so the resulting rpcData is tagged with what it was
-        // fetched for even if the view changes again mid-RPC.
-        const fetchKey = dotplotFetchKey(lodMode, hViewSnap, vViewSnap)
+        // The only tracked view dep. `currentFetchKey` folds every input this
+        // fetch depends on — LOD tier, both axes' zoom and displayed-region
+        // order, and the snapped h-axis fetch window — into one computed, so
+        // the autorun refires exactly when a refetch is actually needed. A pan
+        // that stays inside the buffered window recomputes it to the same
+        // string and doesn't refire; that same string is what tags the
+        // resulting rpcData, so it can't drift from what was fetched even if
+        // the view moves again mid-RPC.
+        const fetchKey = self.currentFetchKey
+        // Untracked: the values behind that key. Reading them here rather than
+        // as deps keeps raw offsetPx/width changes from refiring the fetch,
+        // while the worker still sees the current axes.
+        const { lodMode, hViewSnap, vViewSnap, regions } = untracked(() => ({
+          lodMode: view.lodMode,
+          hViewSnap: makeViewSnap(view.hview),
+          vViewSnap: makeViewSnap(view.vview),
+          regions: self.fetchRegions,
+        }))
 
         const { stopToken, isCurrent, statusCallback } = fetch.begin()
         self.setLoading(stopToken)
