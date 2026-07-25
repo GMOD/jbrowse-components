@@ -10,8 +10,6 @@ import {
   links,
   maxNodeHeight,
   renderTreeSVG,
-  sort,
-  sum,
 } from './hierarchy.ts'
 
 interface Node {
@@ -56,20 +54,6 @@ test('hierarchy handles leaf-only input', () => {
   const root = hierarchy<Node>({ name: 'solo' }, childrenOf)
   expect(root.height).toBe(0)
   expect(root.children).toBeNull()
-})
-
-test('sum aggregates leaf counts', () => {
-  const root = hierarchy(sample(), childrenOf)
-  sum(root, d => (d.children ? 0 : 1))
-  expect(root.value).toBe(3)
-  expect(root.children![1]!.value).toBe(2)
-})
-
-test('sort orders children in place', () => {
-  const root = hierarchy(sample(), childrenOf)
-  sort(root, (a, b) => (b.data.length ?? 0) - (a.data.length ?? 0))
-  expect(root.children!.map(c => c.data.name)).toEqual(['B', 'A'])
-  expect(root.children![0]!.children!.map(c => c.data.name)).toEqual(['D', 'C'])
 })
 
 test('leaves returns only terminal nodes', () => {

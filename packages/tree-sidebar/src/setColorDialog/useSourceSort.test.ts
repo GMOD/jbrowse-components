@@ -77,3 +77,25 @@ describe('sortRows', () => {
     expect(rows.map(r => r.name)).toEqual(before)
   })
 })
+
+describe('compareCells via sortRows', () => {
+  test('unset cells sort together, not under "undefined"', () => {
+    const rows = [
+      { name: 'a', group: 'zeta' },
+      { name: 'b' },
+      { name: 'c', group: 'alpha' },
+    ]
+    expect(sortRows(rows, 'group', 'asc').map(r => r.name)).toEqual([
+      'b',
+      'c',
+      'a',
+    ])
+  })
+
+  test('numeric columns sort by value, not lexically', () => {
+    const rows = [{ score: 10 }, { score: 2 }, { score: 100 }]
+    expect(sortRows(rows, 'score', 'asc').map(r => r.score)).toEqual([
+      2, 10, 100,
+    ])
+  })
+})

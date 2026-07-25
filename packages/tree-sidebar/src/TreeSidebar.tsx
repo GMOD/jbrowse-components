@@ -104,13 +104,17 @@ const TreeSidebar = observer(function TreeSidebar({
   function handleMouseMove(event: React.MouseEvent) {
     // while the subtree popover is open, freeze the highlight on the clicked
     // node rather than tracking the cursor
-    if (menuAnchor) {
-      return
+    if (!menuAnchor) {
+      const node = hitTestNode(event)
+      // only write on an actual change: every write walks the subtree for its
+      // leaf names and repaints the full view-width hover canvas, and mousemove
+      // fires many times within one node's hit box
+      if (node !== model.hoveredTreeNode?.node) {
+        model.setHoveredTreeNode(
+          node ? { node, descendantNames: getLeafNames(node) } : undefined,
+        )
+      }
     }
-    const node = hitTestNode(event)
-    model.setHoveredTreeNode(
-      node ? { node, descendantNames: getLeafNames(node) } : undefined,
-    )
   }
 
   function handleClick(event: React.MouseEvent) {

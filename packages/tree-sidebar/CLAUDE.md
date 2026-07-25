@@ -3,9 +3,26 @@
 ## Hand-written hierarchy layout (`src/hierarchy.ts`)
 
 `src/hierarchy.ts` is a small hand-written subset of what d3-hierarchy used to
-provide (`hierarchy`, `leaves`, `descendants`, `links`, `sum`, `sort`, and a
+provide (`hierarchy`, `leaves`, `descendants`, `links`, and a
 `clusterLayout`/`assign*Y` dendrogram layout). d3-hierarchy is pure ESM and
-breaks Jest, so it isn't used as an npm dependency — don't reintroduce it.
+breaks Jest, so it isn't used as an npm dependency — don't reintroduce it. Keep
+it to what the sidebar actually draws: `sum`/`sort` (and the `value` field they
+filled) were carried for years without a single reader.
+
+## The two `length` encodings
+
+Newick's `length` means an absolute merge height in hclust's `(A,B)1.5` form and
+an incremental branch length in phylo's `(A:0.1,B:0.2)` form, and the two need
+opposite layouts (`assignMergeHeightY` vs `assignCumulativeLengthY`). Anything
+that writes `length` must know which form it holds:
+
+- `parseNewick` treats a post-paren numeric as a length only when the string
+  contains no `:` at all (hclust's `toNewick` never emits one). In a phylo tree
+  that number is a bootstrap value, and reading it as a length dwarfs the real
+  branch lengths.
+- `pruneNewickToLeaves` only sums lengths when collapsing a unary node in the
+  incremental form. Summing merge heights invents a depth, and giving a bare
+  hclust leaf a `length` flips the whole tree onto the cumulative layout.
 
 ## `TreeDrawingModel` takes `effectiveRowHeight`, never a raw `rowHeight`
 

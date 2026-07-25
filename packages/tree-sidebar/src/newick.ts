@@ -25,6 +25,13 @@ const NUMERIC_TOKEN = /^-?\d+(\.\d+)?([eE][+-]?\d+)?$/
 export default function parseNewick(s: string): NewickNode {
   const ancestors: NewickNode[] = []
 
+  // `@gmod/hclust`'s `toNewick` never emits a `:`, so a colon anywhere means
+  // standard phylo Newick — where a numeric post-paren token is a bootstrap
+  // support value, not a merge height. Reading `(A:0.1,B:0.2)95` as length 95
+  // makes the phylogram sum support values into the branch distances, dwarfing
+  // the real lengths.
+  const hclustForm = !s.includes(':')
+
   let tree: NewickNode = {}
   // Consume whitespace around the delimiters rather than everywhere: leaf
   // labels carry meaningful spaces (variants' phased `"NA18536 HP0"`), and
@@ -58,10 +65,10 @@ export default function parseNewick(s: string): NewickNode {
           tree.length = Number.parseFloat(token)
         } else if (prev === ')') {
           // hclust serializes `(A,B)1.5` with the numeric height as the label;
-          // standard phylo Newick puts a name there. Disambiguate with a
-          // regex so tokens like `1.50` or `1e-3` (which fail a String(n)
-          // round-trip) still parse as length.
-          if (NUMERIC_TOKEN.test(token)) {
+          // standard phylo Newick puts a name (or a bootstrap value) there.
+          // Disambiguate with a regex so tokens like `1.50` or `1e-3` (which
+          // fail a String(n) round-trip) still parse as length.
+          if (hclustForm && NUMERIC_TOKEN.test(token)) {
             tree.length = Number.parseFloat(token)
           } else {
             tree.name = token

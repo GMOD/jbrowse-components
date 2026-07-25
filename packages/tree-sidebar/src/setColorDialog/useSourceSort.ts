@@ -9,10 +9,11 @@ export interface SortState {
   field: string | null
 }
 
-// Two-state (asc/desc) sort layered on MUI's tri-state onSortModelChange.
-// Clicking a new column starts ascending; clicking the same column flips
-// direction; MUI's third-click "clear" keeps rows sorted and flips direction
-// once more so the user never sees an unsorted intermediate state.
+// Two-state (asc/desc) sort. SourceGrid pins `sortModel` empty, so MUI re-emits
+// `asc` on every header click and its own tri-state never advances — direction
+// lives here: a new column starts ascending, the same column again flips. An
+// empty model (MUI's clear) keeps the field and flips too, so the user never
+// sees an unsorted intermediate state.
 export function nextSortState(
   prev: SortState,
   model: GridSortModel,
@@ -28,13 +29,18 @@ export function nextSortState(
 
 // Compare two cells: numerically when both parse as finite numbers (so a
 // numeric column like a score sorts 2 < 10, not "10" < "2"), else by locale
-// string order.
+// string order. An unset cell normalizes to '' — most row fields are optional,
+// and stringifying one through String(undefined) sorted it among values
+// starting with "u" instead of clustering the unset rows at one end. '' is also
+// what keeps `null` out of the numeric branch, where Number(null) is 0.
 function compareCells(a: unknown, b: unknown): number {
-  const na = Number(a)
-  const nb = Number(b)
+  const sa = a === undefined || a === null ? '' : getStr(a)
+  const sb = b === undefined || b === null ? '' : getStr(b)
+  const na = Number(sa)
+  const nb = Number(sb)
   const bothNumeric =
-    a !== '' && b !== '' && Number.isFinite(na) && Number.isFinite(nb)
-  return bothNumeric ? na - nb : getStr(a).localeCompare(getStr(b))
+    sa !== '' && sb !== '' && Number.isFinite(na) && Number.isFinite(nb)
+  return bothNumeric ? na - nb : sa.localeCompare(sb)
 }
 
 export function sortRows<S>(

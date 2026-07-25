@@ -21,6 +21,9 @@ export function treeBranchLengthMenuItem(
     type: 'checkbox',
     checked: self.showBranchLength,
     disabled: !self.showTree || !self.treeHasBranchLengths,
+    disabledHelpText: self.showTree
+      ? 'This tree has no branch lengths'
+      : 'Show the tree first',
     onClick: () => {
       self.setShowBranchLength(!self.showBranchLength)
     },

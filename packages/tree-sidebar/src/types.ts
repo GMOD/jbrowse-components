@@ -26,6 +26,7 @@ export interface TreeSidebarModel {
   showTree: boolean
   sources?: TreeSource[]
   subtreeFilter?: string[]
+  hoveredTreeNode?: HoveredTreeNode
   spatialIndex?: {
     index: Flatbush
     nodes: ClusterHierarchyNode[]

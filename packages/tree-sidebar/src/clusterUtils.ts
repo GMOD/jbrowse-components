@@ -1,4 +1,9 @@
-import { clusterLayout, hierarchy, leaves, sum } from './hierarchy.ts'
+import {
+  clusterLayout,
+  hasIncrementalBranchLengths,
+  hierarchy,
+  leaves,
+} from './hierarchy.ts'
 import parseNewick from './newick.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
@@ -51,35 +56,42 @@ function findSubtree<T extends ClusterNodeData>(
 // Kept separate from applySubtreeFilter so MST can cache them independently —
 // changing the subtree filter re-runs only the traversal, not the parser.
 export function buildTree(newick: string): HierarchyNode<ClusterNodeData> {
-  const data = parseNewick(newick)
-  const root = hierarchy<ClusterNodeData>(data, d => d.children)
-  sum(root, d => (d.children ? 0 : 1))
-  return root
+  return hierarchy<ClusterNodeData>(parseNewick(newick), d => d.children)
 }
 
 // Prune a Newick-shaped tree down to just the leaves in `keep`, preserving the
 // topology among them. Internal nodes left with a single child are collapsed
-// into that child (their branch length added on) so the result has no spurious
-// unary nodes. Returns undefined if no kept leaf is below `node`.
+// into that child so the result has no spurious unary nodes. Returns undefined
+// if no kept leaf is below `node`.
 //
 // Unlike `findSubtree` (which only matches a single monophyletic clade), this
 // works for any leaf set — e.g. a scattered hand-picked species selection — so
 // the rendered dendrogram always matches the visible rows rather than falling
 // back to the full tree.
+//
+// `incrementalLengths` says which of the two `length` encodings the tree uses
+// (see `hasIncrementalBranchLengths`). Only a phylo tree's incremental lengths
+// add up when a node collapses; an hclust node's `length` is an absolute merge
+// height, so summing it both invents a depth the child never had and — because
+// hclust leaves are bare — gives a leaf a `length`, which flips the whole tree
+// onto the cumulative phylogram layout.
 export function pruneNewickToLeaves(
   node: ClusterNodeData,
   keep: Set<string>,
+  incrementalLengths = true,
 ): ClusterNodeData | undefined {
   if (node.children?.length) {
     const children = node.children
-      .map(c => pruneNewickToLeaves(c, keep))
+      .map(c => pruneNewickToLeaves(c, keep, incrementalLengths))
       .filter((c): c is ClusterNodeData => c !== undefined)
     if (children.length === 0) {
       return undefined
     }
     if (children.length === 1) {
       const child = children[0]!
-      return { ...child, length: (child.length ?? 0) + (node.length ?? 0) }
+      return incrementalLengths
+        ? { ...child, length: (child.length ?? 0) + (node.length ?? 0) }
+        : child
     }
     return { ...node, children }
   }
@@ -103,13 +115,12 @@ export function applySubtreeFilter(
   if (monophyletic) {
     return monophyletic
   }
-  const pruned = pruneNewickToLeaves(root.data, filterSet)
-  if (!pruned) {
-    return root
-  }
-  const filtered = hierarchy<ClusterNodeData>(pruned, d => d.children)
-  sum(filtered, d => (d.children ? 0 : 1))
-  return filtered
+  const pruned = pruneNewickToLeaves(
+    root.data,
+    filterSet,
+    hasIncrementalBranchLengths(root),
+  )
+  return pruned ? hierarchy<ClusterNodeData>(pruned, d => d.children) : root
 }
 
 export function parseClusterTree(newick: string, subtreeFilter?: string[]) {

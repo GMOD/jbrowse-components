@@ -5,7 +5,7 @@ import {
   pruneNewickToLeaves,
   validateClusterOrder,
 } from './clusterUtils.ts'
-import { hierarchy, leaves } from './hierarchy.ts'
+import { clusterLayout, hierarchy, leaves } from './hierarchy.ts'
 
 import type { NewickNode } from './newick.ts'
 
@@ -150,4 +150,19 @@ test('validateClusterOrder rejects out-of-range, duplicate, and wrong-length', (
   expect(() => {
     validateClusterOrder([0, 1], 3)
   }).toThrow(/expected 3 entries/)
+})
+
+// hclust's `length` is an absolute merge height, so a collapsing unary node
+// must drop it rather than add it: summing invents a depth, and a bare hclust
+// leaf that gains a `length` flips the tree onto the cumulative phylogram
+// layout, stranding leaves mid-tree instead of flush against their row labels.
+test('pruneNewickToLeaves drops merge heights when collapsing a unary node', () => {
+  const root = parseClusterTree('((A,B)4,(C,D)1)5;', ['A', 'C'])
+  expect(root.data).toEqual({
+    length: 5,
+    children: [{ name: 'A' }, { name: 'C' }],
+  })
+  const laid = clusterLayout(root, 100, 80, true)
+  // both leaves stay flush at the leaf edge, as they were before the filter
+  expect(leaves(laid).map(l => l.y)).toEqual([80, 80])
 })

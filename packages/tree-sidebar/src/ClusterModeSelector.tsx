@@ -32,18 +32,17 @@ const ClusterModeSelector = observer(function ClusterModeSelector({
   return (
     <div>
       {children}
-      <RadioGroup>
+      <RadioGroup
+        value={value}
+        onChange={(_event, next) => {
+          onChange(next)
+        }}
+      >
         {Object.entries(modeDescriptions).map(([key, label]) => (
           <FormControlLabel
             key={key}
-            control={
-              <Radio
-                checked={value === key}
-                onChange={() => {
-                  onChange(key)
-                }}
-              />
-            }
+            value={key}
+            control={<Radio />}
             label={label}
           />
         ))}

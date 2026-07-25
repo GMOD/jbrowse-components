@@ -15,7 +15,6 @@ export interface HierarchyNode<T> {
   parent: HierarchyNode<T> | null
   depth: number
   height: number
-  value?: number
   x?: number
   y?: number
 }
@@ -57,40 +56,6 @@ export function hierarchy<T>(
   childrenAccessor: (d: T) => T[] | undefined | null,
 ): HierarchyNode<T> {
   return wrap(data, childrenAccessor, null, 0)
-}
-
-export function sum<T>(
-  node: HierarchyNode<T>,
-  valueFn: (d: T) => number,
-): HierarchyNode<T> {
-  function visit(n: HierarchyNode<T>): number {
-    let s = valueFn(n.data)
-    if (n.children) {
-      for (const child of n.children) {
-        s += visit(child)
-      }
-    }
-    n.value = s
-    return s
-  }
-  visit(node)
-  return node
-}
-
-export function sort<T>(
-  node: HierarchyNode<T>,
-  compareFn: (a: HierarchyNode<T>, b: HierarchyNode<T>) => number,
-): HierarchyNode<T> {
-  function visit(n: HierarchyNode<T>) {
-    if (n.children) {
-      n.children.sort(compareFn)
-      for (const child of n.children) {
-        visit(child)
-      }
-    }
-  }
-  visit(node)
-  return node
 }
 
 export function leaves<N extends { children: N[] | null }>(node: N): N[] {
@@ -150,7 +115,6 @@ function cloneHierarchy<T>(
     parent,
     depth: node.depth,
     height: node.height,
-    value: node.value,
   }
   if (node.children) {
     copy.children = node.children.map(child => cloneHierarchy(child, copy))
