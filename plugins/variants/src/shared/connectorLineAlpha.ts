@@ -20,7 +20,9 @@
 //   convert static/img/hprc2/mhc_clustered.png -crop 2400x1+0+404 +repage \
 //     -format '%[fx:int(255*mean)]' info:
 //
-// Target for that row is a light texture (~180-210), not a mass (~25).
+// At the value below that row measures ~155, and the individual lines and their
+// varying density are visible in the band — a texture, where 0.4 gave ~25 and no
+// structure at all. Judge the structure, not just the number.
 const INK_PER_PX = 0.17
 const MAX_ALPHA = 0.4
 
