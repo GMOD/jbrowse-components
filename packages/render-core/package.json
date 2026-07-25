@@ -33,6 +33,7 @@
     "./createRenderingBackend": "./src/createRenderingBackend.ts",
     "./displayPhase": "./src/displayPhase.ts",
     "./globalRenderingBackend": "./src/globalRenderingBackend.ts",
+    "./globalUploadSync": "./src/globalUploadSync.ts",
     "./gpuDevice": "./src/gpuDevice.ts",
     "./hal": "./src/hal/index.ts",
     "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",

@@ -81,22 +81,23 @@ startRenderingBackend(backend: RenderingBackend) {
       // Read plugin observables, push bytes to the GPU.
       // Re-fires on any observable change.
     },
-    render: b => {
-      const state = self.renderState
-      if (!state) return false              // renderState not ready
-      return b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
-      // renderBlocks answers "did real content reach the canvas"; forward it.
-      // On true the mixin calls markCanvasDrawn() → canvasDrawn flips true →
-      // isReady becomes true once isLoading also clears.
-      //
-      // Don't re-derive that answer here (`rpcDataMap.size === 0` and friends).
-      // Per ADR-009 the backend owns it: it holds the regions map, and a
-      // model-side predicate both duplicates it and drifts — the two displays
-      // that gated on nothing used to flip canvasDrawn over a blank canvas.
-      // Add a guard only for something the backend genuinely cannot see, and
-      // say what that is (alignments' zero-group grouped fetch, MAF's
-      // identity-plot frame — both in HISTORICAL.md).
-    },
+    // `renderState` is a plain resolved getter — never `undefined`. "The view
+    // isn't measured yet" is the mixins' `canRender` gate (see below), not a
+    // nullable render state.
+    //
+    // renderBlocks answers "did real content reach the canvas"; forward it. On
+    // true the mixin calls markCanvasDrawn() → canvasDrawn flips true → isReady
+    // becomes true once isLoading also clears.
+    //
+    // Don't re-derive that answer here (`rpcDataMap.size === 0` and friends).
+    // Per ADR-009 the backend owns it: it holds the regions map, and a
+    // model-side predicate both duplicates it and drifts — the two displays
+    // that gated on nothing used to flip canvasDrawn over a blank canvas.
+    // Add a guard only for something the backend genuinely cannot see, and say
+    // what that is (alignments' zero-group grouped fetch, MAF's "no fetch has
+    // landed yet" first-paint gate — see HISTORICAL.md).
+    render: b =>
+      b.renderBlocks(self.renderBlocks, self.rpcDataMap, self.renderState),
   })
 }
 ```
@@ -111,6 +112,14 @@ RenderLifecycleMixin
     renderTick: number            bumped by renderNow() and after every upload
     autorunsInstalled: boolean    guards attachRenderingBackend (idempotent)
     renderError: unknown          render-backend init / context-loss error; single source for the 'renderError' terminal phase
+  .views
+    canRender: boolean            overridable precondition, default true; while false BOTH autoruns skip their
+                                  callback. The LGV mixins override it with view.initialized — before the view is
+                                  measured its geometry throws by design (view.width, so visibleRegions /
+                                  trackWidthPx too), and the render autorun routes a throw to renderError, i.e.
+                                  "not measured yet" would surface as the GPU error banner. Gated once there, so a
+                                  display's renderState stays a resolved getter and its render callback gates only
+                                  on its own data ("no fetch has landed") — never on view geometry.
   .actions
     markCanvasDrawn()             idempotent flip to true
     resetCanvasDrawn()            flip to false (called by clearAllRpcData)
@@ -121,10 +130,12 @@ RenderLifecycleMixin
 
 MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
+    canRender: boolean            view.initialized (see above); GlobalDataDisplayMixin overrides it identically
     isReady: boolean              canvasDrawn && !isLoading
     viewportWithinLoadedData      every visible block ⊆ a loaded region
     displayPhase                  'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
-                                  computeDisplayPhase(self, () => !isReady || !viewportWithinLoadedData)
+                                  computeDisplayPhase(self, () => !isReady || !viewportWithinLoadedData || fetchCanceled)
+                                  (fetchCanceled keeps the overlay — and its retry affordance — up after a user cancel)
 ```
 
 Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase ===
@@ -479,9 +490,11 @@ by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
 `LinearMultiRowFeatureDisplay`. It does **not** apply to the canvas plugin's other
 display, `LinearBasicDisplay`, whose whole-map Y-layout keeps it on the
 computed-map form described below. (The canvas plugin's two displays sit on
-opposite upload strategies, so they're always spelled out where they diverge. The
-multi-variant displays are per-region streamed too, but hand-roll their upload
-loop.) Each plugin's `startRenderingBackend` collapses to a single call:
+opposite upload strategies, so they're always spelled out where they diverge.
+`LinearMultiSampleVariantDisplay` is per-region too but derives its regions map
+from a single `cellData` computed, so per-key autoruns can't help it — it takes
+the same `createRegionUploadSync` reference-diff canvas does.) Each plugin's
+`startRenderingBackend` collapses to a single call:
 
 ```ts
 startRenderingBackend(backend: XxxRenderingBackend) {
@@ -490,12 +503,12 @@ startRenderingBackend(backend: XxxRenderingBackend) {
     self.rpcDataMap,
     backend,
     data => encode(data, self.gpuProps()),       // optional encode step
-    (b, encoded) => {                             // render callback
-      const state = self.xxxRenderState
-      if (!state) return false
-      b.renderBlocks(self.renderBlocks, /* rpcDataMap or `encoded` */, state)
-      return true
-    },
+    (b, encoded) =>                               // render callback
+      b.renderBlocks(
+        self.renderBlocks,
+        /* rpcDataMap or `encoded` */,
+        self.renderState,
+      ),
   )
 }
 ```
@@ -525,6 +538,54 @@ coupling is load-bearing (collapsed-intron views split one chromosome into many
 displayed regions, and a long gene must hold the same Y row in each) and is why
 layout runs on the main thread — row assignment needs the union of all visible
 regions' features.
+
+The whole-map form still gets an incremental upload from
+`createRegionUploadSync` (`@jbrowse/render-core/regionUploadSync`): it diffs the
+computed map against the last upload **by reference**, so only regions whose data
+object actually changed re-upload, and it owns the prune plus the re-upload-all on
+backend swap (context-loss recovery hands over empty GPU buffers). Canvas and
+`LinearMultiSampleVariantDisplay` both use it — don't hand-roll the loop with a
+local `active[]`, which silently skips those two behaviors.
+
+#### Monolithic: independently-keyed upload slots (`createGlobalUploadSync`)
+
+A monolithic display has no region map to diff, but it can still have **more than
+one upload slot** — and the mixin gives it exactly one upload autorun, so every
+observable any slot reads re-fires all of them. That's harmless when the slots
+share a source: LD derives both its matrix and its color ramp from `rpcData`, so
+one arrival legitimately re-pushes both. It bites when the inputs are
+independent — HiC's palette is a config slot while its contact matrix comes from
+the RPC, so a palette flip re-uploaded the whole matrix and every fetch rebuilt
+the ramp texture.
+
+`createGlobalUploadSync` (`@jbrowse/render-core/globalUploadSync`) is the
+monolithic counterpart to `createRegionUploadSync`: name each slot, and it skips
+the upload while that slot's input is reference-identical to its last, dropping
+every memo on a backend swap for the same context-loss reason.
+
+```ts
+startRenderingBackend(backend: HicRenderingBackend) {
+  // outside attachRenderingBackend — the mixin captures the callbacks from the
+  // first call only, so the closure has to outlive them
+  const syncUpload = createGlobalUploadSync<HicRenderingBackend>()
+  self.attachRenderingBackend(backend, {
+    upload: b => {
+      syncUpload(b, 'data', self.rpcData, (bb, data) => {
+        if (data) { bb.uploadData(data) }
+      })
+      syncUpload(b, 'colorRamp', self.colorScheme, (bb, scheme) => {
+        bb.uploadColorRamp(generateColorRamp(scheme))
+      })
+    },
+    render: …,
+  })
+}
+```
+
+Read every slot's input **unconditionally**, as above — a read moved behind an
+`if` drops out of the autorun's dependency set on the runs that skip it, the same
+hazard `installGlobalFetchAutorun` documents for its trigger list. Let the upload
+callback handle the empty case. A display with one slot (LD) doesn't need this.
 
 `LinearBasicDisplay` recovers O(N) anyway via `createIncrementalLayout`
 (`plugins/canvas/src/LinearBasicDisplay/layout.ts`), which memoizes the pure

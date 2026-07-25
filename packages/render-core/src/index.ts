@@ -52,10 +52,11 @@ export {
 } from './globalRenderingBackend.ts'
 export type { GlobalRenderingBackend } from './globalRenderingBackend.ts'
 
-// --- Per-region upload helpers ---
+// --- Upload helpers ---
 export { installPerRegionLifecycle } from './installPerRegionLifecycle.ts'
 export type { PerRegionRender } from './installPerRegionLifecycle.ts'
 export { createRegionUploadSync } from './regionUploadSync.ts'
+export { createGlobalUploadSync } from './globalUploadSync.ts'
 
 // --- Render blocks + display phase ---
 export { buildRenderBlocks } from './renderBlock.ts'

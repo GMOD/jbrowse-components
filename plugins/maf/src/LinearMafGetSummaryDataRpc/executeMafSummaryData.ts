@@ -30,7 +30,7 @@ export async function executeMafSummaryData({
   pluginManager: PluginManager
   args: LinearMafGetSummaryDataArgs
 }): Promise<LinearMafGetSummaryDataResult> {
-  const { regions, adapterConfig, sessionId, stopToken } = args
+  const { regions, adapterConfig, sessionId, stopToken, statusCallback } = args
   const region = regions[0]!
   const { adapter, samples, treeNewick } = await loadMafSamplesAdapter(
     pluginManager,
@@ -39,7 +39,10 @@ export async function executeMafSummaryData({
   )
 
   const records: MafSummaryRecord[] = []
-  const obs = adapter.getSummaryFeatures?.(region, { stopToken })
+  const obs = adapter.getSummaryFeatures?.(region, {
+    stopToken,
+    statusCallback,
+  })
   if (obs) {
     await subscribeToObservable(obs, record => {
       records.push(record)

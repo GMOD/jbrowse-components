@@ -20,7 +20,7 @@ export {
 } from './autoscale.ts'
 export type { Dataset, FeatureArrays, ScoreStats } from './autoscale.ts'
 
-export const YSCALEBAR_LABEL_OFFSET = 5
+export { YSCALEBAR_LABEL_OFFSET } from './constants.ts'
 
 export { computeYTicks } from './computeYTicks.ts'
 

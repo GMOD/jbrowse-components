@@ -55,7 +55,7 @@ export type MafSamplesAdapter = BaseFeatureDataAdapter & {
   getSamples: () => Promise<MafSamplesResult>
   getSummaryFeatures?: (
     region: Region,
-    opts?: { stopToken?: StopToken },
+    opts?: BaseOptions,
   ) => Observable<MafSummaryRecord>
 }
 

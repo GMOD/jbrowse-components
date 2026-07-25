@@ -1,10 +1,11 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { callEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
@@ -17,6 +18,7 @@ interface MafFetchSelf extends IAnyStateTreeNode {
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
+  makeRegionStatusCallback: (key: number) => (status: RpcStatus) => void
   setRpcData: (regionIndex: number, data: MafRegionData) => void
   setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
   setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void
@@ -58,13 +60,21 @@ export function pickSamplesResult<R extends { samples: Sample[] }>(
  * The RPC payload carries no color/style settings — worker output is purely
  * data-dependent and the main thread encodes from it plus `gpuProps()`, so
  * toggling colors/theme never refetches.
+ *
+ * `call` receives the region's `displayedRegionIndex` so it can key its
+ * `statusCallback` off it — the parallel per-region fetches then aggregate into
+ * one progress bar instead of clobbering each other.
  */
 async function fetchMafRegions<
   R extends { samples: Sample[]; treeNewick: string | undefined },
 >(
   self: MafFetchSelf,
   needed: Needed,
-  call: (region: Region, ctx: FetchContext) => Promise<R>,
+  call: (
+    region: Region,
+    ctx: FetchContext,
+    displayedRegionIndex: number,
+  ) => Promise<R>,
   commit: (results: { displayedRegionIndex: number; result: R }[]) => void,
 ) {
   await self.fetchRegions(needed, async (ctx: FetchContext) => {
@@ -72,14 +82,12 @@ async function fetchMafRegions<
     // stop-token-guarded pass as the main data so the two share staleness +
     // loadedRegions book-keeping; the two RPCs run concurrently.
     const [results] = await Promise.all([
-      Promise.all(
-        needed.map(async ({ region, displayedRegionIndex }) => ({
-          displayedRegionIndex,
-          result: await call(region, ctx),
-        })),
-      ),
+      callEachRegion(needed, ctx, call),
       fetchAnnotationData(self, needed, ctx),
     ])
+    // One guard around the whole batch, not per region as in `fetchEachRegion`:
+    // `setSamples` is a cross-region decision over `results`, so a partial
+    // commit would publish a sample set derived from a superseded viewport.
     if (ctx.isStale()) {
       return
     }
@@ -116,21 +124,16 @@ async function fetchAnnotationData(
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   try {
-    const results = await Promise.all(
-      needed.map(async ({ region, displayedRegionIndex }) => ({
-        displayedRegionIndex,
-        records: (
-          await rpcManager.call(sessionId, 'LinearMafGetAnnotationData', {
-            adapterConfig,
-            regions: [region],
-            stopToken: ctx.stopToken,
-          })
-        ).records,
-      })),
+    const results = await callEachRegion(needed, ctx, region =>
+      rpcManager.call(sessionId, 'LinearMafGetAnnotationData', {
+        adapterConfig,
+        regions: [region],
+        stopToken: ctx.stopToken,
+      }),
     )
     if (!ctx.isStale()) {
-      for (const { displayedRegionIndex, records } of results) {
-        self.setFramesData(displayedRegionIndex, records)
+      for (const { displayedRegionIndex, result } of results) {
+        self.setFramesData(displayedRegionIndex, result.records)
       }
     }
   } catch (e) {
@@ -146,13 +149,14 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
   return fetchMafRegions(
     self,
     needed,
-    (region, ctx) =>
+    (region, ctx, displayedRegionIndex) =>
       rpcManager.call(sessionId, 'LinearMafGetAlignmentData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
         // Display row order; the worker keys rowIndex off it (see rpcProps).
         orderedSampleIds: self.orderedSampleIds,
         stopToken: ctx.stopToken,
+        statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
       }),
     results => {
       for (const { displayedRegionIndex, result } of results) {
@@ -173,11 +177,12 @@ export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
   return fetchMafRegions(
     self,
     needed,
-    (region, ctx) =>
+    (region, ctx, displayedRegionIndex) =>
       rpcManager.call(sessionId, 'LinearMafGetSummaryData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
         stopToken: ctx.stopToken,
+        statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
       }),
     results => {
       self.clearAlignmentData()

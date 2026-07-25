@@ -45,11 +45,17 @@ export interface WiggleFamilySvgLegendInfo {
   ticks: YScaleTicks | undefined
 }
 
-// Shared SVG-export scaffold for the wiggle-family displays (single/multi
-// wiggle, GWAS Manhattan). Owns the parts that must stay pixel-aligned with the
-// on-screen canvas — the SvgChrome frame, the clip rect + YSCALEBAR_LABEL_OFFSET
-// translate, the PaintLayer sizing, and the cross-hatch overlay. The caller
-// supplies only its paint (draws the data) and an optional legend/axis tree.
+// Shared SVG-export scaffold for the single-plot wiggle-family displays
+// (LinearWiggleDisplay, GWAS Manhattan). Owns the parts that must stay
+// pixel-aligned with the on-screen canvas — the SvgChrome frame, the clip rect +
+// YSCALEBAR_LABEL_OFFSET translate, the PaintLayer sizing, and the cross-hatch
+// overlay. The caller supplies only its paint (draws the data) and an optional
+// legend/axis tree.
+//
+// MultiLinearWiggleDisplay deliberately does NOT use this: it stacks rows
+// edge-to-edge over the full height with no YSCALEBAR_LABEL_OFFSET inset (see
+// its `renderState`), so it keeps its own scaffold. Don't "unify" them without
+// first parameterizing the inset.
 export async function renderWiggleFamilySvg({
   model,
   opts,

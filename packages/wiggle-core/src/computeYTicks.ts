@@ -1,10 +1,7 @@
+import { YSCALEBAR_LABEL_OFFSET } from './constants.ts'
 import { getScale } from './scale.ts'
 
 import type { YScaleTicks } from './index.ts'
-
-// kept in sync with the export in index.ts — duplicated here to avoid a
-// circular import (index.ts re-exports computeYTicks).
-const YSCALEBAR_LABEL_OFFSET = 5
 
 // Builds Y-axis tick positions for a wiggle-family display: tick values come
 // from d3's scale.ticks(4) at normal heights, or fall back to the domain

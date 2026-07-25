@@ -158,6 +158,16 @@ documents only what bites when editing _this package_.
 - **Renderers stay stateless.** No per-region `Map` on a renderer class —
   delegate buffer lifecycle to `hal.pruneRegions(active)` and read per-region
   data from the model's map passed into `renderBlocks(blocks, regions, state)`.
+- **Upload memos are helpers, not hand-rolled `let`s.** The mixin gives a
+  display one upload autorun, so every observable any upload reads re-fires all
+  of them. Per-region maps diff through `createRegionUploadSync`; a monolithic
+  display with **independently-keyed** slots (HiC: RPC matrix + config palette)
+  diffs through `createGlobalUploadSync`. Both drop their memos on a backend
+  swap, which is the part a hand-rolled version forgets — context-loss recovery
+  hands back a backend with empty GPU buffers. Create either _outside_ the
+  `attachRenderingBackend` call (it captures callbacks from the first call
+  only), and keep every input read unconditional so none drops out of the
+  dependency set. A display whose slots share one source (LD) needs neither.
 - **Multi-pass renderers bracket `sync()` with `hal.beginUpload()` /
   `hal.endUpload()`.** Between them every `uploadBuffer` is recorded;
   `endUpload` destroys any pass buffer _not_ rewritten — so a pass whose data

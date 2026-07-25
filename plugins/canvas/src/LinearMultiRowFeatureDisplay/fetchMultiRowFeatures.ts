@@ -5,7 +5,7 @@ import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   FetchContext,
@@ -24,6 +24,7 @@ interface FetchSelf extends IAnyStateTreeNode {
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
+  makeRegionStatusCallback: (key: number) => (status: RpcStatus) => void
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
   commitGateMeasurements: (measurements: RegionGateMeasurement[]) => void
 }
@@ -39,12 +40,14 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const bpPerPx = (getContainingView(self) as LinearGenomeViewModel).bpPerPx
   const byteLimit = self.resolvedByteLimit()
   const maxFeatureDensity = self.maxFeatureDensity
-  const widthByIndex = new Map(
-    needed.map(n => [n.displayedRegionIndex, n.region.end - n.region.start]),
-  )
-  const gateMeasurements: RegionGateMeasurement[] = []
+  // Per-region gate measurements, keyed by the displayedRegionIndex onResult
+  // reports back. A region whose fetch was skipped as stale never lands here.
+  const gateResults = new Map<
+    number,
+    { bytes?: number; featureCount?: number }
+  >()
   return fetchEachRegion(self, needed, {
-    call: (region, ctx) =>
+    call: (region, ctx, displayedRegionIndex) =>
       rpcManager.call(sessionId, 'MultiRowGetFeatures', {
         adapterConfig: self.adapterConfig,
         region,
@@ -54,20 +57,33 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
         partitionField: self.partitionField,
         colorConfig: self.colorConfig,
         stopToken: ctx.stopToken,
+        // keyed by region so the parallel per-region fetches aggregate into one
+        // progress bar instead of clobbering each other
+        statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
       }),
     onResult: (idx, result) => {
-      gateMeasurements.push({
-        displayedRegionIndex: idx,
-        regionWidthBp: widthByIndex.get(idx) ?? 0,
-        bytes: result.bytes,
-        featureCount: result.featureCount,
-      })
+      gateResults.set(idx, result)
       if (!('regionTooLarge' in result)) {
         self.setRpcData(idx, result)
       }
     },
+    // Assembled from `needed` — which already carries each region's span — so
+    // the width pairs with the result by construction instead of through a
+    // second lookup that could miss.
     onComplete: () => {
-      self.commitGateMeasurements(gateMeasurements)
+      const measurements: RegionGateMeasurement[] = []
+      for (const { region, displayedRegionIndex } of needed) {
+        const res = gateResults.get(displayedRegionIndex)
+        if (res) {
+          measurements.push({
+            displayedRegionIndex,
+            regionWidthBp: region.end - region.start,
+            bytes: res.bytes,
+            featureCount: res.featureCount,
+          })
+        }
+      }
+      self.commitGateMeasurements(measurements)
     },
   })
 }

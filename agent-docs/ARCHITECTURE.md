@@ -224,9 +224,13 @@ autorun and wipe the flag before any viewport change.
 
 Variants are the exception to per-region granularity:
 `MultiSampleVariantGetCellData` returns one batched payload covering all visible
-regions, so variants' `fetchNeeded` expands `needed` to all
-`bufferedVisibleRegions` and marks them all loaded together when the work
-callback returns.
+regions, so variants' `fetchNeeded` ignores `needed` and derives its own region
+set (`fetchRegionsForMode`), marking them all loaded together when the work
+callback returns. Which set depends on the mode: regular mode takes
+`bufferedVisibleRegions` (off-screen variants simply clip), matrix mode takes
+`visibleRegions` only — its columns lay out by feature *index* across the visible
+width, so a buffered feature would be crammed into the viewport and draw a
+connector to an off-screen position.
 
 ### The region-too-large gate (summary)
 
@@ -240,7 +244,8 @@ its byte check into the feature-fetch RPC instead of a separate pre-flight
 estimate, and adds the density axis, via `CanvasFeatureGateMixin`
 (`plugins/canvas/src/shared/`), which both canvas feature displays compose; the
 shared verdict/threshold/banner-text primitives live in
-`shared/regionTooLargeUtils.ts` so the two paths can't drift.
+`plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts` so the two paths
+can't drift.
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
 shared decision primitives: [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).
@@ -441,9 +446,10 @@ per-region display with no settings-driven refetch (e.g.
 `rpcProps()`; `installGlobalFetchAutorun` reads it directly.
 
 `gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle,
-multi-wiggle, MAF, HiC (and GC-content, which inherits wiggle's wholesale).
-Multi-LGV synteny fills the same role without the method: its `computedColors`
-getter is the re-upload-without-refetch half of the split. Canvas's worker
+multi-wiggle and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
+multi-LGV synteny fill the same role without the method: HiC's upload callback
+reads `self.colorScheme` straight into `generateColorRamp`, and synteny's
+`computedColors` getter is its re-upload-without-refetch half. Canvas's worker
 pre-builds the buffer, so canvas has only `rpcProps()`. This splits refetch from re-upload: wiggle color change →
 re-encode only; `bicolorPivot` change → worker output differs → `rpcProps()` →
 refetch.
@@ -487,8 +493,18 @@ under zoom. The exceptions are for zoom-dependent *content*, not coords:
   `shouldRenderPeptideBackground`'s discrete threshold. `laidOutDataMap` uses
   `coarseBpPerPx` (debounced 500ms) so Y-row packing doesn't recompute on every
   animation frame during smooth zoom.
+- **MAF**: zoom picks *which fetch runs*, not a resolution — zoomed out with a
+  configured summary adapter it pulls cheap per-species summary rows, zoomed in
+  the full alignment. Crossing that threshold inside an already-loaded region
+  wouldn't move the region bounds, so `isCacheValid` keys on which map holds the
+  region (`summaryDataMap` vs `rpcDataMap`).
+- **Multi-sample variant matrix**: columns lay out by feature index across the
+  visible width, so which features show is a function of the current zoom even
+  when the viewport stays spatially inside loaded data. Strict `bpPerPx`
+  equality, same rule as wiggle. The *regular* variant display draws each variant
+  at its genomic position and keeps the default.
 
-Those are the only two *zoom*-dependent overrides. Other displays either leave
+Those are the only four *zoom*-dependent overrides. Other displays either leave
 the default `() => true` or override on presence alone (`LinearMultiRowFeatureDisplay`
 returns `rpcDataMap.has(idx)`, so a too-large region — marked loaded but holding
 no data — refetches the moment the gate releases).

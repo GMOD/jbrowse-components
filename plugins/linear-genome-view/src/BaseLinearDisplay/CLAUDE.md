@@ -116,6 +116,28 @@ populated before the backing data exists. `FetchVisibleRegions` checks coverage
 against `view.visibleRegions` but requests `view.bufferedVisibleRegions` (wider,
 for smooth scrolling), so subsequent pans within the buffer require no re-fetch.
 
+### Fan-out helpers — don't hand-roll the fetch loop
+
+Three exported helpers cover the shapes a `fetchNeeded` override needs. All keep
+the literal RPC method name at the call site, so its typed args/return survive.
+
+| Helper                                | Shape                                                                               | Staleness guard                                | Users                                                                                                                                |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `fetchEachRegion(self, needed, opts)` | one RPC per region, in parallel, wrapped in `fetchRegions`                          | **per region** — an early result still commits | manhattan, multi-row features                                                                                                        |
+| `fetchAllRegions(self, needed, opts)` | one batched RPC for all regions, results aligned to input order                     | one guard around the batch                     | wiggle, multi-wiggle (BigWig coalesces adjacent on-disk blocks across region boundaries, which the per-region fan-out can't exploit) |
+| `callEachRegion(needed, ctx, call)`   | the fan-out **only** — returns `{displayedRegionIndex, result}[]` in `needed` order | none; the caller owns it                       | MAF                                                                                                                                  |
+
+`callEachRegion` is for a display that must run something _else_ under the same
+stop token, or make a cross-region decision before committing — MAF does both: a
+concurrent CDS-frame annotation fetch, then `pickSamplesResult` over the whole
+array (so it guards once around the batch rather than per region, since a
+partial commit would publish a sample set derived from a superseded viewport).
+Use it inside a `fetchRegions` work callback you already own. Reach for
+`fetchEachRegion` unless you need one of those two things.
+
+Forgetting a `ctx.isStale()` guard is a stale-data write, not just a wasted
+render, which is why the first two own it rather than leaving it to call sites.
+
 ### `clearAllRpcData` vs `invalidateLoadedRegions`
 
 `clearAllRpcData` — full reset: cancels fetch, clears error, loadedRegions,
