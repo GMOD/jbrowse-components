@@ -7,6 +7,7 @@ import {
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
+  hasNamedGroups,
   orderedGroups,
 } from './groupedDataMaps.ts'
 
@@ -105,6 +106,22 @@ test('orderedGroups keeps untagged last even when it is a region’s only group'
 
 test('orderedGroups is empty for an empty fetch', () => {
   expect(orderedGroups(new Map())).toEqual([])
+})
+
+// The labels gate reads the sections the worker actually emitted, because the
+// `groupBy` setting can be set while the fetch is ungrouped.
+test('hasNamedGroups is false for an ungrouped or degraded fetch', () => {
+  // ungrouped: the worker's singleSection, keyed '' with no label
+  expect(hasNamedGroups([{ key: '', label: '' }])).toBe(false)
+  // chain mode + a per-read dimension: groupBy stays set, but groupByForMode
+  // degrades the partition to that same unnamed single section
+  expect(hasNamedGroups([])).toBe(false)
+})
+
+test('hasNamedGroups is true whenever a section carries a name', () => {
+  expect(hasNamedGroups([{ key: '+', label: 'Forward strand' }])).toBe(true)
+  // a catch-all bucket is still a named section — every dimension names its own
+  expect(hasNamedGroups([{ key: '', label: 'HP: none' }])).toBe(true)
 })
 
 // Closed-loop cross-region proof: run the *real* worker per-region partition

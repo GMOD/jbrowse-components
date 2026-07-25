@@ -167,13 +167,24 @@ export function compareGroupKeys(a: string, b: string) {
 // leave the main thread's cross-region union above MAX_GROUPS when regions expose
 // wildly different value sets, but it bounds the per-group region-width cost that
 // actually blows up.
+//
+// The "untagged"/"unknown" group is held out of the merge and re-pinned ahead of
+// the overflow bucket. `groupKeyRank` sorts it second-to-last precisely so it
+// stays a named section — reads *lacking* the grouping tag are a distinct answer
+// users look for, not one arbitrary value among the merged tail — and since it
+// sorts into that tail, a plain splice would bury it under "N more values".
 function capGroups(groups: FeatureGroup[]) {
-  const overflow = groups.splice(MAX_GROUPS - 1)
+  const untagged = groups.at(-1)?.key === '' ? groups.pop() : undefined
+  const kept = untagged ? MAX_GROUPS - 2 : MAX_GROUPS - 1
+  const overflow = groups.splice(kept)
   groups.push({
     key: OVERFLOW_GROUP_KEY,
     label: `${overflow.length} more values`,
     features: overflow.flatMap(g => g.features),
   })
+  if (untagged) {
+    groups.splice(-1, 0, untagged)
+  }
   return groups
 }
 

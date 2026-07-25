@@ -125,6 +125,21 @@ export interface GroupId {
 // region (e.g. a chromosome with only reverse-strand reads) would then sort
 // ahead of one it should follow — and an untagged group could escape last —
 // purely from fetch layout. Sorting the merged set restores the intended order.
+// Whether the fetch actually produced NAMED sections, i.e. whether to draw the
+// section labels + dividers. Deliberately reads the data, not the `groupBy`
+// setting: an ungrouped fetch is one group keyed '' with an empty label, and chain
+// mode with a per-read dimension degrades to exactly that in the worker (see
+// `groupByForMode`) while `groupBy` stays set — so keying off the setting labelled
+// that degraded single section "ungrouped". Every real dimension names even its
+// catch-all bucket ('HP: none', 'No orientation', 'MAPQ unavailable'), so a
+// non-empty label is the reliable signal that grouping is in effect.
+//
+// Distinct from the model's `isGrouped` (>1 section), which is about the scroll
+// model: grouping that yields a single section still wants its label.
+export function hasNamedGroups(order: readonly GroupId[]) {
+  return order.some(g => g.label !== '')
+}
+
 export function orderedGroups(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
 ): GroupId[] {

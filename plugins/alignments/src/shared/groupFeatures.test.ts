@@ -268,11 +268,37 @@ test('exactly MAX_GROUPS values needs no overflow section', () => {
   expect(groups.map(g => g.key)).not.toContain(OVERFLOW_GROUP_KEY)
 })
 
-test('the overflow bucket sorts after even the untagged group', () => {
+// Reads *lacking* the grouping tag are a distinct answer, not one arbitrary value
+// among the merged tail — so the cap holds the untagged group out of the merge and
+// re-pins it just ahead of the overflow bucket. It sorts into the tail
+// (groupKeyRank), so a plain splice would have buried it under "N more values".
+test('the untagged group survives the cap, pinned just ahead of the overflow', () => {
   // one untagged read plus enough tagged values to trip the cap
   const features = [feat('none', {}), ...umiFeatures(MAX_GROUPS + 5)]
   const groups = partitionFeatures(features, { type: 'tag', tag: 'RX' })
+  expect(groups).toHaveLength(MAX_GROUPS)
   expect(groups.at(-1)!.key).toBe(OVERFLOW_GROUP_KEY)
+  const untagged = groups.at(-2)!
+  expect(untagged.key).toBe('')
+  expect(untagged.label).toBe('RX: none')
+  expect(untagged.features.map(f => f.id())).toEqual(['none'])
+  // holding it out costs one named slot, and the merged tail grows by one to match
+  expect(groups.at(-1)!.label).toBe('7 more values')
+  expect(groups.flatMap(g => g.features)).toHaveLength(MAX_GROUPS + 6)
+})
+
+// Reads lacking the grouping tag are their own answer, so the cap must not bury
+// them in "N more values" just because '' sorts into the merged tail.
+test('the untagged group survives the cap, pinned ahead of the overflow', () => {
+  const features = [feat('none', {}), ...umiFeatures(MAX_GROUPS + 5)]
+  const groups = partitionFeatures(features, { type: 'tag', tag: 'RX' })
+  expect(groups).toHaveLength(MAX_GROUPS)
+  expect(groups.map(g => g.key).slice(-2)).toEqual(['', OVERFLOW_GROUP_KEY])
+  expect(groups.at(-2)!.features.map(f => f.id())).toEqual(['none'])
+  // still no reads dropped, and the overflow absorbs the groups the untagged
+  // section displaced
+  expect(groups.flatMap(g => g.features)).toHaveLength(MAX_GROUPS + 6)
+  expect(groups.at(-1)!.features).toHaveLength(7)
 })
 
 test('partitionChains caps groups too, keeping each chain whole', () => {

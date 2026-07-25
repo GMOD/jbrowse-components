@@ -82,6 +82,7 @@ import {
   buildRawDataByGroup,
   buildReadIdIndexMap,
   eachGroupData,
+  hasNamedGroups,
   orderedGroups,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
@@ -1682,10 +1683,11 @@ export default function stateModelFactory(
          * collapsible — otherwise it reads as an ungrouped track with mysterious
          * blank space above it. `isGrouped` stays about the scroll model (>1
          * section scrolls coverage with its section), which one section doesn't
-         * change.
+         * change. Reads the fetched sections rather than `groupBy` — see
+         * `hasNamedGroups` for why the setting is the wrong signal.
          */
         get showsGroupLabels() {
-          return self.groupBy !== undefined && self.groupOrder.length > 0
+          return hasNamedGroups(self.groupOrder)
         },
 
         /**

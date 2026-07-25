@@ -58,15 +58,18 @@ secondary.
 **Group count is capped at `MAX_GROUPS`** (`shared/groupFeatures.ts`). The spine
 runs per group, and each group's `runCoveragePipeline` allocates per-bp depth
 arrays sized to the whole region and then uploads its own per-bp GPU coverage
-buffer — the buffer that already approaches the device limit for a *single*
+buffer — the buffer that already approaches the device limit for a _single_
 section at chromosome scale. So grouping by a high-cardinality tag (a UMI-style
 `RX`/`MI`, a per-read `NM`) would pay that region-width cost once per distinct
 value. Groups past the cap merge into one `OVERFLOW_GROUP_KEY` section labelled
 "N more values", chosen in sorted key order so the survivors are a deterministic
 function of the key set rather than of per-region read counts. No reads are
-dropped. The cap is per worker call, so a many-region view whose regions expose
-disjoint value sets can still union above it on the main thread — bounded, but not
-capped there.
+dropped. The `''` "untagged"/"unknown" group is held out of that merge and
+re-pinned just ahead of the overflow section — reads _lacking_ the grouping tag
+are a distinct answer users look for, and since `''` sorts into the merged tail
+(`groupKeyRank`) a plain splice would bury it under "N more values". The cap is
+per worker call, so a many-region view whose regions expose disjoint value sets
+can still union above it on the main thread — bounded, but not capped there.
 
 Chain mode therefore only allows **chain-consistent** dimensions — ones where
 every read of a chain yields the same key (`tag`, `firstOfPairStrand`,
