@@ -60,15 +60,6 @@ looking at, rather than framing on the whole block's endpoints.
 track drawn as ribbons between the panels. Set the ribbon coloring to **Strand**
 from the palette button in the synteny track header.
 
-This is the payoff: _TNNT3_ is the locus from Fig 5C of the T2T human variation
-paper. Called against GRCh38 the region reads as a 24 kb inversion plus a 22 kb
-deletion that ablates _LINC01150_ in every individual; against T2T-CHM13 that
-same 22 kb is intact, just sitting on the other side of _TNNT3_ in the opposite
-orientation. Colored by strand, that segment is the one off-color ribbon in the
-view.
-
-<Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand. LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the purple ribbon is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
-
 ## Two settings worth changing
 
 Both live on the synteny view's **View options** button:
@@ -81,6 +72,16 @@ Both live on the synteny view's **View options** button:
   coloring on, that keeps color meaning only one thing.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels, where the indels drop out to white and the reverse-strand segment is a single blue sweep crossing the forward-strand pink." />
+
+## The rearrangement
+
+_TNNT3_ is the locus from Fig 5C of the T2T human variation paper. Called
+against GRCh38 the region reads as a 24 kb inversion plus a 22 kb deletion that
+ablates _LINC01150_ in every individual; against T2T-CHM13 that same 22 kb is
+intact, just sitting on the other side of _TNNT3_ in the opposite orientation.
+Colored by strand, that segment is the one off-color ribbon in the view.
+
+<Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand with curved ribbons and transparent indels. LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the purple ribbon is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
 ## Trying other pairs
 

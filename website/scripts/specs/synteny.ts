@@ -599,11 +599,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // ablating LINC01150 in every individual; against T2T-CHM13 the same 22 kb is
   // simply inversely transposed to the other side of TNNT3. colorBy 'strand'
   // paints that flipped segment against the collinear ribbons around it, so the
-  // rearrangement is the only off-color block in the view.
+  // rearrangement is the only off-color block in the view. Curved ribbons plus
+  // 'matches' (transparent indels) keep strand the only thing color means, which
+  // is what makes the flipped block read at a glance.
   {
     ...TNNT3_FRAME,
     name: 'synteny_hg38_hs1_tnnt3',
-    url: tnnt3Session(),
+    url: tnnt3Session({ drawCurves: true, cigarMode: 'matches' }),
   },
 
   // Two-part figure for the genomes_synteny tutorial: the same view as it opens
