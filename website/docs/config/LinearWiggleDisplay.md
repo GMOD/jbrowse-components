@@ -126,7 +126,7 @@ alongside posColor/negColor it goes unused. Density rendering always draws from
 posColor.
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`WIGGLE_POS_COLOR_DEFAULT`
+`'#0068d1'`
 
 #### slot: minimalTicks
 

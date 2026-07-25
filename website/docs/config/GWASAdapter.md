@@ -37,7 +37,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 BED column to read as the Manhattan plot score
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`DEFAULT_SCORE_COLUMN`
+`'neg_log_pvalue'`
 
 #### slot: scoreTransform
 
@@ -49,7 +49,7 @@ else (e.g. `jexl:-log10(score)`) — arbitrary but slower than the native modes,
 so opt-in only
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`DEFAULT_SCORE_TRANSFORM`
+`'none'`
 
 #### slot: ldAdapter
 

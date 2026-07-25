@@ -83,7 +83,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 CSS color or jexl callback for Manhattan points
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`DEFAULT_MANHATTAN_COLOR`
+`'#0068d1'`
 
 #### slot: colorBy
 

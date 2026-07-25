@@ -3,7 +3,7 @@ import fs from 'fs'
 import slugify from 'slugify'
 import * as ts from 'typescript'
 
-import { enumConstantValues } from './enumConstants.ts'
+import { enumConstantValues, scalarConstantValue } from './enumConstants.ts'
 import { writeFormatted } from './format.ts'
 import {
   assertSingleHeader,
@@ -649,6 +649,16 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
     (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand))
   if (ts.isStringLiteralLike(node)) {
     return `'${node.text}'`
+  }
+  // A bare identifier that names a known string constant renders as its value —
+  // a reader of `defaultValue: DEFAULT_HIC_COLOR_SCHEME` wants `'juicebox'`.
+  // Unresolvable or ambiguous names keep printing the identifier, which is what
+  // non-string references (defaultFilterFlags, Number.MIN_VALUE) still do.
+  const scalarConst = ts.isIdentifier(node)
+    ? scalarConstantValue(node.text)
+    : undefined
+  if (scalarConst !== undefined) {
+    return `'${scalarConst}'`
   }
   if (isScalar) {
     return node.getText()

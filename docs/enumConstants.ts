@@ -28,6 +28,17 @@ import * as ts from 'typescript'
 // name -> members, or null once a conflicting definition is seen
 const index = new Map<string, string[] | null>()
 
+// The same idea for a lone string constant used as a slot's `defaultValue`, e.g.
+//
+//   defaultValue: DEFAULT_HIC_COLOR_SCHEME
+//
+// A slot default is written that way for the same reason as the enum spreads
+// above — the runtime default and the schema default are one fact — and the
+// reader still wants the value, not the identifier. Same conflict rule: a name
+// defined twice with different values is dropped, so it degrades to printing the
+// identifier rather than documenting the wrong default.
+const scalarIndex = new Map<string, string | null>()
+
 function stringsOf(node: ts.Expression): string[] | undefined {
   if (!ts.isArrayLiteralExpression(node)) {
     return undefined
@@ -96,6 +107,15 @@ function record(name: string, values: string[]) {
   }
 }
 
+function recordScalar(name: string, value: string) {
+  const prior = scalarIndex.get(name)
+  if (prior === undefined) {
+    scalarIndex.set(name, value)
+  } else if (prior !== value) {
+    scalarIndex.set(name, null)
+  }
+}
+
 /**
  * Scan `files` for top-level string-array constants. Cheap enough to run over
  * the whole repo: only files whose text mentions a candidate declaration are
@@ -119,7 +139,9 @@ export function buildEnumConstantIndex(files: string[]) {
             // `as const` wraps the literal in an assertion expression
             const value = ts.isAsExpression(init) ? init.expression : init
             const direct = stringsOf(value)
-            if (direct) {
+            if (ts.isStringLiteralLike(value)) {
+              recordScalar(name, value.text)
+            } else if (direct) {
               record(name, direct)
               literals.set(name, value)
             } else if (tupleHeads(value) ?? groupedTupleHeads(value)) {
@@ -152,4 +174,9 @@ export function buildEnumConstantIndex(files: string[]) {
 /** Members of a named string-array constant, or undefined if unknown/ambiguous. */
 export function enumConstantValues(name: string) {
   return index.get(name) ?? undefined
+}
+
+/** Value of a named string constant, or undefined if unknown/ambiguous. */
+export function scalarConstantValue(name: string) {
+  return scalarIndex.get(name) ?? undefined
 }
