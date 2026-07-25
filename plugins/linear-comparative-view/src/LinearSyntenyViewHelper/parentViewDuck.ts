@@ -10,6 +10,5 @@ export interface ParentViewDuck {
   views: LinearGenomeViewModel[]
   scrollZoom: boolean
   overdrawPx: number
-  autoDiagonalizeRequested: boolean
-  autoDiagonalizeComplete: boolean
+  diagonalizeSettled: boolean
 }

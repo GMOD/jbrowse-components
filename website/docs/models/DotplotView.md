@@ -33,120 +33,121 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 
 ## Members
 
-| Member                                                                         | Kind       | Defined by                                      | Description                                                                                                                                                                    |
-| ------------------------------------------------------------------------------ | ---------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [id](#property-id)                                                             | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [type](#property-type)                                                         | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [height](#property-height)                                                     | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [trackSelectorType](#property-trackselectortype)                               | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [assemblyNames](#property-assemblynames)                                       | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [drawCigar](#property-drawcigar)                                               | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [lodMode](#property-lodmode)                                                   | Properties | DotplotView                                     | Level-of-detail tier override for PIF adapters.                                                                                                                                |
-| [lockAspectRatio](#property-lockaspectratio)                                   | Properties | DotplotView                                     | When true, hview and vview are kept at the same bpPerPx so the dotplot stays square.                                                                                           |
-| [lineWidth](#property-linewidth)                                               | Properties | DotplotView                                     | Screen-space line width (CSS pixels) applied to every dotplot display in this view.                                                                                            |
-| [hview](#property-hview)                                                       | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [vview](#property-vview)                                                       | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [tracks](#property-tracks)                                                     | Properties | DotplotView                                     |                                                                                                                                                                                |
-| [viewTrackConfigs](#property-viewtrackconfigs)                                 | Properties | DotplotView                                     | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                      |
-| [init](#property-init)                                                         | Properties | DotplotView                                     | used for initializing the view from a session snapshot                                                                                                                         |
-| [showColorLegend](#property-showcolorlegend)                                   | Properties | DotplotView                                     | Show the floating color-by legend in the top-right of the plot.                                                                                                                |
-| [volatileWidth](#volatile-volatilewidth)                                       | Volatiles  | DotplotView                                     |                                                                                                                                                                                |
-| [volatileError](#volatile-volatileerror)                                       | Volatiles  | DotplotView                                     |                                                                                                                                                                                |
-| [cursorMode](#volatile-cursormode)                                             | Volatiles  | DotplotView                                     | these are 'personal preferences', stored in volatile and loaded/written to localStorage                                                                                        |
-| [importFormSyntenyTrackSelections](#volatile-importformsyntenytrackselections) | Volatiles  | DotplotView                                     |                                                                                                                                                                                |
-| [awaitingAutoDiagonalize](#volatile-awaitingautodiagonalize)                   | Volatiles  | DotplotView                                     | True while the init autorun is waiting for the first dotplot RPC so it can run the DiagonalizeDotplot pass.                                                                    |
-| [diagonalizeStatus](#volatile-diagonalizestatus)                               | Volatiles  | DotplotView                                     | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; undefined outside that wait.                                   |
-| [diagonalizeStopToken](#volatile-diagonalizestoptoken)                         | Volatiles  | DotplotView                                     | Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort it; undefined when none is running.                                                           |
-| [autoDiagonalizeRequested](#volatile-autodiagonalizerequested)                 | Volatiles  | DotplotView                                     | Set true as soon as an init-time autoDiagonalize is requested, before any render can paint.                                                                                    |
-| [autoDiagonalizeComplete](#volatile-autodiagonalizecomplete)                   | Volatiles  | DotplotView                                     | Set true only after the init-time DiagonalizeDotplot pass RESOLVES successfully.                                                                                               |
-| [width](#getter-width)                                                         | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [borderX](#getter-borderx)                                                     | Getters    | DotplotView                                     | Left margin: fits the vertical (vview) axis labels.                                                                                                                            |
-| [borderY](#getter-bordery)                                                     | Getters    | DotplotView                                     | Bottom margin: fits the horizontal (hview) axis labels.                                                                                                                        |
-| [assemblyErrors](#getter-assemblyerrors)                                       | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [assembliesInitialized](#getter-assembliesinitialized)                         | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [initialized](#getter-initialized)                                             | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [hticks](#getter-hticks)                                                       | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [vticks](#getter-vticks)                                                       | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [hTickPositions](#getter-htickpositions)                                       | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [vTickPositions](#getter-vtickpositions)                                       | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [hasSomethingToShow](#getter-hassomethingtoshow)                               | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [showImportForm](#getter-showimportform)                                       | Getters    | DotplotView                                     | Whether to show the import form                                                                                                                                                |
-| [showLoading](#getter-showloading)                                             | Getters    | DotplotView                                     | Whether to show a loading indicator instead of the import form or view                                                                                                         |
-| [loadingMessage](#getter-loadingmessage)                                       | Getters    | DotplotView                                     | Label for the generic loading spinner.                                                                                                                                         |
-| [viewWidth](#getter-viewwidth)                                                 | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [viewHeight](#getter-viewheight)                                               | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [hblockLabelKeysToHide](#getter-hblocklabelkeystohide)                         | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [vblockLabelKeysToHide](#getter-vblocklabelkeystohide)                         | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [views](#getter-views)                                                         | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [dotplotDisplays](#getter-dotplotdisplays)                                     | Getters    | DotplotView                                     | DotplotDisplays under each track, indexed to match `tracks`.                                                                                                                   |
-| [settled](#getter-settled)                                                     | Getters    | DotplotView                                     | Canvas has painted and no display is still fetching, so what's on screen is the final settled content.                                                                         |
-| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | DotplotView                                     | True if any track has an adapter that declares the 'lod' capability.                                                                                                           |
-| [geometryByTrackIndex](#getter-geometrybytrackindex)                           | Getters    | DotplotView                                     | Per-display GPU geometry keyed by track index.                                                                                                                                 |
-| [dotplotRenderState](#getter-dotplotrenderstate)                               | Getters    | DotplotView                                     | Aggregated per-frame render state.                                                                                                                                             |
-| [error](#getter-error)                                                         | Getters    | DotplotView                                     |                                                                                                                                                                                |
-| [getHHighlightCoords](#method-gethhighlightcoords)                             | Methods    | DotplotView                                     | Map a highlight/bookmark region to {left, width} px on the horizontal axis.                                                                                                    |
-| [getVHighlightCoords](#method-getvhighlightcoords)                             | Methods    | DotplotView                                     | Map a highlight/bookmark region to {top, height} px on the vertical axis.                                                                                                      |
-| [menuItems](#method-menuitems)                                                 | Methods    | DotplotView                                     |                                                                                                                                                                                |
-| [setImportFormSyntenyTrack](#action-setimportformsyntenytrack)                 | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [startRenderingBackend](#action-startrenderingbackend)                         | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setCursorMode](#action-setcursormode)                                         | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setDrawCigar](#action-setdrawcigar)                                           | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setLodMode](#action-setlodmode)                                               | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setLockAspectRatio](#action-setlockaspectratio)                               | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [syncBpPerPx](#action-syncbpperpx)                                             | Actions    | DotplotView                                     | Equalize hview/vview bpPerPx without recentering.                                                                                                                              |
-| [setLineWidth](#action-setlinewidth)                                           | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [clearView](#action-clearview)                                                 | Actions    | DotplotView                                     | returns to the import form                                                                                                                                                     |
-| [setWidth](#action-setwidth)                                                   | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setHeight](#action-setheight)                                                 | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setError](#action-seterror)                                                   | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setInit](#action-setinit)                                                     | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setAwaitingAutoDiagonalize](#action-setawaitingautodiagonalize)               | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setAutoDiagonalizeRequested](#action-setautodiagonalizerequested)             | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setAutoDiagonalizeComplete](#action-setautodiagonalizecomplete)               | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setDiagonalizeStatus](#action-setdiagonalizestatus)                           | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setDiagonalizeStopToken](#action-setdiagonalizestoptoken)                     | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [cancelAutoDiagonalize](#action-cancelautodiagonalize)                         | Actions    | DotplotView                                     | Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag, revealing the (undiagonalized) plot.                                                           |
-| [zoomOut](#action-zoomout)                                                     | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [zoomIn](#action-zoomin)                                                       | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [activateTrackSelector](#action-activatetrackselector)                         | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [showTrack](#action-showtrack)                                                 | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [hideTrack](#action-hidetrack)                                                 | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [toggleTrack](#action-toggletrack)                                             | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [setAssemblyNames](#action-setassemblynames)                                   | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [getCoords](#action-getcoords)                                                 | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [zoomInToMouseCoords](#action-zoomintomousecoords)                             | Actions    | DotplotView                                     | zooms into clicked and dragged region                                                                                                                                          |
-| [addHighlightFromMouseCoords](#action-addhighlightfrommousecoords)             | Actions    | DotplotView                                     | highlights the clicked and dragged region: the x-span becomes a band on the horizontal axis and the y-span a band on the vertical axis, so the drag rect is their intersection |
-| [showAllRegions](#action-showallregions)                                       | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [initializeDisplayedRegions](#action-initializedisplayedregions)               | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [onDotplotView](#action-ondotplotview)                                         | Actions    | DotplotView                                     | creates a linear synteny view from the clicked and dragged region                                                                                                              |
-| [exportSvg](#action-exportsvg)                                                 | Actions    | DotplotView                                     | creates an svg export and save using FileSaver                                                                                                                                 |
-| [applySquare](#action-applysquare)                                             | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [squareView](#action-squareview)                                               | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [squareViewProportional](#action-squareviewproportional)                       | Actions    | DotplotView                                     |                                                                                                                                                                                |
-| [displayName](#property-displayname)                                           | Properties | [BaseViewModel](../baseviewmodel)               | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                          |
-| [minimized](#property-minimized)                                               | Properties | [BaseViewModel](../baseviewmodel)               |                                                                                                                                                                                |
-| [width](#volatile-width)                                                       | Volatiles  | [BaseViewModel](../baseviewmodel)               |                                                                                                                                                                                |
-| [setDisplayName](#action-setdisplayname)                                       | Actions    | [BaseViewModel](../baseviewmodel)               |                                                                                                                                                                                |
-| [setMinimized](#action-setminimized)                                           | Actions    | [BaseViewModel](../baseviewmodel)               |                                                                                                                                                                                |
-| [canvasDrawn](#volatile-canvasdrawn)                                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | flips true on first paint; read by test selectors to detect render                                                                                                             |
-| [currentRenderingBackend](#volatile-currentrenderingbackend)                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | current backend reference, updated on context-loss recovery.                                                                                                                   |
-| [renderTick](#volatile-rendertick)                                             | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | counter the render autorun observes; bumped to force a re-render                                                                                                               |
-| [autorunsInstalled](#volatile-autorunsinstalled)                               | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                     |
-| [renderError](#volatile-rendererror)                                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                                                                    |
-| [markCanvasDrawn](#action-markcanvasdrawn)                                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                                   | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                |
-| [stopRenderingBackend](#action-stoprenderingbackend)                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                |
-| [renderNow](#action-rendernow)                                                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                |
-| [setRenderError](#action-setrendererror)                                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | set/clear the render-backend error.                                                                                                                                            |
-| [attachRenderingBackend](#action-attachrenderingbackend)                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                    |
-| [highlight](#property-highlight)                                               | Properties | [HighlightsMixin](../highlightsmixin)           | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu                                                           |
-| [showHighlightChips](#property-showhighlightchips)                             | Properties | [HighlightsMixin](../highlightsmixin)           | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                                                     |
-| [addToHighlights](#action-addtohighlights)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                |
-| [setHighlight](#action-sethighlight)                                           | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                |
-| [removeHighlight](#action-removehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                |
-| [updateHighlight](#action-updatehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                |
-| [setShowHighlightChips](#action-setshowhighlightchips)                         | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                |
+| Member                                                                         | Kind       | Defined by                                              | Description                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------ | ---------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                                             | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [type](#property-type)                                                         | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [height](#property-height)                                                     | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [trackSelectorType](#property-trackselectortype)                               | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [assemblyNames](#property-assemblynames)                                       | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [drawCigar](#property-drawcigar)                                               | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [lodMode](#property-lodmode)                                                   | Properties | DotplotView                                             | Level-of-detail tier override for PIF adapters.                                                                                                                                                     |
+| [lockAspectRatio](#property-lockaspectratio)                                   | Properties | DotplotView                                             | When true, hview and vview are kept at the same bpPerPx so the dotplot stays square.                                                                                                                |
+| [lineWidth](#property-linewidth)                                               | Properties | DotplotView                                             | Screen-space line width (CSS pixels) applied to every dotplot display in this view.                                                                                                                 |
+| [hview](#property-hview)                                                       | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [vview](#property-vview)                                                       | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [tracks](#property-tracks)                                                     | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [viewTrackConfigs](#property-viewtrackconfigs)                                 | Properties | DotplotView                                             | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                                           |
+| [init](#property-init)                                                         | Properties | DotplotView                                             | used for initializing the view from a session snapshot                                                                                                                                              |
+| [showColorLegend](#property-showcolorlegend)                                   | Properties | DotplotView                                             | Show the floating color-by legend in the top-right of the plot.                                                                                                                                     |
+| [volatileWidth](#volatile-volatilewidth)                                       | Volatiles  | DotplotView                                             |                                                                                                                                                                                                     |
+| [volatileError](#volatile-volatileerror)                                       | Volatiles  | DotplotView                                             |                                                                                                                                                                                                     |
+| [cursorMode](#volatile-cursormode)                                             | Volatiles  | DotplotView                                             | these are 'personal preferences', stored in volatile and loaded/written to localStorage                                                                                                             |
+| [importFormSyntenyTrackSelections](#volatile-importformsyntenytrackselections) | Volatiles  | DotplotView                                             |                                                                                                                                                                                                     |
+| [width](#getter-width)                                                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [borderX](#getter-borderx)                                                     | Getters    | DotplotView                                             | Left margin: fits the vertical (vview) axis labels.                                                                                                                                                 |
+| [borderY](#getter-bordery)                                                     | Getters    | DotplotView                                             | Bottom margin: fits the horizontal (hview) axis labels.                                                                                                                                             |
+| [assemblyErrors](#getter-assemblyerrors)                                       | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [assembliesInitialized](#getter-assembliesinitialized)                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [initialized](#getter-initialized)                                             | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [hticks](#getter-hticks)                                                       | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [vticks](#getter-vticks)                                                       | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [hTickPositions](#getter-htickpositions)                                       | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [vTickPositions](#getter-vtickpositions)                                       | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [hasSomethingToShow](#getter-hassomethingtoshow)                               | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [showImportForm](#getter-showimportform)                                       | Getters    | DotplotView                                             | Whether to show the import form                                                                                                                                                                     |
+| [showLoading](#getter-showloading)                                             | Getters    | DotplotView                                             | Whether to show a loading indicator instead of the import form or view                                                                                                                              |
+| [loadingMessage](#getter-loadingmessage)                                       | Getters    | DotplotView                                             | Label for the generic loading spinner.                                                                                                                                                              |
+| [viewWidth](#getter-viewwidth)                                                 | Getters    | DotplotView                                             | Plot area width.                                                                                                                                                                                    |
+| [viewHeight](#getter-viewheight)                                               | Getters    | DotplotView                                             | Plot area height.                                                                                                                                                                                   |
+| [hblockLabelKeysToHide](#getter-hblocklabelkeystohide)                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [vblockLabelKeysToHide](#getter-vblocklabelkeystohide)                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [views](#getter-views)                                                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [dotplotDisplays](#getter-dotplotdisplays)                                     | Getters    | DotplotView                                             | DotplotDisplays under each track, indexed to match `tracks`.                                                                                                                                        |
+| [settled](#getter-settled)                                                     | Getters    | DotplotView                                             | Canvas has painted and no display is still fetching, so what's on screen is the final settled content.                                                                                              |
+| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | DotplotView                                             | True if any track has an adapter that declares the 'lod' capability.                                                                                                                                |
+| [geometryByTrackIndex](#getter-geometrybytrackindex)                           | Getters    | DotplotView                                             | Per-display GPU geometry keyed by track index.                                                                                                                                                      |
+| [dotplotRenderState](#getter-dotplotrenderstate)                               | Getters    | DotplotView                                             | Aggregated per-frame render state.                                                                                                                                                                  |
+| [error](#getter-error)                                                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [getHHighlightCoords](#method-gethhighlightcoords)                             | Methods    | DotplotView                                             | Map a highlight/bookmark region to {left, width} px on the horizontal axis.                                                                                                                         |
+| [getVHighlightCoords](#method-getvhighlightcoords)                             | Methods    | DotplotView                                             | Map a highlight/bookmark region to {top, height} px on the vertical axis.                                                                                                                           |
+| [menuItems](#method-menuitems)                                                 | Methods    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setImportFormSyntenyTrack](#action-setimportformsyntenytrack)                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [startRenderingBackend](#action-startrenderingbackend)                         | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setCursorMode](#action-setcursormode)                                         | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setDrawCigar](#action-setdrawcigar)                                           | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setLodMode](#action-setlodmode)                                               | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setLockAspectRatio](#action-setlockaspectratio)                               | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setLineWidth](#action-setlinewidth)                                           | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [clearView](#action-clearview)                                                 | Actions    | DotplotView                                             | returns to the import form                                                                                                                                                                          |
+| [setWidth](#action-setwidth)                                                   | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setHeight](#action-setheight)                                                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setError](#action-seterror)                                                   | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setInit](#action-setinit)                                                     | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [zoomOut](#action-zoomout)                                                     | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [zoomIn](#action-zoomin)                                                       | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [activateTrackSelector](#action-activatetrackselector)                         | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [showTrack](#action-showtrack)                                                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [hideTrack](#action-hidetrack)                                                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [toggleTrack](#action-toggletrack)                                             | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setAssemblyNames](#action-setassemblynames)                                   | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [getCoords](#action-getcoords)                                                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [zoomInToMouseCoords](#action-zoomintomousecoords)                             | Actions    | DotplotView                                             | zooms into clicked and dragged region                                                                                                                                                               |
+| [addHighlightFromMouseCoords](#action-addhighlightfrommousecoords)             | Actions    | DotplotView                                             | highlights the clicked and dragged region: the x-span becomes a band on the horizontal axis and the y-span a band on the vertical axis, so the drag rect is their intersection                      |
+| [showAllRegions](#action-showallregions)                                       | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [initializeDisplayedRegions](#action-initializedisplayedregions)               | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [onDotplotView](#action-ondotplotview)                                         | Actions    | DotplotView                                             | creates a linear synteny view from the clicked and dragged region                                                                                                                                   |
+| [exportSvg](#action-exportsvg)                                                 | Actions    | DotplotView                                             | creates an svg export and save using FileSaver                                                                                                                                                      |
+| [applySquare](#action-applysquare)                                             | Actions    | DotplotView                                             | Set both axes to the average bpPerPx (hview divided by `ratio`), re-anchoring each on the locus that was at its center.                                                                             |
+| [squareView](#action-squareview)                                               | Actions    | DotplotView                                             | Equalize both axes' bpPerPx.                                                                                                                                                                        |
+| [squareViewProportional](#action-squareviewproportional)                       | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [displayName](#property-displayname)                                           | Properties | [BaseViewModel](../baseviewmodel)                       | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                               |
+| [minimized](#property-minimized)                                               | Properties | [BaseViewModel](../baseviewmodel)                       |                                                                                                                                                                                                     |
+| [width](#volatile-width)                                                       | Volatiles  | [BaseViewModel](../baseviewmodel)                       |                                                                                                                                                                                                     |
+| [setDisplayName](#action-setdisplayname)                                       | Actions    | [BaseViewModel](../baseviewmodel)                       |                                                                                                                                                                                                     |
+| [setMinimized](#action-setminimized)                                           | Actions    | [BaseViewModel](../baseviewmodel)                       |                                                                                                                                                                                                     |
+| [canvasDrawn](#volatile-canvasdrawn)                                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)         | flips true on first paint; read by test selectors to detect render                                                                                                                                  |
+| [currentRenderingBackend](#volatile-currentrenderingbackend)                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)         | current backend reference, updated on context-loss recovery.                                                                                                                                        |
+| [renderTick](#volatile-rendertick)                                             | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)         | counter the render autorun observes; bumped to force a re-render                                                                                                                                    |
+| [autorunsInstalled](#volatile-autorunsinstalled)                               | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)         | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                          |
+| [renderError](#volatile-rendererror)                                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)         | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                                                                                         |
+| [canRender](#getter-canrender)                                                 | Getters    | [RenderLifecycleMixin](../renderlifecyclemixin)         | Overridable precondition (default true): both lifecycle autoruns skip their callback entirely while this is false, so a display never has to open its own `upload`/`render` with a readiness check. |
+| [markCanvasDrawn](#action-markcanvasdrawn)                                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)         |                                                                                                                                                                                                     |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                                   | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)         |                                                                                                                                                                                                     |
+| [stopRenderingBackend](#action-stoprenderingbackend)                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)         |                                                                                                                                                                                                     |
+| [renderNow](#action-rendernow)                                                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)         |                                                                                                                                                                                                     |
+| [setRenderError](#action-setrendererror)                                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)         | set/clear the render-backend error.                                                                                                                                                                 |
+| [attachRenderingBackend](#action-attachrenderingbackend)                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)         | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                         |
+| [highlight](#property-highlight)                                               | Properties | [HighlightsMixin](../highlightsmixin)                   | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu                                                                                |
+| [showHighlightChips](#property-showhighlightchips)                             | Properties | [HighlightsMixin](../highlightsmixin)                   | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                                                                          |
+| [addToHighlights](#action-addtohighlights)                                     | Actions    | [HighlightsMixin](../highlightsmixin)                   |                                                                                                                                                                                                     |
+| [setHighlight](#action-sethighlight)                                           | Actions    | [HighlightsMixin](../highlightsmixin)                   |                                                                                                                                                                                                     |
+| [removeHighlight](#action-removehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)                   |                                                                                                                                                                                                     |
+| [updateHighlight](#action-updatehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)                   |                                                                                                                                                                                                     |
+| [setShowHighlightChips](#action-setshowhighlightchips)                         | Actions    | [HighlightsMixin](../highlightsmixin)                   |                                                                                                                                                                                                     |
+| [awaitingAutoDiagonalize](#volatile-awaitingautodiagonalize)                   | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | True while the init autorun is waiting on the diagonalize RPC.                                                                                                                                      |
+| [autoDiagonalizeRequested](#volatile-autodiagonalizerequested)                 | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Set true as soon as an init-time autoDiagonalize is requested, before any render can paint.                                                                                                         |
+| [autoDiagonalizeComplete](#volatile-autodiagonalizecomplete)                   | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Set true only after the init-time diagonalize pass RESOLVES successfully.                                                                                                                           |
+| [diagonalizeStatus](#volatile-diagonalizestatus)                               | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; undefined outside that wait.                                                        |
+| [diagonalizeStopToken](#volatile-diagonalizestoptoken)                         | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort it; undefined when none is running.                                                                                |
+| [diagonalizeSettled](#getter-diagonalizesettled)                               | Getters    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | The diagonalize half of a view's `settled` gate: either no reorder was requested, or the one that was has completed.                                                                                |
+| [setAwaitingAutoDiagonalize](#action-setawaitingautodiagonalize)               | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                     |
+| [setAutoDiagonalizeRequested](#action-setautodiagonalizerequested)             | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                     |
+| [setAutoDiagonalizeComplete](#action-setautodiagonalizecomplete)               | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                     |
+| [setDiagonalizeStatus](#action-setdiagonalizestatus)                           | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                     |
+| [setDiagonalizeStopToken](#action-setdiagonalizestoptoken)                     | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                     |
+| [cancelAutoDiagonalize](#action-cancelautodiagonalize)                         | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears the wait flag, revealing the (undiagonalized) view.                                                                 |
 
 <details>
 <summary>DotplotView - Properties</summary>
@@ -274,71 +275,6 @@ cursorMode: localStorageGetItem(LS_CURSOR_MODE) === 'move'
   : 'crosshair'
 ```
 
-#### volatile: awaitingAutoDiagonalize
-
-True while the init autorun is waiting for the first dotplot RPC so it can run
-the DiagonalizeDotplot pass. Used to gate showLoading on so the user sees a
-spinner with "Reordering chromosomes…" instead of an undiagonalized plot that
-immediately re-paints.
-
-```ts
-// type signature
-type awaitingAutoDiagonalize = false
-// code
-awaitingAutoDiagonalize: false
-```
-
-#### volatile: diagonalizeStatus
-
-Live status from the auto-diagonalize RPC (download %, parse, algorithm phase)
-shown on the reordering spinner; undefined outside that wait.
-
-```ts
-// type signature
-type diagonalizeStatus = RpcStatus | undefined
-// code
-diagonalizeStatus: undefined as RpcStatus | undefined
-```
-
-#### volatile: diagonalizeStopToken
-
-Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort
-it; undefined when none is running.
-
-```ts
-// type signature
-type diagonalizeStopToken = StopToken | undefined
-// code
-diagonalizeStopToken: undefined as StopToken | undefined
-```
-
-#### volatile: autoDiagonalizeRequested
-
-Set true as soon as an init-time autoDiagonalize is requested, before any render
-can paint. Gates `settled` (and thus the `dotplot_webgl_canvas_done` test-id) so
-a screenshot / browser-test can't capture the pre-reorder plot.
-
-```ts
-// type signature
-type autoDiagonalizeRequested = false
-// code
-autoDiagonalizeRequested: false
-```
-
-#### volatile: autoDiagonalizeComplete
-
-Set true only after the init-time DiagonalizeDotplot pass RESOLVES successfully.
-If the reorder is skipped or throws, this stays false so `settled` never reports
-done on an undiagonalized plot — the capture fails loudly (times out) instead of
-committing a hairball.
-
-```ts
-// type signature
-type autoDiagonalizeComplete = false
-// code
-autoDiagonalizeComplete: false
-```
-
 </details>
 
 <details>
@@ -397,6 +333,24 @@ not ready" case.
 
 ```ts
 type loadingMessage = 'Loading' | undefined
+```
+
+#### getter: viewWidth
+
+Plot area width. Floored at 0: the axis borders have their own MIN_BORDER floor,
+so a container narrower than that would otherwise yield a negative canvas
+dimension and a negative maxBpPerPx.
+
+```ts
+type viewWidth = number
+```
+
+#### getter: viewHeight
+
+Plot area height. Floored at 0, see viewWidth.
+
+```ts
+type viewHeight = number
 ```
 
 #### getter: dotplotDisplays
@@ -470,8 +424,6 @@ type dotplotRenderState =
 | <span id="getter-htickpositions">hTickPositions</span>               | `PositionedTick[]`                                                      |
 | <span id="getter-vtickpositions">vTickPositions</span>               | `PositionedTick[]`                                                      |
 | <span id="getter-hassomethingtoshow">hasSomethingToShow</span>       | `boolean`                                                               |
-| <span id="getter-viewwidth">viewWidth</span>                         | `number`                                                                |
-| <span id="getter-viewheight">viewHeight</span>                       | `number`                                                                |
 | <span id="getter-hblocklabelkeystohide">hblockLabelKeysToHide</span> | `Set<string>`                                                           |
 | <span id="getter-vblocklabelkeystohide">vblockLabelKeysToHide</span> | `Set<string>`                                                           |
 | <span id="getter-views">views</span>                                 | `(ModelInstanceTypeProps<…> & ... 10 more ... & IStateTreeNode<...>)[]` |
@@ -526,31 +478,12 @@ type getVHighlightCoords = (region: {
 <details>
 <summary>DotplotView - Actions</summary>
 
-#### action: syncBpPerPx
-
-Equalize hview/vview bpPerPx without recentering. Used by the aspect-lock
-autorun to absorb divergence from box-zoom and similar operations while
-preserving the user's current pan position.
-
-```ts
-type syncBpPerPx = () => void
-```
-
 #### action: clearView
 
 returns to the import form
 
 ```ts
 type clearView = () => void
-```
-
-#### action: cancelAutoDiagonalize
-
-Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
-revealing the (undiagonalized) plot.
-
-```ts
-type cancelAutoDiagonalize = () => void
 ```
 
 #### action: zoomInToMouseCoords
@@ -587,43 +520,59 @@ creates an svg export and save using FileSaver
 type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
+#### action: applySquare
+
+Set both axes to the average bpPerPx (hview divided by `ratio`), re-anchoring
+each on the locus that was at its center. setBpPerPx alone would leave offsetPx
+untouched while bpPerPx changed under it, scrolling the plot; the centerAt calls
+are what hold it still.
+
+```ts
+type applySquare = (ratio: number) => void
+```
+
+#### action: squareView
+
+Equalize both axes' bpPerPx. Also what the aspect-ratio lock applies to absorb
+divergence from box-zoom and other per-axis operations — deliberately not
+clamped to either axis's own maxBpPerPx, since a shared bpPerPx that fits the
+larger genome necessarily exceeds the smaller axis's limit, and it converges in
+one step where a clamped one would ping-pong between the two maxima.
+
+```ts
+type squareView = () => void
+```
+
 </details>
 
 <details>
 <summary>DotplotView - Actions (other undocumented members)</summary>
 
-| Member                                                                           | Type                                                                                                                             |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-setimportformsyntenytrack">setImportFormSyntenyTrack</span>     | `(arg: number, val: ImportFormSyntenyTrack) => void`                                                                             |
-| <span id="action-startrenderingbackend">startRenderingBackend</span>             | `(backend: DotplotRenderingBackend) => void`                                                                                     |
-| <span id="action-setcursormode">setCursorMode</span>                             | `(mode: CursorMode) => void`                                                                                                     |
-| <span id="action-setdrawcigar">setDrawCigar</span>                               | `(flag: boolean) => void`                                                                                                        |
-| <span id="action-setlodmode">setLodMode</span>                                   | `(value: "auto" \| "fine" \| "coarse") => void`                                                                                  |
-| <span id="action-setlockaspectratio">setLockAspectRatio</span>                   | `(flag: boolean) => void`                                                                                                        |
-| <span id="action-setlinewidth">setLineWidth</span>                               | `(value: number) => void`                                                                                                        |
-| <span id="action-setshowcolorlegend">setShowColorLegend</span>                   | `(arg: boolean) => void`                                                                                                         |
-| <span id="action-setwidth">setWidth</span>                                       | `(newWidth: number) => number`                                                                                                   |
-| <span id="action-setheight">setHeight</span>                                     | `(newHeight: number) => number`                                                                                                  |
-| <span id="action-seterror">setError</span>                                       | `(e: unknown) => void`                                                                                                           |
-| <span id="action-setinit">setInit</span>                                         | `(init?: DotplotViewInit \| undefined) => void`                                                                                  |
-| <span id="action-setawaitingautodiagonalize">setAwaitingAutoDiagonalize</span>   | `(arg: boolean) => void`                                                                                                         |
-| <span id="action-setautodiagonalizerequested">setAutoDiagonalizeRequested</span> | `(arg: boolean) => void`                                                                                                         |
-| <span id="action-setautodiagonalizecomplete">setAutoDiagonalizeComplete</span>   | `(arg: boolean) => void`                                                                                                         |
-| <span id="action-setdiagonalizestatus">setDiagonalizeStatus</span>               | `(arg?: RpcStatus \| undefined) => void`                                                                                         |
-| <span id="action-setdiagonalizestoptoken">setDiagonalizeStopToken</span>         | `(arg?: StopToken \| undefined) => void`                                                                                         |
-| <span id="action-zoomout">zoomOut</span>                                         | `() => void`                                                                                                                     |
-| <span id="action-zoomin">zoomIn</span>                                           | `() => void`                                                                                                                     |
-| <span id="action-activatetrackselector">activateTrackSelector</span>             | `() => Widget`                                                                                                                   |
-| <span id="action-showtrack">showTrack</span>                                     | `(trackId: string, initialSnapshot?: any) => any`                                                                                |
-| <span id="action-hidetrack">hideTrack</span>                                     | `(trackId: string) => boolean`                                                                                                   |
-| <span id="action-toggletrack">toggleTrack</span>                                 | `(trackId: string) => boolean`                                                                                                   |
-| <span id="action-setassemblynames">setAssemblyNames</span>                       | `(target: string, query: string) => void`                                                                                        |
-| <span id="action-getcoords">getCoords</span>                                     | `(mousedown: Coord, mouseup: Coord) => { x1: PxToBpResult; x2: PxToBpResult; y1: PxToBpResult; y2: PxToBpResult; } \| undefined` |
-| <span id="action-showallregions">showAllRegions</span>                           | `() => void`                                                                                                                     |
-| <span id="action-initializedisplayedregions">initializeDisplayedRegions</span>   | `() => void`                                                                                                                     |
-| <span id="action-applysquare">applySquare</span>                                 | `(ratio: number) => void`                                                                                                        |
-| <span id="action-squareview">squareView</span>                                   | `() => void`                                                                                                                     |
-| <span id="action-squareviewproportional">squareViewProportional</span>           | `() => void`                                                                                                                     |
+| Member                                                                         | Type                                                                                                                             |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| <span id="action-setimportformsyntenytrack">setImportFormSyntenyTrack</span>   | `(arg: number, val: ImportFormSyntenyTrack) => void`                                                                             |
+| <span id="action-startrenderingbackend">startRenderingBackend</span>           | `(backend: DotplotRenderingBackend) => void`                                                                                     |
+| <span id="action-setcursormode">setCursorMode</span>                           | `(mode: CursorMode) => void`                                                                                                     |
+| <span id="action-setdrawcigar">setDrawCigar</span>                             | `(flag: boolean) => void`                                                                                                        |
+| <span id="action-setlodmode">setLodMode</span>                                 | `(value: "auto" \| "fine" \| "coarse") => void`                                                                                  |
+| <span id="action-setlockaspectratio">setLockAspectRatio</span>                 | `(flag: boolean) => void`                                                                                                        |
+| <span id="action-setlinewidth">setLineWidth</span>                             | `(value: number) => void`                                                                                                        |
+| <span id="action-setshowcolorlegend">setShowColorLegend</span>                 | `(arg: boolean) => void`                                                                                                         |
+| <span id="action-setwidth">setWidth</span>                                     | `(newWidth: number) => number`                                                                                                   |
+| <span id="action-setheight">setHeight</span>                                   | `(newHeight: number) => number`                                                                                                  |
+| <span id="action-seterror">setError</span>                                     | `(e: unknown) => void`                                                                                                           |
+| <span id="action-setinit">setInit</span>                                       | `(init?: DotplotViewInit \| undefined) => void`                                                                                  |
+| <span id="action-zoomout">zoomOut</span>                                       | `() => void`                                                                                                                     |
+| <span id="action-zoomin">zoomIn</span>                                         | `() => void`                                                                                                                     |
+| <span id="action-activatetrackselector">activateTrackSelector</span>           | `() => Widget`                                                                                                                   |
+| <span id="action-showtrack">showTrack</span>                                   | `(trackId: string, initialSnapshot?: any) => any`                                                                                |
+| <span id="action-hidetrack">hideTrack</span>                                   | `(trackId: string) => boolean`                                                                                                   |
+| <span id="action-toggletrack">toggleTrack</span>                               | `(trackId: string) => boolean`                                                                                                   |
+| <span id="action-setassemblynames">setAssemblyNames</span>                     | `(target: string, query: string) => void`                                                                                        |
+| <span id="action-getcoords">getCoords</span>                                   | `(mousedown: Coord, mouseup: Coord) => { x1: PxToBpResult; x2: PxToBpResult; y1: PxToBpResult; y2: PxToBpResult; } \| undefined` |
+| <span id="action-showallregions">showAllRegions</span>                         | `() => void`                                                                                                                     |
+| <span id="action-initializedisplayedregions">initializeDisplayedRegions</span> | `() => void`                                                                                                                     |
+| <span id="action-squareviewproportional">squareViewProportional</span>         | `() => void`                                                                                                                     |
 
 </details>
 
@@ -742,6 +691,27 @@ type renderError = undefined
 renderError: undefined
 ```
 
+**Getters**
+
+#### getter: canRender
+
+Overridable precondition (default true): both lifecycle autoruns skip their
+callback entirely while this is false, so a display never has to open its own
+`upload`/`render` with a readiness check.
+
+The LGV mixins override it with `view.initialized`, because before the view is
+measured its geometry throws by design (`view.width`, and so `visibleRegions` /
+`trackWidthPx` with it) and a throw in either callback is routed to
+`renderError` — surfacing "not measured yet" as the GPU render-error banner.
+Because it's an observable read inside the autoruns, the pair re-fires the
+moment it flips. This is the _precondition_ axis only: whether any data has
+arrived stays the render callback's own gate (return `false` to skip a tick),
+which is why `renderState` getters can be plain resolved values.
+
+```ts
+type canRender = boolean
+```
+
 **Actions**
 
 #### action: setRenderError
@@ -818,5 +788,109 @@ showHighlightChips: types.stripDefault(types.boolean, false)
 | <span id="action-removehighlight">removeHighlight</span>             | `(highlight: HighlightType) => void`                            |
 | <span id="action-updatehighlight">updateHighlight</span>             | `(old: HighlightType, updates: Partial<HighlightType>) => void` |
 | <span id="action-setshowhighlightchips">setShowHighlightChips</span> | `(arg: boolean) => void`                                        |
+
+</details>
+
+<details>
+<summary>Derived from DiagonalizeProgressMixin</summary>
+
+[DiagonalizeProgressMixin →](../diagonalizeprogressmixin)
+
+**Volatiles**
+
+#### volatile: awaitingAutoDiagonalize
+
+True while the init autorun is waiting on the diagonalize RPC. Gates the canvas
+off — otherwise the user watches an undiagonalized hairball flash before the
+reorder kicks in.
+
+```ts
+// type signature
+type awaitingAutoDiagonalize = false
+// code
+awaitingAutoDiagonalize: false
+```
+
+#### volatile: autoDiagonalizeRequested
+
+Set true as soon as an init-time autoDiagonalize is requested, before any render
+can paint. Gates `diagonalizeSettled` so a capture can't commit the pre-reorder
+view during the view-building await window, before `awaitingAutoDiagonalize`
+flips.
+
+```ts
+// type signature
+type autoDiagonalizeRequested = false
+// code
+autoDiagonalizeRequested: false
+```
+
+#### volatile: autoDiagonalizeComplete
+
+Set true only after the init-time diagonalize pass RESOLVES successfully. If the
+reorder is skipped or throws this stays false, so `diagonalizeSettled` never
+reports done on an undiagonalized view — the capture fails loudly (times out)
+instead of committing a hairball.
+
+```ts
+// type signature
+type autoDiagonalizeComplete = false
+// code
+autoDiagonalizeComplete: false
+```
+
+#### volatile: diagonalizeStatus
+
+Live status from the auto-diagonalize RPC (download %, parse, algorithm phase)
+shown on the reordering spinner; undefined outside that wait.
+
+```ts
+// type signature
+type diagonalizeStatus = RpcStatus | undefined
+// code
+diagonalizeStatus: undefined as RpcStatus | undefined
+```
+
+#### volatile: diagonalizeStopToken
+
+Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort
+it; undefined when none is running.
+
+```ts
+// type signature
+type diagonalizeStopToken = StopToken | undefined
+// code
+diagonalizeStopToken: undefined as StopToken | undefined
+```
+
+**Getters**
+
+#### getter: diagonalizeSettled
+
+The diagonalize half of a view's `settled` gate: either no reorder was
+requested, or the one that was has completed.
+
+```ts
+type diagonalizeSettled = boolean
+```
+
+**Actions**
+
+#### action: cancelAutoDiagonalize
+
+Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears
+the wait flag, revealing the (undiagonalized) view.
+
+```ts
+type cancelAutoDiagonalize = () => void
+```
+
+| Member                                                                           | Type                                     |
+| -------------------------------------------------------------------------------- | ---------------------------------------- |
+| <span id="action-setawaitingautodiagonalize">setAwaitingAutoDiagonalize</span>   | `(arg: boolean) => void`                 |
+| <span id="action-setautodiagonalizerequested">setAutoDiagonalizeRequested</span> | `(arg: boolean) => void`                 |
+| <span id="action-setautodiagonalizecomplete">setAutoDiagonalizeComplete</span>   | `(arg: boolean) => void`                 |
+| <span id="action-setdiagonalizestatus">setDiagonalizeStatus</span>               | `(arg?: RpcStatus \| undefined) => void` |
+| <span id="action-setdiagonalizestoptoken">setDiagonalizeStopToken</span>         | `(arg?: StopToken \| undefined) => void` |
 
 </details>

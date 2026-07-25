@@ -5,6 +5,7 @@ import {
   buildFeaturePath,
   computeTransform,
   isEdgeCulled,
+  makeCornerScratch,
   projectCorners,
   ribbonPerpWidth,
 } from './syntenyRibbonPath.ts'
@@ -59,8 +60,9 @@ function buildPickIndex(
   t: ComputedTransform,
 ): PickIndex {
   const flatbush = new Flatbush(data.instanceCount)
+  const scratch = makeCornerScratch()
   for (let i = 0; i < data.instanceCount; i++) {
-    const c = projectCorners(data, i, t)
+    const c = projectCorners(data, i, t, scratch)
     flatbush.add(
       Math.min(c.sx1, c.sx2, c.sx3, c.sx4),
       0,
@@ -104,6 +106,7 @@ export function pickFeatureAtPoint(
   const { ctx, state, regions, pickIndices, canvasLogicalWidth, x, y } = pc
   const leftLimit = -state.overdrawPx
   const rightLimit = canvasLogicalWidth + state.overdrawPx
+  const scratch = makeCornerScratch()
 
   // Iterate tracks in reverse draw order so top-most wins.
   const entries = [...state.perTrack]
@@ -138,10 +141,12 @@ export function pickFeatureAtPoint(
     const d1 = transform.panPx1 - idx.panPx1
     const panLo = Math.min(d0, d1)
     const panHi = Math.max(d0, d1)
-    // Sort descending so the highest instance index (last drawn = topmost) wins.
+    // Sort descending so the highest instance index (last drawn = topmost)
+    // wins. In place — `search` returns a freshly allocated array we own, and on
+    // a dense whole-genome view it can hold ~100k candidates.
     const candidates = idx.flatbush
       .search(x - panHi, 0.5, x - panLo, 0.5)
-      .toSorted((a, b) => b - a)
+      .sort((a, b) => b - a)
     for (let ci = 0, l = candidates.length; ci < l; ci++) {
       const i = candidates[ci]!
       if (data.alignmentLengths[i]! < minAlignmentLength) {
@@ -151,7 +156,7 @@ export function pickFeatureAtPoint(
         continue
       }
 
-      const c = projectCorners(data, i, transform)
+      const c = projectCorners(data, i, transform, scratch)
       if (isEdgeCulled(c, leftLimit, rightLimit)) {
         continue
       }

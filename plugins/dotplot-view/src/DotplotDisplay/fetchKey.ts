@@ -1,3 +1,5 @@
+import { regionSignature } from '@jbrowse/synteny-core'
+
 import type { Region } from '@jbrowse/core/util'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
@@ -22,9 +24,7 @@ export function dotplotFetchKey(
   fetchRegions: Region[],
 ) {
   const axis = (a: BpIndexViewSnap) =>
-    `${a.bpPerPx}#${a.displayedRegions
-      .map(r => `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`)
-      .join('|')}`
+    `${a.bpPerPx}#${regionSignature(a.displayedRegions)}`
   const window = fetchRegions
     .map(r => `${r.refName}:${r.start}-${r.end}`)
     .join(',')

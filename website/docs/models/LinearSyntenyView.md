@@ -33,100 +33,101 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 
 ## Members
 
-| Member                                                                         | Kind       | Defined by                                        | Description                                                                                                                                                                                             |
-| ------------------------------------------------------------------------------ | ---------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                                         | Properties | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [cigarMode](#property-cigarmode)                                               | Properties | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [drawCurves](#property-drawcurves)                                             | Properties | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [drawLocationMarkers](#property-drawlocationmarkers)                           | Properties | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [overdrawPx](#property-overdrawpx)                                             | Properties | LinearSyntenyView                                 | pixels beyond the visible viewport edge that synteny lines are still drawn                                                                                                                              |
-| [alpha](#property-alpha)                                                       | Properties | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [minAlignmentLength](#property-minalignmentlength)                             | Properties | LinearSyntenyView                                 | Hide alignment blocks shorter than this many bp.                                                                                                                                                        |
-| [lodMode](#property-lodmode)                                                   | Properties | LinearSyntenyView                                 | Level-of-detail tier selection for PIF adapters.                                                                                                                                                        |
-| [colorBy](#property-colorby)                                                   | Properties | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [showColorLegend](#property-showcolorlegend)                                   | Properties | LinearSyntenyView                                 | Show the floating color-by legend in the top-right of the synteny canvas.                                                                                                                               |
-| [opacityByIdentity](#property-opacitybyidentity)                               | Properties | LinearSyntenyView                                 | Fade alignment blocks by per-feature identity (lower identity = more transparent).                                                                                                                      |
-| [fadeThinAlignmentsMode](#property-fadethinalignmentsmode)                     | Properties | LinearSyntenyView                                 | Whether to fade a sub-pixel-thin ribbon's opacity by its on-screen width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. |
-| [init](#property-init)                                                         | Properties | LinearSyntenyView                                 | used for initializing the view from a session snapshot.                                                                                                                                                 |
-| [importFormSyntenyTrackSelections](#volatile-importformsyntenytrackselections) | Volatiles  | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [awaitingAutoDiagonalize](#volatile-awaitingautodiagonalize)                   | Volatiles  | LinearSyntenyView                                 | True while the init autorun is waiting for the first synteny RPC so it can diagonalize.                                                                                                                 |
-| [autoDiagonalizeRequested](#volatile-autodiagonalizerequested)                 | Volatiles  | LinearSyntenyView                                 | Set true as soon as an init-time autoDiagonalize is requested, before any render can paint.                                                                                                             |
-| [autoDiagonalizeComplete](#volatile-autodiagonalizecomplete)                   | Volatiles  | LinearSyntenyView                                 | Set true only after the init-time DiagonalizeSynteny pass RESOLVES successfully.                                                                                                                        |
-| [diagonalizeStatus](#volatile-diagonalizestatus)                               | Volatiles  | LinearSyntenyView                                 | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; undefined outside that wait.                                                            |
-| [diagonalizeStopToken](#volatile-diagonalizestoptoken)                         | Volatiles  | LinearSyntenyView                                 | Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort it; undefined when none is running.                                                                                    |
-| [hasSomethingToShow](#getter-hassomethingtoshow)                               | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [showAssemblyNameInSubviewScalebar](#getter-showassemblynameinsubviewscalebar) | Getters    | LinearSyntenyView                                 | Opt each sub-view's scalebar into prefixing its refName labels with the assembly name (e.g. "hg38:chr1"), so stacked genome rows of different assemblies stay distinguishable.                          |
-| [drawCIGAR](#getter-drawcigar)                                                 | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [drawCIGARMatchesOnly](#getter-drawcigarmatchesonly)                           | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | LinearSyntenyView                                 | True if any track on any level has an adapter that declares the 'lod' capability.                                                                                                                       |
-| [hasCigarData](#getter-hascigardata)                                           | Getters    | LinearSyntenyView                                 | True if any currently-loaded synteny display has at least one feature with a CIGAR.                                                                                                                     |
-| [presentCigarKinds](#getter-presentcigarkinds)                                 | Getters    | LinearSyntenyView                                 | Union across every loaded synteny display of which CIGAR indel ops are actually drawn on screen.                                                                                                        |
-| [fadeThinAlignments](#getter-fadethinalignments)                               | Getters    | LinearSyntenyView                                 | Resolved fade-thin flag that renderParams reads.                                                                                                                                                        |
-| [anchorAssemblyName](#getter-anchorassemblyname)                               | Getters    | LinearSyntenyView                                 | The "anchor" assembly for colorBy:'reference': the assembly bordering the most synteny levels.                                                                                                          |
-| [showLoading](#getter-showloading)                                             | Getters    | LinearSyntenyView                                 | Whether to show a loading indicator instead of the import form or view                                                                                                                                  |
-| [loadingMessage](#getter-loadingmessage)                                       | Getters    | LinearSyntenyView                                 | Label for the generic loading spinner.                                                                                                                                                                  |
-| [showImportForm](#getter-showimportform)                                       | Getters    | LinearSyntenyView                                 | Whether to show the import form                                                                                                                                                                         |
-| [showMenuItems](#method-showmenuitems)                                         | Methods    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [headerMenuItems](#method-headermenuitems)                                     | Methods    | LinearSyntenyView                                 | includes a subset of view menu options because the full list is a little overwhelming                                                                                                                   |
-| [menuItems](#method-menuitems)                                                 | Methods    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [importFormRemoveRow](#action-importformremoverow)                             | Actions    | LinearSyntenyView                                 | Remove the pair-selection at the given index — the pair that vanishes when an assembly row is removed.                                                                                                  |
-| [clearImportFormSyntenyTracks](#action-clearimportformsyntenytracks)           | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setImportFormSyntenyTrack](#action-setimportformsyntenytrack)                 | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setDrawCurves](#action-setdrawcurves)                                         | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setCigarMode](#action-setcigarmode)                                           | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setDrawLocationMarkers](#action-setdrawlocationmarkers)                       | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setOverdrawPx](#action-setoverdrawpx)                                         | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setAlpha](#action-setalpha)                                                   | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setMinAlignmentLength](#action-setminalignmentlength)                         | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setLodMode](#action-setlodmode)                                               | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setColorBy](#action-setcolorby)                                               | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setOpacityByIdentity](#action-setopacitybyidentity)                           | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setFadeThinAlignmentsMode](#action-setfadethinalignmentsmode)                 | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [showAllRegions](#action-showallregions)                                       | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setInit](#action-setinit)                                                     | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setAwaitingAutoDiagonalize](#action-setawaitingautodiagonalize)               | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setAutoDiagonalizeRequested](#action-setautodiagonalizerequested)             | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setAutoDiagonalizeComplete](#action-setautodiagonalizecomplete)               | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setDiagonalizeStatus](#action-setdiagonalizestatus)                           | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [setDiagonalizeStopToken](#action-setdiagonalizestoptoken)                     | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [cancelAutoDiagonalize](#action-cancelautodiagonalize)                         | Actions    | LinearSyntenyView                                 | Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag, revealing the (undiagonalized) view.                                                                                    |
-| [exportSvg](#action-exportsvg)                                                 | Actions    | LinearSyntenyView                                 |                                                                                                                                                                                                         |
-| [id](#property-id)                                                             | Properties | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [trackSelectorType](#property-trackselectortype)                               | Properties | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [showIntraviewLinks](#property-showintraviewlinks)                             | Properties | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [linkViews](#property-linkviews)                                               | Properties | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [levels](#property-levels)                                                     | Properties | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [views](#property-views)                                                       | Properties | [LinearComparativeView](../linearcomparativeview) | N genome rows, with N-1 synteny `levels` between adjacent pairs.                                                                                                                                        |
-| [viewTrackConfigs](#property-viewtrackconfigs)                                 | Properties | [LinearComparativeView](../linearcomparativeview) | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                                               |
-| [width](#volatile-width)                                                       | Volatiles  | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [scrollZoom](#getter-scrollzoom)                                               | Getters    | [LinearComparativeView](../linearcomparativeview) | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                                                                                   |
-| [initialized](#getter-initialized)                                             | Getters    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [assemblyNames](#getter-assemblynames)                                         | Getters    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [isViewCompact](#method-isviewcompact)                                         | Methods    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [rubberBandMenuItems](#method-rubberbandmenuitems)                             | Methods    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [reconcileLevels](#action-reconcilelevels)                                     | Actions    | [LinearComparativeView](../linearcomparativeview) | Reconcile the levels array to the views array: exactly one synteny level per gap between adjacent views (N views -> N-1 levels).                                                                        |
-| [setWidth](#action-setwidth)                                                   | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [setViews](#action-setviews)                                                   | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [addView](#action-addview)                                                     | Actions    | [LinearComparativeView](../linearcomparativeview) | Push a new genome row.                                                                                                                                                                                  |
-| [removeLastRow](#action-removelastrow)                                         | Actions    | [LinearComparativeView](../linearcomparativeview) | Drop the bottom genome row and its synteny level.                                                                                                                                                       |
-| [setLinkViews](#action-setlinkviews)                                           | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [setScrollZoom](#action-setscrollzoom)                                         | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [activateTrackSelector](#action-activatetrackselector)                         | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [toggleTrack](#action-toggletrack)                                             | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [showTrack](#action-showtrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) | No-op for a level that doesn't exist, matching hideTrack/toggleTrack.                                                                                                                                   |
-| [hideTrack](#action-hidetrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [squareView](#action-squareview)                                               | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [clearView](#action-clearview)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [toggleCompactView](#action-togglecompactview)                                 | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [compactAllViews](#action-compactallviews)                                     | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [expandAllViews](#action-expandallviews)                                       | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [autoScaleLevelHeights](#action-autoscalelevelheights)                         | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                         |
-| [appendRow](#action-appendrow)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) | Append an assembly to the bottom of the stack and optionally show a synteny track on the new level connecting it to the previous bottom row.                                                            |
-| [displayName](#property-displayname)                                           | Properties | [BaseViewModel](../baseviewmodel)                 | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                                   |
-| [minimized](#property-minimized)                                               | Properties | [BaseViewModel](../baseviewmodel)                 |                                                                                                                                                                                                         |
-| [setDisplayName](#action-setdisplayname)                                       | Actions    | [BaseViewModel](../baseviewmodel)                 |                                                                                                                                                                                                         |
-| [setMinimized](#action-setminimized)                                           | Actions    | [BaseViewModel](../baseviewmodel)                 |                                                                                                                                                                                                         |
+| Member                                                                         | Kind       | Defined by                                              | Description                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------ | ---------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                                         | Properties | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [cigarMode](#property-cigarmode)                                               | Properties | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [drawCurves](#property-drawcurves)                                             | Properties | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [drawLocationMarkers](#property-drawlocationmarkers)                           | Properties | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [overdrawPx](#property-overdrawpx)                                             | Properties | LinearSyntenyView                                       | pixels beyond the visible viewport edge that synteny lines are still drawn                                                                                                                              |
+| [alpha](#property-alpha)                                                       | Properties | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [minAlignmentLength](#property-minalignmentlength)                             | Properties | LinearSyntenyView                                       | Hide alignment blocks shorter than this many bp.                                                                                                                                                        |
+| [lodMode](#property-lodmode)                                                   | Properties | LinearSyntenyView                                       | Level-of-detail tier selection for PIF adapters.                                                                                                                                                        |
+| [colorBy](#property-colorby)                                                   | Properties | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [showColorLegend](#property-showcolorlegend)                                   | Properties | LinearSyntenyView                                       | Show the floating color-by legend in the top-right of the synteny canvas.                                                                                                                               |
+| [opacityByIdentity](#property-opacitybyidentity)                               | Properties | LinearSyntenyView                                       | Fade alignment blocks by per-feature identity (lower identity = more transparent).                                                                                                                      |
+| [fadeThinAlignmentsMode](#property-fadethinalignmentsmode)                     | Properties | LinearSyntenyView                                       | Whether to fade a sub-pixel-thin ribbon's opacity by its on-screen width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. |
+| [init](#property-init)                                                         | Properties | LinearSyntenyView                                       | used for initializing the view from a session snapshot.                                                                                                                                                 |
+| [importFormSyntenyTrackSelections](#volatile-importformsyntenytrackselections) | Volatiles  | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [hasSomethingToShow](#getter-hassomethingtoshow)                               | Getters    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [showAssemblyNameInSubviewScalebar](#getter-showassemblynameinsubviewscalebar) | Getters    | LinearSyntenyView                                       | Opt each sub-view's scalebar into prefixing its refName labels with the assembly name (e.g. "hg38:chr1"), so stacked genome rows of different assemblies stay distinguishable.                          |
+| [drawCIGAR](#getter-drawcigar)                                                 | Getters    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [drawCIGARMatchesOnly](#getter-drawcigarmatchesonly)                           | Getters    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | LinearSyntenyView                                       | True if any track on any level has an adapter that declares the 'lod' capability.                                                                                                                       |
+| [allSyntenyDisplays](#getter-allsyntenydisplays)                               | Getters    | LinearSyntenyView                                       | Every synteny display across every level, flattened.                                                                                                                                                    |
+| [hasCigarData](#getter-hascigardata)                                           | Getters    | LinearSyntenyView                                       | True if any currently-loaded synteny display has at least one feature with a CIGAR.                                                                                                                     |
+| [presentCigarKinds](#getter-presentcigarkinds)                                 | Getters    | LinearSyntenyView                                       | Union across every loaded synteny display of which CIGAR indel ops are actually drawn on screen.                                                                                                        |
+| [anchorAssemblyName](#getter-anchorassemblyname)                               | Getters    | LinearSyntenyView                                       | The "anchor" assembly for colorBy:'reference': the assembly bordering the most synteny levels.                                                                                                          |
+| [showLoading](#getter-showloading)                                             | Getters    | LinearSyntenyView                                       | Whether to show a loading indicator instead of the import form or view                                                                                                                                  |
+| [loadingMessage](#getter-loadingmessage)                                       | Getters    | LinearSyntenyView                                       | Label for the generic loading spinner.                                                                                                                                                                  |
+| [showImportForm](#getter-showimportform)                                       | Getters    | LinearSyntenyView                                       | Whether to show the import form                                                                                                                                                                         |
+| [showMenuItems](#method-showmenuitems)                                         | Methods    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [headerMenuItems](#method-headermenuitems)                                     | Methods    | LinearSyntenyView                                       | includes a subset of view menu options because the full list is a little overwhelming                                                                                                                   |
+| [menuItems](#method-menuitems)                                                 | Methods    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [importFormRemoveRow](#action-importformremoverow)                             | Actions    | LinearSyntenyView                                       | Remove the pair-selection at the given index — the pair that vanishes when an assembly row is removed.                                                                                                  |
+| [clearImportFormSyntenyTracks](#action-clearimportformsyntenytracks)           | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setImportFormSyntenyTrack](#action-setimportformsyntenytrack)                 | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setDrawCurves](#action-setdrawcurves)                                         | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setCigarMode](#action-setcigarmode)                                           | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setDrawLocationMarkers](#action-setdrawlocationmarkers)                       | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setOverdrawPx](#action-setoverdrawpx)                                         | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setAlpha](#action-setalpha)                                                   | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setMinAlignmentLength](#action-setminalignmentlength)                         | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setLodMode](#action-setlodmode)                                               | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setColorBy](#action-setcolorby)                                               | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setOpacityByIdentity](#action-setopacitybyidentity)                           | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setFadeThinAlignmentsMode](#action-setfadethinalignmentsmode)                 | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [showAllRegions](#action-showallregions)                                       | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [setInit](#action-setinit)                                                     | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [exportSvg](#action-exportsvg)                                                 | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
+| [id](#property-id)                                                             | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [trackSelectorType](#property-trackselectortype)                               | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [showIntraviewLinks](#property-showintraviewlinks)                             | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [linkViews](#property-linkviews)                                               | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [levels](#property-levels)                                                     | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [views](#property-views)                                                       | Properties | [LinearComparativeView](../linearcomparativeview)       | N genome rows, with N-1 synteny `levels` between adjacent pairs.                                                                                                                                        |
+| [viewTrackConfigs](#property-viewtrackconfigs)                                 | Properties | [LinearComparativeView](../linearcomparativeview)       | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                                               |
+| [width](#volatile-width)                                                       | Volatiles  | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [scrollZoom](#getter-scrollzoom)                                               | Getters    | [LinearComparativeView](../linearcomparativeview)       | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                                                                                   |
+| [initialized](#getter-initialized)                                             | Getters    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [assemblyNames](#getter-assemblynames)                                         | Getters    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [isViewCompact](#method-isviewcompact)                                         | Methods    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [rubberBandMenuItems](#method-rubberbandmenuitems)                             | Methods    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [reconcileLevels](#action-reconcilelevels)                                     | Actions    | [LinearComparativeView](../linearcomparativeview)       | Reconcile the levels array to the views array: exactly one synteny level per gap between adjacent views (N views -> N-1 levels).                                                                        |
+| [setWidth](#action-setwidth)                                                   | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [setViews](#action-setviews)                                                   | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [addView](#action-addview)                                                     | Actions    | [LinearComparativeView](../linearcomparativeview)       | Push a new genome row.                                                                                                                                                                                  |
+| [removeLastRow](#action-removelastrow)                                         | Actions    | [LinearComparativeView](../linearcomparativeview)       | Drop the bottom genome row and its synteny level.                                                                                                                                                       |
+| [setLinkViews](#action-setlinkviews)                                           | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [setScrollZoom](#action-setscrollzoom)                                         | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [activateTrackSelector](#action-activatetrackselector)                         | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [toggleTrack](#action-toggletrack)                                             | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [showTrack](#action-showtrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       | No-op for a level that doesn't exist, matching hideTrack/toggleTrack.                                                                                                                                   |
+| [hideTrack](#action-hidetrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [squareView](#action-squareview)                                               | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [clearView](#action-clearview)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [toggleCompactView](#action-togglecompactview)                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [compactAllViews](#action-compactallviews)                                     | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [expandAllViews](#action-expandallviews)                                       | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [autoScaleLevelHeights](#action-autoscalelevelheights)                         | Actions    | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [appendRow](#action-appendrow)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview)       | Append an assembly to the bottom of the stack and optionally show a synteny track on the new level connecting it to the previous bottom row.                                                            |
+| [displayName](#property-displayname)                                           | Properties | [BaseViewModel](../baseviewmodel)                       | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                                   |
+| [minimized](#property-minimized)                                               | Properties | [BaseViewModel](../baseviewmodel)                       |                                                                                                                                                                                                         |
+| [setDisplayName](#action-setdisplayname)                                       | Actions    | [BaseViewModel](../baseviewmodel)                       |                                                                                                                                                                                                         |
+| [setMinimized](#action-setminimized)                                           | Actions    | [BaseViewModel](../baseviewmodel)                       |                                                                                                                                                                                                         |
+| [awaitingAutoDiagonalize](#volatile-awaitingautodiagonalize)                   | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | True while the init autorun is waiting on the diagonalize RPC.                                                                                                                                          |
+| [autoDiagonalizeRequested](#volatile-autodiagonalizerequested)                 | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Set true as soon as an init-time autoDiagonalize is requested, before any render can paint.                                                                                                             |
+| [autoDiagonalizeComplete](#volatile-autodiagonalizecomplete)                   | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Set true only after the init-time diagonalize pass RESOLVES successfully.                                                                                                                               |
+| [diagonalizeStatus](#volatile-diagonalizestatus)                               | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; undefined outside that wait.                                                            |
+| [diagonalizeStopToken](#volatile-diagonalizestoptoken)                         | Volatiles  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort it; undefined when none is running.                                                                                    |
+| [diagonalizeSettled](#getter-diagonalizesettled)                               | Getters    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | The diagonalize half of a view's `settled` gate: either no reorder was requested, or the one that was has completed.                                                                                    |
+| [setAwaitingAutoDiagonalize](#action-setawaitingautodiagonalize)               | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                         |
+| [setAutoDiagonalizeRequested](#action-setautodiagonalizerequested)             | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                         |
+| [setAutoDiagonalizeComplete](#action-setautodiagonalizecomplete)               | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                         |
+| [setDiagonalizeStatus](#action-setdiagonalizestatus)                           | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                         |
+| [setDiagonalizeStopToken](#action-setdiagonalizestoptoken)                     | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) |                                                                                                                                                                                                         |
+| [cancelAutoDiagonalize](#action-cancelautodiagonalize)                         | Actions    | [DiagonalizeProgressMixin](../diagonalizeprogressmixin) | Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears the wait flag, revealing the (undiagonalized) view.                                                                     |
 
 <details>
 <summary>LinearSyntenyView - Properties</summary>
@@ -208,7 +209,9 @@ doesn't read as a hard full-opacity hairball. 'auto' enables the fade once a
 display is dominated by sub-pixel ribbons (see
 LinearSyntenyDisplay.autoFadeThinAlignments); a genuinely sparse comparison
 (only a handful of ribbons) keeps full alpha so the fade doesn't wash it out.
-'on'/'off' pin it. Resolved by the `fadeThinAlignments` getter.
+'on'/'off' pin it. Resolved per display by LinearSyntenyDisplay's
+`fadeThinAlignments` — each level's ribbon density decides its own fade, so a
+dense level doesn't wash out a sparse one stacked below it.
 
 ```ts
 // type signature
@@ -270,76 +273,6 @@ init: types.frozen<LinearSyntenyViewInit | undefined>()
 <details>
 <summary>LinearSyntenyView - Volatiles</summary>
 
-#### volatile: awaitingAutoDiagonalize
-
-True while the init autorun is waiting for the first synteny RPC so it can
-diagonalize. Used to gate the canvas off — otherwise the user watches an
-undiagonalized hairball flash before the reorder kicks in.
-
-```ts
-// type signature
-type awaitingAutoDiagonalize = false
-// code
-awaitingAutoDiagonalize: false
-```
-
-#### volatile: autoDiagonalizeRequested
-
-Set true as soon as an init-time autoDiagonalize is requested, before any render
-can paint. Gates `settled` (and thus the `synteny_canvas_done` test-id) so a
-screenshot / browser-test can't capture the pre-reorder hairball during the
-view-building await window, before `awaitingAutoDiagonalize` flips.
-
-```ts
-// type signature
-type autoDiagonalizeRequested = false
-// code
-autoDiagonalizeRequested: false
-```
-
-#### volatile: autoDiagonalizeComplete
-
-Set true only after the init-time DiagonalizeSynteny pass RESOLVES successfully.
-If the reorder is skipped or throws, this stays false so `settled` never reports
-done on an undiagonalized view — the capture fails loudly (times out) instead of
-committing a hairball.
-
-```ts
-// type signature
-type autoDiagonalizeComplete = false
-// code
-autoDiagonalizeComplete: false
-```
-
-#### volatile: diagonalizeStatus
-
-Live status from the auto-diagonalize RPC (download %, parse, algorithm phase)
-shown on the reordering spinner; undefined outside that wait.
-
-```ts
-// type signature
-type diagonalizeStatus = RpcStatus | undefined
-// code
-diagonalizeStatus: undefined as RpcStatus | undefined
-```
-
-#### volatile: diagonalizeStopToken
-
-Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort
-it; undefined when none is running.
-
-```ts
-// type signature
-type diagonalizeStopToken = StopToken | undefined
-// code
-diagonalizeStopToken: undefined as StopToken | undefined
-```
-
-</details>
-
-<details>
-<summary>LinearSyntenyView - Volatiles (other undocumented members)</summary>
-
 | Member                                                                                       | Type                                       |
 | -------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | <span id="volatile-importformsyntenytrackselections">importFormSyntenyTrackSelections</span> | `IObservableArray<ImportFormSyntenyTrack>` |
@@ -370,6 +303,16 @@ PAFAdapter, BlastTabularAdapter) have nothing to switch between.
 type hasLodCapableAdapter = boolean
 ```
 
+#### getter: allSyntenyDisplays
+
+Every synteny display across every level, flattened. One memoized getter for the
+several view-wide aggregates below, which would otherwise each re-flatten the
+levels.
+
+```ts
+type allSyntenyDisplays = any[]
+```
+
 #### getter: hasCigarData
 
 True if any currently-loaded synteny display has at least one feature with a
@@ -391,17 +334,6 @@ visible-width op of that kind is painted somewhere in the view.
 
 ```ts
 type presentCigarKinds = number
-```
-
-#### getter: fadeThinAlignments
-
-Resolved fade-thin flag that renderParams reads. In 'auto' mode the fade turns
-on once any loaded synteny display is dominated by sub-pixel ribbons
-(`autoFadeThinAlignments` — a thin hairball that benefits from decluttering); a
-sparse view keeps its few ribbons at full alpha. 'on'/'off' pin it.
-
-```ts
-type fadeThinAlignments = boolean
 ```
 
 #### getter: anchorAssemblyName
@@ -493,15 +425,6 @@ row-to-pair mapping lives with the React-side assembly list.
 type importFormRemoveRow = (pairIdx: number) => void
 ```
 
-#### action: cancelAutoDiagonalize
-
-Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
-revealing the (undiagonalized) view.
-
-```ts
-type cancelAutoDiagonalize = () => void
-```
-
 </details>
 
 <details>
@@ -524,11 +447,6 @@ type cancelAutoDiagonalize = () => void
 | <span id="action-setfadethinalignmentsmode">setFadeThinAlignmentsMode</span>       | `(arg: "auto" \| "off" \| "on") => void`                                                                                              |
 | <span id="action-showallregions">showAllRegions</span>                             | `() => void`                                                                                                                          |
 | <span id="action-setinit">setInit</span>                                           | `(init?: LinearSyntenyViewInit \| undefined) => void`                                                                                 |
-| <span id="action-setawaitingautodiagonalize">setAwaitingAutoDiagonalize</span>     | `(arg: boolean) => void`                                                                                                              |
-| <span id="action-setautodiagonalizerequested">setAutoDiagonalizeRequested</span>   | `(arg: boolean) => void`                                                                                                              |
-| <span id="action-setautodiagonalizecomplete">setAutoDiagonalizeComplete</span>     | `(arg: boolean) => void`                                                                                                              |
-| <span id="action-setdiagonalizestatus">setDiagonalizeStatus</span>                 | `(arg?: RpcStatus \| undefined) => void`                                                                                              |
-| <span id="action-setdiagonalizestoptoken">setDiagonalizeStopToken</span>           | `(arg?: StopToken \| undefined) => void`                                                                                              |
 | <span id="action-exportsvg">exportSvg</span>                                       | `(opts: ExportSvgOptions) => Promise<void>`                                                                                           |
 
 </details>
@@ -728,5 +646,109 @@ displayName: types.maybe(types.string)
 | ------------------------------------------------------ | ------------------------- |
 | <span id="action-setdisplayname">setDisplayName</span> | `(name: string) => void`  |
 | <span id="action-setminimized">setMinimized</span>     | `(flag: boolean) => void` |
+
+</details>
+
+<details>
+<summary>Derived from DiagonalizeProgressMixin</summary>
+
+[DiagonalizeProgressMixin →](../diagonalizeprogressmixin)
+
+**Volatiles**
+
+#### volatile: awaitingAutoDiagonalize
+
+True while the init autorun is waiting on the diagonalize RPC. Gates the canvas
+off — otherwise the user watches an undiagonalized hairball flash before the
+reorder kicks in.
+
+```ts
+// type signature
+type awaitingAutoDiagonalize = false
+// code
+awaitingAutoDiagonalize: false
+```
+
+#### volatile: autoDiagonalizeRequested
+
+Set true as soon as an init-time autoDiagonalize is requested, before any render
+can paint. Gates `diagonalizeSettled` so a capture can't commit the pre-reorder
+view during the view-building await window, before `awaitingAutoDiagonalize`
+flips.
+
+```ts
+// type signature
+type autoDiagonalizeRequested = false
+// code
+autoDiagonalizeRequested: false
+```
+
+#### volatile: autoDiagonalizeComplete
+
+Set true only after the init-time diagonalize pass RESOLVES successfully. If the
+reorder is skipped or throws this stays false, so `diagonalizeSettled` never
+reports done on an undiagonalized view — the capture fails loudly (times out)
+instead of committing a hairball.
+
+```ts
+// type signature
+type autoDiagonalizeComplete = false
+// code
+autoDiagonalizeComplete: false
+```
+
+#### volatile: diagonalizeStatus
+
+Live status from the auto-diagonalize RPC (download %, parse, algorithm phase)
+shown on the reordering spinner; undefined outside that wait.
+
+```ts
+// type signature
+type diagonalizeStatus = RpcStatus | undefined
+// code
+diagonalizeStatus: undefined as RpcStatus | undefined
+```
+
+#### volatile: diagonalizeStopToken
+
+Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort
+it; undefined when none is running.
+
+```ts
+// type signature
+type diagonalizeStopToken = StopToken | undefined
+// code
+diagonalizeStopToken: undefined as StopToken | undefined
+```
+
+**Getters**
+
+#### getter: diagonalizeSettled
+
+The diagonalize half of a view's `settled` gate: either no reorder was
+requested, or the one that was has completed.
+
+```ts
+type diagonalizeSettled = boolean
+```
+
+**Actions**
+
+#### action: cancelAutoDiagonalize
+
+Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears
+the wait flag, revealing the (undiagonalized) view.
+
+```ts
+type cancelAutoDiagonalize = () => void
+```
+
+| Member                                                                           | Type                                     |
+| -------------------------------------------------------------------------------- | ---------------------------------------- |
+| <span id="action-setawaitingautodiagonalize">setAwaitingAutoDiagonalize</span>   | `(arg: boolean) => void`                 |
+| <span id="action-setautodiagonalizerequested">setAutoDiagonalizeRequested</span> | `(arg: boolean) => void`                 |
+| <span id="action-setautodiagonalizecomplete">setAutoDiagonalizeComplete</span>   | `(arg: boolean) => void`                 |
+| <span id="action-setdiagonalizestatus">setDiagonalizeStatus</span>               | `(arg?: RpcStatus \| undefined) => void` |
+| <span id="action-setdiagonalizestoptoken">setDiagonalizeStopToken</span>         | `(arg?: StopToken \| undefined) => void` |
 
 </details>

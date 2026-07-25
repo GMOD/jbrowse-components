@@ -12,6 +12,7 @@ import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
+import type { SyntenyPickResult } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { ParentViewDuck } from './parentViewDuck.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
@@ -74,20 +75,51 @@ function openSyntenyFeatureWidget(
   )
 }
 
-// Single hover-id update across all live displays in a level. Picked display
-// gets the hit's feature index; everyone else clears.
-function setHoverOnDisplays(
+// Single hover- or click-id update across all live displays in a level. Picked
+// display gets the hit's feature index; everyone else clears.
+function setIdxOnDisplays(
   model: LinearSyntenyViewHelperModel,
+  set: (display: LinearSyntenyDisplayModel, idx: number) => void,
   hitDisplay: LinearSyntenyDisplayModel | undefined,
   featureIndex: number,
 ) {
   transaction(() => {
     for (const display of model.linearSyntenyDisplays) {
       if (isAlive(display)) {
-        display.setHoveredFeatureIdx(display === hitDisplay ? featureIndex : -1)
+        set(display, display === hitDisplay ? featureIndex : -1)
       }
     }
   })
+}
+
+function setHoverOnDisplays(
+  model: LinearSyntenyViewHelperModel,
+  hitDisplay: LinearSyntenyDisplayModel | undefined,
+  featureIndex: number,
+) {
+  setIdxOnDisplays(
+    model,
+    (d, idx) => {
+      d.setHoveredFeatureIdx(idx)
+    },
+    hitDisplay,
+    featureIndex,
+  )
+}
+
+function setClickedOnDisplays(
+  model: LinearSyntenyViewHelperModel,
+  hitDisplay: LinearSyntenyDisplayModel | undefined,
+  featureIndex: number,
+) {
+  setIdxOnDisplays(
+    model,
+    (d, idx) => {
+      d.setClickedFeatureIdx(idx)
+    },
+    hitDisplay,
+    featureIndex,
+  )
 }
 
 const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
@@ -137,6 +169,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     return backend.pick(coords.x, coords.y, state)
   }
 
+  // `displaysByKey` is a computed no reaction observes, so each access rebuilds
+  // the map — resolve the hit to its display exactly once per event.
+  function hitDisplay(hit: SyntenyPickResult | undefined) {
+    return hit ? model.displaysByKey.get(hit.key) : undefined
+  }
+
   // Drag-pan accumulator. Drag mode flushes synchronously per mousemove
   // because mouse events fire at ~60Hz, no batching needed.
   function dragPan(dx: number) {
@@ -159,11 +197,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const coords = canvasCoords(event)
     if (coords) {
       const hit = pickAt(coords)
-      setHoverOnDisplays(
-        model,
-        hit ? model.displaysByKey.get(hit.key) : undefined,
-        hit ? hit.featureIndex : -1,
-      )
+      setHoverOnDisplays(model, hitDisplay(hit), hit ? hit.featureIndex : -1)
     }
   }
 
@@ -193,15 +227,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       return
     }
     const hit = pickAt(coords)
-    transaction(() => {
-      for (const display of model.linearSyntenyDisplays) {
-        const isHit = hit && model.displaysByKey.get(hit.key) === display
-        display.setClickedFeatureIdx(isHit ? hit.featureIndex : -1)
-        if (isHit) {
-          openSyntenyFeatureWidget(display, hit.featureIndex)
-        }
-      }
-    })
+    const display = hitDisplay(hit)
+    setClickedOnDisplays(model, display, hit ? hit.featureIndex : -1)
+    if (display && hit) {
+      openSyntenyFeatureWidget(display, hit.featureIndex)
+    }
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {
@@ -214,12 +244,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!hit) {
       return
     }
-    const hitDisplay = model.displaysByKey.get(hit.key)
-    const feat = hitDisplay?.getFeature(hit.featureIndex)
-    if (hitDisplay && feat) {
+    const display = hitDisplay(hit)
+    const feat = display?.getFeature(hit.featureIndex)
+    if (display && feat) {
       // clear the hover tooltip so it doesn't stay stuck behind the menu
       setHoverOnDisplays(model, undefined, -1)
-      hitDisplay.openContextMenu({
+      display.openContextMenu({
         clientX: event.clientX,
         clientY: event.clientY,
         feature: feat,

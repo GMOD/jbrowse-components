@@ -1,10 +1,12 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { normalizeTrackInit } from '@jbrowse/plugin-linear-genome-view'
-import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
+import {
+  DiagonalizeProgressMixin,
+  withDiagonalizeProgress,
+} from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -23,8 +25,6 @@ import type {
   LinearSyntenyViewInit,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -62,6 +62,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .compose(
       'LinearSyntenyView',
       baseModel(pluginManager),
+      DiagonalizeProgressMixin(),
       types.model({
         /**
          * #property
@@ -134,8 +135,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * 'auto' enables the fade once a display is dominated by sub-pixel
          * ribbons (see LinearSyntenyDisplay.autoFadeThinAlignments); a genuinely
          * sparse comparison (only a handful of ribbons) keeps full alpha so the
-         * fade doesn't wash it out. 'on'/'off' pin it. Resolved by the
-         * `fadeThinAlignments` getter.
+         * fade doesn't wash it out. 'on'/'off' pin it. Resolved per display by
+         * LinearSyntenyDisplay's `fadeThinAlignments` — each level's ribbon
+         * density decides its own fade, so a dense level doesn't wash out a
+         * sparse one stacked below it.
          */
         fadeThinAlignmentsMode: types.stripDefault(
           types.enumeration('FadeThinMode', ['auto', 'on', 'off']),
@@ -167,42 +170,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
-      /**
-       * #volatile
-       * True while the init autorun is waiting for the first synteny RPC so
-       * it can diagonalize. Used to gate the canvas off — otherwise the user
-       * watches an undiagonalized hairball flash before the reorder kicks in.
-       */
-      awaitingAutoDiagonalize: false,
-      /**
-       * #volatile
-       * Set true as soon as an init-time autoDiagonalize is requested, before
-       * any render can paint. Gates `settled` (and thus the
-       * `synteny_canvas_done` test-id) so a screenshot / browser-test can't
-       * capture the pre-reorder hairball during the view-building await window,
-       * before `awaitingAutoDiagonalize` flips.
-       */
-      autoDiagonalizeRequested: false,
-      /**
-       * #volatile
-       * Set true only after the init-time DiagonalizeSynteny pass RESOLVES
-       * successfully. If the reorder is skipped or throws, this stays false so
-       * `settled` never reports done on an undiagonalized view — the capture
-       * fails loudly (times out) instead of committing a hairball.
-       */
-      autoDiagonalizeComplete: false,
-      /**
-       * #volatile
-       * Live status from the auto-diagonalize RPC (download %, parse, algorithm
-       * phase) shown on the reordering spinner; undefined outside that wait.
-       */
-      diagonalizeStatus: undefined as RpcStatus | undefined,
-      /**
-       * #volatile
-       * Stop token for the in-flight auto-diagonalize, so the spinner's Cancel
-       * can abort it; undefined when none is running.
-       */
-      diagonalizeStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       /**
@@ -248,6 +215,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * Every synteny display across every level, flattened. One memoized getter
+       * for the several view-wide aggregates below, which would otherwise each
+       * re-flatten the levels.
+       */
+      get allSyntenyDisplays() {
+        return self.levels.flatMap(l => l.linearSyntenyDisplays)
+      },
+      /**
+       * #getter
        * True if any currently-loaded synteny display has at least one
        * feature with a CIGAR. Used to gate CIGAR-related menu items —
        * coarse-tier PIF files and CIGAR-less PAFs have nothing to show.
@@ -260,9 +236,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // "has CIGAR, or hasn't reported yet" — an unloaded display reads
         // undefined and counts as a maybe. No displays at all -> no maybes ->
         // false.
-        return self.levels
-          .flatMap(l => l.linearSyntenyDisplays)
-          .some(d => d.featureData?.hasCigar ?? true)
+        return this.allSyntenyDisplays.some(
+          d => d.featureData?.hasCigar ?? true,
+        )
       },
       /**
        * #getter
@@ -271,25 +247,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * when a visible-width op of that kind is painted somewhere in the view.
        */
       get presentCigarKinds(): CigarOpMask {
-        return self.levels
-          .flatMap(l => l.linearSyntenyDisplays)
-          .reduce((mask, d) => mask | d.presentCigarKinds, 0)
-      },
-      /**
-       * #getter
-       * Resolved fade-thin flag that renderParams reads. In 'auto' mode the fade
-       * turns on once any loaded synteny display is dominated by sub-pixel
-       * ribbons (`autoFadeThinAlignments` — a thin hairball that benefits from
-       * decluttering); a sparse view keeps its few ribbons at full alpha.
-       * 'on'/'off' pin it.
-       */
-      get fadeThinAlignments(): boolean {
-        const { fadeThinAlignmentsMode } = self
-        return fadeThinAlignmentsMode === 'auto'
-          ? self.levels
-              .flatMap(l => l.linearSyntenyDisplays)
-              .some(d => d.autoFadeThinAlignments)
-          : fadeThinAlignmentsMode === 'on'
+        return this.allSyntenyDisplays.reduce(
+          (mask, d) => mask | d.presentCigarKinds,
+          0,
+        )
       },
       /**
        * #getter
@@ -301,20 +262,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * so a region keeps its color as it's traced across levels.
        */
       get anchorAssemblyName() {
-        const asms = self.views.map(v => v.assemblyNames[0])
+        // views without an assembly yet can't be the anchor, so drop them up
+        // front rather than guarding every read below
+        const asms = self.views
+          .map(v => v.assemblyNames[0])
+          .filter(a => a !== undefined)
         const counts = new Map<string, number>()
         for (let i = 0; i < asms.length - 1; i++) {
-          for (const a of [asms[i], asms[i + 1]]) {
-            if (a) {
-              counts.set(a, (counts.get(a) ?? 0) + 1)
-            }
-          }
+          counts.set(asms[i]!, (counts.get(asms[i]!) ?? 0) + 1)
+          counts.set(asms[i + 1]!, (counts.get(asms[i + 1]!) ?? 0) + 1)
         }
         let best: string | undefined
         let bestCount = -1
         for (const a of asms) {
-          const c = a ? (counts.get(a) ?? 0) : 0
-          if (a && c > bestCount) {
+          const c = counts.get(a) ?? 0
+          if (c > bestCount) {
             bestCount = c
             best = a
           }
@@ -452,44 +414,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setInit(init?: LinearSyntenyViewInit) {
         self.init = init
-      },
-      /**
-       * #action
-       */
-      setAwaitingAutoDiagonalize(arg: boolean) {
-        self.awaitingAutoDiagonalize = arg
-      },
-      /**
-       * #action
-       */
-      setAutoDiagonalizeRequested(arg: boolean) {
-        self.autoDiagonalizeRequested = arg
-      },
-      /**
-       * #action
-       */
-      setAutoDiagonalizeComplete(arg: boolean) {
-        self.autoDiagonalizeComplete = arg
-      },
-      /**
-       * #action
-       */
-      setDiagonalizeStatus(arg?: RpcStatus) {
-        self.diagonalizeStatus = arg
-      },
-      /**
-       * #action
-       */
-      setDiagonalizeStopToken(arg?: StopToken) {
-        self.diagonalizeStopToken = arg
-      },
-      /**
-       * #action
-       * Abort an in-flight auto-diagonalize; the runner's finally clears the
-       * wait flag, revealing the (undiagonalized) view.
-       */
-      cancelAutoDiagonalize() {
-        stopStopToken(self.diagonalizeStopToken)
       },
     }))
     .actions(self => ({

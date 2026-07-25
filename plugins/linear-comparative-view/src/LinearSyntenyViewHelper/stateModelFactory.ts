@@ -152,8 +152,7 @@ export function linearSyntenyViewHelperModelFactory(
           // if an init autoDiagonalize was requested, the view isn't "done"
           // until that reorder has actually completed — otherwise a
           // skipped/errored reorder would settle on the undiagonalized view
-          (!this.parentView.autoDiagonalizeRequested ||
-            this.parentView.autoDiagonalizeComplete)
+          this.parentView.diagonalizeSettled
         )
       },
     }))

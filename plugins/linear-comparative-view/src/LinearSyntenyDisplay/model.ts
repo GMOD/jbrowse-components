@@ -6,6 +6,7 @@ import {
   NO_CIGAR_OPS,
   coerceColorBy,
   isDataCurrent,
+  regionSignature,
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
@@ -317,6 +318,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           this.meanAlignmentPx > 0 &&
           this.meanAlignmentPx < FADE_AUTO_SUBPIXEL_PX
         )
+      },
+      /**
+       * #getter
+       * Resolved fade-thin flag that renderParams reads. 'auto' defers to this
+       * display's own ribbon density (`autoFadeThinAlignments`), so a dense level
+       * fades without washing out a sparse one stacked below it; 'on'/'off' pin
+       * it view-wide.
+       */
+      get fadeThinAlignments(): boolean {
+        const mode = this.view.fadeThinAlignmentsMode
+        return mode === 'auto' ? this.autoFadeThinAlignments : mode === 'on'
       },
       /**
        * #getter
@@ -637,7 +649,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           yTop: 0,
           height: this.height,
           alpha: view.alpha,
-          fadeThinAlignments: view.fadeThinAlignments,
+          fadeThinAlignments: this.fadeThinAlignments,
           minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId: toFeatureId(hoveredFeatureIdx),
           clickedFeatureId: toFeatureId(clickedFeatureIdx),

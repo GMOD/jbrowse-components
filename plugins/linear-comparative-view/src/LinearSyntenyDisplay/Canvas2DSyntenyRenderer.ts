@@ -16,6 +16,7 @@ import {
   buildFeaturePath,
   computeTransform,
   isEdgeCulled,
+  makeCornerScratch,
   projectCorners,
   ribbonPerpWidth,
   strokeCenterline,
@@ -148,6 +149,7 @@ function drawInstances(
     fadeThinAlignments,
   } = params
   const style = new StyleCache()
+  const scratch = makeCornerScratch()
   // Every stroke this function makes is 1px (centerlines, marker ticks, the
   // clicked outline), so the width is set once for the pass.
   ctx.lineWidth = 1
@@ -160,7 +162,7 @@ function drawInstances(
       continue
     }
 
-    const c = projectCorners(data, i, transform)
+    const c = projectCorners(data, i, transform, scratch)
     if (isEdgeCulled(c, leftLimit, rightLimit)) {
       continue
     }

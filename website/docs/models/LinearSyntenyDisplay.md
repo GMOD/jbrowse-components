@@ -66,11 +66,13 @@ and the `renderParams` the view reads out.
 | [totalAlignmentBp](#getter-totalalignmentbp)                   | Getters    | LinearSyntenyDisplay          | Summed genomic length (axis 0) of every loaded alignment block.                                                                                                                                       |
 | [meanAlignmentPx](#getter-meanalignmentpx)                     | Getters    | LinearSyntenyDisplay          | Mean on-screen width (px, axis 0) of this display's alignment blocks, or 0 until a fetch lands and both views connect.                                                                                |
 | [autoFadeThinAlignments](#getter-autofadethinalignments)       | Getters    | LinearSyntenyDisplay          | 'auto' fade-thin signal for this display: on when the ribbons are predominantly sub-pixel (`meanAlignmentPx` < 1) and there are enough of them to form a hairball.                                    |
+| [fadeThinAlignments](#getter-fadethinalignments)               | Getters    | LinearSyntenyDisplay          | Resolved fade-thin flag that renderParams reads.                                                                                                                                                      |
 | [presentCigarKinds](#getter-presentcigarkinds)                 | Getters    | LinearSyntenyDisplay          | Which CIGAR indel ops are actually painted in the current geometry.                                                                                                                                   |
 | [warnings](#getter-warnings)                                   | Getters    | LinearSyntenyDisplay          | Warnings surfaced in the view header.                                                                                                                                                                 |
 | [ready](#getter-ready)                                         | Getters    | LinearSyntenyDisplay          | A fetch has completed (data is present, even if it mapped zero features).                                                                                                                             |
 | [loading](#getter-loading)                                     | Getters    | LinearSyntenyDisplay          | First load: a fetch is running and no data has arrived yet.                                                                                                                                           |
 | [refetching](#getter-refetching)                               | Getters    | LinearSyntenyDisplay          | Refetch in-flight: a new fetch is running but stale ribbons are still on screen (e.g. zoom-out across a log2 bucket, region change).                                                                  |
+| [regionSignature](#getter-regionsignature)                     | Getters    | LinearSyntenyDisplay          | Contents, order and orientation of both connected views' displayed regions — the inputs the worker's cumBp index is built from, so a change in any of them makes held features stale.                 |
 | [currentFetchKey](#getter-currentfetchkey)                     | Getters    | LinearSyntenyDisplay          | Fetch-input signature (region set/order, snapped fetch window, zoom bucket, CIGAR/marker draw options, LOD tier) for the view's current state — the same tracked deps the fetch autorun refetches on. |
 | [dataCurrent](#getter-datacurrent)                             | Getters    | LinearSyntenyDisplay          | True when the rendered data was fetched for the view's current inputs.                                                                                                                                |
 | [svgReady](#getter-svgready)                                   | Getters    | LinearSyntenyDisplay          | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)).                                                                |
@@ -208,6 +210,16 @@ widen past 1px.
 type autoFadeThinAlignments = boolean
 ```
 
+#### getter: fadeThinAlignments
+
+Resolved fade-thin flag that renderParams reads. 'auto' defers to this display's
+own ribbon density (`autoFadeThinAlignments`), so a dense level fades without
+washing out a sparse one stacked below it; 'on'/'off' pin it view-wide.
+
+```ts
+type fadeThinAlignments = boolean
+```
+
 #### getter: presentCigarKinds
 
 Which CIGAR indel ops are actually painted in the current geometry. The worker
@@ -260,6 +272,20 @@ every viewport change.
 
 ```ts
 type refetching = boolean
+```
+
+#### getter: regionSignature
+
+Contents, order and orientation of both connected views' displayed regions — the
+inputs the worker's cumBp index is built from, so a change in any of them makes
+held features stale. Its own getter, not inlined into `currentFetchKey`: this is
+O(total regions) (a whole-genome view of a scaffold-heavy assembly runs to
+thousands), while `currentFetchKey`'s other deps flip on every pan past the
+buffer and every zoom bucket. Split out, MobX memoizes it against
+`displayedRegions` alone instead of rebuilding the whole string per zoom step.
+
+```ts
+type regionSignature = string
 ```
 
 #### getter: currentFetchKey
@@ -395,15 +421,15 @@ type renderParams = {…} | undefined
 <details>
 <summary>LinearSyntenyDisplay - Getters (other undocumented members)</summary>
 
-| Member                                               | Type                                                                                                          |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| <span id="getter-parenthelper">parentHelper</span>   | `{ height: number; level: number; }`                                                                          |
-| <span id="getter-level">level</span>                 | `number`                                                                                                      |
-| <span id="getter-height">height</span>               | `number`                                                                                                      |
-| <span id="getter-adapterconfig">adapterConfig</span> | `any`                                                                                                         |
-| <span id="getter-numfeats">numFeats</span>           | `number`                                                                                                      |
-| <span id="getter-view">view</span>                   | `ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>` |
-| <span id="getter-tooltiptext">tooltipText</span>     | `string`                                                                                                      |
+| Member                                               | Type                                                                                                                       |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| <span id="getter-parenthelper">parentHelper</span>   | `{ height: number; level: number; }`                                                                                       |
+| <span id="getter-level">level</span>                 | `number`                                                                                                                   |
+| <span id="getter-height">height</span>               | `number`                                                                                                                   |
+| <span id="getter-adapterconfig">adapterConfig</span> | `any`                                                                                                                      |
+| <span id="getter-numfeats">numFeats</span>           | `number`                                                                                                                   |
+| <span id="getter-view">view</span>                   | `ModelInstanceTypeProps<_OverrideProps<Omit<_OverrideProps<…>, never>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>` |
+| <span id="getter-tooltiptext">tooltipText</span>     | `string`                                                                                                                   |
 
 </details>
 

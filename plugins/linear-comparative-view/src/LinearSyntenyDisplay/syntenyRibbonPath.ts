@@ -158,6 +158,15 @@ export interface ProjectedCorners {
   sx4: number
 }
 
+// Mutable scratch for `projectCorners`, so the per-instance loops (draw, pick,
+// pick-index build) don't allocate one object per instance — at 500k instances
+// that allocation dominated the pick-index rebuild. Corners never outlive the
+// iteration that projected them, so every caller can hold a single scratch for
+// the whole loop.
+export function makeCornerScratch(): ProjectedCorners {
+  return { sx1: 0, sx2: 0, sx3: 0, sx4: 0 }
+}
+
 // SYNC: matches computeCorners in syntenyTypes.slang. Corners are window-
 // relative bp (cumBp - base), so screen X is `bpRel * bpPerPxInv + panPx` —
 // the identical expression the shader evaluates.
@@ -165,13 +174,13 @@ export function projectCorners(
   data: SyntenyInstanceData,
   i: number,
   t: ComputedTransform,
-): ProjectedCorners {
-  return {
-    sx1: data.bp1[i]! * t.bpPerPxInv0 + t.panPx0,
-    sx2: data.bp2[i]! * t.bpPerPxInv0 + t.panPx0,
-    sx3: data.bp3[i]! * t.bpPerPxInv1 + t.panPx1,
-    sx4: data.bp4[i]! * t.bpPerPxInv1 + t.panPx1,
-  }
+  out: ProjectedCorners,
+) {
+  out.sx1 = data.bp1[i]! * t.bpPerPxInv0 + t.panPx0
+  out.sx2 = data.bp2[i]! * t.bpPerPxInv0 + t.panPx0
+  out.sx3 = data.bp3[i]! * t.bpPerPxInv1 + t.panPx1
+  out.sx4 = data.bp4[i]! * t.bpPerPxInv1 + t.panPx1
+  return out
 }
 
 // Ribbon perpendicular (visual) thickness in px. A steep diagonal can span

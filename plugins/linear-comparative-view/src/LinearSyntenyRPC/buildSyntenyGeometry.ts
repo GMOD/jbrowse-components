@@ -310,21 +310,18 @@ export function buildSyntenyGeometry({
   // Pass 1: one full-span KIND_BASE trapezoid per feature for gapless
   // match-color coverage. Tiled features skip it — pass 2 lays their base down
   // per match segment so the intervening indels stay see-through.
-  function emitNonCigarFeature(i: number) {
+  for (let i = 0; i < featureCount; i++) {
     const x11 = p11_cumBp[i]!
     const x12 = p12_cumBp[i]!
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
+    const alignmentLength = alignmentLengths[i]!
     if (!isTiled(i)) {
-      addInstance(x11, x12, x22, x21, KIND_BASE, i, alignmentLengths[i]!)
+      addInstance(x11, x12, x22, x21, KIND_BASE, i, alignmentLength)
     }
     if (!willDrawCigarArr[i] && drawLocationMarkers) {
-      addLocationMarkers(x11, x12, x22, x21, i, alignmentLengths[i]!)
+      addLocationMarkers(x11, x12, x22, x21, i, alignmentLength)
     }
-  }
-
-  for (let i = 0; i < featureCount; i++) {
-    emitNonCigarFeature(i)
   }
 
   // Pass 2: per-segment CIGAR quads on top of pass 1. cigarSegmentKind decides

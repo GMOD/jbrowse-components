@@ -11,7 +11,6 @@ import {
   minmax,
 } from '@jbrowse/core/util'
 import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -20,6 +19,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
+import { DiagonalizeProgressMixin } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { observable } from 'mobx'
@@ -40,17 +40,11 @@ import type {
 } from '../DotplotDisplay/dotplotRenderingBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from './1dview.ts'
-import type {
-  Coord,
-  DotplotViewInit,
-  ImportFormSyntenyTrack,
-} from './types.ts'
+import type { Coord, DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { RpcStatus } from '@jbrowse/core/util'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
@@ -154,6 +148,7 @@ export default function stateModelFactory(pm: PluginManager) {
         BaseViewModel,
         RenderLifecycleMixin(),
         HighlightsMixin(),
+        DiagonalizeProgressMixin(),
         types.model({
           /**
            * #property
@@ -266,43 +261,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         importFormSyntenyTrackSelections:
           observable.array<ImportFormSyntenyTrack>(),
-        /**
-         * #volatile
-         * True while the init autorun is waiting for the first dotplot RPC
-         * so it can run the DiagonalizeDotplot pass. Used to gate showLoading
-         * on so the user sees a spinner with "Reordering chromosomes…"
-         * instead of an undiagonalized plot that immediately re-paints.
-         */
-        awaitingAutoDiagonalize: false,
-        /**
-         * #volatile
-         * Live status from the auto-diagonalize RPC (download %, parse,
-         * algorithm phase) shown on the reordering spinner; undefined outside
-         * that wait.
-         */
-        diagonalizeStatus: undefined as RpcStatus | undefined,
-        /**
-         * #volatile
-         * Stop token for the in-flight auto-diagonalize, so the spinner's
-         * Cancel can abort it; undefined when none is running.
-         */
-        diagonalizeStopToken: undefined as StopToken | undefined,
-        /**
-         * #volatile
-         * Set true as soon as an init-time autoDiagonalize is requested, before
-         * any render can paint. Gates `settled` (and thus the
-         * `dotplot_webgl_canvas_done` test-id) so a screenshot / browser-test
-         * can't capture the pre-reorder plot.
-         */
-        autoDiagonalizeRequested: false,
-        /**
-         * #volatile
-         * Set true only after the init-time DiagonalizeDotplot pass RESOLVES
-         * successfully. If the reorder is skipped or throws, this stays false so
-         * `settled` never reports done on an undiagonalized plot — the capture
-         * fails loudly (times out) instead of committing a hairball.
-         */
-        autoDiagonalizeComplete: false,
       }))
       .actions(self => ({
         /**
@@ -503,7 +461,7 @@ export default function stateModelFactory(pm: PluginManager) {
             // if an init autoDiagonalize was requested, the plot isn't "done"
             // until that reorder has actually completed — otherwise a
             // skipped/errored reorder would settle on the undiagonalized plot
-            (!self.autoDiagonalizeRequested || self.autoDiagonalizeComplete)
+            self.diagonalizeSettled
           )
         },
         /**
@@ -668,44 +626,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setInit(init?: DotplotViewInit) {
           self.init = init
-        },
-        /**
-         * #action
-         */
-        setAwaitingAutoDiagonalize(arg: boolean) {
-          self.awaitingAutoDiagonalize = arg
-        },
-        /**
-         * #action
-         */
-        setAutoDiagonalizeRequested(arg: boolean) {
-          self.autoDiagonalizeRequested = arg
-        },
-        /**
-         * #action
-         */
-        setAutoDiagonalizeComplete(arg: boolean) {
-          self.autoDiagonalizeComplete = arg
-        },
-        /**
-         * #action
-         */
-        setDiagonalizeStatus(arg?: RpcStatus) {
-          self.diagonalizeStatus = arg
-        },
-        /**
-         * #action
-         */
-        setDiagonalizeStopToken(arg?: StopToken) {
-          self.diagonalizeStopToken = arg
-        },
-        /**
-         * #action
-         * Abort an in-flight auto-diagonalize; the runner's finally clears the
-         * wait flag, revealing the (undiagonalized) plot.
-         */
-        cancelAutoDiagonalize() {
-          stopStopToken(self.diagonalizeStopToken)
         },
 
         /**
