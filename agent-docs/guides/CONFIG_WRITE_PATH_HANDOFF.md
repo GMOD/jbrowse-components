@@ -8,7 +8,12 @@ description: Migrating the remaining raw configuration.setSlot call sites onto t
 Config **reads** are typo-checked. Config **writes** were not, and the write
 side is the one config mistake with no diagnostic at any layer. `setConf` was
 fixed in `4c8d5f06fd` and `LinearAlignmentsDisplay` was migrated as the proving
-ground. Roughly 97 call sites remain.
+ground.
+
+**Status: 68 of the 79 pinned sites are migrated** (maf, variants, canvas
+multi-row, sequence, wiggle multi, gwas). Every name typechecked, so none of
+them were broken. What remains is 11 pinned sites in hic and arc, blocked only
+by other agents' uncommitted edits, plus the widened and must-stay groups below.
 
 ## What was wrong, and why it is worth finishing
 
@@ -52,23 +57,24 @@ typed.** Same lever as reads, see the "Config read type narrowing" section of
 `packages/core/src/configuration/CLAUDE.md`. That splits the remaining sites into
 three groups.
 
-### Pinned, so migrating gains the check (79 sites)
+### Pinned, so migrating gains the check (11 sites left of 79)
 
-| Sites | File |
-| --- | --- |
-| 23 | `plugins/maf/src/LinearMafDisplay/stateModel.ts` |
-| 14 | `plugins/variants/src/LDDisplay/shared.ts` |
-| 11 | `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` |
-| 9 | `plugins/hic/src/LinearHicDisplay/model.ts` |
-| 8 | `plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts` |
-| 6 | `plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts` |
-| 4 | `plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts` |
-| 2 | `plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts` |
-| 1 | `plugins/arc/src/LinearPairedArcDisplay/model.ts` |
-| 1 | `plugins/arc/src/LinearArcDisplay/model.ts` |
+| Sites | File | State |
+| --- | --- | --- |
+| 9 | `plugins/hic/src/LinearHicDisplay/model.ts` | blocked, dirty |
+| 1 | `plugins/arc/src/LinearPairedArcDisplay/model.ts` | blocked, dirty |
+| 1 | `plugins/arc/src/LinearArcDisplay/model.ts` | blocked, dirty |
 
-Start with MAF. It is the largest single win and its factory already takes
-`LinearMafDisplayConfigModel`.
+All three were still carrying another agent's uncommitted SVG-export edits when
+the rest of the sweep ran. Re-check with `git status --short` and finish them
+when clean; the recipe is unchanged and each is a one-file commit.
+
+Done, for reference: maf `stateModel.ts` (23), variants `LDDisplay/shared.ts`
+(14) and `MultiSampleVariantBaseModel.ts` (11), canvas
+`LinearMultiRowFeatureDisplay/model.ts` (8), sequence
+`LinearReferenceSequenceDisplay/model.ts` (6), wiggle
+`MultiLinearWiggleDisplay/model.ts` (4), gwas
+`LinearManhattanDisplay/stateModelFactory.ts` (2).
 
 ### Widened, so migrating gains nothing yet (17 sites)
 
@@ -98,13 +104,11 @@ first.
 
 ## Concurrency hazard, read this before starting
 
-Several of the target files are edited by other agents on a regular basis. At the
-time of writing `plugins/arc/src/LinearArcDisplay/model.ts`,
-`plugins/arc/src/LinearPairedArcDisplay/model.ts`,
-`plugins/hic/src/LinearHicDisplay/model.ts` and
-`plugins/variants/src/LDDisplay/shared.ts` all had uncommitted changes from
-someone else. That is why this migration was left unfinished rather than done in
-one sweep.
+Several of the target files are edited by other agents on a regular basis, and
+which ones are busy shifts. That is why this migration ran in stages rather than
+as one sweep: on the first pass both arc models, hic and
+`plugins/variants/src/LDDisplay/shared.ts` were dirty; by the second, LD had
+been committed and only hic and arc were still held.
 
 `git commit -- <paths>` takes the **working tree** at those paths, so committing
 a file that carries another agent's in-flight edits publishes their work under
