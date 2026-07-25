@@ -10,6 +10,7 @@ import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type {
   VariantRenderBlock,
+  VariantRenderState,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
 import type {
@@ -23,6 +24,7 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   referenceDrawingMode: string
   renderBlocks: VariantRenderBlock[]
   perRegionCellMap: ReadonlyMap<number, VariantUploadData>
+  renderState: VariantRenderState
 }
 
 export async function renderSvg(
@@ -34,7 +36,7 @@ export async function renderSvg(
   // partial or stale viewport.
   await awaitSvgReady(model)
   const view = getContainingView(model) as LGV
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}
@@ -58,55 +60,32 @@ function VariantSvgBody({
   height: number
   opts: ExportSvgDisplayOptions | undefined
 }) {
-  const {
-    effectiveRowHeight: rowHeight,
-    scrollTop,
-    availableHeight,
-    referenceDrawingMode,
-    canDisplayLabels,
-    // reuse the model's own getters so the export draws the exact block set and
-    // region map the live canvas does — no divergent rebuild here
-    renderBlocks,
-    perRegionCellMap,
-  } = model
-  // canvas spans the viewport (visibleRegions coords are viewport-relative and
-  // clipped to view.width below), matching the on-screen canvas rather than the
-  // full-genome totalWidthPx
-  const canvasWidth = view.width
-
-  const sources = model.sources ?? []
+  // reuse the model's own getters so the export draws the exact block set,
+  // region map, and canvas geometry the live canvas does — no divergent rebuild
+  // here. renderState.canvasWidth is the viewport-relative width the blocks are
+  // already clipped to, not the full-genome totalWidthPx.
+  const { referenceDrawingMode, renderBlocks, perRegionCellMap, renderState } =
+    model
+  const { canvasWidth, canvasHeight } = renderState
   return (
     <SvgVariantOverlay
-      id={`variant-clip-${model.id}`}
+      model={model}
+      idPrefix="variant-clip"
       width={view.width}
       height={height}
-      content={
-        <PaintLayer
-          width={canvasWidth}
-          height={availableHeight}
-          opts={opts}
-          paint={ctx => {
-            if (referenceDrawingMode === 'skip') {
-              ctx.fillStyle = REFERENCE_COLOR
-              ctx.fillRect(0, 0, canvasWidth, availableHeight)
-            }
-            drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, {
-              canvasWidth,
-              canvasHeight: availableHeight,
-              rowHeight,
-              scrollTop,
-            })
-          }}
-        />
-      }
-      sources={sources}
-      rowHeight={rowHeight}
-      scrollTop={scrollTop}
-      availableHeight={availableHeight}
-      canDisplayLabels={canDisplayLabels}
-      hierarchy={model.hierarchy}
-      showTree={model.showTree}
-      treeAreaWidth={model.treeAreaWidth}
-    />
+    >
+      <PaintLayer
+        width={canvasWidth}
+        height={canvasHeight}
+        opts={opts}
+        paint={ctx => {
+          if (referenceDrawingMode === 'skip') {
+            ctx.fillStyle = REFERENCE_COLOR
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+          }
+          drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, renderState)
+        }}
+      />
+    </SvgVariantOverlay>
   )
 }

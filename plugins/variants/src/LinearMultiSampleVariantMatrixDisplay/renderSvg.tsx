@@ -6,9 +6,11 @@ import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRenderer.ts'
+import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
-import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
+import type { ConnectorLinesModel } from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import type { MatrixRenderState } from './components/variantMatrixRenderingBackendTypes.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -16,9 +18,9 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-interface MatrixRenderSvgModel extends RenderSvgBaseModel {
-  flipped: boolean
+interface MatrixRenderSvgModel extends RenderSvgBaseModel, ConnectorLinesModel {
   referenceDrawingMode: string
+  renderState: MatrixRenderState
 }
 
 export async function renderSvg(
@@ -30,7 +32,7 @@ export async function renderSvg(
   // partial or stale viewport.
   await awaitSvgReady(model)
   const view = getContainingView(model) as LGV
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}
@@ -59,59 +61,47 @@ function VariantMatrixSvgBody({
   height: number
   opts: ExportSvgDisplayOptions | undefined
 }) {
-  const cellData = model.cellData as MatrixCellData | undefined
+  // reuse the model's own render state so the export lays columns out on the
+  // exact geometry the live canvas does
+  const { cellData, referenceDrawingMode, renderState } = model
+  const { canvasWidth, canvasHeight } = renderState
+  // same shift the live matrix body takes (VariantMatrixDisplayComponent):
+  // when the content doesn't reach the left viewport edge (offsetPx < 0) the
+  // matrix moves right with the ruler. The connector lines need no transform —
+  // their coords are already viewport-relative.
+  const left = Math.max(0, -view.offsetPx)
+
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
-  // this narrows the single nullable fetch blob for TS only — unreachable at
-  // runtime. An empty (numCells === 0) matrix still paints nothing.
-  if (!cellData) {
-    return null
-  }
-
-  const {
-    effectiveRowHeight: rowHeight,
-    scrollTop,
-    availableHeight,
-    canDisplayLabels,
-  } = model
-  const canvasWidth = view.totalWidthPxWithoutBorders
-
-  const sources = model.sources ?? []
-  return (
+  // the mode check narrows the single nullable fetch blob for TS only —
+  // unreachable at runtime. An empty (numCells === 0) matrix still paints
+  // nothing.
+  return cellData?.mode === 'matrix' ? (
     <SvgVariantOverlay
-      id={`variant-matrix-clip-${model.id}`}
-      width={canvasWidth}
+      model={model}
+      idPrefix="variant-matrix-clip"
+      width={view.width}
       height={height}
-      content={
+      lineZone={
+        <LinesConnectingMatrixToGenomicPosition model={model} exportSVG />
+      }
+    >
+      <g transform={`translate(${left})`}>
         <PaintLayer
           width={canvasWidth}
-          height={availableHeight}
+          height={canvasHeight}
           opts={opts}
           paint={ctx => {
             // Matrix always draws ref cells; "skip" mode is realized by a grey
             // background (matching the live canvas in VariantMatrixComponent),
             // so no-call cells read the same grey as ref instead of white.
-            if (model.referenceDrawingMode === 'skip') {
+            if (referenceDrawingMode === 'skip') {
               ctx.fillStyle = REFERENCE_COLOR
-              ctx.fillRect(0, 0, canvasWidth, availableHeight)
+              ctx.fillRect(0, 0, canvasWidth, canvasHeight)
             }
-            drawVariantMatrixBlocks(ctx, cellData, {
-              canvasWidth,
-              canvasHeight: availableHeight,
-              rowHeight,
-              scrollTop,
-              flipped: model.flipped,
-            })
+            drawVariantMatrixBlocks(ctx, cellData, renderState)
           }}
         />
-      }
-      sources={sources}
-      rowHeight={rowHeight}
-      scrollTop={scrollTop}
-      availableHeight={availableHeight}
-      canDisplayLabels={canDisplayLabels}
-      hierarchy={model.hierarchy}
-      showTree={model.showTree}
-      treeAreaWidth={model.treeAreaWidth}
-    />
-  )
+      </g>
+    </SvgVariantOverlay>
+  ) : null
 }

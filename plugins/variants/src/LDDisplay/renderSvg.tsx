@@ -7,13 +7,13 @@ import {
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { ConnectorZone } from '../shared/ConnectorLines.tsx'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
-import Wrapper from './components/Wrapper.tsx'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 
 import type { SharedLDModel } from './shared.ts'
@@ -33,7 +33,7 @@ export async function renderSvg(
   // a partial or stale viewport.
   await awaitSvgReady(self)
   const view = getContainingView(self) as LGV
-  const height = opts.overrideHeight ?? self.height
+  const height = self.height
   return (
     <SvgChrome
       error={self.error}
@@ -67,7 +67,6 @@ function LdSvgBody({
     effectiveLineZoneHeight,
     useGenomicPositions,
     signedLD,
-    yScalar,
   } = self
 
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
@@ -86,13 +85,6 @@ function LdSvgBody({
   const visibleWidth = view.totalWidthPxWithoutBorders
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
   const triangleHeight = height - effectiveLineZoneHeight
-  // svgReady gates on a fresh viewport, so viewScale === 1 and viewOffsetX ===
-  // max(0, -offsetPx) — the left gap when the region doesn't reach the viewport
-  // edge. Paint the triangle with the same transform the connector lines and
-  // VariantLabels use so all three stay aligned when offsetPx < 0 (a no-op
-  // otherwise, since viewOffsetX is then 0).
-  const { scale: exportViewScale, viewOffsetX: exportViewOffsetX } =
-    self.renderTransform
 
   // Match the live overlay's layout: genomic-positions mode places the
   // recombination plot at the top spanning effectiveLineZoneHeight; index
@@ -114,26 +106,26 @@ function LdSvgBody({
             width={visibleWidth}
             height={triangleHeight}
             opts={opts}
+            // Reuse the model's renderState so the export shares one source of
+            // truth for the transform and fit-to-height yScalar with the
+            // on-screen render. svgReady gates on a fresh viewport, so
+            // viewScale === 1 and viewOffsetX === max(0, -offsetPx) — the left
+            // gap when the region doesn't reach the viewport edge — which keeps
+            // the triangle aligned with the connector lines and VariantLabels.
             paint={ctx => {
               drawLDBlocks(
                 ctx,
                 { ldValues, boundaries, numCells, signedLD, uniformW },
                 ramp,
-                {
-                  yScalar,
-                  canvasWidth: visibleWidth,
-                  canvasHeight: triangleHeight,
-                  viewScale: exportViewScale,
-                  viewOffsetX: exportViewOffsetX,
-                },
+                self.renderState,
               )
             }}
           />
         </g>
         {useGenomicPositions ? (
-          <Wrapper model={self} exportSVG>
+          <ConnectorZone width={visibleWidth} height={height} exportSVG>
             <VariantLabels model={self} />
-          </Wrapper>
+          </ConnectorZone>
         ) : (
           <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
         )}
@@ -161,6 +153,10 @@ function LdSvgBody({
           ldMetric={ldMetric}
           width={visibleWidth}
           signedLD={signedLD}
+          // >0 means the container reserved a legend area to the right (it
+          // maxes svgLegendWidth() across tracks). Absent/0 — a container that
+          // reserves nothing — floats the legend over the plot instead.
+          positionOutside={(opts.legendWidth ?? 0) > 0}
         />
       ) : null}
     </>

@@ -1,5 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getRpcSessionId,
@@ -20,10 +21,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
+import { clampLineZoneHeight } from '../shared/constants.ts'
+import { genomicViewportX } from '../shared/genomicViewportX.ts'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
+import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type {
   FilterStats,
   LDMethod,
@@ -99,7 +103,7 @@ export default function sharedModelFactory(
           self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
         },
         setLineZoneHeight(n: number) {
-          self.configuration.setSlot('lineZoneHeight', Math.max(0, n))
+          self.configuration.setSlot('lineZoneHeight', clampLineZoneHeight(n))
         },
         setMafFilter(arg: number) {
           self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
@@ -411,6 +415,49 @@ export default function sharedModelFactory(
             viewOffsetX,
           }
         },
+        /**
+         * #getter
+         * The connector lines tying each matrix column to its SNP's genomic
+         * position, in viewport pixels, plus the label the hover tooltip and
+         * `VariantLabels` show. Only meaningful in index mode (genomic-positions
+         * mode already draws columns at their genomic x).
+         */
+        // Column centers ride the same forward transform the shader does —
+        // `cellWidth` (uniformW) is the fetch-time cell width and `renderTransform`
+        // rescales it to the live viewport, exactly like `hitTest` inverts it.
+        // Deriving the column pitch from the *current* block width instead would
+        // apply the zoom twice, sliding the lines off the triangle apexes for the
+        // whole debounce+RPC window after a zoom.
+        //
+        // Horizontal flips need nothing here: the worker hands back `snps`
+        // already in screen order (`RenderLDDataRPC/reversedRegions.ts`), so the
+        // index axis and the genomic x agree.
+        get connectorLineCoords(): ConnectorCoord[] {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const { assemblyManager } = getSession(self)
+          const assembly = assemblyManager.get(view.assemblyNames[0]!)
+          const { scale, viewOffsetX } = this.renderTransform
+          const pitch = self.cellWidth * Math.SQRT2
+          return assembly
+            ? self.snps
+                .map((snp, i) => {
+                  const gx = genomicViewportX(
+                    view,
+                    assembly,
+                    snp.refName,
+                    snp.start,
+                  )
+                  return gx === undefined
+                    ? undefined
+                    : {
+                        mx: (i + 0.5) * pitch * scale + viewOffsetX,
+                        gx,
+                        label: snp.id,
+                      }
+                })
+                .filter(coord => coord !== undefined)
+            : []
+        },
 
         /**
          * #method
@@ -544,7 +591,7 @@ export default function sharedModelFactory(
          * #method
          */
         svgLegendWidth(): number {
-          return self.showLegend ? 140 : 0
+          return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
         },
       }))
       .views(self => {

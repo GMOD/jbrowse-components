@@ -1,3 +1,5 @@
+import { clamp } from '@jbrowse/core/util'
+
 export const GENOTYPE_SPLITTER = /[/|]/
 
 export const f2 = 0.3
@@ -12,6 +14,14 @@ export const VARIANT_FEATURE_WIDGET = {
 
 // Sidebar and label background opacity
 export const SIDEBAR_BACKGROUND_OPACITY = 0.8
+
+// Both displays' connector-line zone is drag-resizable, and both clamp the drag
+// the same way: the floor keeps the resize handle (drawn at lineZoneHeight - 4)
+// reachable, so a zone dragged shut can always be dragged back open. A config
+// or snapshot may still declare 0 to turn the zone off entirely.
+export function clampLineZoneHeight(n: number) {
+  return clamp(n, 10, 1000)
+}
 
 // Variant rendering colors
 export const REFERENCE_COLOR = '#ccc'

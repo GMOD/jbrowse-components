@@ -3,6 +3,10 @@ import './svgExportMocks.ts'
 import { openMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
 import { doBeforeEach, getSavedSvg, setup } from './util.tsx'
 
+// `view.tracks[0].displays[0]` is untyped; annotating it makes a getter that
+// doesn't exist on the model a typecheck error rather than a silent undefined.
+import type { LinearMultiSampleVariantMatrixDisplayModel } from '@jbrowse/plugin-variants'
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -55,6 +59,35 @@ test(
   () => exportFitModeAndCheck('matrix'),
   45000,
 )
+
+// The matrix display reserves `lineZoneHeight` at the top for the lines tying
+// each column to its genomic position. The export used to draw neither: rows
+// started at y=0 (20px above where the live canvas and tree sidebar put them,
+// leaving the bottom 20px blank) and the connector lines were missing entirely,
+// even though the component already had an `exportSVG` mode nothing called.
+test('matrix multi-sample variant SVG export draws the connector lines and offsets rows below them', async () => {
+  const { view, findByTestId, info } = await openMultiSampleVariantDisplay({
+    displayType: 'matrix',
+  })
+  await findByTestId(info.doneTestId, {}, { timeout: 40000 })
+  const display: LinearMultiSampleVariantMatrixDisplayModel =
+    view.tracks[0].displays[0]
+  const { lineZoneHeight } = display
+
+  await view.exportSvg({ rasterizeLayers: false })
+  const svg = getSavedSvg()
+
+  expect(lineZoneHeight).toBeGreaterThan(0)
+  // cells, labels, and dendrogram all live in one row-space group below the
+  // line zone
+  expect(svg).toContain(`transform="translate(0 ${lineZoneHeight})"`)
+  // each connector runs from its column center at the bottom of the zone up
+  // to the genomic position on the ruler
+  const connectors = svg.match(
+    new RegExp(`M[\\d.]+ ${lineZoneHeight}L[\\d.]+ 0`, 'g'),
+  )
+  expect(connectors?.length).toBeGreaterThan(10)
+}, 45000)
 
 test(
   'regular multi-sample variant SVG export spreads rows in fit mode',

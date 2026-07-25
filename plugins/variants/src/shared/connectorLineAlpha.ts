@@ -25,15 +25,24 @@
 // structure at all. Judge the structure, not just the number.
 const INK_PER_PX = 0.17
 const MAX_ALPHA = 0.4
+// Stroke width the budget above was measured at (the matrix field). A thicker
+// line lays down proportionally more ink per crossing, so it is divided back
+// out: the LD field's 1px lines would otherwise paint twice the darkness of the
+// matrix field's 0.5px lines at the same column density.
+const CALIBRATION_STROKE_WIDTH = 0.5
 
 /**
- * Per-line alpha for `count` connector lines spread over `spanPx` horizontal
- * pixels. `spanPx` is the field's own extent (not the view width) so a dense
- * cluster of lines in a narrow band fades like the dense thing it is.
+ * Per-line alpha for `count` connector lines of `strokeWidth` spread over
+ * `spanPx` horizontal pixels. `spanPx` is the field's own extent (not the view
+ * width) so a dense cluster of lines in a narrow band fades like the dense
+ * thing it is.
  */
-export function connectorLineAlpha(count: number, spanPx: number) {
-  const linesPerPx = count / Math.max(spanPx, 1)
-  return linesPerPx > 0
-    ? Math.min(INK_PER_PX / linesPerPx, MAX_ALPHA)
-    : MAX_ALPHA
+export function connectorLineAlpha(
+  count: number,
+  spanPx: number,
+  strokeWidth: number,
+) {
+  const inkPerPx =
+    (count / Math.max(spanPx, 1)) * (strokeWidth / CALIBRATION_STROKE_WIDTH)
+  return inkPerPx > 0 ? Math.min(INK_PER_PX / inkPerPx, MAX_ALPHA) : MAX_ALPHA
 }

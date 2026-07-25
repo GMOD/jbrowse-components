@@ -1,8 +1,12 @@
-import { clamp, getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
+import { clampLineZoneHeight } from '../shared/constants.ts'
+import { genomicViewportX } from '../shared/genomicViewportX.ts'
+import { mirrorColumnIndex } from './components/variantMatrixRenderingBackendTypes.ts'
 
+import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type { VariantMatrixRenderingBackend } from './components/variantMatrixRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -80,15 +84,96 @@ export default function stateModelFactory(
             flipped: self.flipped,
           }
         },
-        async renderSvg(opts?: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts)
+        /**
+         * #getter
+         * Column pitch and origin of the matrix in viewport pixels: `left` is
+         * where the content starts when it doesn't reach the left viewport edge
+         * (offsetPx < 0), `columnWidth` the per-column width the canvas lays out
+         * at. The connector lines, their hit-test, and the crosshair column all
+         * key off this so columns/lines/clicks stay pixel-aligned.
+         */
+        get columnGeometry() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const n = self.featuresVolatile?.length
+          return {
+            n: n ?? 0,
+            columnWidth: n ? view.totalWidthPxWithoutBorders / n : 0,
+            left: Math.max(0, -view.offsetPx),
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The connector lines tying each matrix column to its feature's genomic
+         * position, in viewport pixels, plus the label the hover tooltip shows.
+         * A feature whose refName has left the view has no genomic x and is
+         * dropped rather than pinned to the left edge.
+         */
+        get connectorLineCoords(): ConnectorCoord[] {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const { assemblyManager } = getSession(self)
+          const assembly = assemblyManager.get(view.assemblyNames[0]!)
+          const features = self.featuresVolatile
+          const { n, columnWidth, left } = self.columnGeometry
+          return assembly && features
+            ? features
+                .map((feature, i) => {
+                  const gx = genomicViewportX(
+                    view,
+                    assembly,
+                    feature.get('refName'),
+                    feature.get('start'),
+                  )
+                  return gx === undefined
+                    ? undefined
+                    : {
+                        mx:
+                          left +
+                          (mirrorColumnIndex(i, n, self.flipped) + 0.5) *
+                            columnWidth,
+                        gx,
+                        label: feature.get('name'),
+                      }
+                })
+                .filter(coord => coord !== undefined)
+            : []
+        },
+        /**
+         * #method
+         * The connector for the column under `screenX` (the crosshair), or
+         * undefined off the ends. crosshairX picks a *screen* column, so mirror
+         * it back to the data index — on a flipped view the feature drawn there
+         * is not the one at that index.
+         */
+        connectorLineAtScreenX(screenX: number): ConnectorCoord | undefined {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const { assemblyManager } = getSession(self)
+          const assembly = assemblyManager.get(view.assemblyNames[0]!)
+          const features = self.featuresVolatile
+          const { n, columnWidth, left } = self.columnGeometry
+          const screenCol = Math.floor((screenX - left) / columnWidth)
+          const feature =
+            assembly && features && screenCol >= 0 && screenCol < n
+              ? features[mirrorColumnIndex(screenCol, n, self.flipped)]!
+              : undefined
+          const gx =
+            assembly && feature
+              ? genomicViewportX(
+                  view,
+                  assembly,
+                  feature.get('refName'),
+                  feature.get('start'),
+                )
+              : undefined
+          return gx === undefined
+            ? undefined
+            : { mx: left + (screenCol + 0.5) * columnWidth, gx }
         },
       }))
       .actions(self => ({
         setLineZoneHeight(n: number) {
-          self.lineZoneHeight = clamp(n, 10, 1000)
-          return self.lineZoneHeight
+          self.lineZoneHeight = clampLineZoneHeight(n)
         },
         /**
          * #action
@@ -117,6 +202,14 @@ export default function stateModelFactory(
               }
             },
           })
+        },
+      }))
+      // separate block so renderSvg's `self` sees renderState and the connector
+      // zone's setLineZoneHeight
+      .views(self => ({
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
         },
       }))
   )

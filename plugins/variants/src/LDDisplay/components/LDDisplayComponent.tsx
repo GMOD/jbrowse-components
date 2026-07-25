@@ -10,6 +10,7 @@ import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
+import { ConnectorZone } from '../../shared/ConnectorLines.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 import Crosshairs from './Crosshairs.tsx'
@@ -19,7 +20,6 @@ import { LDRenderer } from './LDRenderer.ts'
 import LDStatusBar from './LDStatusBar.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
-import Wrapper from './Wrapper.tsx'
 
 import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
@@ -274,9 +274,9 @@ const LDCanvas = observer(function LDCanvas({
       ) : null}
       <LDStatusBar model={model} />
       {useGenomicPositions ? (
-        <Wrapper model={model}>
+        <ConnectorZone width={view.width} height={model.height}>
           <VariantLabels model={model} />
-        </Wrapper>
+        </ConnectorZone>
       ) : (
         <LinesConnectingMatrixToGenomicPosition model={model} />
       )}

@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getStrokeProps } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
@@ -10,13 +11,17 @@ import { observer } from 'mobx-react'
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
 import { connectorLineAlpha } from './connectorLineAlpha.ts'
 
-// One connector: `mx` is the matrix-column center x, `gx` the genomic x on the
-// ruler. How those are computed differs per display (index layout vs the
-// GPU-transformed LD triangle), so callers build the coords; everything below
-// is shared so the two displays' hit-test/render can't drift apart.
+// One connector, in viewport pixels (0 = the view's left edge): `mx` is the
+// matrix-column center at the bottom of the zone, `gx` the genomic position on
+// the ruler at the top, `label` the tooltip shown on hover (SNP id / feature
+// name; a variant with neither gets none). Each display derives these on its
+// model — the column axis differs (feature index vs the GPU-transformed LD
+// triangle) — but both land in this one frame, so everything below, and the
+// SVG export, is shared and can't drift apart.
 export interface ConnectorCoord {
   mx: number
   gx: number
+  label?: string
 }
 
 const useStyles = makeStyles()({
@@ -27,7 +32,7 @@ const useStyles = makeStyles()({
 })
 
 // The red connector line drawn for the hovered (or crosshair) column.
-export function ConnectorLine({
+function ConnectorLine({
   mx,
   gx,
   lineZoneHeight,
@@ -46,20 +51,19 @@ export function ConnectorLine({
 }
 
 // The faint field of every connector line plus its hover hit-test. Reports the
-// hovered index back so callers can drive their own highlight line/tooltip from
-// their richer per-column data; `children` slots in extra overlay (e.g. SNP
-// labels) beneath the lines.
-export const ConnectorLineField = observer(function ConnectorLineField({
+// hovered coord back so the overlay can draw its highlight and tooltip;
+// `children` slots in extra overlay (e.g. SNP labels) beneath the lines.
+const ConnectorLineField = observer(function ConnectorLineField({
   lineCoords,
   lineZoneHeight,
   strokeWidth,
-  onHoverIndex,
+  onHover,
   children,
 }: {
   lineCoords: ConnectorCoord[]
   lineZoneHeight: number
   strokeWidth: number
-  onHoverIndex: (index: number | undefined) => void
+  onHover: (coord: ConnectorCoord | undefined) => void
   children?: React.ReactNode
 }) {
   const theme = useTheme()
@@ -83,19 +87,18 @@ export const ConnectorLineField = observer(function ConnectorLineField({
       lo = Math.min(lo, mx, gx)
       hi = Math.max(hi, mx, gx)
     }
-    return connectorLineAlpha(lineCoords.length, hi - lo)
-  }, [lineCoords])
+    return connectorLineAlpha(lineCoords.length, hi - lo, strokeWidth)
+  }, [lineCoords, strokeWidth])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<SVGElement>) => {
       const pt = svgMousePoint(event)
       if (!pt) {
-        onHoverIndex(undefined)
+        onHover(undefined)
       } else {
         let minDist = 10
-        let found: number | undefined
-        for (let i = 0; i < lineCoords.length; i++) {
-          const coord = lineCoords[i]!
+        let found: ConnectorCoord | undefined
+        for (const coord of lineCoords) {
           const dist = pointToSegmentDist(
             pt.x,
             pt.y,
@@ -106,13 +109,13 @@ export const ConnectorLineField = observer(function ConnectorLineField({
           )
           if (dist < minDist) {
             minDist = dist
-            found = i
+            found = coord
           }
         }
-        onHoverIndex(found)
+        onHover(found)
       }
     },
-    [lineCoords, lineZoneHeight, onHoverIndex],
+    [lineCoords, lineZoneHeight, onHover],
   )
 
   return (
@@ -125,7 +128,7 @@ export const ConnectorLineField = observer(function ConnectorLineField({
         fill="transparent"
         onMouseMove={onMouseMove}
         onMouseLeave={() => {
-          onHoverIndex(undefined)
+          onHover(undefined)
         }}
       />
       <path
@@ -140,23 +143,102 @@ export const ConnectorLineField = observer(function ConnectorLineField({
   )
 })
 
-// The drag handle that resizes the connector zone.
-export function ConnectorResizeHandle({
-  lineZoneHeight,
-  onResize,
+// The frame the zone's contents draw in: an absolutely positioned <svg> live,
+// nothing at all in an SVG export (the export's own <svg> is already the frame).
+// Neither shifts horizontally — the coords are viewport-relative to start with,
+// so the |offsetPx| gap when the content doesn't reach the left viewport edge is
+// carried by the coords, not by a transform the export would have to restate.
+export function ConnectorZone({
+  exportSVG,
+  width,
+  height,
+  children,
 }: {
-  lineZoneHeight: number
-  onResize: (delta: number) => void
+  exportSVG?: boolean
+  width: number
+  height: number
+  children: React.ReactNode
 }) {
-  const { classes } = useStyles()
-  return (
-    <ResizeHandle
-      style={{ position: 'absolute', top: lineZoneHeight - 4 }}
-      onDrag={d => {
-        onResize(d)
-        return undefined
+  return exportSVG ? (
+    children
+  ) : (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        height,
+        width,
       }}
-      className={classes.resizeHandle}
-    />
+    >
+      {children}
+    </svg>
   )
 }
+
+/**
+ * The lines tying each matrix column to its genomic position, shared by the LD
+ * and multi-sample-matrix displays: the faint field, the hovered line and its
+ * tooltip, an optional externally driven `highlight` (the matrix crosshair
+ * column), and the drag handle that resizes the zone.
+ */
+export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
+  lineCoords,
+  lineZoneHeight,
+  height,
+  width,
+  strokeWidth,
+  highlight,
+  exportSVG,
+  onResize,
+  children,
+}: {
+  lineCoords: ConnectorCoord[]
+  lineZoneHeight: number
+  height: number
+  width: number
+  strokeWidth: number
+  highlight?: ConnectorCoord
+  exportSVG?: boolean
+  onResize: (delta: number) => void
+  children?: React.ReactNode
+}) {
+  const { classes } = useStyles()
+  const [hovered, setHovered] = useState<ConnectorCoord>()
+  // a real hover wins over the crosshair column it necessarily sits on
+  const emphasized = hovered ? hovered : highlight
+
+  return lineCoords.length === 0 ? null : (
+    <>
+      <ConnectorZone exportSVG={exportSVG} width={width} height={height}>
+        <ConnectorLineField
+          lineCoords={lineCoords}
+          lineZoneHeight={lineZoneHeight}
+          strokeWidth={strokeWidth}
+          onHover={coord => {
+            setHovered(coord)
+          }}
+        >
+          {children}
+        </ConnectorLineField>
+        {emphasized ? (
+          <ConnectorLine
+            mx={emphasized.mx}
+            gx={emphasized.gx}
+            lineZoneHeight={lineZoneHeight}
+          />
+        ) : null}
+        {hovered?.label ? <BaseTooltip>{hovered.label}</BaseTooltip> : null}
+      </ConnectorZone>
+      {exportSVG ? null : (
+        <ResizeHandle
+          style={{ position: 'absolute', top: lineZoneHeight - 4 }}
+          onDrag={d => {
+            onResize(d)
+            return undefined
+          }}
+          className={classes.resizeHandle}
+        />
+      )}
+    </>
+  )
+})
