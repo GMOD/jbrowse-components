@@ -8,7 +8,9 @@ import { isUriLocation } from './types/index.ts'
 import type { FileLocation } from './types/index.ts'
 import type { GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
 
-export { unzip } from '@gmod/bgzf-filehandle'
+// `unzip` is deliberately NOT re-exported here — it lives at
+// '@jbrowse/core/util/unzip' so this barrel does not reach bgzf/pako. See that
+// file for why a re-export of it cannot be tree-shaken.
 
 export { shorten, shorten2, truncateMiddle } from './stringUtils.ts'
 export { getFillProps, getStrokeProps, stripAlpha } from './svgColorProps.ts'

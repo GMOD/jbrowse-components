@@ -1,7 +1,5 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
-import { executeDiagonalize } from './executeDiagonalize.ts'
-
 import type { DiagonalizeArgs } from './executeDiagonalize.ts'
 
 /**
@@ -37,6 +35,7 @@ import type { DiagonalizeArgs } from './executeDiagonalize.ts'
  */
 export default abstract class DiagonalizeRpcBase extends RpcMethodType {
   async execute(args: DiagonalizeArgs, rpcDriverClassName: string) {
+    const { executeDiagonalize } = await import('./executeDiagonalize.ts')
     return executeDiagonalize(
       this.pluginManager,
       await this.deserializeArguments(args, rpcDriverClassName),

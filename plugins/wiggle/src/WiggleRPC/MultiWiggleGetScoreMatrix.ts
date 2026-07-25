@@ -2,8 +2,6 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-import { getScoreMatrix } from './getScoreMatrix.ts'
-
 import type { GetScoreMatrixArgs } from './types.ts'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -25,6 +23,7 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRename
     )
 
     const stopTokenCheck = createStopTokenChecker(deserializedArgs.stopToken)
+    const { getScoreMatrix } = await import('./getScoreMatrix.ts')
     const matrix = await getScoreMatrix({
       args: { ...deserializedArgs, stopTokenCheck },
       pluginManager: this.pluginManager,

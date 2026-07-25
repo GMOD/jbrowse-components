@@ -1,5 +1,3 @@
-import { unzip } from '@gmod/bgzf-filehandle'
-
 import { downloadStatus, updateStatus } from './progress.ts'
 
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
@@ -19,8 +17,15 @@ export async function fetchAndMaybeUnzip(
     statusCallback,
     onProgress => loc.readFile({ ...opts, onProgress }) as Promise<Uint8Array>,
   )
+  // the inflater is imported dynamically because this module is reachable from
+  // the core/util barrel, so a static import put bgzf-filehandle + pako
+  // (~180KB) on the startup path of every page load; only an actually-gzipped
+  // file needs them
   return isGzip(buf)
-    ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
+    ? await updateStatus('Unzipping', statusCallback, async () => {
+        const { unzip } = await import('@gmod/bgzf-filehandle')
+        return unzip(buf)
+      })
     : buf
 }
 

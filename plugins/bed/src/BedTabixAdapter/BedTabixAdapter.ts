@@ -5,10 +5,10 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   SimpleFeature,
   downloadStatus,
-  unzip,
   updateStatus,
 } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
+import { unzip } from '@jbrowse/core/util/unzip'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
   checkStopToken2,
