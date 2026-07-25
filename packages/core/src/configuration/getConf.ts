@@ -67,15 +67,29 @@ export function getConf<
  * `configuration.setSlot` cast so mixins whose `self` isn't typed with
  * `configuration` don't each re-cast.
  *
+ * **Prefer this over a bare `self.configuration.setSlot('x', v)`.** The
+ * constraint here mirrors `getConf`'s, so on a model with a concrete schema an
+ * unknown slot name is a compile error. The raw `setSlot` action takes a plain
+ * `string`, and a typo there fails *completely silently*: the assignment lands
+ * on an undeclared property, so nothing throws, nothing persists, and the
+ * matching `getConf` read keeps returning the default. That is the one config
+ * mistake with no diagnostic at any layer. `setSlot` itself stays untyped on
+ * purpose — the config editor's slot facade routes dynamic slot names through it
+ * (`configurationSchema.ts`).
+ *
+ * A wrong *value* type still throws at runtime (MST type-checks the assignment)
+ * rather than at compile time; `value` is deliberately `unknown` because the
+ * inherit sentinel (`undefined`/`null`) is a legitimate write on every
+ * promotable slot, which the declared slot value type doesn't include.
+ *
  * @param model - object containing a 'configuration' member
  * @param slotName - the slot to write
  * @param value - the new value
  */
 export function setConf<
   CONFMODEL extends AnyConfigurationModel,
-  SLOT extends
-    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | string = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
   ;(
     model.configuration as CONFMODEL & {

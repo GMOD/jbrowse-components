@@ -12,6 +12,7 @@ import {
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   makeSlotsValueDisplayTypeDefaultControl,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -2263,12 +2264,12 @@ export default function stateModelFactory(
           }
         }
         function setShowSashimiArcs(show: boolean) {
-          self.configuration.setSlot('showSashimiArcs', show)
+          setConf(self, 'showSashimiArcs', show)
           // Sashimi only renders over the coverage band, so making it visible
           // requires coverage. Keep this invariant here, not in the menu
           // handler, so it holds for every caller.
           if (show) {
-            self.configuration.setSlot('showCoverage', true)
+            setConf(self, 'showCoverage', true)
           }
         }
         return {
@@ -2390,7 +2391,7 @@ export default function stateModelFactory(
             if (colorBy.type !== 'tag' || colorBy.tag !== current.tag) {
               self.colorTagMap = {}
             }
-            self.configuration.setSlot('colorBy', colorBy)
+            setConf(self, 'colorBy', colorBy)
           },
 
           /**
@@ -2413,21 +2414,21 @@ export default function stateModelFactory(
            * #action
            */
           setFilterBy(filterBy: FilterBy) {
-            self.configuration.setSlot('filterBy', filterBy)
+            setConf(self, 'filterBy', filterBy)
           },
 
           /**
            * #action
            */
           setShowSoftClipping(value: boolean) {
-            self.configuration.setSlot('showSoftClipping', value)
+            setConf(self, 'showSoftClipping', value)
           },
 
           /**
            * #action
            */
           setMismatchAlpha(value: boolean) {
-            self.configuration.setSlot('mismatchAlpha', value)
+            setConf(self, 'mismatchAlpha', value)
           },
 
           /**
@@ -2492,8 +2493,8 @@ export default function stateModelFactory(
             assemblyName: string
             tag?: string
           }) {
-            self.configuration.setSlot('largeFeaturesFirst', false)
-            self.configuration.setSlot('sortedBy', sortedBy)
+            setConf(self, 'largeFeaturesFirst', false)
+            setConf(self, 'sortedBy', sortedBy)
           },
 
           /**
@@ -2522,14 +2523,14 @@ export default function stateModelFactory(
            * #action
            */
           clearSortedBy() {
-            self.configuration.setSlot('sortedBy', null)
+            setConf(self, 'sortedBy', null)
           },
 
           /**
            * #action
            */
           setLargeFeaturesFirst(flag: boolean) {
-            self.configuration.setSlot('largeFeaturesFirst', flag)
+            setConf(self, 'largeFeaturesFirst', flag)
           },
 
           /**
@@ -2542,7 +2543,7 @@ export default function stateModelFactory(
            * `groupBy` default rather than falling back to it.
            */
           setGroupBy(groupBy?: GroupBy) {
-            self.configuration.setSlot('groupBy', groupBy ?? null)
+            setConf(self, 'groupBy', groupBy ?? null)
             self.collapsedGroups.clear()
             self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
@@ -2556,7 +2557,7 @@ export default function stateModelFactory(
            * meaningless once every lane is a stack again.
            */
           setCollapseGroupRows(flag: boolean) {
-            self.configuration.setSlot('collapseGroupRows', flag)
+            setConf(self, 'collapseGroupRows', flag)
             self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
           },
@@ -2617,28 +2618,28 @@ export default function stateModelFactory(
            * #action
            */
           setScaleType(val: string) {
-            self.configuration.setSlot('scaleType', val)
+            setConf(self, 'scaleType', val)
           },
 
           /**
            * #action
            */
           setAutoscale(val?: string) {
-            self.configuration.setSlot('autoscale', val)
+            setConf(self, 'autoscale', val)
           },
 
           /**
            * #action
            */
           setMinScore(val?: number) {
-            self.configuration.setSlot('minScore', val)
+            setConf(self, 'minScore', val)
           },
 
           /**
            * #action
            */
           setMaxScore(val?: number) {
-            self.configuration.setSlot('maxScore', val)
+            setConf(self, 'maxScore', val)
           },
 
           /**
@@ -2651,9 +2652,9 @@ export default function stateModelFactory(
            */
           setFeatureHeight(height?: number) {
             if (self.fitHeightToDisplay) {
-              self.configuration.setSlot('heightMode', 'fixed')
+              setConf(self, 'heightMode', 'fixed')
             }
-            self.configuration.setSlot('featureHeight', height)
+            setConf(self, 'featureHeight', height)
             self.scrollTop = 0
           },
 
@@ -2661,7 +2662,7 @@ export default function stateModelFactory(
            * #action
            */
           setMaxHeight(height?: number) {
-            self.configuration.setSlot('maxHeight', height)
+            setConf(self, 'maxHeight', height)
             self.scrollTop = 0
           },
 
@@ -2678,7 +2679,7 @@ export default function stateModelFactory(
            * the display/data change.
            */
           setHeightMode(mode: HeightMode) {
-            self.configuration.setSlot('heightMode', mode)
+            setConf(self, 'heightMode', mode)
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
               self.scrollTop = 0
@@ -2716,7 +2717,7 @@ export default function stateModelFactory(
            * #action
            */
           setReadConnections(mode: ReadConnectionsMode) {
-            self.configuration.setSlot('readConnections', mode)
+            setConf(self, 'readConnections', mode)
           },
 
           /**
@@ -2726,38 +2727,36 @@ export default function stateModelFactory(
           // arcs and sashimi arcs. Single source of truth — there is no
           // per-feature direction to keep in sync.
           setReadConnectionsDown(down: boolean) {
-            self.configuration.setSlot('readConnectionsDown', down)
+            setConf(self, 'readConnectionsDown', down)
           },
 
           /**
            * #action
            */
           setShowCoverage(show: boolean) {
-            self.configuration.setSlot('showCoverage', show)
+            setConf(self, 'showCoverage', show)
           },
 
           /**
            * #action
            */
           setShowPileup(show: boolean) {
-            self.configuration.setSlot('showPileup', show)
+            setConf(self, 'showPileup', show)
           },
 
           /**
            * #action
            */
           setCoverageHeight(height: number) {
-            self.configuration.setSlot(
-              'coverageHeight',
-              Math.max(MIN_BAND_HEIGHT, height),
-            )
+            setConf(self, 'coverageHeight', Math.max(MIN_BAND_HEIGHT, height))
           },
 
           /**
            * #action
            */
           setReadConnectionsHeight(height: number) {
-            self.configuration.setSlot(
+            setConf(
+              self,
               'readConnectionsHeight',
               Math.max(MIN_BAND_HEIGHT, height),
             )
@@ -2767,7 +2766,8 @@ export default function stateModelFactory(
            * #action
            */
           setSashimiArcsHeight(height: number) {
-            self.configuration.setSlot(
+            setConf(
+              self,
               'sashimiArcsHeight',
               Math.max(MIN_BAND_HEIGHT, height),
             )
@@ -2777,105 +2777,105 @@ export default function stateModelFactory(
            * #action
            */
           setMinSashimiScore(score: number) {
-            self.configuration.setSlot('minSashimiScore', score)
+            setConf(self, 'minSashimiScore', score)
           },
 
           /**
            * #action
            */
           setSashimiArcsMode(mode: SashimiArcsMode) {
-            self.configuration.setSlot('sashimiArcsMode', mode)
+            setConf(self, 'sashimiArcsMode', mode)
           },
 
           /**
            * #action
            */
           setShowSashimiLabels(show: boolean) {
-            self.configuration.setSlot('showSashimiLabels', show)
+            setConf(self, 'showSashimiLabels', show)
           },
 
           /**
            * #action
            */
           setReadConnectionsLineWidth(width: number) {
-            self.configuration.setSlot('readConnectionsLineWidth', width)
+            setConf(self, 'readConnectionsLineWidth', width)
           },
 
           /**
            * #action
            */
           setDrawInter(draw: boolean) {
-            self.configuration.setSlot('drawInter', draw)
+            setConf(self, 'drawInter', draw)
           },
 
           /**
            * #action
            */
           setDrawLongRange(draw: boolean) {
-            self.configuration.setSlot('drawLongRange', draw)
+            setConf(self, 'drawLongRange', draw)
           },
 
           /**
            * #action
            */
           setArcColorByType(type: ArcColorByType) {
-            self.configuration.setSlot('arcColorByType', type)
+            setConf(self, 'arcColorByType', type)
           },
 
           /**
            * #action
            */
           setShowMismatches(show: boolean) {
-            self.configuration.setSlot('showMismatches', show)
+            setConf(self, 'showMismatches', show)
           },
 
           /**
            * #action
            */
           setShowLegend(show: boolean | undefined) {
-            self.configuration.setSlot('showLegend', show)
+            setConf(self, 'showLegend', show)
           },
 
           /**
            * #action
            */
           setDrawSingletons(flag: boolean) {
-            self.configuration.setSlot('drawSingletons', flag)
+            setConf(self, 'drawSingletons', flag)
           },
 
           /**
            * #action
            */
           setDrawProperPairs(flag: boolean) {
-            self.configuration.setSlot('drawProperPairs', flag)
+            setConf(self, 'drawProperPairs', flag)
           },
 
           /**
            * #action
            */
           setShowOnlySplitAlignments(flag: boolean) {
-            self.configuration.setSlot('showOnlySplitAlignments', flag)
+            setConf(self, 'showOnlySplitAlignments', flag)
           },
 
           /**
            * #action
            */
           setShowInterbaseIndicators(show: boolean) {
-            self.configuration.setSlot('showInterbaseIndicators', show)
+            setConf(self, 'showInterbaseIndicators', show)
           },
 
           /**
            * #action
            */
           setFlipStrandLongReadChains(flag: boolean) {
-            self.configuration.setSlot('flipStrandLongReadChains', flag)
+            setConf(self, 'flipStrandLongReadChains', flag)
           },
 
           /**
            * #action
            */
           setColorSupplementaryChains(flag: boolean) {
-            self.configuration.setSlot('colorSupplementaryChains', flag)
+            setConf(self, 'colorSupplementaryChains', flag)
           },
 
           /**
@@ -2883,7 +2883,7 @@ export default function stateModelFactory(
            */
           setLinkedReads(mode: LinkedReadsMode) {
             const prev = self.linkedReads
-            self.configuration.setSlot('linkedReads', mode)
+            setConf(self, 'linkedReads', mode)
             // Forget chain hover/selection when leaving 'normal' mode. This is
             // now a product choice (selection doesn't survive a mode change),
             // not a render-safety mechanism — `renderState` already gates chain
@@ -2904,12 +2904,12 @@ export default function stateModelFactory(
                 // customizing `normal` over a default. Explicit non-pairing choices (tag,
                 // methylation, base quality, ...) are preserved by the gate.
                 if (PAIRING_COLOR_SCHEMES.has(currentType)) {
-                  self.configuration.setSlot('colorBy', { type: 'inherit' })
+                  setConf(self, 'colorBy', { type: 'inherit' })
                 }
               } else if (currentType === 'normal') {
                 // Entering pairs: nudge the plain default to the SV-signal
                 // scheme, but don't clobber a scheme the user explicitly picked.
-                self.configuration.setSlot('colorBy', {
+                setConf(self, 'colorBy', {
                   type: 'insertSizeAndOrientation',
                 })
               }
@@ -2924,7 +2924,7 @@ export default function stateModelFactory(
            * `rpcProps` — toggling it never refetches.
            */
           setShowBezierConnections(flag: boolean) {
-            self.configuration.setSlot('showBezierConnections', flag)
+            setConf(self, 'showBezierConnections', flag)
           },
 
           /**
