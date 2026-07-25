@@ -32,6 +32,13 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
   const { intronBp, upDownBp } = model
   const hasCDS = featureHasCDS(feature)
   const hasExonOrCDS = featureHasExonOrCDS(feature)
+  // the raw reference span, offered for spliced features too: it is the way to
+  // read a promoter or terminator, and unlike the gene_* types it keeps the
+  // reference's own casing (soft-masked repeats stay visible) and draws no
+  // CDS/UTR coloring. Named for that difference where both are on offer.
+  const genomicLabel = hasExonOrCDS
+    ? 'Genomic (no CDS/UTR highlighting)'
+    : 'Genomic'
 
   return (
     <FormControl className={classes.formControl}>
@@ -65,15 +72,11 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
                 ],
               ]
             : []),
-          ...(!hasExonOrCDS
-            ? [
-                ['genomic', 'Genomic'],
-                [
-                  'genomic_sequence_updownstream',
-                  `Genomic +/- ${upDownBp}bp up+down stream`,
-                ],
-              ]
-            : []),
+          ['genomic', genomicLabel],
+          [
+            'genomic_sequence_updownstream',
+            `${genomicLabel} +/- ${upDownBp}bp up+down stream`,
+          ],
         ].map(([key, val]) => (
           <MenuItem key={key} value={key} data-testid={`sequence_type_${key}`}>
             {val}
