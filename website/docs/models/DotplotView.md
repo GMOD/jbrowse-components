@@ -74,11 +74,15 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [vblockLabelKeysToHide](#getter-vblocklabelkeystohide)                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
 | [views](#getter-views)                                                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
 | [dotplotDisplays](#getter-dotplotdisplays)                                     | Getters    | DotplotView                                             | DotplotDisplays under each track, indexed to match `tracks`.                                                                                                                                        |
+| [colorBy](#getter-colorby)                                                     | Getters    | DotplotView                                             | The color-by mode the whole plot renders with.                                                                                                                                                      |
+| [alpha](#getter-alpha)                                                         | Getters    | DotplotView                                             | Plot-wide alpha.                                                                                                                                                                                    |
+| [minAlignmentLength](#getter-minalignmentlength)                               | Getters    | DotplotView                                             | Plot-wide minimum alignment length filter, in bp.                                                                                                                                                   |
 | [settled](#getter-settled)                                                     | Getters    | DotplotView                                             | Canvas has painted and no display is still fetching, so what's on screen is the final settled content.                                                                                              |
 | [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | DotplotView                                             | True if any track has an adapter that declares the 'lod' capability.                                                                                                                                |
 | [geometryByTrackIndex](#getter-geometrybytrackindex)                           | Getters    | DotplotView                                             | Per-display GPU geometry keyed by track index.                                                                                                                                                      |
 | [dotplotRenderState](#getter-dotplotrenderstate)                               | Getters    | DotplotView                                             | Aggregated per-frame render state.                                                                                                                                                                  |
 | [error](#getter-error)                                                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
+| [getCoords](#method-getcoords)                                                 | Methods    | DotplotView                                             | Both corners of a drag rect, in bp on each axis.                                                                                                                                                    |
 | [getHHighlightCoords](#method-gethhighlightcoords)                             | Methods    | DotplotView                                             | Map a highlight/bookmark region to {left, width} px on the horizontal axis.                                                                                                                         |
 | [getVHighlightCoords](#method-getvhighlightcoords)                             | Methods    | DotplotView                                             | Map a highlight/bookmark region to {top, height} px on the vertical axis.                                                                                                                           |
 | [menuItems](#method-menuitems)                                                 | Methods    | DotplotView                                             |                                                                                                                                                                                                     |
@@ -90,6 +94,9 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [setLockAspectRatio](#action-setlockaspectratio)                               | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
 | [setLineWidth](#action-setlinewidth)                                           | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
 | [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setColorBy](#action-setcolorby)                                               | Actions    | DotplotView                                             | Fan a per-display render setting out to every display, so the view-level getters above stay the single answer for the whole plot.                                                                   |
+| [setAlpha](#action-setalpha)                                                   | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
+| [setMinAlignmentLength](#action-setminalignmentlength)                         | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
 | [clearView](#action-clearview)                                                 | Actions    | DotplotView                                             | returns to the import form                                                                                                                                                                          |
 | [setWidth](#action-setwidth)                                                   | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
 | [setHeight](#action-setheight)                                                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
@@ -102,7 +109,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [hideTrack](#action-hidetrack)                                                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
 | [toggleTrack](#action-toggletrack)                                             | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
 | [setAssemblyNames](#action-setassemblynames)                                   | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
-| [getCoords](#action-getcoords)                                                 | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
 | [zoomInToMouseCoords](#action-zoomintomousecoords)                             | Actions    | DotplotView                                             | zooms into clicked and dragged region                                                                                                                                                               |
 | [addHighlightFromMouseCoords](#action-addhighlightfrommousecoords)             | Actions    | DotplotView                                             | highlights the clicked and dragged region: the x-span becomes a band on the horizontal axis and the y-span a band on the vertical axis, so the drag rect is their intersection                      |
 | [showAllRegions](#action-showallregions)                                       | Actions    | DotplotView                                             |                                                                                                                                                                                                     |
@@ -358,7 +364,46 @@ type viewHeight = number
 DotplotDisplays under each track, indexed to match `tracks`.
 
 ```ts
-type dotplotDisplays = (ModelInstanceTypeProps<_OverrideProps<…>> & ... 10 more ... & IStateTreeNode<...>)[]
+type dotplotDisplays = (ModelInstanceTypeProps<_OverrideProps<Omit<…>, { ...; }>> & ... 12 more ... & IStateTreeNode<...>)[]
+```
+
+#### getter: colorBy
+
+The color-by mode the whole plot renders with. colorBy is stored per display (it
+feeds the display's own geometry rebuild), but every control writes it to all of
+them at once, so the view resolves it once here instead of each consumer
+re-deriving it from `dotplotDisplays[0]` with its own fallback — two of them
+disagreed, one running the raw string through `coerceColorBy` and one not, so an
+unrecognized value lit the legend as 'default' while the menu showed no mode
+checked.
+
+```ts
+type colorBy =
+  | 'default'
+  | 'strand'
+  | 'query'
+  | 'target'
+  | 'reference'
+  | 'identity'
+  | 'meanQueryIdentity'
+  | 'mappingQuality'
+```
+
+#### getter: alpha
+
+Plot-wide alpha. See colorBy: resolved here so the no-display case is answered
+once. Matches the display schema's own default.
+
+```ts
+type alpha = number
+```
+
+#### getter: minAlignmentLength
+
+Plot-wide minimum alignment length filter, in bp. See colorBy.
+
+```ts
+type minAlignmentLength = number
 ```
 
 #### getter: settled
@@ -434,6 +479,22 @@ type dotplotRenderState =
 <details>
 <summary>DotplotView - Methods</summary>
 
+#### method: getCoords
+
+Both corners of a drag rect, in bp on each axis. The vertical axis lays out
+bottom-up, so its pixels are flipped through viewHeight first. Undefined for a
+drag too small to be a selection — the same threshold the interaction hook uses
+to tell a drag from a click.
+
+```ts
+type getCoords = (
+  mousedown: Coord,
+  mouseup: Coord,
+) =>
+  | { x1: PxToBpResult; x2: PxToBpResult; y1: PxToBpResult; y2: PxToBpResult }
+  | undefined
+```
+
 #### method: getHHighlightCoords
 
 Map a highlight/bookmark region to {left, width} px on the horizontal axis. left
@@ -477,6 +538,28 @@ type getVHighlightCoords = (region: {
 
 <details>
 <summary>DotplotView - Actions</summary>
+
+#### action: setColorBy
+
+Fan a per-display render setting out to every display, so the view-level getters
+above stay the single answer for the whole plot. The controls are view-level
+(one palette menu, one settings popover) even though the state is per-display,
+so every writer went through the same loop — it lives here now instead of at
+each call site.
+
+```ts
+type setColorBy = (
+  value:
+    | 'default'
+    | 'strand'
+    | 'query'
+    | 'target'
+    | 'reference'
+    | 'identity'
+    | 'meanQueryIdentity'
+    | 'mappingQuality',
+) => void
+```
 
 #### action: clearView
 
@@ -548,31 +631,32 @@ type squareView = () => void
 <details>
 <summary>DotplotView - Actions (other undocumented members)</summary>
 
-| Member                                                                         | Type                                                                                                                             |
-| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-setimportformsyntenytrack">setImportFormSyntenyTrack</span>   | `(arg: number, val: ImportFormSyntenyTrack) => void`                                                                             |
-| <span id="action-startrenderingbackend">startRenderingBackend</span>           | `(backend: DotplotRenderingBackend) => void`                                                                                     |
-| <span id="action-setcursormode">setCursorMode</span>                           | `(mode: CursorMode) => void`                                                                                                     |
-| <span id="action-setdrawcigar">setDrawCigar</span>                             | `(flag: boolean) => void`                                                                                                        |
-| <span id="action-setlodmode">setLodMode</span>                                 | `(value: "auto" \| "fine" \| "coarse") => void`                                                                                  |
-| <span id="action-setlockaspectratio">setLockAspectRatio</span>                 | `(flag: boolean) => void`                                                                                                        |
-| <span id="action-setlinewidth">setLineWidth</span>                             | `(value: number) => void`                                                                                                        |
-| <span id="action-setshowcolorlegend">setShowColorLegend</span>                 | `(arg: boolean) => void`                                                                                                         |
-| <span id="action-setwidth">setWidth</span>                                     | `(newWidth: number) => number`                                                                                                   |
-| <span id="action-setheight">setHeight</span>                                   | `(newHeight: number) => number`                                                                                                  |
-| <span id="action-seterror">setError</span>                                     | `(e: unknown) => void`                                                                                                           |
-| <span id="action-setinit">setInit</span>                                       | `(init?: DotplotViewInit \| undefined) => void`                                                                                  |
-| <span id="action-zoomout">zoomOut</span>                                       | `() => void`                                                                                                                     |
-| <span id="action-zoomin">zoomIn</span>                                         | `() => void`                                                                                                                     |
-| <span id="action-activatetrackselector">activateTrackSelector</span>           | `() => Widget`                                                                                                                   |
-| <span id="action-showtrack">showTrack</span>                                   | `(trackId: string, initialSnapshot?: any) => any`                                                                                |
-| <span id="action-hidetrack">hideTrack</span>                                   | `(trackId: string) => boolean`                                                                                                   |
-| <span id="action-toggletrack">toggleTrack</span>                               | `(trackId: string) => boolean`                                                                                                   |
-| <span id="action-setassemblynames">setAssemblyNames</span>                     | `(target: string, query: string) => void`                                                                                        |
-| <span id="action-getcoords">getCoords</span>                                   | `(mousedown: Coord, mouseup: Coord) => { x1: PxToBpResult; x2: PxToBpResult; y1: PxToBpResult; y2: PxToBpResult; } \| undefined` |
-| <span id="action-showallregions">showAllRegions</span>                         | `() => void`                                                                                                                     |
-| <span id="action-initializedisplayedregions">initializeDisplayedRegions</span> | `() => void`                                                                                                                     |
-| <span id="action-squareviewproportional">squareViewProportional</span>         | `() => void`                                                                                                                     |
+| Member                                                                         | Type                                                 |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| <span id="action-setimportformsyntenytrack">setImportFormSyntenyTrack</span>   | `(arg: number, val: ImportFormSyntenyTrack) => void` |
+| <span id="action-startrenderingbackend">startRenderingBackend</span>           | `(backend: DotplotRenderingBackend) => void`         |
+| <span id="action-setcursormode">setCursorMode</span>                           | `(mode: CursorMode) => void`                         |
+| <span id="action-setdrawcigar">setDrawCigar</span>                             | `(flag: boolean) => void`                            |
+| <span id="action-setlodmode">setLodMode</span>                                 | `(value: "auto" \| "fine" \| "coarse") => void`      |
+| <span id="action-setlockaspectratio">setLockAspectRatio</span>                 | `(flag: boolean) => void`                            |
+| <span id="action-setlinewidth">setLineWidth</span>                             | `(value: number) => void`                            |
+| <span id="action-setshowcolorlegend">setShowColorLegend</span>                 | `(arg: boolean) => void`                             |
+| <span id="action-setalpha">setAlpha</span>                                     | `(value: number) => void`                            |
+| <span id="action-setminalignmentlength">setMinAlignmentLength</span>           | `(value: number) => void`                            |
+| <span id="action-setwidth">setWidth</span>                                     | `(newWidth: number) => number`                       |
+| <span id="action-setheight">setHeight</span>                                   | `(newHeight: number) => number`                      |
+| <span id="action-seterror">setError</span>                                     | `(e: unknown) => void`                               |
+| <span id="action-setinit">setInit</span>                                       | `(init?: DotplotViewInit \| undefined) => void`      |
+| <span id="action-zoomout">zoomOut</span>                                       | `() => void`                                         |
+| <span id="action-zoomin">zoomIn</span>                                         | `() => void`                                         |
+| <span id="action-activatetrackselector">activateTrackSelector</span>           | `() => Widget`                                       |
+| <span id="action-showtrack">showTrack</span>                                   | `(trackId: string, initialSnapshot?: any) => any`    |
+| <span id="action-hidetrack">hideTrack</span>                                   | `(trackId: string) => boolean`                       |
+| <span id="action-toggletrack">toggleTrack</span>                               | `(trackId: string) => boolean`                       |
+| <span id="action-setassemblynames">setAssemblyNames</span>                     | `(target: string, query: string) => void`            |
+| <span id="action-showallregions">showAllRegions</span>                         | `() => void`                                         |
+| <span id="action-initializedisplayedregions">initializeDisplayedRegions</span> | `() => void`                                         |
+| <span id="action-squareviewproportional">squareViewProportional</span>         | `() => void`                                         |
 
 </details>
 

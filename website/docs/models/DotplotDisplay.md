@@ -13,57 +13,59 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Members
 
-| Member                                                         | Kind       | Defined by                    | Description                                                                                                                                                                                                                                                               |
-| -------------------------------------------------------------- | ---------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                         | Properties | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [configuration](#property-configuration)                       | Properties | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [colorBy](#property-colorby)                                   | Properties | DotplotDisplay                | color by setting that overrides the config setting                                                                                                                                                                                                                        |
-| [alpha](#property-alpha)                                       | Properties | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [minAlignmentLength](#property-minalignmentlength)             | Properties | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [rpcData](#volatile-rpcdata)                                   | Volatiles  | DotplotDisplay                | RPC-computed feature data                                                                                                                                                                                                                                                 |
-| [geometry](#volatile-geometry)                                 | Volatiles  | DotplotDisplay                | GPU-instance geometry produced from featPositions, self- describing via embedded bpPerPx.                                                                                                                                                                                 |
-| [fetchStopToken](#volatile-fetchstoptoken)                     | Volatiles  | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [fetchWarnings](#volatile-fetchwarnings)                       | Volatiles  | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [loadedFetchKey](#volatile-loadedfetchkey)                     | Volatiles  | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [assembliesSwapped](#volatile-assembliesswapped)               | Volatiles  | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [isLoading](#getter-isloading)                                 | Getters    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [isRefetching](#getter-isrefetching)                           | Getters    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [fetchRegions](#getter-fetchregions)                           | Getters    | DotplotDisplay                | The h-axis fetch window: the visible content blocks expanded by the shared pan buffer and snapped outward to a buffer-sized grid, so a pan within the buffer neither refetches nor exposes an unfetched strip, and zoomed out it collapses to the whole displayed region. |
-| [currentFetchKey](#getter-currentfetchkey)                     | Getters    | DotplotDisplay                | The fetch-input signature (see fetchKey.ts) for the view's current state.                                                                                                                                                                                                 |
-| [dataCurrent](#getter-datacurrent)                             | Getters    | DotplotDisplay                | True when the rendered rpcData was fetched for the view's current inputs.                                                                                                                                                                                                 |
-| [warnings](#getter-warnings)                                   | Getters    | DotplotDisplay                | Per-render fetch warnings, plus the load-time reversed-assembly hint.                                                                                                                                                                                                     |
-| [svgReady](#getter-svgready)                                   | Getters    | DotplotDisplay                | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)).                                                                                                                                    |
-| [renderSvg](#method-rendersvg)                                 | Methods    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setLoading](#action-setloading)                               | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setRpcData](#action-setrpcdata)                               | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setWarnings](#action-setwarnings)                             | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setAssembliesSwapped](#action-setassembliesswapped)           | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setGeometry](#action-setgeometry)                             | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setError](#action-seterror)                                   | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setAlpha](#action-setalpha)                                   | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setMinAlignmentLength](#action-setminalignmentlength)         | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [setColorBy](#action-setcolorby)                               | Actions    | DotplotDisplay                |                                                                                                                                                                                                                                                                           |
-| [id](#property-id)                                             | Properties | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [rpcDriverName](#property-rpcdrivername)                       | Properties | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [ignorePromotedDefaults](#property-ignorepromoteddefaults)     | Properties | [BaseDisplay](../basedisplay) | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL).                                                                                                                                       |
-| [error](#volatile-error)                                       | Volatiles  | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [statusMessage](#volatile-statusmessage)                       | Volatiles  | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [statusProgress](#volatile-statusprogress)                     | Volatiles  | [BaseDisplay](../basedisplay) | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate.                                                                                                                                                       |
-| [parentTrack](#getter-parenttrack)                             | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [parentDisplay](#getter-parentdisplay)                         | Getters    | [BaseDisplay](../basedisplay) | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                          |
-| [RenderingComponent](#getter-renderingcomponent)               | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [DisplayBlurb](#getter-displayblurb)                           | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [adapterConfig](#getter-adapterconfig)                         | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [isMinimized](#getter-isminimized)                             | Getters    | [BaseDisplay](../basedisplay) | Returns true if the parent track is minimized.                                                                                                                                                                                                                            |
-| [effectiveRpcDriverName](#getter-effectiverpcdrivername)       | Getters    | [BaseDisplay](../basedisplay) | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                                                                                      |
-| [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | [BaseDisplay](../basedisplay) | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                |
-| [renderingProps](#method-renderingprops)                       | Methods    | [BaseDisplay](../basedisplay) | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                               |
-| [trackMenuItems](#method-trackmenuitems)                       | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | [BaseDisplay](../basedisplay) | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                 |
-| [setStatusMessage](#action-setstatusmessage)                   | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [setRpcDriverName](#action-setrpcdrivername)                   | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                           |
-| [reload](#action-reload)                                       | Actions    | [BaseDisplay](../basedisplay) | base display reload does nothing, see specialized displays for details                                                                                                                                                                                                    |
+| Member                                                         | Kind       | Defined by                                          | Description                                                                                                                                                                                                                                                               |
+| -------------------------------------------------------------- | ---------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                         | Properties | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [configuration](#property-configuration)                       | Properties | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [colorBy](#property-colorby)                                   | Properties | DotplotDisplay                                      | color by setting that overrides the config setting                                                                                                                                                                                                                        |
+| [alpha](#property-alpha)                                       | Properties | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [minAlignmentLength](#property-minalignmentlength)             | Properties | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [rpcData](#volatile-rpcdata)                                   | Volatiles  | DotplotDisplay                                      | RPC-computed feature data                                                                                                                                                                                                                                                 |
+| [geometry](#volatile-geometry)                                 | Volatiles  | DotplotDisplay                                      | GPU-instance geometry produced from featPositions, self- describing via embedded bpPerPx.                                                                                                                                                                                 |
+| [fetchWarnings](#volatile-fetchwarnings)                       | Volatiles  | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [ready](#getter-ready)                                         | Getters    | DotplotDisplay                                      | A fetch has completed (data is present, even if it mapped zero features).                                                                                                                                                                                                 |
+| [loading](#getter-loading)                                     | Getters    | DotplotDisplay                                      | First load: no data has arrived yet.                                                                                                                                                                                                                                      |
+| [refetching](#getter-refetching)                               | Getters    | DotplotDisplay                                      | Refetch in-flight: a new fetch is running but a stale plot is still on screen (zoom, diagonalize reorder, pan past the buffer).                                                                                                                                           |
+| [fetchRegions](#getter-fetchregions)                           | Getters    | DotplotDisplay                                      | The h-axis fetch window: the visible content blocks expanded by the shared pan buffer and snapped outward to a buffer-sized grid, so a pan within the buffer neither refetches nor exposes an unfetched strip, and zoomed out it collapses to the whole displayed region. |
+| [currentFetchKey](#getter-currentfetchkey)                     | Getters    | DotplotDisplay                                      | The fetch-input signature (see fetchKey.ts) for the view's current state.                                                                                                                                                                                                 |
+| [dataCurrent](#getter-datacurrent)                             | Getters    | DotplotDisplay                                      | True when the rendered rpcData was fetched for the view's current inputs.                                                                                                                                                                                                 |
+| [warnings](#getter-warnings)                                   | Getters    | DotplotDisplay                                      | Per-render fetch warnings, plus the load-time reversed-assembly hint.                                                                                                                                                                                                     |
+| [svgReady](#getter-svgready)                                   | Getters    | DotplotDisplay                                      | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)).                                                                                                                                    |
+| [renderSvg](#method-rendersvg)                                 | Methods    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setLoading](#action-setloading)                               | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setRpcData](#action-setrpcdata)                               | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setWarnings](#action-setwarnings)                             | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setGeometry](#action-setgeometry)                             | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setError](#action-seterror)                                   | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setAlpha](#action-setalpha)                                   | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setMinAlignmentLength](#action-setminalignmentlength)         | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [setColorBy](#action-setcolorby)                               | Actions    | DotplotDisplay                                      |                                                                                                                                                                                                                                                                           |
+| [id](#property-id)                                             | Properties | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [rpcDriverName](#property-rpcdrivername)                       | Properties | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [ignorePromotedDefaults](#property-ignorepromoteddefaults)     | Properties | [BaseDisplay](../basedisplay)                       | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL).                                                                                                                                       |
+| [error](#volatile-error)                                       | Volatiles  | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [statusMessage](#volatile-statusmessage)                       | Volatiles  | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [statusProgress](#volatile-statusprogress)                     | Volatiles  | [BaseDisplay](../basedisplay)                       | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate.                                                                                                                                                       |
+| [parentTrack](#getter-parenttrack)                             | Getters    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [parentDisplay](#getter-parentdisplay)                         | Getters    | [BaseDisplay](../basedisplay)                       | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                          |
+| [RenderingComponent](#getter-renderingcomponent)               | Getters    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [DisplayBlurb](#getter-displayblurb)                           | Getters    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [adapterConfig](#getter-adapterconfig)                         | Getters    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [isMinimized](#getter-isminimized)                             | Getters    | [BaseDisplay](../basedisplay)                       | Returns true if the parent track is minimized.                                                                                                                                                                                                                            |
+| [effectiveRpcDriverName](#getter-effectiverpcdrivername)       | Getters    | [BaseDisplay](../basedisplay)                       | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                                                                                      |
+| [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | [BaseDisplay](../basedisplay)                       | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                |
+| [renderingProps](#method-renderingprops)                       | Methods    | [BaseDisplay](../basedisplay)                       | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                               |
+| [trackMenuItems](#method-trackmenuitems)                       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | [BaseDisplay](../basedisplay)                       | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                 |
+| [setStatusMessage](#action-setstatusmessage)                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [setRpcDriverName](#action-setrpcdrivername)                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
+| [reload](#action-reload)                                       | Actions    | [BaseDisplay](../basedisplay)                       | base display reload does nothing, see specialized displays for details                                                                                                                                                                                                    |
+| [fetching](#volatile-fetching)                                 | Volatiles  | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) | True while an RPC fetch is in-flight.                                                                                                                                                                                                                                     |
+| [loadedFetchKey](#volatile-loadedfetchkey)                     | Volatiles  | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) | Fetch-input signature the currently held data was fetched for (each display builds its own `currentFetchKey`).                                                                                                                                                            |
+| [assembliesSwapped](#volatile-assembliesswapped)               | Volatiles  | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) | Set once at view load by a refName-comparison check, independent of the per-render fetch, so it never re-fires or misfires on zoom.                                                                                                                                       |
+| [setFetching](#action-setfetching)                             | Actions    | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) |                                                                                                                                                                                                                                                                           |
+| [setAssembliesSwapped](#action-setassembliesswapped)           | Actions    | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) |                                                                                                                                                                                                                                                                           |
 
 ### DotplotDisplay - Configuration
 
@@ -130,17 +132,44 @@ geometry: undefined as DotplotGeometryData | undefined
 <details>
 <summary>DotplotDisplay - Volatiles (other undocumented members)</summary>
 
-| Member                                                         | Type                                     |
-| -------------------------------------------------------------- | ---------------------------------------- |
-| <span id="volatile-fetchstoptoken">fetchStopToken</span>       | `StopToken \| undefined`                 |
-| <span id="volatile-fetchwarnings">fetchWarnings</span>         | `{ message: string; effect: string; }[]` |
-| <span id="volatile-loadedfetchkey">loadedFetchKey</span>       | `string \| undefined`                    |
-| <span id="volatile-assembliesswapped">assembliesSwapped</span> | `false`                                  |
+| Member                                                 | Type                                     |
+| ------------------------------------------------------ | ---------------------------------------- |
+| <span id="volatile-fetchwarnings">fetchWarnings</span> | `{ message: string; effect: string; }[]` |
 
 </details>
 
 <details>
 <summary>DotplotDisplay - Getters</summary>
+
+#### getter: ready
+
+A fetch has completed (data is present, even if it mapped zero features). Not a
+feature-count test — an empty-but-finished fetch is ready, otherwise an empty
+plot spins the loading overlay forever.
+
+```ts
+type ready = boolean
+```
+
+#### getter: loading
+
+First load: no data has arrived yet. Excludes error so error UI and loading UI
+never show simultaneously. Drives the centered overlay.
+
+```ts
+type loading = boolean
+```
+
+#### getter: refetching
+
+Refetch in-flight: a new fetch is running but a stale plot is still on screen
+(zoom, diagonalize reorder, pan past the buffer). Drives a subtle corner
+indicator instead of the full overlay so the visible plot isn't masked on every
+viewport change.
+
+```ts
+type refetching = boolean
+```
 
 #### getter: fetchRegions
 
@@ -197,25 +226,15 @@ type warnings = { message: string; effect: string }[]
 Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the
 [SVG export guide](/docs/developer_guides/svg_export)). Dotplot is
 non-rectangular (square canvas), so it keeps a bespoke `SVGErrorBox` error UI
-instead of `SvgChrome`, but still exposes `svgReady` + awaits it via the shared
-`awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state. Stale-safe via
-`dataCurrent`: an export fired right after a zoom/diagonalize reorder waits for
-geometry rebuilt from the fresh fetch instead of exporting the stale plot (the
-follow-up the synteny gate also now carries).
+instead of `SvgChrome`, but it runs the same shared `computeSvgReady` policy and
+awaits it via the shared `awaitSvgReady` — no inlined `when()`. No
+`regionTooLarge` state. Stale-safe via `dataCurrent`: an export fired right
+after a zoom/diagonalize reorder waits for geometry rebuilt from the fresh fetch
+instead of exporting the stale plot.
 
 ```ts
 type svgReady = boolean
 ```
-
-</details>
-
-<details>
-<summary>DotplotDisplay - Getters (other undocumented members)</summary>
-
-| Member                                             | Type      |
-| -------------------------------------------------- | --------- |
-| <span id="getter-isloading">isLoading</span>       | `boolean` |
-| <span id="getter-isrefetching">isRefetching</span> | `boolean` |
 
 </details>
 
@@ -233,10 +252,9 @@ type svgReady = boolean
 
 | Member                                                               | Type                                                                                                                                    |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-setloading">setLoading</span>                       | `(stopToken: StopToken) => void`                                                                                                        |
+| <span id="action-setloading">setLoading</span>                       | `() => void`                                                                                                                            |
 | <span id="action-setrpcdata">setRpcData</span>                       | `(data: DotplotRpcData, fetchKey: string) => void`                                                                                      |
 | <span id="action-setwarnings">setWarnings</span>                     | `(w: { message: string; effect: string; }[]) => void`                                                                                   |
-| <span id="action-setassembliesswapped">setAssembliesSwapped</span>   | `(arg: boolean) => void`                                                                                                                |
 | <span id="action-setgeometry">setGeometry</span>                     | `(data: DotplotGeometryData \| undefined) => void`                                                                                      |
 | <span id="action-seterror">setError</span>                           | `(error: unknown) => void`                                                                                                              |
 | <span id="action-setalpha">setAlpha</span>                           | `(value: number) => void`                                                                                                               |
@@ -391,5 +409,62 @@ type reload = () => void
 | ---------------------------------------------------------- | ------------------------------------------- |
 | <span id="action-setstatusmessage">setStatusMessage</span> | `(status?: RpcStatus \| undefined) => void` |
 | <span id="action-setrpcdrivername">setRpcDriverName</span> | `(rpcDriverName: string) => void`           |
+
+</details>
+
+<details>
+<summary>Derived from SyntenyFetchStateMixin</summary>
+
+[SyntenyFetchStateMixin →](../syntenyfetchstatemixin)
+
+**Volatiles**
+
+#### volatile: fetching
+
+True while an RPC fetch is in-flight. Combined with `ready` it distinguishes a
+first load (no data yet — full overlay) from a refetch (stale content still on
+screen — corner indicator).
+
+```ts
+// type signature
+type fetching = false
+// code
+fetching: false
+```
+
+#### volatile: loadedFetchKey
+
+Fetch-input signature the currently held data was fetched for (each display
+builds its own `currentFetchKey`). Compared against the live inputs in
+`dataCurrent` to catch data gone stale after a region/zoom change — including
+during the pre-refetch debounce gap, where `fetching` is still false and would
+otherwise report done on content drawn against the old viewport.
+
+```ts
+// type signature
+type loadedFetchKey = string | undefined
+// code
+loadedFetchKey: undefined as string | undefined
+```
+
+#### volatile: assembliesSwapped
+
+Set once at view load by a refName-comparison check, independent of the
+per-render fetch, so it never re-fires or misfires on zoom. Surfaces through
+each display's `warnings`.
+
+```ts
+// type signature
+type assembliesSwapped = false
+// code
+assembliesSwapped: false
+```
+
+**Actions**
+
+| Member                                                             | Type                     |
+| ------------------------------------------------------------------ | ------------------------ |
+| <span id="action-setfetching">setFetching</span>                   | `(arg: boolean) => void` |
+| <span id="action-setassembliesswapped">setAssembliesSwapped</span> | `(arg: boolean) => void` |
 
 </details>

@@ -45,74 +45,74 @@ and the `renderParams` the view reads out.
 
 ## Members
 
-| Member                                                         | Kind       | Defined by                    | Description                                                                                                                                                                                           |
-| -------------------------------------------------------------- | ---------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                         | Properties | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [configuration](#property-configuration)                       | Properties | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [featureData](#volatile-featuredata)                           | Volatiles  | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [instanceData](#volatile-instancedata)                         | Volatiles  | LinearSyntenyDisplay          | Raw GPU-instance geometry produced by the RPC.                                                                                                                                                        |
-| [hoveredFeatureIdx](#volatile-hoveredfeatureidx)               | Volatiles  | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [clickedFeatureIdx](#volatile-clickedfeatureidx)               | Volatiles  | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [contextMenuAnchor](#volatile-contextmenuanchor)               | Volatiles  | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [fetching](#volatile-fetching)                                 | Volatiles  | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [loadedFetchKey](#volatile-loadedfetchkey)                     | Volatiles  | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [assembliesSwapped](#volatile-assembliesswapped)               | Volatiles  | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [parentHelper](#getter-parenthelper)                           | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [level](#getter-level)                                         | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [displayKey](#getter-displaykey)                               | Getters    | LinearSyntenyDisplay          | Stable backend key under the view-shared backend.                                                                                                                                                     |
-| [height](#getter-height)                                       | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [adapterConfig](#getter-adapterconfig)                         | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [numFeats](#getter-numfeats)                                   | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [totalAlignmentBp](#getter-totalalignmentbp)                   | Getters    | LinearSyntenyDisplay          | Summed genomic length (axis 0) of every loaded alignment block.                                                                                                                                       |
-| [meanAlignmentPx](#getter-meanalignmentpx)                     | Getters    | LinearSyntenyDisplay          | Mean on-screen width (px, axis 0) of this display's alignment blocks, or 0 until a fetch lands and both views connect.                                                                                |
-| [autoFadeThinAlignments](#getter-autofadethinalignments)       | Getters    | LinearSyntenyDisplay          | 'auto' fade-thin signal for this display: on when the ribbons are predominantly sub-pixel (`meanAlignmentPx` < 1) and there are enough of them to form a hairball.                                    |
-| [presentCigarKinds](#getter-presentcigarkinds)                 | Getters    | LinearSyntenyDisplay          | Which CIGAR indel ops are actually painted in the current geometry.                                                                                                                                   |
-| [warnings](#getter-warnings)                                   | Getters    | LinearSyntenyDisplay          | Warnings surfaced in the view header.                                                                                                                                                                 |
-| [ready](#getter-ready)                                         | Getters    | LinearSyntenyDisplay          | A fetch has completed (data is present, even if it mapped zero features).                                                                                                                             |
-| [loading](#getter-loading)                                     | Getters    | LinearSyntenyDisplay          | First load: a fetch is running and no data has arrived yet.                                                                                                                                           |
-| [refetching](#getter-refetching)                               | Getters    | LinearSyntenyDisplay          | Refetch in-flight: a new fetch is running but stale ribbons are still on screen (e.g. zoom-out across a log2 bucket, region change).                                                                  |
-| [regionSignature](#getter-regionsignature)                     | Getters    | LinearSyntenyDisplay          | Contents, order and orientation of both connected views' displayed regions — the inputs the worker's cumBp index is built from, so a change in any of them makes held features stale.                 |
-| [currentFetchKey](#getter-currentfetchkey)                     | Getters    | LinearSyntenyDisplay          | Fetch-input signature (region set/order, snapped fetch window, zoom bucket, CIGAR/marker draw options, LOD tier) for the view's current state — the same tracked deps the fetch autorun refetches on. |
-| [dataCurrent](#getter-datacurrent)                             | Getters    | LinearSyntenyDisplay          | True when the rendered data was fetched for the view's current inputs.                                                                                                                                |
-| [svgReady](#getter-svgready)                                   | Getters    | LinearSyntenyDisplay          | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)).                                                                |
-| [view](#getter-view)                                           | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [computedColors](#getter-computedcolors)                       | Getters    | LinearSyntenyDisplay          | Main-thread-computed per-instance colors.                                                                                                                                                             |
-| [effectiveColorBy](#getter-effectivecolorby)                   | Getters    | LinearSyntenyDisplay          | The view-level colorBy resolved for this specific level.                                                                                                                                              |
-| [renderInstanceData](#getter-renderinstancedata)               | Getters    | LinearSyntenyDisplay          | Instance data with main-thread-computed colors substituted in.                                                                                                                                        |
-| [tooltipText](#getter-tooltiptext)                             | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [connectedViews](#getter-connectedviews)                       | Getters    | LinearSyntenyDisplay          | The two adjacent genome views this level draws between, or undefined until both are initialized with regions.                                                                                         |
-| [bpPerPxBucketKey](#getter-bpperpxbucketkey)                   | Getters    | LinearSyntenyDisplay          | Stable key over the log2 zoom bucket of both connected views.                                                                                                                                         |
-| [fetchRegionsKey](#getter-fetchregionskey)                     | Getters    | LinearSyntenyDisplay          | Stable key over the _snapped_ fetch window of both connected views.                                                                                                                                   |
-| [renderParams](#getter-renderparams)                           | Getters    | LinearSyntenyDisplay          | Per-track render params consumed by the view's aggregator.                                                                                                                                            |
-| [getFeature](#method-getfeature)                               | Methods    | LinearSyntenyDisplay          | The parent feature under an INSTANCE index (what the pick engine and the hover/click state carry).                                                                                                    |
-| [setRpcData](#action-setrpcdata)                               | Actions    | LinearSyntenyDisplay          | Set both feature and instance data in one MST action so downstream autoruns (upload, render) fire once per RPC completion, not twice.                                                                 |
-| [setFetching](#action-setfetching)                             | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [setAssembliesSwapped](#action-setassembliesswapped)           | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [setHoveredFeatureIdx](#action-sethoveredfeatureidx)           | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [setClickedFeatureIdx](#action-setclickedfeatureidx)           | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [openContextMenu](#action-opencontextmenu)                     | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [closeContextMenu](#action-closecontextmenu)                   | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                       |
-| [id](#property-id)                                             | Properties | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [rpcDriverName](#property-rpcdrivername)                       | Properties | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [ignorePromotedDefaults](#property-ignorepromoteddefaults)     | Properties | [BaseDisplay](../basedisplay) | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL).                                                                   |
-| [error](#volatile-error)                                       | Volatiles  | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [statusMessage](#volatile-statusmessage)                       | Volatiles  | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [statusProgress](#volatile-statusprogress)                     | Volatiles  | [BaseDisplay](../basedisplay) | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate.                                                                                   |
-| [parentTrack](#getter-parenttrack)                             | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [parentDisplay](#getter-parentdisplay)                         | Getters    | [BaseDisplay](../basedisplay) | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                      |
-| [RenderingComponent](#getter-renderingcomponent)               | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [DisplayBlurb](#getter-displayblurb)                           | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [isMinimized](#getter-isminimized)                             | Getters    | [BaseDisplay](../basedisplay) | Returns true if the parent track is minimized.                                                                                                                                                        |
-| [effectiveRpcDriverName](#getter-effectiverpcdrivername)       | Getters    | [BaseDisplay](../basedisplay) | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                  |
-| [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | [BaseDisplay](../basedisplay) | if a display-level message should be displayed instead, make this return a react component                                                                                                            |
-| [renderingProps](#method-renderingprops)                       | Methods    | [BaseDisplay](../basedisplay) | props passed to the renderer's React "Rendering" component.                                                                                                                                           |
-| [trackMenuItems](#method-trackmenuitems)                       | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | [BaseDisplay](../basedisplay) | see the `ignorePromotedDefaults` property                                                                                                                                                             |
-| [setStatusMessage](#action-setstatusmessage)                   | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [setError](#action-seterror)                                   | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [setRpcDriverName](#action-setrpcdrivername)                   | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                       |
-| [reload](#action-reload)                                       | Actions    | [BaseDisplay](../basedisplay) | base display reload does nothing, see specialized displays for details                                                                                                                                |
+| Member                                                         | Kind       | Defined by                                          | Description                                                                                                                                                                                           |
+| -------------------------------------------------------------- | ---------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                         | Properties | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [configuration](#property-configuration)                       | Properties | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [featureData](#volatile-featuredata)                           | Volatiles  | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [instanceData](#volatile-instancedata)                         | Volatiles  | LinearSyntenyDisplay                                | Raw GPU-instance geometry produced by the RPC.                                                                                                                                                        |
+| [hoveredFeatureIdx](#volatile-hoveredfeatureidx)               | Volatiles  | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [clickedFeatureIdx](#volatile-clickedfeatureidx)               | Volatiles  | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [contextMenuAnchor](#volatile-contextmenuanchor)               | Volatiles  | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [parentHelper](#getter-parenthelper)                           | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [level](#getter-level)                                         | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [displayKey](#getter-displaykey)                               | Getters    | LinearSyntenyDisplay                                | Stable backend key under the view-shared backend.                                                                                                                                                     |
+| [height](#getter-height)                                       | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [adapterConfig](#getter-adapterconfig)                         | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [numFeats](#getter-numfeats)                                   | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [totalAlignmentBp](#getter-totalalignmentbp)                   | Getters    | LinearSyntenyDisplay                                | Summed genomic length (axis 0) of every loaded alignment block.                                                                                                                                       |
+| [meanAlignmentPx](#getter-meanalignmentpx)                     | Getters    | LinearSyntenyDisplay                                | Mean on-screen width (px, axis 0) of this display's alignment blocks, or 0 until a fetch lands and both views connect.                                                                                |
+| [autoFadeThinAlignments](#getter-autofadethinalignments)       | Getters    | LinearSyntenyDisplay                                | 'auto' fade-thin signal for this display: on when the ribbons are predominantly sub-pixel (`meanAlignmentPx` < 1) and there are enough of them to form a hairball.                                    |
+| [presentCigarKinds](#getter-presentcigarkinds)                 | Getters    | LinearSyntenyDisplay                                | Which CIGAR indel ops are actually painted in the current geometry.                                                                                                                                   |
+| [warnings](#getter-warnings)                                   | Getters    | LinearSyntenyDisplay                                | Warnings surfaced in the view header.                                                                                                                                                                 |
+| [ready](#getter-ready)                                         | Getters    | LinearSyntenyDisplay                                | A fetch has completed (data is present, even if it mapped zero features).                                                                                                                             |
+| [loading](#getter-loading)                                     | Getters    | LinearSyntenyDisplay                                | First load: a fetch is running and no data has arrived yet.                                                                                                                                           |
+| [refetching](#getter-refetching)                               | Getters    | LinearSyntenyDisplay                                | Refetch in-flight: a new fetch is running but stale ribbons are still on screen (e.g. zoom-out across a log2 bucket, region change).                                                                  |
+| [regionSignature](#getter-regionsignature)                     | Getters    | LinearSyntenyDisplay                                | Contents, order and orientation of both connected views' displayed regions — the inputs the worker's cumBp index is built from, so a change in any of them makes held features stale.                 |
+| [currentFetchKey](#getter-currentfetchkey)                     | Getters    | LinearSyntenyDisplay                                | Fetch-input signature (region set/order, snapped fetch window, zoom bucket, CIGAR/marker draw options, LOD tier) for the view's current state — the same tracked deps the fetch autorun refetches on. |
+| [dataCurrent](#getter-datacurrent)                             | Getters    | LinearSyntenyDisplay                                | True when the rendered data was fetched for the view's current inputs.                                                                                                                                |
+| [svgReady](#getter-svgready)                                   | Getters    | LinearSyntenyDisplay                                | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)).                                                                |
+| [view](#getter-view)                                           | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [computedColors](#getter-computedcolors)                       | Getters    | LinearSyntenyDisplay                                | Main-thread-computed per-instance colors.                                                                                                                                                             |
+| [effectiveColorBy](#getter-effectivecolorby)                   | Getters    | LinearSyntenyDisplay                                | The view-level colorBy resolved for this specific level.                                                                                                                                              |
+| [renderInstanceData](#getter-renderinstancedata)               | Getters    | LinearSyntenyDisplay                                | Instance data with main-thread-computed colors substituted in.                                                                                                                                        |
+| [tooltipText](#getter-tooltiptext)                             | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [connectedViews](#getter-connectedviews)                       | Getters    | LinearSyntenyDisplay                                | The two adjacent genome views this level draws between, or undefined until both are initialized with regions.                                                                                         |
+| [bpPerPxBucketKey](#getter-bpperpxbucketkey)                   | Getters    | LinearSyntenyDisplay                                | Stable key over the log2 zoom bucket of both connected views.                                                                                                                                         |
+| [fetchRegionsKey](#getter-fetchregionskey)                     | Getters    | LinearSyntenyDisplay                                | Stable key over the _snapped_ fetch window of both connected views.                                                                                                                                   |
+| [renderParams](#getter-renderparams)                           | Getters    | LinearSyntenyDisplay                                | Per-track render params consumed by the view's aggregator.                                                                                                                                            |
+| [getFeature](#method-getfeature)                               | Methods    | LinearSyntenyDisplay                                | The parent feature under an INSTANCE index (what the pick engine and the hover/click state carry).                                                                                                    |
+| [setRpcData](#action-setrpcdata)                               | Actions    | LinearSyntenyDisplay                                | Set both feature and instance data in one MST action so downstream autoruns (upload, render) fire once per RPC completion, not twice.                                                                 |
+| [setHoveredFeatureIdx](#action-sethoveredfeatureidx)           | Actions    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [setClickedFeatureIdx](#action-setclickedfeatureidx)           | Actions    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [openContextMenu](#action-opencontextmenu)                     | Actions    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [closeContextMenu](#action-closecontextmenu)                   | Actions    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
+| [id](#property-id)                                             | Properties | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [rpcDriverName](#property-rpcdrivername)                       | Properties | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [ignorePromotedDefaults](#property-ignorepromoteddefaults)     | Properties | [BaseDisplay](../basedisplay)                       | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL).                                                                   |
+| [error](#volatile-error)                                       | Volatiles  | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [statusMessage](#volatile-statusmessage)                       | Volatiles  | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [statusProgress](#volatile-statusprogress)                     | Volatiles  | [BaseDisplay](../basedisplay)                       | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate.                                                                                   |
+| [parentTrack](#getter-parenttrack)                             | Getters    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [parentDisplay](#getter-parentdisplay)                         | Getters    | [BaseDisplay](../basedisplay)                       | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                      |
+| [RenderingComponent](#getter-renderingcomponent)               | Getters    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [DisplayBlurb](#getter-displayblurb)                           | Getters    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [isMinimized](#getter-isminimized)                             | Getters    | [BaseDisplay](../basedisplay)                       | Returns true if the parent track is minimized.                                                                                                                                                        |
+| [effectiveRpcDriverName](#getter-effectiverpcdrivername)       | Getters    | [BaseDisplay](../basedisplay)                       | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                  |
+| [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | [BaseDisplay](../basedisplay)                       | if a display-level message should be displayed instead, make this return a react component                                                                                                            |
+| [renderingProps](#method-renderingprops)                       | Methods    | [BaseDisplay](../basedisplay)                       | props passed to the renderer's React "Rendering" component.                                                                                                                                           |
+| [trackMenuItems](#method-trackmenuitems)                       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | [BaseDisplay](../basedisplay)                       | see the `ignorePromotedDefaults` property                                                                                                                                                             |
+| [setStatusMessage](#action-setstatusmessage)                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [setError](#action-seterror)                                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [setRpcDriverName](#action-setrpcdrivername)                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
+| [reload](#action-reload)                                       | Actions    | [BaseDisplay](../basedisplay)                       | base display reload does nothing, see specialized displays for details                                                                                                                                |
+| [fetching](#volatile-fetching)                                 | Volatiles  | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) | True while an RPC fetch is in-flight.                                                                                                                                                                 |
+| [loadedFetchKey](#volatile-loadedfetchkey)                     | Volatiles  | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) | Fetch-input signature the currently held data was fetched for (each display builds its own `currentFetchKey`).                                                                                        |
+| [assembliesSwapped](#volatile-assembliesswapped)               | Volatiles  | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) | Set once at view load by a refName-comparison check, independent of the per-render fetch, so it never re-fires or misfires on zoom.                                                                   |
+| [setFetching](#action-setfetching)                             | Actions    | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) |                                                                                                                                                                                                       |
+| [setAssembliesSwapped](#action-setassembliesswapped)           | Actions    | [SyntenyFetchStateMixin](../syntenyfetchstatemixin) |                                                                                                                                                                                                       |
 
 ### LinearSyntenyDisplay - Configuration
 
@@ -156,9 +156,6 @@ instanceData: undefined as SyntenyGeometry | undefined
 | <span id="volatile-hoveredfeatureidx">hoveredFeatureIdx</span> | `number`                          |
 | <span id="volatile-clickedfeatureidx">clickedFeatureIdx</span> | `number`                          |
 | <span id="volatile-contextmenuanchor">contextMenuAnchor</span> | `ClickCoord \| undefined`         |
-| <span id="volatile-fetching">fetching</span>                   | `false`                           |
-| <span id="volatile-loadedfetchkey">loadedFetchKey</span>       | `string \| undefined`             |
-| <span id="volatile-assembliesswapped">assembliesSwapped</span> | `false`                           |
 
 </details>
 
@@ -297,9 +294,11 @@ type currentFetchKey = string
 True when the rendered data was fetched for the view's current inputs. Goes
 false the instant a region/zoom/draw-option change makes the held ribbons stale
 — including during the pre-refetch debounce gap where `fetching` is still false
-so `refetching` alone can't catch it. The synteny analog of LGV's
-`viewportWithinLoadedData` and arc's
-`loadedRegionSignature === currentRegionSignature`.
+so `refetching` alone can't catch it.
+
+This is the shared freshness hook every display foundation answers, expressed
+the signature-compare way (as arc and dotplot do); the per-region families
+answer it with spatial coverage instead.
 
 ```ts
 type dataCurrent = boolean
@@ -309,9 +308,9 @@ type dataCurrent = boolean
 
 Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the
 [SVG export guide](/docs/developer_guides/svg_export)). Synteny is not an LGV
-display — it composes only `BaseDisplay` with its own fetch — so it has no
-`MultiRegionDisplayMixin`/`GlobalDataDisplayMixin` `svgReady`; this is the
-equivalent. Stale-safe on both axes: `dataCurrent` closes the pre-refetch
+display — it composes only `BaseDisplay` with its own fetch — so it gets no
+mixin `svgReady`, but it runs the same shared `computeSvgReady` policy so the
+two can't drift. Stale-safe on both axes: `dataCurrent` closes the pre-refetch
 debounce gap (stale window before `fetching` flips) and `!refetching` covers the
 in-flight RPC, so an export fired right after a zoom/pan waits for fresh ribbons
 instead of capturing stale ones. No `regionTooLarge` state (synteny never gates
@@ -417,7 +416,7 @@ type renderParams = {…} | undefined
 | <span id="getter-height">height</span>               | `number`                                                                                                                   |
 | <span id="getter-adapterconfig">adapterConfig</span> | `any`                                                                                                                      |
 | <span id="getter-numfeats">numFeats</span>           | `number`                                                                                                                   |
-| <span id="getter-view">view</span>                   | `ModelInstanceTypeProps<_OverrideProps<Omit<_OverrideProps<…>, never>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>` |
+| <span id="getter-view">view</span>                   | `ModelInstanceTypeProps<_OverrideProps<Omit<_OverrideProps<…>, never>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>` |
 | <span id="getter-tooltiptext">tooltipText</span>     | `string`                                                                                                                   |
 
 </details>
@@ -469,8 +468,6 @@ type setRpcData = (
 
 | Member                                                             | Type                           |
 | ------------------------------------------------------------------ | ------------------------------ |
-| <span id="action-setfetching">setFetching</span>                   | `(arg: boolean) => void`       |
-| <span id="action-setassembliesswapped">setAssembliesSwapped</span> | `(arg: boolean) => void`       |
 | <span id="action-sethoveredfeatureidx">setHoveredFeatureIdx</span> | `(idx: number) => void`        |
 | <span id="action-setclickedfeatureidx">setClickedFeatureIdx</span> | `(idx: number) => void`        |
 | <span id="action-opencontextmenu">openContextMenu</span>           | `(anchor: ClickCoord) => void` |
@@ -624,5 +621,62 @@ type reload = () => void
 | <span id="action-setstatusmessage">setStatusMessage</span> | `(status?: RpcStatus \| undefined) => void` |
 | <span id="action-seterror">setError</span>                 | `(error?: unknown) => void`                 |
 | <span id="action-setrpcdrivername">setRpcDriverName</span> | `(rpcDriverName: string) => void`           |
+
+</details>
+
+<details>
+<summary>Derived from SyntenyFetchStateMixin</summary>
+
+[SyntenyFetchStateMixin →](../syntenyfetchstatemixin)
+
+**Volatiles**
+
+#### volatile: fetching
+
+True while an RPC fetch is in-flight. Combined with `ready` it distinguishes a
+first load (no data yet — full overlay) from a refetch (stale content still on
+screen — corner indicator).
+
+```ts
+// type signature
+type fetching = false
+// code
+fetching: false
+```
+
+#### volatile: loadedFetchKey
+
+Fetch-input signature the currently held data was fetched for (each display
+builds its own `currentFetchKey`). Compared against the live inputs in
+`dataCurrent` to catch data gone stale after a region/zoom change — including
+during the pre-refetch debounce gap, where `fetching` is still false and would
+otherwise report done on content drawn against the old viewport.
+
+```ts
+// type signature
+type loadedFetchKey = string | undefined
+// code
+loadedFetchKey: undefined as string | undefined
+```
+
+#### volatile: assembliesSwapped
+
+Set once at view load by a refName-comparison check, independent of the
+per-render fetch, so it never re-fires or misfires on zoom. Surfaces through
+each display's `warnings`.
+
+```ts
+// type signature
+type assembliesSwapped = false
+// code
+assembliesSwapped: false
+```
+
+**Actions**
+
+| Member                                                             | Type                     |
+| ------------------------------------------------------------------ | ------------------------ |
+| <span id="action-setfetching">setFetching</span>                   | `(arg: boolean) => void` |
+| <span id="action-setassembliesswapped">setAssembliesSwapped</span> | `(arg: boolean) => void` |
 
 </details>
