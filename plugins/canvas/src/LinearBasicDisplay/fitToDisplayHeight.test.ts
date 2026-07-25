@@ -4,11 +4,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import {
-  computeLaidOutData,
-  maxBottom,
-  packedContentHeight,
-} from './layout.ts'
+import { computeLaidOutData, maxBottom, packedContentHeight } from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type {
@@ -813,7 +809,7 @@ describe('canvas display fit escalation ladder', () => {
 
     const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
     expect(factor).toBeDefined()
-    const inputs = display.decimatedLayoutInputs(factor!)
+    const inputs = display.decimatedLayoutInputs(factor)
     expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
       maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
     )
@@ -863,7 +859,7 @@ describe('canvas display fit escalation ladder', () => {
 
     const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
     expect(factor).toBeDefined()
-    const inputs = display.decimatedLayoutInputs(factor!)
+    const inputs = display.decimatedLayoutInputs(factor)
     // probe and commit still agree once the sort key itself moves with the factor
     expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
       maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
@@ -888,7 +884,10 @@ describe('canvas display fit escalation ladder', () => {
       })
       expect(display.reversedRegions.has(0)).toBe(reversed)
       const heights = [0, 0.25, 0.5, 1, 2, 4, 8].map(f =>
-        packedContentHeight(display.rpcDataMap, display.decimatedLayoutInputs(f)),
+        packedContentHeight(
+          display.rpcDataMap,
+          display.decimatedLayoutInputs(f),
+        ),
       )
       for (let i = 1; i < heights.length; i++) {
         expect(heights[i]!).toBeLessThanOrEqual(heights[i - 1]!)

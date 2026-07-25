@@ -51,22 +51,23 @@ in `laidOutPileupMap`. Keep `colorTagMap` out of `rpcProps()`.
 
 ## Grouping: three different "is it grouped?" questions
 
-Don't collapse these — each gates something different, and one is not derived from
-the section count at all.
+Don't collapse these — each gates something different, and one is not derived
+from the section count at all.
 
 - **`isGrouped`** (`groupOrder.length > 1`) — the **scroll model**. >1 section
-  scrolls each section's coverage with its rows; one section keeps coverage sticky
-  and scrolls only the pileup. `buildSectionRenders` and `makeScroll` re-spell the
-  same >1 rule for the pure passes.
-- **`showsGroupLabels`** (`groupBy !== undefined && groupOrder.length > 0`) — the
-  **label chips + dividers**, on screen and in SVG export. Grouping that yields one
-  section (one strand present, a tag with a single value) still reserves the label
-  offset via `prefersOffset`, so it must still name that section — gating labels on
-  `isGrouped` left blank space with nothing in it.
+  scrolls each section's coverage with its rows; one section keeps coverage
+  sticky and scrolls only the pileup. `buildSectionRenders` and `makeScroll`
+  re-spell the same >1 rule for the pure passes.
+- **`showsGroupLabels`** (`groupBy !== undefined && groupOrder.length > 0`) —
+  the **label chips + dividers**, on screen and in SVG export. Grouping that
+  yields one section (one strand present, a tag with a single value) still
+  reserves the label offset via `prefersOffset`, so it must still name that
+  section — gating labels on `isGrouped` left blank space with nothing in it.
 - **`rpcDataMap.size === 0`** — whether **data has arrived** at all, which gates
-  first paint (`canvasDrawn`). Never gate that on a group's laid-out map: a grouped
-  fetch over a region with no reads partitions to zero groups, so the first group's
-  map is empty while the fetch is complete, and the loading overlay never cleared.
+  first paint (`canvasDrawn`). Never gate that on a group's laid-out map: a
+  grouped fetch over a region with no reads partitions to zero groups, so the
+  first group's map is empty while the fetch is complete, and the loading
+  overlay never cleared.
 
 Group keys are also the identity for the volatile per-group state
 (`collapsedGroups`, `groupMaxHeightOverrides`), which is why `setGroupBy` clears

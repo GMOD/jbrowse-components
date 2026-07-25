@@ -129,18 +129,19 @@ documents only what bites when editing _this package_.
   wiggle/multi-row/canvas-rect the latter.
 - **Per-block Canvas2D clipping goes through `forEachClippedBlock`, never a
   hand-rolled `save`/`clip`/`restore` loop.** It is the Canvas2D twin of
-  `GpuPerRegionRenderingBackend.renderBlocks`' per-block scissor, and it owns the
-  three things painters kept re-deriving: the `clipBlockForCanvas` null check,
-  the `(scissorX, 0, scissorW, clipHeight)` rect, and the save/restore pairing
-  (in a `finally`, since an on-screen ctx outlives the frame and `prepareCanvas`
-  does **not** reset clip state — one throwing painter would otherwise leave
-  every later frame drawing through a stale clip). Its `select` callback is the
-  single skip gate: return `undefined` for "no region", "zero features", or "the
-  sub-field this painter needs is absent" (MAF's `?.coverage`). Skipping there
-  rather than inside `paint` is load-bearing on the export path —
-  `SvgCanvas.clip()` emits a `<clipPath>` + group unconditionally, so a block
-  skipped *after* the clip opens leaves dead markup in the SVG. Painters that
-  clip to a sub-band pass that band's height, not `canvasHeight` (MAF coverage).
+  `GpuPerRegionRenderingBackend.renderBlocks`' per-block scissor, and it owns
+  the three things painters kept re-deriving: the `clipBlockForCanvas` null
+  check, the `(scissorX, 0, scissorW, clipHeight)` rect, and the save/restore
+  pairing (in a `finally`, since an on-screen ctx outlives the frame and
+  `prepareCanvas` does **not** reset clip state — one throwing painter would
+  otherwise leave every later frame drawing through a stale clip). Its `select`
+  callback is the single skip gate: return `undefined` for "no region", "zero
+  features", or "the sub-field this painter needs is absent" (MAF's
+  `?.coverage`). Skipping there rather than inside `paint` is load-bearing on
+  the export path — `SvgCanvas.clip()` emits a `<clipPath>` + group
+  unconditionally, so a block skipped _after_ the clip opens leaves dead markup
+  in the SVG. Painters that clip to a sub-band pass that band's height, not
+  `canvasHeight` (MAF coverage).
 - **`gpuDevice` is a shared singleton.** `getGpuDevice` serves both the HAL and
   the LD-matrix WebGPU compute path (`plugins/variants/.../getLDMatrixGPU.ts`),
   so its `?renderer=` override checks are load-bearing in both. The `.lost`

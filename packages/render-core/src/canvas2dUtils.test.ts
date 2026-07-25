@@ -286,7 +286,14 @@ describe('forEachClippedBlock', () => {
         log.push('paint')
       },
     )
-    expect(log).toEqual(['save', 'beginPath', 'rect', 'clip', 'paint', 'restore'])
+    expect(log).toEqual([
+      'save',
+      'beginPath',
+      'rect',
+      'clip',
+      'paint',
+      'restore',
+    ])
     expect(rects[0]).toEqual([10, 0, 100, 42])
   })
 

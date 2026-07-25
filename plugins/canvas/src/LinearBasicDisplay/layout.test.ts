@@ -228,15 +228,15 @@ describe('fitWidth label decimation', () => {
     const keptAt = (gap: number) =>
       keptName(
         decimate(
-        labeledFeatureData([
-          { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
-          {
-            featureId: 'next',
-            startBp: 100 + gap,
-            endBp: 110 + gap,
-            height: 20,
-          },
-        ]),
+          labeledFeatureData([
+            { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
+            {
+              featureId: 'next',
+              startBp: 100 + gap,
+              endBp: 110 + gap,
+              height: 20,
+            },
+          ]),
         ).floatingLabelsData,
         'probe',
       )
@@ -256,31 +256,31 @@ describe('fitWidth label decimation', () => {
     const decimateAt = (factor: number, gap: number) =>
       keptName(
         computeLaidOutData(
-        new Map([
-          [
-            0,
-            labeledFeatureData([
-              { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
-              {
-                featureId: 'next',
-                startBp: 100 + gap,
-                endBp: 110 + gap,
-                height: 20,
-              },
-            ]),
-          ],
-        ]),
-        {
-          bpPerPx: 1,
-          regionKeys: keys,
-          showLabels: true,
-          showDescriptions: false,
-          reversedRegions: new Set<number>(),
-          displayMode: 'normal',
-          pinnedFeatureIds: new Set<string>(),
-          labelDecimation: 'fitWidth',
-          labelRoomFactor: factor,
-        },
+          new Map([
+            [
+              0,
+              labeledFeatureData([
+                { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
+                {
+                  featureId: 'next',
+                  startBp: 100 + gap,
+                  endBp: 110 + gap,
+                  height: 20,
+                },
+              ]),
+            ],
+          ]),
+          {
+            bpPerPx: 1,
+            regionKeys: keys,
+            showLabels: true,
+            showDescriptions: false,
+            reversedRegions: new Set<number>(),
+            displayMode: 'normal',
+            pinnedFeatureIds: new Set<string>(),
+            labelDecimation: 'fitWidth',
+            labelRoomFactor: factor,
+          },
         ).get(0)!.floatingLabelsData,
         'probe',
       )

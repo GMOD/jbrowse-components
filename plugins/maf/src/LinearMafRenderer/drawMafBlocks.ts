@@ -48,7 +48,13 @@ export function drawMafBlocks(
     (regionData, renderBlock, clip) => {
       const scale = clip.fullBlockWidth / clip.bpLength
       const bpToCellLeftPx = makeCellLeftMapper(renderBlock)
-      const renderingContext = { ctx, scale, h, cellColorConfig, bpToCellLeftPx }
+      const renderingContext = {
+        ctx,
+        scale,
+        h,
+        cellColorConfig,
+        bpToCellLeftPx,
+      }
 
       for (const mafBlock of regionData.blocks) {
         const { refSeqBytes, startBp: blockStartBp } = mafBlock

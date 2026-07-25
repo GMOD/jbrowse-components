@@ -1,6 +1,5 @@
-import { Chip, Tooltip } from '@mui/material'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Chip, Tooltip } from '@mui/material'
 
 import type { MouseEvent, ReactElement } from 'react'
 

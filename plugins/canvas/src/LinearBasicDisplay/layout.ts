@@ -826,7 +826,11 @@ function prepareRefPack(
   for (const [, data] of regions) {
     for (const labelData of Object.values(data.floatingLabelsData)) {
       const targetId = labelData.parentFeatureId ?? labelData.featureId
-      const widths = renderedLabelWidths(labelData, showLabels, showDescriptions)
+      const widths = renderedLabelWidths(
+        labelData,
+        showLabels,
+        showDescriptions,
+      )
       const existing = labelInfoByFeatureId.get(targetId)
       if (existing) {
         existing.hasName ||= !!labelData.nameLabel

@@ -100,8 +100,7 @@ export function resolveFitLadder(
   let lastHeight = 0
   for (const [i, rung] of rungs.entries()) {
     const layout = rung.layout()
-    const contentHeight =
-      layout === lastLayout ? lastHeight : maxBottom(layout)
+    const contentHeight = layout === lastLayout ? lastHeight : maxBottom(layout)
     lastLayout = layout
     lastHeight = contentHeight
     if (contentHeight <= trackHeight || i === rungs.length - 1) {
