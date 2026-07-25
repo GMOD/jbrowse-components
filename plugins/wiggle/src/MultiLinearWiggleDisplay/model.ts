@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -317,19 +321,19 @@ export default function stateModelFactory(
         },
 
         setShowTree(arg: boolean) {
-          self.configuration.setSlot('showTree', arg)
+          setConf(self, 'showTree', arg)
         },
 
         setShowBranchLength(arg: boolean) {
-          self.configuration.setSlot('showBranchLength', arg)
+          setConf(self, 'showBranchLength', arg)
         },
 
         setShowRowSeparators(arg: boolean) {
-          self.configuration.setSlot('showRowSeparators', arg)
+          setConf(self, 'showRowSeparators', arg)
         },
 
         setShowLegend(arg: boolean) {
-          self.configuration.setSlot('showLegend', arg)
+          setConf(self, 'showLegend', arg)
         },
 
         setRunClustering(arg?: boolean) {
