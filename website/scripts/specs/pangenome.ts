@@ -89,11 +89,17 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
 
   // Projection 3: the graph's whole-genome alignment as a MAF, projected onto
   // K12. The coverage band on top, then one row per strain (K12 reference first),
-  // each colored where it differs from K12. This window sits on the shared
-  // backbone where all four strains align continuously (taffy coverage: CFT073
-  // and Sakai align ~1:1 to K12 across it, no large insertions or deletions), so
-  // each strain's mismatch columns read as pure SNP divergence from K12 — not the
-  // accessory-region indels that dominate elsewhere in the pangenome.
+  // each colored where it differs from K12.
+  //
+  // 60 kb rather than the 6 kb this used to show (reviewer: "zoom out more"). At
+  // 6 kb every row was continuous backbone, so the figure could only say "these
+  // strains differ by SNPs" - a fact the variant figure above already carries.
+  // The window is picked from the odgi pav bigWigs rather than by eye: scoring
+  // every 60 kb window on "each strain is partly present and partly absent"
+  // (8-40% of its 500bp bins absent) puts chr:4,540,000-4,600,000 top, with all
+  // four strains between 29% and 40% absent. So the rows now show what only a
+  // zoomed-out MAF can: where each strain stops aligning to K12 at all, against
+  // the backbone it shares.
   {
     mode: 'url',
     name: 'pangenome/maf',
@@ -102,7 +108,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:800,000-806,000',
+          loc: 'chr:4,540,000-4,600,000',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
@@ -122,7 +128,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '806,000',
+    readyText: '4,560,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the variant lane plus one MAF row per sample and the coverage band

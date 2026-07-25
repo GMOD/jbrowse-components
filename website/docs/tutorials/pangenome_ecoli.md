@@ -412,7 +412,7 @@ taffy index -i ecoli_pggb.taf.gz                        # -> .taf.gz.tai
 }
 ```
 
-<Figure caption="The graph's whole-genome alignment projected onto K12: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12. This shared-backbone window has all five strains aligning continuously, so each strain's mismatch columns read as SNP divergence from K12. NCTC86 is the closest to K12 and its row is nearly bare; IAI39 carries insertions relative to K12 (the boxed runs)." src="/img/pangenome/maf.png" />
+<Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb spanning the fim, mcr and hsd loci: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12, with the variant calls above. Where a row goes blank the strain has no alignment to K12 at all, so the accessory structure and the SNP divergence read in the same picture." src="/img/pangenome/maf.png" />
 
 The `samples` list fixes the row order and labels. Supply an `nhLocation` Newick
 tree instead to draw the rows as a dendrogram. The
