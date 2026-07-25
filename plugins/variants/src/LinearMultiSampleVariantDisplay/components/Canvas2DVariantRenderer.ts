@@ -1,6 +1,6 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
-  clipBlockForCanvas,
+  forEachClippedBlock,
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -33,52 +33,50 @@ export function drawVariantBlocks(
   // variantHitTest.ts.
   const drawnRowHeight = Math.max(rowHeight, 2)
 
-  for (const block of blocks) {
-    const region = regions.get(block.displayedRegionIndex)
-    if (!region || region.numCells === 0) {
-      continue
-    }
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    canvasHeight,
+    block => {
+      const region = regions.get(block.displayedRegionIndex)
+      return region && region.numCells > 0 ? region : undefined
+    },
+    (region, block) => {
+      const toX = makeBpMapper(block)
+      let prevColor = -1
+      for (let i = 0; i < region.numCells; i++) {
+        // Y-cull first: y depends only on rowIndex + scroll, so off-screen
+        // rows skip all the bp→px math below. Meaningful when scrolling
+        // through a dense matrix where most rows are out of view.
+        const y = region.cellRowIndices[i]! * rowHeight - scrollTop
+        if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
+          const startBp = region.cellPositions[i * 2]!
+          const endBp = region.cellPositions[i * 2 + 1]!
 
-    const clip = clipBlockForCanvas(block, canvasWidth)
-    if (!clip) {
-      continue
-    }
+          const x1_raw = toX(startBp)
+          const x2_raw = toX(endBp)
+          const x1 = Math.min(x1_raw, x2_raw)
+          const spanPx = Math.abs(x2_raw - x1_raw)
+          const w = Math.max(2, spanPx)
 
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-    ctx.clip()
-
-    const toX = makeBpMapper(block)
-    let prevColor = -1
-    for (let i = 0; i < region.numCells; i++) {
-      // Y-cull first: y depends only on rowIndex + scroll, so off-screen
-      // rows skip all the bp→px math below. Meaningful when scrolling
-      // through a dense matrix where most rows are out of view.
-      const y = region.cellRowIndices[i]! * rowHeight - scrollTop
-      if (y + drawnRowHeight < 0 || y > canvasHeight) {
-        continue
+          const color = region.cellColors[i]!
+          if (color !== prevColor) {
+            ctx.fillStyle = abgrToCssRgba(color)
+            prevColor = color
+          }
+          drawVariantShape(
+            ctx,
+            region.cellShapeTypes[i]!,
+            x1,
+            y,
+            w,
+            drawnRowHeight,
+          )
+        }
       }
-
-      const startBp = region.cellPositions[i * 2]!
-      const endBp = region.cellPositions[i * 2 + 1]!
-
-      const x1_raw = toX(startBp)
-      const x2_raw = toX(endBp)
-      const x1 = Math.min(x1_raw, x2_raw)
-      const spanPx = Math.abs(x2_raw - x1_raw)
-      const w = Math.max(2, spanPx)
-
-      const color = region.cellColors[i]!
-      if (color !== prevColor) {
-        ctx.fillStyle = abgrToCssRgba(color)
-        prevColor = color
-      }
-      drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, drawnRowHeight)
-    }
-
-    ctx.restore()
-  }
+    },
+  )
 }
 
 export class Canvas2DVariantRenderer extends Canvas2DPerRegionRenderingBackend<

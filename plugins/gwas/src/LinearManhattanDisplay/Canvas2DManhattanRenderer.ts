@@ -1,7 +1,7 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   bpToScreenPx,
-  clipBlockForCanvas,
+  forEachClippedBlock,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { appendPointMarker } from '@jbrowse/wiggle-core'
@@ -32,81 +32,76 @@ export function drawManhattanBlocks(
   const { canvasWidth, canvasHeight, domainY, pointDiameterPx } = state
   const r = pointDiameterPx / 2
 
-  for (const block of blocks) {
-    const data = regions.get(block.displayedRegionIndex)
-    if (!data || data.numFeatures === 0) {
-      continue
-    }
-    const clip = clipBlockForCanvas(block, canvasWidth)
-    if (!clip) {
-      continue
-    }
-    const { screenStartPx, screenEndPx, reversed, start, end } = block
-    const { positions, ends, glyphs, scores, colors, numFeatures } = data
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    canvasHeight,
+    block => {
+      const data = regions.get(block.displayedRegionIndex)
+      return data && data.numFeatures > 0 ? data : undefined
+    },
+    (data, block) => {
+      const { screenStartPx, screenEndPx, reversed, start, end } = block
+      const { positions, ends, glyphs, scores, colors, numFeatures } = data
 
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-    ctx.clip()
-
-    // Batch by color to amortize fillStyle changes. Point features (SNPs,
-    // insertions) draw as discs; ranged SVs wider than a point draw as a bar
-    // from start→end — both subpaths share the batch's single fill().
-    let currentAbgr = colors[0]!
-    ctx.fillStyle = abgrToCssRgba(currentAbgr)
-    ctx.beginPath()
-    for (let i = 0; i < numFeatures; i++) {
-      const abgr = colors[i]!
-      if (abgr !== currentAbgr) {
-        ctx.fill()
-        currentAbgr = abgr
-        ctx.fillStyle = abgrToCssRgba(currentAbgr)
-        ctx.beginPath()
+      // Batch by color to amortize fillStyle changes. Point features (SNPs,
+      // insertions) draw as discs; ranged SVs wider than a point draw as a bar
+      // from start→end — both subpaths share the batch's single fill().
+      let currentAbgr = colors[0]!
+      ctx.fillStyle = abgrToCssRgba(currentAbgr)
+      ctx.beginPath()
+      for (let i = 0; i < numFeatures; i++) {
+        const abgr = colors[i]!
+        if (abgr !== currentAbgr) {
+          ctx.fill()
+          currentAbgr = abgr
+          ctx.fillStyle = abgrToCssRgba(currentAbgr)
+          ctx.beginPath()
+        }
+        const xStart = bpToScreenPx(
+          positions[i]!,
+          start,
+          end,
+          screenStartPx,
+          screenEndPx,
+          reversed,
+        )
+        const y = scoreToY(scores[i]!, domainY, canvasHeight)
+        const xEnd = bpToScreenPx(
+          ends[i]!,
+          start,
+          end,
+          screenStartPx,
+          screenEndPx,
+          reversed,
+        )
+        const left = Math.min(xStart, xEnd)
+        const widthPx = Math.abs(xEnd - xStart)
+        if (widthPx > pointDiameterPx) {
+          ctx.rect(left, y - r, widthPx, pointDiameterPx)
+        } else if (glyphs[i] === GLYPH_INSERTION) {
+          // Insertion: inverted triangle (apex pointing down) at the point.
+          ctx.moveTo(xStart - r, y - r)
+          ctx.lineTo(xStart + r, y - r)
+          ctx.lineTo(xStart, y + r)
+          ctx.closePath()
+        } else if (glyphs[i] === GLYPH_INDEX) {
+          // LD index/lead SNP: diamond (LocusZoom convention), drawn larger so
+          // it reads as "the one that matters" at a glance.
+          const ri = r * INDEX_GLYPH_SCALE
+          ctx.moveTo(xStart, y - ri)
+          ctx.lineTo(xStart + ri, y)
+          ctx.lineTo(xStart, y + ri)
+          ctx.lineTo(xStart - ri, y)
+          ctx.closePath()
+        } else {
+          appendPointMarker(ctx, xStart, y, pointDiameterPx)
+        }
       }
-      const xStart = bpToScreenPx(
-        positions[i]!,
-        start,
-        end,
-        screenStartPx,
-        screenEndPx,
-        reversed,
-      )
-      const y = scoreToY(scores[i]!, domainY, canvasHeight)
-      const xEnd = bpToScreenPx(
-        ends[i]!,
-        start,
-        end,
-        screenStartPx,
-        screenEndPx,
-        reversed,
-      )
-      const left = Math.min(xStart, xEnd)
-      const widthPx = Math.abs(xEnd - xStart)
-      if (widthPx > pointDiameterPx) {
-        ctx.rect(left, y - r, widthPx, pointDiameterPx)
-      } else if (glyphs[i] === GLYPH_INSERTION) {
-        // Insertion: inverted triangle (apex pointing down) at the point.
-        ctx.moveTo(xStart - r, y - r)
-        ctx.lineTo(xStart + r, y - r)
-        ctx.lineTo(xStart, y + r)
-        ctx.closePath()
-      } else if (glyphs[i] === GLYPH_INDEX) {
-        // LD index/lead SNP: diamond (LocusZoom convention), drawn larger so
-        // it reads as "the one that matters" at a glance.
-        const ri = r * INDEX_GLYPH_SCALE
-        ctx.moveTo(xStart, y - ri)
-        ctx.lineTo(xStart + ri, y)
-        ctx.lineTo(xStart, y + ri)
-        ctx.lineTo(xStart - ri, y)
-        ctx.closePath()
-      } else {
-        appendPointMarker(ctx, xStart, y, pointDiameterPx)
-      }
-    }
-    ctx.fill()
-
-    ctx.restore()
-  }
+      ctx.fill()
+    },
+  )
 }
 
 export class Canvas2DManhattanRenderer extends Canvas2DPerRegionRenderingBackend<

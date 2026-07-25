@@ -6,7 +6,7 @@ import {
   abgrToCssRgba,
 } from '@jbrowse/core/util/colorBits'
 import {
-  clipBlockForCanvas,
+  forEachClippedBlock,
   makeBpMapper,
   spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
@@ -43,7 +43,6 @@ import type {
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { BlockClip } from '@jbrowse/render-core/canvas2dUtils'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
@@ -335,41 +334,6 @@ function drawContinuation(
   }
 }
 
-// Runs `paint` for each block that has data and lands on-screen, inside that
-// block's scissor clip so a partial block can't bleed across a region boundary.
-// The Canvas2D counterpart of the GPU backend's per-block scissor + uniform
-// write (GpuCanvasFeatureRenderer.drawRegion), and the one place the
-// save/clip/restore pairing lives — both draw entry points below share it.
-//
-// One closure per draw call, not per feature: the per-feature loops live inside
-// the `paint` body and stay allocation-free.
-function forEachClippedBlock<T>(
-  ctx: Ctx2D,
-  regions: ReadonlyMap<number, T>,
-  blocks: FeatureRenderBlock[],
-  state: RenderState,
-  paint: (
-    region: T,
-    block: FeatureRenderBlock,
-    toX: BpToScreen,
-    clip: BlockClip,
-  ) => void,
-) {
-  const { canvasWidth, canvasHeight } = state
-  for (const block of blocks) {
-    const region = regions.get(block.displayedRegionIndex)
-    const clip = region && clipBlockForCanvas(block, canvasWidth)
-    if (region && clip) {
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-      ctx.clip()
-      paint(region, block, makeBpMapper(block), clip)
-      ctx.restore()
-    }
-  }
-}
-
 /**
  * Pure draw entry point. Paints lines, rects, and arrows for the laid-out
  * feature data into any 2D-canvas-like context. Per-block scissor clips so
@@ -383,13 +347,15 @@ export function drawFeatureBlocks(
   blocks: FeatureRenderBlock[],
   state: RenderState,
 ) {
-  const { canvasWidth, scrollY } = state
+  const { canvasWidth, canvasHeight, scrollY } = state
   forEachClippedBlock(
     ctx,
-    regions,
     blocks,
-    state,
-    (region, block, toX, clip) => {
+    canvasWidth,
+    canvasHeight,
+    block => regions.get(block.displayedRegionIndex),
+    (region, block, clip) => {
+      const toX = makeBpMapper(block)
       drawLines(ctx, region, block, toX, scrollY, canvasWidth)
       drawRects(ctx, region, toX, scrollY)
       drawArrows(ctx, region, block, toX, scrollY)
@@ -472,39 +438,47 @@ export function drawHighlightBoxes(
   colors: { border: string; fill: string },
   labelContext: HighlightLabelContext,
 ) {
-  const { scrollY } = state
+  const { canvasWidth, canvasHeight, scrollY } = state
   if (highlightedIds.size === 0) {
     return
   }
-  forEachClippedBlock(ctx, regions, blocks, state, (region, _block, toX) => {
-    for (const item of region.flatbushItems) {
-      if (highlightedIds.has(item.featureId)) {
-        drawHighlightBox(
-          ctx,
-          item,
-          toX,
-          scrollY,
-          colors,
-          region.floatingLabelsData[item.featureId],
-          labelContext,
-        )
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    canvasHeight,
+    block => regions.get(block.displayedRegionIndex),
+    (region, block) => {
+      const toX = makeBpMapper(block)
+      for (const item of region.flatbushItems) {
+        if (highlightedIds.has(item.featureId)) {
+          drawHighlightBox(
+            ctx,
+            item,
+            toX,
+            scrollY,
+            colors,
+            region.floatingLabelsData[item.featureId],
+            labelContext,
+          )
+        }
       }
-    }
-    // Subfeatures deliberately pass no labelData — see drawHighlightBox.
-    for (const item of region.subfeatureInfos) {
-      if (highlightedIds.has(item.featureId)) {
-        drawHighlightBox(
-          ctx,
-          item,
-          toX,
-          scrollY,
-          colors,
-          undefined,
-          labelContext,
-        )
+      // Subfeatures deliberately pass no labelData — see drawHighlightBox.
+      for (const item of region.subfeatureInfos) {
+        if (highlightedIds.has(item.featureId)) {
+          drawHighlightBox(
+            ctx,
+            item,
+            toX,
+            scrollY,
+            colors,
+            undefined,
+            labelContext,
+          )
+        }
       }
-    }
-  })
+    },
+  )
 }
 
 export class Canvas2DFeatureRenderer extends Canvas2DPerRegionRenderingBackend<

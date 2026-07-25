@@ -1,4 +1,4 @@
-import { clipBlockForCanvas } from '@jbrowse/render-core/canvas2dUtils'
+import { forEachClippedBlock } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import {
@@ -44,57 +44,52 @@ function drawWiggleBlocks(
   } = state
   const rowHeight = canvasHeight / numRows
 
-  for (const block of blocks) {
-    const sources = regions.get(block.displayedRegionIndex)
-    if (!sources || sources.length === 0) {
-      continue
-    }
-    const clip = clipBlockForCanvas(block, canvasWidth)
-    if (!clip) {
-      continue
-    }
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    canvasHeight,
+    block => {
+      const sources = regions.get(block.displayedRegionIndex)
+      return sources && sources.length > 0 ? sources : undefined
+    },
+    (sources, block) => {
+      for (const source of sources) {
+        const rowTop = source.rowIndex * rowHeight
+        const r = Math.round(source.color[0] * 255)
+        const g = Math.round(source.color[1] * 255)
+        const b = Math.round(source.color[2] * 255)
+        const rgb = `rgb(${r},${g},${b})`
+        const row = {
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop,
+          domainY,
+          scaleType,
+          origin,
+        }
 
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-    ctx.clip()
-
-    for (const source of sources) {
-      const rowTop = source.rowIndex * rowHeight
-      const r = Math.round(source.color[0] * 255)
-      const g = Math.round(source.color[1] * 255)
-      const b = Math.round(source.color[2] * 255)
-      const rgb = `rgb(${r},${g},${b})`
-      const row = {
-        ctx,
-        source,
-        block,
-        rowHeight,
-        rowTop,
-        domainY,
-        scaleType,
-        origin,
+        switch (renderingType) {
+          case RENDERING_TYPE_LINE:
+            drawLine({ ...row, rgb, lineWidth })
+            break
+          case RENDERING_TYPE_LINE_CENTER:
+            drawLineCenter({ ...row, rgb, lineWidth })
+            break
+          case RENDERING_TYPE_DENSITY:
+            drawDensity({ ...row, r, g, b })
+            break
+          case RENDERING_TYPE_SCATTER:
+            drawScatter({ ...row, rgb, pointSize: scatterPointSize })
+            break
+          default:
+            drawXYPlot({ ...row, rgb })
+        }
       }
-
-      switch (renderingType) {
-        case RENDERING_TYPE_LINE:
-          drawLine({ ...row, rgb, lineWidth })
-          break
-        case RENDERING_TYPE_LINE_CENTER:
-          drawLineCenter({ ...row, rgb, lineWidth })
-          break
-        case RENDERING_TYPE_DENSITY:
-          drawDensity({ ...row, r, g, b })
-          break
-        case RENDERING_TYPE_SCATTER:
-          drawScatter({ ...row, rgb, pointSize: scatterPointSize })
-          break
-        default:
-          drawXYPlot({ ...row, rgb })
-      }
-    }
-    ctx.restore()
-  }
+    },
+  )
 }
 
 // One-shot pure entry point used by SVG export per

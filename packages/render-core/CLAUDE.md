@@ -34,11 +34,10 @@ context-loss / device-loss / pagehide / retry lifecycle.
 
 **The WebGL→Canvas2D ladder in `createGpuHal` runs at backend construction
 only.** A context lost afterwards never degrades to Canvas2D by itself, so the
-hook reports an unrestored loss as `renderError` (whose unmount is the only way to
-get a live context back) and the banner offers the page-wide
-`setGpuOverride('canvas2d')` switch. See
-`agent-docs/reference/GPU_RENDERING.md` "Context-loss recovery"; don't add a
-second, per-display fallback path.
+hook reports an unrestored loss as `renderError` (whose unmount is the only way
+to get a live context back) and the banner offers the page-wide
+`setGpuOverride('canvas2d')` switch. See `agent-docs/reference/GPU_RENDERING.md`
+"Context-loss recovery"; don't add a second, per-display fallback path.
 
 **Conceptual reference: `agent-docs/reference/GPU_RENDERING.md`.** This file
 documents only what bites when editing _this package_.
@@ -128,6 +127,20 @@ documents only what bites when editing _this package_.
   fills per-base _cells_ (`makeCellLeftMapper`, caller owns width) or a two-edge
   _span_ widened to a floor (`spanLeft`). MAF's cell painter is the former,
   wiggle/multi-row/canvas-rect the latter.
+- **Per-block Canvas2D clipping goes through `forEachClippedBlock`, never a
+  hand-rolled `save`/`clip`/`restore` loop.** It is the Canvas2D twin of
+  `GpuPerRegionRenderingBackend.renderBlocks`' per-block scissor, and it owns the
+  three things painters kept re-deriving: the `clipBlockForCanvas` null check,
+  the `(scissorX, 0, scissorW, clipHeight)` rect, and the save/restore pairing
+  (in a `finally`, since an on-screen ctx outlives the frame and `prepareCanvas`
+  does **not** reset clip state — one throwing painter would otherwise leave
+  every later frame drawing through a stale clip). Its `select` callback is the
+  single skip gate: return `undefined` for "no region", "zero features", or "the
+  sub-field this painter needs is absent" (MAF's `?.coverage`). Skipping there
+  rather than inside `paint` is load-bearing on the export path —
+  `SvgCanvas.clip()` emits a `<clipPath>` + group unconditionally, so a block
+  skipped *after* the clip opens leaves dead markup in the SVG. Painters that
+  clip to a sub-band pass that band's height, not `canvasHeight` (MAF coverage).
 - **`gpuDevice` is a shared singleton.** `getGpuDevice` serves both the HAL and
   the LD-matrix WebGPU compute path (`plugins/variants/.../getLDMatrixGPU.ts`),
   so its `?renderer=` override checks are load-bearing in both. The `.lost`

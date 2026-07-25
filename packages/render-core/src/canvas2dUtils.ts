@@ -206,6 +206,75 @@ export function clipBlockForCanvas(
 }
 
 /**
+ * The 2D-context subset the block scaffold below needs. Structural on purpose:
+ * render-core must not depend on `@jbrowse/core`, where the real `Ctx2D =
+ * CanvasRenderingContext2D | SvgCanvas` union lives. Both members satisfy it,
+ * so a plugin passes its `Ctx2D` straight in.
+ */
+export interface ClipContext2D {
+  save(): void
+  restore(): void
+  beginPath(): void
+  rect(x: number, y: number, w: number, h: number): void
+  clip(): void
+}
+
+/**
+ * The Canvas2D twin of `GpuPerRegionRenderingBackend.renderBlocks`' per-block
+ * scissor: skip blocks with nothing to draw or no on-screen span, clip to the
+ * block's columns, paint, unclip. Owning it here means a painter can't pair
+ * `save()` with a missed `restore()` (leaking the clip onto every later block),
+ * clip to a span other than `clipBlockForCanvas`', or forget the null check.
+ *
+ * `select` resolves a block to what it paints, or `undefined` to skip it — the
+ * one gate covering all three reasons a painter skips: no region in the map, a
+ * region with zero features, and a region whose relevant sub-field is absent
+ * (MAF's `?.coverage`). It runs *before* the clip because entering the scaffold
+ * for an empty block is not free on the export path: `SvgCanvas.clip()` emits a
+ * `<clipPath>` + group unconditionally, so a skipped-late block leaves dead
+ * markup in the SVG. Resolving here also lets `paint` take a non-optional value
+ * instead of re-narrowing inside the callback.
+ *
+ * `clipHeight` is a parameter rather than read off a render state because
+ * painters that own a sub-band of the canvas clip to that band, not the full
+ * height (MAF's coverage row).
+ *
+ * `paint` receives the block, so callers needing bp→px build their own mapper
+ * (`makeBpMapper` / `makeCellLeftMapper` — which one is a per-painter choice).
+ * Two closures per draw call, not per feature: per-feature loops live inside the
+ * `paint` body and stay allocation-free.
+ */
+export function forEachClippedBlock<T, B extends BpRegionBounds>(
+  ctx: ClipContext2D,
+  blocks: readonly B[],
+  canvasWidth: number,
+  clipHeight: number,
+  select: (block: B) => T | undefined,
+  paint: (data: T, block: B, clip: BlockClip) => void,
+) {
+  for (const block of blocks) {
+    const data = select(block)
+    const clip =
+      data === undefined ? null : clipBlockForCanvas(block, canvasWidth)
+    if (data !== undefined && clip) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(clip.scissorX, 0, clip.scissorW, clipHeight)
+      ctx.clip()
+      try {
+        paint(data, block, clip)
+      } finally {
+        // An on-screen ctx outlives the frame and `prepareCanvas`'s
+        // setTransform/clearRect do not reset clip state, so a painter that
+        // throws once would otherwise leave every later frame drawing through
+        // a stale clip — a transient error turned permanent corruption.
+        ctx.restore()
+      }
+    }
+  }
+}
+
+/**
  * `fillRect` x for a mark that spans `x1`→`x2` but is painted at `width` — the
  * Canvas2D pivot for every painter that widens a too-narrow span to a floor (a
  * 1bp feature, a zoomed-out coverage bin), and the twin of the pivot baked into

@@ -77,6 +77,7 @@ export {
   clampBlockScissor,
   clipBlockForCanvas,
   devicePxSpan,
+  forEachClippedBlock,
   getDpr,
   getPreparedCanvas2D,
   lookupColorRamp,
@@ -87,7 +88,7 @@ export {
   spanLeft,
   syncCanvasSize,
 } from './canvas2dUtils.ts'
-export type { BlockClip } from './canvas2dUtils.ts'
+export type { BlockClip, ClipContext2D } from './canvas2dUtils.ts'
 
 // --- Shader pass wiring ---
 export { slangPass } from './slangPass.ts'

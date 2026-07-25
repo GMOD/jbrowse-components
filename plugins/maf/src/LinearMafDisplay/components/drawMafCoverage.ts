@@ -6,7 +6,7 @@ import {
   drawSnpSegments,
 } from '@jbrowse/alignments-core'
 import {
-  clipBlockForCanvas,
+  forEachClippedBlock,
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
@@ -54,15 +54,14 @@ export function drawMafCoverage(
     softclip: theme.palette.insertion,
     hardclip: theme.palette.insertion,
   }
-  for (const block of blocks) {
-    const coverage = regions.get(block.displayedRegionIndex)?.coverage
-    const clip = coverage ? clipBlockForCanvas(block, canvasWidth) : null
-    if (coverage && clip) {
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    coverageHeight,
+    block => regions.get(block.displayedRegionIndex)?.coverage,
+    (coverage, block) => {
       const bpToX = makeBpMapper(block)
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, coverageHeight)
-      ctx.clip()
       drawCoverageBins(
         ctx,
         coverage.coveragePackedBuffer,
@@ -102,7 +101,6 @@ export function drawMafCoverage(
         bpToX,
         canvasWidth,
       )
-      ctx.restore()
-    }
-  }
+    },
+  )
 }

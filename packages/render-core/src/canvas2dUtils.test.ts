@@ -2,6 +2,7 @@ import {
   MAX_CANVAS_DIM_PX,
   MAX_DPR,
   devicePxSpan,
+  forEachClippedBlock,
   getDpr,
   getPreparedCanvas2D,
   makeBpMapper,
@@ -241,5 +242,118 @@ describe('getDpr', () => {
     expect(getDpr()).toBe(MAX_DPR)
     setDpr(4)
     expect(getDpr()).toBe(MAX_DPR)
+  })
+})
+
+describe('forEachClippedBlock', () => {
+  function makeRecordingCtx() {
+    const log: string[] = []
+    const rects: number[][] = []
+    return {
+      log,
+      rects,
+      ctx: {
+        save: () => log.push('save'),
+        restore: () => log.push('restore'),
+        beginPath: () => log.push('beginPath'),
+        clip: () => log.push('clip'),
+        rect: (x: number, y: number, w: number, h: number) => {
+          log.push('rect')
+          rects.push([x, y, w, h])
+        },
+      },
+    }
+  }
+
+  const block = (displayedRegionIndex: number, screenStartPx: number) => ({
+    displayedRegionIndex,
+    start: 0,
+    end: 100,
+    screenStartPx,
+    screenEndPx: screenStartPx + 100,
+    reversed: false,
+  })
+
+  test('clips to the block span and the caller-supplied height', () => {
+    const { ctx, log, rects } = makeRecordingCtx()
+    forEachClippedBlock(
+      ctx,
+      [block(0, 10)],
+      1000,
+      42,
+      () => 'data',
+      () => {
+        log.push('paint')
+      },
+    )
+    expect(log).toEqual(['save', 'beginPath', 'rect', 'clip', 'paint', 'restore'])
+    expect(rects[0]).toEqual([10, 0, 100, 42])
+  })
+
+  test('skips the block entirely when select returns undefined', () => {
+    const { ctx, log } = makeRecordingCtx()
+    forEachClippedBlock(
+      ctx,
+      [block(0, 10)],
+      1000,
+      50,
+      () => undefined,
+      () => {
+        log.push('paint')
+      },
+    )
+    // Not merely "paint never ran" — nothing may reach the context at all, or
+    // SvgCanvas.clip() leaves a dead <clipPath> + group in the export.
+    expect(log).toEqual([])
+  })
+
+  test('skips an off-screen block without opening a clip', () => {
+    const { ctx, log } = makeRecordingCtx()
+    forEachClippedBlock(
+      ctx,
+      [block(0, -500)],
+      100,
+      50,
+      () => 'data',
+      () => {
+        log.push('paint')
+      },
+    )
+    expect(log).toEqual([])
+  })
+
+  test('pairs save/restore per painted block and passes each block through', () => {
+    const { ctx, log } = makeRecordingCtx()
+    const seen: number[] = []
+    forEachClippedBlock(
+      ctx,
+      [block(0, 0), block(1, 100), block(2, 200)],
+      1000,
+      50,
+      b => (b.displayedRegionIndex === 1 ? undefined : b.displayedRegionIndex),
+      idx => {
+        seen.push(idx)
+      },
+    )
+    expect(seen).toEqual([0, 2])
+    expect(log.filter(c => c === 'save')).toHaveLength(2)
+    expect(log.filter(c => c === 'restore')).toHaveLength(2)
+  })
+
+  test('restores even when paint throws, so the clip cannot leak', () => {
+    const { ctx, log } = makeRecordingCtx()
+    expect(() => {
+      forEachClippedBlock(
+        ctx,
+        [block(0, 0)],
+        1000,
+        50,
+        () => 'data',
+        () => {
+          throw new Error('boom')
+        },
+      )
+    }).toThrow('boom')
+    expect(log).toContain('restore')
   })
 })
