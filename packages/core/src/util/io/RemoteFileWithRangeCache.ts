@@ -1,8 +1,21 @@
 import { RemoteFile } from 'generic-filehandle2'
 
-const MAX_CACHE_ENTRIES = 2000
 const CHUNK_SIZE = 256 * 1024
+// Cached chunks own their bytes (see fetchRun), so this entry count is a true
+// bound on retained memory: MAX_CACHE_ENTRIES * CHUNK_SIZE = 256 MB per module
+// instance, and the main thread and each RPC worker have their own.
+const MAX_CACHE_ENTRIES = 1000
 const MAX_CONCURRENT = 20
+
+interface ChunkRun {
+  start: number
+  end: number
+}
+
+interface PendingChunk {
+  index: number
+  chunk: Promise<Uint8Array>
+}
 
 let cache = new Map<string, Uint8Array>()
 // File size is cached at the module level (keyed by URL), parallel to the chunk
@@ -10,6 +23,15 @@ let cache = new Map<string, Uint8Array>()
 // previous instance's fetch would otherwise leave a new instance's stat() with
 // no Content-Range observation, returning a bogus size of 0.
 let sizeCache = new Map<string, number>()
+// Chunk fetches in progress, keyed like `cache`. A read that needs a chunk
+// another read is already fetching awaits that promise rather than requesting
+// the same bytes again: concurrent reads over adjacent genomic blocks routinely
+// land in one 256 KiB chunk, and each duplicate also burns one of the
+// MAX_CONCURRENT slots. A failed fetch rejects every waiter, which is what each
+// would have gotten on its own — and no waiter can cancel a fetch out from under
+// the others, because in-tree cancellation is stopToken-based rather than
+// AbortSignal-based (see BaseOptions.signal).
+let inFlight = new Map<string, Promise<Uint8Array>>()
 let activeCount = 0
 const queue: (() => void)[] = []
 
@@ -43,6 +65,9 @@ function putCached(key: string, chunk: Uint8Array) {
 export function clearCache() {
   cache = new Map<string, Uint8Array>()
   sizeCache = new Map<string, number>()
+  // A leaked fetch that settles after this still removes its own entry from the
+  // new map only if it is still the owner, so dropping the old map is safe.
+  inFlight = new Map<string, Promise<Uint8Array>>()
   // Reset concurrency state too. A leaked async fetch from a prior test that
   // resolves after clearCache will still decrement activeCount in its finally
   // block — so this can momentarily push activeCount negative, which is
@@ -197,6 +222,53 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     return buffer
   }
 
+  /**
+   * Fetch one contiguous run of missing chunks as a single range request, and
+   * publish a promise for each of its chunks. Publication is synchronous —
+   * before the request is awaited — so a read planned while this is in flight
+   * awaits these chunks instead of asking for the same bytes again.
+   */
+  private fetchRun(url: string, run: ChunkRun, init?: RequestInit) {
+    const data = limitConcurrency(() =>
+      this.fetchRange(
+        url,
+        run.start * CHUNK_SIZE,
+        (run.end + 1) * CHUNK_SIZE - 1,
+        init,
+      ),
+    )
+    const pending: PendingChunk[] = []
+    for (let index = run.start; index <= run.end; index++) {
+      const key = cacheKey(url, index)
+      const offset = (index - run.start) * CHUNK_SIZE
+      // A run crossing EOF comes back short: its last chunk with data is short
+      // and any chunk past that is empty. Both are cached as-is, so a later read
+      // sees the EOF marker instead of re-requesting past EOF.
+      //
+      // slice, not subarray: a view would keep the whole run buffer alive for as
+      // long as any one of its chunks stays cached, so evicting a chunk would
+      // free nothing and MAX_CACHE_ENTRIES would bound nothing.
+      const chunk = data.then(buffer => {
+        const copy = buffer.slice(offset, offset + CHUNK_SIZE)
+        putCached(key, copy)
+        return copy
+      })
+      inFlight.set(key, chunk)
+      const forget = () => {
+        // only if still the owner: clearCache, or a later run for the same
+        // chunk, may have replaced this entry
+        if (inFlight.get(key) === chunk) {
+          inFlight.delete(key)
+        }
+      }
+      // runs after the putCached above, so a chunk is never absent from both the
+      // cache and this map
+      void chunk.then(forget, forget)
+      pending.push({ index, chunk })
+    }
+    return pending
+  }
+
   private async getCachedRange(
     url: string,
     start: number,
@@ -223,50 +295,48 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     // reference locally makes eviction from the Map harmless.
     const chunks = new Map<number, Uint8Array>()
 
-    // Plan the fetches: contiguous runs of missing chunks become one HTTP range
-    // request each. Stops at a cached chunk shorter than CHUNK_SIZE — the file
-    // ended inside it, so every later chunk starts past EOF. That covers the
-    // over-read above even when the size is unknown (CORS hiding Content-Range).
-    const runs: { start: number; end: number }[] = []
+    // Plan the fetches. Contiguous runs of missing chunks become one range
+    // request each; a chunk another read is already fetching is awaited instead.
+    // Planning and publishing run to completion without an await, so two reads
+    // in the same tick can't both open a run for the same chunk.
+    //
+    // Stops at a cached chunk shorter than CHUNK_SIZE — the file ended inside it,
+    // so every later chunk starts past EOF. That covers the over-read above even
+    // when the size is unknown (CORS hiding Content-Range).
+    const pending: PendingChunk[] = []
+    const runs: ChunkRun[] = []
     let endChunk = lastChunk
-    for (let i = startChunk; i <= lastChunk; i++) {
-      const cached = getCached(cacheKey(url, i))
+    for (let index = startChunk; index <= lastChunk; index++) {
+      const key = cacheKey(url, index)
+      const cached = getCached(key)
       if (cached === undefined) {
-        const lastRun = runs.at(-1)
-        if (lastRun?.end === i - 1) {
-          lastRun.end = i
+        const flight = inFlight.get(key)
+        if (flight === undefined) {
+          const lastRun = runs.at(-1)
+          if (lastRun?.end === index - 1) {
+            lastRun.end = index
+          } else {
+            runs.push({ start: index, end: index })
+          }
         } else {
-          runs.push({ start: i, end: i })
+          pending.push({ index, chunk: flight })
         }
       } else {
-        chunks.set(i, cached)
+        chunks.set(index, cached)
         if (cached.length < CHUNK_SIZE) {
-          endChunk = i
+          endChunk = index
           break
         }
       }
     }
+    for (const run of runs) {
+      pending.push(...this.fetchRun(url, run, init))
+    }
 
     await Promise.all(
-      runs.map(run =>
-        limitConcurrency(async () => {
-          const data = await this.fetchRange(
-            url,
-            run.start * CHUNK_SIZE,
-            (run.end + 1) * CHUNK_SIZE - 1,
-            init,
-          )
-          // A run crossing EOF comes back short: its last chunk with data is
-          // short and any chunk past it is empty. Both are cached as-is, so a
-          // later read sees the EOF marker instead of re-requesting past EOF.
-          for (let i = run.start; i <= run.end; i++) {
-            const offset = (i - run.start) * CHUNK_SIZE
-            const chunk = data.subarray(offset, offset + CHUNK_SIZE)
-            chunks.set(i, chunk)
-            putCached(cacheKey(url, i), chunk)
-          }
-        }),
-      ),
+      pending.map(async ({ index, chunk }) => {
+        chunks.set(index, await chunk)
+      }),
     )
 
     const result = new Uint8Array(Math.max(0, end - start))

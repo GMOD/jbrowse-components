@@ -209,6 +209,106 @@ describe('RemoteFileWithRangeCache', () => {
     expect(result).toHaveLength(0)
   })
 
+  // Concurrent reads over adjacent genomic blocks routinely land in the same
+  // 256 KiB chunk. Each read plans synchronously and publishes a promise per
+  // chunk it is about to fetch, so the later read awaits that promise instead of
+  // requesting the same bytes again (and burning a second concurrency slot).
+  describe('in-flight chunk sharing', () => {
+    // A mock that parks every request until released, so both reads plan while
+    // the first fetch is still outstanding
+    function createGatedMockFetch() {
+      const calls: { start: number; end: number }[] = []
+      let release = () => {}
+      const gate = new Promise<void>(resolve => {
+        release = resolve
+      })
+      const mockFetch = async (
+        _url: string | URL | Request,
+        init?: RequestInit,
+      ) => {
+        const m = /bytes=(\d+)-(\d+)/.exec(
+          new Headers(init?.headers).get('range')!,
+        )!
+        const start = Number(m[1])
+        const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+        calls.push({ start, end })
+        await gate
+        return new Response(slice(start, end), { status: 206 })
+      }
+      return {
+        calls,
+        mockFetch,
+        release: () => {
+          release()
+        },
+      }
+    }
+
+    test('two reads of the same missing chunk share one request', async () => {
+      const { calls, mockFetch, release } = createGatedMockFetch()
+      const file = makeFile(mockFetch)
+
+      const first = fetchRange(file, 0, 99)
+      const second = fetchRange(file, 100, 199)
+      release()
+
+      expect(await first).toEqual(slice(0, 99))
+      expect(await second).toEqual(slice(100, 199))
+      expect(calls).toHaveLength(1)
+    })
+
+    test('a read overlapping an in-flight run fetches only what it adds', async () => {
+      const { calls, mockFetch, release } = createGatedMockFetch()
+      const file = makeFile(mockFetch)
+
+      const first = fetchRange(file, 0, CHUNK * 2 - 1)
+      // chunk 1 is in flight above, chunk 2 is nobody's yet
+      const second = fetchRange(file, CHUNK, CHUNK * 3 - 1)
+      release()
+
+      expect(await first).toEqual(slice(0, CHUNK * 2 - 1))
+      expect(await second).toEqual(slice(CHUNK, CHUNK * 3 - 1))
+      expect(calls).toEqual([
+        { start: 0, end: CHUNK * 2 - 1 },
+        { start: CHUNK * 2, end: CHUNK * 3 - 1 },
+      ])
+    })
+
+    test('a failed shared request rejects both readers and is retried later', async () => {
+      const calls: number[] = []
+      let failing = true
+      const mockFetch = async (
+        _url: string | URL | Request,
+        init?: RequestInit,
+      ) => {
+        const m = /bytes=(\d+)-(\d+)/.exec(
+          new Headers(init?.headers).get('range')!,
+        )!
+        const start = Number(m[1])
+        calls.push(start)
+        // yield so both reads plan before the first response settles
+        await Promise.resolve()
+        return failing
+          ? new Response('', { status: 503 })
+          : new Response(slice(start, Math.min(Number(m[2]), FILE_SIZE - 1)), {
+              status: 206,
+            })
+      }
+      const file = makeFile(mockFetch)
+
+      const first = fetchRange(file, 0, 99)
+      const second = fetchRange(file, 100, 199)
+      await expect(first).rejects.toThrow('HTTP 503')
+      await expect(second).rejects.toThrow('HTTP 503')
+      expect(calls).toHaveLength(1)
+
+      // the failure left nothing cached and nothing marked in flight
+      failing = false
+      expect(await fetchRange(file, 0, 99)).toEqual(slice(0, 99))
+      expect(calls).toHaveLength(2)
+    })
+  })
+
   test('multiple disjoint gaps produce separate fetches', async () => {
     const { calls, mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)
