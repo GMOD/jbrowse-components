@@ -28,6 +28,18 @@ const CONFIG = 'test_data/graphgenomeview/config.json'
 const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
 const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
+// Paint the linear segments track in the graph view's own 'Stable rank (rGFA)'
+// colors, so the blocks above and the nodes below are the same color for the same
+// segment instead of gold-vs-blue. RgfaTabixAdapter puts the SR tag on the
+// feature as `rank`, and the plugin's scheme is rank 0 -> rgb(52,152,219), then a
+// ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph's max
+// rank. Only rank 0 has reference coordinates, so a reference LGV only ever draws
+// the blue backbone; the else branch is the ramp's rank-1 end, for a linear view
+// opened on one of the other assemblies.
+const RANK_COLOR_DEFAULTS = {
+  color: "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'",
+}
+
 // The HPRC figures take the other route into the same view: instead of a whole
 // GFA file, a GraphGenomeView carrying `loadedTrackId`/`loadedRegion` — the exact
 // snapshot the "Launch view, then Graph genome view (this region)" menu item
@@ -121,7 +133,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     diffThreshold: 0.1,
     viewportWidth: 1000,
-    viewportHeight: 640,
+    // the force layout is taller than it is wide at this node count, and the
+    // auto-fit left the bottom of the backbone off the frame at 640
+    viewportHeight: 820,
     hideTooltip: true,
   },
   // The indexed route on the tutorial's own four-strain graph: the rGFA
@@ -144,6 +158,7 @@ export const graphSpecs: ScreenshotSpec[] = [
             type: 'RgfaTabixAdapter',
             uri: `${DATA}/ecoli_minigraph`,
           },
+          displayDefaults: RANK_COLOR_DEFAULTS,
         },
       ],
       views: [
@@ -170,6 +185,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
+    // GraphGenomeView takes no `height` through the launch snapshot, and its
+    // auto-fit places a wide-and-flat anchored layout low in the panel, so the
+    // frame has to be tall enough to reach it
     viewportHeight: 900,
     hideTooltip: true,
   },

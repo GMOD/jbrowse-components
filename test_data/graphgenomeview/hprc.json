@@ -47,6 +47,9 @@
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
         "assemblyNameToPanSN": { "hg38": "GRCh38" }
+      },
+      "displayDefaults": {
+        "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
       }
     }
   ]

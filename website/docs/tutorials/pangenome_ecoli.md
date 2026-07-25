@@ -217,12 +217,19 @@ in_cactus gfatools view -R "K12#1#chr:1000000-1300000" -r 1 \
 GFA no graph-specific extraction step is needed. Load the result in a **Graph
 genome view** and it lays out from the file rather than from a force simulation:
 rank-0 segments at the reference offset they declare, each higher rank on its
-own row. Pick **Stable rank (rGFA)** in the Color dropdown to color by rank. A
+own row. Pick **Stable rank (rGFA)** in the Color dropdown to color by rank.
+
+Rank is the `SR` tag minigraph writes on every segment, and it counts build
+order: 0 is the first assembly on the command line (K12 here, the reference
+backbone), 1 is sequence first added when Sakai was folded in, 2 when CFT073
+was, 3 when NCTC86 was. So a rank-3 segment is sequence none of the three
+assemblies before it had. Only rank 0 has reference coordinates, which is why
+it is the only rank a linear view of K12 can show. A
 minigraph graph is also far less fragmented than a pggb one, since it records
 structural variation rather than every SNP, so a legible window is hundreds of
 kb rather than hundreds of bp.
 
-<Figure caption="The same four-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout." src="/img/pangenome/graph_rgfa.png" />
+<Figure caption="The same four-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout. The indexed figure further down puts a linear view of the same window above this layout." src="/img/pangenome/graph_rgfa.png" />
 
 The rank-ladder layout above is anchored to K12, so it lines up with a linear
 view of the same window. The toolbar's **Layout** dropdown trades that
@@ -273,7 +280,17 @@ Launch view, then Graph genome view (this region)** opens the graph for whatever
 is on screen, up to 100 kb, past which the layout stops being legible and the
 view declines.
 
-<Figure caption="The indexed route on the E. coli graph: the rGFA segments as a feature track over 50 kb of K12 on top, and the graph view launched from that same window below. Both are drawn from the tabix indexes, so the segment ids in the track are the nodes in the graph, at the same offsets." src="/img/pangenome/rgfa_subgraph_launch.png" />
+Give the feature track a `color` jexl on the segment's `rank` and it paints in the
+graph view's own Stable rank colors, so a segment is the same color in both
+panels:
+
+```json
+"displayDefaults": {
+  "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+}
+```
+
+<Figure caption="The indexed route on the E. coli graph: the rGFA segments as a feature track over 50 kb of K12 on top, and the graph view launched from that same window below. Both are drawn from the tabix indexes, so the blue blocks above are the blue rank-0 backbone below, same ids at the same offsets. The orange, red and purple alleles hanging off that backbone have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 ## All-vs-all synteny projection
 

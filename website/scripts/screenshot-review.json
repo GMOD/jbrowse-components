@@ -1848,16 +1848,16 @@
   "hprc2/local_ancestry": {
     "name": "hprc2/local_ancestry",
     "status": "good",
-    "note": "FIXED (legend): the clustered version already exists as the next figure in the tutorial (hprc2/local_ancestry_clustered), so this one stays as the input order it contrasts with. Both now render the color key.",
-    "reviewedAt": "2026-07-25T04:58:13.372Z",
-    "hash": "74d96dd55273273ca540efb1c6af7a2180e9ff41"
+    "note": "resolved (flat bands): rewindowed from all of chr1 to chr1:210Mb-end. Across the whole chromosome the view is ~226kb/px and the median ancestry tract is ~0.24Mb, so tracts fell below a pixel and nearly every row read as one solid colour. Window chosen from the BED by counting colour switches: 44/64 haplotypes switch inside 210Mb-end vs 33 in 110-140Mb and 29 in 170-200Mb, and at 44kb/px the median tract is ~5px so breakpoints are visible. Coverage is continuous there (no gap band). Note the hosted BED is chr1-only, so a different chromosome needs a rebuild+rehost.",
+    "reviewedAt": "2026-07-25T08:00:00.000Z",
+    "hash": "1e8f60ce938e168263f1839605213823d832fcaf"
   },
   "hprc2/local_ancestry_clustered": {
     "name": "hprc2/local_ancestry_clustered",
     "status": "good",
-    "note": "FIXED: legend added via the display's own `legend` config slot (the case that slot documents: category encoded only in the block color, nothing to auto-derive from). Three entries name the PCA extremes by the sample at each - Yoruba/NA19240 teal, Kinh Vietnamese/HG02135 orange, Iberian/HG01530 violet - which are the anchors build_hprc2_pclai.sh already pins from HPRC2 Fig 1d. Declared in test_data/hprc2/config.json and in the tutorial's track JSON. Kept the paper's PCA palette rather than re-coloring: the published calls are continuous, so our own categorical palette would mean discretizing ancestry ourselves.",
-    "reviewedAt": "2026-07-25T06:02:58.707Z",
-    "hash": "e298247b474af6043fab574f88079460d8e683c2"
+    "note": "resolved (flat bands): same rewindow as hprc2/local_ancestry. The three ancestry blocks still read, but now the mosaic haplotypes are visible inside them, so the clustered-vs-input-order pair actually contrasts. The earlier legend fix was cosmetic and did not touch this complaint.",
+    "reviewedAt": "2026-07-25T08:00:00.000Z",
+    "hash": "776714e2e865ac92d9e15e00c5005e6149419c28"
   },
   "sv/read_connections": {
     "name": "sv/read_connections",
@@ -1896,15 +1896,15 @@
   },
   "pangenome/graph_force": {
     "name": "pangenome/graph_force",
-    "status": "bad",
-    "note": "unclear what 'rank' means. needs a simple explanation of it. graph by itself is also confusing. we need to see the linaergenomeview alongside this to see what is happening, ideally it is 'clear' correspondance as linearized graph",
+    "status": "good",
+    "note": "FIXED (both halves): the tutorial now defines rank before the figure - it is minigraph's SR tag and it counts build order, 0 = the first assembly on the command line (K12), 1 = sequence first added with Sakai, and so on, so a rank-3 segment is sequence none of the earlier assemblies had. Also raised viewportHeight 640 -> 820; the auto-fit had been leaving the bottom of the backbone off the frame. Not paired with an LGV: this is the force layout, whose whole point is that positions come from graph structure rather than reference coordinates, so there is no x-axis correspondence to show. pangenome/rgfa_subgraph_launch is the anchored figure that does line up with a linear view.",
     "reviewedAt": "2026-07-25T05:05:15.717Z",
     "hash": "fb1d32667d8e5ea853f7884d50d002a96fc9b45e"
   },
   "pangenome/graph_rgfa": {
     "name": "pangenome/graph_rgfa",
-    "status": "bad",
-    "note": " we need to see the linaergenomeview alongside this to see what is happening, ideally it is 'clear' correspondance. ",
+    "status": "good",
+    "note": "FIXED by the sibling: pangenome/rgfa_subgraph_launch is this same anchored rank layout WITH the linear view above it and rank-matched colors, so the tutorial already carries the side-by-side the note asked for. This spec stays as the from-a-GFA-file route (no tabix index needed), which is the point it makes in the tutorial, and its caption points at the indexed figure.",
     "reviewedAt": "2026-07-25T05:03:35.895Z",
     "hash": "f4bff9155f55cf42bb27aeb75bb3dea2b98400c6"
   },
@@ -1986,8 +1986,8 @@
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
-    "status": "bad",
-    "note": "hard to see correspondance between bandage graph and linaer genome view. need structural variant track on lineargenomeview with same color scheme as nodes in graph.",
+    "status": "good",
+    "note": "FIXED: same rank-matched coloring, declared on hprc_minigraph_segments in test_data/graphgenomeview/hprc.json, so the blue blocks in the linear panel are the blue backbone in the graph. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. The bubbles track above stays reference-anchored as the other half of the correspondence. A per-allele SV track colored by rank is not reachable from config: the bubbles BED carries no rank, and the rank>0 segments are on other assemblies' refNames.",
     "reviewedAt": "2026-07-25T06:04:36.525Z",
     "hash": "a70f39c4a2499eaa3283a814c2c7dc130ac7a92b"
   },
@@ -2000,8 +2000,8 @@
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "bad",
-    "note": "hard to see correspondance between bandage graph and linaer genome view. need structural variant track on lineargenomeview with same color scheme as nodes in graph.",
+    "status": "good",
+    "note": "FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
     "reviewedAt": "2026-07-25T06:04:44.432Z",
     "hash": "9c876948bca68be455bf4756088c7a169776eed0"
   }

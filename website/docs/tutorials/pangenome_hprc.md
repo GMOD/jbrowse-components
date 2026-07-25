@@ -137,7 +137,7 @@ Navigate somewhere interesting, then:
 cut from the same two files, as a graph. Above 100 kb the view declines to draw,
 since the layout stops being legible.
 
-<Figure caption="The HLA class II region (chr6:32,500,000-32,560,000) of the HPRC release 2 graph in force-directed layout, with RefSeq genes (HLA-DRB5, HLA-DRB6) and the bubble track above it. The graph's shape: the backbone winds through the frame and every loop and stub hanging off it is an alternate allele from the 464 haplotypes. Node lengths use per-graph Bandage scaling, so a 300 bp allele and a 7 kb backbone segment stay in one picture." src="/img/pangenome/hprc_mhc_bandage.png" />
+<Figure caption="The HLA class II region (chr6:32,500,000-32,560,000) of the HPRC release 2 graph in force-directed layout, with RefSeq genes (HLA-DRB5, HLA-DRB6) and the bubble track above it. The graph's shape: the backbone winds through the frame and every loop and stub hanging off it is an alternate allele from the 464 haplotypes. The segments track is colored by the same rank scheme, so its blue blocks are that blue backbone; the orange loops are the alternates, which have no GRCh38 coordinates to draw at. Node lengths use per-graph Bandage scaling, so a 300 bp allele and a 7 kb backbone segment stay in one picture." src="/img/pangenome/hprc_mhc_bandage.png" />
 
 That is the picture the graph is really about. The toolbar's **Layout** dropdown
 also offers an **anchored** layout that puts the x axis back on GRCh38, so the
@@ -286,13 +286,13 @@ builds your own for a chromosome and sample count you pick
 (`bash build_hprc2_pclai.sh out chr1 64`); it fetches the per-haplotype BEDs,
 keeps the columns the painting needs, and writes one bgzipped, tabixed file.
 
-<Figure caption="64 HPRC2 haplotypes painted along chr1 by PCLAI local ancestry, one row per haplotype, colored by the published per-window PCA color. Most rows hold a single color end to end; a few switch color repeatedly along the chromosome, each change a recombination breakpoint between differently-inferred segments. The key names the three PCA extremes the palette interpolates between." src="/img/hprc2/local_ancestry.png" />
+<Figure caption="64 HPRC2 haplotypes painted by PCLAI local ancestry over the last 39 Mb of chr1, one row per haplotype, colored by the published per-window PCA color. Every vertical edge inside a row is a switch between differently-inferred segments; 44 of the 64 haplotypes switch somewhere in this window. Rows are in file order here, so the colors interleave. The key names the three PCA extremes the palette interpolates between." src="/img/hprc2/local_ancestry.png" />
 
 This display has its own clustering, **Clustering > Cluster rows by similarity**
 in the track menu, which reorders the haplotype rows so ancestry-similar rows
 sit together:
 
-<Figure caption="The same 64-haplotype painting with the rows clustered and a dendrogram beside them. Haplotypes sharing an ancestry profile group into blocks, so the continuous PCA colors sort into bands rather than the input file's order." src="/img/hprc2/local_ancestry_clustered.png" />
+<Figure caption="The same 64-haplotype painting with the rows clustered and a dendrogram beside them. Haplotypes sharing an ancestry profile group into blocks, so the interleaved rows above sort into three bands, and the haplotypes that switch mid-window stand out against the neighbours they were grouped with." src="/img/hprc2/local_ancestry_clustered.png" />
 
 ## Reproduce it end to end
 
