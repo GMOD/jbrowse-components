@@ -1,48 +1,47 @@
 import React from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
+import { rowSpanAtY } from './mafHitTest.ts'
 
-import type { Sample } from '../../types.ts'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { ContextCoord } from './useDragSelection.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Right-click menu shown after the user finishes a drag-selection on the MAF
  * canvas. "All rows" opens the subsequence widget for every visible sample;
- * "selected rows" narrows it to the rows the drag rectangle vertically
- * covers.
+ * "selected rows" narrows it to the rows the drag rectangle vertically covers
+ * (via the shared `rowSpanAtY`, so the selection lands on the same rows the
+ * hover hit-test would report).
  */
-export default function SubsequenceContextMenu({
-  session,
+const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   model,
-  view,
-  samples,
-  effectiveRowHeight,
-  rowsTopOffset,
-  scrollTop,
   contextCoord,
   setContextCoord,
 }: {
-  session: AbstractSessionModel
   model: LinearMafDisplayModel
-  view: LinearGenomeViewModel
-  samples: Sample[] | undefined
-  // resolved row height (never the raw 0/fit sentinel) — divided into below
-  effectiveRowHeight: number
-  // Y offset of the rows area within the outer display container. The drag
-  // rect's startY/endY are outer-container coords; the coverage band above the
-  // rows shifts row 0 down by this much.
-  rowsTopOffset: number
-  scrollTop: number
   contextCoord: ContextCoord | undefined
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
   const theme = useTheme()
+  const { samples } = model
+  const openRows = (rows: typeof samples) => {
+    if (contextCoord && rows) {
+      openSubsequenceWidget(
+        getSession(model),
+        model,
+        model.lgv,
+        contextCoord.startX,
+        contextCoord.endX,
+        rows,
+      )
+    }
+    setContextCoord(undefined)
+  }
   return (
     <Menu
       open={Boolean(contextCoord)}
@@ -71,50 +70,21 @@ export default function SubsequenceContextMenu({
         {
           label: 'View subsequences (all rows)',
           onClick: () => {
-            if (contextCoord && samples) {
-              openSubsequenceWidget(
-                session,
-                model,
-                view,
-                contextCoord.startX,
-                contextCoord.endX,
-                samples,
-              )
-            }
-            setContextCoord(undefined)
+            openRows(samples)
           },
         },
         {
           label: 'View subsequences (selected rows)',
           onClick: () => {
-            if (contextCoord && samples) {
-              const minY = Math.min(contextCoord.startY, contextCoord.endY)
-              const maxY = Math.max(contextCoord.startY, contextCoord.endY)
-              const startRow = Math.max(
-                0,
-                Math.floor(
-                  (minY + scrollTop - rowsTopOffset) / effectiveRowHeight,
-                ),
-              )
-              const endRow = Math.max(
-                0,
-                Math.ceil(
-                  (maxY + scrollTop - rowsTopOffset) / effectiveRowHeight,
-                ),
-              )
-              openSubsequenceWidget(
-                session,
-                model,
-                view,
-                contextCoord.startX,
-                contextCoord.endX,
-                samples.slice(startRow, endRow),
-              )
-            }
-            setContextCoord(undefined)
+            const { startRow, endRow } = contextCoord
+              ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
+              : { startRow: 0, endRow: 0 }
+            openRows(samples?.slice(startRow, endRow))
           },
         },
       ]}
     />
   )
-}
+})
+
+export default SubsequenceContextMenu

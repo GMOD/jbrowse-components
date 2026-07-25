@@ -1,7 +1,7 @@
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
 import { drawMafInsertions } from '../../LinearMafRenderer/rendering/insertions.ts'
-import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
 import type { InsertionMarker } from './computeVisibleInsertions.ts'

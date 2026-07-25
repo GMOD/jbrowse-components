@@ -1,30 +1,40 @@
+import React from 'react'
+
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import TrackBandCanvas from './TrackBandCanvas.tsx'
+import MafBand from './MafBand.tsx'
 import { drawMafCoverage } from './drawMafCoverage.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 /**
- * Coverage band at the top of the MAF display, delegating to the shared
+ * Depth + SNP coverage band at the top of the display, delegating to the shared
  * `drawMafCoverage` per-block loop (alignments-core `drawCoverageBins` +
  * `drawSnpSegments`). The worker pre-packs both buffers in the layout alignments
- * uses, so this does no per-frame data massaging.
+ * uses, so this does no per-frame data massaging. Its axis is data-driven
+ * (`coverageTicks`) and absent until the domain resolves.
  */
-const MafCoverageCanvas = observer(function MafCoverageCanvas({
+const MafCoverageBand = observer(function MafCoverageBand({
   model,
+  onResizeActiveChange,
 }: {
   model: LinearMafDisplayModel
+  onResizeActiveChange: (active: boolean) => void
 }) {
   const theme = useTheme()
-  const { showCoverage, coverageHeight } = model
+  const { showCoverage, coverageHeight, coverageTicks } = model
   return (
-    <TrackBandCanvas
+    <MafBand
       model={model}
+      show={showCoverage}
       top={0}
       height={coverageHeight}
-      show={showCoverage}
+      ticks={coverageTicks}
+      setHeight={n => {
+        model.setCoverageHeight(n)
+      }}
+      onResizeActiveChange={onResizeActiveChange}
       draw={ctx => {
         drawMafCoverage(ctx, model.renderBlocks, model.rpcDataMap, {
           coverageHeight,
@@ -37,4 +47,4 @@ const MafCoverageCanvas = observer(function MafCoverageCanvas({
   )
 })
 
-export default MafCoverageCanvas
+export default MafCoverageBand

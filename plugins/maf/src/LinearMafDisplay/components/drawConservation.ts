@@ -21,7 +21,7 @@ interface DrawConservationState {
  * Fixed 0–100% identity Y-axis ticks for the conservation band, inset by the
  * same `coverageLayout` margin the band drawing uses so the top/bottom labels
  * align with the band edges instead of being clipped at the SVG boundary.
- * Shared by the on-screen axis (`MafConservationYScale`) and SVG export.
+ * Shared by the on-screen axis (`MafConservationBand`) and SVG export.
  */
 export function conservationTicks(conservationHeight: number): YScaleTicks {
   const { effectiveH, bottom } = coverageLayout(conservationHeight)
@@ -45,6 +45,11 @@ export function conservationTicks(conservationHeight: number): YScaleTicks {
  * many pixels (solid); zoomed out, many bases share one pixel (averaged — the
  * sliding window). `NaN` (unclassifiable) positions are skipped. Pure +
  * accumulator-mutating so it's unit-testable with a plain `bpToX`.
+ *
+ * `[xLo, xHi)` is the block's own pixel span (`clip.scissorX` ..
+ * `+scissorW`), NOT the whole canvas: the fetched region is the *buffered*
+ * one, so its out-of-block bp map past the block's screen edges and would
+ * otherwise paint over the neighboring region — see `drawConservation`.
  */
 export function accumulateConservation(
   sum: Float32Array,
@@ -52,7 +57,8 @@ export function accumulateConservation(
   identityScores: Float32Array,
   coverageStartPos: number,
   bpToX: (bp: number) => number,
-  width: number,
+  xLo: number,
+  xHi: number,
 ) {
   for (let i = 0; i < identityScores.length; i++) {
     const v = identityScores[i]!
@@ -60,14 +66,12 @@ export function accumulateConservation(
       const bp = coverageStartPos + i
       const xa = bpToX(bp)
       const xb = bpToX(bp + 1)
-      let lo = Math.floor(Math.min(xa, xb))
-      let hi = Math.max(lo + 1, Math.ceil(Math.max(xa, xb)))
-      if (lo < 0) {
-        lo = 0
-      }
-      if (hi > width) {
-        hi = width
-      }
+      const cellLeft = Math.floor(Math.min(xa, xb))
+      const lo = Math.max(xLo, cellLeft)
+      const hi = Math.min(
+        xHi,
+        Math.max(cellLeft + 1, Math.ceil(Math.max(xa, xb))),
+      )
       for (let px = lo; px < hi; px++) {
         sum[px]! += v
         count[px]! += 1
@@ -85,6 +89,11 @@ export function accumulateConservation(
  * pixel (the sliding window is one pixel's worth of bp). `NaN` positions
  * (depth 0 / ref `N`) are skipped, so unalignable regions read as empty rather
  * than 0%. Shared by the on-screen canvas and SVG export, like `drawMafCoverage`.
+ *
+ * Each block accumulates only into its own scissor columns. The alternative —
+ * `forEachClippedBlock`'s ctx clip — can't work here: the per-pixel means are
+ * summed across every block first and painted in one pass at the end, so the
+ * bound has to be on the accumulate, not the paint.
  */
 export function drawConservation(
   ctx: Ctx2D,
@@ -110,7 +119,8 @@ export function drawConservation(
         coverage.identityScores,
         coverage.coverageStartPos,
         makeBpMapper(block),
-        width,
+        clip.scissorX,
+        clip.scissorX + clip.scissorW,
       )
     }
   }

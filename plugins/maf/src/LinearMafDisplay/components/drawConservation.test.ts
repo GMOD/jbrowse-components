@@ -10,6 +10,7 @@ test('zoomed out: many bases average into one pixel', () => {
     new Float32Array([1, 0, 1, 0]),
     0,
     bp => bp / 4,
+    0,
     1,
   )
   expect(count[0]).toBe(4)
@@ -25,6 +26,7 @@ test('zoomed in: one base fills every pixel of its span', () => {
     new Float32Array([1]),
     0,
     bp => bp * 10,
+    0,
     10,
   )
   for (let x = 0; x < 10; x++) {
@@ -42,6 +44,7 @@ test('NaN positions are skipped', () => {
     new Float32Array([Number.NaN, 1]),
     0,
     bp => bp,
+    0,
     2,
   )
   expect(count[0]).toBe(0)
@@ -49,7 +52,7 @@ test('NaN positions are skipped', () => {
   expect(sum[1]).toBe(1)
 })
 
-test('pixels outside [0, width) are clamped away', () => {
+test('pixels outside the bound are clamped away', () => {
   const sum = new Float32Array(3)
   const count = new Uint32Array(3)
   // x = bp - 5, so only bp 5,6,7 land in [0,3).
@@ -59,7 +62,27 @@ test('pixels outside [0, width) are clamped away', () => {
     new Float32Array(10).fill(1),
     0,
     bp => bp - 5,
+    0,
     3,
   )
   expect(Array.from(count)).toEqual([1, 1, 1])
+})
+
+// The bound is the *block's* scissor span, not the canvas: the fetched region
+// is the buffered one, so it extends past its render block, and unbounded its
+// bases would paint over whichever region occupies the neighboring columns.
+test('bases outside the block scissor span do not bleed into neighbors', () => {
+  const sum = new Float32Array(6)
+  const count = new Uint32Array(6)
+  // 6 bp at 1px each, but the owning block only holds columns [2, 4).
+  accumulateConservation(
+    sum,
+    count,
+    new Float32Array(6).fill(1),
+    0,
+    bp => bp,
+    2,
+    4,
+  )
+  expect(Array.from(count)).toEqual([0, 0, 1, 1, 0, 0])
 })

@@ -1,9 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { SvgColorLegend, createJBrowseTheme } from '@jbrowse/core/ui'
 import { colorLongreadInv } from '@jbrowse/core/ui/theme'
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
@@ -12,7 +11,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
-import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
@@ -29,6 +27,7 @@ import {
   getFrameColors,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
+import { SvgYScaleGutter } from './components/MafYScaleGutter.tsx'
 import {
   conservationTicks,
   drawCodonConservation,
@@ -37,14 +36,12 @@ import {
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawRowIdentity } from './components/drawRowIdentity.ts'
 import { drawSourceChrom } from './components/drawSourceChrom.ts'
-import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 export async function renderSvg(
   model: LinearMafDisplayModel,
@@ -54,7 +51,7 @@ export async function renderSvg(
   // resolve) and goes false during an in-place refetch, so exports never
   // capture a partial or stale viewport.
   await awaitSvgReady(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = model.lgv
   const height = model.height
   return (
     <SvgChrome
@@ -224,24 +221,28 @@ function MafSvgBody({
         />
       </g>
       {showCoverage && coverageTicks ? (
-        <LeftAxis y={0} ticks={coverageTicks} />
+        <SvgYScaleGutter y={0} ticks={coverageTicks} />
       ) : null}
       {showConservation ? (
-        <LeftAxis
+        <SvgYScaleGutter
           y={coverageDisplayHeight}
           ticks={conservationTicks(conservationHeight)}
         />
       ) : null}
+      {/* The same color key the display shows on screen (`MafLegends`).
+          Without it an exported codon or source-chromosome figure has colored
+          cells and nothing saying what the colors mean — and there the
+          swatches are the only decoder. No `onDismiss`: an exported legend
+          can't be clicked. */}
+      <SvgColorLegend
+        entries={model.legendItems.map((item, i) => ({
+          key: `maf-legend-${i}`,
+          ...item,
+        }))}
+        canvasWidth={width}
+        maxHeight={height}
+        testid="maf-color-legend"
+      />
     </SvgClipRect>
-  )
-}
-
-// A left-orientation y-axis in the shared axis gutter (YSCALE_AXIS_X), at a
-// vertical band offset — coverage sits at y=0, conservation below it.
-function LeftAxis({ y, ticks }: { y: number; ticks: YScaleTicks }) {
-  return (
-    <g transform={`translate(${YSCALE_AXIS_X}, ${y})`}>
-      <YScaleBar ticks={ticks} orientation="left" />
-    </g>
   )
 }

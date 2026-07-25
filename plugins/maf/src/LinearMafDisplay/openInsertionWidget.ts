@@ -1,9 +1,8 @@
-import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
+import { openFeatureWidget } from '@jbrowse/core/util'
 
-import { resolveMafRowHover } from './components/resolveRowHover.ts'
+import { resolveMafRowHover } from './components/mafHitTest.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * On a plain click over an insertion marker, open the feature-details widget
@@ -21,8 +20,7 @@ export function openInsertionWidgetOnClick(
   mouseY: number,
 ) {
   if (model.activeRowRendering === 'bases') {
-    const view = getContainingView(model) as LinearGenomeViewModel
-    const hover = resolveMafRowHover(model, view, mouseX, mouseY)
+    const hover = resolveMafRowHover(model, mouseX, mouseY)
     if (hover?.kind === 'insertion') {
       const { length, sequence, chr, pos, strand, sampleLabel } = hover
       const start = pos ?? 0

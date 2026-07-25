@@ -1,9 +1,9 @@
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { drawMafCodons } from '../../LinearMafRenderer/rendering/codons.ts'
 import { getCodonColors } from '../../LinearMafRenderer/util.ts'
-import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { CodonMarker } from './computeVisibleCodons.ts'
 

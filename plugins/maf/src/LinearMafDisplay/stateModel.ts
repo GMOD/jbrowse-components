@@ -48,6 +48,7 @@ import { computeVisibleInsertions } from './components/computeVisibleInsertions.
 import { computeVisibleInversions } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
+import { identityRgb } from './components/drawRowIdentity.ts'
 import {
   perRowChromRanks,
   sourceChromRankColor,
@@ -1393,29 +1394,55 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Rank-based legend for the color-by-source-chromosome mode: one entry per
-         * source-chromosome rank actually present across the visible rows (rank 0 =
-         * each species' main chromosome, higher ranks = the minority chromosomes a
-         * row switches to at a rearrangement). Because coloring is by per-row rank
-         * rather than chromosome name (see `perRowChromRanks`), the legend is this
-         * short fixed scheme, not a per-scaffold rainbow. Empty unless the mode is
-         * active; a single "Main chromosome" entry means nothing rearranges in view.
+         * The color key for whatever `activeRowRendering` is painting, or empty
+         * where the rendering needs no key (plain bases). One getter rather than
+         * a component per mode, because both the on-screen legend and the SVG
+         * export read it — an exported codon or source-chromosome figure whose
+         * swatches are its only decoder used to ship with no key at all.
+         *
+         * Source-chromosome coloring is by each row's per-row chromosome RANK
+         * (see `perRowChromRanks`), not by chromosome name, so its key is this
+         * short fixed scheme rather than a per-scaffold rainbow: one entry per
+         * rank actually present in view, and a lone "Main chromosome" entry
+         * means nothing rearranges here.
          */
-        get sourceChromLegend(): { label: string; color: string }[] {
+        get legendItems(): { label: string; color?: string }[] {
           const view = self.lgv
-          if (self.activeRowRendering !== 'sourceChrom' || !view.initialized) {
+          if (!view.initialized) {
             return []
           }
-          const { maxRank } = perRowChromRanks(
-            uniqueRegionsFromBlocks(
-              view.dynamicBlocks.contentBlocks,
-              self.rpcDataMap,
-            ),
-          )
-          return Array.from({ length: maxRank + 1 }, (_, rank) => ({
-            label: sourceChromRankLabel(rank),
-            color: sourceChromRankColor(rank),
-          }))
+          const rendering = self.activeRowRendering
+          if (rendering === 'codon') {
+            const { palette } = getSession(self).theme
+            return [
+              { label: 'Nonsynonymous', color: palette.codonNonsynonymous },
+              { label: 'Synonymous', color: palette.codonSynonymous },
+              { label: 'Stop', color: palette.codonStop },
+            ]
+          }
+          if (rendering === 'sourceChrom') {
+            const { maxRank } = perRowChromRanks(
+              uniqueRegionsFromBlocks(
+                view.dynamicBlocks.contentBlocks,
+                self.rpcDataMap,
+              ),
+            )
+            return Array.from({ length: maxRank + 1 }, (_, rank) => ({
+              label: sourceChromRankLabel(rank),
+              color: sourceChromRankColor(rank),
+            }))
+          }
+          if (rendering === 'heatmap' || rendering === 'xyplot') {
+            // Endpoints of the same ramp the rows are painted with, so the
+            // swatches match the rendering exactly. The color-less first entry
+            // names the metric, without which the ramp is ambiguous.
+            return [
+              { label: 'Per-base identity to reference' },
+              { label: 'Conserved (base matches)', color: identityRgb(1) },
+              { label: 'Divergent (base differs)', color: identityRgb(0) },
+            ]
+          }
+          return []
         },
         /**
          * #method

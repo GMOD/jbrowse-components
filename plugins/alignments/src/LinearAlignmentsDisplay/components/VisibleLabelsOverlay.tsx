@@ -1,6 +1,4 @@
-import { useEffect, useRef } from 'react'
-
-import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -22,29 +20,15 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   contrastMap,
 }: VisibleLabelsOverlayProps) {
   const theme = useTheme()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const ctx = getPreparedCanvas2D(canvasRef.current, width ?? 0, height)
-    if (ctx) {
-      drawAlignmentLabels(ctx, labels, contrastMap, theme)
-    }
-  }, [labels, width, height, contrastMap, theme])
-
   if (labels.length === 0) {
     return null
   }
-
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width,
-        height,
-        pointerEvents: 'none',
+    <OverlayCanvas
+      width={width ?? 0}
+      height={height}
+      draw={ctx => {
+        drawAlignmentLabels(ctx, labels, contrastMap, theme)
       }}
     />
   )

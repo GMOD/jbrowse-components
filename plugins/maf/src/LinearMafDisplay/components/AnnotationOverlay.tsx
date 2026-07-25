@@ -1,9 +1,9 @@
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { drawMafAnnotations } from '../../LinearMafRenderer/rendering/annotations.ts'
 import { getFrameColors } from '../../LinearMafRenderer/util.ts'
-import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { FrameMarker } from './computeVisibleAnnotations.ts'
 

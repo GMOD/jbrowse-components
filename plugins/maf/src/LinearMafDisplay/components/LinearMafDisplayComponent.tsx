@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   SvgRowLabels,
@@ -22,21 +21,16 @@ import InsertionsOverlay from './InsertionsOverlay.tsx'
 import InversionsOverlay from './InversionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
-import MafBandResizeHandle from './MafBandResizeHandle.tsx'
-import MafCodonLegend from './MafCodonLegend.tsx'
-import MafConservationCanvas from './MafConservationCanvas.tsx'
-import MafConservationYScale from './MafConservationYScale.tsx'
-import MafCoverageCanvas from './MafCoverageCanvas.tsx'
-import MafCoverageYScale from './MafCoverageYScale.tsx'
-import MafIdentityLegend from './MafIdentityLegend.tsx'
+import MafConservationBand from './MafConservationBand.tsx'
+import MafCoverageBand from './MafCoverageBand.tsx'
+import MafLegends from './MafLegends.tsx'
 import MafRowIdentityCanvas from './MafRowIdentityCanvas.tsx'
 import MafSourceChromCanvas from './MafSourceChromCanvas.tsx'
-import MafSourceChromLegend from './MafSourceChromLegend.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { resolveMafRowHover } from './resolveRowHover.ts'
+import { resolveMafRowHover } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -96,15 +90,14 @@ const MafBody = observer(function MafBody({
     hierarchy,
     sources,
     samples,
+    colorPalette,
   } = model
   const [coverageResizeActive, setCoverageResizeActive] = useState(false)
   const [conservationResizeActive, setConservationResizeActive] =
     useState(false)
   const resizeActive = coverageResizeActive || conservationResizeActive
-  const session = getSession(model)
   const view = model.lgv
   const { width } = view
-  const { colorPalette } = model
 
   const {
     isDragging,
@@ -124,44 +117,28 @@ const MafBody = observer(function MafBody({
   const sidebarOffset = showTree && hierarchy ? treeAreaWidth : 0
   // Mouse guides/tooltips hide left of the sidebar's resize-handle edge.
   const dataLeft = treeSidebarRightEdge(model)
+  const pointerOverData =
+    mouseX !== undefined && mouseY !== undefined && mouseX > dataLeft
 
   // Pointer cursor when an insertion marker is clickable under the cursor, via
-  // the same `resolveMafRowHover` the tooltip uses so the two always agree (see
-  // resolveRowHover.ts). Matches the click gate in openInsertionWidgetOnClick:
+  // the same `resolveMafRowHover` the tooltip and the click handler use, so all
+  // three always agree. Matches the click gate in openInsertionWidgetOnClick:
   // bases mode only, and never mid drag-selection.
   const overInsertion =
     !isDragging &&
-    mouseX !== undefined &&
-    mouseY !== undefined &&
-    mouseX > dataLeft &&
+    pointerOverData &&
     model.activeRowRendering === 'bases' &&
-    resolveMafRowHover(model, view, mouseX, mouseY)?.kind === 'insertion'
+    resolveMafRowHover(model, mouseX, mouseY)?.kind === 'insertion'
 
   return (
     <>
-      <MafCoverageCanvas model={model} />
-      <MafCoverageYScale model={model} />
-      <MafBandResizeHandle
+      <MafCoverageBand
         model={model}
-        show={model.showCoverage}
-        height={model.coverageHeight}
-        setHeight={arg => {
-          model.setCoverageHeight(arg)
-        }}
-        top={model.coverageHeight - 4}
-        onActiveChange={setCoverageResizeActive}
+        onResizeActiveChange={setCoverageResizeActive}
       />
-      <MafConservationCanvas model={model} />
-      <MafConservationYScale model={model} />
-      <MafBandResizeHandle
+      <MafConservationBand
         model={model}
-        show={model.showConservation}
-        height={model.conservationHeight}
-        setHeight={arg => {
-          model.setConservationHeight(arg)
-        }}
-        top={rowsTopOffset - 4}
-        onActiveChange={setConservationResizeActive}
+        onResizeActiveChange={setConservationResizeActive}
       />
       <MafBandLabels model={model} />
       <div
@@ -186,9 +163,7 @@ const MafBody = observer(function MafBody({
         />
         <MafRowIdentityCanvas model={model} />
         <MafSourceChromCanvas model={model} />
-        <MafSourceChromLegend model={model} />
-        <MafCodonLegend model={model} />
-        <MafIdentityLegend model={model} />
+        <MafLegends model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
           width={width}
@@ -260,12 +235,7 @@ const MafBody = observer(function MafBody({
         <TreeSidebar model={model} />
       </div>
       <MsaHighlightOverlay model={model} view={view} height={height} />
-      {mouseY !== undefined &&
-      mouseX !== undefined &&
-      mouseX > dataLeft &&
-      samples &&
-      !contextCoord &&
-      !resizeActive ? (
+      {pointerOverData && samples && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>
           <Crosshairs
             width={width}
@@ -298,13 +268,7 @@ const MafBody = observer(function MafBody({
         />
       ) : null}
       <SubsequenceContextMenu
-        session={session}
         model={model}
-        view={view}
-        samples={samples}
-        effectiveRowHeight={effectiveRowHeight}
-        rowsTopOffset={rowsTopOffset}
-        scrollTop={scrollTop}
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}
       />

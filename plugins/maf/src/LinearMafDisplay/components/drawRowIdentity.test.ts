@@ -17,6 +17,7 @@ test('matches vs mismatches against the reference', () => {
     bytes('ACGA'),
     0,
     identityMapper,
+    0,
     4,
   )
   expect(Array.from(cls)).toEqual([1, 1, 1, 1])
@@ -33,6 +34,7 @@ test('sample gaps are excluded from the denominator', () => {
     bytes('A-GT'),
     0,
     identityMapper,
+    0,
     4,
   )
   expect(Array.from(cls)).toEqual([1, 0, 1, 1])
@@ -51,6 +53,7 @@ test('reference insertion columns (ref dash) consume no ref position', () => {
     bytes('ATCG'),
     0,
     identityMapper,
+    0,
     3,
   )
   expect(Array.from(cls)).toEqual([1, 1, 1])
@@ -67,6 +70,7 @@ test('reference N columns are unclassifiable', () => {
     bytes('CA'),
     0,
     identityMapper,
+    0,
     2,
   )
   expect(Array.from(cls)).toEqual([0, 1])
@@ -83,6 +87,7 @@ test('comparison is case-insensitive (soft-masking ignored)', () => {
     bytes('ac'),
     0,
     identityMapper,
+    0,
     2,
   )
   expect(Array.from(match)).toEqual([1, 1])
@@ -99,10 +104,30 @@ test('zoomed out: several bases average into one pixel', () => {
     bytes('ATGT'),
     0,
     bp => bp / 4,
+    0,
     1,
   )
   expect(cls[0]).toBe(4)
   expect(match[0]).toBe(3)
+})
+
+// The bound is the owning block's scissor span — see the matching test in
+// drawConservation.test.ts for why the canvas width is not the right bound.
+test('bases outside the block scissor span do not bleed into neighbors', () => {
+  const match = new Float32Array(6)
+  const cls = new Float32Array(6)
+  accumulateRowIdentity(
+    match,
+    cls,
+    bytes('ACGTAC'),
+    bytes('ACGTAC'),
+    0,
+    identityMapper,
+    2,
+    4,
+  )
+  expect(Array.from(cls)).toEqual([0, 0, 1, 1, 0, 0])
+  expect(Array.from(match)).toEqual([0, 0, 1, 1, 0, 0])
 })
 
 test('identityColor ramps from divergent red through grey to conserved blue', () => {

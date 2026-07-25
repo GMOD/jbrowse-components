@@ -1,7 +1,7 @@
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
 import { drawMafDeletionLabels } from '../../LinearMafRenderer/rendering/deletions.ts'
-import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { DeletionMarker } from './computeVisibleDeletions.ts'
 

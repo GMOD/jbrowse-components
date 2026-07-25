@@ -1,3 +1,5 @@
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
+
 // The pileup has a two-tier vertical scroll model, and nearly every overlay has
 // to project a content-space Y into screen space under it. Centralizing the two
 // tiers here keeps each overlay from re-deriving `isGrouped ? y - scroll : y`
@@ -43,10 +45,11 @@ export interface BpScreenRegion {
   screenStartPx: number
 }
 export function makeBpToPx(region: BpScreenRegion, bpPerPx: number) {
-  const reversed = region.reversed ?? false
-  const bpEdge = reversed ? region.end : region.start
+  // The reversed pivot itself is core's `bpOffsetInRegion` — the same primitive
+  // MAF's overlay walk builds its mapper from — so the two plugins can't drift
+  // on which edge a flipped region counts from.
   return (bp: number) =>
-    (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + region.screenStartPx
+    bpOffsetInRegion(region, bp) / bpPerPx + region.screenStartPx
 }
 
 // React-list key for a section. The ungrouped section's `groupKey` is '', so

@@ -1,7 +1,7 @@
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
 import { drawMafSummaryBars } from '../../LinearMafRenderer/rendering/summaryBars.ts'
-import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
 import type { SummaryBar } from './computeVisibleSummaryBars.ts'

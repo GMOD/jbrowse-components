@@ -25,7 +25,7 @@ interface DrawMafCoverageState {
 
 /**
  * Draws the depth-bar + SNP layers of the MAF coverage band into a 2D
- * context. Shared by the on-screen `MafCoverageCanvas` and the SVG export
+ * context. Shared by the on-screen `MafCoverageBand` and the SVG export
  * `renderSvg` paths so both call the same per-block loop over
  * alignments-core's `drawCoverageBins` + `drawSnpSegments`.
  */

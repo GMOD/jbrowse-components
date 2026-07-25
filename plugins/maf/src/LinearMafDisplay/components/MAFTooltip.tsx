@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
 import MafCoverageTooltipContents from './MafCoverageTooltipContents.tsx'
 import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
+import { mafPointerAt } from './mafHitTest.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
@@ -22,13 +23,7 @@ const MAFTooltip = observer(function ({
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
-  const {
-    showCoverage,
-    coverageDisplayHeight,
-    rowsTopOffset,
-    effectiveRowHeight,
-    scrollTop,
-  } = model
+  const { showCoverage, coverageDisplayHeight } = model
   // Controlled point for floating-ui. Without it, `useClientPoint` enters
   // pointer-tracking mode: a window `mousemove` listener that allocates a fresh
   // virtual reference every move. Every other display tooltip passes this.
@@ -38,17 +33,18 @@ const MAFTooltip = observer(function ({
       : undefined
   const view = model.lgv
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
-  const p2 = view.pxToBp(mouseX)
-  // Absolute fractional genomic coordinate under the cursor, for px-accurate
-  // insertion hit-testing (insertions are interbase). Orientation-aware.
-  const gposFrac = p2.reversed ? p2.end - p2.offset : p2.start + p2.offset
+  const {
+    pos: p2,
+    gposFrac,
+    rowIndex,
+    inBands,
+  } = mafPointerAt(model, mouseX, mouseY)
 
-  // mouseY in [0, rowsTopOffset) means the cursor is over the band area above
-  // the rows (coverage and/or the conservation band). Both show the depth +
-  // SNP + identity breakdown via the shared alignments-core tooltip bin (which
-  // now carries identity). `index` from pxToBp is the displayedRegion index and
-  // matches the rpcDataMap key.
-  if (mouseY < rowsTopOffset) {
+  // Over the band area above the rows (coverage and/or conservation). Both show
+  // the depth + SNP + identity breakdown via the shared alignments-core tooltip
+  // bin (which carries identity). `index` from pxToBp is the displayedRegion
+  // index and matches the rpcDataMap key.
+  if (inBands) {
     // Insertions (interbase) get their own tooltip, tested first by pixel
     // proximity to the thin boundary bar, but only within the coverage band
     // (that's where the markers draw); otherwise the depth/SNP/identity tooltip
@@ -75,29 +71,21 @@ const MAFTooltip = observer(function ({
     ) : null
   }
 
-  // Per-row hover: convert (mouseX, mouseY) to (bp, rowIndex into `sources`)
-  // and resolve the aligned base or bridged/empty region at that row. Skipped
-  // during a selection drag (origMouseX set) so the drag's range readout stays.
-  const rowIndex = Math.floor(
-    (mouseY + scrollTop - rowsTopOffset) / effectiveRowHeight,
-  )
-  const hover =
-    origMouseX === undefined && !p2.oob
-      ? model.rowHoverInfo(p2.index, gposFrac, rowIndex, view.bpPerPx)
-      : undefined
-  // CDS gene/reading-frame at this row, when the mafFrames overlay is on, so
-  // the gene structure is identifiable by hovering any species — not just the
-  // colored strip.
-  const frame =
-    origMouseX === undefined && !p2.oob
-      ? model.frameHoverInfo(p2.index, gposFrac, rowIndex)
-      : undefined
-  // In codon view, the actual codon/amino-acid change at this row (so a specific
-  // change can be read directly rather than inferred from the cell color).
-  const codon =
-    origMouseX === undefined && !p2.oob
-      ? model.codonHoverInfo(p2.index, gposFrac, rowIndex)
-      : undefined
+  // Per-row hover, skipped during a selection drag (origMouseX set) so the
+  // drag's range readout stays. `frame` is the CDS gene at this row, so gene
+  // structure is identifiable by hovering any species rather than only the
+  // colored strip; `codon` is the actual codon/amino-acid change in codon view,
+  // so a specific change reads directly instead of being inferred from color.
+  const rowsHover = origMouseX === undefined && !p2.oob
+  const hover = rowsHover
+    ? model.rowHoverInfo(p2.index, gposFrac, rowIndex, view.bpPerPx)
+    : undefined
+  const frame = rowsHover
+    ? model.frameHoverInfo(p2.index, gposFrac, rowIndex)
+    : undefined
+  const codon = rowsHover
+    ? model.codonHoverInfo(p2.index, gposFrac, rowIndex)
+    : undefined
 
   return (
     <BaseTooltip clientPoint={clientPoint}>

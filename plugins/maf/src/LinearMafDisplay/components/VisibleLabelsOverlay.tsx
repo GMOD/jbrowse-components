@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { drawMafLabels } from '../../LinearMafRenderer/rendering/labels.ts'
 import { getContrastBaseMap } from '../../LinearMafRenderer/util.ts'
-import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 

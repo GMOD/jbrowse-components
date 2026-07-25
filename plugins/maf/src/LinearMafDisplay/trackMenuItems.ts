@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { checkboxItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
@@ -22,6 +23,27 @@ const SetRowHeightDialog = lazy(
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
 )
+
+// Compact row for the plain show/hide toggles, which are otherwise a dozen
+// near-identical four-line literals. Reads the current value and hands the
+// negation to the setter explicitly, so no event argument can reach it.
+// `checkboxItem` supplies `keepMenuOpen` — users flip several of these in one
+// visit, and the menu is an observer, so the ticks move live.
+function toggle(label: string, checked: boolean, set: (v: boolean) => void) {
+  return checkboxItem(label, checked, () => {
+    set(!checked)
+  })
+}
+
+// Row-height presets. `rowHeight` is a single coupled axis — 0 is the
+// fit-to-view sentinel, any positive value is a fixed height — so unlike the
+// alignments display, whose size and sizing are separable, these are one
+// mutually-exclusive set expressed as radios. Each preset pairs a height with
+// the glyph proportion that reads best at it.
+const HEIGHT_PRESETS = [
+  { label: 'Normal', rowHeight: DEFAULTS.rowHeight, rowProportion: 0.8 },
+  { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
+]
 
 interface MafMenuSelf extends IAnyStateTreeNode {
   showAllLetters: boolean
@@ -70,194 +92,151 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   willClearTree: (s: MafSource[]) => boolean
 }
 
-export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
+// The CDS-frame overlays only mean anything with a reading frame, so they
+// appear only when an `annotationAdapter` (mafFrames) is configured.
+function frameMenuItems(self: MafMenuSelf): MenuItem[] {
+  return self.annotationAdapterConfig
+    ? [
+        toggle(
+          'Show CDS frames',
+          self.showAnnotations,
+          self.setShowAnnotations,
+        ),
+        toggle(
+          'Codon view (amino-acid changes)',
+          self.showTranslation,
+          self.setShowTranslation,
+        ),
+      ]
+    : []
+}
+
+function showMenuItems(self: MafMenuSelf): MenuItem[] {
+  return [
+    toggle(
+      'Show letters at all positions',
+      self.showAllLetters,
+      self.setShowAllLetters,
+    ),
+    toggle(
+      'Show mismatches colored by base',
+      self.mismatchRendering,
+      self.setMismatchRendering,
+    ),
+    toggle(
+      'Show letters as uppercase',
+      self.showAsUpperCase,
+      self.setShowAsUpperCase,
+    ),
+    toggle(
+      'Show sidebar with tree and labels',
+      self.showTree,
+      self.setShowTree,
+    ),
+    treeBranchLengthMenuItem(self),
+    toggle('Show coverage', self.showCoverage, self.setShowCoverage),
+    toggle('Show alignments', self.showAlignments, self.setShowAlignments),
+    toggle(
+      'Show conservation (% identity)',
+      self.showConservation,
+      self.setShowConservation,
+    ),
+    // Per-codon (amino-acid) conservation needs a reading frame, so the
+    // resolution radio only appears alongside the other frame-gated items.
+    ...(self.annotationAdapterConfig
+      ? [
+          makeRadioSubMenu({
+            label: 'Conservation resolution',
+            value: self.conservationMode,
+            onChange: m => {
+              self.setConservationMode(m)
+            },
+            options: CONSERVATION_MODES,
+          }),
+        ]
+      : []),
+    toggle(
+      'Color by source chromosome',
+      self.colorByChromosome,
+      self.setColorByChromosome,
+    ),
+    toggle(
+      'Show inversions (strand flips)',
+      self.showInversions,
+      self.setShowInversions,
+    ),
+    ...frameMenuItems(self),
+    makeRadioSubMenu({
+      label: 'Per-row identity',
+      value: self.rowIdentityMode,
+      onChange: m => {
+        self.setRowIdentityMode(m)
+      },
+      options: ROW_IDENTITY_MODES,
+      extraItems: [
+        {
+          ...checkboxItem(
+            'Auto-switch by zoom',
+            self.rowIdentityAutoZoom,
+            () => {
+              self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
+            },
+          ),
+          disabled: self.rowIdentityMode === 'none',
+        },
+      ],
+    }),
+  ]
+}
+
+function rowHeightMenuItems(self: MafMenuSelf): MenuItem[] {
   const { rowHeight } = self
-  // rowHeight is a single coupled axis: 0 is the fit-to-view sentinel, any
-  // positive value is a fixed row height (Normal/Compact/custom). So — unlike
-  // the alignments display, whose size and sizing are separable — MAF's options
-  // are one mutually-exclusive set, expressed as radios in one "Row height"
-  // menu. "Squeeze to fit view" shares the verb the alignments/canvas/multi-row
-  // displays use for the same idea.
-  const isCustomHeight =
-    rowHeight !== 0 && rowHeight !== DEFAULTS.rowHeight && rowHeight !== 8
+  return [
+    {
+      label: 'Squeeze to fit view',
+      type: 'radio',
+      checked: rowHeight === 0,
+      onClick: () => {
+        self.setFitToHeight()
+      },
+    },
+    ...HEIGHT_PRESETS.map(preset => ({
+      label: preset.label,
+      type: 'radio' as const,
+      checked: rowHeight === preset.rowHeight,
+      onClick: () => {
+        self.setRowHeight(preset.rowHeight)
+        self.setRowProportion(preset.rowProportion)
+      },
+    })),
+    {
+      label: 'Custom...',
+      type: 'radio',
+      checked:
+        rowHeight !== 0 && !HEIGHT_PRESETS.some(p => p.rowHeight === rowHeight),
+      onClick: () => {
+        getSession(self).queueDialog(handleClose => [
+          SetRowHeightDialog,
+          { model: self, handleClose },
+        ])
+      },
+    },
+  ]
+}
+
+export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
     {
       label: 'Row height',
       icon: HeightIcon,
       type: 'subMenu',
-      subMenu: [
-        {
-          label: 'Squeeze to fit view',
-          type: 'radio',
-          checked: rowHeight === 0,
-          onClick: () => {
-            self.setFitToHeight()
-          },
-        },
-        {
-          label: 'Normal',
-          type: 'radio',
-          checked: rowHeight === DEFAULTS.rowHeight,
-          onClick: () => {
-            self.setRowHeight(DEFAULTS.rowHeight)
-            self.setRowProportion(DEFAULTS.rowProportion)
-          },
-        },
-        {
-          label: 'Compact',
-          type: 'radio',
-          checked: rowHeight === 8,
-          onClick: () => {
-            self.setRowHeight(8)
-            self.setRowProportion(0.9)
-          },
-        },
-        {
-          label: 'Custom...',
-          type: 'radio',
-          checked: isCustomHeight,
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              SetRowHeightDialog,
-              { model: self, handleClose },
-            ])
-          },
-        },
-      ],
+      subMenu: rowHeightMenuItems(self),
     },
     {
       label: 'Show...',
       icon: VisibilityIcon,
       type: 'subMenu',
-      subMenu: [
-        {
-          label: 'Show letters at all positions',
-          type: 'checkbox',
-          checked: self.showAllLetters,
-          onClick: () => {
-            self.setShowAllLetters(!self.showAllLetters)
-          },
-        },
-        {
-          label: 'Show mismatches colored by base',
-          type: 'checkbox',
-          checked: self.mismatchRendering,
-          onClick: () => {
-            self.setMismatchRendering(!self.mismatchRendering)
-          },
-        },
-        {
-          label: 'Show letters as uppercase',
-          type: 'checkbox',
-          checked: self.showAsUpperCase,
-          onClick: () => {
-            self.setShowAsUpperCase(!self.showAsUpperCase)
-          },
-        },
-        {
-          label: 'Show sidebar with tree and labels',
-          type: 'checkbox',
-          checked: self.showTree,
-          onClick: () => {
-            self.setShowTree(!self.showTree)
-          },
-        },
-        treeBranchLengthMenuItem(self),
-        {
-          label: 'Show coverage',
-          type: 'checkbox',
-          checked: self.showCoverage,
-          onClick: () => {
-            self.setShowCoverage(!self.showCoverage)
-          },
-        },
-        {
-          label: 'Show alignments',
-          type: 'checkbox',
-          checked: self.showAlignments,
-          onClick: () => {
-            self.setShowAlignments(!self.showAlignments)
-          },
-        },
-        {
-          label: 'Show conservation (% identity)',
-          type: 'checkbox',
-          checked: self.showConservation,
-          onClick: () => {
-            self.setShowConservation(!self.showConservation)
-          },
-        },
-        // Per-codon (amino-acid) conservation is only meaningful with a reading
-        // frame, so the mode radio only appears when an annotationAdapter
-        // (mafFrames) is configured.
-        ...(self.annotationAdapterConfig
-          ? [
-              makeRadioSubMenu({
-                label: 'Conservation resolution',
-                value: self.conservationMode,
-                onChange: m => {
-                  self.setConservationMode(m)
-                },
-                options: CONSERVATION_MODES,
-              }),
-            ]
-          : []),
-        {
-          label: 'Color by source chromosome',
-          type: 'checkbox',
-          checked: self.colorByChromosome,
-          onClick: () => {
-            self.setColorByChromosome(!self.colorByChromosome)
-          },
-        },
-        {
-          label: 'Show inversions (strand flips)',
-          type: 'checkbox',
-          checked: self.showInversions,
-          onClick: () => {
-            self.setShowInversions(!self.showInversions)
-          },
-        },
-        ...(self.annotationAdapterConfig
-          ? [
-              {
-                label: 'Show CDS frames',
-                type: 'checkbox' as const,
-                checked: self.showAnnotations,
-                onClick: () => {
-                  self.setShowAnnotations(!self.showAnnotations)
-                },
-              },
-              {
-                label: 'Codon view (amino-acid changes)',
-                type: 'checkbox' as const,
-                checked: self.showTranslation,
-                onClick: () => {
-                  self.setShowTranslation(!self.showTranslation)
-                },
-              },
-            ]
-          : []),
-        makeRadioSubMenu({
-          label: 'Per-row identity',
-          value: self.rowIdentityMode,
-          onChange: m => {
-            self.setRowIdentityMode(m)
-          },
-          options: ROW_IDENTITY_MODES,
-          extraItems: [
-            {
-              label: 'Auto-switch by zoom',
-              type: 'checkbox',
-              checked: self.rowIdentityAutoZoom,
-              disabled: self.rowIdentityMode === 'none',
-              onClick: () => {
-                self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
-              },
-            },
-          ],
-        }),
-      ],
+      subMenu: showMenuItems(self),
     },
     {
       label: 'Edit row arrangement...',

@@ -1,7 +1,7 @@
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
 import { drawMafEmptyLines } from '../../LinearMafRenderer/rendering/emptyLines.ts'
-import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
 import type { EmptyLineSegment } from './computeVisibleEmptyLines.ts'

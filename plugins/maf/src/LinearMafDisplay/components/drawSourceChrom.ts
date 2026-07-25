@@ -1,5 +1,5 @@
 import {
-  clipBlockForCanvas,
+  forEachClippedBlock,
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
@@ -144,9 +144,17 @@ export function drawSourceChrom(
   // Rank per row over the unique visible regions.
   const { ranks } = perRowChromRanks(uniqueRegionsFromBlocks(blocks, regions))
 
-  for (const block of blocks) {
-    const region = regions.get(block.displayedRegionIndex)
-    if (region && clipBlockForCanvas(block, canvasWidth)) {
+  // Scissor to each block's own columns: the fetched region is the *buffered*
+  // one, so its MAF blocks extend past the render block's screen span, and a
+  // region referenced by two render blocks would otherwise paint twice under
+  // two different mappings — smeared over the neighboring region.
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    rowHeight * nRows,
+    block => regions.get(block.displayedRegionIndex),
+    (region, block) => {
       const bpToX = makeBpMapper(block)
       for (const mafBlock of region.blocks) {
         const xa = bpToX(mafBlock.startBp)
@@ -161,6 +169,6 @@ export function drawSourceChrom(
           }
         }
       }
-    }
-  }
+    },
+  )
 }

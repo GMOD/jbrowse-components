@@ -41,6 +41,12 @@ export function identityColor(t: number): [number, number, number] {
   return [lerp(140, 47, f), lerp(140, 102, f), lerp(140, 176, f)]
 }
 
+/** `identityColor` as a CSS string, for the legend swatches. */
+export function identityRgb(t: number) {
+  const [r, g, b] = identityColor(t)
+  return `rgb(${r},${g},${b})`
+}
+
 /**
  * Splat one row's per-bp match / classifiable counts into per-pixel
  * accumulators, comparing each sample base to the reference exactly as
@@ -51,6 +57,9 @@ export function identityColor(t: number): [number, number, number] {
  * so `matchSum[x]/classCount[x]` is that row's mean identity under pixel `x` —
  * one pixel's worth of bp is the sliding window (same semantics as the
  * conservation band). Pure + accumulator-mutating for unit testing.
+ *
+ * `[xLo, xHi)` is the block's own pixel span (`clip.scissorX` .. `+scissorW`),
+ * NOT the whole canvas — see `accumulateConservation` for why.
  */
 export function accumulateRowIdentity(
   matchSum: Float32Array,
@@ -59,7 +68,8 @@ export function accumulateRowIdentity(
   alignmentBytes: Uint8Array,
   startBp: number,
   bpToX: (bp: number) => number,
-  width: number,
+  xLo: number,
+  xHi: number,
 ) {
   let refPos = startBp
   for (let col = 0; col < refBytes.length; col++) {
@@ -72,14 +82,12 @@ export function accumulateRowIdentity(
       if (classifiable) {
         const xa = bpToX(refPos)
         const xb = bpToX(refPos + 1)
-        let lo = Math.floor(Math.min(xa, xb))
-        let hi = Math.max(lo + 1, Math.ceil(Math.max(xa, xb)))
-        if (lo < 0) {
-          lo = 0
-        }
-        if (hi > width) {
-          hi = width
-        }
+        const cellLeft = Math.floor(Math.min(xa, xb))
+        const lo = Math.max(xLo, cellLeft)
+        const hi = Math.min(
+          xHi,
+          Math.max(cellLeft + 1, Math.ceil(Math.max(xa, xb))),
+        )
         const isMatch = (sampleByte & ~LOWER_BIT) === refUpper
         for (let px = lo; px < hi; px++) {
           classCount[px]! += 1
@@ -130,7 +138,8 @@ export function drawRowIdentity(
   const classCount = new Float32Array(nRows * width)
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)
-    if (region && clipBlockForCanvas(block, canvasWidth)) {
+    const clip = region ? clipBlockForCanvas(block, canvasWidth) : null
+    if (region && clip) {
       const bpToX = makeBpMapper(block)
       for (const mafBlock of region.blocks) {
         for (const row of mafBlock.rows) {
@@ -143,7 +152,8 @@ export function drawRowIdentity(
               row.alignmentBytes,
               mafBlock.startBp,
               bpToX,
-              width,
+              clip.scissorX,
+              clip.scissorX + clip.scissorW,
             )
           }
         }
