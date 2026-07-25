@@ -60,14 +60,13 @@ function HicSvgBody({
   const hasLegendData = self.hasLegendData
   const renderState = self.renderState
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
-  // this narrows the nullable fetch blob / render state for TS only —
-  // unreachable at runtime. An empty (numContacts === 0) result still paints an
-  // empty matrix.
-  if (!rpcData || !renderState) {
+  // this narrows the nullable fetch blob for TS only — unreachable at runtime.
+  // An empty (numContacts === 0) result still paints an empty matrix.
+  if (!rpcData) {
     return null
   }
 
-  const { positions, counts, numContacts } = rpcData
+  const { positions, counts, numContacts, binWidth } = rpcData
   const visibleWidth = view.width
   const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
@@ -99,7 +98,7 @@ function HicSvgBody({
           paint={ctx => {
             drawHicBlocks(
               ctx,
-              { positions, counts, numContacts },
+              { positions, counts, numContacts, binWidth },
               fillStyleLut,
               {
                 ...renderState,

@@ -71,16 +71,19 @@ export class GpuHicRenderer
     this.hal.uploadTexture(PASS_MAIN, colors, 256, 1)
   }
 
-  render(_data: HicUploadData | null, state: HicRenderState) {
+  render(data: HicUploadData | null, state: HicRenderState) {
     const { canvasWidth, canvasHeight } = state
 
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
-    if (this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
+    // binWidth comes from the payload the buffers were packed from, so an
+    // uploaded buffer with no current data draws nothing rather than scaling
+    // bins by a stand-in.
+    if (data && this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
       this.uniformF32[U.canvasSize] = canvasWidth
       this.uniformF32[U.canvasSize + 1] = canvasHeight
-      this.uniformF32[U.binWidth] = state.binWidth
+      this.uniformF32[U.binWidth] = data.binWidth
       this.uniformF32[U.yScalar] = state.yScalar
       this.uniformF32[U.colorMaxScore] = state.colorMaxScore
       this.uniformF32[U.viewScale] = state.viewScale

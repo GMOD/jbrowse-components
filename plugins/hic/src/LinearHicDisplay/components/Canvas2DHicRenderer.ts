@@ -23,15 +23,8 @@ export function drawHicBlocks(
   fillStyleLut: (t: number) => string | undefined,
   state: HicRenderState,
 ) {
-  const {
-    binWidth,
-    yScalar,
-    colorMaxScore,
-    useLogScale,
-    viewScale,
-    viewOffsetX,
-  } = state
-  const { positions, counts, numContacts } = data
+  const { yScalar, colorMaxScore, useLogScale, viewScale, viewOffsetX } = state
+  const { positions, counts, numContacts, binWidth } = data
   if (numContacts === 0) {
     return
   }

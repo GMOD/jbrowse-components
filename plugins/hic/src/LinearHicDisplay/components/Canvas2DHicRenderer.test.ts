@@ -43,13 +43,13 @@ function makeData(overrides?: Partial<HicUploadData>): HicUploadData {
     positions: new Float32Array([10, 20]),
     counts: new Float32Array([50]),
     numContacts: 1,
+    binWidth: 10,
     ...overrides,
   }
 }
 
 function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
   return {
-    binWidth: 10,
     yScalar: 1,
     canvasWidth: 800,
     canvasHeight: 600,

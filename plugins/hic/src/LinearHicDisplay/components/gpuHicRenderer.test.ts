@@ -6,13 +6,25 @@ import {
   HIC_PASSES,
 } from './GpuHicRenderer.ts'
 
-import type { HicRenderState } from './hicRenderingBackendTypes.ts'
+import type {
+  HicRenderState,
+  HicUploadData,
+} from './hicRenderingBackendTypes.ts'
+
+function makeData(overrides?: Partial<HicUploadData>): HicUploadData {
+  return {
+    positions: new Float32Array([10, 20]),
+    counts: new Float32Array([5]),
+    numContacts: 1,
+    binWidth: 10,
+    ...overrides,
+  }
+}
 
 function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
   return {
     canvasWidth: 800,
     canvasHeight: 600,
-    binWidth: 10,
     yScalar: 1,
     colorMaxScore: 100,
     useLogScale: false,
@@ -31,6 +43,7 @@ describe('GpuHicRenderer', () => {
       positions: new Float32Array([10, 20, 30, 40]),
       counts: new Float32Array([5, 15]),
       numContacts: 2,
+      binWidth: 10,
     })
 
     const buf = hal.getBuffer(0, 'main')
@@ -53,6 +66,7 @@ describe('GpuHicRenderer', () => {
       positions: new Float32Array([10, 20]),
       counts: new Float32Array([5]),
       numContacts: 1,
+      binWidth: 10,
     })
     expect(hal.getBufferCount(0, 'main')).toBe(1)
 
@@ -60,6 +74,7 @@ describe('GpuHicRenderer', () => {
       positions: new Float32Array([]),
       counts: new Float32Array([]),
       numContacts: 0,
+      binWidth: 10,
     })
     expect(hal.getBufferCount(0, 'main')).toBe(0)
   })
@@ -83,13 +98,10 @@ describe('GpuHicRenderer', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
 
-    renderer.uploadData({
-      positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5]),
-      numContacts: 1,
-    })
+    const data = makeData()
+    renderer.uploadData(data)
 
-    renderer.render(null, makeRenderState())
+    renderer.render(data, makeRenderState())
 
     const f32 = hal.getLastUniformsF32()!
     const u32 = hal.getLastUniformsU32()!
@@ -107,13 +119,10 @@ describe('GpuHicRenderer', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
 
-    renderer.uploadData({
-      positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5]),
-      numContacts: 1,
-    })
+    const data = makeData()
+    renderer.uploadData(data)
 
-    renderer.render(null, makeRenderState({ useLogScale: true }))
+    renderer.render(data, makeRenderState({ useLogScale: true }))
 
     const u32 = hal.getLastUniformsU32()!
     expect(u32[7]).toBe(1)
@@ -134,13 +143,10 @@ describe('GpuHicRenderer', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
 
-    renderer.uploadData({
-      positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5]),
-      numContacts: 1,
-    })
+    const data = makeData()
+    renderer.uploadData(data)
 
-    renderer.render(null, makeRenderState())
+    renderer.render(data, makeRenderState())
 
     const methods = hal.calls
       .filter(c =>

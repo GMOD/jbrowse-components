@@ -7,6 +7,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
 import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
@@ -26,7 +27,10 @@ import type {
   HicDataResult,
 } from '../RenderHicDataRPC/types.ts'
 import type { HicColorScheme } from './components/colorRamp.ts'
-import type { HicRenderingBackend } from './components/hicRenderingBackendTypes.ts'
+import type {
+  HicRenderState,
+  HicRenderingBackend,
+} from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -344,16 +348,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #method
        * Computed per-frame render state for the GPU backend. Read by the
-       * autorun lifecycle on every change to any tracked observable.
+       * autorun lifecycle on every change to any tracked observable. Always
+       * resolved (a bare getter must never hand back undefined) — it's pure
+       * view/settings geometry, and "no data yet" is the render callback's gate,
+       * not a nullable state. The one data-derived field, `binWidth`, rides with
+       * the payload instead (see HicUploadData).
        */
-      get renderState() {
-        const data = self.rpcData
-        if (!data) {
-          return undefined
-        }
+      get renderState(): HicRenderState {
         const { scale, viewOffsetX } = self.renderTransform
         return {
-          binWidth: data.binWidth,
           yScalar: self.yScalar,
           canvasWidth: self.view.totalWidthPx,
           canvasHeight: self.height,
@@ -389,20 +392,29 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `attachRenderingBackend`.
        */
       startRenderingBackend(backend: HicRenderingBackend) {
+        // The matrix and the palette have independent inputs (RPC result vs
+        // config slot) but share the one mixin-owned upload autorun, so without
+        // per-slot diffing a palette flip re-pushed the whole contact matrix and
+        // a new fetch rebuilt the ramp texture. Both inputs stay read
+        // unconditionally so neither drops out of the autorun's dependency set.
+        const syncUpload = createGlobalUploadSync<HicRenderingBackend>()
         self.attachRenderingBackend<HicRenderingBackend>(backend, {
           upload: b => {
-            if (self.rpcData) {
-              b.uploadData(self.rpcData)
-            }
-            b.uploadColorRamp(generateColorRamp(self.colorScheme))
+            syncUpload(b, 'data', self.rpcData, (bb, data) => {
+              if (data) {
+                bb.uploadData(data)
+              }
+            })
+            syncUpload(b, 'colorRamp', self.colorScheme, (bb, colorScheme) => {
+              bb.uploadColorRamp(generateColorRamp(colorScheme))
+            })
           },
           render: b => {
-            const state = self.renderState
-            if (!state) {
-              return false
+            const data = self.rpcData
+            if (data) {
+              b.render(data, self.renderState)
             }
-            b.render(self.rpcData, state)
-            return true
+            return data !== null
           },
         })
       },
