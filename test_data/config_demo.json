@@ -318,7 +318,6 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "broad_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
           "partitionField": "cellType",
-          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
           "rowOrder": [
             "GM12878",
             "H1-hESC",
@@ -352,7 +351,6 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
           "partitionField": "cellType",
-          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
           "rowOrder": [
             "Adipose Nuclei",
             "Primary T cells from cord blood",

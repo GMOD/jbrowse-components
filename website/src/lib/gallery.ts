@@ -346,7 +346,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'chromhmm',
         guide: 'tutorials/chromhmm',
         description:
-          'Roadmap Epigenomics chromatin states for 127 epigenomes, drawn from a single BigBed: the multi-row feature display partitions features on a field (cell type) into one row each and colors them from itemRgb through a jexl callback.',
+          'Roadmap Epigenomics chromatin states for 127 epigenomes, drawn from a single BigBed: the multi-row feature display partitions features on a field (cell type) into one row each, paints them with the itemRgb state colors the file carries, and derives the state legend from the data.',
       },
       {
         label: 'Single-cell ATAC pseudobulk',

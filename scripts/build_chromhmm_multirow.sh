@@ -12,9 +12,8 @@
 # Everything is pinned (fixed UCSC download dir, fixed cell-type order), so
 # re-running reproduces the same track.
 #
-# Requires: bash 4+ (for the `declare -A` map), wget, awk/sed, bgzip/tabix
-#           (htslib), and node (JBrowse CLI, fetched via npx unless `jbrowse` is
-#           on PATH).
+# Requires: wget, awk, bgzip/tabix (htslib), and node (JBrowse CLI, fetched via
+#           npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_chromhmm_multirow.sh [outdir]
 #
 set -euo pipefail
@@ -30,15 +29,32 @@ ls wgEncodeBroadHmm*HMM.bed.gz >/dev/null 2>&1 \
   || wget -q -r -np -nd -A 'wgEncodeBroadHmm*HMM.bed.gz' "$UCSC/"
 
 # ── Concatenate into one BED9 + a trailing `cellType` column, coordinate-sorted
-# map each UCSC filename token to its canonical ENCODE cell-line label
-declare -A ct=(
-  [Gm12878]=GM12878 [H1hesc]=H1-hESC [K562]=K562  [Hepg2]=HepG2 [Huvec]=HUVEC
-  [Hmec]=HMEC       [Hsmm]=HSMM      [Nhek]=NHEK   [Nhlf]=NHLF
-)
-for f in wgEncodeBroadHmm*HMM.bed.gz; do
-  tok=$(echo "$f" | sed -E 's/wgEncodeBroadHmm(.*)HMM.bed.gz/\1/')
-  zcat "$f" | awk -v c="${ct[$tok]}" 'BEGIN{OFS="\t"} {print $0, c}'
-done | sort -k1,1 -k2,2n > wgEncodeBroadHmm.multirow.bed
+# Each UCSC filename token maps to its canonical ENCODE cell-line label, which is
+# what becomes a row label and what `rowOrder` in the config references.
+cell_type() {
+  case "$1" in
+  wgEncodeBroadHmmGm12878HMM.bed.gz) echo GM12878 ;;
+  wgEncodeBroadHmmH1hescHMM.bed.gz) echo H1-hESC ;;
+  wgEncodeBroadHmmK562HMM.bed.gz) echo K562 ;;
+  wgEncodeBroadHmmHepg2HMM.bed.gz) echo HepG2 ;;
+  wgEncodeBroadHmmHuvecHMM.bed.gz) echo HUVEC ;;
+  wgEncodeBroadHmmHmecHMM.bed.gz) echo HMEC ;;
+  wgEncodeBroadHmmHsmmHMM.bed.gz) echo HSMM ;;
+  wgEncodeBroadHmmNhekHMM.bed.gz) echo NHEK ;;
+  wgEncodeBroadHmmNhlfHMM.bed.gz) echo NHLF ;;
+  *) echo "unexpected file $1" >&2 && return 1 ;;
+  esac
+}
+
+# The `#`-prefixed defline names the columns, so the adapter reads them from the
+# file and the track config needs no `columnNames`. It is written outside the
+# sort so it stays the first line.
+{
+  printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
+  for f in wgEncodeBroadHmm*HMM.bed.gz; do
+    zcat "$f" | awk -v c="$(cell_type "$f")" 'BEGIN{OFS="\t"} {print $0, c}'
+  done | sort -k1,1 -k2,2n
+} > wgEncodeBroadHmm.multirow.bed
 
 # already coordinate-sorted, so just compress + index (no bigBed conversion)
 bgzip -f wgEncodeBroadHmm.multirow.bed
@@ -56,10 +72,10 @@ cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 # ── config.json: hg19 + the multi-row ChromHMM track ─────────────────────────
 # The assembly is sourced entirely from UCSC (hgdownload), the same host the
 # ENCODE segmentation BEDs came from, so the whole demo reads from one place.
-# The BedTabixAdapter columnNames name the extra column 10 `cellType` so the
-# display can split on it; itemRgb (column 9) paints each feature its state
-# color automatically. The CLI can't set columnNames/partitionField/rowOrder, so
-# the track is written straight into config.json.
+# Column names come from the BED's own defline, so all the track has to say is
+# which of them partitions the rows; itemRgb paints each feature its state color
+# automatically. The CLI can't set partitionField/rowOrder, so the track is
+# written straight into config.json.
 cat > "$APP"/config.json <<'JSON'
 {
   "assemblies": [
@@ -91,18 +107,11 @@ cat > "$APP"/config.json <<'JSON'
       "category": ["ENCODE", "Chromatin state"],
       "adapter": {
         "type": "BedTabixAdapter",
-        "disableGeneHeuristic": true,
-        "columnNames": [
-          "chrom", "chromStart", "chromEnd", "name", "score", "strand",
-          "thickStart", "thickEnd", "itemRgb", "cellType"
-        ],
-        "bedGzLocation": { "uri": "wgEncodeBroadHmm.multirow.bed.gz" },
-        "index": { "location": { "uri": "wgEncodeBroadHmm.multirow.bed.gz.tbi" } }
+        "uri": "wgEncodeBroadHmm.multirow.bed.gz"
       },
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "displayId": "broad_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
           "partitionField": "cellType",
           "rowOrder": [
             "GM12878", "H1-hESC", "K562", "HepG2", "HUVEC",
