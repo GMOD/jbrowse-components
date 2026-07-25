@@ -235,7 +235,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       getTrackOverlayData(
         trackId: string,
         yOffsetsOverride?: number[],
-        domYOffsets?: number[],
+        domYOffsets?: (number | undefined)[],
       ) {
         const { views } = self
         const tracks = this.getMatchedTracks(trackId)
@@ -567,22 +567,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 if (!self.views.every(view => view.initialized)) {
                   return
                 }
-                // the banner has replaced the features, so there's nothing to
-                // match against
-                if (
-                  self.matchedTracks.some(
-                    track => track.displays[0]!.regionTooLarge,
-                  )
-                ) {
-                  return
-                }
-
+                // Skipped per track, not for the whole view: where the banner
+                // has replaced the features there is nothing to match against,
+                // but that says nothing about the other matched tracks, and
+                // dropping the key also clears any features left from before
+                // the track went over its limit.
                 const fetched = Object.fromEntries(
                   await Promise.all(
-                    self.matchedTracks.map(async track => [
-                      track.configuration.trackId,
-                      await getBlockFeatures(self, track),
-                    ]),
+                    self.matchedTracks
+                      .filter(track => !track.displays[0]!.regionTooLarge)
+                      .map(
+                        async track =>
+                          [
+                            track.configuration.trackId,
+                            await getBlockFeatures(self, track),
+                          ] as const,
+                      ),
                   ),
                 )
                 if (!isStale()) {

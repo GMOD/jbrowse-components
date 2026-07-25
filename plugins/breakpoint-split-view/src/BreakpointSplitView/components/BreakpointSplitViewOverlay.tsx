@@ -8,10 +8,13 @@ import { useOverlayWheelZoom } from './useOverlayWheelZoom.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 
-function offsetsEqual(
-  a: Record<string, number[]>,
-  b: Record<string, number[]>,
-) {
+// A level with no mounted rendering div (minimized track, or a frame mid-remount)
+// measures as `undefined` rather than 0 so getTrackOverlayData falls back to its
+// model-derived offset — a 0 would read as "this track's body starts at the top
+// of the whole view" and yank that level's connections up there.
+type TrackYOffsets = Record<string, (number | undefined)[]>
+
+function offsetsEqual(a: TrackYOffsets, b: TrackYOffsets) {
   const aKeys = Object.keys(a)
   if (aKeys.length !== Object.keys(b).length) {
     return false
@@ -40,7 +43,7 @@ function useDomTrackYOffsets(
   matchedTracks: BreakpointViewModel['matchedTracks'],
 ) {
   const svgRef = useRef<SVGSVGElement>(null)
-  const [offsets, setOffsets] = useState<Record<string, number[]>>({})
+  const [offsets, setOffsets] = useState<TrackYOffsets>({})
   const lastOffsetsRef = useRef(offsets)
 
   useEffect(() => {
@@ -49,14 +52,13 @@ function useDomTrackYOffsets(
       const svg = svgRef.current
       if (svg) {
         const svgTop = svg.getBoundingClientRect().top
-        const next: Record<string, number[]> = {}
+        const next: TrackYOffsets = {}
         for (const track of matchedTracks) {
           const { trackId } = track.configuration
-          next[trackId] = views.map(
-            view =>
-              (view.trackRefs[trackId]?.getBoundingClientRect().top ?? svgTop) -
-              svgTop,
-          )
+          next[trackId] = views.map(view => {
+            const top = view.trackRefs[trackId]?.getBoundingClientRect().top
+            return top === undefined ? undefined : top - svgTop
+          })
         }
         if (!offsetsEqual(lastOffsetsRef.current, next)) {
           lastOffsetsRef.current = next

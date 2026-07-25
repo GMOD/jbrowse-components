@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import {
+  accumulateScroll,
   applyZoomAccum,
   isActivelyZooming,
   normalizeWheelDelta,
@@ -16,14 +17,6 @@ interface GenomeViewModel {
   scrollZoom?: boolean
   zoomTo: (bpPerPx: number, offset?: number) => void
   horizontalScroll: (delta: number) => void
-}
-
-// accumulate horizontal scroll across a frame, restarting from zero when the
-// gesture reverses direction so a flick the opposite way isn't cancelled out by
-// leftover momentum
-function accumulateScroll(prev: number, deltaX: number) {
-  const reversed = prev !== 0 && Math.sign(deltaX) !== Math.sign(prev)
-  return (reversed ? 0 : prev) + deltaX
 }
 
 interface WheelState {

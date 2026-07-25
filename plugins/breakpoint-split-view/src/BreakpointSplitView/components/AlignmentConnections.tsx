@@ -18,22 +18,6 @@ import {
 } from './overlayUtils.tsx'
 
 import type { OverlayProps } from './overlayUtils.tsx'
-import type { Feature } from '@jbrowse/core/util'
-
-function connectionTooltip({
-  f1,
-  f2,
-  colorReason,
-  hiddenNote,
-}: {
-  f1: Feature
-  f2: Feature
-  colorReason: string
-  hiddenNote: string | undefined
-}) {
-  const base = buildPairTooltip(f1, f2, colorReason)
-  return hiddenNote ? `${base}<br/>${hiddenNote}` : base
-}
 
 const AlignmentConnections = observer(function AlignmentConnections({
   model,
@@ -136,19 +120,21 @@ const AlignmentConnections = observer(function AlignmentConnections({
           orientationColor: orientation?.color,
           f1,
           f2,
-          colorReason,
-          hiddenNote,
+          // Lazy: only the hovered connection's tooltip is ever rendered and
+          // building one walks both features' fields, so it's resolved on hover
+          // rather than for all N every frame.
+          tooltip: () =>
+            buildPairTooltip(
+              f1,
+              f2,
+              hiddenNote ? `${colorReason}<br/>${hiddenNote}` : colorReason,
+            ),
           hiddenSegment: !!hiddenNote,
         },
       ]
     },
   )
   const hoveredConnection = connections.find(c => c.id === mouseoverElt)
-  // Only the hovered connection's tooltip is ever shown, and building one walks
-  // both features' fields — so it's resolved here rather than for all N.
-  const hoveredTooltip = hoveredConnection
-    ? connectionTooltip(hoveredConnection)
-    : undefined
 
   return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
@@ -174,7 +160,9 @@ const AlignmentConnections = observer(function AlignmentConnections({
           />
         ),
       )}
-      {hoveredTooltip ? <BreakpointTooltip contents={hoveredTooltip} /> : null}
+      {hoveredConnection ? (
+        <BreakpointTooltip contents={hoveredConnection.tooltip()} />
+      ) : null}
     </g>
   )
 })

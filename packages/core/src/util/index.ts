@@ -147,6 +147,7 @@ export {
   MAX_ZOOM_RATE_PER_MS,
   SCROLL_ZOOM_FACTOR_DIVISOR,
   ZOOM_ACTIVE_WINDOW_MS,
+  accumulateScroll,
   applyZoomAccum,
   getZoomNormalizer,
   isActivelyZooming,

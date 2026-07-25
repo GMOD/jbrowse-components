@@ -71,6 +71,14 @@ export function wheelFrameElapsedMs(now: number, lastRafTime: number | null) {
   return Math.min(100, lastRafTime !== null ? now - lastRafTime : 16.67)
 }
 
+// Accumulate horizontal scroll across a frame, restarting from zero when the
+// gesture reverses direction so a flick the opposite way isn't cancelled out by
+// leftover momentum.
+export function accumulateScroll(prev: number, deltaX: number) {
+  const reversed = prev !== 0 && Math.sign(deltaX) !== Math.sign(prev)
+  return (reversed ? 0 : prev) + deltaX
+}
+
 // A pinch/scroll-zoom gesture fires a continuous stream of wheel events, so we
 // treat the view as "actively zooming" until this many ms pass with no zoom
 // event. While actively zooming, callers ignore horizontal deltas: trackpads

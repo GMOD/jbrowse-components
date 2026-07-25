@@ -29,8 +29,12 @@ export interface OverlayProps {
   trackId: string
   /** SVG export: fixed track tops, scrollTops zeroed */
   yOffsetsOverride?: number[]
-  /** Live rendering: DOM-measured track tops relative to the overlay SVG */
-  domYOffsets?: number[]
+  /**
+   * Live rendering: DOM-measured track tops relative to the overlay SVG.
+   * A level whose rendering div isn't mounted is `undefined`, not 0, so the
+   * model-derived offset is used for it instead.
+   */
+  domYOffsets?: (number | undefined)[]
 }
 
 export function useMouseoverElt() {

@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
+import { VIEW_DIVIDER_HEIGHT } from '../util.ts'
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay.tsx'
 import Header from './Header.tsx'
 
@@ -18,7 +19,8 @@ const BreakpointSplitViewImportForm = lazy(
 const useStyles = makeStyles()(theme => ({
   viewDivider: {
     background: theme.palette.secondary.main,
-    height: 3,
+    // the overlay stacks view tops with this same constant, so they can't drift
+    height: VIEW_DIVIDER_HEIGHT,
   },
   // CSS grid with both children at gridArea 1/1 makes the overlay sit exactly
   // on top of the views without any JS coordinate translation. The downside is

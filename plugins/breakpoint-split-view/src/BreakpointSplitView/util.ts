@@ -53,7 +53,8 @@ export interface OverlayTrack {
   configuration: AnyConfigurationModel
 }
 
-// Must match the CSS height of viewDivider in BreakpointSplitView.tsx
+// Height of the bar between stacked views; also the CSS height of viewDivider in
+// BreakpointSplitView.tsx, which imports this rather than restating it
 export const VIEW_DIVIDER_HEIGHT = 3
 
 // Sentinel y for a feature with no row in its track's layout; `getY` snaps it to
