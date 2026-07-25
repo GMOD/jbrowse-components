@@ -138,6 +138,7 @@ import type {
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -161,6 +162,7 @@ function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
 
 interface FetchFeatureDetailsSelf {
   adapterConfig: Record<string, unknown>
+  rpcProps: () => { lodMode?: BaseOptions['lodMode'] }
   getFeatureInfoById: (id: string) =>
     | {
         refName: string
@@ -184,11 +186,18 @@ async function fetchFeatureDetails(
   // from (see getFeatureInfoById), so there's nothing to look up here. The old
   // refName scan over loadedRegions could pick a different region's assembly and
   // threw on the one it couldn't resolve.
+  //
+  // A single base at the feature's start, not its full extent: the adapter
+  // returns everything overlapping the region and we keep the one matching id,
+  // so the extent only ever made the query bigger. It is the read's own length
+  // for a BAM, but the whole block for a synteny alignment — right-clicking a
+  // megabase PAF block re-read the entire block just to name it, so the menu's
+  // feature items landed seconds after it opened.
   const region = {
     refName: info.refName,
     assemblyName: info.assemblyName,
     start: info.start,
-    end: info.end,
+    end: info.start + 1,
   }
   const sequenceAdapter = getSequenceAdapter(session, region)
   const sessionId = getRpcSessionId(self)
@@ -200,6 +209,11 @@ async function fetchFeatureDetails(
       sequenceAdapter,
       regions: [region],
       featureId,
+      // The tier the pileup was fetched at. A tiered PIF adapter numbers its
+      // coarse and fine rows from different file offsets, so ids only match
+      // within one tier — querying the default (fine) tier for a feature drawn
+      // from the coarse one found nothing, and the details silently never came.
+      lodMode: self.rpcProps().lodMode,
     },
   )
   if (!feature) {
@@ -540,6 +554,15 @@ export default function stateModelFactory(
            * #volatile
            */
           contextMenuFeature: undefined as Feature | undefined,
+          /**
+           * #volatile
+           * The read/feature id under a right-click, known synchronously (the
+           * hit test carries it) unlike `contextMenuFeature`, which only lands
+           * after an RPC. A menu item that can act from the id alone — or fetch
+           * the feature in its own onClick — reads this, so it doesn't blink
+           * into existence a fetch later.
+           */
+          contextMenuFeatureId: undefined as string | undefined,
           /**
            * #volatile
            */
@@ -2240,6 +2263,12 @@ export default function stateModelFactory(
             drawProperPairs: self.drawProperPairs,
             showOnlySplitAlignments: self.showOnlySplitAlignments,
             linkedReads: self.linkedReads,
+            // Detail tier, for adapters that serve more than one (the tiered PIF
+            // adapters behind LGVSyntenyDisplay, which overrides this to resolve
+            // it). Declared here — undefined meaning "whatever the adapter picks"
+            // — so every consumer of the props bag, notably the feature-details
+            // fetch, can read the tier without knowing which subclass set it.
+            lodMode: undefined as BaseOptions['lodMode'],
           }
         },
 
@@ -3013,6 +3042,7 @@ export default function stateModelFactory(
           closeContextMenu() {
             self.contextMenuCoord = undefined
             self.contextMenuFeature = undefined
+            self.contextMenuFeatureId = undefined
             self.contextMenuCigarHit = undefined
             self.contextMenuIndicatorHit = undefined
             self.contextMenuModHit = undefined
@@ -3082,6 +3112,18 @@ export default function stateModelFactory(
           },
           /**
            * #action
+           * Run `onFeat` against the fetched feature. For a menu item that needs
+           * the whole feature but must be offered before one is in hand — the id
+           * is known when the menu opens, the feature only after this RPC.
+           */
+          async withFeatureById(
+            featureId: string,
+            onFeat: (feat: SimpleFeature) => void,
+          ) {
+            await fetchAndDo(featureId, onFeat)
+          },
+          /**
+           * #action
            * Open the right-click menu over a hit. Coord, block, and the two hit
            * kinds always travel as a unit — set atomically so a consumer can
            * never read a block without its hit (the split-state class of bug
@@ -3106,6 +3148,7 @@ export default function stateModelFactory(
             self.contextMenuIndicatorHit = args.indicatorHit
             self.contextMenuModHit = args.modHit
             self.contextMenuFeature = undefined
+            self.contextMenuFeatureId = args.featureId
             // Pin the hover to the menu's target read so its highlight box
             // (highlightBoxes, keyed on featureIdUnderMouse) stays on while the
             // menu is open — the caller cleared mouseover state first, so this

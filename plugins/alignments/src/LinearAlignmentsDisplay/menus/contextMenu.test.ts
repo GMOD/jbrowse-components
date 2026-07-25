@@ -350,6 +350,40 @@ describe('getHitMenuItems with sort: false', () => {
     expect(items.every(i => !('subMenu' in i))).toBe(true)
   })
 
+  // Beside a feature-level "Open feature details", a bare "Open deletion
+  // details" doesn't say what it is the details of. The span does.
+  test('a sized cigar hit names its span, a single base does not', () => {
+    const sized = getHitMenuItems(
+      makeModel({
+        contextMenuCigarHit: {
+          type: 'deletion',
+          index: 0,
+          position: 28498,
+          length: 4860,
+        },
+      }),
+      { sort: false },
+    )
+    expect(sized.map(i => (i as { label?: string }).label)).toEqual([
+      'Open deletion details (4,860 bp)',
+    ])
+
+    const oneBase = getHitMenuItems(
+      makeModel({
+        contextMenuCigarHit: {
+          type: 'insertion',
+          index: 0,
+          position: 42,
+          length: 1,
+        },
+      }),
+      { sort: false },
+    )
+    expect(oneBase.map(i => (i as { label?: string }).label)).toEqual([
+      'Open insertion details',
+    ])
+  })
+
   test('an indicator hit still reaches its details, with no sort peer', () => {
     const items = getHitMenuItems(
       makeModel({

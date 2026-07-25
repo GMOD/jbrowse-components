@@ -30,11 +30,29 @@ import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LaunchSyntenyViewDialog = lazy(
   () => import('./components/LaunchSyntenyViewDialog.tsx'),
 )
+
+// The whole PAF row as JSON, minus the synthetic uniqueId. The clipboard util is
+// imported on click so it stays off the startup path.
+async function copyFeatureInfo(
+  session: AbstractSessionModel,
+  feature: Feature,
+) {
+  try {
+    const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
+    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+    copy(JSON.stringify(rest, null, 4))
+    session.notify('Copied to clipboard', 'success')
+  } catch (e) {
+    console.error(e)
+    session.notifyError(`${e}`, e)
+  }
+}
 
 /**
  * #stateModel LGVSyntenyDisplay
@@ -192,8 +210,14 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           // is replaced by the feature items below. `sort: false` because the
           // curated "Sort by..." menu offers no position-anchored mode.
           const items: MenuItem[] = getHitMenuItems(self, { sort: false })
-          const feature = self.contextMenuFeature
-          if (feature) {
+          // Keyed on the id, which the hit test carries, rather than on
+          // `contextMenuFeature`, which arrives an RPC later: a right-click on a
+          // CIGAR op otherwise opened a menu holding only its hit item, and the
+          // feature items appeared afterwards (or, on a whole-block re-read,
+          // long afterwards). What actually needs the feature fetches it in its
+          // own onClick.
+          const featureId = self.contextMenuFeatureId
+          if (featureId !== undefined) {
             // The visible block the user right-clicked in, which the launch
             // dialog offers to clip the synteny view to. Snapshotted here rather
             // than read in the onClick because closeContextMenu nulls it first,
@@ -201,18 +225,26 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // feature abutting a region boundary overlaps two visible blocks,
             // and only the cursor says which one it was drawn in.
             const block = self.contextMenuBlock
-            const canLaunchSynteny = canLaunchSyntenyForMate(
-              getConf(getContainingTrack(self), 'assemblyNames'),
-              getMate(feature).assemblyName,
-            )
             items.push({
               label: 'Open feature details',
               icon: MenuOpenIcon,
               onClick: () => {
-                self.selectFeature(feature)
+                void self.selectFeatureById(featureId)
               },
             })
-            if (canLaunchSynteny) {
+            // The one item that can't be offered from the id alone: whether a
+            // synteny view can open depends on the mate's assembly, which is
+            // per-feature (a one-vs-all mate can be a PanSN sample that is no
+            // declared assembly of the track). So it waits for the fetch rather
+            // than offering a view that would fail to open.
+            const feature = self.contextMenuFeature
+            if (
+              feature &&
+              canLaunchSyntenyForMate(
+                getConf(getContainingTrack(self), 'assemblyNames'),
+                getMate(feature).assemblyName,
+              )
+            ) {
               items.push({
                 label: 'Launch synteny view for this position',
                 icon: CompareArrowsIcon,
@@ -235,18 +267,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             items.push({
               label: 'Copy info to clipboard',
               icon: ContentCopyIcon,
-              onClick: async () => {
-                const session = getSession(self)
-                try {
-                  const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
-                  const { default: copy } =
-                    await import('@jbrowse/core/util/copyToClipboard')
-                  copy(JSON.stringify(rest, null, 4))
-                  session.notify('Copied to clipboard', 'success')
-                } catch (e) {
-                  console.error(e)
-                  session.notifyError(`${e}`, e)
-                }
+              onClick: () => {
+                void self.withFeatureById(featureId, feat => {
+                  void copyFeatureInfo(getSession(self), feat)
+                })
               },
             })
           }

@@ -285,7 +285,15 @@ export function getHitMenuItems(
           : 'Sort by base at position',
         sortType: isInterbase ? cigarHit.type : 'basePair',
         position: cigarHit.position,
-        detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
+        // Named with its span, so "Open deletion details" beside a feature-level
+        // "Open feature details" reads as the CIGAR op the cursor is on rather
+        // than as an unexplained second kind of detail. A mismatch is 1bp by
+        // construction and says nothing.
+        detailsLabel: `Open ${typeLabel.toLowerCase()} details${
+          cigarHit.length !== undefined && cigarHit.length > 1
+            ? ` (${cigarHit.length.toLocaleString()} bp)`
+            : ''
+        }`,
         openDetails: b => {
           openCigarWidget(self, cigarHit, b.refName)
         },

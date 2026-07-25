@@ -1,6 +1,7 @@
 import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
@@ -10,6 +11,10 @@ interface GetFeatureDetailsArgs {
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   featureId: string
+  // The detail tier the pileup was fetched at. Feature ids are only comparable
+  // within one tier (a tiered PIF adapter numbers its coarse and fine rows from
+  // different file offsets), so the lookup has to ask for the same one.
+  lodMode?: BaseOptions['lodMode']
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -25,8 +30,14 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
   name = 'GetPileupFeatureDetails'
 
   async execute(args: GetFeatureDetailsArgs, _rpcDriver: string) {
-    const { sessionId, adapterConfig, sequenceAdapter, regions, featureId } =
-      args
+    const {
+      sessionId,
+      adapterConfig,
+      sequenceAdapter,
+      regions,
+      featureId,
+      lodMode,
+    } = args
 
     const region = regions[0]!
 
@@ -37,7 +48,8 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
       sequenceAdapter,
     })
 
-    const features = (await dataAdapter?.getFeaturesArray(region, {})) ?? []
+    const features =
+      (await dataAdapter?.getFeaturesArray(region, { lodMode })) ?? []
 
     return {
       feature: features.find(f => f.id() === featureId)?.toJSON(),
