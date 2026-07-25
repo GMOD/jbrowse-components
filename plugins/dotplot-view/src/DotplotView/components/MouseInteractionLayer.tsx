@@ -10,17 +10,14 @@ import DotplotGrid from './DotplotGrid.tsx'
 import type { DotplotViewModel } from '../model.ts'
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
 
-const useStyles = makeStyles()(theme => ({
-  grid: {
-    background: theme.palette.divider,
-  },
+const useStyles = makeStyles()({
   htmlOverlay: {
     position: 'absolute',
     inset: 0,
     pointerEvents: 'none',
     overflow: 'hidden',
   },
-}))
+})
 
 function NoHTMLOverlay(_props: { model: DotplotViewModel }) {
   return null
@@ -44,11 +41,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
   )
   return (
     <>
-      <svg
-        width={model.viewWidth}
-        height={model.viewHeight}
-        className={classes.grid}
-      >
+      <svg width={model.viewWidth} height={model.viewHeight}>
         <DotplotGrid model={model}>
           {validSelect && anchor && pointer ? (
             <rect

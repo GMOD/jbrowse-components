@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { stripAlpha } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
@@ -61,10 +63,15 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
   const { viewWidth, borderY, hview } = model
   // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
   const rotate = -90
-  const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
+  const { offsetPx, dynamicBlocks, bpPerPx } = hview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.hblockLabelKeysToHide
-  const ticks = model.hTickPositions
+  // ticks come from staticBlocks, which extend a screen past the viewport;
+  // dropping the off-axis ones here (rather than per-element inside the map)
+  // keeps the SVG export from carrying an empty group per invisible tick
+  const ticks = model.hTickPositions.filter(
+    t => t.alongPx > 0 && t.alongPx < viewWidth,
+  )
   const { fill, stroke } = useAxisColors()
 
   return (
@@ -89,20 +96,17 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             </text>
           )
         })}
-      {ticks.map(({ tick, alongPx: x }, idx) => (
-        // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
-        <g key={`${tick.refName}-${tick.base}-${idx}`}>
-          {x > 0 && x < width ? (
-            <line
-              x1={x}
-              x2={x}
-              y1={0}
-              y2={tickLen(tick)}
-              strokeWidth={1}
-              {...stroke}
-            />
-          ) : null}
-          {tick.type === 'major' && x > 10 && x < width ? (
+      {ticks.map(({ tick, alongPx: x }) => (
+        <Fragment key={`${tick.refName}-${tick.base}`}>
+          <line
+            x1={x}
+            x2={x}
+            y1={0}
+            y2={tickLen(tick)}
+            strokeWidth={1}
+            {...stroke}
+          />
+          {tick.type === 'major' && x > 10 ? (
             <text
               x={x - 7}
               y={0}
@@ -115,7 +119,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               {tickLabel(tick, bpPerPx)}
             </text>
           ) : null}
-        </g>
+        </Fragment>
       ))}
       <text
         y={borderY - 12}
@@ -154,7 +158,10 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
   const { offsetPx, dynamicBlocks, bpPerPx } = vview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.vblockLabelKeysToHide
-  const ticks = model.vTickPositions
+  // see HorizontalAxisRaw
+  const ticks = model.vTickPositions.filter(
+    t => t.alongPx > 0 && t.alongPx < viewHeight,
+  )
   const { fill, stroke } = useAxisColors()
 
   // Vertical axis is flipped: block offsetPx grows upward visually, so we map
@@ -179,23 +186,19 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
             </text>
           )
         })}
-      {ticks.map(({ tick, alongPx }, idx) => {
+      {ticks.map(({ tick, alongPx }) => {
         const y = viewHeight - alongPx
-        const len = tickLen(tick)
         return (
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
-          <g key={`${tick.refName}-${tick.base}-${idx}`}>
-            {alongPx > 0 && alongPx < viewHeight ? (
-              <line
-                y1={y}
-                y2={y}
-                x1={borderX}
-                x2={borderX - len}
-                strokeWidth={1}
-                {...stroke}
-              />
-            ) : null}
-            {tick.type === 'major' && alongPx > 10 && alongPx < viewHeight ? (
+          <Fragment key={`${tick.refName}-${tick.base}`}>
+            <line
+              y1={y}
+              y2={y}
+              x1={borderX}
+              x2={borderX - tickLen(tick)}
+              strokeWidth={1}
+              {...stroke}
+            />
+            {tick.type === 'major' && alongPx > 10 ? (
               <text
                 y={y - 3}
                 x={borderX - 7}
@@ -207,7 +210,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
                 {tickLabel(tick, bpPerPx)}
               </text>
             ) : null}
-          </g>
+          </Fragment>
         )
       })}
       <text

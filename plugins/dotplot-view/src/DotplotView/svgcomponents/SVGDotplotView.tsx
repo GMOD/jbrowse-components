@@ -20,13 +20,14 @@ export async function renderToSvg(
 
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
-  const { width, borderX, viewWidth, viewHeight, tracks, height } = model
-  const legendColorBy = model.showColorLegend ? model.colorBy : undefined
+  const { width, borderX, viewWidth, viewHeight, height } = model
+  // dotplotDisplays over tracks[].displays[0]: same displays, but typed as
+  // DotplotDisplayModel instead of the view's untyped pluggable track array
   const displayResults = await Promise.all(
-    tracks.map(async track => {
-      const trackDisplay = track.displays[0]
-      return { track, result: await trackDisplay.renderSvg({ ...opts, theme }) }
-    }),
+    model.dotplotDisplays.map(async display => ({
+      id: display.id,
+      node: await display.renderSvg({ ...opts, theme }),
+    })),
   )
 
   const { pluginManager } = getEnv(model)
@@ -47,20 +48,22 @@ export async function renderToSvg(
       <g transform={`translate(${exportMargin} 0)`}>
         <VerticalAxisRaw model={model} />
         <g transform={`translate(${borderX} 0)`}>
-          <DotplotGrid model={model} />
+          {/* grid inside the clip, matching the on-screen grid's sized <svg>:
+              its region-boundary lines can otherwise stray into the axes */}
           <SvgClipRect
-            id={`clip-ruler-${model.id}`}
+            id={`clip-plot-${model.id}`}
             width={viewWidth}
             height={viewHeight}
           >
+            <DotplotGrid model={model} />
             {additional}
-            {displayResults.map(({ track, result }) => (
-              <g key={track.configuration.trackId}>{result}</g>
+            {displayResults.map(({ id, node }) => (
+              <g key={id}>{node}</g>
             ))}
           </SvgClipRect>
-          {legendColorBy ? (
+          {model.showColorLegend ? (
             <SVGColorByLegend
-              colorBy={legendColorBy}
+              colorBy={model.colorBy}
               viewWidth={viewWidth}
               alpha={model.alpha}
               pointBased

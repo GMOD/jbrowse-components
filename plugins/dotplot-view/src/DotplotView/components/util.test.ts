@@ -1,6 +1,7 @@
 import {
   axisBorderPx,
   getBlockLabelKeysToHide,
+  makeTicks,
   truncateRefName,
 } from './util.ts'
 
@@ -8,6 +9,25 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 function region(refName: string, end: number, start = 0) {
   return { refName, start, end }
+}
+
+// a static block, which is 1000 CSS px of the region rather than the whole of it
+function staticBlock(
+  start: number,
+  end: number,
+  isLeftEndOfDisplayedRegion = false,
+): ContentBlock {
+  return {
+    type: 'ContentBlock',
+    key: `ctgA:${start}-${end}`,
+    offsetPx: start,
+    widthPx: end - start,
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start,
+    end,
+    isLeftEndOfDisplayedRegion,
+  }
 }
 
 // label position along the axis is `round(length - offsetPx + viewOffsetPx)`;
@@ -76,6 +96,32 @@ describe('axisBorderPx', () => {
     const fine = axisBorderPx([region('chr1', 1_234_567)], 1)
     const coarse = axisBorderPx([region('chr1', 1_234_567)], 1_000)
     expect(fine).toBeGreaterThan(coarse)
+  })
+})
+
+describe('makeTicks', () => {
+  test('a static-block seam does not emit its ticks twice', () => {
+    // the seam bp is not pitch-aligned, so the first block's loop overshoots it
+    // and the second block's starts below it — the overlap used to ship two
+    // <line>s at the same position, drawn out of order
+    const bases = makeTicks(
+      [staticBlock(12_000, 22_345), staticBlock(22_345, 32_345)],
+      20,
+    ).map(t => t.base)
+    // one uniform pitch step throughout: a repeated tick shows up as a 0 step,
+    // a dropped one as a doubled step
+    const steps = new Set(bases.slice(1).map((base, i) => base - bases[i]!))
+    expect([...steps]).toHaveLength(1)
+  })
+
+  test('only a region left end suppresses the major tick under its refName label', () => {
+    const interior = makeTicks([staticBlock(0, 10_000)], 20).map(t => t.base)
+    const leftEnd = makeTicks([staticBlock(0, 10_000, true)], 20).map(
+      t => t.base,
+    )
+    expect(interior).toContain(-1)
+    expect(leftEnd).not.toContain(-1)
+    expect(leftEnd).toHaveLength(interior.length - 1)
   })
 })
 

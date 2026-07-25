@@ -47,6 +47,23 @@ test('export widens the canvas and shifts content into the margin gutter', async
   expect(svg).toContain(`translate(${exportMargin} 0)`)
 }, 20000)
 
+// The markup between the clip group's <g clip-path=…> and its matching </g>.
+// Walking the depth is what makes "inside the clip" a real assertion: the
+// legend and the horizontal axis both follow the group, so a plain
+// indexOf-after-clipStart check passes for content placed beside it.
+function clipGroupContents(svg: string) {
+  const open = svg.indexOf('<g clip-path="url(#clip-plot')
+  expect(open).toBeGreaterThan(-1)
+  let depth = 0
+  for (const tag of svg.slice(open).matchAll(/<(\/?)g[\s>]/g)) {
+    depth += tag[1] ? -1 : 1
+    if (depth === 0) {
+      return svg.slice(open, open + tag.index)
+    }
+  }
+  throw new Error('clip group never closed')
+}
+
 test('overlay highlights render inside the view clip group', async () => {
   const view = await setup()
   view.addToHighlights({
@@ -54,14 +71,11 @@ test('overlay highlights render inside the view clip group', async () => {
     start: 5000,
     end: 6000,
     assemblyName: 'volvox',
+    color: '#ff00ff',
   })
   const svg = await renderToSvg(view, {})
 
-  // The only <rect>s emitted after the clip group opens are the highlight
-  // bands: with no tracks, the feature layer is empty and the trailing axis
-  // draws only <line>/<text>. So a rect after the clip marker proves the
-  // overlay was placed inside SvgClipRect rather than beside it.
-  const clipStart = svg.indexOf('clip-path="url(#clip-ruler')
-  expect(clipStart).toBeGreaterThan(-1)
-  expect(svg.indexOf('<rect', clipStart)).toBeGreaterThan(clipStart)
+  // an explicit highlight color is used as-is, so it identifies the bands
+  // (both axes are volvox, so the region highlights on each)
+  expect(clipGroupContents(svg).match(/fill="#ff00ff"/g)).toHaveLength(2)
 }, 20000)

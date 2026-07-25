@@ -12,7 +12,6 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 export interface Tick {
   type: 'major' | 'minor'
   base: number
-  index: number
   refName: string
 }
 
@@ -149,23 +148,48 @@ export function tickLabel(tick: Tick, bpPerPx: number) {
   return getTickDisplayStr(tick.base + 1, bpPerPx)
 }
 
+// Ticks for one axis, built from staticBlocks so the count stays bounded by the
+// viewport rather than by chromosome length.
+//
+// Two things follow from the blocks being static (1000px-aligned, several per
+// region) rather than one block per region:
+//
+// - the pitch-aligned loop bounds overshoot each block's end and the next block
+//   restarts below its own start, so the shared seam emits its ticks twice
+//   unless deduped. Doubled <line>s stroke visibly darker than their neighbors
+//   and the SVG export carries both copies.
+// - a block's `start` is an arbitrary 1000px boundary, so it can't stand in for
+//   the region start. The major tick that would collide with the refName label
+//   is therefore suppressed only on the block at the region's own left end
+//   (`isLeftEndOfDisplayedRegion`), measured from the edge the label is drawn
+//   at — `end` for a reversed region, which lays out right-to-left.
 export function makeTicks(regions: ContentBlock[], bpPerPx: number) {
   const ticks: Tick[] = []
+  const seen = new Set<string>()
   const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
-  for (const { start, end, refName } of regions) {
-    let index = 0
+  for (const block of regions) {
+    const { start, end, refName } = block
+    const labelBase = block.reversed ? end : start
     for (
       let base = Math.floor(start / iterPitch) * iterPitch;
       base < Math.ceil(end / iterPitch) * iterPitch + 1;
       base += iterPitch
     ) {
-      if (base % gridPitch.majorPitch) {
-        ticks.push({ type: 'minor', base: base - 1, index, refName })
-        index += 1
-      } else if (Math.abs(base - start) > gridPitch.minorPitch) {
-        ticks.push({ type: 'major', base: base - 1, index, refName })
-        index += 1
+      const key = `${refName}-${base}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        const major = base % gridPitch.majorPitch === 0
+        const underLabel =
+          !!block.isLeftEndOfDisplayedRegion &&
+          Math.abs(base - labelBase) <= gridPitch.minorPitch
+        if (!major || !underLabel) {
+          ticks.push({
+            type: major ? 'major' : 'minor',
+            base: base - 1,
+            refName,
+          })
+        }
       }
     }
   }

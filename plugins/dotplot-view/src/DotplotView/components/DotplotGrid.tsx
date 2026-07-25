@@ -25,20 +25,15 @@ function gridLines(
   return out
 }
 
-const DotplotGrid = observer(function DotplotGrid({
+const RegionGrid = observer(function RegionGrid({
   model,
-  children,
 }: {
   model: DotplotViewModel
-  children?: React.ReactNode
 }) {
   const { viewWidth, viewHeight, hview, vview } = model
   const hblocks = hview.dynamicBlocks.contentBlocks
   const vblocks = vview.dynamicBlocks.contentBlocks
   const theme = useTheme()
-  if (!hblocks.length || !vblocks.length) {
-    return null
-  }
   const htop = hview.displayedRegionsTotalPx - hview.offsetPx
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
   const hbottom = hblocks[0]!.offsetPx - hview.offsetPx
@@ -58,6 +53,12 @@ const DotplotGrid = observer(function DotplotGrid({
     b => viewHeight - (b.offsetPx - vview.offsetPx),
   )
 
+  // the far end of the last region on each axis, drawn only when it lands
+  // inside the plot. Both surfaces clip it away otherwise, but the coordinates
+  // run thousands of px out (see the rect clamp above), and in SVG export that
+  // is serialized geometry nothing can ever see.
+  const vy = viewHeight - vtop
+
   return (
     <>
       <rect
@@ -67,27 +68,27 @@ const DotplotGrid = observer(function DotplotGrid({
         height={h}
         {...getFillProps(theme.palette.background.default)}
       />
-      <g>
-        {hlines.map(({ key, px }) => (
-          <line
-            key={key}
-            x1={px}
-            y1={0}
-            x2={px}
-            y2={viewHeight}
-            {...getStrokeProps(stroke)}
-          />
-        ))}
-        {vlines.map(({ key, px }) => (
-          <line
-            key={key}
-            x1={0}
-            y1={px}
-            x2={viewWidth}
-            y2={px}
-            {...getStrokeProps(stroke)}
-          />
-        ))}
+      {hlines.map(({ key, px }) => (
+        <line
+          key={key}
+          x1={px}
+          y1={0}
+          x2={px}
+          y2={viewHeight}
+          {...getStrokeProps(stroke)}
+        />
+      ))}
+      {vlines.map(({ key, px }) => (
+        <line
+          key={key}
+          x1={0}
+          y1={px}
+          x2={viewWidth}
+          y2={px}
+          {...getStrokeProps(stroke)}
+        />
+      ))}
+      {htop >= 0 && htop <= viewWidth ? (
         <line
           x1={htop}
           y1={0}
@@ -95,14 +96,44 @@ const DotplotGrid = observer(function DotplotGrid({
           y2={viewHeight}
           {...getStrokeProps(stroke)}
         />
+      ) : null}
+      {vy >= 0 && vy <= viewHeight ? (
         <line
           x1={0}
-          y1={viewHeight - vtop}
+          y1={vy}
           x2={viewWidth}
-          y2={viewHeight - vtop}
+          y2={vy}
           {...getStrokeProps(stroke)}
         />
-      </g>
+      ) : null}
+    </>
+  )
+})
+
+// Plot backdrop plus the region grid. The backdrop is drawn here rather than as
+// a CSS background on the on-screen <svg>, so SVG export gets it too: without
+// it, area beyond the displayed regions exports as page background instead of
+// the divider tint that says "no sequence here".
+const DotplotGrid = observer(function DotplotGrid({
+  model,
+  children,
+}: {
+  model: DotplotViewModel
+  children?: React.ReactNode
+}) {
+  const { viewWidth, viewHeight, hview, vview } = model
+  const theme = useTheme()
+  const hasBlocks =
+    hview.dynamicBlocks.contentBlocks.length > 0 &&
+    vview.dynamicBlocks.contentBlocks.length > 0
+  return (
+    <>
+      <rect
+        width={viewWidth}
+        height={viewHeight}
+        {...getFillProps(theme.palette.divider)}
+      />
+      {hasBlocks ? <RegionGrid model={model} /> : null}
       {children}
     </>
   )

@@ -8,6 +8,7 @@ export interface DotplotDrawParams {
   bpPerPxHInv: number
   viewBpV: number
   bpPerPxVInv: number
+  viewWidth: number
   viewHeight: number
   lineWidth: number
 }
@@ -17,16 +18,20 @@ export function drawDotplotInstances(
   geometry: DotplotGeometryData,
   params: DotplotDrawParams,
 ) {
-  const { viewBpH, bpPerPxHInv, viewBpV, bpPerPxVInv, viewHeight, lineWidth } =
-    params
+  const {
+    viewBpH,
+    bpPerPxHInv,
+    viewBpV,
+    bpPerPxVInv,
+    viewWidth,
+    viewHeight,
+    lineWidth,
+  } = params
   // Round caps make sub-lineWidth segments render as dots, matching the GPU
   // capsule-SDF path. Setting per call keeps callers from forgetting.
   ctx.lineWidth = lineWidth
   ctx.lineCap = 'round'
   const { x1, y1, x2, y2, colors, instanceCount } = geometry
-  if (instanceCount === 0) {
-    return
-  }
 
   // Batch consecutive same-color segments into one path, flushing only when the
   // packed color changes (same shape as Canvas2DManhattanRenderer). Runs are
@@ -36,24 +41,41 @@ export function drawDotplotInstances(
   // per-segment strokeStyle write plus beginPath/stroke pair is the dominant
   // cost at 10^5+ segments, and in vector SVG export SvgCanvas emits one <path>
   // element per stroke() call, so batching divides the element count by the
-  // average run length.
-  let currentAbgr = colors[0]!
-  ctx.strokeStyle = abgrToCssRgba(currentAbgr)
-  ctx.beginPath()
+  // average run length. `currentAbgr === undefined` means no path is open, so
+  // the color switch and the trailing flush share one condition.
+  //
+  // Segments outside the plot are dropped: the fetch window is snapped and
+  // padded well past the viewport, so most of a fetch is offscreen (87% on the
+  // ExportSvgDotplot fixture). Canvas clips them for free, but SVG export
+  // serializes every one into the <path> behind the clipPath — the dominant
+  // term in export size. Padded by lineWidth so a round cap can't be clipped
+  // out while its dot is still visible.
+  let currentAbgr: number | undefined
   for (let i = 0; i < instanceCount; i++) {
-    const abgr = colors[i]!
-    if (abgr !== currentAbgr) {
-      ctx.stroke()
-      currentAbgr = abgr
-      ctx.strokeStyle = abgrToCssRgba(currentAbgr)
-      ctx.beginPath()
-    }
     const sx1 = (x1[i]! - viewBpH) * bpPerPxHInv
     const sy1 = viewHeight - (y1[i]! - viewBpV) * bpPerPxVInv
     const sx2 = (x2[i]! - viewBpH) * bpPerPxHInv
     const sy2 = viewHeight - (y2[i]! - viewBpV) * bpPerPxVInv
-    ctx.moveTo(sx1, sy1)
-    ctx.lineTo(sx2, sy2)
+    const offscreen =
+      Math.max(sx1, sx2) < -lineWidth ||
+      Math.min(sx1, sx2) > viewWidth + lineWidth ||
+      Math.max(sy1, sy2) < -lineWidth ||
+      Math.min(sy1, sy2) > viewHeight + lineWidth
+    if (!offscreen) {
+      const abgr = colors[i]!
+      if (abgr !== currentAbgr) {
+        if (currentAbgr !== undefined) {
+          ctx.stroke()
+        }
+        currentAbgr = abgr
+        ctx.strokeStyle = abgrToCssRgba(abgr)
+        ctx.beginPath()
+      }
+      ctx.moveTo(sx1, sy1)
+      ctx.lineTo(sx2, sy2)
+    }
   }
-  ctx.stroke()
+  if (currentAbgr !== undefined) {
+    ctx.stroke()
+  }
 }

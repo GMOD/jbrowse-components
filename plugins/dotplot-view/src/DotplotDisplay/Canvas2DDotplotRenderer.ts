@@ -63,6 +63,7 @@ export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
         bpPerPxHInv,
         viewBpV,
         bpPerPxVInv,
+        viewWidth: this.width,
         viewHeight: this.height,
         lineWidth,
       })

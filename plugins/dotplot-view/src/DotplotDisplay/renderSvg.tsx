@@ -7,6 +7,7 @@ import { drawDotplotInstances } from './drawDotplot.ts'
 
 import type { DotplotRenderState } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRenderModel } from './types.ts'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
 // Minimal structural view type instead of DotplotViewModel: this file is in
@@ -26,34 +27,29 @@ export async function renderSvg(
   opts?: PaintLayerOpts,
 ) {
   await awaitSvgReady(model)
-  const view = getContainingView(model) as unknown as RenderSvgView
+  const view = getContainingView(model) as AbstractViewModel & RenderSvgView
   const { viewWidth, viewHeight, dotplotRenderState } = view
-  if (model.error) {
-    return (
-      <SVGErrorBox error={model.error} width={viewWidth} height={viewHeight} />
-    )
-  }
-  const { geometry } = model
-  if (!geometry || !dotplotRenderState) {
-    return null
-  }
-  const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth } =
-    dotplotRenderState
-  return (
+  const { geometry, error } = model
+  return error ? (
+    <SVGErrorBox error={error} width={viewWidth} height={viewHeight} />
+  ) : geometry && dotplotRenderState ? (
     <PaintLayer
       width={viewWidth}
       height={viewHeight}
       opts={opts}
       paint={ctx => {
+        const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth } =
+          dotplotRenderState
         drawDotplotInstances(ctx, geometry, {
           viewBpH,
           bpPerPxHInv,
           viewBpV,
           bpPerPxVInv,
+          viewWidth,
           viewHeight,
           lineWidth,
         })
       }}
     />
-  )
+  ) : null
 }
