@@ -6,12 +6,16 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
   computeLaidOutData,
+  packedContentHeight,
   createIncrementalLayout,
   maxBottom,
   scaleLaidOutData,
 } from './layout.ts'
 
-import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FeatureDataResult,
+  FloatingLabelsDataMap,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 function makeFeatureData(opts: {
   features: {
@@ -124,6 +128,13 @@ describe('fitWidth label decimation', () => {
     }).get(0)!
   }
 
+  // Whether a feature's NAME survived decimation. A decimated feature keeps its
+  // floatingLabelsData entry (its description and subfeature label still draw and
+  // still have reserved space) and loses only `nameLabel`, so presence of the
+  // entry is not the question — presence of the name is.
+  const keptName = (labels: FloatingLabelsDataMap, featureId: string) =>
+    labels[featureId]?.nameLabel !== undefined
+
   // `crowded` (10px box) is followed 5px later by `blocker`, leaving 5px < 46px
   // of overhang room, so its name is dropped; `blocker` itself is the last
   // feature with open space to its right, so its name is kept.
@@ -135,8 +146,8 @@ describe('fitWidth label decimation', () => {
 
   it('drops a crowded narrow name but keeps one with overhang room', () => {
     const labels = decimate(mixed()).floatingLabelsData
-    expect(labels.crowded).toBeUndefined()
-    expect(labels.blocker).toBeDefined()
+    expect(keptName(labels, 'crowded')).toBe(false)
+    expect(keptName(labels, 'blocker')).toBe(true)
   })
 
   it('keeps a narrow name that has open whitespace to overhang into', () => {
@@ -148,12 +159,12 @@ describe('fitWidth label decimation', () => {
         { featureId: 'lonely', startBp: 100, endBp: 110, height: 20 },
       ]),
     ).floatingLabelsData
-    expect(labels.lonely).toBeDefined()
+    expect(keptName(labels, 'lonely')).toBe(true)
   })
 
   it('keeps a pinned name even when a neighbor crowds it', () => {
     const labels = decimate(mixed(), new Set(['crowded'])).floatingLabelsData
-    expect(labels.crowded).toBeDefined()
+    expect(keptName(labels, 'crowded')).toBe(true)
   })
 
   it('keeps every name under the default `all` policy', () => {
@@ -197,7 +208,7 @@ describe('fitWidth label decimation', () => {
         { featureId: 'next', startBp: 146, endBp: 156, height: 20 }, // room 46
       ]),
     ).floatingLabelsData
-    expect(atThreshold.probe).toBeDefined()
+    expect(keptName(atThreshold, 'probe')).toBe(true)
 
     const belowThreshold = decimate(
       labeledFeatureData([
@@ -205,7 +216,7 @@ describe('fitWidth label decimation', () => {
         { featureId: 'next', startBp: 145, endBp: 155, height: 20 }, // room 45
       ]),
     ).floatingLabelsData
-    expect(belowThreshold.probe).toBeUndefined()
+    expect(keptName(belowThreshold, 'probe')).toBe(false)
   })
 
   // The decision keys on available room, not box width: keeping a name only
@@ -215,8 +226,8 @@ describe('fitWidth label decimation', () => {
   // gap does.
   it('decimation is monotone in overhang room', () => {
     const keptAt = (gap: number) =>
-      'probe' in
-      decimate(
+      keptName(
+        decimate(
         labeledFeatureData([
           { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
           {
@@ -226,7 +237,9 @@ describe('fitWidth label decimation', () => {
             height: 20,
           },
         ]),
-      ).floatingLabelsData
+        ).floatingLabelsData,
+        'probe',
+      )
     const kept = [10, 30, 45, 46, 60, 100].map(keptAt)
     // once kept as the gap widens, stays kept (no true precedes a later false)
     expect(kept).toStrictEqual([...kept].sort((a, b) => Number(a) - Number(b)))
@@ -241,8 +254,8 @@ describe('fitWidth label decimation', () => {
   // survives factor 2 but not factor 4 (needs 184).
   it('keeps fewer names as labelRoomFactor rises', () => {
     const decimateAt = (factor: number, gap: number) =>
-      'probe' in
-      computeLaidOutData(
+      keptName(
+        computeLaidOutData(
         new Map([
           [
             0,
@@ -268,7 +281,9 @@ describe('fitWidth label decimation', () => {
           labelDecimation: 'fitWidth',
           labelRoomFactor: factor,
         },
-      ).get(0)!.floatingLabelsData
+        ).get(0)!.floatingLabelsData,
+        'probe',
+      )
     expect(decimateAt(1, 46)).toBe(true)
     expect(decimateAt(2, 46)).toBe(false)
     expect(decimateAt(2, 100)).toBe(true)
@@ -293,7 +308,7 @@ describe('fitWidth label decimation', () => {
       labelDecimation: 'fitWidth',
       labelRoomFactor: 4,
     }).get(0)!.floatingLabelsData
-    expect(labels.crowded).toBeDefined()
+    expect(keptName(labels, 'crowded')).toBe(true)
   })
 
   // Reversed regions overhang the name leftward (toward lower bp; see the
@@ -321,8 +336,8 @@ describe('fitWidth label decimation', () => {
         labelDecimation: 'fitWidth',
       },
     ).get(0)!.floatingLabelsData
-    expect(out.edge).toBeUndefined() // crowded 5px on its left
-    expect(out.blockerL).toBeDefined() // leftmost end, open space to the left
+    expect(keptName(out, 'edge')).toBe(false) // crowded 5px on its left
+    expect(keptName(out, 'blockerL')).toBe(true) // leftmost end, open to the left
   })
 })
 
@@ -1322,4 +1337,76 @@ test('scaleLaidOutData scales every Y and height by the fit factor', () => {
   for (let i = 0; i < baseRectYs.length; i++) {
     expect(outRectYs[i]).toBeCloseTo(baseRectYs[i]! * 0.5)
   }
+})
+
+// packedContentHeight exists so the fit solve can measure ~9 candidate factors
+// without paying for a clone each time (the clone is ~4/5 of a layout). That is
+// only sound while it reports EXACTLY what the committed layout reports — it packs
+// the raw region data, applying the compact multiplier itself rather than reading
+// an already-scaled clone, so the two can only agree if that arithmetic matches.
+describe('packedContentHeight matches the committed layout', () => {
+  // Mutually overlapping, so each needs its own row and the stack has real height.
+  const overlapping = (count: number, height: number) =>
+    labeledFeatureData(
+      Array.from({ length: count }, (_, i) => ({
+        featureId: `f${i}`,
+        startBp: 100,
+        endBp: 900,
+        height,
+      })),
+    )
+
+  const cases = [
+    { reversed: false, displayMode: 'normal' as const },
+    { reversed: true, displayMode: 'normal' as const },
+    { reversed: false, displayMode: 'compact' as const },
+    { reversed: true, displayMode: 'superCompact' as const },
+    { reversed: false, displayMode: 'collapsed' as const },
+  ]
+  for (const { reversed, displayMode } of cases) {
+    it(`agrees for ${displayMode}${reversed ? ' reversed' : ''}`, () => {
+      const inputs = {
+        bpPerPx: 1,
+        regionKeys: new Map([[0, 'volvox:ctgA']]),
+        showLabels: true,
+        showDescriptions: false,
+        reversedRegions: reversed ? new Set([0]) : new Set<number>(),
+        displayMode,
+        pinnedFeatureIds: new Set<string>(),
+      }
+      const data = new Map([[0, overlapping(6, 20)]])
+      expect(packedContentHeight(data, inputs)).toBe(
+        maxBottom(computeLaidOutData(data, inputs)),
+      )
+    })
+  }
+
+  // Guards the packer against reading heights off the clone again: every feature
+  // must land on its own row, with its row offset carried into rectYs, and a
+  // compact stack must be genuinely shorter than a normal one.
+  it('stacks overlapping features onto distinct rows, compact tighter', () => {
+    const base = {
+      bpPerPx: 1,
+      regionKeys: new Map([[0, 'volvox:ctgA']]),
+      showLabels: true,
+      showDescriptions: false,
+      reversedRegions: new Set<number>(),
+      pinnedFeatureIds: new Set<string>(),
+    }
+    const laid = computeLaidOutData(new Map([[0, overlapping(3, 20)]]), {
+      ...base,
+      displayMode: 'normal',
+    }).get(0)!
+    const tops = laid.flatbushItems.map(i => i.topPx)
+    expect(new Set(tops).size).toBe(3)
+    expect(Math.max(...tops)).toBeGreaterThan(0)
+    // row offsets reached the geometry, not left at the worker's 0
+    expect(new Set([...laid.rectYs]).size).toBe(3)
+
+    const compactH = packedContentHeight(new Map([[0, overlapping(3, 20)]]), {
+      ...base,
+      displayMode: 'compact',
+    })
+    expect(compactH).toBeLessThan(maxBottom(new Map([[0, laid]])))
+  })
 })

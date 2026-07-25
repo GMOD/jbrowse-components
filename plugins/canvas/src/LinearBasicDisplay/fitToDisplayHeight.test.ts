@@ -4,7 +4,11 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { maxBottom } from './layout.ts'
+import {
+  computeLaidOutData,
+  maxBottom,
+  packedContentHeight,
+} from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type {
@@ -789,5 +793,137 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
     expect(display.renderedShowDescriptions).toBe(true)
     expect(display.renderedShowLabels).toBe(true)
+  })
+
+  // The solve measures its ~9 trial factors with packedContentHeight (no clone,
+  // no Y rewrite) and lays out only the winner. That is only sound if the probe
+  // and the commit agree exactly on the height — otherwise the ladder keeps a rung
+  // it measured as fitting and then renders one that overflows.
+  it('the probed height equals the committed layout height', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, ctgA)
+    display.setHeightMode('fit')
+    // A height between the all-names stack and the bodies stack, so the ladder
+    // lands on `decimated` and the solve actually runs.
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    display.setHeight(Math.round((labelsH + bodiesH) / 2))
+    expect(display.fitStage.level).toBe('decimated')
+
+    const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
+    expect(factor).toBeDefined()
+    const inputs = display.decimatedLayoutInputs(factor!)
+    expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
+      maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
+    )
+    // ...and that is the height the ladder committed to.
+    expect(display.fitStage.contentHeight).toBe(
+      packedContentHeight(display.rpcDataMap, inputs),
+    )
+  })
+
+  // Factor 0 keeps every name, so when it fits there is nothing to decimate and
+  // the solve must say so rather than bisecting into a needless name cull. The
+  // `labels` rung is packed through the incremental memo, whose prior-row seeding
+  // can make it taller than an unseeded pack, so "labels overflowed" does not by
+  // itself prove factor 0 overflows — hence probing it instead of assuming.
+  it('solves to factor 0 when every name already fits', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(30), view.bpPerPx, ctgA)
+    display.setHeightMode('fit')
+    const roomy = maxBottom(display.fitLabelsOnlyLayout) + 500
+    expect(display.solveLabelRoomFactor(roomy)).toBe(0)
+    // Nothing fits when there is no room at all, and the solve reports that
+    // rather than returning its most aggressive factor.
+    expect(display.solveLabelRoomFactor(1)).toBeUndefined()
+  })
+
+  // A reversed region is the one case where the whitespace factor changes the
+  // insertion SORT and not just the row heights: the name overhangs leftward, so it
+  // widens layoutStartBp, which is the sort key. That is the only place the
+  // bisection's "stack height is monotone in the factor" premise could break, so
+  // check the solve end-to-end there rather than only the keep/drop rule.
+  it('solves and commits consistently in a reversed region', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    // `reversedRegions` is derived from the region each fetch was loaded with, not
+    // from the view, so the flag has to ride in on setRpcData.
+    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, {
+      ...ctgA,
+      reversed: true,
+    })
+    expect(display.reversedRegions.has(0)).toBe(true)
+    display.setHeightMode('fit')
+
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    display.setHeight(Math.round((labelsH + bodiesH) / 2))
+
+    const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
+    expect(factor).toBeDefined()
+    const inputs = display.decimatedLayoutInputs(factor!)
+    // probe and commit still agree once the sort key itself moves with the factor
+    expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
+      maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
+    )
+    // and whatever rung the ladder settles on genuinely fits, or is the last one
+    expect(
+      display.fitStage.contentHeight <= display.fitTargetHeight ||
+        display.fitStage.level === 'bodies',
+    ).toBe(true)
+  })
+
+  // Height must be monotone non-increasing in the factor — the premise the
+  // bisection rests on. Asserted over a sweep rather than trusted, in both region
+  // orientations.
+  it('packs a monotone non-increasing stack as the factor rises', () => {
+    for (const reversed of [false, true]) {
+      const { createDisplay } = createTestEnvironment()
+      const { display, view } = createDisplay()
+      display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, {
+        ...ctgA,
+        reversed,
+      })
+      expect(display.reversedRegions.has(0)).toBe(reversed)
+      const heights = [0, 0.25, 0.5, 1, 2, 4, 8].map(f =>
+        packedContentHeight(display.rpcDataMap, display.decimatedLayoutInputs(f)),
+      )
+      for (let i = 1; i < heights.length; i++) {
+        expect(heights[i]!).toBeLessThanOrEqual(heights[i - 1]!)
+      }
+      // and the sweep actually moves, so this isn't vacuously true
+      expect(heights.at(-1)!).toBeLessThan(heights[0]!)
+    }
+  })
+
+  // Features past GranularRectLayout's row limit are pushed offscreen: they don't
+  // draw, don't hit-test, and don't count toward maxY — so the display would
+  // otherwise report a tidy fitted track while silently withholding data.
+  it('counts features the layout could not place', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setHeightMode('fit')
+    display.setHeight(200)
+    // 800 mutually-overlapping features each need their own row, which passes the
+    // 10000px row limit well before the last of them is placed.
+    display.setRpcData(0, stackedRegionData(800, 20), view.bpPerPx, ctgA)
+
+    expect(display.truncatedFeatureCount).toBeGreaterThan(0)
+    const placed = 800 - display.truncatedFeatureCount
+    // maxY only accounts for what was placed, which is why the count is needed.
+    expect(display.settledMaxY).toBeLessThan(800 * 20)
+    expect(placed).toBeGreaterThan(0)
+    expect(placed).toBeLessThan(800)
+  })
+
+  it('reports nothing truncated on a stack that fits the row limit', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setHeightMode('fit')
+    display.setHeight(100)
+    display.setRpcData(0, stackedRegionData(20, 20), view.bpPerPx, ctgA)
+    expect(display.truncatedFeatureCount).toBe(0)
   })
 })

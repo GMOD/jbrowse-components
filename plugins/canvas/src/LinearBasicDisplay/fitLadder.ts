@@ -84,21 +84,41 @@ export function resolveFitLadder(
   minScale: number,
   maxScale: number,
 ): FitStage {
-  const walk = (i: number): FitStage => {
-    const { level, layout: getLayout } = rungs[i]!
-    const layout = getLayout()
-    const contentHeight = maxBottom(layout)
-    return contentHeight <= trackHeight || i === rungs.length - 1
-      ? {
-          level,
-          layout,
-          contentHeight,
-          scale:
-            contentHeight > 0
-              ? fitScaleToFill(contentHeight, trackHeight, minScale, maxScale)
-              : 1,
-        }
-      : walk(i + 1)
+  // LOAD-BEARING: every kept rung's height is measured HERE, off the stack it is
+  // about to return. The `decimated` rung arrives from a bisection that assumes
+  // stack height is monotone in its whitespace factor, which greedy first-fit and
+  // pitchY quantization do not actually guarantee. This re-measure is what makes a
+  // non-monotone solve self-correcting — an overflowing `decimated` stack simply
+  // descends to `bodies`. Do not replace it with a height the rung reports about
+  // itself.
+  //
+  // Rungs coincide often — a rung whose reduction is already in effect hands back
+  // the previous rung's map by reference (names off makes `labels`, `decimated`
+  // and `bodies` all the same stack). Reusing the height for a reference-identical
+  // map is safe (same stack, same height) and keeps the guarantee above.
+  let lastLayout: Map<number, FeatureDataResult> | undefined
+  let lastHeight = 0
+  for (const [i, rung] of rungs.entries()) {
+    const layout = rung.layout()
+    const contentHeight =
+      layout === lastLayout ? lastHeight : maxBottom(layout)
+    lastLayout = layout
+    lastHeight = contentHeight
+    if (contentHeight <= trackHeight || i === rungs.length - 1) {
+      return {
+        level: rung.level,
+        layout,
+        contentHeight,
+        // An empty stack has nothing to fill the track with, so it stays at 1
+        // rather than dividing by zero.
+        scale:
+          contentHeight > 0
+            ? fitScaleToFill(contentHeight, trackHeight, minScale, maxScale)
+            : 1,
+      }
+    }
   }
-  return walk(0)
+  // Unreachable: the tuple type guarantees a rung, and the last one always
+  // returns. Present so the function is total without a non-null assertion.
+  throw new Error('resolveFitLadder called with no rungs')
 }

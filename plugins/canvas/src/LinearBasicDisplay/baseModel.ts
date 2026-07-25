@@ -79,6 +79,8 @@ import {
 import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
 import {
   computeLaidOutData,
+  countTruncatedFeatures,
+  createContentHeightProbe,
   createIncrementalLayout,
   maxBottom,
   scaleLaidOutData,
@@ -117,7 +119,7 @@ import type {
   ResolvedHighlights,
 } from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
-import type { IncrementalLayout } from './layout.ts'
+import type { IncrementalLayout, LayoutInputs } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -272,6 +274,30 @@ function showHiddenFeaturesMenuItems(self: {
           icon: VisibilityIcon,
           onClick: () => {
             self.showAllHidden()
+          },
+        },
+      ]
+    : []
+}
+
+// The track-level "Clear N highlights" recovery item. Per-feature "Remove
+// highlight" needs the boxed feature under the cursor, and a highlight outlives
+// the navigation that created it (a text-search highlight is only ever replaced
+// by the next search) — so without this a highlight the user has panned away
+// from is unreachable. Empty when nothing is highlighted, matching the
+// "Show N hidden features" / "Clear filters" shape.
+function clearHighlightsMenuItems(self: {
+  featureHighlights: { length: number }
+  clearFeatureHighlights: () => void
+}) {
+  const n = self.featureHighlights.length
+  return n > 0
+    ? [
+        {
+          label: `Clear ${n} highlight${n > 1 ? 's' : ''}`,
+          icon: Highlighter,
+          onClick: () => {
+            self.clearFeatureHighlights()
           },
         },
       ]
@@ -761,12 +787,13 @@ export default function baseStateModelFactory(
           )
           // exact-span matching makes a mistyped coordinate draw nothing at all;
           // say so once rather than leaving it silent (warnUnresolvedHighlights
-          // dedupes, so recomputing this getter doesn't spam)
-          warnUnresolvedHighlights(
-            self.featureHighlights,
-            resolved,
-            self.rpcDataMap.size > 0,
-          )
+          // dedupes, so recomputing this getter doesn't spam). It is handed the
+          // loaded region SPANS, not just "is there data": a highlight resolves
+          // to nothing whenever the user pans or navigates off its locus, and
+          // gating on data-existence alone blamed the spec for that.
+          warnUnresolvedHighlights(self.featureHighlights, resolved, [
+            ...self.loadedRegions.values(),
+          ])
           return resolved
         },
 
@@ -949,6 +976,77 @@ export default function baseStateModelFactory(
               })
             : new Map<number, FeatureDataResult>()
         },
+        /**
+         * #getter
+         * The `decimated` rung's layout inputs minus the whitespace factor. Typed
+         * without `labelRoomFactor` so the solve's shared preparation provably can't
+         * depend on it (see createContentHeightProbe).
+         */
+        get decimatedBaseInputs(): Omit<LayoutInputs, 'labelRoomFactor'> {
+          return {
+            ...self.layoutInputs,
+            showLabels: self.showLabels,
+            showDescriptions: false,
+            labelDecimation: 'fitWidth',
+          }
+        },
+        /**
+         * #method
+         * Layout inputs for the `decimated` rung at one whitespace factor. Every
+         * probe and the committed layout go through this single builder, so the
+         * stack the solve measures cannot differ from the stack it commits by a
+         * forgotten field.
+         */
+        decimatedLayoutInputs(labelRoomFactor: number): LayoutInputs {
+          return { ...this.decimatedBaseInputs, labelRoomFactor }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * The smallest `labelRoomFactor` whose packed stack fits `trackHeight`, or
+         * undefined when even the most aggressive decimation overflows.
+         *
+         * Smallest = most names kept, because the set of kept names shrinks
+         * monotonically as the factor rises (see keepFeatureLabel), so stack height
+         * is monotone non-increasing in the factor and a bisection is valid.
+         *
+         * Factor 0 (every name kept) is probed first rather than assumed to
+         * overflow: the `labels` rung that sent the ladder here is packed through
+         * the incremental memo, whose prior-row seeding can make it taller than an
+         * unseeded pack of the same label set, so "labels overflowed" does not
+         * actually establish "factor 0 overflows". Probing it costs one height and
+         * turns the bisection's lower bound from an assumption into a measurement —
+         * and when it fits, the solve returns immediately with every name intact.
+         */
+        solveLabelRoomFactor(trackHeight: number) {
+          // One preparation shared by every probe below — the label widths and
+          // neighbor-room measurements don't vary with the factor.
+          const heightAt = createContentHeightProbe(
+            self.rpcDataMap,
+            self.decimatedBaseInputs,
+          )
+          const fits = (labelRoomFactor: number) =>
+            heightAt(labelRoomFactor) <= trackHeight
+          if (fits(0)) {
+            return 0
+          }
+          // Bisect (0, FIT_MAX_ROOM_FACTOR]: `lo` is known to overflow, `hi` is the
+          // smallest factor measured to fit so far (undefined until one does).
+          let lo = 0
+          let hi = FIT_MAX_ROOM_FACTOR
+          let fitting: number | undefined
+          for (let i = 0; i < FIT_SOLVE_ITERS; i++) {
+            const mid = (lo + hi) / 2
+            if (fits(mid)) {
+              hi = mid
+              fitting = mid
+            } else {
+              lo = mid
+            }
+          }
+          return fitting
+        },
       }))
       .views(self => ({
         /**
@@ -991,63 +1089,56 @@ export default function baseStateModelFactory(
          * keeps the SMALLEST fitting factor, i.e. the MOST names. It decimates by
          * isolation, not feature size/"importance" (no reliable importance signal —
          * a tiny miRNA can outrank a large pseudogene), so it just maximizes how
-         * many readable names fit. Both the ~8 trial factors and the committed
-         * layout go through the same pure `computeLaidOutData` at a factor: the
-         * committed stack is *byte-identical* to the probe that was measured
-         * against `trackHeight`, so the height the solve fits is exactly the height
-         * `resolveFitLadder` sees. It deliberately does NOT reuse the incremental
-         * memo here — the memo seeds each re-pack with the previous layout's rows
-         * (`captureFeatureTops`), and seeding a new factor's (different) label set
-         * from the old factor's rows packs the stack taller than the fresh probe,
-         * pushing the committed stack over `trackHeight` and making the ladder
-         * wrongly fall through to `bodies` (every label vanishing as the track
-         * grows). When even `FIT_MAX_ROOM_FACTOR` overflows, the `labels` stack is
-         * returned — it overflows (that is why the ladder reached this rung), so
+         * many readable names fit.
+         *
+         * The trial factors are measured by `createContentHeightProbe`, which runs
+         * the same pack over the same raw region data but skips the clone and the
+         * per-region Y rewrite that `computeLaidOutData` does (~4/5 of a layout) and
+         * hoists the factor-invariant preparation out of the probe loop (about half
+         * of what remains). Only the winning factor is laid out for real. Probe and
+         * commit therefore agree on the height by construction — identical packing
+         * over identical inputs — which is what lets the ladder trust that the stack
+         * it measured is the stack it renders.
+         *
+         * It deliberately does NOT use the incremental memo — the memo seeds each
+         * re-pack with the previous layout's rows (`captureFeatureTops`), and
+         * seeding a new factor's (different) label set from the old factor's rows
+         * packs the stack taller than the fresh probe, pushing the committed stack
+         * over `trackHeight` and making the ladder wrongly fall through to `bodies`
+         * (every label vanishing as the track grows).
+         *
+         * Known cost of that choice: this is the one rung without prior-row
+         * seeding, so while the display sits here a zoom re-pack does not preserve
+         * top features' rows the way the other three rungs do. The pack is still
+         * deterministic for given inputs (insertion order falls back to
+         * layoutStartBp), so it is a lost stability guarantee, not churn. Seeding
+         * probes AND commit from the previous committed layout would restore it and
+         * keep the heights agreeing, but it puts a stateful seed underneath a
+         * control loop that picks the factor from measured heights — which can
+         * oscillate the factor, and flickering labels are worse than shifting rows.
+         *
+         * When even `FIT_MAX_ROOM_FACTOR` overflows, the `labels` stack is returned
+         * — it overflows (that is why the ladder reached this rung), so
          * `resolveFitLadder` descends to `bodies`, and reusing a stack already
          * packed spares the solve one more pack that would only be discarded.
          *
          * With names off entirely there is nothing to decimate — every factor packs
          * the `labels` stack (see keepFeatureLabel's `showLabels` guard) — so the
-         * solve is skipped and that stack reused, turning the ~9 probes this rung
-         * costs into zero on exactly the dense tracks where the auto density gate
-         * hides names and fit mode is most used.
+         * solve is skipped and that stack reused, turning the probes this rung costs
+         * into zero on exactly the dense tracks where the auto density gate hides
+         * names and fit mode is most used.
          */
         get fitDecimatedSolved(): Map<number, FeatureDataResult> {
           if (!self.layoutReady || !self.showLabels) {
             return this.fitLabelsOnlyLayout
           }
-          const trackHeight = self.fitTargetHeight
-          const layoutAtFactor = (labelRoomFactor: number) =>
-            computeLaidOutData(self.rpcDataMap, {
-              ...self.layoutInputs,
-              showLabels: self.showLabels,
-              showDescriptions: false,
-              labelDecimation: 'fitWidth',
-              labelRoomFactor,
-            })
-          // Binary-search the whitespace factor: `lo` overflows (factor 0 keeps
-          // every name — the `labels` stack, which already overflowed to reach
-          // this rung), `hi` fits. Keep the fitting probe's OWN map as the
-          // committed layout, so the stack the ladder measured IS the stack it
-          // renders — the probe/commit identity the solve depends on becomes the
-          // same object, not a re-run that has to match. `hiLayout` stays
-          // undefined only when nothing fit; then the `labels` stack — already
-          // packed, and known to overflow since the ladder descended past it to
-          // reach this rung — is returned so resolveFitLadder falls to `bodies`.
-          let lo = 0
-          let hi = FIT_MAX_ROOM_FACTOR
-          let hiLayout: Map<number, FeatureDataResult> | undefined
-          for (let i = 0; i < FIT_SOLVE_ITERS; i++) {
-            const mid = (lo + hi) / 2
-            const layout = layoutAtFactor(mid)
-            if (maxBottom(layout) <= trackHeight) {
-              hi = mid
-              hiLayout = layout
-            } else {
-              lo = mid
-            }
-          }
-          return hiLayout ?? this.fitLabelsOnlyLayout
+          const factor = self.solveLabelRoomFactor(self.fitTargetHeight)
+          return factor === undefined
+            ? this.fitLabelsOnlyLayout
+            : computeLaidOutData(
+                self.rpcDataMap,
+                self.decimatedLayoutInputs(factor),
+              )
         },
         /**
          * #getter
@@ -1299,6 +1390,20 @@ export default function baseStateModelFactory(
          */
         get hasOverflow() {
           return this.maxY > self.height
+        },
+
+        /**
+         * #getter
+         */
+        // Features the packer could not place at all because the stack passed
+        // GranularRectLayout's row limit. They are not scrolled-out-of-view, they
+        // are absent: nothing draws or hit-tests them, and `maxY` doesn't count
+        // them, so without this the display reports "everything fits" while
+        // showing strictly less than its data. Fit mode is where this bites — its
+        // whole promise is that every feature is in view — so the track-sizing
+        // affordance surfaces it (see TrackHeightIndicator's tooltip).
+        get truncatedFeatureCount() {
+          return countTruncatedFeatures(self.laidOutDataMap)
         },
 
         /**
@@ -1566,17 +1671,12 @@ export default function baseStateModelFactory(
               // the interpolated rows each frame (and once more on settle).
               syncRegions(b, self.renderDataMap)
             },
-            render: b => {
-              if (self.renderDataMap.size === 0) {
-                return false
-              }
+            render: b =>
               b.renderBlocks(
                 self.renderBlocks,
                 self.renderDataMap,
                 self.renderState,
-              )
-              return true
-            },
+              ),
           })
         },
 
@@ -2850,6 +2950,7 @@ export default function baseStateModelFactory(
             },
             ...self.featureHeightMenuItems(),
             ...self.colorMenuItems(),
+            ...clearHighlightsMenuItems(self),
             {
               label: 'Edit filters',
               icon: FilterAltIcon,

@@ -7,7 +7,6 @@ import {
   STRAND_ARROW_WIDTH,
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
 import { captureFeatureTops } from './yMorph.ts'
 
@@ -22,7 +21,12 @@ import type {
 // instead of stacking them at y=0. Float32 handles this magnitude losslessly.
 const OFFSCREEN_Y = -1e6
 
-// Tallest row bottom across a layout, i.e. its content height.
+// Tallest row bottom across a layout, i.e. its content height. Features pushed
+// to OFFSCREEN_Y are excluded: their bottom is far below 0, so `max` never sees
+// them. That is deliberate — they don't render, so they contribute no height —
+// but it also means a layout that hit the row limit reports a SHORT height while
+// silently holding fewer features than it was given. `countTruncatedFeatures` is
+// how a caller finds out.
 export function maxBottom(map: ReadonlyMap<number, FeatureDataResult>) {
   let max = 0
   for (const data of map.values()) {
@@ -33,6 +37,29 @@ export function maxBottom(map: ReadonlyMap<number, FeatureDataResult>) {
     }
   }
   return max
+}
+
+// Features the packer could not place because the stack passed
+// GranularRectLayout's row limit, and so pushed to OFFSCREEN_Y where nothing
+// draws or hit-tests them. Counted off the laid-out map (a feature appearing in
+// several regions of one ref-group shares a row, so it is counted once per region
+// it appears in — the same basis as maxBottom). Non-zero means the display is
+// showing the user strictly less than the data it holds, which fit mode in
+// particular must own up to rather than present as a complete picture.
+export function countTruncatedFeatures(
+  map: ReadonlyMap<number, FeatureDataResult>,
+) {
+  let n = 0
+  for (const data of map.values()) {
+    for (const item of data.flatbushItems) {
+      // A placed row is always >= 0; only the OFFSCREEN_Y sentinel is negative
+      // (still negative after a fit scale, which only ever multiplies by > 0).
+      if (item.topPx < 0) {
+        n++
+      }
+    }
+  }
+  return n
 }
 
 // How names are chosen when `showLabels` is on. `all` reserves + renders every
@@ -57,36 +84,43 @@ export interface LayoutInputs {
   // Name-decimation policy (default `all`). See LabelDecimation.
   labelDecimation?: LabelDecimation
   // Whitespace multiplier for `fitWidth` decimation (default 1). The fit ladder
-  // raises it (2, 4) to keep fewer names on tighter rungs. See keepFeatureLabel.
+  // binary-searches it over [0, FIT_MAX_ROOM_FACTOR] to land the packed stack on
+  // the track height: 0 keeps every name, higher values keep progressively fewer.
+  // See keepFeatureLabel.
   labelRoomFactor?: number
 }
 
 // Whether a feature keeps its name under the active decimation policy. `all`
 // keeps every name; `fitWidth` keeps pinned/highlighted names always, plus any
-// name whose reserved width (times `roomFactor`) fits the whitespace its
-// overhang can use — the feature box PLUS the gap to the neighbor on the
-// overhang side. A name renders left-aligned to the box and overhangs rightward
-// (leftward in a reversed region) into free space (see computeLabelPosition),
-// and the packer reserves exactly that overhang, so keying on box width alone
-// dropped names that plainly had room; keying on the available room drops a name
-// only where it would genuinely collide. So an isolated feature keeps its name
-// however narrow its box, while a name crammed against its neighbor still sheds
-// — thinning names (and their reserved row height) precisely in the dense
-// stretches that overflow. `roomFactor` (>= 1) is the fit ladder's gradual knob:
-// it demands that much more whitespace before a name is kept, so the tighter
-// decimated rungs (2x, 4x) shed the crowded names first instead of dropping
-// straight to no names at all.
+// name whose width (times `roomFactor`) fits the whitespace its overhang can use
+// — the feature box PLUS the gap to the neighbor on the overhang side. A name
+// renders left-aligned to the box and overhangs rightward (leftward in a reversed
+// region) into free space (see computeLabelPosition), and the packer reserves
+// exactly that overhang, so keying on box width alone dropped names that plainly
+// had room; keying on the available room drops a name only where it would
+// genuinely collide. So an isolated feature keeps its name however narrow its box,
+// while a name crammed against its neighbor still sheds — thinning names (and
+// their reserved row height) precisely in the dense stretches that overflow.
+//
+// `roomFactor` is the fit solve's continuous knob, searched over
+// [0, FIT_MAX_ROOM_FACTOR]. Note it is NOT bounded below by 1: a factor under 1
+// keeps a name even where the neighbor gap is narrower than the name, which is
+// safe because the overhang the packer reserves is always the FULL name width, so
+// a kept-but-crowded name is pushed to a lower row rather than overlapped. That is
+// what lets the solve spend leftover vertical space on labels instead of
+// whitespace. Higher factors demand proportionally more room, so the set of kept
+// names shrinks monotonically as the factor rises.
 function keepFeatureLabel(
   labelDecimation: LabelDecimation,
   availableRoomPx: number,
-  labelWidthPx: number,
+  nameWidthPx: number,
   pinned: boolean,
   roomFactor: number,
 ) {
   return (
     labelDecimation === 'all' ||
     pinned ||
-    availableRoomPx >= labelWidthPx * roomFactor
+    availableRoomPx >= nameWidthPx * roomFactor
   )
 }
 
@@ -115,17 +149,74 @@ function strandArrowPadding(ext: {
   }
 }
 
-function reservedLabelWidthPx(
+// Add LABEL_PADDING_PX so adjacent labels packed onto one row keep a small gap
+// and small measureText underestimates don't cause visual overlap. Keep 0 when
+// there's no label so the collapse-to-row-0 path (anyLabelRenders) and
+// empty-feature packing stay unaffected.
+function paddedLabelWidthPx(label: { textWidth: number } | undefined) {
+  return label && label.textWidth > 0 ? label.textWidth + LABEL_PADDING_PX : 0
+}
+
+// One reserved width per label KIND, kept separate rather than collapsed to a
+// single max because the packer asks three different questions of them (see
+// keptOverhangWidthPx, anyLabelRenders, and the decimation's name-only test).
+// Each is 0 when its kind is switched off or absent, so the numbers alone encode
+// what renders.
+interface LabelWidths {
+  name: number
+  description: number
+  subfeature: number
+}
+
+// The widths one floatingLabelsData entry contributes under the current label
+// flags. Subfeature labels are deliberately un-gated: unlike names and
+// descriptions they always draw when present (see resolveFeatureLabels), so their
+// width is always reserved.
+function renderedLabelWidths(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
+): LabelWidths {
+  return {
+    name: showLabels ? paddedLabelWidthPx(labelData.nameLabel) : 0,
+    description: showDescriptions
+      ? paddedLabelWidthPx(labelData.descriptionLabel)
+      : 0,
+    subfeature: paddedLabelWidthPx(labelData.subfeatureLabel),
+  }
+}
+
+// A feature can own several floatingLabelsData entries (its own plus its
+// subfeatures', via parentFeatureId); it must reserve enough for the widest of
+// each kind.
+function widerLabelWidths(a: LabelWidths, b: LabelWidths): LabelWidths {
+  return {
+    name: Math.max(a.name, b.name),
+    description: Math.max(a.description, b.description),
+    subfeature: Math.max(a.subfeature, b.subfeature),
+  }
+}
+
+// Whether anything at all draws for this feature. Gates the sub-pixel
+// density-collapse path: a collapsed box reserves no horizontal room, so a
+// labeled feature must stack instead of piling its label onto row 0.
+function anyLabelRenders(widths: LabelWidths) {
+  return widths.name > 0 || widths.description > 0 || widths.subfeature > 0
+}
+
+// Horizontal room a feature's labels need beyond its box, given which of them
+// survived the keep decision. A decimated name contributes nothing, so the packer
+// stops holding space for a name that will not draw.
+function keptOverhangWidthPx(
+  widths: LabelWidths,
+  keepName: boolean,
+  keepDescription: boolean,
 ) {
-  // Add LABEL_PADDING_PX so adjacent labels packed onto one row keep a small
-  // gap and small measureText underestimates don't cause visual overlap. Keep 0
-  // when there's no label so the collapse-to-row-0 path (hasRenderedLabel) and
-  // empty-feature packing stay unaffected.
-  const width = maxLabelTextWidth(labelData, showLabels, showDescriptions)
-  return width > 0 ? width + LABEL_PADDING_PX : 0
+  return Math.max(
+    keepName ? widths.name : 0,
+    keepDescription ? widths.description : 0,
+    widths.subfeature,
+  )
 }
 
 function scaleFloat32(arr: Float32Array, multiplier: number) {
@@ -170,6 +261,31 @@ function applyHeightScale(data: FeatureDataResult, multiplier: number) {
   }
 }
 
+// Everything the packer derives from the display mode. Bundled into one helper so
+// the committed layout and the height probe cannot derive them differently — the
+// probe is only trustworthy if it packs on byte-identical terms.
+interface DisplayModeMetrics {
+  // compact/superCompact body scale (1 in normal mode)
+  heightMultiplier: number
+  // reserved height of one rendered label line
+  labelFontPx: number
+  // vertical gap between stacked rows
+  rowPadding: number
+  // collapsed mode: one shared row, no greedy stacking
+  singleRow: boolean
+}
+
+function displayModeMetrics(displayMode: DisplayMode): DisplayModeMetrics {
+  return {
+    heightMultiplier: HEIGHT_MULTIPLIERS[displayMode],
+    labelFontPx: labelFontSize(displayMode),
+    rowPadding: ROW_PADDING[displayMode],
+    // Labels are already forced off upstream in collapsed mode (model
+    // showLabels/showDescriptions), so no row height is reserved for them.
+    singleRow: displayMode === 'collapsed',
+  }
+}
+
 // Pure layout. Raw data from the worker has Y coordinates relative to feature
 // top (topPx = 0). This returns a new map where each region's Y values have
 // been shifted by the per-feature top computed by GranularRectLayout.
@@ -182,76 +298,139 @@ export function computeLaidOutData(
   // so top features keep their rows across a re-pack (see packRef).
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ): Map<number, FeatureDataResult> {
-  const {
-    bpPerPx,
-    regionKeys,
-    showLabels,
-    showDescriptions,
-    reversedRegions,
-    displayMode,
-    pinnedFeatureIds,
-    labelDecimation = 'all',
-    labelRoomFactor = 1,
-  } = inputs
-  const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
-  const labelFontPx = labelFontSize(displayMode)
-  const rowPadding = ROW_PADDING[displayMode]
-  // Collapsed packs every feature onto row 0 (see packRef). Labels are already
-  // forced off upstream (model showLabels/showDescriptions), so no row height is
-  // reserved for them.
-  const singleRow = displayMode === 'collapsed'
-
+  const metrics = displayModeMetrics(inputs.displayMode)
   const out = new Map<number, FeatureDataResult>()
-  const refGroups = new Map<string, [number, FeatureDataResult][]>()
+  for (const [, regions] of groupRawByRef(rpcDataMap, inputs.regionKeys)) {
+    const { layoutMap, layoutHeights, droppedLabelIds, densityFadeIds } =
+      packPreparedRef(
+        prepareRefPack(regions, inputs, metrics),
+        inputs,
+        metrics,
+        prevYByFeatureId,
+      )
+    // Clone only now that the packing is decided: cloneMutableFields dominates
+    // this function's cost (~4/5 of it at 4k features), so the height probes the
+    // fit solve runs skip it entirely (see packedContentHeight) and only the
+    // committed layout pays it.
+    for (const [n, raw] of regions) {
+      const cloned = cloneMutableFields(raw)
+      applyHeightScale(cloned, metrics.heightMultiplier)
+      applyLayoutToRegion(
+        cloned,
+        layoutMap,
+        layoutHeights,
+        droppedLabelIds,
+        densityFadeIds,
+      )
+      out.set(n, cloned)
+    }
+  }
   for (const [n, raw] of rpcDataMap) {
     if (raw.flatbushItems.length === 0) {
       // Empty regions need no layout mutations — share the raw object rather
-      // than allocating clone arrays that will never be written, and skip the
-      // ref-group (nothing to pack).
+      // than allocating clone arrays that will never be written. groupRawByRef
+      // skips them, so nothing above has set them.
       out.set(n, raw)
-    } else {
-      const cloned = cloneMutableFields(raw)
-      applyHeightScale(cloned, heightMultiplier)
-      out.set(n, cloned)
+    }
+  }
+
+  return out
+}
+
+// Content height of a set of packed rows, matching `maxBottom` of the layout the
+// same pack would produce. OFFSCREEN_Y rows are excluded exactly as `maxBottom`
+// excludes them: their bottom lands far below 0, so its running max never sees
+// them either.
+function packedRowsHeight(
+  layoutMap: Map<string, number>,
+  layoutHeights: Map<string, number>,
+) {
+  let max = 0
+  for (const [id, top] of layoutMap) {
+    const bottom = top + (layoutHeights.get(id) ?? 0)
+    if (top !== OFFSCREEN_Y && bottom > max) {
+      max = bottom
+    }
+  }
+  return max
+}
+
+// Layout inputs with the fit solve's knob deliberately absent. `prepareRefPack`
+// takes this type so the compiler enforces what the solve depends on: the
+// prepared half of a pack cannot read `labelRoomFactor`, therefore one prep is
+// valid for every factor probed against it.
+type LabelRoomFactorFreeInputs = Omit<LayoutInputs, 'labelRoomFactor'>
+
+// Measure the content height of many `labelRoomFactor` candidates against ONE
+// preparation. Returns the probe; each call packs the prepared groups at that
+// factor and reports the height `computeLaidOutData` would report for it.
+//
+// This is what makes the fit solve affordable. A probe skips `cloneMutableFields`
+// and `applyLayoutToRegion` (~4/5 of a full layout), and hoisting the prep out of
+// the loop removes roughly half of what remains — the per-kind label widths and
+// the two neighbor-room sorts, none of which depend on the factor. Because every
+// probe and the eventual commit run the identical pack over the identical raw
+// values, the height measured here IS the height the committed layout reports, by
+// construction rather than by two code paths agreeing.
+export function createContentHeightProbe(
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  inputs: LabelRoomFactorFreeInputs,
+  prevYByFeatureId?: ReadonlyMap<string, number>,
+) {
+  const metrics = displayModeMetrics(inputs.displayMode)
+  const preps = [...groupRawByRef(rpcDataMap, inputs.regionKeys).values()].map(
+    regions => prepareRefPack(regions, inputs, metrics),
+  )
+  return (labelRoomFactor: number) => {
+    let max = 0
+    for (const prep of preps) {
+      const { layoutMap, layoutHeights } = packPreparedRef(
+        prep,
+        { ...inputs, labelRoomFactor },
+        metrics,
+        prevYByFeatureId,
+      )
+      max = Math.max(max, packedRowsHeight(layoutMap, layoutHeights))
+    }
+    return max
+  }
+}
+
+// One-shot height for fully-formed inputs — `createContentHeightProbe` for a
+// single factor. Same pack, so the same guarantee.
+export function packedContentHeight(
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  inputs: LayoutInputs,
+  prevYByFeatureId?: ReadonlyMap<string, number>,
+) {
+  return createContentHeightProbe(
+    rpcDataMap,
+    inputs,
+    prevYByFeatureId,
+  )(inputs.labelRoomFactor ?? 1)
+}
+
+// Group the non-empty raw regions by `assembly:refName`, the unit `packRef` lays
+// out (regions on different chromosomes never affect each other's rows). Shared
+// by the committed layout and the height probe so both pack exactly the same
+// groups from exactly the same objects.
+function groupRawByRef(
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  regionKeys: Map<number, string>,
+) {
+  const refGroups = new Map<string, [number, FeatureDataResult][]>()
+  for (const [n, raw] of rpcDataMap) {
+    if (raw.flatbushItems.length > 0) {
       const key = regionKeys.get(n) ?? ''
       let group = refGroups.get(key)
       if (!group) {
         group = []
         refGroups.set(key, group)
       }
-      group.push([n, cloned])
+      group.push([n, raw])
     }
   }
-
-  for (const [, regions] of refGroups) {
-    const { layoutMap, layoutHeights, droppedLabelIds, densityFadeIds } =
-      packRef(
-        regions,
-        bpPerPx,
-        showLabels,
-        showDescriptions,
-        reversedRegions,
-        pinnedFeatureIds,
-        labelDecimation,
-        labelRoomFactor,
-        heightMultiplier,
-        labelFontPx,
-        rowPadding,
-        singleRow,
-        prevYByFeatureId,
-      )
-    for (const [, data] of regions) {
-      applyLayoutToRegion(
-        data,
-        layoutMap,
-        layoutHeights,
-        droppedLabelIds,
-        densityFadeIds,
-      )
-    }
-  }
-
-  return out
+  return refGroups
 }
 
 interface GroupCache {
@@ -564,38 +743,263 @@ function labelOverhangRoomPx(
   return { rightRoom, leftRoom }
 }
 
-function packRef(
+// A feature's packing geometry that does NOT vary with `labelRoomFactor`: its bp
+// extent, its body height, and which reversed/non-reversed sides it occupies (a
+// reversed region's label extends toward lower bp, so the overhang must widen the
+// start rather than the end). Read-only, because the whole point of separating it
+// from PackedExtent is that the per-factor pass cannot write here — a mutation
+// would silently leak one probe's label decisions into the next.
+interface FeatureGeometry {
+  readonly startBp: number
+  readonly endBp: number
+  // Compact-scaled feature-body height (px), pre-label — the raw worker height
+  // times `heightMultiplier`, computed here rather than read off an
+  // already-scaled clone so packing works straight from the raw data.
+  readonly bodyHeightPx: number
+  readonly strand: number
+  readonly densityFade: boolean
+  hasReversed: boolean
+  hasNonReversed: boolean
+}
+
+// A feature's packing geometry that DOES vary with `labelRoomFactor`: the
+// label-widened span the packer collides on, and the row height including
+// whichever label lines survived the keep decision.
+interface PackedExtent {
+  layoutStartBp: number
+  layoutEndBp: number
+  height: number
+}
+
+interface LabelInfo {
+  hasName: boolean
+  hasDescription: boolean
+  widths: LabelWidths
+}
+
+// Everything about packing one ref-group that is invariant to `labelRoomFactor`.
+// The fit solve probes ~10 factors, so computing this once instead of per probe
+// removes roughly half the work from each one (label widths and the two
+// neighbor-room sorts are the bulk of it).
+interface PackPrep {
+  labelInfoByFeatureId: Map<string, LabelInfo>
+  features: Map<string, FeatureGeometry>
+  // Per-side whitespace a label may overhang into. Only measured for the
+  // `fitWidth` decimation; the default `all` policy keeps every name and never asks.
+  overhangRoom: ReturnType<typeof labelOverhangRoomPx> | undefined
+  // Box px-spans of the visible (non-collapsing) features. A sub-pixel fade box
+  // may collapse onto row 0 only where it doesn't overlap one of these — else it
+  // must stack, or it renders on top of the visible feature (a 1bp SNP sitting
+  // inside a wide gene box is the canonical case).
+  solidSpansPx: [number, number][]
+  // Features that draw at least one label under the current flags. Pre-decimation
+  // on purpose: it gates the density-collapse path, which asks "does anything
+  // render here", not "did the name survive".
+  labeledFeatureIds: Set<string>
+}
+
+// Gather the factor-invariant half of a pack. Reads the RAW (un-cloned,
+// un-height-scaled) region data and applies `heightMultiplier` itself, so packing
+// never depends on the clone `computeLaidOutData` makes afterward — that is what
+// lets the height probes skip cloning, and what makes probe and commit identical
+// by construction.
+function prepareRefPack(
+  // Raw regions sharing one `assembly:refName` key.
   regions: [number, FeatureDataResult][],
-  bpPerPx: number,
-  showLabels: boolean,
-  showDescriptions: boolean,
-  reversedRegions: ReadonlySet<number>,
-  // Feature ids pinned to the top: sorted ahead of everything so they win the
-  // lowest rows in their bp range. Also the always-keep set for `fitWidth` name
-  // decimation.
-  pinnedFeatureIds: ReadonlySet<string>,
-  // Name-decimation policy (see keepFeatureLabel). `all` at every rung except the
-  // `decimated` fit rungs, which pass `fitWidth`.
-  labelDecimation: LabelDecimation,
-  // Whitespace multiplier for `fitWidth` decimation (see keepFeatureLabel). 1 at
-  // the first decimated rung; the tighter rungs raise it to shed more names.
-  labelRoomFactor: number,
-  // compact/superCompact scale factor (1 in normal mode), used to shrink the
-  // row-quantization grid (pitchY) with the feature body.
-  heightMultiplier: number,
-  // Resolved label font size (px) for the current display mode — reserved per
-  // rendered label line so the row height matches the (compact-shrunk) text.
-  labelFontPx: number,
-  // Vertical gap between stacked rows for the current display mode (compact
-  // modes tighten it more than the body shrink; see ROW_PADDING).
-  rowPadding: number,
-  // Collapsed mode: pin every feature to row 0 for a single-row overview,
-  // bypassing the greedy stacker (and the sub-pixel density-collapse path).
-  singleRow: boolean,
+  inputs: LabelRoomFactorFreeInputs,
+  metrics: DisplayModeMetrics,
+): PackPrep {
+  const {
+    bpPerPx,
+    showLabels,
+    showDescriptions,
+    reversedRegions,
+    labelDecimation = 'all',
+  } = inputs
+
+  // Per-feature label geometry: which kinds exist, and the reserved width of each.
+  // The decimation measures the NAME alone (a long description or subfeature label
+  // says nothing about whether the name fits its neighbor whitespace), while the
+  // overhang reservation covers whichever labels survive — hence the per-kind
+  // widths rather than one max across them.
+  const labelInfoByFeatureId = new Map<string, LabelInfo>()
+  for (const [, data] of regions) {
+    for (const labelData of Object.values(data.floatingLabelsData)) {
+      const targetId = labelData.parentFeatureId ?? labelData.featureId
+      const widths = renderedLabelWidths(labelData, showLabels, showDescriptions)
+      const existing = labelInfoByFeatureId.get(targetId)
+      if (existing) {
+        existing.hasName ||= !!labelData.nameLabel
+        existing.hasDescription ||= !!labelData.descriptionLabel
+        existing.widths = widerLabelWidths(existing.widths, widths)
+      } else {
+        labelInfoByFeatureId.set(targetId, {
+          hasName: !!labelData.nameLabel,
+          hasDescription: !!labelData.descriptionLabel,
+          widths,
+        })
+      }
+    }
+  }
+
+  const features = new Map<string, FeatureGeometry>()
+  for (const [displayedRegionIndex, data] of regions) {
+    const reversed = reversedRegions.has(displayedRegionIndex)
+    for (const item of data.flatbushItems) {
+      const existing = features.get(item.featureId)
+      if (existing) {
+        if (reversed) {
+          existing.hasReversed = true
+        } else {
+          existing.hasNonReversed = true
+        }
+      } else {
+        features.set(item.featureId, {
+          startBp: item.startBp,
+          endBp: item.endBp,
+          bodyHeightPx: item.featureHeightPx * metrics.heightMultiplier,
+          strand: item.strand ?? 0,
+          hasReversed: reversed,
+          hasNonReversed: !reversed,
+          densityFade: item.densityFade,
+        })
+      }
+    }
+  }
+
+  const labeledFeatureIds = new Set<string>()
+  for (const [id, info] of labelInfoByFeatureId) {
+    if (anyLabelRenders(info.widths)) {
+      labeledFeatureIds.add(id)
+    }
+  }
+
+  return {
+    labelInfoByFeatureId,
+    features,
+    overhangRoom:
+      labelDecimation === 'fitWidth'
+        ? labelOverhangRoomPx(features, bpPerPx)
+        : undefined,
+    solidSpansPx: mergeIntervals(
+      [...features.values()]
+        .filter(geom => !isSubPixelFade(geom, bpPerPx))
+        .map(geom => [geom.startBp / bpPerPx, geom.endBp / bpPerPx]),
+    ),
+    labeledFeatureIds,
+  }
+}
+
+// Decide each feature's kept label lines at this `labelRoomFactor`, reserving
+// their row height and widening its layout span by the reserved label overhang.
+// Pure in `prep`: it reads the shared geometry and returns fresh per-factor
+// extents, so probing a second factor can't see the first one's decisions.
+function decideLabelReservations(
+  prep: PackPrep,
+  inputs: LayoutInputs,
+  metrics: DisplayModeMetrics,
+) {
+  const {
+    bpPerPx,
+    showLabels,
+    showDescriptions,
+    pinnedFeatureIds,
+    labelDecimation = 'all',
+    labelRoomFactor = 1,
+  } = inputs
+  const { labelFontPx, rowPadding } = metrics
+  const { labelInfoByFeatureId, features, overhangRoom } = prep
+  const packed = new Map<string, PackedExtent>()
+  // Features whose name was decimated away (`fitWidth`): no row height or overhang
+  // is reserved for it here, and applyLayoutToRegion removes the name afterward so
+  // no renderer/hit-test draws it. Empty under the default `all` policy.
+  const droppedLabelIds = new Set<string>()
+
+  for (const [id, geom] of features) {
+    const labelInfo = labelInfoByFeatureId.get(id)
+    // Whitespace the name overhang can use, on the side(s) this feature points:
+    // the min across the sides it occupies so a feature spanning both directions
+    // must clear on both. Infinity (no room measured) under the `all` policy.
+    const availableRoomPx = overhangRoom
+      ? Math.min(
+          geom.hasNonReversed ? overhangRoom.rightRoom.get(id)! : Infinity,
+          geom.hasReversed ? overhangRoom.leftRoom.get(id)! : Infinity,
+        )
+      : Infinity
+    // Keep this feature's name unless decimation drops it (no room to host it,
+    // and not pinned/highlighted). Measured against the NAME's own width, not the
+    // feature's widest label — a description or subfeature label being long says
+    // nothing about whether the name fits. A dropped name is recorded so it is
+    // removed after layout.
+    const keepName =
+      showLabels &&
+      !!labelInfo?.hasName &&
+      keepFeatureLabel(
+        labelDecimation,
+        availableRoomPx,
+        labelInfo.widths.name,
+        pinnedFeatureIds.has(id),
+        labelRoomFactor,
+      )
+    if (showLabels && !!labelInfo?.hasName && !keepName) {
+      droppedLabelIds.add(id)
+    }
+    // A dropped name removes only the name (applyLayoutToRegion), so a
+    // description still draws and still needs its row reserved.
+    const keepDescription = showDescriptions && !!labelInfo?.hasDescription
+
+    // bodyHeightPx is the raw worker height times the compact multiplier; add the
+    // mode's inter-row gap (rowPadding) so rows pack tightly. Each kept label
+    // line reserves the mode's resolved font size (labelFontPx) so compact rows
+    // shrink with the smaller text the renderers draw.
+    const labelLines = (keepName ? 1 : 0) + (keepDescription ? 1 : 0)
+    const ext: PackedExtent = {
+      layoutStartBp: geom.startBp,
+      layoutEndBp: geom.endBp,
+      height: geom.bodyHeightPx + rowPadding + labelLines * labelFontPx,
+    }
+
+    // Widen the layout span by the label overhang so the packer keeps a kept
+    // name off its neighbor's row. A reversed region overhangs toward lower bp
+    // (widen layoutStartBp); otherwise toward higher bp (widen layoutEndBp).
+    // Gated on the feature reserving a name or description line, so one carrying
+    // nothing but a subfeature label reserves no overhang.
+    const reservesLabel = keepName || keepDescription
+    const overhangPx =
+      labelInfo && reservesLabel
+        ? keptOverhangWidthPx(labelInfo.widths, keepName, keepDescription)
+        : 0
+    if (overhangPx > 0) {
+      const labelBp = overhangPx * bpPerPx
+      if (geom.hasNonReversed) {
+        ext.layoutEndBp = Math.max(ext.layoutEndBp, geom.startBp + labelBp)
+      }
+      if (geom.hasReversed) {
+        ext.layoutStartBp = Math.min(ext.layoutStartBp, geom.endBp - labelBp)
+      }
+    }
+    packed.set(id, ext)
+  }
+  return { packed, droppedLabelIds }
+}
+
+// Pack a prepared ref-group into rows at one `labelRoomFactor`.
+function packPreparedRef(
+  prep: PackPrep,
+  inputs: LayoutInputs,
+  metrics: DisplayModeMetrics,
   // Each feature's y (px) in the previous layout, if any. Used only to order
   // insertion, not to force a row — see the sort below.
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
+  const { bpPerPx, pinnedFeatureIds } = inputs
+  const { heightMultiplier, singleRow } = metrics
+  const { features, solidSpansPx, labeledFeatureIds } = prep
+  const { packed, droppedLabelIds } = decideLabelReservations(
+    prep,
+    inputs,
+    metrics,
+  )
   // GranularRectLayout quantizes rows to pitchY (default 10px), so tops snap to
   // a 10px grid and compact/superCompact features can't pack below one grid
   // cell. Shrink the grid with the mode so the row spacing tightens too — else
@@ -618,175 +1022,6 @@ function packRef(
   // to convey density.
   const collapsedFeatureIds = new Set<string>()
 
-  const labelInfoByFeatureId = new Map<
-    string,
-    { hasName: boolean; hasDescription: boolean; maxLabelWidthPx: number }
-  >()
-  for (const [, data] of regions) {
-    for (const labelData of Object.values(data.floatingLabelsData)) {
-      const targetId = labelData.parentFeatureId ?? labelData.featureId
-      const widthPx = reservedLabelWidthPx(
-        labelData,
-        showLabels,
-        showDescriptions,
-      )
-      const existing = labelInfoByFeatureId.get(targetId)
-      if (existing) {
-        if (labelData.nameLabel) {
-          existing.hasName = true
-        }
-        if (labelData.descriptionLabel) {
-          existing.hasDescription = true
-        }
-        if (widthPx > existing.maxLabelWidthPx) {
-          existing.maxLabelWidthPx = widthPx
-        }
-      } else {
-        labelInfoByFeatureId.set(targetId, {
-          hasName: !!labelData.nameLabel,
-          hasDescription: !!labelData.descriptionLabel,
-          maxLabelWidthPx: widthPx,
-        })
-      }
-    }
-  }
-
-  // Track per-feature whether it appears in any reversed/non-reversed region
-  // so label-overhang space can be reserved on the correct side(s). In a
-  // reversed region the label visually extends toward lower bp, so the
-  // overhang must widen layoutStartBp; otherwise it widens layoutEndBp.
-  interface FeatureExtent {
-    startBp: number
-    endBp: number
-    layoutStartBp: number
-    layoutEndBp: number
-    // Compact-scaled feature-body height (px), pre-label. `height` below adds the
-    // reserved label line(s) once the keep decision is made.
-    bodyHeightPx: number
-    height: number
-    strand: number
-    hasReversed: boolean
-    hasNonReversed: boolean
-    densityFade: boolean
-    // Whether this feature reserves any label line (name kept and/or description
-    // shown). Gates the horizontal label-overhang reservation below so a
-    // decimated (name-dropped) feature reserves no overhang.
-    reservesLabel: boolean
-  }
-  // Features whose name was decimated away (`fitWidth`): their reserved row
-  // height and overhang are skipped here, and their floatingLabelsData entry is
-  // deleted in applyLayoutToRegion so no renderer/hit-test draws the dropped
-  // name. Empty under the default `all` policy.
-  const droppedLabelIds = new Set<string>()
-
-  // Pass 1: gather each feature's extent and reversed/non-reversed sides. The
-  // keep-name decision is deferred to pass 2 because `fitWidth` decimation needs
-  // every feature's extent first, to measure the overhang whitespace between
-  // neighbors.
-  const allFeatures = new Map<string, FeatureExtent>()
-  for (const [displayedRegionIndex, data] of regions) {
-    const reversed = reversedRegions.has(displayedRegionIndex)
-    for (const item of data.flatbushItems) {
-      const existing = allFeatures.get(item.featureId)
-      if (existing) {
-        if (reversed) {
-          existing.hasReversed = true
-        } else {
-          existing.hasNonReversed = true
-        }
-      } else {
-        allFeatures.set(item.featureId, {
-          startBp: item.startBp,
-          endBp: item.endBp,
-          layoutStartBp: item.startBp,
-          layoutEndBp: item.endBp,
-          bodyHeightPx: item.featureHeightPx,
-          height: 0,
-          strand: item.strand ?? 0,
-          hasReversed: reversed,
-          hasNonReversed: !reversed,
-          densityFade: item.densityFade,
-          reservesLabel: false,
-        })
-      }
-    }
-  }
-
-  // `fitWidth` keeps a name where the box plus its overhang whitespace can host
-  // it; measure that per-side room once all extents are known. The default `all`
-  // policy keeps every name, so it never needs this.
-  const overhangRoom =
-    labelDecimation === 'fitWidth'
-      ? labelOverhangRoomPx(allFeatures, bpPerPx)
-      : undefined
-
-  // Pass 2: decide each feature's kept label lines, reserve their row height,
-  // and widen its layout span by the reserved label overhang.
-  for (const [id, ext] of allFeatures) {
-    const labelInfo = labelInfoByFeatureId.get(id)
-    // Whitespace the name overhang can use, on the side(s) this feature points:
-    // the min across the sides it occupies so a feature spanning both directions
-    // must clear on both. Infinity (no room measured) under the `all` policy.
-    const availableRoomPx = overhangRoom
-      ? Math.min(
-          ext.hasNonReversed ? overhangRoom.rightRoom.get(id)! : Infinity,
-          ext.hasReversed ? overhangRoom.leftRoom.get(id)! : Infinity,
-        )
-      : Infinity
-    // Keep this feature's name unless decimation drops it (no room to host it,
-    // and not pinned/highlighted). A dropped name is recorded so its label entry
-    // is deleted after layout.
-    const keepName =
-      showLabels &&
-      !!labelInfo?.hasName &&
-      keepFeatureLabel(
-        labelDecimation,
-        availableRoomPx,
-        labelInfo.maxLabelWidthPx,
-        pinnedFeatureIds.has(id),
-        labelRoomFactor,
-      )
-    // A feature that had a name but didn't keep it is decimated away, and
-    // applyLayoutToRegion deletes its WHOLE floatingLabelsData entry (the
-    // description with it). So don't reserve a description row that would then
-    // never draw — keep the reserved height in step with what actually renders.
-    // (On live paths this is moot: fitWidth decimation always runs with
-    // showDescriptions=false; the guard just removes the latent contradiction.)
-    const nameDropped = showLabels && !!labelInfo?.hasName && !keepName
-    if (nameDropped) {
-      droppedLabelIds.add(id)
-    }
-    const keepDescription =
-      showDescriptions && !!labelInfo?.hasDescription && !nameDropped
-
-    // bodyHeightPx is already compact-scaled (see applyHeightScale); add the
-    // mode's inter-row gap (rowPadding) so rows pack tightly. Each kept label
-    // line reserves the mode's resolved font size (labelFontPx) so compact rows
-    // shrink with the smaller text the renderers draw.
-    let height = ext.bodyHeightPx + rowPadding
-    if (keepName) {
-      height += labelFontPx
-    }
-    if (keepDescription) {
-      height += labelFontPx
-    }
-    ext.height = height
-    ext.reservesLabel = keepName || keepDescription
-
-    // Widen the layout span by the label overhang so the packer keeps a kept
-    // name off its neighbor's row. A reversed region overhangs toward lower bp
-    // (widen layoutStartBp); otherwise toward higher bp (widen layoutEndBp).
-    if (labelInfo && ext.reservesLabel) {
-      const labelBp = labelInfo.maxLabelWidthPx * bpPerPx
-      if (ext.hasNonReversed) {
-        ext.layoutEndBp = Math.max(ext.layoutEndBp, ext.startBp + labelBp)
-      }
-      if (ext.hasReversed) {
-        ext.layoutStartBp = Math.min(ext.layoutStartBp, ext.endBp - labelBp)
-      }
-    }
-  }
-
   // Insertion order = priority for the low rows in greedy first-fit. Features
   // that sat near the top of the previous layout are inserted first so they
   // keep those low rows across a zoom re-pack (when label overhang shifts the
@@ -797,7 +1032,7 @@ function packRef(
   // would pack on its own. Ties fall back to layoutStartBp for determinism.
   // Pinned features sort ahead of all others (before the prior-y ordering) so
   // they claim the lowest rows in their bp range across every re-pack.
-  const sorted = [...allFeatures.entries()].sort(([idA, a], [idB, b]) => {
+  const sorted = [...packed.entries()].sort(([idA, a], [idB, b]) => {
     const pinA = pinnedFeatureIds.has(idA)
     const pinB = pinnedFeatureIds.has(idB)
     if (pinA !== pinB) {
@@ -816,17 +1051,9 @@ function packRef(
     }
     return a.layoutStartBp - b.layoutStartBp
   })
-  // Box px-spans of the visible (non-collapsing) features. A sub-pixel fade box
-  // may collapse onto row 0 only where it doesn't overlap one of these — else it
-  // must stack, or it renders on top of the visible feature (a 1bp SNP sitting
-  // inside a wide gene box is the canonical case).
-  const solidSpansPx = mergeIntervals(
-    [...allFeatures.values()]
-      .filter(ext => !isSubPixelFade(ext, bpPerPx))
-      .map(ext => [ext.startBp / bpPerPx, ext.endBp / bpPerPx]),
-  )
 
   for (const [id, ext] of sorted) {
+    const geom = features.get(id)!
     // Collapsed mode: every feature shares row 0. No greedy stacking, no
     // sub-pixel density collapse — just one overlapping row.
     if (singleRow) {
@@ -843,9 +1070,9 @@ function packRef(
     // otherwise land on top of that feature. Match the render extent to the
     // shader's min-draw clamp (MIN_RECT_WIDTH_PX * 2, anchored at the start) so a
     // mark abutting a visible feature stacks rather than overprinting it.
-    const boxStartPx = ext.startBp / bpPerPx
+    const boxStartPx = geom.startBp / bpPerPx
     const boxEndPx = Math.max(
-      ext.endBp / bpPerPx,
+      geom.endBp / bpPerPx,
       boxStartPx + MIN_RECT_WIDTH_PX * 2,
     )
     // A collapsed box reserves no horizontal label space, so a labeled sub-pixel
@@ -853,17 +1080,15 @@ function packRef(
     // still renders at the feature's left edge, and piling several onto row 0
     // paints their names on top of each other. Send it through addRect so its
     // label width is reserved and it stacks like every other labeled feature.
-    const hasRenderedLabel =
-      (labelInfoByFeatureId.get(id)?.maxLabelWidthPx ?? 0) > 0
     const collapses =
-      isSubPixelFade(ext, bpPerPx) &&
-      !hasRenderedLabel &&
+      isSubPixelFade(geom, bpPerPx) &&
+      !labeledFeatureIds.has(id) &&
       !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
     if (collapses) {
       layoutMap.set(id, 0)
       collapsedFeatureIds.add(id)
     } else {
-      const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
+      const { left: arrowLeft, right: arrowRight } = strandArrowPadding(geom)
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
       const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
       // A null top means the feature overflowed maxHeight. This is expected
@@ -949,21 +1174,23 @@ function applyLayoutToRegion(
     info.bottomPx += offset
   }
 
-  // Drop labels whose feature overflowed maxHeight (the feature itself doesn't
-  // render, and we don't want to pay the React reconciliation cost of emitting
-  // thousands of off-screen <div> labels in useFloatingLabels) or whose name was
-  // decimated away (no row height was reserved for it, so drawing it would
-  // overlap the boxes).
+  // Drop the whole entry for a feature that overflowed maxHeight: the feature
+  // itself doesn't render, and we don't want to pay the React reconciliation cost
+  // of emitting thousands of off-screen <div> labels in useFloatingLabels.
+  //
+  // A decimated feature keeps its entry and loses only `nameLabel` — that is the
+  // one label the decimation ruled on, and it's the one whose row height went
+  // unreserved, so drawing it would overlap the boxes. Its description and
+  // subfeature label still have reserved space and still draw.
   for (const [key, labelData] of Object.entries(data.floatingLabelsData)) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
     const offset = layoutMap.get(layoutKey)
-    if (
-      offset === undefined ||
-      offset === OFFSCREEN_Y ||
-      droppedLabelIds.has(layoutKey)
-    ) {
+    if (offset === undefined || offset === OFFSCREEN_Y) {
       delete data.floatingLabelsData[key]
       continue
+    }
+    if (droppedLabelIds.has(layoutKey)) {
+      delete labelData.nameLabel
     }
     labelData.topY += offset
   }

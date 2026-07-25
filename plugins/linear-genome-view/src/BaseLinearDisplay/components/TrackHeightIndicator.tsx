@@ -21,6 +21,13 @@ const useStyles = makeStyles()(theme => ({
       background: theme.palette.action.hover,
     },
   },
+  // Dropping features outright is data loss, so the button has to read as
+  // "something is wrong here" without a hover — a tooltip nobody opens is not a
+  // disclosure. Still the same quiet button, just warning-toned.
+  truncated: {
+    borderColor: theme.palette.warning.main,
+    color: theme.palette.warning.main,
+  },
 }))
 
 // Persistent bottom-right track-sizing switcher (fixed / autogrow / fit),
@@ -32,22 +39,34 @@ const useStyles = makeStyles()(theme => ({
 // scroll hint while
 // content overflows under scrollZoom — where a plain wheel zooms the view, so
 // scrolling the overflow needs shift+wheel.
+//
+// `truncatedCount` is items the layout could not place at all (past its row
+// limit) — not scrolled out of view, absent. It rides here because the track's
+// height and density are what cause it and what can relieve it, and because a
+// silently incomplete track is worse than an ugly one.
 export default function TrackHeightIndicator({
   heightMode,
   hasOverflow,
   scrollZoom,
   noun,
+  truncatedCount = 0,
   onSetHeightMode,
 }: {
   heightMode: HeightMode
   hasOverflow: boolean
   scrollZoom: boolean
   noun: string
+  truncatedCount?: number
   onSetHeightMode: (mode: HeightMode) => void
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const tooltip = [
     'Track sizing',
+    // ' — ' is already this tooltip's segment separator, so keep the segment
+    // itself free of one.
+    truncatedCount > 0
+      ? `${truncatedCount.toLocaleString()} ${noun}${truncatedCount > 1 ? 's' : ''} not shown (past the layout row limit; filter or zoom in)`
+      : undefined,
     hasOverflow && scrollZoom ? 'shift+wheel to scroll' : undefined,
   ]
     .filter(Boolean)
@@ -55,7 +74,7 @@ export default function TrackHeightIndicator({
   return (
     <CascadingMenuButton
       size="small"
-      className={classes.button}
+      className={cx(classes.button, truncatedCount > 0 && classes.truncated)}
       stopPropagation
       tooltip={tooltip}
       menuItems={getHeightModeOptions(noun).map(option => ({

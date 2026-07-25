@@ -21,13 +21,20 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearCanvasBaseDisplay',
     {
+      // NOT a cap on the layout. It bounds how tall autogrow ("grow") mode will
+      // size the track (naturalContentHeight); in fixed and fit modes the height
+      // comes from the `height` slot and content taller than the track scrolls,
+      // unbounded by this. The packer has its own, separate ceiling —
+      // GranularRectLayout's row limit — past which features are dropped entirely
+      // (surfaced as truncatedFeatureCount). Two different limits; don't conflate.
       /**
        * #slot
        */
       maxHeight: {
         type: 'number',
         defaultValue: 1200,
-        description: 'Maximum height of the display in pixels',
+        description:
+          'Maximum height in pixels that autogrow mode will size this display to (does not limit fixed or fit mode, where taller content scrolls)',
         advanced: true,
       },
       // maxFeatureScreenDensity is inherited from baseLinearDisplayConfigSchema

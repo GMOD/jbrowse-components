@@ -67,6 +67,7 @@ export interface LinearBasicDisplayModel {
   error: unknown
   maxY: number
   hasOverflow: boolean
+  truncatedFeatureCount: number
   contentHeight: number
   scrollableHeight: number
   heightMode: HeightMode
@@ -607,6 +608,7 @@ const FeatureBody = observer(function FeatureBody({
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}
           noun="feature"
+          truncatedCount={model.truncatedFeatureCount}
           onSetHeightMode={mode => {
             model.setHeightMode(mode)
           }}
