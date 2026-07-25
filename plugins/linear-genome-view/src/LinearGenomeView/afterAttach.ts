@@ -9,32 +9,15 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
+import { unknownInitKeys } from './initKeys.ts'
 import { normalizeTrackInit } from './normalizeTrackInit.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-// Derived from InitState so the two can't drift: the Record requires exactly
-// one entry per InitState key, so adding/removing a field without updating
-// here is a compile error rather than a key that silently warns as "unknown".
-const knownInitKeyMap: Record<keyof InitState, true> = {
-  loc: true,
-  grow: true,
-  assembly: true,
-  displayedRegionNames: true,
-  tracks: true,
-  tracklist: true,
-  nav: true,
-  highlight: true,
-}
-export const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
-
-// a declarative init is easy to typo (e.g. `tracksList`, `highlights`); MST
-// stores it as a frozen blob so a mistyped key would otherwise be silently
-// dropped with no diagnostic
 function warnUnknownInitKeys(init: InitState) {
-  const unknown = Object.keys(init).filter(k => !knownInitKeys.has(k))
+  const unknown = unknownInitKeys(init)
   if (unknown.length) {
     console.warn(
       `LinearGenomeView init ignored unknown key(s): ${unknown.join(', ')}`,
@@ -85,6 +68,15 @@ function showNamedRegions(
     if (regions.length) {
       self.setDisplayedRegions(regions)
       self.showAllRegions()
+    } else {
+      // a list that matches nothing leaves the view alone rather than blanking
+      // it, so say why. Otherwise a typo'd refName silently shows the whole
+      // genome and reads as displayedRegionNames being ignored
+      session.notify(
+        `displayedRegionNames matched no regions in ${assemblyName}: ${names.join(', ')}`,
+        'warning',
+      )
+      self.showAllRegionsInAssembly(assemblyName)
     }
   }
 }
@@ -223,6 +215,14 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
   // autorun observes init/initialized (read synchronously before any await) so
   // it re-fires when either changes, but a re-entrant pass while a drain is
   // in-flight is a no-op — drainInit already consumes whatever init is current.
+  //
+  // The flag is load-bearing, not incidental: `initialized` flips
+  // true→false→true when volatileWidth resets (StrictMode remount, dockview
+  // re-mount), which re-fires this whether it is an autorun or a reaction. The
+  // other way out (clearing `init` up front, the way SpreadsheetView does) is
+  // not available here, because `init` is what makes hasSomethingToShow /
+  // initPending report "loading" until navigation populates displayedRegions, so
+  // clearing it early flashes the import form mid-load.
   let draining = false
   addDisposer(
     self,
