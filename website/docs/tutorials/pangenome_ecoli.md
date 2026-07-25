@@ -223,11 +223,11 @@ Rank is the `SR` tag minigraph writes on every segment, and it counts build
 order: 0 is the first assembly on the command line (K12 here, the reference
 backbone), 1 is sequence first added when Sakai was folded in, 2 when CFT073
 was, 3 when NCTC86 was. So a rank-3 segment is sequence none of the three
-assemblies before it had. Only rank 0 has reference coordinates, which is why
-it is the only rank a linear view of K12 can show. A
-minigraph graph is also far less fragmented than a pggb one, since it records
-structural variation rather than every SNP, so a legible window is hundreds of
-kb rather than hundreds of bp.
+assemblies before it had. Only rank 0 has reference coordinates, which is why it
+is the only rank a linear view of K12 can show. A minigraph graph is also far
+less fragmented than a pggb one, since it records structural variation rather
+than every SNP, so a legible window is hundreds of kb rather than hundreds of
+bp.
 
 <Figure caption="The same four-strain minigraph window in the Graph genome view's anchored layout, colored by stable rank. The blue line is rank 0, the K12 reference backbone, drawn at the offsets its segments declare; the orange, red and purple segments below are higher-rank alternate alleles, joined to the backbone by the edges that thread each strain's path through the graph. Compare the pggb figure above, where the backbone has to be inferred by a force layout. The indexed figure further down puts a linear view of the same window above this layout." src="/img/pangenome/graph_rgfa.png" />
 
@@ -280,8 +280,8 @@ Launch view, then Graph genome view (this region)** opens the graph for whatever
 is on screen, up to 100 kb, past which the layout stops being legible and the
 view declines.
 
-Give the feature track a `color` jexl on the segment's `rank` and it paints in the
-graph view's own Stable rank colors, so a segment is the same color in both
+Give the feature track a `color` jexl on the segment's `rank` and it paints in
+the graph view's own Stable rank colors, so a segment is the same color in both
 panels:
 
 ```json
@@ -410,7 +410,13 @@ taffy index -i ecoli_pggb.taf.gz                        # -> .taf.gz.tai
 }
 ```
 
-<Figure caption="The graph's whole-genome alignment projected onto K12: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12. This shared-backbone window has all four strains aligning continuously, so each strain's mismatch columns read as SNP divergence from K12. NCTC86 aligns on the opposite strand and carries small insertions relative to K12 (the boxed runs)." src="/img/pangenome/maf.png" />
+<Figure caption="The graph's whole-genome alignment projected onto K12: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12. This shared-backbone window has all four strains aligning continuously, so each strain's mismatch columns read as SNP divergence from K12. NCTC86 carries small insertions relative to K12 (the boxed runs)." src="/img/pangenome/maf.png" />
+
+NCTC86 draws reverse-strand here because the hosted graph was built from
+GCF_003697165.2, which is stored in the opposite orientation to the
+GCF_002007705.1 NCTC86 this config loads. That is an accession mismatch pending
+a rebuild, not an inversion: against the loaded assembly K12 and NCTC86 align
+96.1% forward, like every other pair.
 
 The `samples` list fixes the row order and labels. Supply an `nhLocation` Newick
 tree instead to draw the rows as a dendrogram. The

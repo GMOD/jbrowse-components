@@ -317,6 +317,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // drop short minimap2 alignments so the shared backbone reads as
             // clean ribbons instead of a dense noise band
             minAlignmentLength: 10000,
+            // No autoDiagonalize. It reorders and flips a level's lower axis,
+            // and neither lever applies: each assembly is a single contig, so
+            // there is nothing to reorder, and every pair is >92% forward-strand
+            // (K12-Sakai 0.03 reverse bp, CFT073-NCTC86 0.07), so nothing to
+            // flip either — tested, the render is unchanged. The slant is not a
+            // rearrangement to correct: each row spans its own whole genome
+            // across the same pixel width, and the genomes differ in length
+            // (K-12 4.64 Mb vs Sakai 5.50 Mb), so a colinear alignment has to
+            // draw as a diagonal. Rotating the circular genomes to a common
+            // origin at build time is the only thing that would change it.
           },
         ],
       },
@@ -435,9 +445,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // feaR/feaB/tynA just upstream) has no alignment at all in Sakai
   // (1,446,100-1,467,908 bare) or CFT073 (1,446,270-1,465,276 bare), while
   // NCTC86 runs through it in one 33 kb block (1,434,958-1,467,909). Neither
-  // Sakai's nor CFT073's annotation carries a phenylacetate gene. Framing the
-  // 45 kb window puts the shared flanks on both sides of that break, so two
-  // sections visibly stop where the third continues.
+  // Sakai's nor CFT073's annotation carries a phenylacetate gene. The window
+  // puts the shared flanks on both sides of that break, so two lanes visibly
+  // stop where the third continues.
+  //
+  // The right edge reaches past 1,467,921 on purpose: the IS elements
+  // insD2/insC2/insI2 sit immediately downstream of the island, and each one
+  // aligns to ten-plus loci per strain. Under one-row-per-group those land on
+  // top of each other, so they read as the dark ticks that the shading is for —
+  // the same repeat pile that used to stack seven rows deep in every lane and
+  // squeeze the actual synteny into a sliver.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_one_vs_all',
@@ -450,7 +467,24 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'K12',
-            loc: 'chr:1,433,000-1,467,500',
+            loc: 'chr:1,440,000-1,473,000',
+            // The island itself, banded across every track so the gene block
+            // and the two lanes that stop at its left edge are one object
+            // rather than two things a reader has to line up by eye. Explicit
+            // rgba because getHighlightColor uses a supplied color as-is. 0.13
+            // is picked off the composite, not by eye: over white it lands at
+            // (250,240,224), an obvious cream, while over a forward-strand bar
+            // it moves (240,141,131) to (237,140,116) — invisible. That matters
+            // because darker salmon already MEANS overlap depth here, so a band
+            // heavy enough to tint the bars would read as data.
+            highlight: [
+              {
+                refName: 'chr',
+                start: 1446100,
+                end: 1467921,
+                color: 'rgba(214,137,16,0.13)',
+              },
+            ],
             tracks: [
               {
                 trackId: 'K12_genes',
@@ -462,51 +496,62 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'ecoli_ava',
                 type: 'LGVSyntenyDisplay',
                 groupBy: { type: 'mateAssembly' },
-                // sized to the four sections' actual rows. At 250 each section
-                // was mostly empty space, which is what made the figure read as
-                // an unexplained scatter of bars rather than four per-strain
-                // rows ("unclear what we are looking at" in review).
-                height: 210,
+                // Same thicker bar as the whole-genome figure below, and for
+                // the same reason: what the reader is asked to find is where a
+                // lane STOPS, and a 7px bar makes that a hairline.
+                featureHeight: 14,
+                // One row per strain (the LGVSyntenyDisplay default), so the
+                // track is its four lanes and nothing else. Stacked, the same
+                // four groups needed 210px, almost all of it empty: the row
+                // count came from the IS-element pile at the right edge, not
+                // from the synteny anyone is looking at.
+                height: 110,
               },
             ],
           },
         ],
       },
     ),
-    viewportHeight: 510,
+    viewportHeight: 432,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 12000,
-    // One callout naming what the section labels don't say: these are not four
-    // tracks, they are one track split by which strain each block aligns to.
-    // Anchored to the bottom section's chip and pushed right into the bare
-    // stretch, so it labels the sections without covering any block. The biology
-    // (which operon, why two stop) stays in the caption.
-    annotations: [
-      {
-        type: 'text',
-        text: 'each bar: K-12 aligned to that strain',
-        anchor: { text: 'NCTC86' },
-        dx: 640,
-        dy: -14,
-      },
-    ],
+    // No on-image callout. The stacked version needed one to explain that the
+    // scattered bars were four per-strain sections; four labelled lanes 16px
+    // apart say it themselves, and at this density any text box drawn over the
+    // track covers a lane. "One track, one lane per strain" moved to the caption.
   },
 
   // The whole-genome end of the same "One strain against all the others"
-  // section: one-vs-all zoomed all the way out over K-12's 4.6 Mb. Deliberately
-  // on ecoli_pggb_ava (AllVsAllIndexedPAFAdapter) rather than the in-memory
-  // ecoli_ava — a whole-chromosome one-vs-all is exactly the query the tabix
-  // index exists for, and it is the only figure covering the indexed adapter in
-  // a plain LGV. Grouped by mate assembly again, so each strain's rearrangements
-  // against K-12 read as their own band instead of one merged pileup.
+  // section: the figure above, zoomed all the way out over K-12's 4.6 Mb. Same
+  // track (ecoli_ava) on purpose — it is this tutorial's own all_vs_all.paf, and
+  // "the same mode zoomed out" should be literally the same lanes.
   //
-  // This renders the FINE (per-row CIGAR) tier, which is correct and not worth
-  // "fixing": the hosted .pif.gz does carry a coarse tier, but coarse is served
-  // only past coarseBpPerPxThreshold (10kb/px), and K-12's whole 4.6 Mb across a
-  // 1500px capture is ~3.2kb/px. A genome this small never reaches the coarse
-  // tier at any zoom, so no E. coli figure can demonstrate it — that needs a
-  // eukaryote-scale PIF.
+  // It used to run on ecoli_pggb_ava (AllVsAllIndexedPAFAdapter) to cover the
+  // indexed adapter in a plain LGV. That was wrong twice over, both in the
+  // hosted asset rather than in our code, and both invisible in a caption:
+  //
+  //  - Wrong NCTC86. jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_ava.pif.gz
+  //    carries NCTC86#1#chr = 4,903,501 bp (GCF_003697165.2) while every
+  //    assembly in that same config — and all_vs_all.paf.gz — is 5,111,920 bp
+  //    (GCF_002007705.1). The two deposits of the isolate are
+  //    reverse-complements, so all 34 K-12/NCTC86 rows drew reverse-strand: a
+  //    solid blue lane that reads as a whole-genome inversion and is an
+  //    accession mismatch. ecoli_cactus_ava has the same 4,903,501 NCTC86, so
+  //    the pangenome_cactus figures inherit it.
+  //  - Reciprocal duplication. pggb's wfmash step emits each pair in both
+  //    directions (K12|Sakai 21 rows and Sakai|K12 20 rows, and so on for all
+  //    six pairs), so mean depth is 2.0 across the whole genome and the overlap
+  //    shading darkened every lane uniformly — it meant "both directions", not
+  //    "repeats". The two directions segment differently, so nothing downstream
+  //    can dedupe them safely.
+  //
+  // all_vs_all.paf.gz has neither problem: 5,111,920 bp NCTC86, one direction
+  // per pair. Fixing the pggb asset needs a rebuild and re-upload, and even then
+  // the tabix point is thin here — a 4.6 Mb whole-chromosome query returns
+  // essentially the whole file, so the index saves nothing at this zoom. The
+  // prose now points at the make-pif section instead of claiming the figure
+  // demonstrates it.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
@@ -522,19 +567,29 @@ export const syntenySpecs: ScreenshotSpec[] = [
             loc: 'chr:1-4,641,652',
             tracks: [
               {
-                trackId: 'ecoli_pggb_ava',
+                trackId: 'ecoli_ava',
                 type: 'LGVSyntenyDisplay',
                 groupBy: { type: 'mateAssembly' },
-                // three mate sections of one row each — sized to them, so the
-                // figure is the bands rather than mostly empty track
-                height: 130,
+                // Per-base mismatches are sub-pixel at 3.2kb/px — thousands of
+                // inter-strain SNPs, each drawn at a 1px floor, painted every
+                // lane a solid brown-and-purple wall and buried the block
+                // structure the figure is about. Off, the lanes read as blocks
+                // and gaps, which is what the figure is for.
+                showMismatches: false,
+                // Thicker than the default bar: at 3.2kb/px the information is
+                // the WHITE, and a 3px gap in a 7px bar is not a gap anyone
+                // sees. 14px lanes make each strain-specific stretch read.
+                featureHeight: 14,
+                // four lanes, one row each — sized to them, so the figure is
+                // the lanes rather than mostly empty track
+                height: 110,
               },
             ],
           },
         ],
       },
     ),
-    viewportHeight: 320,
+    viewportHeight: 280,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 15000,

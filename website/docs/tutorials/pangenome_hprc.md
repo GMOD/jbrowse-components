@@ -143,8 +143,8 @@ That is the picture the graph is really about. The toolbar's **Layout** dropdown
 also offers an **anchored** layout that puts the x axis back on GRCh38, so the
 subgraph lines up under a linear view of the same window: the rank-0 backbone
 draws at its declared offsets with each alternate allele as a bar below it. Each
-rank becomes a parallel row, so a bubble reads as a pair of stalks rather than an
-eye, but the reference axis stays exact and the layout renders in about a
+rank becomes a parallel row, so a bubble reads as a pair of stalks rather than
+an eye, but the reference axis stays exact and the layout renders in about a
 millisecond.
 
 Loci where the graph is worth a look, all on GRCh38. Zoom to a few tens of kb,

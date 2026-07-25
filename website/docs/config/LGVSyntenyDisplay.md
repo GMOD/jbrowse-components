@@ -63,6 +63,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | ---------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [mouseover](#slot-mouseover)                   | `string`  | Tooltip shown on hovering a synteny feature; the default jexl expression renders both mates' names and locations.                                                                                           |
 | [showCoverage](#slot-showcoverage)             | `boolean` | Synteny reads hide the coverage histogram by default; overrides the inherited base alignments display's `showCoverage` default of `true`.                                                                   |
+| [collapseGroupRows](#slot-collapsegrouprows)   | `boolean` | One lane per group by default: an all-vs-all track grouped by mate assembly draws each mate genome as a single band, with repeat depth shown as darker shading rather than as extra rows.                   |
 | [largeFeaturesFirst](#slot-largefeaturesfirst) | `boolean` | Synteny lays large alignments out first so big syntenic blocks cluster at the top instead of interleaving with small ones; overrides the base alignments display's `largeFeaturesFirst` default of `false`. |
 
 <details>
@@ -100,6 +101,17 @@ base alignments display's `showCoverage` default of `true`.
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `false`
+
+#### slot: collapseGroupRows
+
+One lane per group by default: an all-vs-all track grouped by mate assembly
+draws each mate genome as a single band, with repeat depth shown as darker
+shading rather than as extra rows. Overrides the base alignments display's
+`collapseGroupRows` default of `false`, where a group is a read category and the
+stack itself is the information.
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: largeFeaturesFirst
 

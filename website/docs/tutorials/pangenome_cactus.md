@@ -143,7 +143,13 @@ Stack the four strains in a linear synteny view exactly as the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
 describes.
 
-<Figure caption="The Minigraph-Cactus graph's synteny projection: the four strains stacked K12 to NCTC86, a halSynteny ribbon between each adjacent pair drawn from the graph's HAL. The continuous diagonals are shared backbone; NCTC86 aligns to the others on the opposite strand (the crossed ribbons), the same orientation the pggb graph reports." src="/img/pangenome_cactus/synteny.png" />
+<Figure caption="The Minigraph-Cactus graph's synteny projection: the four strains stacked K12 to NCTC86, a halSynteny ribbon between each adjacent pair drawn from the graph's HAL. The continuous diagonals are shared backbone." src="/img/pangenome_cactus/synteny.png" />
+
+The NCTC86 ribbons cross because the hosted graph was built from
+GCF_003697165.2, which is stored in the opposite orientation to the
+GCF_002007705.1 NCTC86 this config loads. That is an accession mismatch pending
+a rebuild, not an inversion: against the loaded assembly K12 and NCTC86 align
+96.1% forward, like every other pair.
 
 ## Pangenome variants projection
 
@@ -308,9 +314,11 @@ coordinate (and a different length) in each strain. Read them off the synteny
 PAF rather than guessing: for the blue box the K12 window's end points fall in
 halSynteny blocks that place it at Sakai `chr:1,129,000-1,462,000`, CFT073
 `chr:1,044,000-1,243,500`, and NCTC86 `chr:2,972,000-3,062,000` (reverse
-orientation, so that ribbon crosses). The interactive equivalent is to navigate
-the K12 row, then right-click a ribbon and pick **Center on feature**, which
-puts the row below on the matching alignment.
+orientation, so that ribbon crosses; that window is in the graph's NCTC86, which
+is the wrong deposit per the note above, so it does not name the same locus in
+the NCTC86 you have loaded). The interactive equivalent is to navigate the K12
+row, then right-click a ribbon and pick **Center on feature**, which puts the
+row below on the matching alignment.
 
 Do not square the rows to a common width here. The span each row needs _is_ the
 result: 100 kb of K12 costs 333 kb in Sakai, 200 kb in CFT073, and 90 kb in

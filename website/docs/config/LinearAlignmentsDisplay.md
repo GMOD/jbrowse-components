@@ -85,6 +85,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                        |
 | [showSashimiLabels](#slot-showsashimilabels)               | `maybeBoolean`                                                   | Draw the supporting-read count on each sashimi arc                                                                                                                         |
 | [height](#slot-height)                                     | `number`                                                         |                                                                                                                                                                            |
+| [collapseGroupRows](#slot-collapsegrouprows)               | `boolean`                                                        | Only consulted while `groupBy` is in effect.                                                                                                                               |
 | [autoscale](#slot-autoscale)                               | `stringEnum` (local, localsd)                                    | Coverage autoscale type                                                                                                                                                    |
 | [scaleType](#slot-scaletype)                               | `stringEnum` (linear, log)                                       | Coverage scale type (linear or log)                                                                                                                                        |
 | [mismatchAlpha](#slot-mismatchalpha)                       | `maybeBoolean`                                                   | Fade mismatch bases by their per-base Phred quality.                                                                                                                       |
@@ -218,6 +219,17 @@ strand (null = ungrouped)
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
 `null` · _advanced_
+
+#### slot: collapseGroupRows
+
+Only consulted while `groupBy` is in effect. Collapsing trades the per-group
+stack for one lane per group, with overlap depth carried by the tint shading
+instead of by row count — the compact reading for a track with many groups (an
+all-vs-all synteny track's mate genomes). A group expanded from its label chip
+opts back out and draws a true stack.
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: autoscale
 

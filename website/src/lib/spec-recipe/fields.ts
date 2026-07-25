@@ -229,6 +229,13 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Show soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
+  // Same label in the same submenu on both displays that have the slot: the
+  // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
+  // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.
+  showMismatches: checkbox(
+    'Show... → Show mismatches',
+    'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
+  ),
   showOnlyGenes: checkbox('Show only genes'),
   showTranslation: checkbox('Show translation'),
   showSashimiLabels: checkbox('Sashimi arcs → Show labels'),

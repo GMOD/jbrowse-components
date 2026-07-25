@@ -1,6 +1,7 @@
 ---
 title: BLAT and in-silico PCR
-description: Map a sequence to genome coordinates, and find where primers amplify
+description:
+  Map a sequence to genome coordinates, and find where primers amplify
 guide_category: Other features
 ---
 

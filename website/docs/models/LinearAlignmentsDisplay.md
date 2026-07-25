@@ -168,6 +168,7 @@ State model factory for LinearAlignmentsDisplay
 | [largeFeaturesFirst](#getter-largefeaturesfirst)                                       | Getters    | LinearAlignmentsDisplay                               | Lay out the widest features in the lowest pileup rows (main-thread tier-2 relayout via laidOutPileupMap).                                                                                                                                                                                                                       |
 | [groupBy](#getter-groupby)                                                             | Getters    | LinearAlignmentsDisplay                               | In-track stacked grouping dimension (undefined = ungrouped).                                                                                                                                                                                                                                                                    |
 | [prefersOffset](#getter-prefersoffset)                                                 | Getters    | LinearAlignmentsDisplay                               | Offset the track label above the visualization when grouping, so the stacked group sections aren't hidden behind an overlapping label.                                                                                                                                                                                          |
+| [collapseGroupRows](#getter-collapsegrouprows)                                         | Getters    | LinearAlignmentsDisplay                               | Whether each group draws as a single row, its overlap depth carried by the tint layer rather than by stacking.                                                                                                                                                                                                                  |
 | [coverageIsLog](#getter-coverageislog)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [coverageStats](#getter-coveragestats)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [coverageDomain](#getter-coveragedomain)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
@@ -256,6 +257,7 @@ State model factory for LinearAlignmentsDisplay
 | [clearSortedBy](#action-clearsortedby)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [setLargeFeaturesFirst](#action-setlargefeaturesfirst)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [setGroupBy](#action-setgroupby)                                                       | Actions    | LinearAlignmentsDisplay                               | Set (or remove, when undefined) the in-track stacked grouping dimension.                                                                                                                                                                                                                                                        |
+| [setCollapseGroupRows](#action-setcollapsegrouprows)                                   | Actions    | LinearAlignmentsDisplay                               | Draw each group as one row (overlap depth shows as tint shading) rather than as its own stack.                                                                                                                                                                                                                                  |
 | [toggleGroupCollapsed](#action-togglegroupcollapsed)                                   | Actions    | LinearAlignmentsDisplay                               | Collapse/expand a stacked group's pileup (coverage stays visible).                                                                                                                                                                                                                                                              |
 | [toggleGroupExpanded](#action-togglegroupexpanded)                                     | Actions    | LinearAlignmentsDisplay                               | Expand a fit-to-viewport group back to the full `maxHeight` cap (show all its reads), or, if it already carries a height override (from expand or a drag), drop the override to return it to the fit budget.                                                                                                                    |
 | [resizeGroupHeight](#action-resizegroupheight)                                         | Actions    | LinearAlignmentsDisplay                               | Drag a stacked group's pileup band taller/shorter by `dy` px, capping how many rows that group lays out.                                                                                                                                                                                                                        |
@@ -641,6 +643,17 @@ data is needed.
 type prefersOffset = boolean
 ```
 
+#### getter: collapseGroupRows
+
+Whether each group draws as a single row, its overlap depth carried by the tint
+layer rather than by stacking. Gated on the grouping actually being honored
+(`prefersOffset`), so the slot can be a track-config default without an
+ungrouped view silently flattening its whole pileup onto one row.
+
+```ts
+type collapseGroupRows = boolean
+```
+
 #### getter: colorLegendCategories
 
 Read-color buckets actually present across the rendered reads, the single input
@@ -696,7 +709,7 @@ group out uncapped to count rows. Kept apart from the fit policy (row caps),
 which varies per call.
 
 ```ts
-type groupLayoutContext = { order: GroupId[]; rawByGroup: Map<string, Map<number, PileupDataResult>>; isChainMode: boolean; sortedBy: SortedBy | undefined; ... 5 more ...; colorTagMap: Record<...>; }
+type groupLayoutContext = { order: GroupId[]; rawByGroup: Map<string, Map<number, PileupDataResult>>; isChainMode: boolean; sortedBy: SortedBy | undefined; ... 6 more ...; collapseGroupRows: boolean; }
 ```
 
 #### getter: groupOrder
@@ -1282,6 +1295,17 @@ beats a configured `groupBy` default rather than falling back to it.
 
 ```ts
 type setGroupBy = (groupBy?: GroupBy | undefined) => void
+```
+
+#### action: setCollapseGroupRows
+
+Draw each group as one row (overlap depth shows as tint shading) rather than as
+its own stack. Clears the per-group height overrides: an override means "this
+lane opted out of the collapse", which is meaningless once every lane is a stack
+again.
+
+```ts
+type setCollapseGroupRows = (flag: boolean) => void
 ```
 
 #### action: toggleGroupCollapsed

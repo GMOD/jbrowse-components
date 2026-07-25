@@ -316,6 +316,11 @@ in-flight RPC, so an export fired right after a zoom/pan waits for fresh ribbons
 instead of capturing stale ones. No `regionTooLarge` state (synteny never gates
 on region size).
 
+`extraTerminal` covers the two states where the fetch autorun deliberately never
+runs — minimized, or a level whose two rows aren't both showing regions. Those
+displays draw nothing (`renderParams` is undefined for exactly the same pair),
+so a data-only gate would hang the export forever on data that is never coming.
+
 ```ts
 type svgReady = boolean
 ```
