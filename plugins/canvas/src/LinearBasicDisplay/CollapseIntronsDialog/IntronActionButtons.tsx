@@ -51,7 +51,13 @@ const IntronActionButtons = observer(function IntronActionButtons({
         }
   const run = (action: (a: NonNullable<typeof args>) => void) => {
     if (args) {
-      runIntronAction(view, () => action(args), handleClose)
+      runIntronAction(
+        view,
+        () => {
+          action(args)
+        },
+        handleClose,
+      )
     }
   }
   return (
