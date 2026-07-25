@@ -1,10 +1,18 @@
 import { csToCigar } from '@jbrowse/cigar-utils'
-import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
+import {
+  createStatusFanOut,
+  downloadStatus,
+  fetchAndMaybeUnzipText,
+} from '@jbrowse/core/util'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
 import { panSNPrefixes } from './pansn.ts'
 
 import type { BareFeature } from './mcscanUtil.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
+import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -123,6 +131,52 @@ export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
   return fetchAndMaybeUnzipText(file, opts)
 }
 
+/**
+ * {@link readFile} for a set of files downloaded at once (MCScan's BED sidecars
+ * plus its anchors/blocks file). They share one status field, so each gets its
+ * own {@link createStatusFanOut} slot: unslotted, the downloads took turns
+ * overwriting it and the first to finish blanked the label while the rest were
+ * still running. Aggregated they read as one Σbytes bar.
+ */
+export function readFiles(files: GenericFilehandle[], opts?: BaseOptions) {
+  const slot = createStatusFanOut(opts?.statusCallback)
+  return Promise.all(
+    files.map(file => readFile(file, { ...opts, statusCallback: slot() })),
+  )
+}
+
+/**
+ * Parse a whole flat file into records, one line at a time, under a determinate
+ * `label`d progress bar. `parseLine` returning undefined skips the line
+ * (comments, malformed rows).
+ */
+export function collectLines<T>({
+  buffer,
+  label,
+  parseLine,
+  opts,
+}: {
+  buffer: Uint8Array
+  label: string
+  parseLine: (line: string) => T | undefined
+  opts?: BaseOptions
+}) {
+  const records: T[] = []
+  parseLineByLine(
+    buffer,
+    line => {
+      const record = parseLine(line)
+      if (record !== undefined) {
+        records.push(record)
+      }
+      return true
+    },
+    opts?.statusCallback,
+    { label, stopToken: opts?.stopToken },
+  )
+  return records
+}
+
 // Identity in [0,1] from a parsed PAF row's `extra` map. Prefers the
 // `de:f:` tag (minimap2 / make-pif gap-compressed divergence) since it is
 // computed from the actual CIGAR — same identity source rustybam's `rb stats
@@ -194,6 +248,60 @@ export function parsePifLine(line: string) {
     strand: r.strand,
     extra: r.extra,
   }
+}
+
+/** A PIF row parsed into its anchor/mate roles — see {@link parsePifLine}. */
+export type PifLine = ReturnType<typeof parsePifLine>
+
+/**
+ * Minimal structural view of `@gmod/tabix`'s `TabixIndexedFile.getLines`, so
+ * this signature needn't name the concrete class.
+ */
+interface PifLineSource {
+  getLines(
+    refName: string,
+    start: number,
+    end: number,
+    opts: {
+      lineCallback: (line: string, fileOffset: number) => void
+      onProgress?: (bytesDownloaded: number, totalBytes?: number) => void
+    },
+  ): Promise<void>
+}
+
+/**
+ * Read one PIF range under a determinate download bar, parsing each line and
+ * checking the stop token as it goes. Shared by the two indexed PIF adapters,
+ * which previously wrapped the scan in a bare `updateStatus` — the only tabix
+ * adapters left showing a spinner where the rest show bytes, and the only ones
+ * that ran a cancelled query to completion.
+ */
+export function readPifLines({
+  pif,
+  seqid,
+  start,
+  end,
+  statusCallback,
+  stopTokenCheck,
+  lineCallback,
+}: {
+  pif: PifLineSource
+  seqid: string
+  start: number
+  end: number
+  statusCallback: StatusCallback
+  stopTokenCheck: StopTokenChecker
+  lineCallback: (line: PifLine, fileOffset: number) => void
+}) {
+  return downloadStatus('Downloading features', statusCallback, onProgress =>
+    pif.getLines(seqid, start, end, {
+      onProgress,
+      lineCallback: (line, fileOffset) => {
+        checkStopToken2(stopTokenCheck)
+        lineCallback(parsePifLine(line), fileOffset)
+      },
+    }),
+  )
 }
 
 // A file carries the coarse tier only if make-pif emitted at least one

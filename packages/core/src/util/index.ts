@@ -110,6 +110,7 @@ export {
   type StatusWithProgress,
   aggregateStatus,
   createProgressReporter,
+  createStatusFanOut,
   createStatusThrottle,
   downloadStatus,
   progressLabel,
@@ -523,6 +524,7 @@ export {
   type ActiveFetch,
   createStopTokenRotation,
 } from './createStopTokenRotation.ts'
+export { createSharedSetup } from './createSharedSetup.ts'
 export { isDataCurrent } from './isDataCurrent.ts'
 export {
   abortBreakPoint,
@@ -613,6 +615,5 @@ export {
 export {
   type AlignmentData,
   type DiagonalizationResult,
-  type DiagonalizeTick,
   diagonalizeRegions,
 } from './diagonalizeRegions.ts'

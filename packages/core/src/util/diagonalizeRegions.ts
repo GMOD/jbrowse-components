@@ -1,5 +1,9 @@
 import { cmpStr } from './cmpStr.ts'
+import { createProgressReporter } from './progress.ts'
+import { checkStopToken } from './stopToken.ts'
 
+import type { StatusCallback } from './progress.ts'
+import type { StopToken } from './stopToken.ts'
 import type { Region } from './types/index.ts'
 
 export interface AlignmentData {
@@ -19,10 +23,6 @@ export interface DiagonalizationResult {
     regionsReversed: number
   }
 }
-
-// onTick: sync callback fired at internal phase boundaries. Throw to abort
-// (e.g. wrap checkStopToken from a worker).
-export type DiagonalizeTick = () => void
 
 // Accumulated stats for one (query chrom, reference chrom) pair. `bases` and
 // `strandWeightedSum` are sums of integers, so they are exact and independent of
@@ -109,8 +109,24 @@ export async function diagonalizeRegions(
   alignments: AlignmentData[],
   referenceRegions: Region[],
   currentRegions: Region[],
-  onTick?: DiagonalizeTick,
+  {
+    stopToken,
+    statusCallback,
+  }: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
 ): Promise<DiagonalizationResult> {
+  // Both passes below are long enough to notice on a whole-genome alignment —
+  // the grouping walks every alignment, and the ordering pass sorts each query
+  // chromosome's group. They used to share a single cancel check between them,
+  // so the whole grouping pass ran after a cancel and the bar sat on the
+  // fetch's last message throughout. Two reporters because the phases count
+  // different things (alignments, then chromosomes), so one auto-incrementing
+  // counter across both would report a meaningless fraction.
+  const reportGrouping = createProgressReporter({
+    label: 'Grouping alignments',
+    total: alignments.length,
+    statusCallback,
+    stopToken,
+  })
   // first appearance wins: a refName can appear in more than one reference
   // region, and the ordering key is where that chromosome starts on the axis
   const refOrder = new Map<string, number>()
@@ -125,6 +141,7 @@ export async function diagonalizeRegions(
   // neither an ordering index nor a comparable position.
   const queryGroups = new Map<string, Map<string, PairStats>>()
   for (const aln of alignments) {
+    reportGrouping()
     const refIndex = refOrder.get(aln.refRefName)
     if (refIndex !== undefined) {
       let group = queryGroups.get(aln.queryRefName)
@@ -150,8 +167,6 @@ export async function diagonalizeRegions(
     }
   }
 
-  onTick?.()
-
   const queryOrdering: {
     refName: string
     bestRefIndex: number
@@ -159,7 +174,14 @@ export async function diagonalizeRegions(
     shouldReverse: boolean
   }[] = []
 
+  const reportOrdering = createProgressReporter({
+    label: 'Ordering chromosomes',
+    total: queryGroups.size,
+    statusCallback,
+    stopToken,
+  })
   for (const [verticalChrom, group] of queryGroups) {
+    reportOrdering()
     let best: PairStats | undefined
     for (const data of group.values()) {
       // the refName tiebreak is explicit because Map iteration follows insertion
@@ -183,7 +205,7 @@ export async function diagonalizeRegions(
     }
   }
 
-  onTick?.()
+  checkStopToken(stopToken)
 
   queryOrdering.sort(
     (a, b) =>

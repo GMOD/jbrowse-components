@@ -1,10 +1,10 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { doesIntersect2, updateStatus } from '@jbrowse/core/util'
+import { createSharedSetup, doesIntersect2 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { parseBed, readFile } from '../util.ts'
+import { parseBed, readFiles } from '../util.ts'
 
 import type { MCScanSimpleAnchorsAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -30,31 +30,20 @@ type Row = [
 ]
 
 export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter<MCScanSimpleAnchorsAdapterConfig> {
-  private setupP?: Promise<{
-    assemblyNames: string[]
-    feats: Row[]
-  }>
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  async setup(opts: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
+  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
+
   async setupPre(opts: BaseOptions) {
-    const { statusCallback = () => {} } = opts
     const assemblyNames = this.getConf('assemblyNames')
     const pm = this.pluginManager
-    const bed1 = openLocation(this.getConf('bed1Location'), pm)
-    const bed2 = openLocation(this.getConf('bed2Location'), pm)
-    const mcscan = openLocation(this.getConf('mcscanSimpleAnchorsLocation'), pm)
-    const [bed1text, bed2text, mcscantext] = await updateStatus(
-      'Downloading data',
-      statusCallback,
-      () => Promise.all([bed1, bed2, mcscan].map(r => readFile(r, opts))),
+    const [bed1text, bed2text, mcscantext] = await readFiles(
+      [
+        openLocation(this.getConf('bed1Location'), pm),
+        openLocation(this.getConf('bed2Location'), pm),
+        openLocation(this.getConf('mcscanSimpleAnchorsLocation'), pm),
+      ],
+      opts,
     )
 
     const bed1Map = parseBed(bed1text!)

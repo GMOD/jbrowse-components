@@ -1,11 +1,14 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { doesIntersect2, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  createSharedSetup,
+  doesIntersect2,
+  fetchAndMaybeUnzip,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { getAssemblyNamesFromConf } from '../util.ts'
+import { collectLines, getAssemblyNamesFromConf } from '../util.ts'
 
 import type { BlastTabularAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -203,37 +206,20 @@ function createBlastLineParser(columns: string) {
 }
 
 export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTabularAdapterConfig> {
-  private setupP?: Promise<BlastRecord[]>
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
+  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
   async setupPre(opts?: BaseOptions): Promise<BlastRecord[]> {
-    const columns = this.getConf('columns')
-    const lines: BlastRecord[] = []
-    const cb = createBlastLineParser(columns)
-    parseLineByLine(
-      await fetchAndMaybeUnzip(
+    return collectLines({
+      buffer: await fetchAndMaybeUnzip(
         openLocation(this.getConf('blastTableLocation'), this.pluginManager),
         opts,
       ),
-      line => {
-        const res = cb(line)
-        if (res) {
-          lines.push(res)
-        }
-        return true
-      },
-      opts?.statusCallback,
-    )
-    return lines
+      label: 'Parsing BLAST table',
+      parseLine: createBlastLineParser(this.getConf('columns')),
+      opts,
+    })
   }
 
   async hasDataForRefName() {

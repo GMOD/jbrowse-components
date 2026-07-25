@@ -1,20 +1,22 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { getWeightedMeans, makeSyntenyFeature } from '../PAFAdapter/util.ts'
+import { parsePafBuffer } from '../PAFAdapter/PAFAdapter.ts'
+import {
+  loadPafRecords,
+  makeSyntenyFeature,
+  orientPafRecord,
+} from '../PAFAdapter/util.ts'
 import { panSNContig, panSNMatchesPrefix } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
-  parsePAFLine,
   resolvePanSNPrefix,
 } from '../util.ts'
 
-import type { PAFRecord } from '../PAFAdapter/util.ts'
 import type { AllVsAllPAFAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -29,11 +31,6 @@ interface RecordSide {
 }
 
 export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllPAFAdapterConfig> {
-  private setupP?: Promise<{
-    records: PAFRecord[]
-    sidesByContig: Map<string, RecordSide[]>
-  }>
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
   async hasDataForRefName() {
@@ -43,28 +40,15 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     return true
   }
 
-  async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
+  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
   async setupPre(opts?: BaseOptions) {
-    const lines: PAFRecord[] = []
-    parseLineByLine(
-      await fetchAndMaybeUnzip(
-        openLocation(this.getConf('pafLocation'), this.pluginManager),
-        opts,
-      ),
-      line => {
-        lines.push(parsePAFLine(line))
-        return true
-      },
-      opts?.statusCallback,
-    )
-    const records = getWeightedMeans(lines)
+    const records = await loadPafRecords({
+      file: openLocation(this.getConf('pafLocation'), this.pluginManager),
+      parse: parsePafBuffer,
+      opts,
+    })
+    opts?.statusCallback?.('Indexing alignments by contig')
 
     // Each record is filed under the stripped contig of both of its sides, so a
     // region query walks only the records touching that contig instead of the
@@ -135,12 +119,14 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
       // paralogy since the mate is the same sample, not the other band.
       for (const { index, flip } of sidesByContig.get(qref) ?? []) {
         const r = records[index]!
-        const sideName = flip ? r.qname : r.tname
-        const mateName = flip ? r.tname : r.qname
-        const start = flip ? r.qstart : r.tstart
-        const end = flip ? r.qend : r.tend
-        const mateStart = flip ? r.tstart : r.qstart
-        const mateEnd = flip ? r.tend : r.qend
+        const {
+          refName: sideName,
+          start,
+          end,
+          mateRefName: mateName,
+          mateStart,
+          mateEnd,
+        } = orientPafRecord(r, flip)
 
         // A degenerate self-diagonal is the SAME sequence aligned to itself at
         // the same coords (minimap2 without -X emits one per sequence); drop it

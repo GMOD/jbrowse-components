@@ -4,12 +4,34 @@ import { prepareDiagonalizeAdapter } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
 import type {
   DiagonalizeRunOpts,
   DiagonalizeStats,
 } from '@jbrowse/synteny-core'
 
 type Level = LinearSyntenyViewModel['levels'][number]
+
+// Levels run one after another, each restarting the RPC's phase labels from
+// "Fetching features". On a stacked N-way view that reads as a bar looping
+// forever, so each level's messages say which level they belong to. A single
+// level (the ordinary two-row view) is left unprefixed.
+function levelStatusCallback(
+  statusCallback: StatusCallback | undefined,
+  level: number,
+  levelCount: number,
+): StatusCallback | undefined {
+  return statusCallback === undefined || levelCount < 2
+    ? statusCallback
+    : status => {
+        const prefix = `Level ${level + 1}/${levelCount}: `
+        statusCallback(
+          typeof status === 'string'
+            ? `${prefix}${status}`
+            : { ...status, message: `${prefix}${status.message}` },
+        )
+      }
+}
 
 // Runs the DiagonalizeSynteny RPC (one call per level — the worker fetches the
 // alignments and runs the algorithm off the main thread, mirroring the dotplot
@@ -68,7 +90,11 @@ export async function runDiagonalize(
         currentRegions,
         bpPerPx: model.views[i]!.bpPerPx,
         stopToken: opts.stopToken,
-        statusCallback: opts.statusCallback,
+        statusCallback: levelStatusCallback(
+          opts.statusCallback,
+          i,
+          model.levels.length,
+        ),
       })
       if (result) {
         model.views[i + 1]!.setDisplayedRegions(result.newRegions)

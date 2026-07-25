@@ -1,6 +1,6 @@
 import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { dedupe } from '@jbrowse/core/util'
+import { createProgressReporter, dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
@@ -107,6 +107,11 @@ export async function executeDotplotFeaturesAndPositions({
       targetAssemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
     },
   )
+  // Give the synchronous prepare/projection work its own labels. Without them
+  // the bar held whatever the fetch phase last wrote for the entire CPU pass —
+  // seconds on a whole-genome PAF — which reads as a stuck bar. Mirrors the
+  // synteny worker's three phases.
+  statusCallback?.('Preparing dotplot features')
   const features = dedupe(rawFeatures, f => f.id())
 
   // RefName aliases are resolved on the main thread before the RPC (the worker
@@ -144,7 +149,17 @@ export async function executeDotplotFeaturesAndPositions({
   let skippedFeatureCount = 0
   const skippedHRefNames = new Set<string>()
   const skippedVRefNames = new Set<string>()
+  // report() runs the throttled stop-token check as well as advancing the bar,
+  // so cancelling a whole-genome projection lands mid-loop instead of only at
+  // the next phase boundary.
+  const report = createProgressReporter({
+    label: 'Computing dotplot positions',
+    total: count,
+    statusCallback,
+    stopToken,
+  })
   for (const f of features) {
+    report()
     // A comparative feature without a mate has no vertical-axis location to
     // plot, so skip it — mirrors extractAlignmentData's contract, and avoids
     // dereferencing an undefined mate below.
@@ -224,6 +239,7 @@ export async function executeDotplotFeaturesAndPositions({
 
   // Concatenate into the flat (data, offsets) pair the result ships. Offsets are
   // n+1 long so feature i is always cigarData.subarray(off[i], off[i+1]).
+  statusCallback?.('Packing CIGAR data')
   const cigarData = new Uint32Array(cigarTotal)
   const cigarOffsets = new Uint32Array(n + 1)
   let cigarWrite = 0

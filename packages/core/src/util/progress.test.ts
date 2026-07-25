@@ -1,6 +1,7 @@
 import {
   aggregateStatus,
   createProgressReporter,
+  createStatusFanOut,
   createStatusThrottle,
   downloadStatus,
   progressLabel,
@@ -381,5 +382,56 @@ describe('aggregateStatus', () => {
       { message: 'Downloading', current: 1, total: 100 },
     ])
     expect(statusFraction(agg)).toBeCloseTo(0.455)
+  })
+})
+
+describe('createStatusFanOut', () => {
+  it('sums concurrent slots into one bar rather than last-writer-wins', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => seen.push(s))
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading', current: 90, total: 100 })
+    b({ message: 'Downloading', current: 10, total: 100 })
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading',
+      current: 100,
+      total: 200,
+    })
+  })
+
+  it('keeps reporting the others when one slot finishes', () => {
+    // the bug this exists for: a finished operation writes '' to clear its
+    // phase, which used to blank the shared label while the rest ran on
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => seen.push(s))
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading', current: 100, total: 100 })
+    b({ message: 'Downloading', current: 20, total: 100 })
+    a('')
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading',
+      current: 20,
+      total: 100,
+    })
+  })
+
+  it('clears once every slot is done', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => seen.push(s))
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading', current: 1, total: 2 })
+    b('')
+    a('')
+    expect(seen.at(-1)).toBe('')
+  })
+
+  it('is inert without a downstream callback', () => {
+    const slot = createStatusFanOut(undefined)
+    expect(() => {
+      slot()('Downloading')
+    }).not.toThrow()
   })
 })

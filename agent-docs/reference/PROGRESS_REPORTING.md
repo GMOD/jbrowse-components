@@ -42,6 +42,8 @@ worker adapter → opts.statusCallback(status)
 - `downloadStatus(label, cb, fn(onProgress))` wraps every download adapter:
   label + clear + a byte-reporter adapting generic-filehandle2 / tabix / bam /
   cram. `total` is optional — an unknown Content-Length means indeterminate.
+  Reach for this, not `updateStatus`, whenever the reader accepts `onProgress`
+  — that is what turns a spinner into a byte bar.
 - `createProgressReporter` / `withProgress` for determinate worker CPU loops.
   `report()` auto-increments; the cancel-check and emit are counter-gated, so
   calling it every iteration is cheap.
@@ -49,9 +51,29 @@ worker adapter → opts.statusCallback(status)
 - `statusMessageText` / `statusFraction` / `statusProgressLabel` extract the
   parts back out.
 - `aggregateStatus` merges concurrent statuses into one `Σcurrent/Σtotal`.
+- `createStatusFanOut(cb)` is that aggregation as a transport: each `slot()` is
+  a `StatusCallback` remembering only its own value, and every write re-derives
+  the shared status from all slots. Hand a slot to each of N concurrent
+  operations sharing one status field.
 
-`parseLineByLine` (flat-file adapters) and `fetchAndMaybeUnzip`
-(bigwig/bigbed/hic/sequence) forward determinate progress through these.
+`parseLineByLine` (flat-file adapters, `label` + `stopToken` opts) and
+`fetchAndMaybeUnzip` (bigwig/bigbed/hic/sequence) forward determinate progress
+through these.
+
+## Shared setup reports to whoever is waiting
+
+An adapter that parses a whole file caches the work in one promise. Memoizing
+it by hand captures the *first* caller's `opts`, so its `statusCallback` is the
+only one the parse ever reaches: once that fetch is superseded (its callback
+gated off by the display's latest-wins guard) the fetch replacing it awaits the
+same promise in silence, behind a blank overlay. `createSharedSetup(run)`
+(`packages/core/src/util/createSharedSetup.ts`) fans progress out to the live
+waiter set instead, and clears the memo on failure so the next caller retries.
+
+It deliberately drops `stopToken`: the work is shared, so honoring one caller's
+cancel would abort a parse the caller replacing it is already waiting on, and
+reject them both. Cancellation belongs to per-call work (indexed range
+queries), which nobody else is waiting on.
 
 ## Concurrent fetches share one field — aggregate, don't clobber
 
@@ -61,16 +83,27 @@ status)` (keyed by `displayedRegionIndex`), which re-derives the shared fields
 via `aggregateStatus`. N downloads then read as one honest bar instead of
 last-writer thrash. `runFetch` / `cancelFetch` clear the map.
 
+The same hazard exists inside the worker wherever one `statusCallback` is
+handed to several operations at once — `BaseFeatureDataAdapter`'s multi-region
+`merge`, a `Promise.all` over sidecar files, a fan-out over tabix seqids. Give
+each a `createStatusFanOut` slot. The tell that it is missing: the first
+operation to finish writes the `''` that every phase helper clears with, so the
+label blanks while the rest are still running.
+
 ## The stream is throttled on the callback, never on the write
 
 An adapter emits progress ~40/s and each observable write repaints the overlay
 (and repositions its MUI Popper) — measured outpacing the view's own animation.
 `createStatusThrottle()` (`@jbrowse/core/util`) is the one leading-edge window
 (100ms): **one per display**, shared across its status callbacks so N parallel
-region fetches thin to one stream between them rather than N. Both fetch
-families own one — `FetchMixin` for the LGV displays, `createStopTokenRotation`
-for the bare-autorun fetches (dotplot, synteny) that compose no fetch mixin — so
-progress cadence is uniform whichever path a display took.
+region fetches thin to one stream between them rather than N. Three owners, so
+progress cadence is uniform whichever path a status took:
+
+- `FetchMixin` — the LGV displays
+- `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny) that
+  compose no fetch mixin
+- `withDiagonalizeProgress` and `DiagonalizeDialog` — the diagonalize RPC,
+  which drives a spinner and a dialog rather than a display's status fields
 
 Two rules the shape enforces:
 
@@ -102,3 +135,8 @@ clears it on pan/zoom, and `runFetch` start is the single un-cancel point.
 Text-indexing reports byte strings to the admin CLI, and worker sort/layout
 loops emit no per-iteration progress. Both could go determinate via
 `createProgressReporter` if a context ever surfaces them.
+
+`PAFAdapter.getFeatures` still linear-scans every record per region query
+(`AllVsAllPAFAdapter` builds a `sidesByContig` index for this); that is a
+performance gap, not a reporting one, but it is what makes the unreported
+stretches long enough to notice.

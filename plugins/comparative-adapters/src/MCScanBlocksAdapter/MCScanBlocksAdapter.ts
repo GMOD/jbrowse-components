@@ -1,10 +1,10 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { makeBlockFeatures } from '../mcscanUtil.ts'
-import { parseBed, readFile } from '../util.ts'
+import { parseBed, readFiles } from '../util.ts'
 
 import type { BareFeature, BlockRow } from '../mcscanUtil.ts'
 import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
@@ -18,24 +18,11 @@ import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 // the pair (query assembly, target assembly); with a legacy 2-entry
 // assemblyNames config and no target, the sole other assembly is the mate.
 export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBlocksAdapterConfig> {
-  private setupP?: Promise<{
-    blockAssemblies: string[]
-    bedMaps: Map<string, BareFeature>[]
-    blockLines: string[][]
-  }>
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  async setup(opts: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
+  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
   async setupPre(opts: BaseOptions) {
-    const { statusCallback = () => {} } = opts
     const blockAssemblies = this.getConf('blockAssemblies')
     const bedLocations = this.getConf('bedLocations') as FileLocation[]
     // one BED per column, all present: caught here so a misconfigured track
@@ -53,16 +40,12 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
       )
     }
     const pm = this.pluginManager
-    const blocks = openLocation(this.getConf('mcscanBlocksLocation'), pm)
-    const [blockstext, ...bedtexts] = await updateStatus(
-      'Downloading data',
-      statusCallback,
-      () =>
-        Promise.all(
-          [blocks, ...bedLocations.map(b => openLocation(b, pm))].map(r =>
-            readFile(r, opts),
-          ),
-        ),
+    const [blockstext, ...bedtexts] = await readFiles(
+      [
+        openLocation(this.getConf('mcscanBlocksLocation'), pm),
+        ...bedLocations.map(b => openLocation(b, pm)),
+      ],
+      opts,
     )
     return {
       blockAssemblies,

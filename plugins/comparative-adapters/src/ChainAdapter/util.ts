@@ -23,6 +23,8 @@
  * SOFTWARE.
  */
 
+import { createProgressReporter } from '@jbrowse/core/util'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function generateRecord(
@@ -54,8 +56,16 @@ function generateRecord(
 }
 
 export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
-  const { statusCallback = () => {} } = opts ?? {}
+  const { statusCallback = () => {}, stopToken } = opts ?? {}
   const decoder = new TextDecoder('utf8')
+  // Time-gated rather than the old every-500kB byte gate, and it carries the
+  // stop-token check, so a multi-GB chain is both labelled and interruptible.
+  const report = createProgressReporter({
+    label: 'Parsing chain',
+    total: buffer.length,
+    statusCallback,
+    stopToken,
+  })
   const records: ReturnType<typeof generateRecord>[] = []
 
   let t_name = ''
@@ -71,7 +81,6 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let cigarParts: string[] = []
 
   let blockStart = 0
-  let lastReported = 0
 
   while (blockStart < buffer.length) {
     const n = buffer.indexOf(10, blockStart)
@@ -166,14 +175,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
       }
     }
 
-    if (blockStart - lastReported > 500_000) {
-      statusCallback({
-        message: 'Loading',
-        current: blockStart,
-        total: buffer.length,
-      })
-      lastReported = blockStart
-    }
+    report(blockStart)
     blockStart = lineEnd + 1
   }
 

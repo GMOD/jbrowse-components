@@ -1,7 +1,11 @@
 import { useState } from 'react'
 
 import { Dialog, ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
-import { statusFraction, statusProgressLabel } from '@jbrowse/core/util'
+import {
+  createStatusThrottle,
+  statusFraction,
+  statusProgressLabel,
+} from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
@@ -64,15 +68,21 @@ export default function DiagonalizeDialog({
   async function start() {
     const stopToken = createStopToken()
     setState({ phase: 'running', stopToken, status: 'Preparing' })
+    // One window per run, so the RPC's ~40/s download ticks don't drive a
+    // React render each. Local to the run rather than a hook: its lifetime is
+    // exactly this dialog run.
+    const throttle = createStatusThrottle()
     try {
       const stats = await run({
         stopToken,
         // a status arriving after the run was cancelled or finished must not
         // resurrect the running phase
         statusCallback: status => {
-          setState(prev =>
-            prev.phase === 'running' ? { ...prev, status } : prev,
-          )
+          throttle.run(() => {
+            setState(prev =>
+              prev.phase === 'running' ? { ...prev, status } : prev,
+            )
+          })
         },
       })
       setState({ phase: 'done', summary: summarize(stats) })

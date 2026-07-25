@@ -1,4 +1,4 @@
-import { isAbortException } from '@jbrowse/core/util'
+import { createStatusThrottle, isAbortException } from '@jbrowse/core/util'
 import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -30,12 +30,19 @@ export async function withDiagonalizeProgress(
   model.setAwaitingAutoDiagonalize(true)
   const stopToken = createStopToken()
   model.setDiagonalizeStopToken(stopToken)
+  // The third owner of a progress stream, alongside FetchMixin and
+  // createStopTokenRotation: the diagonalize RPC emits at download granularity
+  // (~40/s) and every write repaints the reordering spinner, so it needs the
+  // same leading-edge window they use.
+  const throttle = createStatusThrottle()
   try {
     await run({
       stopToken,
       statusCallback: s => {
         if (isAlive(model)) {
-          model.setDiagonalizeStatus(s)
+          throttle.run(() => {
+            model.setDiagonalizeStatus(s)
+          })
         }
       },
     })

@@ -1,6 +1,11 @@
+import { fetchAndMaybeUnzip, updateStatus } from '@jbrowse/core/util'
+
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { orientAlignment } from '../csUtils.ts'
 import { pafIdentity } from '../util.ts'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 export interface PAFRecord {
   qname: string
@@ -82,6 +87,57 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   }
 
   return ret
+}
+
+/**
+ * The whole setup of every in-memory pairwise adapter: download the file, hand
+ * the buffer to a format-specific `parse`, then attach the per-pair
+ * weighted-mean identity. Written once so the five formats (PAF, MashMap,
+ * delta, chain, all-vs-all PAF) can't drift on their progress phases — the
+ * identity pass in particular walks every record twice and used to run
+ * unlabelled, holding the parse's last percentage on screen while it did.
+ */
+export async function loadPafRecords<T extends PAFRecord>({
+  file,
+  parse,
+  opts,
+}: {
+  file: GenericFilehandle
+  parse: (buffer: Uint8Array, opts?: BaseOptions) => T[]
+  opts?: BaseOptions
+}) {
+  const buffer = await fetchAndMaybeUnzip(file, opts)
+  const records = parse(buffer, opts)
+  return updateStatus('Computing identities', opts?.statusCallback, () =>
+    getWeightedMeans(records),
+  )
+}
+
+/**
+ * Resolve a PAF record to the perspective the view is anchored on: `flip` (the
+ * queried assembly is the PAF query side) puts the q* columns on the feature
+ * and the t* columns on the mate, otherwise the reverse. Shared by the two
+ * in-memory PAF adapters, which each spelled out the same six ternaries.
+ */
+export function orientPafRecord(record: PAFRecord, flip: boolean) {
+  const { qname, qstart, qend, tname, tstart, tend } = record
+  return flip
+    ? {
+        refName: qname,
+        start: qstart,
+        end: qend,
+        mateRefName: tname,
+        mateStart: tstart,
+        mateEnd: tend,
+      }
+    : {
+        refName: tname,
+        start: tstart,
+        end: tend,
+        mateRefName: qname,
+        mateStart: qstart,
+        mateEnd: qend,
+      }
 }
 
 // Build a SyntenyFeature from a parsed PAF row already resolved to the

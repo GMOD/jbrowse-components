@@ -1,6 +1,8 @@
 import { IntervalTree } from './IntervalTree.ts'
+import { createProgressReporter } from './progress.ts'
 
 import type { RpcStatus } from './progress.ts'
+import type { StopToken } from './stopToken.ts'
 
 export type StatusCallback = (arg: RpcStatus) => void
 export type LineCallback = (
@@ -80,13 +82,29 @@ export function makeFeatureIntervalTreeMap<
  * @param buffer - The buffer to parse
  * @param lineCallback - Callback function called for each line. Return false to stop parsing.
  * @param statusCallback - Optional callback for progress updates
+ * @param opts - `label` names the phase on the progress bar (a multi-phase
+ *   adapter wants "Parsing PAF", not another "Loading" indistinguishable from
+ *   the download that preceded it); `stopToken` makes a multi-GB parse
+ *   interruptible instead of running to completion after a cancel.
  */
 export function parseLineByLine(
   buffer: Uint8Array,
   lineCallback: LineCallback,
   statusCallback: StatusCallback = () => {},
+  opts: { label?: string; stopToken?: StopToken } = {},
 ) {
+  const { label = 'Loading', stopToken } = opts
   const decoder = new TextDecoder('utf8')
+  // Time-gated, not gated on a line counter: a file of few but very expensive
+  // lines would never reach a count mask, freezing the bar at 0% for the whole
+  // parse (the failure createProgressReporter documents). The stop-token check
+  // rides the same tick, so cancellation lands within one window.
+  const report = createProgressReporter({
+    label,
+    total: buffer.length,
+    statusCallback,
+    stopToken,
+  })
   let blockStart = 0
   let i = 0
 
@@ -104,15 +122,13 @@ export function parseLineByLine(
       }
     }
 
-    if (i++ % 10_000 === 0) {
-      statusCallback({
-        message: 'Loading',
-        current: blockStart,
-        total: buffer.length,
-      })
-    }
+    i++
+    report(blockStart)
 
     // If no newline found, we've reached the end
     blockStart = lineEnd + 1
   }
+  // Clear, so the finished parse's last percentage doesn't sit on screen
+  // through whatever unlabelled phase the caller runs next.
+  statusCallback('')
 }

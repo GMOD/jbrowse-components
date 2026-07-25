@@ -1,8 +1,9 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import { createStatusFanOut } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { panSNContig, panSNMatchesPrefix, panSNPrefixes } from '../pansn.ts'
 import {
@@ -10,10 +11,12 @@ import {
   assemblyForPanSNName,
   hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
-  parsePifLine,
+  readPifLines,
   resolveCoarseTier,
   resolvePanSNPrefix,
 } from '../util.ts'
+
+import type { PifLine } from '../util.ts'
 
 import type { AllVsAllIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -21,6 +24,28 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+
+// One-vs-all draws every mate, including same-sample paralogy: make-pif's
+// double-emit already keys each locus on its own contig, so viewing chr1
+// returns the chr1-anchored row and viewing chr2 the chr2-anchored row
+// (distinct fileOffsets = distinct ids). A synteny band narrows to its pair via
+// targetAssemblyName, which also drops paralogy. A degenerate self-diagonal
+// (the SAME sequence aligned to itself at the same coords) is skipped — tested
+// on the full PanSN names, since `grape#1#chr1` vs `grape#2#chr1` shares sample
+// and stripped contig yet is a real hap1-vs-hap2 alignment, and two samples
+// sharing a contig name (both `chr1`) can align at identical coords in a
+// conserved region. Mirrors AllVsAllPAFAdapter.
+function drawsHere(line: PifLine, targetPrefix: string | undefined) {
+  const selfDiagonal =
+    line.indexedName.slice(1) === line.mateName &&
+    line.mateStart === line.indexedStart &&
+    line.mateEnd === line.indexedEnd
+  return (
+    !selfDiagonal &&
+    (targetPrefix === undefined ||
+      panSNMatchesPrefix(line.mateName, targetPrefix))
+  )
+}
 
 export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<AllVsAllIndexedPAFAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -122,7 +147,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
-    const { statusCallback = () => {} } = opts
+    const { statusCallback = () => {}, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
@@ -146,62 +171,46 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
       const seqs =
         (await this.seqIndex(opts)).get(anchorPrefix)?.get(qref) ?? []
 
-      const label = 'Downloading features'
-      await updateStatus(label, statusCallback, () =>
-        Promise.all(
-          seqs.flatMap(seq =>
-            letters.map(letter =>
-              this.pif.getLines(letter + seq, start, end, {
-                lineCallback: (line, fileOffset) => {
-                  // The mate (columns 6/8/9) is a full PanSN name, no tier
-                  // letter; split it into sample + contig.
-                  const parsed = parsePifLine(line)
-                  const mateRefName = panSNContig(parsed.mateName)
-
-                  // One-vs-all draws every mate, including same-sample paralogy:
-                  // make-pif's double-emit already keys each locus on its own
-                  // contig, so viewing chr1 returns the chr1-anchored row and
-                  // viewing chr2 the chr2-anchored row (distinct fileOffsets =
-                  // distinct ids). A synteny band narrows to its pair via
-                  // targetAssemblyName, which also drops paralogy. A degenerate
-                  // self-diagonal (the SAME sequence aligned to itself at the
-                  // same coords) is skipped — tested on the full PanSN names,
-                  // since `grape#1#chr1` vs `grape#2#chr1` shares sample and
-                  // stripped contig yet is a real hap1-vs-hap2 alignment, and
-                  // two samples sharing a contig name (both `chr1`) can align at
-                  // identical coords in a conserved region. Mirrors
-                  // AllVsAllPAFAdapter.
-                  const selfDiagonal =
-                    parsed.indexedName.slice(1) === parsed.mateName &&
-                    parsed.mateStart === parsed.indexedStart &&
-                    parsed.mateEnd === parsed.indexedEnd
-                  const drawsHere =
-                    !selfDiagonal &&
-                    (targetPrefix === undefined ||
-                      panSNMatchesPrefix(parsed.mateName, targetPrefix))
-
-                  if (drawsHere) {
-                    observer.next(
-                      makeIndexedSyntenyFeature({
-                        line: parsed,
-                        fileOffset,
-                        assemblyName,
-                        refName: qref,
-                        mate: {
-                          start: parsed.mateStart,
-                          end: parsed.mateEnd,
-                          refName: mateRefName,
-                          assemblyName: assemblyForPanSNName(
-                            asmByPrefix,
-                            parsed.mateName,
-                          ),
-                        },
-                      }),
-                    )
-                  }
-                },
-              }),
-            ),
+      // One slot per concurrent getLines: they run under one Promise.all and
+      // would otherwise take turns overwriting the single status field, so the
+      // bar would jump between seqids and blank as soon as the first finished.
+      // Aggregated, a multi-haplotype anchor reads as one Σbytes bar.
+      const slot = createStatusFanOut(statusCallback)
+      const stopTokenCheck = createStopTokenChecker(stopToken)
+      await Promise.all(
+        seqs.flatMap(seq =>
+          letters.map(letter =>
+            readPifLines({
+              pif: this.pif,
+              seqid: letter + seq,
+              start,
+              end,
+              statusCallback: slot(),
+              stopTokenCheck,
+              lineCallback: (parsed, fileOffset) => {
+                if (drawsHere(parsed, targetPrefix)) {
+                  observer.next(
+                    makeIndexedSyntenyFeature({
+                      line: parsed,
+                      fileOffset,
+                      assemblyName,
+                      refName: qref,
+                      mate: {
+                        // The mate (columns 6/8/9) is a full PanSN name, no
+                        // tier letter; split it into sample + contig.
+                        start: parsed.mateStart,
+                        end: parsed.mateEnd,
+                        refName: panSNContig(parsed.mateName),
+                        assemblyName: assemblyForPanSNName(
+                          asmByPrefix,
+                          parsed.mateName,
+                        ),
+                      },
+                    }),
+                  )
+                }
+              },
+            }),
           ),
         ),
       )

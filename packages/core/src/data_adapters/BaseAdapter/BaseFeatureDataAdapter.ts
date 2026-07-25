@@ -1,6 +1,7 @@
 import { firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { createStatusFanOut } from '../../util/progress.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 import { BaseAdapter } from './BaseAdapter.ts'
 import { aggregateQuantitativeStats } from './stats.ts'
@@ -80,12 +81,26 @@ export abstract class BaseFeatureDataAdapter<
   /**
    * Adapters that are frequently called on multiple regions simultaneously
    * may want to implement a more efficient custom version of this method.
+   *
+   * The regions are fetched concurrently, so each gets its own
+   * {@link createStatusFanOut} slot rather than the caller's raw
+   * `statusCallback`: they all report the same phases ("Downloading
+   * features"), and sharing one status field meant the last writer won and the
+   * first region to finish cleared the label while the rest were still
+   * downloading. Aggregated, N regions read as one Σbytes bar — the same thing
+   * `FetchMixin.setRegionStatus` does for the per-region RPCs on the main
+   * thread.
    */
   public getFeaturesInMultipleRegions(
     regions: Region[],
     opts: BaseOptions = {},
   ) {
-    return merge(...regions.map(region => this.getFeatures(region, opts)))
+    const slot = createStatusFanOut(opts.statusCallback)
+    return merge(
+      ...regions.map(region =>
+        this.getFeatures(region, { ...opts, statusCallback: slot() }),
+      ),
+    )
   }
 
   /**

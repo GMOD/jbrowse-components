@@ -92,18 +92,16 @@ export async function executeDiagonalize(
   const targetAssemblyName = currentRegions[0]?.assemblyName
 
   // The getFeatures call upgrades "Fetching features" to a determinate
-  // download/parse bar while it runs. Fetch sequentially (not Promise.all): the
-  // adapters share one statusCallback, so concurrent fetches would clobber each
-  // other's bar.
+  // download/parse bar while it runs. Still fetched sequentially: the adapters
+  // are typically the same file at different perspectives, so serial fetching
+  // keeps peak worker memory to one adapter's records rather than all of them.
   statusCallback?.('Fetching features')
 
   const alignments: AlignmentData[] = []
-  for (const {
-    adapterConfig,
-    fetchRegions,
-    refRefNameMap,
-    queryRefNameMap,
-  } of adapters) {
+  for (const [
+    adapterIndex,
+    { adapterConfig, fetchRegions, refRefNameMap, queryRefNameMap },
+  ] of adapters.entries()) {
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager,
       sessionId,
@@ -118,6 +116,15 @@ export async function executeDiagonalize(
         targetAssemblyName,
       }),
       f => f.id(),
+    )
+    // Labelled because it is a distinct pass over hundreds of thousands of
+    // features; without it the bar sat on the fetch's last percentage. Numbered
+    // when there are several adapters, so a multi-track level doesn't look like
+    // it is repeating the same step.
+    statusCallback?.(
+      adapters.length > 1
+        ? `Extracting alignments (${adapterIndex + 1}/${adapters.length})`
+        : 'Extracting alignments',
     )
     // append element-by-element, not `push(...arr)`: whole-genome synteny
     // yields hundreds of thousands of alignments, and spreading that many
@@ -134,14 +141,13 @@ export async function executeDiagonalize(
     return null
   }
 
-  statusCallback?.(`Running diagonalization on ${alignments.length} alignments`)
+  // The algorithm labels and ticks its own two phases from here, so it reports
+  // a live percentage rather than one message held for its whole run.
   const result = await diagonalizeRegions(
     alignments,
     referenceRegions,
     currentRegions,
-    () => {
-      checkStopToken(stopToken)
-    },
+    { stopToken, statusCallback },
   )
 
   statusCallback?.('Diagonalization complete!')

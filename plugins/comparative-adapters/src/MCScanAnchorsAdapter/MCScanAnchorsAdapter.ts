@@ -1,43 +1,30 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { getBlockRefNames, makeBlockFeatures } from '../mcscanUtil.ts'
-import { parseBed, readFile } from '../util.ts'
+import { parseBed, readFiles } from '../util.ts'
 
-import type { BlockRow } from '../mcscanUtil.ts'
 import type { MCScanAnchorsAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter<MCScanAnchorsAdapterConfig> {
-  private setupP?: Promise<{
-    assemblyNames: string[]
-    feats: BlockRow[]
-  }>
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  async setup(opts: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
-  async setupPre(opts: BaseOptions) {
-    const { statusCallback = () => {} } = opts
-    const assemblyNames = this.getConf('assemblyNames')
+  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
+  async setupPre(opts: BaseOptions) {
+    const assemblyNames = this.getConf('assemblyNames')
     const pm = this.pluginManager
-    const bed1 = openLocation(this.getConf('bed1Location'), pm)
-    const bed2 = openLocation(this.getConf('bed2Location'), pm)
-    const mcscan = openLocation(this.getConf('mcscanAnchorsLocation'), pm)
-    const [bed1text, bed2text, mcscantext] = await updateStatus(
-      'Downloading data',
-      statusCallback,
-      () => Promise.all([bed1, bed2, mcscan].map(r => readFile(r, opts))),
+    const [bed1text, bed2text, mcscantext] = await readFiles(
+      [
+        openLocation(this.getConf('bed1Location'), pm),
+        openLocation(this.getConf('bed2Location'), pm),
+        openLocation(this.getConf('mcscanAnchorsLocation'), pm),
+      ],
+      opts,
     )
 
     const bed1Map = parseBed(bed1text!)

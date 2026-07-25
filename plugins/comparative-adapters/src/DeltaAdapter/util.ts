@@ -140,6 +140,7 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
       return true
     },
     statusCallback,
+    { label: 'Parsing delta', stopToken: opts?.stopToken },
   )
   return records
 }

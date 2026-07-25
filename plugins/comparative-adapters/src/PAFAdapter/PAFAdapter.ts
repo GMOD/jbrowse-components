@@ -1,45 +1,44 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { getAssemblyNamesFromConf, parsePAFLine } from '../util.ts'
-import { getWeightedMeans, makeSyntenyFeature } from './util.ts'
+import { collectLines, getAssemblyNamesFromConf, parsePAFLine } from '../util.ts'
+import {
+  loadPafRecords,
+  makeSyntenyFeature,
+  orientPafRecord,
+} from './util.ts'
 
 import type { PAFRecord } from './util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-export default class PAFAdapter extends BaseFeatureDataAdapter {
-  private setupP?: Promise<PAFRecord[]>
+export function parsePafBuffer(buffer: Uint8Array, opts?: BaseOptions) {
+  return collectLines({
+    buffer,
+    label: 'Parsing PAF',
+    parseLine: parsePAFLine,
+    opts,
+  })
+}
 
+export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
+  // One download+parse shared by every display on this track, reporting to
+  // whichever of them is currently waiting. Subclasses (delta, chain, MashMap)
+  // override setupPre alone.
+  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
-  async setupPre(opts?: BaseOptions) {
-    const lines: PAFRecord[] = []
-    parseLineByLine(
-      await fetchAndMaybeUnzip(
-        openLocation(this.getConf('pafLocation'), this.pluginManager),
-        opts,
-      ),
-      line => {
-        lines.push(parsePAFLine(line))
-        return true
-      },
-      opts?.statusCallback,
-    )
-    return getWeightedMeans(lines)
+  async setupPre(opts?: BaseOptions): Promise<PAFRecord[]> {
+    return loadPafRecords({
+      file: openLocation(this.getConf('pafLocation'), this.pluginManager),
+      parse: parsePafBuffer,
+      opts,
+    })
   }
 
   async hasDataForRefName() {
@@ -88,31 +87,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         console.warn(`${assemblyName} not found in this adapter`)
       } else {
         for (let i = 0; i < pafRecords.length; i++) {
-          const r = pafRecords[i]!
-
-          let start: number
-          let end: number
-          let refName: string
-          let mateName: string
-          let mateStart: number
-          let mateEnd: number
-
-          if (flip) {
-            start = r.qstart
-            end = r.qend
-            refName = r.qname
-            mateName = r.tname
-            mateStart = r.tstart
-            mateEnd = r.tend
-          } else {
-            start = r.tstart
-            end = r.tend
-            refName = r.tname
-            mateName = r.qname
-            mateStart = r.qstart
-            mateEnd = r.qend
-          }
-          const { extra, strand } = r
+          const record = pafRecords[i]!
+          const { refName, start, end, mateRefName, mateStart, mateEnd } =
+            orientPafRecord(record, flip)
           if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
             observer.next(
               makeSyntenyFeature({
@@ -121,13 +98,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 refName,
                 start,
                 end,
-                strand,
-                extra,
+                strand: record.strand,
+                extra: record.extra,
                 flip,
                 mate: {
                   start: mateStart,
                   end: mateEnd,
-                  refName: mateName,
+                  refName: mateRefName,
                   assemblyName: assemblyNames[+flip]!,
                 },
               }),

@@ -207,6 +207,33 @@ export function aggregateStatus(
 }
 
 /**
+ * Fan one status field out to several concurrent operations that would
+ * otherwise fight over it. Each `slot()` returns a {@link StatusCallback}
+ * remembering only its own latest value; every write re-derives the shared
+ * status from all slots through {@link aggregateStatus}, so N concurrent
+ * downloads read as one Σcurrent/Σtotal bar instead of last-writer-wins — and
+ * the first one to finish (which writes the `''` every phase helper clears
+ * with) can't blank the label while the others are still running.
+ *
+ * The worker-side counterpart to `FetchMixin.setRegionStatus`, which does the
+ * same keyed by region on the main thread. Use it wherever a `Promise.all` or
+ * an rxjs `merge` hands one `statusCallback` to several operations at once.
+ */
+export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
+  const slots: (RpcStatus | undefined)[] = []
+  return (): StatusCallback => {
+    const index = slots.length
+    slots.push(undefined)
+    return status => {
+      // '' is how updateStatus/downloadStatus signal "this phase is done", so
+      // it retires the slot rather than contributing an empty message.
+      slots[index] = status === '' ? undefined : status
+      statusCallback?.(aggregateStatus(slots) ?? '')
+    }
+  }
+}
+
+/**
  * Call once per outer-loop iteration. With no argument it auto-increments an
  * internal counter (the elegant default — `for (…) report()`); pass an explicit
  * `current` when the caller tracks its own position, e.g. a running offset that

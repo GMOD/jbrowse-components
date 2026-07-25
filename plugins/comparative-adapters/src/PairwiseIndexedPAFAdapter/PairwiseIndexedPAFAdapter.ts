@@ -3,12 +3,13 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import {
   getAssemblyNamesFromConf,
   hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
-  parsePifLine,
+  readPifLines,
   resolveCoarseTier,
 } from '../util.ts'
 
@@ -118,7 +119,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
-    const { statusCallback = () => {} } = opts
+    const { statusCallback = () => {}, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
@@ -146,28 +147,30 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]!
 
-      const label = 'Downloading features'
-      await updateStatus(label, statusCallback, () =>
-        this.pif.getLines(letter + query.refName, query.start, query.end, {
-          lineCallback: (line, fileOffset) => {
-            const parsed = parsePifLine(line)
-            observer.next(
-              makeIndexedSyntenyFeature({
-                line: parsed,
-                fileOffset,
-                assemblyName,
-                refName: parsed.indexedName.slice(1), // strip q/t prefix
-                mate: {
-                  start: parsed.mateStart,
-                  end: parsed.mateEnd,
-                  refName: parsed.mateName,
-                  assemblyName: mateAssemblyName,
-                },
-              }),
-            )
-          },
-        }),
-      )
+      await readPifLines({
+        pif: this.pif,
+        seqid: letter + query.refName,
+        start: query.start,
+        end: query.end,
+        statusCallback,
+        stopTokenCheck: createStopTokenChecker(stopToken),
+        lineCallback: (parsed, fileOffset) => {
+          observer.next(
+            makeIndexedSyntenyFeature({
+              line: parsed,
+              fileOffset,
+              assemblyName,
+              refName: parsed.indexedName.slice(1), // strip q/t prefix
+              mate: {
+                start: parsed.mateStart,
+                end: parsed.mateEnd,
+                refName: parsed.mateName,
+                assemblyName: mateAssemblyName,
+              },
+            }),
+          )
+        },
+      })
 
       observer.complete()
     })
