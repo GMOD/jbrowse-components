@@ -87,9 +87,27 @@ test('similar colors are closer than dissimilar ones regardless of insertion ord
     maxBins: 2,
     features: [
       // insertion order deliberately interleaves: green, red, near-green
-      { regionIndex: 0, row: 'seenFirst', start: 0, end: 10, colorKey: '#00ff00' },
-      { regionIndex: 0, row: 'seenMid', start: 0, end: 10, colorKey: '#ff0000' },
-      { regionIndex: 0, row: 'seenLast', start: 0, end: 10, colorKey: '#00fa00' },
+      {
+        regionIndex: 0,
+        row: 'seenFirst',
+        start: 0,
+        end: 10,
+        colorKey: '#00ff00',
+      },
+      {
+        regionIndex: 0,
+        row: 'seenMid',
+        start: 0,
+        end: 10,
+        colorKey: '#ff0000',
+      },
+      {
+        regionIndex: 0,
+        row: 'seenLast',
+        start: 0,
+        end: 10,
+        colorKey: '#00fa00',
+      },
     ],
   })
   expect(dist(seenFirst!, seenLast!)).toBeLessThan(dist(seenFirst!, seenMid!))
