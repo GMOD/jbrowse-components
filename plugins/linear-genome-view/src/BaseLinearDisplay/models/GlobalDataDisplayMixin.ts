@@ -132,8 +132,9 @@ interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
  * Unlike `MultiRegionDisplayMixin` (which installs its five fetch autoruns for
  * you), this mixin installs none — each global display owns its trigger. But
  * every global trigger shares the same skeleton: track the viewport,
- * minimize/expand, `rpcProps()` and `reloadCounter` so any of them refires the
- * fetch, then debounce. This helper owns that skeleton so a display supplies
+ * minimize/expand, the `rpcProps()` cache key and `reloadCounter` so any of them
+ * refires the fetch, then debounce. This helper owns that skeleton so a display
+ * supplies
  * only its own `shouldFetch` gate (reading — and thereby MobX-tracking — its
  * display-specific fetch inputs) and its `fetch` action.
  *

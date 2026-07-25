@@ -4,9 +4,9 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * The RPC cache key both display families key their refetch on: the display's
  * `rpcProps()` payload serialized to a string.
  *
- * Observed through a primitive so MobX invalidates observers only when the
- * payload actually changed — building the payload touches far more observables
- * than it returns (canvas builds it from a whole config snapshot via
+ * A primitive, so an observer of it (a MobX computed or getter) re-fires only
+ * when the payload actually changed — building the payload touches far more
+ * observables than it returns (canvas builds it from a whole config snapshot via
  * `resolvePromotableConfigSnapshot`, which reads every slot on the display
  * config; HiC's `activeNormalization` reads the fetched
  * `availableNormalizations`), so an observer of the raw call refetches on purely

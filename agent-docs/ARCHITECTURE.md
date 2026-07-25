@@ -180,8 +180,9 @@ anti-flash. The stricter, staleness-aware `svgReady` is the export gate.
 ### The global-fetch trigger list must be read unconditionally
 
 `installGlobalFetchAutorun` reads the viewport, `isMinimized`, the
-`rpcProps()` cache key and `reloadCounter` at the top of its body, *before* the
-display's `shouldFetch()`
+`rpcProps()` cache key (a `computed`, for the reason in "the cache key is the
+return value, not the reads") and `reloadCounter` at the top of its body,
+*before* the display's `shouldFetch()`
 gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
 every run, so a read placed inside the gate drops out of it on any run that
 decides not to fetch — and can then never wake the autorun again. Arc is the
@@ -293,11 +294,17 @@ from features; sources from clustering already carry `HP` and pass through
 unchanged.
 
 **Rule:** `rpcProps()` must contain only user-controlled settings. Never include
-`cellData`, `sampleInfo`, or any getter that reads them. Both families watch the
-*serialized* payload (`serializeRpcProps`), so a fetch-derived observable merely
-consulted while building it can't loop — but one that reaches the return value
-can, and on the global family it loops on the async-fetch cadence where
-`makeSettingsLoopGuard`'s within-tick counter can't see it. See
+`cellData`, `sampleInfo`, or any getter that reads them.
+
+Because both families key on the *returned* payload (see "the cache key is the
+return value, not the reads"), the loop needs a fetch-derived value to reach the
+**return** — one merely consulted while building can't loop. That is the whole
+reason HiC gets away with `activeNormalization` reading fetched
+`availableNormalizations`. It also sets where the loop shows up: per-region it is
+a synchronous freeze, caught by `makeSettingsLoopGuard`'s within-tick counter;
+on the global family `installGlobalFetchAutorun` reads the key and fetches in one
+debounced body, so it loops on the async-fetch cadence instead, which no
+within-tick counter can tell apart from fast interaction. See
 `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the overridable
 hook list and test-file mapping.
 
@@ -415,7 +422,7 @@ capture pattern, mirroring `renderProps`.
 
 | Method | Consumer | Invalidation route |
 | --- | --- | --- |
-| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | Mixin `SettingsInvalidate` autorun reads `self.rpcPropsCacheKey` (the serialized payload) → `clearAllRpcData` → refetch |
+| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | The **serialized** payload, in both families — per-region `SettingsInvalidate` reads `self.rpcPropsCacheKey` → `clearAllRpcData` → refetch; global `installGlobalFetchAutorun` reads a computed over the same function → refetch. See "the cache key is the return value" below |
 | `gpuProps()` | `buildSourceRenderData(data, self.gpuProps())` — encoder input | Upload callback reads it — MobX re-uploads without an RPC roundtrip |
 | Derived region map | Upload callback iterates it in place of raw `rpcDataMap` | Upload autorun reads it — MobX re-uploads without an RPC roundtrip |
 | `renderState` | `backend.render(state)` per frame | Render callback reads it — re-fires when deps shift |
@@ -466,10 +473,40 @@ re-spread named fields. The mixin's `SettingsInvalidate` autorun looks up
 per-region display with no settings-driven refetch (e.g.
 `LinearReferenceSequenceDisplay`) can simply not define it. HiC and LD compose
 `GlobalDataDisplayMixin` rather than MultiRegion, and both *do* define
-`rpcProps()`; `installGlobalFetchAutorun` observes it through the same
-`serializeRpcProps` cache key the mixin's getter uses, so the two families
-invalidate on identical grounds — the returned payload, not the observables read
-while building it.
+`rpcProps()`.
+
+### The cache key is the return value, not the reads
+
+Both families invalidate on the **serialized** payload — never on the raw call —
+and `serializeRpcProps` is the one implementation of that. The per-region family
+exposes it as the `rpcPropsCacheKey` getter (watched by `SettingsInvalidate`);
+`installGlobalFetchAutorun` wraps the same function in a `computed` for its
+trigger list.
+
+The reason is that **building the payload reads far more observables than it
+returns**, so tracking the call tracks all of them:
+
+- canvas builds it from a whole config snapshot (`resolvePromotableConfigSnapshot`),
+  which reads *every* slot on the display config — so a `showLabels`,
+  `heightMode` or compact/normal `displayMode` flip, all deliberately excluded
+  from the payload, would refetch
+- HiC's `activeNormalization` consults `availableNormalizations`, which is
+  **fetched** (`CoreGetInfo`) — a read that has nothing to do with user intent
+
+Serializing collapses both: only a change in what's returned invalidates. And it
+has to be a string rather than a `.rpcProps()` comparison, because a fresh object
+never compares equal.
+
+The inverse hazard, since `JSON.stringify` *is* the comparison: a payload field
+that doesn't survive serialization is a **silently dead cache axis** — changing it
+refetches nothing and raises no error. A class instance needs a `toJSON`
+(`SerializableFilterChain` has one, which is what makes the variant displays'
+`filters` field a real key); `undefined` drops out of the string entirely. Prefer
+primitives and plain arrays. Regression-tested in
+`installGlobalFetchAutorun.test.ts` ("ignores an observable rpcProps() reads but
+does not return"), which fails if the trigger goes back to the raw call.
+
+### `gpuProps()` and derived region maps — re-upload without refetch
 
 `gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle,
 multi-wiggle and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
