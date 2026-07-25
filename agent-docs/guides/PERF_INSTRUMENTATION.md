@@ -295,8 +295,43 @@ boot three workers, each parsing ~1.9 MB of the same chunks (400–560 ms each),
 which looks like obvious waste. Forcing `rpc.workerCount: 1` and A/B-ing it is a
 wash (3430 vs 3534 ms to settled): the boots overlap, so they are not on the
 wall-clock critical path, and heavy datasets are where the pool earns its keep.
-The live lever is bundle *content* — workers evaluate `@mui/material`,
-`@emotion/styled`, `stylis`, `mobx-react` and view plugins they never use,
-because the 996 KB chunk is shared with the main thread. A worker-targeted
-`splitChunks` group would cut every worker's boot without touching pool
-semantics. Not attempted.
+The live lever is bundle *content* — see below.
+
+## Getting UI code out of the RPC workers
+
+Nothing in a worker renders React, yet **2.2 MB of the 6.35 MB of module bytes
+in the chunks a worker parses is UI code** (`@mui/material` 983 KB, `react-dom`
+533 KB, `@floating-ui/react` 183 KB, `@mui/system` 125 KB, `@popperjs/core`
+67 KB) — measured by bucketing `build/bundle-stats.json` (from
+`node scripts/build.ts --stats`) over the chunks `probe-startup.ts` reports the
+worker importing. Three workers boot for a three-track load, so that is paid
+three times.
+
+`node scripts/check-worker-imports.ts [--causes]` reports why: **258 static
+import sites** across 23 packages, all reached through `corePlugins.ts` — every
+product's worker entry statically imports every plugin's `index.ts`, and a
+plugin index reaches its React components (menu icons via
+`packages/core/src/ui/Icons.tsx`, tooltips via `tss-react`, SVG-export wrappers
+via `renderToStaticMarkup`, `TrackOverlayPortal` via `react-dom`). The sites are
+spread — 89 in `packages/core`, 57 in `linear-genome-view` — not concentrated in
+a few hubs.
+
+**This is all-or-nothing.** Webpack keeps a module if any reachable importer
+needs it, so cutting one chain saves zero bytes; only cutting the last chain to
+a package removes it. Two things follow:
+
+- Don't bother with a partial pass, and don't reach for a `splitChunks`
+  cacheGroup either — the import graph is the actual problem, and a manual chunk
+  split would only paper over it.
+- A measured non-fix for the record: pointing the four product worker entries at
+  `@jbrowse/product-core/src/rpcWorker` instead of the package barrel (which
+  re-exports the whole `ui/` tree) is *correct in direction* but removes exactly
+  one module from the graph, because the plugin indexes pull the same modules
+  anyway. It was tried and reverted.
+
+The real fix is making plugin `index.ts` files stop statically reaching React —
+lazy-importing the menu/UI registration at its natural `import()` boundary. That
+is a campaign across ~23 packages, and `--causes` is its worklist; the site
+count is the progress bar. Related: the same static `corePlugins.ts` import is
+why the cold app shell eagerly loads a ~1 MB all-plugins chunk on the main
+thread (`products/jbrowse-web/CLAUDE.md`), so the two problems share a fix.
