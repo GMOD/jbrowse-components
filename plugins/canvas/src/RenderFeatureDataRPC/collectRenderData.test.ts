@@ -3,6 +3,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
+import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
@@ -766,5 +767,53 @@ describe('collectRenderData density-fade eligibility', () => {
     )
     expect(result.flatbushItems.length).toBeGreaterThan(0)
     expect(result.flatbushItems.every(i => !i.densityFade)).toBe(true)
+  })
+})
+
+// Exon numbering rides on the hit-test entries so the hover can name the exon
+// under the cursor: on the transcript's SubfeatureInfo when it sits under a
+// gene, on the feature's own FlatbushItem when it stands alone.
+describe('collectRenderData exon bounds', () => {
+  const exon = (id: string, start: number, end: number) =>
+    mockFeature({ type: 'exon', id, start, end })
+
+  function transcript(id: string) {
+    return mockFeature({
+      type: 'mRNA',
+      id,
+      start: 0,
+      end: 500,
+      subfeatures: [
+        exon(`${id}-e1`, 0, 100),
+        exon(`${id}-e2`, 200, 300),
+        exon(`${id}-e3`, 400, 500),
+        mockFeature({ type: 'CDS', id: `${id}-cds`, start: 50, end: 450 }),
+      ],
+    })
+  }
+
+  const collect = (layout: FeatureLayout) =>
+    collectRenderData([layout], 0, 1000, config, theme, false, undefined, jexl)
+
+  it('puts the transcript exons on its subfeature entry under a gene', () => {
+    const gene = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 0,
+      end: 500,
+      subfeatures: [transcript('tx1')],
+    })
+    const result = collect(
+      findGlyph(gene, config)({ feature: gene, config: config }),
+    )
+    const info = result.subfeatureInfos.find(s => s.featureId === 'tx1')
+    expect(info!.exonBounds).toEqual([0, 100, 200, 300, 400, 500])
+  })
+
+  it('puts them on the feature entry for a standalone transcript', () => {
+    const tx = transcript('tx1')
+    const result = collect(findGlyph(tx, config)({ feature: tx, config }))
+    const item = result.flatbushItems.find(i => i.featureId === 'tx1')
+    expect(item!.exonBounds).toEqual([0, 100, 200, 300, 400, 500])
   })
 })

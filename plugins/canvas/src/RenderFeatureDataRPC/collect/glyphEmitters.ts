@@ -1,6 +1,7 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
+import { transcriptExonBounds } from '../glyphs/exonBounds.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import {
   getFeatureName,
@@ -136,6 +137,7 @@ function processTranscriptLayout(
       topPx: transcriptTopPx,
       bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
       displayLabel: transcriptName,
+      exonBounds: transcriptExonBounds(transcript),
     })
 
     emitSubfeatureLabel(
@@ -705,6 +707,9 @@ export function processFeatureRecord(
     tooltip: featureTooltip(feature, ctx),
     name,
     strand: strand !== 0 ? strand : undefined,
+    // A standalone transcript (no gene wrapper) registers no SubfeatureInfo, so
+    // its exon bounds ride here instead — same lookup either way for the hover.
+    exonBounds: transcriptExonBounds(layout),
     // Fade *eligibility*, per feature: Box is the only glyph whose top-level box
     // layout may collapse onto row 0 and fade (see isSubPixelFade). The actual
     // per-rect decision is layout's alone. The worker writes no rect-level flag.

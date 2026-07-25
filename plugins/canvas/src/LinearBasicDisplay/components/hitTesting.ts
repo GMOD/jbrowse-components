@@ -54,6 +54,8 @@ export interface HitFeatureResult {
   subfeature: SubfeatureInfo | null
   // amino-acid codon under the cursor, when hovering peptide-level CDS
   peptide: AminoAcidOverlayItem | null
+  // genomic position under the cursor, so the hover can name the exon it lands in
+  bpPos: number
   displayedRegionIndex: number
 }
 
@@ -63,18 +65,43 @@ export function isHitFeature(r: HitResult): r is HitFeatureResult {
   return r.feature !== null
 }
 
+// The 1-based exon containing `bpPos`, out of the transcript's total. Bounds are
+// in transcription order (see transcriptExonBounds), so index 0 is exon 1 on
+// either strand. A position in an intron matches nothing and reports no exon.
+export function exonAt(bounds: number[] | undefined, bpPos: number) {
+  let hit: { number: number; count: number } | undefined
+  if (bounds) {
+    const count = bounds.length / 2
+    for (let i = 0; i < count && !hit; i++) {
+      if (bpPos >= bounds[i * 2]! && bpPos < bounds[i * 2 + 1]!) {
+        hit = { number: i + 1, count }
+      }
+    }
+  }
+  return hit
+}
+
 // Tooltip text for a hit: the subfeature under the cursor names its containing
 // feature (a transcript/isoform, or a mature-peptide product), else the
-// top-level feature's resolved `mouseover` slot. A hovered amino-acid letter
+// top-level feature's resolved `mouseover` slot. On a transcript the exon under
+// the cursor is named too — clinical reporting is written in exon numbers, and
+// counting boxes across a wide gene isn't practical. A hovered amino-acid letter
 // adds its residue (e.g. `K124`) on top of that, so the isoform stays visible.
 export function hoverTooltip(result: HitFeatureResult) {
   const isoform = result.subfeature?.displayLabel
   const { peptide } = result
-  return peptide
-    ? [isoform, `${peptide.aminoAcid}${peptide.proteinIndex + 1}`]
-        .filter(Boolean)
-        .join(' ')
-    : (isoform ?? result.feature.tooltip)
+  const exon = exonAt(
+    result.subfeature?.exonBounds ?? result.feature.exonBounds,
+    result.bpPos,
+  )
+  const exonText = exon ? `exon ${exon.number}/${exon.count}` : undefined
+  return (
+    peptide
+      ? [isoform, exonText, `${peptide.aminoAcid}${peptide.proteinIndex + 1}`]
+      : [isoform ?? result.feature.tooltip, exonText]
+  )
+    .filter(Boolean)
+    .join(' ')
 }
 
 export function buildFeatureFlatbushIndex(
@@ -253,6 +280,7 @@ export function performMultiRegionHitDetection(
                 feature,
               ),
               peptide: findPeptideAt(data, bpPos, yPos, idx),
+              bpPos,
               displayedRegionIndex: vr.displayedRegionIndex,
             }
           }

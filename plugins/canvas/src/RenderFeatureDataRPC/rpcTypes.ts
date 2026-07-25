@@ -210,6 +210,12 @@ export interface HitItemBase {
   endBp: number
   topPx: number
   bottomPx: number
+  // Transcript exons in transcription order, flattened to [start,end,…], so the
+  // hover can name the exon under the cursor (see transcriptExonBounds). Present
+  // only on transcript-shaped glyphs with more than one exon — it rides on the
+  // shared base so a nested transcript carries it on its SubfeatureInfo and a
+  // standalone one on its FlatbushItem.
+  exonBounds?: number[]
 }
 
 export interface FlatbushItem extends HitItemBase {

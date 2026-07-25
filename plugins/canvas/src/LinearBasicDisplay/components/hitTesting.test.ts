@@ -6,6 +6,7 @@ import {
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
+  exonAt,
   hoverTooltip,
   isHitFeature,
   performMultiRegionHitDetection,
@@ -488,6 +489,7 @@ function makeHit(over: Partial<HitFeatureResult>): HitFeatureResult {
     feature: { ...makeItem('gene1', 0, 100, 0, 20), tooltip: 'gene mouseover' },
     subfeature: null,
     peptide: null,
+    bpPos: 0,
     displayedRegionIndex: 0,
     ...over,
   }
@@ -522,6 +524,70 @@ test('hoverTooltip omits a missing isoform, leaving only the residue', () => {
   expect(hoverTooltip(makeHit({ peptide: makeAa('K', 0, 3, 123) }))).toBe(
     'K124',
   )
+})
+
+// Three exons at 0-10, 20-30, 40-50, listed in transcription order.
+const FORWARD_EXONS = [0, 10, 20, 30, 40, 50]
+
+test('hoverTooltip names the exon under the cursor', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  const at = (bpPos: number) =>
+    hoverTooltip(
+      makeHit({
+        subfeature: {
+          ...sub,
+          displayLabel: 'BRCA1-201',
+          exonBounds: FORWARD_EXONS,
+        },
+        bpPos,
+      }),
+    )
+  expect(at(5)).toBe('BRCA1-201 exon 1/3')
+  expect(at(25)).toBe('BRCA1-201 exon 2/3')
+  expect(at(45)).toBe('BRCA1-201 exon 3/3')
+  // an intron names no exon
+  expect(at(15)).toBe('BRCA1-201')
+})
+
+test('hoverTooltip reads exon bounds off the feature for a standalone transcript', () => {
+  expect(
+    hoverTooltip(
+      makeHit({
+        feature: {
+          ...makeItem('mRNA1', 0, 100, 0, 20),
+          tooltip: 'mRNA mouseover',
+          exonBounds: FORWARD_EXONS,
+        },
+        bpPos: 25,
+      }),
+    ),
+  ).toBe('mRNA mouseover exon 2/3')
+})
+
+test('hoverTooltip keeps the exon alongside a hovered residue', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  expect(
+    hoverTooltip(
+      makeHit({
+        subfeature: {
+          ...sub,
+          displayLabel: 'BRCA1-201',
+          exonBounds: FORWARD_EXONS,
+        },
+        peptide: makeAa('K', 0, 3, 123),
+        bpPos: 25,
+      }),
+    ),
+  ).toBe('BRCA1-201 exon 2/3 K124')
+})
+
+// On the - strand the exon list is reversed by the worker, so the highest
+// coordinate is exon 1 -- the numbering a clinical report uses.
+test('exonAt numbers reverse-strand exons from the transcription start', () => {
+  const reversed = [40, 50, 20, 30, 0, 10]
+  expect(exonAt(reversed, 45)).toEqual({ number: 1, count: 3 })
+  expect(exonAt(reversed, 5)).toEqual({ number: 3, count: 3 })
+  expect(exonAt(undefined, 5)).toBeUndefined()
 })
 
 test('subfeature label hit area is reserved when the label is present', () => {
