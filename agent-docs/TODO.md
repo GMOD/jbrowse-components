@@ -53,6 +53,54 @@ Cheaper fallback if it is too invasive: `flatbushItems` and `subfeatureInfos` ar
 arrays of objects cloned by spread, and parallel typed arrays would remove most of
 the allocation without touching the render contract.
 
+Smaller and already unblocked: `rectDensityFade` is worker-allocated but
+layout-valued, and `applyLayoutToRegion` writes every element, so the
+`computeLaidOutData` path could allocate it rather than copy it. Note
+`cloneMutableFields` is shared with `scaleLaidOutData`, which does NOT rewrite the
+array and so still needs the copy. Splitting that means a per-caller flag or two
+clone helpers, which is why it was left alone.
+
+## Stop uploading every rect twice for the continuation pass
+
+`GpuCanvasFeatureRenderer.uploadRegion` packs `numRects` continuation instances
+alongside `numRects` rect instances, so the densest tracks pay double the rect
+upload and VRAM to draw at most a handful of screen-edge markers. The two instance
+structs are already byte-identical (`uint2 startEnd; float y; float height; uint
+color;` plus a differing 4-byte `ATTR4`: `uint densityFade` on rect, `float strand`
+on continuation).
+
+`makeChevronPass` is the worked precedent for the fix: chevron owns no buffer and
+draws off line's via `drawPass(chevron, region, bufferPassId=line)`, wired by
+passing line's `bufferStride`/`bufferAttributes`. Unify `ATTR4` (bit-pack strand
+into the same word, or widen both structs to one shared stride) and continuation
+can do the same off rect.
+
+Not attempted yet because it needs `.slang` edits plus `pnpm gen:shaders`, and a
+wrong attribute offset shows up as garbled geometry that no unit test catches.
+Verify headed on a real GPU against both backends, since WebGL2 binds attributes
+through `vertexAttribPointer`/`vertexAttribIPointer` (int vs float matters) while
+WebGPU goes through `vertex.buffers`.
+
+The cheap half is already done: `drawRegion` skips the continuation pass entirely
+on a block touching neither canvas edge, where every instance would self-cull.
+
+## `featureItemMap` is an O(N) build serving a handful of point queries
+
+`baseModel.ts`'s `featureItemMap` allocates one entry object per feature AND per
+subfeature across every visible region, on every layout change, pan, or zoom. Its
+consumers ask very little of it: `useHighlightOverlays` does a handful of `.get()`s
+(and genuinely needs `entry.vr` / `entry.data`), while `useFloatingLabels` uses it
+only for `?.kind === 'feature'` to decide whether a label is clickable.
+
+That second consumer is removable outright. `emitSubfeatureLabel` always sets
+`parentFeatureId` and `processFeatureRecord` never does, so
+`clickable === (labelData.parentFeatureId === undefined)` with no map at all.
+
+With it gone the map is built for roughly five lookups, so replace it with an
+on-demand region scan or a lazily-populated per-id cache. Worth pairing with the
+`cloneMutableFields` item above, since both are per-layout allocation over the same
+arrays.
+
 ## Measure the WebGL2 context budget in the shape users actually hit
 
 The context ceiling in
