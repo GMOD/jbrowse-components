@@ -1,8 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getSyntenyTracks } from '@jbrowse/synteny-core'
+import { allSessionTracks, getSyntenyTracks } from '@jbrowse/synteny-core'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export interface AddRowOption {
   trackId: string
@@ -18,13 +18,13 @@ export interface AddRowOption {
  * the assembly to add.
  */
 export function getAddRowOptions(
-  session: {
-    tracks: AnyConfigurationModel[]
-    assemblies: AnyConfigurationModel[]
-  },
+  session: AbstractSessionModel,
   terminalAssembly: string,
 ): AddRowOption[] {
-  return getSyntenyTracks(session.tracks, [terminalAssembly]).map(track => {
+  // allSessionTracks, not session.tracks: a dataset from a connection extends the
+  // stack just as well as a config one
+  const tracks = getSyntenyTracks(allSessionTracks(session), [terminalAssembly])
+  return tracks.map(track => {
     const assemblyNames = readConfObject(track, 'assemblyNames') as string[]
     return {
       trackId: readConfObject(track, 'trackId') as string,

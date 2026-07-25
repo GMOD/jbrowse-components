@@ -41,8 +41,13 @@ const AddRowDialog = observer(function AddRowDialog({
   // pre-configured datasets carry their own other-endpoint assembly; a custom
   // upload needs the user to name the assembly being added
   const [mode, setMode] = useState(options.length ? 'existing' : 'custom')
-  const [trackId, setTrackId] = useState(options[0]?.trackId ?? '')
-  const selected = options.find(o => o.trackId === trackId)
+  // resolved every render rather than snapshotted: options can grow after mount
+  // (a connection finishing its load), and a preference that isn't in the list
+  // would leave the Select blank with Add disabled
+  const [preferredTrackId, setTrackId] = useState('')
+  const selected =
+    options.find(o => o.trackId === preferredTrackId) ?? options[0]
+  const trackId = selected?.trackId ?? ''
   const [newAssembly, setNewAssembly] = useState(
     assemblyNames.find(name => name !== terminalAssembly) ??
       assemblyNames[0] ??
