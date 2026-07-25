@@ -1154,10 +1154,47 @@ surfacing it is mostly a rendering task.
 
 **Filter & sort samples by metadata attribute.** Today you can *color* rows by a
 metadata column but not *show only cases* / *only one population*, and sort is limited to
-one variant's genotype (right-click → Sort by genotype, non-ref count descending). A
+one anchor variant (right-click → Sort by genotype, which ranks by genotype there and
+breaks ties by flanking agreement — `shared/anchoredHaplotypeSort.ts`). A
 metadata-based sample filter is a natural extension of the existing `subtreeFilter`
 mechanism; a metadata sort extends `sortByGenotype`. Core cohort operations that are
 currently missing.
+
+**Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
+asks for one distance over the whole window, but a haplotype is a mosaic of segments
+with different histories, so past the first recombination breakpoint that distance
+describes no position in particular. `shared/anchoredHaplotypeSort.ts` addresses the
+*ordering* half of this; the other half is expressing local structure in the cells
+rather than the row order. Per (row, column), compute the id of the set of rows
+identical over a window around that column and paint it with a stable hash color, rows
+staying in whatever order they are in — a crossover then reads as a color change
+mid-row. The plumbing already exists: `computeVariantCells.ts` ships a per-cell
+`cellColors: Uint32Array`, so this is a worker-side computation plus a color mode, not
+new render infrastructure (same bake-into-color discipline as `featureColor`).
+
+Three things separate this from HaploBlocker, whose equivalent plot reads as confetti:
+carry colors across columns (greedily match each column's partition to the previous
+one's by membership overlap and inherit the id, rather than re-deriving blocks
+independently); require a minimum block size in *both* variants and rows, painting
+below-threshold blocks grey; and ship the cheap single-donor variant first — pick one
+row as reference and paint every other row by match-length to it, which is one color
+ramp, trivially computed, and already shows where each row's shared segment ends.
+
+The principled version of the whole problem is that there is no one tree, there is an
+ARG. A tree-sequence adapter (tsinfer / ARG-Needle `.trees`) supplying the local tree
+at the view centre would let the existing sidebar render it unchanged, updating as you
+pan.
+
+**Frequency weighting for the clustering distance.** Every variant contributes equally
+to the genotype-matrix distance, so the largest LD block in the window numerically
+dominates the row ordering — a 10 kb window that is one haplotype block gives a clean
+tree, a 1 Mb window gives mush, and neither states which locus it is describing. A
+GCTA-style `1/sqrt(2p(1-p))` scaling would weight rare variants (informative about
+recent shared ancestry) above common ones; it is a small change to the imputation pass
+in `VariantRPC/genotypeMatrixEncoding.ts`, which already walks every site computing
+per-site means. Deferred because it changes results and wants a UI knob (a
+"Distance" choice next to the linkage selector) rather than a silent switch. LD
+pruning is the same idea one level up and a bigger job.
 
 **Matrix connector-line hover is thin and O(features)/mousemove.** In
 `LinesConnectingMatrixToGenomicPosition.tsx` the hover shows only `feature.get('name')`
@@ -1987,9 +2024,47 @@ gap from the same pass is tracked in TODO.md.
   needs a product call.
 - **Migrate imperative `regionTooLarge`** (wiggle/alignments/LD) to the derived
   shape, or document why they can't hit the stuck-banner bug. Bigger refactor.
-- **Make `dataLoaded` a required member** (omission = compile error, not a
+- **Make `dataCurrent` a required member** (omission = compile error, not a
   runtime export hang). MST mixin composition doesn't enforce "must override a
   getter" cleanly; riskier, deferred.
+- **Don't compose a mixin into `BaseDisplay`.** Tried, backed out (2026-07):
+  factoring the error/status vocabulary into a `DisplayStatusMixin` composed at
+  the `BaseDisplay` root pushed the deeper display chains past MST's
+  type-inference limit, and properties from *later* mixins (`displayCrossHatches`,
+  `treeAreaWidth`, `resolution`, `layout`) silently dropped out of the inferred
+  instance type across wiggle / multi-wiggle / variants. `BaseDisplay` is already
+  at the depth budget; add to it with `.props`/`.volatile`/`.views`, not
+  `types.compose`. Shared *policy* at that level has to be a plain function
+  (`createStatusThrottle`, `computeSvgReady`, `computeDisplayPhase`).
+
+## Fold the non-LGV fetches onto `FetchMixin`
+
+Multi-LGV synteny and dotplot hand-roll the fetch state machine in ~480 lines of
+`afterAttach.ts` plus per-model volatiles, sharing only `createStopTokenRotation`
+(token mechanics) with each other. Freshness and export readiness are now shared
+(`dataCurrent` / `computeSvgReady`), and the progress throttle is shared
+(`createStatusThrottle`), so what remains genuinely duplicated is the state
+machine: a raw token volatile each, their own `isLoading`/`refetching` derivations
+(which disagree — dotplot splits the two, synteny's `loading` is `!ready &&
+!error` and so stays true forever if the fetch never runs), no
+`fetchCanceled`/`cancelFetchByUser`, no `reload()`. Synteny also still uses a
+plain `{ delay: 500 }` where dotplot and `installGlobalFetchAutorun` leading-edge.
+
+The shape: a `SignatureFetchMixin` = `FetchMixin` + `loadedFetchKey` volatile +
+overridable `currentFetchKey` + `dataCurrent`, plus an
+`installSignatureFetchAutorun` skeleton modeled on `installGlobalFetchAutorun`.
+That makes the display-stacks table three rows that all compose `FetchMixin`
+instead of two rows and a footnote. Not attempted yet because a
+`SyntenyFetchStateMixin` landed in `@jbrowse/synteny-core` concurrently — check
+whether that is the same move under another name before starting.
+
+## Extract the duplicated assembly-swap-check autorun
+
+`syntenyAssemblySwapCheck` and `dotplotAssemblySwapCheck` are the same ~20-line
+autorun, differing only in how they read the two assembly names;
+`detectDisplayAssembliesSwapped` is already shared, the wrapper isn't. One
+`installAssemblySwapCheck(self, getAssemblyNames)` in `@jbrowse/synteny-core`.
+Small; left alone only because both files were under concurrent edit.
 ## Vertical real estate & the "scrolls within scrolls" problem
 
 The app nests scroll surfaces (page scroll, per-track synthetic scroll, horizontal
