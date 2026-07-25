@@ -521,6 +521,31 @@ data.
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery), `WebGL2Hal`
 (`antialias: true`, VAO + UBO, context-loss recovery), `MockHal` (tests).
 
+### WebGL2 contexts are a page-level budget, one per display
+
+`WebGL2Hal`'s constructor takes its own `canvas.getContext('webgl2')` with no
+pooling, and each display owns one backend canvas (`DisplayChrome` hands out a
+single `canvasRef`; extra canvases its child renders are 2D overlays). Browsers
+cap live WebGL contexts per page and force-lose the oldest past the cap, which the
+recovery re-acquires, evicting another — a cascade that wedges the main thread
+rather than degrading. `WebGPUHal` has no equivalent cap, since every display
+shares the `gpuDevice.ts` singleton; **that is a primary reason the GPU path
+targets WebGPU.**
+
+So the count to watch is **open GPU tracks**. Chromosomes are free: a whole-genome
+view of one track is one canvas holding one buffer per `displayedRegionIndex`,
+drawn as several scissored blocks. Practical consequences:
+
+- Mounting a canvas is not free, and `stopRenderingBackend` + `dispose()` on
+  unmount is what returns a context. Views lazy-mount for this reason
+  (`useViewVisibility.ts`); tracks within a view do **not** yet.
+- `?renderer=canvas2d` allocates none, which is why it is the fallback for
+  many-track sessions.
+
+Measurements, the unpinned cap, and mitigation state:
+[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"One WebGL2 context per
+display canvas".
+
 **Renderer override** (query param `?renderer=`). Only three values are
 recognized (`createHal.ts` + `getGpuDevice`): `canvas2d` / `canvas` force the
 Canvas2D backend, and `webgl` skips the WebGPU attempt. Omitted → auto-detect.

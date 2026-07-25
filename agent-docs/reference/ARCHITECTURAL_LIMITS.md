@@ -1,0 +1,370 @@
+---
+name: architectural-limits
+description: Live register of the architecture's resource ceilings, accepted couplings, and correctness surfaces nothing mechanical protects. Each entry carries its mitigation state and the condition that retires it. Read before scaling work (many tracks, many views, whole-genome), or when a symptom looks like a product bug but is a ceiling.
+---
+
+# Architectural limits and weak points
+
+A **live register**, not a review snapshot. `ARCHITECTURE.md` says how the system
+works. This says where it stops working, and why we decided that was acceptable.
+
+Keeping it honest:
+
+- **Cite symbols and files, not line numbers.** Line numbers rot faster than
+  limits do.
+- **Delete an entry when its retire condition is met.** If the story shaped a
+  design, move a paragraph to [HISTORICAL.md](HISTORICAL.md). Never leave a
+  "fixed" entry here.
+- **Statuses:** `Mitigated` (a mechanism bounds it, root cause remains),
+  `Accepted` (a cost we chose, with the reason), `Open` (unbuilt, and we would
+  take a fix).
+- **Not a backlog.** An entry earns its place by being something you can trip
+  over without knowing it exists. Work items go in [../TODO.md](../TODO.md).
+- **New entries must be measured or code-verifiable.** Cite the mechanism, not
+  the symptom.
+
+---
+
+## GPU / rendering
+
+### One WebGL2 context per display canvas
+
+**Status:** Mitigated (view-level), root cause is WebGL2 itself.
+
+**Budget contexts as one per open GPU track.** Each display owns one backend
+canvas (`DisplayChrome` hands out a single `canvasRef`; extra canvases its child
+renders are 2D overlays), and `WebGL2Hal`'s constructor takes its own
+`canvas.getContext('webgl2')` with no pooling. Browsers cap live WebGL contexts
+per page and force-lose the oldest past the cap, `useRenderingBackend`
+re-acquires, that eviction evicts another, and the cascade wedges the main thread
+instead of degrading.
+
+Chromosomes are free: a whole-genome view of one track is still one canvas, with
+one GPU buffer per `displayedRegionIndex` and one scissored draw per render
+block. **This ceiling is a primary motivation for targeting WebGPU**, which
+shares one device across displays (next entry) and so has no per-canvas cap.
+
+Measured once, synthetically, with a many-*views* harness because that was the
+reported symptom: 72 canvases (24 views x 3 tracks) gave 56 `context LOST` events
+and a 143s frozen frame, while 20 canvases stayed smooth, and the freeze followed
+run order rather than dockview-vs-classic. Read that as bracketing the cascade
+between 20 and 72 live contexts on the tested Chrome, and nothing more. Two
+caveats that matter more than the numbers:
+
+- **The realistic shape is unmeasured.** A 24-view session is not a workload; one
+  or two views holding 10 to 20 GPU tracks is, and reaches the same count.
+- **Don't trust caps quoted elsewhere.** RFC-001 §12b says "Firefox around 16,
+  Chrome around 8", which the 20-canvas result contradicts.
+
+Mitigations in place, both bounding rather than fixing:
+
+- **View-level lazy mount** (`packages/app-core/src/ui/App/useViewVisibility.ts`)
+  gates whether a view mounts its GPU subtree, falling back to always-visible
+  where IntersectionObserver is absent (jsdom/SSR). Took the 72-canvas case to 6.
+- **Bounded auto-recovery** in `useRenderingBackend`: at most
+  `MAX_CONTEXT_RECOVER_ATTEMPTS` re-inits on backoff, and the budget resets only
+  on a genuine `webglcontextrestored` or a manual retry, so a flapping context
+  climbs to the cap and stops rather than spinning.
+
+Still exposed: tracks inside a mounted view are not virtualized, so one LGV with
+15+ GPU tracks allocates 15+ contexts.
+
+**Retire when** WebGL2 retires (RFC-001 §13a) or track-level mount/release lands.
+Cheaper interim moves, both unbuilt: measure the many-tracks-one-view case, and
+drop a display to Canvas2D after K context losses so the failure is one slow
+track instead of a wedged page.
+
+### WebGPU shares one device across every display
+
+**Status:** Accepted.
+
+`packages/render-core/src/gpuDevice.ts` holds a module-level singleton device.
+That is what removes the per-canvas cap above; the trade is its mirror image. A
+single `device.lost` takes down every display at once, and per-device limits
+(`maxBufferSize`, `maxTextureDimension2D`) are one shared budget rather than a
+per-track one.
+
+Useful for triage: the backends fail in **opposite** directions, so "one track
+broke" points at WebGL2 and "every track broke at once" points at WebGPU. Both
+route through `OomReporter` to `renderError`, so the user gets a
+zoom-in-or-reduce-height message rather than a blank canvas.
+
+**Retire when** never. Document, don't fix.
+
+### No session-level GPU memory budget
+
+**Status:** Accepted (deferred).
+
+Limit checks are per buffer and per texture, and each display prunes to its
+active regions via `hal.pruneRegions(active)`. Nothing sums uploaded bytes
+**across** displays, so total GPU memory is bounded only by every display
+independently behaving. ADR-035 closed the neighbouring question (`maxHeight`
+bounds pixels, not GPU instance count). So OOM is reportable, not preventable,
+which is acceptable while the per-object guards keep catching the pathological
+single upload.
+
+**Retire when** a HAL byte counter with cross-display LRU prune exists, or an OOM
+report arrives that the per-object guards missed.
+
+### A canvas past `MAX_CANVAS_DIM_PX` renders wrong, not smaller
+
+**Status:** Mitigated (per-display sizing), root cause is the unthreaded dpr.
+
+`backingPx` (`packages/render-core/src/canvas2dUtils.ts`) caps a backing store at
+`MAX_CANVAS_DIM_PX` (8192 physical px per axis) so an oversized canvas can't
+throw `InvalidStateError`. But the cap applies only at the canvas: every
+downstream rect is still derived as `cssPx * getDpr()` from the **true** dpr
+(`clipBlock`, alignments' `computeBlockGeom`, the per-region base's `pxH`). Past
+the cap the browser stretches the smaller backing store over the larger element
+*and* the scissor/viewport rects can exceed it, where WebGL2 clamps silently and
+WebGPU rejects the rect and blanks the frame. The one-shot `console.warn` reads
+like a cosmetic notice.
+
+Mitigated rather than Open because it is unreachable today: canvases are
+viewport-sized everywhere except MAF's rows canvas, which sizes to content and
+self-bounds via `maxRowsHeight` (`MAX_CANVAS_DIM_PX / getDpr()`). **Any new
+display that sizes a canvas to content rather than viewport must copy that
+bound**, because nothing mechanical enforces it.
+
+**Retire when** `syncCanvasSize` / `prepareCanvas` report the ratio they actually
+used and that effective dpr is threaded through `clipBlock` instead of the free
+`getDpr()`, so a clamped canvas renders correct content at reduced resolution.
+
+### Every region arrival draws twice, the first draw pre-upload
+
+**Status:** Open. Low severity, invisible to the user, retired by a queued fix.
+
+**Never rely on the upload autorun running before the render autorun.** Measured
+against the real shape (`RenderLifecycleMixin` + `installPerRegionLifecycle`,
+mobx from this repo), 4 regions arriving in separate actions produce 4 uploads
+and **8** renders, logging `tick=0 size=1` then `tick=1 size=1`. Both autoruns
+observe the same `keysAtom_` (render through `rpcDataMap.size`, upload through
+the key set) and MobX notifies in observer order, not creation order. So each
+arrival paints the pre-upload state, then the `renderTick` bump paints the real
+one. That bump is what makes the ordering come out right eventually, and it is
+the only thing that does.
+
+Both draws land in one task, so the browser composites only the second. The cost
+is a wasted GPU submit per arrival per track, not a visible flash.
+
+Two things that already coalesce correctly, so don't "fix" them:
+
+- **Settings fan-out.** One encoder-input change with 4 regions loaded fires all
+  4 per-key autoruns and yields exactly **1** render: the per-key `renderNow()`
+  bumps land while the render reaction is already scheduled, and MobX dedupes.
+- **Pan and zoom.** Wheel, drag and side-scroll batch their MST writes into one
+  `requestAnimationFrame` (`useWheelScroll`, `usePointerDrag`, `useRafCommit`),
+  so a gesture commits at most once per frame.
+
+**Retire when** `renderBlocks` reports whether it painted (§"Did we paint?"
+below; one work item retires both entries) and the render callbacks stop reading
+`rpcDataMap.size` to decide. That read is the only reason the render autorun
+observes the data map, so dropping it makes `renderTick` the single redraw
+channel and the double draw disappears with it.
+
+A frame scheduler on the render autorun (`autorun(fn, { scheduler })`) coalesces
+identically and was measured to work, but it papers over the duplicated predicate
+instead of removing it, breaks the synchronous contract
+`RenderLifecycleMixin.test.ts` and `installPerRegionLifecycle.test.ts` assert,
+and would stall under jest fake timers, which mock rAF. Prefer the predicate fix.
+
+---
+
+## Fetch / RPC
+
+### Worker assignment is sticky per adapter, so one track's parse is single-threaded
+
+**Status:** Accepted.
+
+**The pool spreads tracks, not a track's regions.**
+`WorkerPoolRpcDriver.getWorker(sessionId)` assigns one sticky worker per session
+id, and a track's session id is `adapterConfigCacheKey(adapter)`
+(`BaseTrackModel.rpcSessionId`) — deliberate, since it is what lets a track's
+calls share one cached adapter instance. Pool size is
+`clamp(hardwareConcurrency - 1, 1, 5)`.
+
+So N per-region calls for one track all land on one worker. They interleave at
+`await` points, so network latency overlaps (this is why per-region fan-out beats
+batching, ADR-022), but CPU parse serializes: a single dense BAM or PAF track
+cannot use more than one core however idle the pool is. Matters most where parse
+dominates (synteny PIF, [SYNTENY_LOD.md](SYNTENY_LOD.md)).
+
+**Retire when** never as a design. Revisit the bound only on a profile showing
+parse-serialization dominating; the lever is then an opt-in region-shard suffix
+on `rpcSessionId` for stateless parses, trading duplicated adapter caches for
+cores.
+
+### No fetch prioritization or back-pressure
+
+**Status:** Open.
+
+`FetchVisibleRegions` requests `bufferedVisibleRegions` (wider than visible, for
+smooth scrolling) and nothing orders the resulting calls, so visible does not
+outrank buffered and near does not outrank far. Ten tracks on a whole-genome open
+dispatch hundreds of concurrent RPCs against at most five workers and six
+connections per host, and the region the user is looking at is no likelier to
+resolve first than one off-screen. Cancellation is per-display (stop-token
+rotation in `FetchMixin`), not a scheduler.
+
+**Retire when** a session-level priority queue with a max-in-flight cap lands, or
+`fetchRegions` at least sorts `needed` by distance from viewport center.
+
+### Worker payloads are collect-then-return
+
+**Status:** Accepted (deferred, RFC-001 §13b).
+
+Workers assemble a whole typed-array payload and return it in one message, so
+peak memory is the full payload rather than one feature at a time (which the
+retired streaming `FeatureRendererType` path had). Fine for every in-tree
+display, a real cost for very wide multi-sample tracks (100 samples x 1 Mbp at
+1 bp/px).
+
+**Retire when** a plugin's memory ceiling shows up in production. The options are
+then chunked typed-array delivery or a streaming RPC primitive, neither built.
+
+---
+
+## Coupling
+
+### Canvas feature tracks bake appearance into worker output, so a color or theme change refetches
+
+**Status:** Open.
+
+`LinearBasicDisplay`'s `rpcProps()` returns the whole resolved config snapshot
+(minus four display-only slots) plus `theme: getSession(self).themeOptions`.
+Every returned field is an RPC cache key, so `SettingsInvalidate` fires
+`clearAllRpcData()` and every visible region refetches. **A light/dark toggle, or
+one color slot edit, re-downloads and re-parses every region of every canvas
+feature track.**
+
+This is the one place the codebase inverts its own split (worker returns data,
+main thread owns pixels), and for a real reason: the canvas worker bakes
+per-feature colors, including jexl callbacks that need feature context, into the
+instance buffer. It is also why canvas is the only per-region display with no
+`gpuProps()` (ARCHITECTURE.md §"`rpcProps()` / `gpuProps()` pattern").
+
+**Retire when** canvas splits its payload into fetch-affecting and
+appearance-affecting halves and grows a `gpuProps()`. The consistent fix has the
+worker emit a per-feature color *class index* plus the attributes jexl needs, and
+resolve the palette in the main-thread encoder, as synteny's `computedColors`
+already does. The cheap intermediate is a worker-side parsed-feature cache keyed
+by adapter + region + the non-visual payload, so a color change re-encodes
+without re-parsing.
+
+### Three staleness mechanisms, only the final compare shared
+
+**Status:** Open.
+
+Data freshness is expressed three ways: spatial coverage
+(`viewportWithinLoadedData`, per-region mixins), viewport snapshot
+(`viewportMatchesLastDrawn`, global mixins), and signature compare
+(`isDataCurrent`, arc / dotplot / synteny). Only that last compare is shared, and
+each mechanism has independently shipped a stale-capture bug
+([SVG_EXPORT.md](SVG_EXPORT.md), HISTORICAL.md §"In-place-refetch staleness"). So
+a new display has three ways to choose wrong and an open invitation to invent a
+fourth.
+
+**Retire when** one `dataFreshness(self)` helper returns a comparable signature
+for all three shapes (spatial coverage can be expressed as a signature), so a
+display composes rather than chooses.
+
+---
+
+## Correctness surfaces nothing mechanical protects
+
+### Ordering is the contract, in four places
+
+**Status:** Open (each has a test, none has a type).
+
+One failure shape recurs: behavior depends on an order no type and no runtime
+check can see, and getting it wrong is silent.
+
+- **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
+  Both define `derivedRegionTooLargeEnabled` and the later wins, so swapping them
+  switches the whole size gate off with no error
+  ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)).
+- **`installGlobalFetchAutorun` must read its triggers above the `shouldFetch`
+  gate.** MobX rebuilds the dep set per run, so a read under the gate drops out
+  of it. Arc shipped a dead `reload()` from exactly this (ARCHITECTURE.md §"The
+  global-fetch trigger list must be read unconditionally").
+- **A display that omits `rpcProps()` gets no settings invalidation, silently.**
+  `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —
+  correct for `LinearReferenceSequenceDisplay`, indistinguishable from an
+  omission for everyone else.
+- **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
+  lifecycle hooks, so capturing and calling it double-installs all five autoruns
+  (`models/afterAttachAutoChain.test.ts`).
+
+**Retire when** each order becomes explicit data: a `deps()` callback the
+global-fetch helper reads unconditionally, a required `rpcProps` (or an explicit
+`noSettingsInvalidation: true`) on the fetch foundations, and a dev-mode
+`afterAttach` assertion that warns when a display composing the gate mixin still
+resolves `derivedRegionTooLargeEnabled` false. `makeSettingsLoopGuard` is this
+move already applied to the `rpcProps` loop trap. Generalize it.
+
+### "Did we paint?" is asserted by each display, not answered by the backend
+
+**Status:** Open.
+
+`canvasDrawn` gates the loading scrim, the `-done` testid, and every browser
+test's wait, and it comes from the render callback's boolean. A **missing** return
+is already a compile error (`noImplicitReturns: true`, callback typed
+`=> boolean`), so that half needs no vigilance. The gap is upstream:
+`PerRegionRenderingBackend.renderBlocks` and both its bases return `void`, so
+every per-region display hand-writes the predicate ahead of an unconditional
+`return true` — and they disagree. `LinearBasicDisplay`, Manhattan and wiggle gate
+on `rpcDataMap.size === 0`; `LinearMultiRowFeatureDisplay` and
+`LinearMultiSampleVariantDisplay` gate on nothing, so they flip `canvasDrawn` on
+a tick that drew nothing. On screen that is masked because `isReady` also requires
+`!isLoading`, but the `-done` selector fires early.
+
+The answer exists exactly where it is discarded:
+`GpuPerRegionRenderingBackend.renderBlocks` already skips blocks with no region
+data and blocks clipped offscreen.
+
+**Retire when** `renderBlocks` returns that boolean and the per-display
+predicates are deleted. The work item, with the per-display audit and the
+Canvas2D-asymmetry question to settle first, is [../TODO.md](../TODO.md) §"Make
+`renderBlocks` return whether anything painted". A HAL draw-call counter warning
+in dev when `render` returned `true` with zero draws is the belt-and-braces
+version.
+
+### The plugin ABI is unversioned and the surface is unbounded
+
+**Status:** Open, with a plan.
+
+Nothing tells you an export is load-bearing until an external plugin breaks at
+runtime in a deployment you cannot see, and a plugin built against last year's
+host resolves against today's `exports` with no compatibility check. The analysis
+and the fix ordering (name a `@public` set, snapshot it with a CI diff, then
+version the contract and fail loud at load) are in
+[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md).
+
+One cheap step that list omits: `component_tests/plugin-vite` already installs
+`example-plugins/score-example` from a packed tarball and is the only CI job
+resolving `@jbrowse/*` through `publishConfig` exports. Having it assert the
+**set** of symbols it imports turns one real external-consumer contract into a
+build-time gate today, and gives the `@public` audit a factual starting point.
+
+**Retire when** the `@public` set is named and snapshot-checked.
+
+### Invariants enforced by prose, and enumerations that rot
+
+**Status:** Open.
+
+`agent-docs/` plus the 24 in-tree `CLAUDE.md` files carry on the order of 15k
+lines of contract, including ~60 imperative bullet rules. Rules the compiler
+already owns are still written as warnings, spending the attention the
+unenforceable ones need.
+
+Alongside them sit hand-maintained membership lists (the Display stacks table,
+DisplayChrome's adoption map and testid table, the upload-pattern examples
+column, SVG_EXPORT's per-plugin draw-shape lists) in a doc set that explicitly
+warns against enumerations and lists autogenerating them as a follow-up
+(PLUGIN_ABI_STABILITY.md §"The same disease rots the docs"). Spot-checked
+2026-07-24, DisplayChrome's "Direct users (12)" was accurate, so this is
+prevention rather than repair.
+
+**Retire when** the foundation-to-display map is generated from `addDisplayType`
+registrations, and each surviving "Don't" either names the machine that enforces
+it or is deleted because `tsc` already owns it.

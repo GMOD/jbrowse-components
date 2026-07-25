@@ -45,6 +45,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 
 `reference/` — how the system works:
 
+- [ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) — live register of resource ceilings, accepted trades, and unprotected correctness surfaces. Read before scaling work
 - [GPU_RENDERING.md](reference/GPU_RENDERING.md) — render lifecycle, backends, upload patterns, HAL, Slang shaders
 - [SVG_EXPORT.md](reference/SVG_EXPORT.md) — `renderSvg` shape, `svgReady`/`settled` gates, `paintLayer`, clip ids
 - [BP_PRECISION.md](reference/BP_PRECISION.md) — absolute-uint32, hi/lo float math, genome-size limits

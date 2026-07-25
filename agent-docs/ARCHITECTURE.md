@@ -20,9 +20,10 @@ collected under [See also](#see-also) at the end.
 - Rendering picks WebGPU → WebGL2 → Canvas2D at runtime behind the HAL. A
   Canvas2D draw fn is the floor for canvas-based displays because SVG export
   runs it; the shader path is an optional accelerator.
-- Two fetch foundations cover everything: `MultiRegionDisplayMixin` (per region,
-  its own autoruns) and `GlobalFetchMixin` (one dataset, display installs its
-  own autorun).
+- Two fetch foundations cover every **LGV** display: `MultiRegionDisplayMixin`
+  (per region, its own autoruns) and `GlobalFetchMixin` (one dataset, display
+  installs its own autorun). The non-LGV views (synteny, dotplot) compose
+  neither and hand-roll fetch, debounce and staleness.
 - `DisplayChrome` owns every terminal state — loading, error, render error,
   region-too-large — via the single `displayPhase` getter.
 - Shaders are `.slang` compiled by `pnpm gen:shaders`. **Never hand-edit
@@ -109,7 +110,7 @@ all sharing `baseLinearDisplayConfigSchema` as their config base. Which mixins a
 display composes is the primary axis of code sharing; *how* it renders (GPU vs
 Canvas2D) is a separate axis layered on top. Two fetch foundations — per-region
 (`MultiRegionDisplayMixin`) and single-global (`GlobalFetchMixin`) — cover every
-in-tree display:
+display that lives in an LGV:
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
@@ -125,6 +126,16 @@ it reads `renderError` — the one genuinely GPU-only piece. `RegionTooLargeMixi
 gate is derived and opt-in; arc's `ArcFetchModel` enables it like every other
 byte-gated display (see [the region-too-large
 gate](#the-region-too-large-gate-summary)).
+
+**The non-LGV views are a third shape, not a row in that table.** Multi-LGV
+synteny (`LinearSyntenyDisplay`) composes only `BaseDisplay` and owns its fetch;
+dotplot puts `RenderLifecycleMixin` at the *view* level. Neither gets
+`FetchMixin`'s cancel/stale machinery, `RegionTooLargeMixin` or `loadedRegions`,
+so each re-implements a `fetching` flag, a 500ms debounce, and a signature-compare
+freshness gate (`isDataCurrent` over `dotplotFetchKey` / synteny's
+`currentFetchKey`) in place of `viewportWithinLoadedData` — which is where the
+stale-capture bugs lived
+([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) §"On-screen capture gate").
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
@@ -342,7 +353,9 @@ re-attaches on force-load. What makes it the right shape:
   view's churning `visibleRegions`/`loadedRegions`.
 - **React Compiler opt-out.** `DisplayChromeInner` carries `'use no memo'`, so
   babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read on
-  `model`'s stable identity. Full analysis:
+  `model`'s stable identity. That opt-out is also why `return`-vs-ternary is now
+  a style choice: what stays load-bearing is *replacing the subtree*, not how the
+  replacement is spelled. Full analysis:
   [reference/COMPILER_TERNARY_FINDING.md](reference/COMPILER_TERNARY_FINDING.md).
 
 The rest of the shared chrome — the phase precedence, the retry affordances, the
@@ -513,6 +526,10 @@ region and refetches stale ones.
 Deep subsystems, each read on its own task (also linked inline where they come
 up):
 
+- [reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) — the
+  live register of what this architecture *can't* do: the WebGL2 context budget,
+  worker stickiness, the couplings we accept, the correctness surfaces no type
+  protects. Read before scaling work, or when a symptom smells like a ceiling.
 - [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md) — the render lifecycle
   in depth: the mixin, the upload/render autoruns, per-plugin backends, the three
   upload patterns, the HAL, Slang shaders, and the new-display checklist.

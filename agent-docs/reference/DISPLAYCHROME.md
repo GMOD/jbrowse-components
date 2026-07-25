@@ -17,8 +17,9 @@ description: The shared display status chrome that owns loading, error, and retr
   `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
 - Always: a thin outer owns the chrome, a named observer body owns the canvas
   and overlays, joined by a render-prop child.
-- Terminal states must be literal early returns, and `displayPhase`'s loading
-  term a thunk. Both are load-bearing under React 19 + mobx-react.
+- Load-bearing: a terminal state **replaces the subtree** (that is what disposes
+  the backend) and `displayPhase`'s loading term is a **thunk**. Early-`return`
+  vs ternary is style only, since `'use no memo'`.
 - 15 LGV displays use it. Off it by design: arc/paired-arc (main-thread SVG),
   dotplot and synteny (non-LGV, drop to `useRenderingBackend`), circular-view
   (radial, own banners).
@@ -158,14 +159,22 @@ child. Until then, treat the redundancy as frozen.
 
 ## Load-bearing gotchas
 
-Two JSX-shape rules keep the terminal-state banners committing under React 19 +
-mobx-react + jsdom. Both are restated in the `DisplayChrome.tsx` comment block
-and guarded by `DisplayChrome.test.tsx`:
+Three things get cited here. Two are load-bearing, one is not, and conflating
+them is why this section exists. All are guarded by `DisplayChrome.test.tsx` and
+restated in the `DisplayChrome.tsx` comment block.
 
-- terminal states are literal early `return`s, not ternary branches;
-- `displayPhase`'s loading term is a thunk, evaluated only after the terminal
-  flags are ruled out.
+- **Tree shape (load-bearing):** a terminal state renders as the component's
+  *entire* output rather than sitting beside a still-mounted canvas. That unmount
+  is what fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
+  `stopRenderingBackend()`, with force-load re-initializing through the callback
+  ref.
+- **Laziness (load-bearing):** `displayPhase`'s loading term is a thunk,
+  evaluated only after the terminal flags are ruled out, so a banner state
+  doesn't subscribe to the view's churning `visibleRegions`/`loadedRegions`.
+- **Early `return` vs ternary (style):** once a correctness constraint, because
+  react-compiler could memoize a MobX read on `model`'s stable identity. Not one
+  since `DisplayChromeInner` took `'use no memo'` —
+  [COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md).
 
-The full "why" (the React-commit repro, sub-rules 1a/1b, and the GPU-dispose
-reason) lives in ARCHITECTURE.md §"Terminal states early-return their own root".
-Don't duplicate it here.
+Full "why" for the tree-shape rule: ARCHITECTURE.md §"Terminal states early-return
+their own root". Don't duplicate it here.
