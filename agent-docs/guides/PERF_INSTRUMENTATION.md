@@ -259,3 +259,44 @@ To push past wheel-event-rate cap, the only architectural path is **decoupling
 visual scroll from offsetPx updates** — render a wider-than-viewport canvas and
 CSS-translate it during scroll, only re-rendering when offsetPx exits the
 buffered region. Substantial change; not attempted in May 2026.
+
+## Startup profiling (July 2026)
+
+Four throwaway harnesses in `website/scripts/`, all running the built bundle
+with no source changes:
+
+- `profile-app.ts` — CDP CPU profile of the main thread and every worker across
+  a cold load, a warm load and a pan/zoom burst, plus network bytes, long tasks
+  and a rAF frame-time distribution. Writes `.cpuprofile` files and a markdown
+  report; `profile-resolve.ts` attributes self time to real source files through
+  the build sourcemaps.
+- `probe-startup.ts` — API-level counters (programs linked, shader-status time,
+  GL contexts, workers, blob stop-tokens, sync XHRs) by wrapping the platform
+  APIs in `evaluateOnNewDocument`.
+- `ab-compare.ts` — interleaved A/B of two prebuilt `build/` trees: startup
+  timings, program counts, and an ImageMagick pixel diff of the settled view.
+  Build one variant, copy `build/` aside, build the other, point it at both.
+
+Two results worth not re-deriving.
+
+**Shader compilation dominated first paint, and laziness fixed it.** A
+three-track LGV linked 29 WebGL programs and drew with 14 — the alignments
+renderer alone declares 21 passes, most behind a setting a default pileup never
+turns on. On a cold GPU program cache that was ~1.9 s of blocking driver time.
+`webgl2Hal` now compiles a pass on its first draw (`getPass`), which halves the
+program count and is pixel-identical. **Deferring the status check is not the
+fix** — stubbing `LINK_STATUS`/`COMPILE_STATUS` to `true` removes the time from
+the measurement but not from the load, because the first `useProgram` forces the
+driver to finish anyway. `KHR_parallel_shader_compile` buys little for a program
+used immediately after linking; compiling *fewer* programs is the lever.
+
+**Shrinking the RPC worker pool is not a win — don't retry it.** Three tracks
+boot three workers, each parsing ~1.9 MB of the same chunks (400–560 ms each),
+which looks like obvious waste. Forcing `rpc.workerCount: 1` and A/B-ing it is a
+wash (3430 vs 3534 ms to settled): the boots overlap, so they are not on the
+wall-clock critical path, and heavy datasets are where the pool earns its keep.
+The live lever is bundle *content* — workers evaluate `@mui/material`,
+`@emotion/styled`, `stylis`, `mobx-react` and view plugins they never use,
+because the 996 KB chunk is shared with the main thread. A worker-targeted
+`splitChunks` group would cut every worker's boot without touching pool
+semantics. Not attempted.
