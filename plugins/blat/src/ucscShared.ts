@@ -1,5 +1,8 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { isSessionWithAddTracks } from '@jbrowse/core/util'
+import {
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
+} from '@jbrowse/core/util'
 
 import { assemblyToUcscDb } from './ucscDbMap.ts'
 
@@ -51,10 +54,43 @@ export function featureLocString(feature: SimpleFeatureSerialized) {
   return `${feature.refName}:${feature.start + 1}-${feature.end}`
 }
 
+function findNavigableView(session: AbstractSessionModel, assembly: string) {
+  const view = session.views.find(
+    v => v.type === 'LinearGenomeView' && !!v.assemblyNames?.includes(assembly),
+  )
+  return view && isNavigableView(view) ? view : undefined
+}
+
+// Navigates an open view to a hit, growing the window so it lands with flanking
+// context rather than filling the viewport edge to edge. Shared by the
+// post-query navigation and the results widget's per-hit links.
+export async function navToFeature(
+  session: AbstractSessionModel,
+  assembly: string,
+  feature: SimpleFeatureSerialized,
+) {
+  const view = findNavigableView(session, assembly)
+  const loc = featureLocString(feature)
+  if (view) {
+    try {
+      await view.navToLocString(loc, assembly, 0.2)
+    } catch (e) {
+      // a hit on a refName the loaded assembly doesn't know (the UCSC db and
+      // the loaded assembly aren't the same build, or lack an alias) still
+      // belongs in the track — report the coordinates rather than dropping them
+      session.notify(`Could not navigate to ${loc}: ${e}`, 'warning')
+    }
+  } else {
+    session.notify(`No open view displays ${assembly}`, 'warning')
+  }
+}
+
 // Turns a UCSC query result into an on-the-fly FromConfigAdapter FeatureTrack,
-// shows it, and navigates to the leading hit. Answering "where is this sequence"
-// is the point of the query, so landing on the coordinates is part of the
-// result rather than a follow-up the user has to perform. Callers pass
+// shows it, navigates to the leading hit, and opens the hit list in the drawer.
+// Answering "where is this sequence" is the point of the query, so landing on
+// the coordinates is part of the result rather than a follow-up the user has to
+// perform — and the widget keeps the rest of the hits readable after the dialog
+// closes, which a snackbar naming only the best one could not. Callers pass
 // `features` best-first (pslToFeatures sorts by score; hgPcr returns its
 // products in order).
 export async function addResultTrack({
@@ -84,35 +120,23 @@ export async function addResultTrack({
       features,
     },
   })
-  const view = session.views.find(
-    v => v.type === 'LinearGenomeView' && !!v.assemblyNames?.includes(assembly),
-  )
-  if (view && isNavigableView(view)) {
+  const view = findNavigableView(session, assembly)
+  if (view) {
     view.showTrack(trackId)
-    const loc = featureLocString(features[0]!)
-    try {
-      // grow so the hit sits inside the viewport with flanking context rather
-      // than filling it edge to edge
-      await view.navToLocString(loc, assembly, 0.2)
-      session.notify(
-        features.length > 1
-          ? `${features.length} hits; showing the best at ${loc}`
-          : `1 hit at ${loc}`,
-        'success',
-      )
-    } catch (e) {
-      // a hit on a refName the loaded assembly doesn't know (the UCSC db and
-      // the loaded assembly aren't the same build, or lack an alias) still
-      // belongs in the track — report the coordinates rather than dropping them
-      session.notify(
-        `${features.length} hit(s) added, but could not navigate to ${loc}: ${e}`,
-        'warning',
-      )
-    }
   } else {
     session.notify(
       `Added track "${trackId}" but no open view displays ${assembly}`,
       'warning',
+    )
+  }
+  await navToFeature(session, assembly, features[0]!)
+  if (isSessionModelWithWidgets(session)) {
+    session.showWidget(
+      session.addWidget('UcscResultsWidget', 'ucscResults', {
+        features,
+        assembly,
+        trackName,
+      }),
     )
   }
 }

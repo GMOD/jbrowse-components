@@ -5,6 +5,7 @@ import SearchIcon from '@mui/icons-material/Search'
 
 import BlatDialog from './BlatDialog.tsx'
 import IsPcrDialog from './IsPcrDialog.tsx'
+import UcscResultsWidgetF from './UcscResultsWidget/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -12,7 +13,9 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 export default class BlatPlugin extends Plugin {
   name = 'BlatPlugin'
 
-  install(_pluginManager: PluginManager) {}
+  install(pluginManager: PluginManager) {
+    UcscResultsWidgetF(pluginManager)
+  }
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {

@@ -20,9 +20,10 @@ Choose **Tools → BLAT search…**, paste a DNA sequence or FASTA, pick the
 assembly, and submit.
 
 What comes back is a new track named after the query, holding one feature per
-hit. Hits are ranked by UCSC's `pslScore`, the view navigates to the top-scoring
-one, and a notification reports how many hits there were, so a single sequence
-lands you on its coordinates without any further clicks.
+hit, and a **Search results** panel listing those hits. Hits are ranked by
+UCSC's `pslScore` and the view navigates to the top-scoring one, so a single
+sequence lands you on its coordinates without any further clicks; the panel
+keeps the rest of them in view, each location a link that navigates there.
 
 Each hit feature carries the numbers you need to judge whether it is _the_
 placement or an incidental one. The feature name is the query name plus percent
@@ -31,7 +32,7 @@ coverage, the aligned span of the query, and the block count. Gapped alignments
 keep their PSL blocks as subfeatures, so introns and indels are drawn rather
 than smoothed over.
 
-<Figure src="/img/desktop-blat-results.png" caption="The result of a BLAT search on hg19: the hits became a track named after the query, the view jumped to the best one, and the notification reports the rest. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
+<Figure src="/img/desktop-blat-results.png" caption="The result of a BLAT search on hg19: the hits became a track named after the query, the view jumped to the best one, and the Search results panel lists every hit with its identity, query coverage and score. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
 
 Pasting FASTA searches each record separately, up to 25 records and 25 kb of
 sequence in total. Records keep their own names, so hits from different queries
@@ -71,7 +72,8 @@ UCSC's `hgPcr` service and follows the same database-selection and apiKey/proxy
 options as BLAT search.
 
 Predicted amplicons arrive the same way BLAT hits do, as a track with the view
-navigated to the first product. Each amplicon feature spans the whole product
+navigated to the first product and the same **Search results** panel listing
+every product with its size and primer pair. Each amplicon feature spans the whole product
 and is named by its size, with the forward and reverse primer footprints as
 labelled subfeatures at either end, so you can see which primer sits where on
 both strands.
