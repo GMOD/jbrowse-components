@@ -255,6 +255,56 @@ describe('findTranscriptsWithCDS', () => {
     expect(result[0]!.id()).toBe('cds-1')
   })
 
+  // test_data/sars-cov2/ncbi_original.gff3: the ORF1ab gene owns pp1ab
+  // (266..21555) and the overlapping pp1a (266..13483), each with its own
+  // cleavage products. Keying translation at the gene stitched both CDS spans
+  // into one 11502-aa ORF in place of the real 7096-aa protein, and every mature
+  // region in the shared span then drew residues from both.
+  it('translates each polyprotein CDS of a multi-CDS gene separately', () => {
+    const polyprotein = (id: string) =>
+      createMockFeature({
+        id,
+        type: 'CDS',
+        subfeatures: [
+          createMockFeature({ type: 'mature_protein_region_of_CDS' }),
+        ],
+      })
+    const gene = createMockFeature({
+      id: 'gene-ORF1ab',
+      type: 'gene',
+      subfeatures: [polyprotein('cds-pp1ab'), polyprotein('cds-pp1a')],
+    })
+
+    const result = findTranscriptsWithCDS(new Map([['gene-ORF1ab', gene]]))
+
+    expect(result.map(f => f.id())).toEqual(['cds-pp1ab', 'cds-pp1a'])
+  })
+
+  // The same polyprotein one level deeper, as a GenBank flatfile conversion
+  // emits it. The mRNA satisfies hasCDSSubfeature, so it used to be translated
+  // instead — leaving the emitter's per-CDS peptide lookup empty.
+  it('reaches a polyprotein CDS nested under an mRNA', () => {
+    const cds = createMockFeature({
+      id: 'cds-1',
+      type: 'CDS',
+      subfeatures: [createMockFeature({ type: 'mat_peptide' })],
+    })
+    const mRNA = createMockFeature({
+      id: 'mRNA-1',
+      type: 'mRNA',
+      subfeatures: [cds],
+    })
+    const gene = createMockFeature({
+      id: 'gene-1',
+      type: 'gene',
+      subfeatures: [mRNA],
+    })
+
+    const result = findTranscriptsWithCDS(new Map([['gene-1', gene]]))
+
+    expect(result.map(f => f.id())).toEqual(['cds-1'])
+  })
+
   it('ignores a bare CDS with no children', () => {
     const cds = createMockFeature({ id: 'cds-1', type: 'CDS', subfeatures: [] })
 

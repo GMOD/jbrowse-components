@@ -12,7 +12,10 @@ import {
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { hasCDSSubfeature, hasContainerChildren } from '../glyphs/glyphUtils.ts'
-import { hasMatureProteinChildren } from '../glyphs/matureProteinRegion.ts'
+import {
+  collectPolyproteinCDS,
+  hasMatureProteinChildren,
+} from '../glyphs/matureProteinRegion.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
 import { dedupedSortedCDS } from './cdsSegments.ts'
 
@@ -77,6 +80,18 @@ export function findTranscriptsWithCDS(
     // heuristics below.
     if (isCDS(feature) && hasMatureProteinChildren(feature)) {
       transcripts.push(feature)
+      continue
+    }
+    // A wrapped polyprotein translates per CDS, not at the wrapper. A polyprotein
+    // CDS satisfies neither hasCDSSubfeature (its children are cleavage products,
+    // not CDS) nor the container descent, so the old fallback keyed the whole
+    // gene — and dedupedSortedCDS then stitched every CDS child into one ORF. For
+    // SARS-CoV-2, whose ORF1ab gene carries both pp1ab and the overlapping pp1a,
+    // that produced an 11502-aa concatenation in place of the real 7096-aa
+    // protein, and every mature region in the shared span drew residues from both.
+    const polyproteins = collectPolyproteinCDS(feature)
+    if (polyproteins.length > 0) {
+      transcripts.push(...polyproteins)
     } else if (hasContainerChildren(feature)) {
       const matchingTranscripts =
         getSubfeatures(feature).filter(hasCDSSubfeature)

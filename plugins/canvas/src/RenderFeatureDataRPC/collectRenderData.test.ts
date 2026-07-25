@@ -151,7 +151,8 @@ describe('collectRenderData peptide overlay', () => {
 
 // Viral polyprotein: gene → one CDS (the whole ORF) → mature_protein_region
 // children. The gene routes to Subfeatures, the CDS to MatureProteinRegion;
-// protein is keyed by the gene id. Each region becomes a stacked row.
+// protein is keyed by the CDS id (each polyprotein CDS is its own reading
+// frame, see findTranscriptsWithCDS). Each region becomes a stacked row.
 function polyproteinLayout(
   cdsStart: number,
   cdsEnd: number,
@@ -217,7 +218,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       config,
       theme,
       true,
-      new Map([['g1', { protein: 'MFKLST' }]]),
+      new Map([['cds1', { protein: 'MFKLST' }]]),
       jexl,
     )
 
@@ -245,7 +246,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       config,
       theme,
       true,
-      new Map([['g1', { protein: 'MFKLST' }]]),
+      new Map([['cds1', { protein: 'MFKLST' }]]),
       jexl,
     )
 
@@ -271,7 +272,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       config,
       theme,
       true,
-      new Map([['g1', { protein: 'MFKLST*' }]]),
+      new Map([['cds1', { protein: 'MFKLST*' }]]),
       jexl,
     )
     const overlay = result.aminoAcidOverlay!
@@ -306,7 +307,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       config,
       theme,
       true,
-      new Map([['g1', { protein: 'MFKLST' }]]),
+      new Map([['cds1', { protein: 'MFKLST' }]]),
       jexl,
     )
     const byRow = (y: number) =>

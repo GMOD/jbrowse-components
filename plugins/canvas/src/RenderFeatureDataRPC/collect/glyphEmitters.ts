@@ -1,13 +1,13 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
-import { hasMatureProteinChildren } from '../glyphs/matureProteinRegion.ts'
+import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import {
   getFeatureName,
   readFeatureLabels,
   readFeatureName,
 } from '../labelUtils.ts'
-import { featureType, getSubfeatures, isCDS } from '../util.ts'
+import { featureType, getSubfeatures } from '../util.ts'
 import {
   centerShrink,
   emitCodonRects,
@@ -243,8 +243,11 @@ function processMatureProteinLayout(
 ) {
   // one flat residue list for the whole ORF; the polyprotein CDS is a single
   // reading frame, so mature regions are sub-slices of it rather than the
-  // segment-aligned children the exon path keys on
-  const byCdsSegment = aminoAcidsByFeature(rootFeature, ctx)
+  // segment-aligned children the exon path keys on. Keyed on the CDS, not the
+  // enclosing gene — a gene can own two overlapping polyproteins (SARS-CoV-2
+  // pp1a/pp1ab) whose residues must not be stitched into one ORF; matches what
+  // findTranscriptsWithCDS translates.
+  const byCdsSegment = aminoAcidsByFeature(cdsFeature, ctx)
   const aminoAcids = byCdsSegment && [...byCdsSegment.values()].flat()
 
   // loop-invariant: the owning CDS's config-jexl name, resolved once for all
@@ -257,10 +260,7 @@ function processMatureProteinLayout(
   // nsp1–nsp10 at identical coords). A single-polyprotein gene (enterovirus, the
   // common case) or a standalone CDS has nothing to disambiguate, so suffixing
   // all 12 labels with "(genome polyprotein)" would be pure repeated clutter.
-  const disambiguateWithCds =
-    getSubfeatures(rootFeature).filter(
-      f => isCDS(f) && hasMatureProteinChildren(f),
-    ).length > 1
+  const disambiguateWithCds = collectPolyproteinCDS(rootFeature).length > 1
 
   for (const [i, childLayout] of layout.children.entries()) {
     const childFeature = childLayout.feature
@@ -277,7 +277,7 @@ function processMatureProteinLayout(
         MATURE_PROTEIN_COLOR_HEX[colorIdx]!,
         topPx,
         childLayout.height,
-        rootFeature.get('strand') ?? 0,
+        cdsFeature.get('strand') ?? 0,
         flatbushIdx,
         collector.rects,
         collector.aminoAcidOverlay,

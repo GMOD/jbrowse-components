@@ -1,4 +1,4 @@
-import { featureType, getSubfeatures } from '../util.ts'
+import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { layoutChild, sortByPosition } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
@@ -42,6 +42,26 @@ function getMatureProteinChildren(feature: Feature): Feature[] {
 
 export function hasMatureProteinChildren(feature: Feature) {
   return getMatureProteinChildren(feature).length > 0
+}
+
+// Every polyprotein CDS in the subtree. Each is its own reading frame, so each
+// translates independently — collected at whatever depth it sits (gene → CDS, or
+// gene → mRNA → CDS), since findGlyph reaches it at either. Shared by the
+// translation pass and the emitter's label-disambiguation so the two agree on
+// what counts as a polyprotein.
+export function collectPolyproteinCDS(feature: Feature): Feature[] {
+  const out: Feature[] = []
+  const walk = (f: Feature) => {
+    for (const sub of getSubfeatures(f)) {
+      if (isCDS(sub) && hasMatureProteinChildren(sub)) {
+        out.push(sub)
+      } else {
+        walk(sub)
+      }
+    }
+  }
+  walk(feature)
+  return out
 }
 
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
