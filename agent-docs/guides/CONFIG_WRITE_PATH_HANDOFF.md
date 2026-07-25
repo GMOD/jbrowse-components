@@ -164,13 +164,21 @@ These are alignments items, not config items. They belong in
   unaffected, which is every default and realistically every real config;
   a smaller one keeps its height and can still be dragged, never below where it
   already is. Covered by `bandHeight.test.ts`.
-- `LinearAlignmentsDisplay/model.ts` re-exports `getInsertionType`,
-  `insertionBarWidth as getInsertionRectWidthPx`, `textWidthForNumber`,
-  `InsertionType` and `Region`. Nothing in the monorepo imports any of them from
-  there (consumers go to `constants.ts` or `@jbrowse/alignments-core` directly),
-  but they are published plugin surface, so per
-  [PLUGIN_ABI_STABILITY.md](../reference/PLUGIN_ABI_STABILITY.md) removing them
-  is a breaking change and needs a call, not a cleanup.
+- ~~`LinearAlignmentsDisplay/model.ts` re-exports~~ removed in `589607e043`,
+  along with a sixth the entry missed (`ArcColorByType`). **This entry's premise
+  was wrong**: they were not published plugin surface, so no ABI call was
+  needed. Worth recording how that was settled, because the same check applies
+  next time. A symbol in a plugin's `src/` is externally reachable only via one
+  of three routes — `packages/core/src/ReExports/list.ts`, the plugin's
+  `exports = {}` object (`getPlugin('X').exports.Y`), or the package's `exports`
+  map in `package.json`. All three said no here: absent from `list.ts`,
+  alignments has no `exports` object, and the map publishes only
+  `"." -> esm/index.js` with no deep subpaths, so
+  `@jbrowse/plugin-alignments/LinearAlignmentsDisplay/model` is not importable
+  at all. `src/index.ts` re-exports exactly one symbol from that file, the
+  `LinearAlignmentsDisplayModel` type. That made it in-tree dead code the
+  compiler could validate. Being in a plugin's `src/` does not by itself make a
+  symbol ABI — check the three routes before deferring on that basis.
 - Three comments in `LinearAlignmentsDisplay/renderSvg.tsx` still use em-dashes,
   against the house prose style. Every other file from that pass was converted,
   but `renderSvg.tsx` was carrying another agent's uncommitted edit at the time
