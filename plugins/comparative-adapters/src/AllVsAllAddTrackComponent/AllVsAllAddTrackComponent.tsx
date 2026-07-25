@@ -26,11 +26,20 @@ const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
     session.assemblies[1]?.name ?? defaultAsm,
   ])
 
-  useSeedTrackMixin(model, { adapter: { assemblyNames } })
+  // the same list goes on the track and on the adapter: the adapter uses it to
+  // label mates, while the track needs it to be offered by the track selector of
+  // a multi-way view (which only shows tracks covering every displayed assembly)
+  useSeedTrackMixin(model, {
+    assemblyNames,
+    adapter: { assemblyNames },
+  })
 
   function update(next: string[]) {
     setAssemblyNames(next)
-    model.setMixinData({ adapter: { assemblyNames: next } })
+    model.setMixinData({
+      assemblyNames: next,
+      adapter: { assemblyNames: next },
+    })
   }
 
   return (

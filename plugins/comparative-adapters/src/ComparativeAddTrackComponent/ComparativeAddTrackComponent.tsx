@@ -8,6 +8,17 @@ import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
 
 import type { AddTrackComponentModel } from '../addTrackMixinContribution.ts'
 
+// The pair goes on the track as well as the adapter: a synteny view only offers
+// tracks that cover every assembly it displays (filterTracks), so a track left
+// listing just the assembly the widget was opened on never appears in the view
+// it was made for.
+function toMixin(queryAssembly: string, targetAssembly: string) {
+  return {
+    assemblyNames: [queryAssembly, targetAssembly],
+    adapter: { queryAssembly, targetAssembly },
+  }
+}
+
 const ComparativeAddTrackComponent = observer(
   function ComparativeAddTrackComponent({
     model,
@@ -19,14 +30,12 @@ const ComparativeAddTrackComponent = observer(
     const [queryAssembly, setQueryAssembly] = useState(defaultAsm)
     const [targetAssembly, setTargetAssembly] = useState(defaultAsm)
 
-    useSeedTrackMixin(model, { adapter: { queryAssembly, targetAssembly } })
+    useSeedTrackMixin(model, toMixin(queryAssembly, targetAssembly))
 
     function update(query: string, target: string) {
       setQueryAssembly(query)
       setTargetAssembly(target)
-      model.setMixinData({
-        adapter: { queryAssembly: query, targetAssembly: target },
-      })
+      model.setMixinData(toMixin(query, target))
     }
 
     return (

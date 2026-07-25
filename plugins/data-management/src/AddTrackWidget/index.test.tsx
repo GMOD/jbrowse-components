@@ -542,3 +542,30 @@ test('getTrackConfig includes assembly-pair fields supplied via mixinData', () =
     targetAssembly: 'hg38',
   })
 })
+
+// a synteny track is only offered by a view whose every assembly it lists
+// (filterTracks/containsAll), so a contributed assemblyNames must REPLACE the
+// widget's single-assembly default, not concatenate onto it
+test('getTrackConfig lets mixinData replace the track assemblyNames', () => {
+  const { widget } = makeHg38Session()
+  widget.setTrackData({
+    uri: 'https://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setMixinData({ assemblyNames: ['mm10', 'hg38'] })
+
+  expect(widget.getTrackConfig(Date.now())?.assemblyNames).toEqual([
+    'mm10',
+    'hg38',
+  ])
+})
+
+test('getTrackConfig keeps the view assembly when mixinData contributes none', () => {
+  const { widget } = makeHg38Session()
+  widget.setTrackData({
+    uri: 'https://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+
+  expect(widget.getTrackConfig(Date.now())?.assemblyNames).toEqual(['hg38'])
+})

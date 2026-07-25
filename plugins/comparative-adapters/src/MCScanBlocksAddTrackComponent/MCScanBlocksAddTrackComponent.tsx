@@ -15,12 +15,18 @@ interface GenomeColumn {
   bed?: FileLocation
 }
 
+// The genome list goes on the track as well as the adapter: a multi-way view
+// only offers tracks that cover every assembly it displays (filterTracks), so a
+// track left listing just the assembly the widget was opened on never appears in
+// the view it was made for.
 function columnsToMixin(columns: GenomeColumn[]) {
+  const assemblyNames = columns.map(c => c.assembly)
   return {
+    assemblyNames,
     adapter: {
-      blockAssemblies: columns.map(c => c.assembly),
+      blockAssemblies: assemblyNames,
       bedLocations: columns.map(c => c.bed),
-      assemblyNames: columns.map(c => c.assembly),
+      assemblyNames,
     },
   }
 }

@@ -266,10 +266,16 @@ export default function f(pluginManager: PluginManager) {
                 assemblyNames: [self.assembly],
                 adapter: { ...self.trackAdapter },
               },
-              // Synteny add-track components seed mixinData.adapter with the
-              // query/target assemblies; non-synteny tracks leave it empty so
-              // their adapter config isn't polluted with assembly-pair fields.
+              // Synteny add-track components seed mixinData with the assemblies
+              // the file covers — on the adapter, and on the track itself, since
+              // the track selector only offers a track that lists every assembly
+              // the view displays (filterTracks). Non-synteny tracks leave it
+              // empty so their config isn't polluted with assembly-pair fields.
               self.mixinData,
+              // a contributed array replaces the base one rather than
+              // concatenating onto it, so a multi-genome track's assemblyNames
+              // doesn't come back as [thisAssembly, ...allAssemblies]
+              { arrayMerge: (_base, contributed: unknown[]) => contributed },
             )
           : undefined
       },

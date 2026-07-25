@@ -17,11 +17,17 @@ interface AnchorsForm {
   bed2Location?: FileLocation
 }
 
+// The pair goes on the track as well as the adapter: a synteny view only offers
+// tracks that cover every assembly it displays (filterTracks), so a track left
+// listing just the assembly the widget was opened on never appears in the view
+// it was made for.
 function formToMixin(form: AnchorsForm) {
   const { bed1Assembly, bed2Assembly, bed1Location, bed2Location } = form
+  const assemblyNames = [bed1Assembly, bed2Assembly]
   return {
+    assemblyNames,
     adapter: {
-      assemblyNames: [bed1Assembly, bed2Assembly],
+      assemblyNames,
       bed1Location,
       bed2Location,
     },
