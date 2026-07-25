@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
@@ -11,18 +11,14 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The mixin composes onto a display that supplies `configuration`, but that
 // prop is declared by the concrete display, not here, so `self` isn't typed
-// with it. This is the shared read/write handle: `getConf` for reads,
-// `setConf` (wrapping `configuration.setSlot`) for writes. Mirrors
-// TrackHeightMixin's cast idiom.
+// with it. This is the shared read/write handle for both `getConf` and
+// `setConf`. Mirrors TrackHeightMixin's cast idiom. Slot names go unchecked
+// here because `AnyConfigurationModel` is widened, unlike in a display whose
+// factory pins its schema.
 interface ConfNode {
-  configuration: AnyConfigurationModel & {
-    setSlot: (slotName: string, value: unknown) => void
-  }
+  configuration: AnyConfigurationModel
 }
 const confNode = (self: object) => self as ConfNode
-const setConf = (self: object, slot: string, val: unknown) => {
-  confNode(self).configuration.setSlot(slot, val)
-}
 
 /**
  * #stateModel WiggleScoreConfigMixin
@@ -172,55 +168,55 @@ export function WiggleScoreConfigMixin() {
        * #action
        */
       setScaleType(scaleType: string) {
-        setConf(self, 'scaleType', scaleType)
+        setConf(confNode(self), 'scaleType', scaleType)
       },
       /**
        * #action
        */
       setBicolorPivot(val?: number) {
-        setConf(self, 'bicolorPivot', val)
+        setConf(confNode(self), 'bicolorPivot', val)
       },
       /**
        * #action
        */
       setMinScore(val?: number) {
-        setConf(self, 'minScore', val)
+        setConf(confNode(self), 'minScore', val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        setConf(self, 'maxScore', val)
+        setConf(confNode(self), 'maxScore', val)
       },
       /**
        * #action
        */
       setRenderingType(type: string) {
-        setConf(self, 'defaultRendering', type)
+        setConf(confNode(self), 'defaultRendering', type)
       },
       /**
        * #action
        */
       setSummaryScoreMode(val: string) {
-        setConf(self, 'summaryScoreMode', val)
+        setConf(confNode(self), 'summaryScoreMode', val)
       },
       /**
        * #action
        */
       setScatterPointSize(val?: number) {
-        setConf(self, 'scatterPointSize', val)
+        setConf(confNode(self), 'scatterPointSize', val)
       },
       /**
        * #action
        */
       setLineWidth(val?: number) {
-        setConf(self, 'lineWidth', val)
+        setConf(confNode(self), 'lineWidth', val)
       },
       /**
        * #action
        */
       setAutoscale(val?: string) {
-        setConf(self, 'autoscale', val)
+        setConf(confNode(self), 'autoscale', val)
       },
       /**
        * #action
