@@ -11,9 +11,9 @@ Multi-LGV synteny and dotplot hand-roll the fetch state machine in ~480 lines of
 (`dataCurrent` / `computeSvgReady`), and the progress throttle is shared
 (`createStatusThrottle`), so what remains genuinely duplicated is the state
 machine: a raw token volatile each, their own `loading`/`refetching` derivations,
-no `fetchCanceled`/`cancelFetchByUser`, no `reload()`. Synteny also still uses a
-plain `{ delay: 500 }` where dotplot and `installGlobalFetchAutorun` leading-edge,
-so its first fetch waits out the full debounce with nothing to coalesce.
+no `fetchCanceled`/`cancelFetchByUser`, no `reload()`. (Both now leading-edge
+debounce via `leadingEdgeDebounce`, and both diff their shared-backend uploads
+through `createKeyedUploadSync`.)
 
 The shape: a `SignatureFetchMixin` = `FetchMixin` + `loadedFetchKey` volatile +
 overridable `currentFetchKey` + `dataCurrent`, plus an

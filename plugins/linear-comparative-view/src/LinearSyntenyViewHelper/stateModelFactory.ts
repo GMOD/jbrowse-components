@@ -6,6 +6,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
+import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
@@ -242,35 +243,16 @@ export function linearSyntenyViewHelperModelFactory(
        */
       startRenderingBackend(backend: SyntenyRenderingBackend) {
         // renderInstanceData is MST-cached; its reference is stable while
-        // upstream deps are unchanged. Track what we last uploaded per
-        // key so an upload-autorun re-fire from one display doesn't push
-        // identical bytes back to the GPU for the others.
-        const lastUploaded = new Map<number, SyntenyInstanceData>()
-        let prevUploadRenderingBackend: SyntenyRenderingBackend | undefined
+        // upstream deps are unchanged, so the identity diff keeps an
+        // upload-autorun re-fire from one display off the other displays'
+        // buffers.
+        const syncUpload = createKeyedUploadSync<
+          SyntenyInstanceData,
+          SyntenyRenderingBackend
+        >()
         self.attachRenderingBackend<SyntenyRenderingBackend>(backend, {
           upload: b => {
-            // When the backend instance changes (e.g. canvas remounted after
-            // context loss or Suspense), the new backend has no geometry —
-            // clear the cache to force a full re-upload.
-            if (b !== prevUploadRenderingBackend) {
-              lastUploaded.clear()
-              prevUploadRenderingBackend = b
-            }
-            const currentKeys = new Set<number>()
-            for (const [key, data] of self.geometryByDisplayKey) {
-              currentKeys.add(key)
-              if (lastUploaded.get(key) === data) {
-                continue
-              }
-              b.uploadGeometry(key, data)
-              lastUploaded.set(key, data)
-            }
-            for (const key of lastUploaded.keys()) {
-              if (!currentKeys.has(key)) {
-                b.deleteGeometry(key)
-                lastUploaded.delete(key)
-              }
-            }
+            syncUpload(b, self.geometryByDisplayKey)
           },
           render: b => {
             const state = self.syntenyRenderState

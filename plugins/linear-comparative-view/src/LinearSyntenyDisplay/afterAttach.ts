@@ -3,6 +3,7 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
+import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -17,12 +18,21 @@ import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { Region } from '@jbrowse/core/util'
 
+const RPC_DEBOUNCE_MS = 500
+
 // The stop-token rotation + staleness guard come from
 // `createStopTokenRotation` (shared with dotplot-view's fetch); only the
 // synteny-specific guards, tracked deps, RPC args, and result handling live
 // here.
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   const fetch = createStopTokenRotation(self)
+
+  // Leading-edge on the first fetch, debounced after, matching dotplot and
+  // `installGlobalFetchAutorun`. MobX's `{ delay }` schedules even the initial
+  // run, so opening a synteny view waited a full RPC_DEBOUNCE_MS before the RPC
+  // started with nothing to coalesce. Priming after the fetch begins keeps the
+  // runs that bail on the minimized/connectedViews guards on the leading edge.
+  const debounce = leadingEdgeDebounce(RPC_DEBOUNCE_MS)
 
   addDisposer(
     self,
@@ -104,6 +114,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // never lingers over freshly-loaded data (mirrors dotplot setLoading).
         self.setError(undefined)
         self.setFetching(true)
+        debounce.prime()
 
         try {
           const sessionId = getRpcSessionId(self)
@@ -167,7 +178,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           }
         }
       },
-      { name: 'SyntenyFetch', delay: 500 },
+      { name: 'SyntenyFetch', scheduler: debounce.scheduler },
     ),
   )
 

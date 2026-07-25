@@ -131,7 +131,9 @@ gate](#the-region-too-large-gate-summary)).
 synteny (`LinearSyntenyDisplay`) composes only `BaseDisplay` and owns its fetch;
 dotplot puts `RenderLifecycleMixin` at the *view* level. Neither gets
 `FetchMixin`'s cancel/stale machinery, `RegionTooLargeMixin` or `loadedRegions`,
-so each re-implements a `fetching` flag and a 500ms debounce. They do answer the
+so each re-implements a `fetching` flag and its own leading-edge debounce
+(`leadingEdgeDebounce`, the same scheduler `installGlobalFetchAutorun` uses).
+They do answer the
 shared `dataCurrent` freshness question and run the shared `computeSvgReady`
 policy, just via a signature compare (`isDataCurrent` over `dotplotFetchKey` /
 synteny's `currentFetchKey`) rather than spatial coverage — which is where the
@@ -144,6 +146,20 @@ snapped to a buffer-sized grid, so a pan inside the buffer neither refetches nor
 exposes an unfetched strip, and the freshness key stays stable across the
 gesture. Synteny scopes its query axis, dotplot its h axis; neither scopes the
 other axis, because the fetch is one-dimensional in both.
+
+Both put their `RenderLifecycleMixin` on the *view*, so one canvas is shared by
+every display in it. That is what makes their upload callbacks keyed rather than
+per-region: they diff through `createKeyedUploadSync` and delete each departed
+key individually, because an active-set prune computed from one display's map
+would wipe its siblings' buffers.
+
+Circular view's `ChordVariantDisplay` is a fourth shape, off this axis
+entirely: it paints main-thread JSX SVG (radial, so it keeps a bespoke
+`<DisplayError>` instead of `SvgChrome`), composes none of the fetch
+foundations, and answers freshness with its own `ready` getter — one chord fetch
+covers the whole view, so there is no spatial or signature axis to compare. It
+still runs the shared `computeSvgReady` / `awaitSvgReady` export gate
+([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md)).
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only

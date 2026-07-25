@@ -37,6 +37,7 @@
     "./gpuDevice": "./src/gpuDevice.ts",
     "./hal": "./src/hal/index.ts",
     "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",
+    "./keyedUploadSync": "./src/keyedUploadSync.ts",
     "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
     "./regionUploadSync": "./src/regionUploadSync.ts",
     "./renderBlock": "./src/renderBlock.ts",

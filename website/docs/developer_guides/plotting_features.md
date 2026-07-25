@@ -286,7 +286,7 @@ logic pure means SVG export reuses it unchanged (see
 ```ts
 import {
   bpToScreenPx,
-  clipBlockForCanvas,
+  forEachClippedBlock,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
@@ -305,44 +305,41 @@ export function drawScoreBlocks(
 ) {
   const { canvasWidth, canvasHeight, color } = state
   ctx.fillStyle = color
-  for (const block of blocks) {
-    const data = regions.get(block.displayedRegionIndex)
-    const clip = data ? clipBlockForCanvas(block, canvasWidth) : undefined
-    if (!data || !clip) {
-      continue
-    }
-    const { start, end, screenStartPx, screenEndPx, reversed } = block
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-    ctx.clip()
-    for (let i = 0; i < data.numFeatures; i++) {
-      const left = bpToScreenPx(
-        data.starts[i]!,
-        start,
-        end,
-        screenStartPx,
-        screenEndPx,
-        reversed,
-      )
-      const right = bpToScreenPx(
-        data.ends[i]!,
-        start,
-        end,
-        screenStartPx,
-        screenEndPx,
-        reversed,
-      )
-      const h = data.scores[i]! * canvasHeight
-      ctx.fillRect(
-        Math.min(left, right),
-        canvasHeight - h,
-        Math.abs(right - left) || 1,
-        h,
-      )
-    }
-    ctx.restore()
-  }
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    canvasHeight,
+    block => regions.get(block.displayedRegionIndex),
+    (data, block) => {
+      const { start, end, screenStartPx, screenEndPx, reversed } = block
+      for (let i = 0; i < data.numFeatures; i++) {
+        const left = bpToScreenPx(
+          data.starts[i]!,
+          start,
+          end,
+          screenStartPx,
+          screenEndPx,
+          reversed,
+        )
+        const right = bpToScreenPx(
+          data.ends[i]!,
+          start,
+          end,
+          screenStartPx,
+          screenEndPx,
+          reversed,
+        )
+        const h = data.scores[i]! * canvasHeight
+        ctx.fillRect(
+          Math.min(left, right),
+          canvasHeight - h,
+          Math.abs(right - left) || 1,
+          h,
+        )
+      }
+    },
+  )
 }
 ```
 

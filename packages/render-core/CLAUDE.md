@@ -162,12 +162,16 @@ documents only what bites when editing _this package_.
   display one upload autorun, so every observable any upload reads re-fires all
   of them. Per-region maps diff through `createRegionUploadSync`; a monolithic
   display with **independently-keyed** slots (HiC: RPC matrix + config palette)
-  diffs through `createGlobalUploadSync`. Both drop their memos on a backend
-  swap, which is the part a hand-rolled version forgets — context-loss recovery
-  hands back a backend with empty GPU buffers. Create either _outside_ the
-  `attachRenderingBackend` call (it captures callbacks from the first call
-  only), and keep every input read unconditional so none drops out of the
-  dependency set. A display whose slots share one source (LD) needs neither.
+  diffs through `createGlobalUploadSync`; a backend **shared by sibling
+  displays** (the dotplot view's canvas, the synteny level's canvas) diffs
+  through `createKeyedUploadSync`, which deletes departed keys one at a time
+  rather than active-set pruning a sibling's buffers away. All three drop their
+  memos on a backend swap, which is the part a hand-rolled version forgets —
+  context-loss recovery hands back a backend with empty GPU buffers. Create any
+  of them _outside_ the `attachRenderingBackend` call (it captures callbacks
+  from the first call only), and keep every input read unconditional so none
+  drops out of the dependency set. A display whose slots share one source (LD)
+  needs none of them.
 - **Multi-pass renderers bracket `sync()` with `hal.beginUpload()` /
   `hal.endUpload()`.** Between them every `uploadBuffer` is recorded;
   `endUpload` destroys any pass buffer _not_ rewritten — so a pass whose data

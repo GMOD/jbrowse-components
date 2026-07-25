@@ -19,8 +19,9 @@ Violations cause silent bugs, not crashes.
   Backends diff by reference identity; in-place mutation leaks stale bytes.
 - **Only write MST observables via actions.** A direct write inside an autorun
   body (`self.canvasDrawn = true`) silently fails under action enforcement.
-- **Shared backends (dotplot, synteny) track their own previously-uploaded
-  keys** and delete the removed ones; an active-set prune would wipe a sibling
+- **Shared backends (dotplot, synteny) diff through `createKeyedUploadSync`**,
+  which deletes each departed key individually; an active-set prune (what
+  `createRegionUploadSync` does for a single display) would wipe a sibling
   display's data.
 - **Structural types across lazy boundaries.** Importing MST model types across
   a lazy import is a circular-reference trap — use duck-typed interfaces.

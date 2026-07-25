@@ -19,6 +19,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
+import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import { DiagonalizeProgressMixin, coerceColorBy } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -570,25 +571,18 @@ export default function stateModelFactory(pm: PluginManager) {
       // and render against the shared backend.
       .actions(self => ({
         startRenderingBackend(backend: DotplotRenderingBackend) {
-          // Previously-uploaded keys, so we can fire deleteGeometry for
-          // entries that disappear between autorun ticks.
-          const lastKeys = new Set<number>()
+          // One display committing new geometry re-fires the shared upload
+          // autorun for every track on the canvas, so diff by reference: only
+          // the track that actually changed re-uploads, and a departed track's
+          // buffer is deleted individually (an active-set prune would wipe the
+          // siblings).
+          const syncUpload = createKeyedUploadSync<
+            DotplotGeometryData,
+            DotplotRenderingBackend
+          >()
           self.attachRenderingBackend<DotplotRenderingBackend>(backend, {
             upload: b => {
-              const currentKeys = new Set<number>()
-              for (const [key, data] of self.geometryByTrackIndex) {
-                b.uploadGeometry(key, data)
-                currentKeys.add(key)
-              }
-              for (const key of lastKeys) {
-                if (!currentKeys.has(key)) {
-                  b.deleteGeometry(key)
-                }
-              }
-              lastKeys.clear()
-              for (const key of currentKeys) {
-                lastKeys.add(key)
-              }
+              syncUpload(b, self.geometryByTrackIndex)
             },
             render: b => {
               const state = self.dotplotRenderState
