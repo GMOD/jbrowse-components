@@ -10,7 +10,27 @@ guide_category: Core configuration
 needs JBrowse to present the credentials. Add an entry to the top-level
 `internetAccounts` array with the `domains` its token applies to. The first
 account whose `domains` substring-matches a URL wins, so order specific ones
-first.
+first. If you control the server holding the data, read the next section before
+configuring any of this.
+
+## If you control the data server, you probably do not need this
+
+The simpler setup is to put JBrowse and its data files on the same server, in
+the same site, and protect both with the login your site already has (a session
+cookie, an SSO proxy, nginx `auth_request`). The browser then sends the cookie
+with every data request by itself: no `internetAccounts` entry, and no
+credential material in your config or in a shared session. It only works when
+the app and the data are on the same origin, since that is the only place a
+browser sends the cookie.
+
+`internetAccounts` is for the data you cannot put behind your own login:
+Dropbox, Google Drive, an OAuth-protected API, a portal that issues tokens.
+
+[How do I put my data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login)
+in the FAQ walks through the cookie setup, what "same origin" means in practice,
+and the login-redirect failure to watch for.
+
+## Internet accounts
 
 JBrowse reads data files directly over HTTP, so a file behind authentication
 needs JBrowse itself to present the credentials. An **internet account** is an
@@ -189,10 +209,14 @@ Authenticated requests are still cross-origin requests, so the data server must
 send the CORS headers that allow them, including the `Authorization` header (or
 whatever `authHeader` names) in `Access-Control-Allow-Headers`, and it must
 allow credentials rather than responding with a wildcard origin. See
-[the CORS FAQ](/docs/faq/#why-do-i-get-a-cors-error-when-loading-remote-files).
+[the CORS FAQ](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
+
+This is another reason the same-origin cookie setup above is easier where it is
+available: there is no cross-origin request to configure.
 
 ## See also
 
 - [config.json format](/docs/config_guides/intro)
 - [BaseInternetAccount config docs](/docs/config/baseinternetaccount)
 - [Configuring tracks](/docs/config_guides/tracks)
+- [FAQ: how do I put my data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login)

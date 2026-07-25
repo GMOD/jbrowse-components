@@ -53,7 +53,20 @@ Key technologies include:
 - @jbrowse/mobx-state-tree
 - web-workers
 - Typescript
+- WebGPU, with WebGL2 and Canvas2D fallbacks, for track rendering
 - Electron (for desktop specifically)
+
+### How do I write a plugin
+
+The [writing a plugin guide](/docs/developer_guides/simple_plugin) starts you
+from an official template with a working build. If all you need is a jexl
+function or a small config callback, the
+[no-build plugin guide](/docs/developer_guides/no_build_plugin) skips the
+toolchain entirely.
+
+The [developer guide index](/docs/developer_guide) covers the pluggable element
+types a plugin can register (adapters, displays, views, widgets) and
+[testing plugins](/docs/developer_guides/testing_plugins).
 
 ## General
 
@@ -61,13 +74,54 @@ Key technologies include:
 
 JBrowse 2's plugin system supports custom view types (e.g. circular, dotplot)
 alongside the built-in ones, making it a platform for genomic visualization
-rather than just a genome browser.
+rather than just a genome browser. The [gallery](/gallery/) shows what that
+looks like in practice, and each figure there opens live in the app.
 
 ### What is the difference between JBrowse Web and JBrowse Desktop
 
-JBrowse Web is a static web app you deploy to a server; anyone with the URL can
-use it. JBrowse Desktop is an Electron app that runs locally on a user's
+JBrowse Web is a static web app you deploy to a server, so anyone with the URL
+can use it. JBrowse Desktop is an Electron app that runs locally on a user's
 machine, can open local files directly, and does not require a server.
+
+### What browsers does JBrowse 2 support
+
+Recent versions of Chrome, Firefox, Safari and Edge. Most development and
+testing happens in Chrome.
+
+Tracks are drawn on the graphics card where the browser provides it (WebGPU
+first, then WebGL2) and fall back to 2D canvas drawing where it does not, so a
+machine without a usable GPU still works. See
+[my tracks are blank or render incorrectly](#my-tracks-are-blank-or-render-incorrectly)
+if something looks wrong.
+
+### What file formats can JBrowse 2 read
+
+BAM, CRAM, VCF, GFF3, BED, bigWig, bigBed, PAF, MAF, `.hic`, and many others.
+The [supported file types](/docs/config_guides/file_types) page maps each format
+to its adapter and a config snippet.
+
+### Does JBrowse 2 send my data anywhere
+
+No. Your browser reads your data files directly from wherever they are hosted,
+so reads, variants and annotations never pass through a JBrowse server. JBrowse
+Desktop works entirely offline against local files.
+
+Two things do use the network. JBrowse Web and JBrowse Desktop send a usage
+report on load: the JBrowse version, counts of tracks, assemblies and open
+views, track type names, plugin names, screen size, and which renderer was
+selected. No file URLs, track names or data are included, and
+[`disableAnalytics: true`](/docs/config_guides/disable_analytics) turns it off
+entirely (the embedded components never report anything). Separately, the Share
+button uploads a session, which is
+[encrypted in your browser before it is sent](#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web).
+
+### How do I make an image for a publication
+
+The genome views (linear, circular, dotplot, synteny, breakpoint split) each
+have an "Export SVG" option that writes a vector file of exactly what is on
+screen, ready to edit in Illustrator or Inkscape. For figures you want to
+regenerate as the data changes, [@jbrowse/img](/docs/jbrowse-img) renders a view
+to SVG or PNG from the command line.
 
 ### What are new features in JBrowse 2
 
@@ -107,6 +161,41 @@ It is free for both academic and commercial use.
 
 ## Setup
 
+### How can I setup JBrowse 2 on my web server
+
+The [quickstart web](/docs/quickstart_web) guide has the full walkthrough. With
+the CLI installed it is one command to install and one to update later:
+
+```bash
+jbrowse create /var/www/html/jb2     # download the app into that folder
+jbrowse upgrade /var/www/html/jb2    # replace the app files with the latest release
+```
+
+The release contains no config.json, so `upgrade` leaves yours in place.
+
+The CLI is optional, though it is the easiest way to add data, since `add-track`
+works out the track type, finds the index and writes the config entry for you.
+Without it, download a zip from the
+[releases page](https://github.com/GMOD/jbrowse-components/releases), unzip it
+into your web directory, and edit `config.json` in a text editor. See
+[config basics](/docs/config_guides/intro) for the shape of the file, the
+[cookbook](/docs/cookbook) for a complete minimal config to start from, and the
+[config guide](/docs/config_guide) for everything you can put in it.
+
+Questions of any kind are welcome on the
+[discussions board](https://github.com/GMOD/jbrowse-components/discussions), or
+feel free to [contact us](/contact) directly.
+
+### How do I install or update the @jbrowse/cli tool
+
+Install with `npm install -g @jbrowse/cli`. Re-running the same command updates
+it.
+
+This adds a `jbrowse` command to your PATH (assuming a standard Node.js
+installation via nodesource or nvm). Note: the CLI only prepares your
+config.json. It **does not run server-side code**. Every command and flag is
+listed in the [CLI reference](/docs/cli).
+
 ### What web server do I need to run JBrowse 2
 
 JBrowse 2 is just static JS/CSS/HTML, no backend required. Deploy by copying the
@@ -120,6 +209,45 @@ them correctly). For some informal troubleshooting notes, see
 The server you use should support byte-range requests (e.g. the
 [Range HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range))
 so that JBrowse can get small slices of large binary data files.
+
+The [deployment guide](/docs/config_guides/deploying) covers the rest of what a
+production instance wants: generating config.json from a script, keeping
+`trackId`s stable so share links survive a redeploy, and cache-busting
+index.html.
+
+### Should I configure gzip on my web server
+
+Yes. JBrowse Web is roughly 2MB of JavaScript, which gzip cuts to about a third
+of that, and the same setting shrinks `config.json` (a config with hundreds of
+tracks is mostly repeated JSON keys). Most cloud hosts, including AWS
+CloudFront, Amplify and Netlify, compress text responses automatically. Apache
+and Nginx have to be told.
+
+For Nginx, add to your server block:
+
+```nginx
+gzip on;
+gzip_types application/json text/plain text/html text/css text/javascript application/javascript;
+```
+
+To enable compression in Apache, use the `mod_deflate` module:
+
+```bash
+sudo a2enmod deflate
+sudo systemctl restart apache2
+```
+
+Then add to your Apache config (e.g.
+`/etc/apache2/sites-available/000-default.conf`):
+
+```apache
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+```
+
+This applies to text only. Never gzip BGZF binary files, see
+[BAM (or other indexed binary files) do not work on my server](#bam-or-other-indexed-binary-files-do-not-work-on-my-server).
 
 ### BAM (or other indexed binary files) do not work on my server
 
@@ -146,8 +274,8 @@ binary.
   </FilesMatch>
   ```
 
-- On Nginx, only `gzip` text MIME types (the default `gzip_types` is fine; don't
-  add `application/octet-stream` or `application/gzip`). Don't enable
+- On Nginx, only `gzip` text MIME types. The default `gzip_types` is fine, just
+  don't add `application/octet-stream` or `application/gzip`, and don't enable
   `gzip_static` for genomic files.
 
 - On S3 / CloudFront, don't upload with `--content-encoding gzip`. Fix a bad
@@ -160,94 +288,91 @@ To check, open dev tools' Network tab, request the file, and confirm no
 
 Compressing `config.json` with `Content-Encoding: gzip` is fine, that's just a
 text file. The rule only applies to BGZF binary files. See also
-[How do I reduce config.json download size?](#how-do-i-reduce-configjson-download-size).
+[Should I configure gzip on my web server?](#should-i-configure-gzip-on-my-web-server).
 
-### How can I setup JBrowse 2 on my web server
+### How do I put my data behind a login
 
-We recommend following the steps in the
-[quickstart web via CLI](/docs/quickstart_web) guide.
+JBrowse has no server and no user accounts of its own. It is static files
+running in a browser, reading your data files over HTTP, so it cannot decide who
+is allowed to see a track. Whatever serves the files has to do that. Two
+consequences that catch people out:
 
-`jbrowse create /var/www/html/jb2` downloads the latest JBrowse into that
-folder. Run `jbrowse upgrade /var/www/html/jb2` to update it later.
+- Leaving a track out of config.json does not protect it. The browser downloads
+  config.json, so every URL in it is visible to anyone who can open the app.
+- Never put a password, token, or API key in config.json, for the same reason.
 
-### How do I install or update the @jbrowse/cli tool
+The recommended setup is to use the login your website already has. Put the
+JBrowse folder and the data files on the same server, in the same site, and
+protect both with whatever your site already uses (a session cookie, an SSO
+proxy, an nginx `auth_request`). Once a user is logged in, the browser sends the
+cookie with every request, including the ones for the BAM and its index. Nothing
+needs configuring in JBrowse, and no credentials end up in your config or in a
+shared session.
 
-Install with `npm install -g @jbrowse/cli`. Re-running the same command updates
-it.
+The requirement is that the app and the data are on the same **origin**, meaning
+the same `https://host` and port. Browsers only send cookies to the origin that
+set them:
 
-This adds a `jbrowse` command to your PATH (assuming a standard Node.js
-installation via nodesource or nvm). Note: the CLI only prepares your
-config.json. It **does not run server-side code**.
+| App at                        | Data at                    | Cookie sent          |
+| ----------------------------- | -------------------------- | -------------------- |
+| `https://mysite.org/jbrowse/` | `https://mysite.org/data/` | yes                  |
+| `https://mysite.org/jbrowse/` | `https://data.mysite.org/` | no, different origin |
+| `https://mysite.org/jbrowse/` | an S3 or other bucket URL  | no, different origin |
+
+Protect both, not just the app. A login page in front of JBrowse while the data
+folder stays world-readable protects nothing, since the file URLs are in
+config.json.
+
+The common failure mode: when a data request arrives without a valid login, most
+auth setups answer with the HTML of a login page. JBrowse asked for bytes of a
+BAM file, so instead of a message about logging in you get a parse error, often
+`HTTP 200 ... (should be 206 for range requests)`. Check a file directly with:
+
+```bash
+curl -s -o /dev/null -D - -H 'Range: bytes=0-100' https://mysite.org/data/file.bam
+```
+
+A logged-in request should answer `206 Partial Content`. A `200` with
+`content-type: text/html`, or a redirect, is the login page. Note also that a
+session expiring while a view is open produces errors mid-use, which a reload
+resolves.
+
+If that setup does not fit, in rough order of simplicity:
+
+- No server at all. [JBrowse Desktop](/docs/quickstart_desktop) reads files off
+  your own machine, so nothing is published in the first place.
+- Expiring links. S3 presigned URLs or CloudFront signed cookies are simple to
+  set up, but a link stops working when its signature expires, taking any saved
+  session or share link with it.
+- [internetAccounts](/docs/config_guides/authentication), for data you do not
+  control: Dropbox, Google Drive, an OAuth-protected API, a portal that issues
+  tokens. JBrowse prompts for the credential and attaches it to requests for the
+  domains you list. It only forwards a credential the user already has, it is
+  not an access-control system, and it is more moving parts than a cookie in
+  front of a folder, so it is worth exhausting the options above first.
+
+Any setup where the data is on a different origin than the app also needs
+[CORS](#why-do-i-get-a-cors-error-when-loading-remote-files), including the auth
+header in `Access-Control-Allow-Headers`.
 
 ### How can I make a header on a jbrowse-web instance
 
 Edit the index.html that ships with jbrowse-web to add content outside the `div`
-the app renders into. For more advanced embedding, consider
-@jbrowse/react-linear-genome-view2 or similar; jbrowse-web itself is not yet
-available as an npm package.
+the app renders into.
 
-### How do I update my instance of jbrowse-web
-
-You can use the command, after installing `@jbrowse/cli`:
-
-```
-jbrowse upgrade /path/to/your/jbrowse2
-```
-
-This downloads the latest release from GitHub and overwrites your jbrowse-web
-instance.
-
-If you've manually downloaded jbrowse-web, the newest releases can be found
-[here](https://github.com/GMOD/jbrowse-components/releases).
-
-### How can I setup JBrowse 2 without the CLI tools
-
-The CLI is the easiest way to add assemblies and tracks (`jbrowse add-track`
-will figure out the track type, index files, and config entries for you), so we
-recommend it for most setups. But it's optional.
-
-To set up JBrowse without the CLI, download a zip from the
-[releases page](https://github.com/GMOD/jbrowse-components/releases) and unzip
-it into your web directory. From there you can:
-
-- edit `config.json` in a text editor, see the
-  [config guide](/docs/config_guide) and
-  [config basics](/docs/config_guides/intro)
-- use the [admin server](/docs/quickstart_adminserver), which provides a GUI for
-  editing the config
-
-The [quickstart web](/docs/quickstart_web) guide walks through both the CLI and
-the manual setup. Questions of any kind are welcome on the
-[discussions board](https://github.com/GMOD/jbrowse-components/discussions), or
-feel free to [contact us](/contact) directly.
-
-### How do I load a track into JBrowse 2
-
-With the JBrowse CLI tools, you can easily add tracks with the `add-track`
-command, e.g.:
-
-    jbrowse add-track myfile.bw -a hg19
-
-This will set up a bigwig track on the hg19 assembly in your config.json.
-
-Run the command from your jbrowse2 folder (e.g. /var/www/html/jbrowse2), or
-wherever you keep your config.json (you can have multiple configs).
-
-You can also use remote URLs:
-
-    jbrowse add-track http://yourremote/myfile.bam
-
-`add-track` infers the track type from the file extension and the index filename
-(e.g. `myfile.bam.bai`).
-
-You can also manually edit your config file or use the GUI.
+If you want the header to be part of a larger app, use
+[`@jbrowse/react-app2`](/docs/embedded_components), which is the whole JBrowse
+app as a React component you control the page around. jbrowse-web itself is not
+published as an npm package.
 
 ### How do I add an assembly (reference genome)
 
 Tracks need an assembly to attach to, so usually you add the assembly first. The
 CLI does this with `add-assembly`:
 
-    jbrowse add-assembly hg19.fa.gz -n hg19
+```bash
+jbrowse add-assembly hg19.fa.gz -n hg19
+```
 
 It indexes the FASTA if needed and writes the assembly entry into config.json.
 Indexed FASTA (`.fa` + `.fai`), bgzip indexed FASTA (`.fa.gz` + `.fai` +
@@ -256,7 +381,64 @@ to in `assemblyNames`.
 
 On JBrowse Desktop you can do the same thing through the "Open assembly" dialog.
 The [assembly configuration guide](/docs/config_guides/assemblies) covers the
-rest (aliases, refname aliasing, custom genetic codes).
+rest (aliases, refname aliasing, custom genetic codes), and the cookbook has the
+[shortest valid assembly entry](/docs/cookbook#assemblies) if you are writing
+config.json by hand.
+
+### How do I load a track into JBrowse 2
+
+With the JBrowse CLI tools, you can easily add tracks with the `add-track`
+command, e.g.:
+
+```bash
+jbrowse add-track myfile.bw -a hg19
+```
+
+This will set up a bigwig track on the hg19 assembly in your config.json.
+
+Run the command from your jbrowse2 folder (e.g. /var/www/html/jbrowse2), or
+wherever you keep your config.json (you can have multiple configs).
+
+You can also use remote URLs:
+
+```bash
+jbrowse add-track http://yourremote/myfile.bam
+```
+
+`add-track` infers the track type from the file extension and the index filename
+(e.g. `myfile.bam.bai`).
+
+You can also manually edit your config file, or add a track from inside the app
+(where it lives in the current session unless the config is writable).
+
+The [cookbook](/docs/cookbook) has a copy-paste track config for each common
+type, and [supported file types](/docs/config_guides/file_types) lists which
+adapter goes with which format.
+
+### Can I open files from my own computer
+
+[JBrowse Desktop](/docs/quickstart_desktop) opens local files through its file
+picker and stores their paths in the session, so it suits data that is not
+hosted anywhere.
+
+JBrowse Web can open a local file too, but only for the life of that tab.
+Browsers do not let a page re-open a path on disk later, so such a track is gone
+after a reload and cannot travel in a share link.
+
+### Can I load a UCSC track hub
+
+Yes. Add the hub's `hub.txt` URL as a connection, and its assemblies and tracks
+become available, see [connections](/docs/user_guides/connections). To hand
+someone a link that opens a hub with no setup at all, use
+[`&hubURL=`](/docs/user_guides/hub_url).
+
+### How do I add a plugin
+
+List the plugin's `name` and bundle `url` in the top-level `plugins` array of
+config.json, see the [plugins guide](/docs/config_guides/plugins). The
+[plugin store page](/plugin_store/) has the config snippet for every published
+plugin, and the [in-app plugin store](/docs/user_guides/plugin_store) can
+install one into the current session without editing config.json.
 
 ### How do I change the color of a track
 
@@ -296,7 +478,10 @@ jbrowse add-track genes.gff.gz --load copy --config '{"displays":[{"type":"Linea
 ```
 
 **In a URL:** set `color` in a track's `displaySnapshot` in the session spec.
-See [URL parameters](/docs/urlparams/#live-example-feature-track-color).
+See [URL parameters](/docs/urlparams#live-example-feature-track-color).
+
+The [cookbook colors section](/docs/cookbook#colors) has copy-paste versions of
+all of these, per track type.
 
 ### How do I color features by an attribute (color callback)
 
@@ -308,11 +493,13 @@ For example, color by strand:
     "color": "jexl:feature.strand==-1?'red':'blue'"
 ```
 
-The in-app **Color** menu picks a single solid color; to enter a jexl
+The in-app **Color** menu picks a single solid color. To enter a jexl
 expression, edit the `color` slot in the track's settings (configuration
-editor), or set it in the config/URL as above. See our
+editor), or set it in the config or URL as above. See the
 [configuration callbacks guide](/docs/config_guides/jexl) for the full jexl
-reference.
+reference, and [more ways to set color](/docs/cookbook#more-ways-to-set-color)
+in the cookbook for worked examples (score thresholds, attribute lookups,
+filtering features out).
 
 ### My jexl is too complicated, how can I simplify it
 
@@ -342,38 +529,21 @@ faceted track selector:
 }
 ```
 
-### How do I reduce config.json download size
+The [hierarchical track selector guide](/docs/config_guides/track_selector)
+covers the rest: grouping, sorting, folder categories, and the metadata columns
+the faceted selector picks up.
 
-You can set up your server to serve zipped files. Most cloud-based services,
-like AWS Amplify and AWS CloudFront, already do this automatically. However, for
-Apache and Nginx, you need to configure them manually.
+### How do I open JBrowse at a particular location with certain tracks turned on
 
-For Nginx, add to your server block:
+For everyone who visits your instance, set a
+[default session](/docs/config_guides/default_session) in config.json.
 
-```nginx
-gzip on;
-gzip_types application/json text/plain text/html text/css text/javascript application/javascript;
-```
-
-To enable compression in Apache, use the `mod_deflate` module:
-
-```
-sudo a2enmod deflate
-sudo systemctl restart apache2
-```
-
-Then add to your Apache config (e.g.
-`/etc/apache2/sites-available/000-default.conf`):
-
-```
-<IfModule mod_deflate.c>
-    # Compress output
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
-</IfModule>
-
-```
-
-With gzip enabled, `config.json` and other text files are served compressed.
+For a one-off link, the [URL parameters](/docs/urlparams) `&assembly=`, `&loc=`
+and `&tracks=` cover the common case, and a session spec can describe a whole
+multi-view state including per-track display settings.
+[Automating JBrowse](/docs/automating) compares all the ways to preset a view
+(URL, config, embedded props, session spec), and the cookbook has a
+[config to URL](/docs/cookbook#from-config-to-a-url) walkthrough.
 
 ## Behavior and design
 
@@ -385,9 +555,10 @@ from JBrowse 1, which operated on a single assembly at a time.
 
 ### How are the menus structured in the app
 
-In JBrowse 2, the top-level menu performs only global operations; each linear
-genome view has its own hamburger menu and each track has its own track menu. In
-JBrowse 1 the app menu operated directly on the single view.
+In JBrowse 2, the top-level menu performs only global operations. Each view has
+its own menu and each track has its own track menu, because a session can hold
+many views at once. In JBrowse 1 the app menu operated directly on the single
+view.
 
 ### What keyboard shortcuts does the linear genome view support
 
@@ -398,8 +569,11 @@ With the view focused (click it first):
 - `Ctrl` + mouse wheel - zoom (trackpad pinch also works)
 - `Shift` + click-drag - rubberband-select a region
 - `Shift` (held, no drag) - show a red vertical guide bar
-- `Ctrl`/`Cmd` + `Z` for undo, `Ctrl`/`Cmd` + `Shift` + `Z` (or `Ctrl` + `Y`)
-  for redo
+
+Undo and redo are app-wide rather than per-view: `Ctrl`/`Cmd` + `Z` undoes and
+`Ctrl`/`Cmd` + `Shift` + `Z` (or `Ctrl` + `Y`) redoes anywhere in JBrowse Web
+and JBrowse Desktop, including things like reopening a view you just closed. The
+embedded components do not include it.
 
 See [Basic usage](/docs/user_guides/basic_usage#zooming) for the scroll-to-zoom
 toggle and other navigation controls.
@@ -411,83 +585,62 @@ so they will not display soft-clipping.
 
 The soft-clipping indicators on these reads will appear black.
 
-### Should I configure gzip on my web server
-
-Yes. JBrowse 2 loads ~5MB of JS resources (~2.5MB each for main and worker
-bundles), but gzip reduces the download to ~1.4MB. How to enable it depends on
-your server (Apache, Nginx, AWS CloudFront, S3, etc.). See also
-[How do I reduce config.json download size?](#how-do-i-reduce-configjson-download-size).
-
 ### How does JBrowse know when to display the "Zoom in to see more features" message
 
-JBrowse uses "stats estimation" rules to decide when to show this message:
+Before fetching anything, JBrowse asks the adapter roughly how much data the
+visible region would download. For an indexed file that is a lookup in the
+index, so it costs nothing. The checks, in order:
 
-- No message is shown when zoomed in to <20kb
-- BAM and CRAM files use byte size estimation (shown alongside the message)
-- Other data types use feature density calculation
-- Hi-C, BigWig, and sequence adapters are hardcoded to `{ featureDensity:0 }`
-  and always render
+- below 20kb nothing is ever held back
+- over the byte limit for the region, you get the message instead of a download
+- feature tracks then also check feature density, which catches a small region
+  holding an enormous number of features
+- adapters that summarize at screen resolution (bigWig, Hi-C, MultiWiggle,
+  sequence) can never be too large and always render
 
-To customize this for a specific track, set these config variables on the
-`displays` section:
+The message itself is "Zoom in to see features or force load (may be slow)",
+usually with the estimated size that tripped it, and the banner's **Force load**
+button downloads the region anyway.
 
-- [`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity) -
-  the maximum number of features per pixel allowed before the "zoom in to see
-  features" message is shown
-- `fetchSizeLimit` - this config variable exists on the adapters (can increase
-  size limit)
+To force load without a click (an embedded view, a notebook, a screenshot, where
+nobody can press the button), set
+[`forceLoad`](/docs/config/baselineardisplay/#slot-forceload) on the display.
 
-Example config with a small feature screen density:
+To move the thresholds instead, the two slots are
+[`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity)
+and [`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) on
+the display:
 
 ```json
-{
-  "type": "VariantTrack",
-  "trackId": "variant_density",
-  "name": "test variants (small featuredensity limit)",
-  "assemblyNames": ["volvox"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "volvox.filtered.vcf.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "volvox.filtered.vcf.gz.tbi"
-      }
-    }
-  },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "maxFeatureScreenDensity": 0.0006,
-      "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay"
-    }
-  ]
-}
+"displays": [
+  { "type": "LinearVariantDisplay", "maxFeatureScreenDensity": 0.0006 }
+]
 ```
 
-Example config for a CRAM file with a small `fetchSizeLimit` configured:
+The BAM, CRAM and VCF adapters have their own `fetchSizeLimit`, and an adapter's
+limit takes priority over the display's, so for those formats set it on the
+adapter:
 
 ```json
 {
   "type": "AlignmentsTrack",
   "trackId": "volvox_cram",
-  "name": "test track (small fetch size limit)",
+  "name": "volvox CRAM (small fetch size limit)",
   "assemblyNames": ["volvox"],
   "adapter": {
     "type": "CramAdapter",
-    "cramLocation": {
-      "uri": "volvox-sorted-altname.cram"
-    },
-    "craiLocation": {
-      "uri": "volvox-sorted-altname.cram.crai"
-    },
+    "uri": "volvox-sorted.cram",
     "fetchSizeLimit": 1000
   }
 }
 ```
 
 ## Text searching
+
+For setting up name searching in the first place, see the
+[text searching guide](/docs/config_guides/text_searching) and
+[indexing feature names](/docs/quickstart_web#indexing-feature-names-for-searching)
+in the web quickstart.
 
 ### Why am I running out of disk space while trix is running
 
@@ -546,6 +699,10 @@ Pasting the URL bar into another tab on the same computer restores the session
 from sessionStorage (same tab) or IndexedDB (new tab), but those sessions are
 not accessible to other users.
 
+If you would rather build the link yourself than click Share, the
+[URL parameters](/docs/urlparams) page documents every form, from a plain
+`&loc=` to a full session spec.
+
 ### How does session sharing with shortened URLs work in JBrowse Web
 
 The Share button generates a random encryption key on the client, encrypts the
@@ -572,8 +729,8 @@ It depends which link you mean. There are two, and they behave differently:
   hosted store.
 
 - The long URL _is_ reproducible. Click the gear icon in the Share dialog to
-  switch to "Long URL" mode; this encodes the entire session as JSON directly in
-  the URL, with no server round-trip and no minted password. The same view
+  switch to "Long URL" mode, which encodes the entire session as JSON directly
+  in the URL, with no server round-trip and no minted password. The same view
   produces the same long URL (given the same config), and it keeps working even
   if you rebuild or move your JBrowse instance.
 
@@ -584,7 +741,7 @@ tracks. Keep `trackId`s deterministic across builds and shared links stay
 stable. See
 [keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)
 and
-[why a saved session fails to load](/docs/faq/#why-does-my-saved-session-fail-to-load).
+[why a saved session fails to load](#why-does-my-saved-session-fail-to-load).
 
 ## Troubleshooting
 
@@ -620,6 +777,42 @@ A few other things worth checking:
 
 (A file that's bgzip compressed or tabix/CSI indexed incorrectly usually throws
 an error rather than rendering blank, so that shows up differently.)
+
+### My tracks are blank or render incorrectly
+
+If the menus and track names look fine but the features themselves are missing,
+smeared, or the wrong color, the drawing path is the more likely cause than the
+data. A URL parameter switches which one is used: `?renderer=webgl` for WebGL2,
+`?renderer=canvas2d` for software drawing.
+
+That identifies where the problem is rather than fixing it, so please
+[open an issue](https://github.com/GMOD/jbrowse-components/issues) noting which
+of the three worked, along with your browser, operating system and graphics
+card. Graphics errors are printed to the browser's developer console, so include
+anything there.
+
+### Why is my track slow
+
+For an indexed file, the time goes into fetching and decoding the region in
+view. Deep alignment tracks at wide zoom levels dominate, with thousands of
+reads to download, decode and lay out. CRAM costs more CPU to decode than BAM,
+being reference-compressed. The
+[region size gate](#how-does-jbrowse-know-when-to-display-the-zoom-in-to-see-more-features-message)
+is what keeps a wide view from attempting this by accident.
+
+Some adapters read a plain text file with no index (`Gff3Adapter`, `VcfAdapter`,
+`BedAdapter`, `PAFAdapter`). These parse the whole file each time the track
+loads, which is reasonable for a small file and the wrong choice for a large
+one. Converting to the bgzip and tabix indexed equivalent, or to
+[PIF](/docs/developer_guides/pif_format) (`jbrowse make-pif`) for PAF, changes
+the cost from whole-file to per-region. The cookbook's
+[large alignments](/docs/cookbook#synteny-large-alignments) recipe covers the
+synteny case.
+
+Server behavior matters as well. Reads are many small range requests, so latency
+counts for more than bandwidth, and a server that ignores `Range` and returns
+whole files turns every read into a full download. See
+[what web server do I need](#what-web-server-do-i-need-to-run-jbrowse-2).
 
 ### Why do I get a CORS error when loading remote files
 
@@ -700,15 +893,22 @@ your server.
 ### Embedded views versus full JBrowse app
 
 Embedded views are designed for genome browsing within an existing webpage. For
-a standalone browser, run JBrowse Web instead. Key differences:
+a standalone browser, run JBrowse Web instead.
 
-| Embedded components                                     | JBrowse Web                                                                            |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Only has access to one view type                        | Access to all view types loaded into the JBrowse session, including those from plugins |
-| Feature details and track selector open as a dialog     | Feature details open as a left/right oriented drawer                                   |
-| No built-in concept of local session, saving or loading | Save / import / export session options for any user                                    |
+There are three options rather than two, because `@jbrowse/react-app2` is the
+whole JBrowse app as a React component, in between a single embedded view and a
+deployed instance. See [embedded components](/docs/embedded_components) for
+picking a package, and [automating JBrowse](/docs/automating) for driving any of
+them from code.
 
-**Both can:**
+|                | Single-view components (LGV, CGV) | `@jbrowse/react-app2`                      | JBrowse Web                                                      |
+| -------------- | --------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| View types     | One only                          | All of them, plugins included              | All of them, plugins included                                    |
+| Feature detail | Opens in a dialog                 | Opens in a drawer                          | Opens in a left/right oriented drawer                            |
+| Sessions       | No built-in saving or loading     | Held in your app's state, yours to persist | Save, import, export, plus local autosave                        |
+| URLs           | The page owns the URL             | The page owns the URL                      | Reads [URL params](/docs/urlparams) like `&loc=` and `&session=` |
+
+**All of them can:**
 
 - enable/disable tracks through the Track interface
 - change the track's assembly based on what is available in the configuration
@@ -719,4 +919,6 @@ a standalone browser, run JBrowse Web instead. Key differences:
 
 Embedded components are designed for web developers to build custom systems
 around, so features like sessions and track manipulation can be implemented by
-the embedding application.
+the embedding application. If your app is Python or R rather than JavaScript,
+[JBrowse in a Jupyter notebook](/docs/jbrowse_jupyter) and
+[JBrowseR](/docs/jbrowser) wrap the same views.
