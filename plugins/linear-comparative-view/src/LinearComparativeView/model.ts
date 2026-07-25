@@ -127,8 +127,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get error() {
-        return self.volatileError
+      get error(): unknown {
+        // resolved, like LGV's and dotplot's: it folds in the sub-views, whose
+        // assemblies are what `initialized` waits on. Without them a failed
+        // assembly left this empty while `initialized` stayed false forever, so
+        // `showLoading` spun instead of falling back to the import form with the
+        // banner, and an SVG export waited on it with nothing to report
+        return self.volatileError ?? self.views.map(v => v.error).find(e => !!e)
       },
 
       /**

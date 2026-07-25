@@ -1,9 +1,9 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { SVGColorByLegend } from '@jbrowse/synteny-core'
-import { when } from 'mobx'
 
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
@@ -15,7 +15,7 @@ export async function renderToSvg(
   model: DotplotViewModel,
   opts: ExportSvgOptions,
 ) {
-  await when(() => model.initialized)
+  await awaitViewInitialized(model)
   const { themeName = 'default', fontFamily, Wrapper } = opts
 
   const session = getSession(model)

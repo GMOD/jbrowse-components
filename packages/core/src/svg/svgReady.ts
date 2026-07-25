@@ -67,3 +67,25 @@ export function computeSvgReady(
 export async function awaitSvgReady(model: Pick<SvgExportable, 'svgReady'>) {
   await when(() => model.svgReady)
 }
+
+/**
+ * The view-level counterpart, for the wait every `renderToSvg` opens with.
+ * `initialized` folds in the view's assemblies, so an assembly that failed to
+ * load leaves it false forever — and a bare `when(() => view.initialized)` then
+ * hangs the export with the dialog's spinner up and nothing said, the same
+ * failure mode on screen the views cure by falling back to their import form.
+ * Every view exposes a resolved `error` beside `initialized`; waiting on both
+ * and throwing turns that hang into the dialog's error banner.
+ *
+ * An `error` on an initialized view is not fatal here — the export proceeds and
+ * the errored piece renders its own box.
+ */
+export async function awaitViewInitialized(view: {
+  initialized: boolean
+  error: unknown
+}) {
+  await when(() => view.initialized || !!view.error)
+  if (!view.initialized) {
+    throw new Error(`Cannot export: ${view.error}`, { cause: view.error })
+  }
+}

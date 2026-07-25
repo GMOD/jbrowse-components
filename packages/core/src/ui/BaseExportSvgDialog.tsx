@@ -55,7 +55,14 @@ export default observer(function BaseExportSvgDialog({
 }) {
   const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
-  const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
+  // persisted like every other option here, but still gated on the capability:
+  // the checkbox isn't rendered without OffscreenCanvas, so a stored `true` must
+  // not survive into a browser that can't rasterize
+  const [rasterizePreference, setRasterizePreference] = useExportSvgPreference(
+    'rasterize',
+    true,
+  )
+  const rasterizeLayers = offscreenCanvas && rasterizePreference
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
   const [format, setFormat] = useExportSvgPreference<'svg' | 'png'>(
@@ -179,7 +186,7 @@ export default observer(function BaseExportSvgDialog({
                 <Checkbox
                   checked={rasterizeLayers}
                   onChange={() => {
-                    setRasterizeLayers(val => !val)
+                    setRasterizePreference(val => !val)
                   }}
                 />
               }

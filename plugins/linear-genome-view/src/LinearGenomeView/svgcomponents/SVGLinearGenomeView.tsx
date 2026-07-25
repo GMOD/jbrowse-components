@@ -1,9 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, max } from '@jbrowse/core/util'
-import { when } from 'mobx'
 
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
@@ -17,7 +17,7 @@ import type { ExportSvgOptions } from '../types.ts'
 type LGV = LinearGenomeViewModel
 
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
-  await when(() => model.initialized)
+  await awaitViewInitialized(model)
   const {
     textHeight = 18,
     rulerHeight = 34,

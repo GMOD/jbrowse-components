@@ -1,4 +1,5 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -6,7 +7,6 @@ import {
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SVGColorByLegend, coerceColorBy } from '@jbrowse/synteny-core'
-import { when } from 'mobx'
 
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
@@ -22,7 +22,7 @@ export async function renderToSvg(
   model: LinearSyntenyViewModel,
   opts: ExportSvgOptions,
 ) {
-  await when(() => model.initialized)
+  await awaitViewInitialized(model)
   const {
     textHeight = 18,
     rulerHeight = 30,

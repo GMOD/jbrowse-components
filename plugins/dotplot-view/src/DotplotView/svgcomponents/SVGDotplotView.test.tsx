@@ -79,3 +79,15 @@ test('overlay highlights render inside the view clip group', async () => {
   // (both axes are volvox, so the region highlights on each)
   expect(clipGroupContents(svg).match(/fill="#ff00ff"/g)).toHaveLength(2)
 }, 20000)
+
+test('the color legend is exported outside the clip, at the top right', async () => {
+  const view = await setup()
+  expect(await renderToSvg(view, {})).not.toContain('Default')
+
+  view.setShowColorLegend(true)
+  const svg = await renderToSvg(view, {})
+  expect(clipGroupContents(svg)).not.toContain('Default')
+  // laid out from the right edge of the plot, so past its midpoint
+  const x = /<g transform="translate\(([\d.]+) 4\)"/.exec(svg)
+  expect(Number(x![1])).toBeGreaterThan(view.viewWidth / 2)
+}, 20000)

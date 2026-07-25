@@ -1,6 +1,10 @@
 import { autorun, observable, runInAction } from 'mobx'
 
-import { awaitSvgReady, computeSvgReady } from './svgReady.ts'
+import {
+  awaitSvgReady,
+  awaitViewInitialized,
+  computeSvgReady,
+} from './svgReady.ts'
 
 const noTerminals = {
   error: undefined,
@@ -76,6 +80,40 @@ test('resolves once svgReady flips true', async () => {
     model.svgReady = true
   })
   await expect(p).resolves.toBeUndefined()
+})
+
+function uninitializedView(): { initialized: boolean; error: unknown } {
+  return observable({ initialized: false, error: undefined })
+}
+
+describe('awaitViewInitialized', () => {
+  it('resolves once the view initializes', async () => {
+    const view = uninitializedView()
+    const p = awaitViewInitialized(view)
+    runInAction(() => {
+      view.initialized = true
+    })
+    await expect(p).resolves.toBeUndefined()
+  })
+
+  // the hang this exists to prevent: an assembly that fails to load leaves
+  // `initialized` false forever, so the export has to fail on the error instead
+  it('fails on an error the view can never initialize past', async () => {
+    const view = uninitializedView()
+    const p = awaitViewInitialized(view)
+    runInAction(() => {
+      view.error = new Error('assembly volvox failed to load')
+    })
+    await expect(p).rejects.toThrow(
+      'Cannot export: Error: assembly volvox failed to load',
+    )
+  })
+
+  it('exports an initialized view that carries an error', async () => {
+    await expect(
+      awaitViewInitialized({ initialized: true, error: new Error('a track') }),
+    ).resolves.toBeUndefined()
+  })
 })
 
 test('a throwing svgReady getter rejects faithfully, not masked', async () => {

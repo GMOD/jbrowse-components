@@ -226,6 +226,24 @@ freshness (capture a stale viewport) — both have shipped.
   observes settles); a missing `dataCurrent` override shows up as an export that
   never finishes, not as a diagnostic.
 
+### The view-level wait: `awaitViewInitialized`
+
+Every view's `renderToSvg` opens with the same wait, and it has the same failure
+mode one level up: `view.initialized` folds in the assemblies, so an assembly
+that fails to load leaves it false forever and a bare
+`when(() => model.initialized)` hangs the export with the dialog spinner up and
+nothing said. Use `awaitViewInitialized(model)`
+(`@jbrowse/core/svg/svgReady`) — it waits on `initialized || error` and throws
+the error when the view never initialized, which surfaces in the dialog's error
+banner. An `error` on an *initialized* view is not fatal: the export proceeds and
+the errored track renders its own box.
+
+This is why every view's `error` must be **resolved** (fold in assembly errors
+and, for the composed views, the sub-views'), not just its raw `volatileError` —
+the same rule that makes `showLoading` fall back to the import form instead of
+spinning. LGV, dotplot and linear-comparative are on the helper; circular and
+breakpoint-split still inline the bare `when()`.
+
 The **sequence** display adds one extra terminal disjunct — it overrides
 `svgReadyExtraTerminal` to return `zoomedOut`, because zoomed past its
 base-render threshold it shows a static "zoom in" message and issues no fetch,
