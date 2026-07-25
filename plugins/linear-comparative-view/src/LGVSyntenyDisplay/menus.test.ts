@@ -2,37 +2,42 @@ import { getSyntenyGroupByMenuItem } from './menus.ts'
 
 import type { GroupByType } from '@jbrowse/plugin-alignments'
 
-function makeModel(type?: GroupByType) {
+function makeModel(type?: GroupByType, collapseGroupRows = true) {
   return {
     groupBy: type ? { type } : undefined,
     setGroupBy: jest.fn(),
+    collapseGroupRows,
+    setCollapseGroupRows: jest.fn(),
   }
 }
 
-function radios(model: ReturnType<typeof makeModel>) {
-  return getSyntenyGroupByMenuItem(model).subMenu
+// The menu mixes radios, a divider and a checkbox; every assertion below is
+// about the labelled entries, so narrow to those once here.
+function items(model: ReturnType<typeof makeModel>) {
+  return getSyntenyGroupByMenuItem(model).subMenu.filter(i => 'label' in i)
 }
 
-test('offers None plus the synteny-applicable dimensions', () => {
-  expect(radios(makeModel()).map(i => i.label)).toEqual([
+test('offers None plus the synteny-applicable dimensions, then the row toggle', () => {
+  expect(items(makeModel()).map(i => i.label)).toEqual([
     'None',
     'Mate assembly',
     'Strand',
     'MAPQ (binned)',
+    'One row per group',
   ])
 })
 
 test('ungrouped checks None', () => {
   expect(
-    radios(makeModel())
+    items(makeModel(undefined, false))
       .filter(i => i.checked)
       .map(i => i.label),
   ).toEqual(['None'])
 })
 
-test('the active dimension is the only one checked', () => {
+test('the active dimension is the only dimension checked', () => {
   expect(
-    radios(makeModel('mateAssembly'))
+    items(makeModel('mateAssembly', false))
       .filter(i => i.checked)
       .map(i => i.label),
   ).toEqual(['Mate assembly'])
@@ -40,13 +45,27 @@ test('the active dimension is the only one checked', () => {
 
 test('picking a dimension sets it; picking None ungroups', () => {
   const model = makeModel('mateAssembly')
-  radios(model)
+  items(model)
     .find(i => i.label === 'Strand')!
     .onClick()
   expect(model.setGroupBy).toHaveBeenCalledWith({ type: 'strand' })
 
-  radios(model)
+  items(model)
     .find(i => i.label === 'None')!
     .onClick()
   expect(model.setGroupBy).toHaveBeenCalledWith(undefined)
+})
+
+test('the row toggle reflects and flips collapseGroupRows', () => {
+  const on = items(makeModel('mateAssembly')).find(
+    i => i.label === 'One row per group',
+  )!
+  expect(on.checked).toBe(true)
+  on.onClick()
+
+  const off = makeModel('mateAssembly', false)
+  items(off)
+    .find(i => i.label === 'One row per group')!
+    .onClick()
+  expect(off.setCollapseGroupRows).toHaveBeenCalledWith(true)
 })

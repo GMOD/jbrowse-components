@@ -12,6 +12,8 @@ import type { GroupByType } from '@jbrowse/plugin-alignments'
 interface GroupByModel {
   groupBy?: { type: GroupByType }
   setGroupBy: (groupBy?: { type: GroupByType }) => void
+  collapseGroupRows: boolean
+  setCollapseGroupRows: (flag: boolean) => void
 }
 
 // Synteny grouping is a plain radio group, not the alignments Group-by dialog:
@@ -23,7 +25,7 @@ interface GroupByModel {
 const GROUP_OPTIONS = pickGroupByOptions('mateAssembly', 'strand', 'mapq')
 
 export function getSyntenyGroupByMenuItem(model: GroupByModel) {
-  return groupByRadioMenuItem({
+  const item = groupByRadioMenuItem({
     current: model.groupBy?.type,
     options: GROUP_OPTIONS,
     onSelect: type => {
@@ -33,6 +35,28 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
       model.setGroupBy(undefined)
     },
   })
+  // Sits under the dimension radios because it modifies them: it is how tall
+  // each group the radios produce is drawn, not a dimension of its own.
+  return {
+    ...item,
+    subMenu: [
+      ...item.subMenu,
+      { type: 'divider' as const },
+      checkboxItem(
+        'One row per group',
+        model.collapseGroupRows,
+        () => {
+          model.setCollapseGroupRows(!model.collapseGroupRows)
+        },
+        {
+          helpText:
+            'Draw each group as a single band, shading overlapping alignments ' +
+            'darker instead of stacking them. Expand one group back to a full ' +
+            'stack from its label.',
+        },
+      ),
+    ] satisfies MenuItem[],
+  }
 }
 
 interface ShowModel {

@@ -93,6 +93,19 @@ function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * One lane per group by default: an all-vs-all track grouped by mate
+       * assembly draws each mate genome as a single band, with repeat depth
+       * shown as darker shading rather than as extra rows. Overrides the base
+       * alignments display's `collapseGroupRows` default of `false`, where a
+       * group is a read category and the stack itself is the information.
+       */
+      collapseGroupRows: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw each group as a single row rather than a stack',
+      },
+      /**
+       * #slot
        * Synteny lays large alignments out first so big syntenic blocks cluster
        * at the top instead of interleaving with small ones; overrides the base
        * alignments display's `largeFeaturesFirst` default of `false`.
