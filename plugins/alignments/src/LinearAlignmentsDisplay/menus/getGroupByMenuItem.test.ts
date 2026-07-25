@@ -72,3 +72,16 @@ test('a stored dimension not offered in chain mode falls back to None', () => {
   const items = radios(makeModel({ type: 'strand', isChainMode: true }).model)
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['None'])
 })
+
+// `hidden` dimensions belong to another display's menu (mateAssembly is
+// LGVSyntenyDisplay's), so this menu never offers them and must not leave the
+// group blank when a config stored one.
+test('a stored hidden dimension falls back to None', () => {
+  const items = radios(makeModel({ type: 'mateAssembly' }).model)
+  expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['None'])
+})
+
+test('grouping by tag checks the Tag... radio', () => {
+  const items = radios(makeModel({ type: 'tag' }).model)
+  expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['Tag...'])
+})

@@ -1,7 +1,11 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
+  MAX_GROUPS,
+  OVERFLOW_GROUP_KEY,
+  groupByForMode,
   isChainGroupableType,
+  normalizeGroupBy,
   partitionChains,
   partitionFeatures,
 } from './groupFeatures.ts'
@@ -99,14 +103,16 @@ test('numeric tag values order by magnitude, not code point', () => {
   expect(keys(groups)).toEqual(['1', '2', '10', ''])
 })
 
-test('mapq buckets sort numerically via zero-padded keys', () => {
+test('mapq buckets sort numerically, not by code point', () => {
   const features = [
     feat('a', { score: 60 }),
     feat('b', { score: 5 }),
     feat('c', { score: 255 }),
+    // bare decimals, so a code-point sort would put '100' before '60'
+    feat('d', { score: 100 }),
   ]
   const groups = partitionFeatures(features, { type: 'mapq' })
-  expect(keys(groups)).toEqual(['000', '060', '255'])
+  expect(keys(groups)).toEqual(['0', '60', '100', '255'])
 })
 
 test('mapq top decade labels 250-254, not 250-259 (255 is unavailable)', () => {
@@ -118,14 +124,24 @@ test('mapq top decade labels 250-254, not 250-259 (255 is unavailable)', () => {
   const groups = partitionFeatures(features, { type: 'mapq' })
   const labelFor = (key: string) => groups.find(g => g.key === key)!.label
   expect(labelFor('250')).toBe('MAPQ 250-254')
-  expect(labelFor('030')).toBe('MAPQ 30-39')
+  expect(labelFor('30')).toBe('MAPQ 30-39')
   expect(labelFor('255')).toBe('MAPQ unavailable')
 })
 
-test('duplicate grouping splits on the duplicate flag', () => {
+// Non-duplicate first, like supplementary's Primary-first — the reads that matter
+// head the stack. The keys are digits purely to get that order out of
+// compareGroupKeys ('duplicate' < 'nonduplicate' would invert it).
+test('duplicate grouping splits on the flag, non-duplicates first', () => {
   const features = [feat('a', { flags: 0x400 }), feat('b', { flags: 0 })]
   const groups = partitionFeatures(features, { type: 'duplicate' })
-  expect(keys(groups).sort()).toEqual(['duplicate', 'nonduplicate'])
+  expect(groups.map(g => g.label)).toEqual(['Non-duplicate', 'Duplicate'])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['b'])
+})
+
+test('supplementary grouping puts primary reads first', () => {
+  const features = [feat('a', { flags: 0x800 }), feat('b', { flags: 0 })]
+  const groups = partitionFeatures(features, { type: 'supplementary' })
+  expect(groups.map(g => g.label)).toEqual(['Primary', 'Supplementary'])
 })
 
 test('mate-assembly grouping splits synteny features by mate assembly', () => {
@@ -212,4 +228,107 @@ test('partitionChains ignores supplementary/secondary for the key', () => {
   ]
   const groups = partitionChains(features, { type: 'tag', tag: 'HP' })
   expect(keys(groups)).toEqual(['9'])
+})
+
+// A high-cardinality grouping (a UMI-style tag) must not spawn a section per
+// value: every section runs its own coverage pipeline over region-width arrays.
+function umiFeatures(count: number) {
+  return Array.from({ length: count }, (_, i) =>
+    // zero-padded so the sorted order is the numeric order, making which values
+    // survive the cap easy to state
+    feat(`r${i}`, { tags: { RX: `v${String(i).padStart(3, '0')}` } }),
+  )
+}
+
+test('group count is capped, with the tail merged into one overflow section', () => {
+  const groups = partitionFeatures(umiFeatures(MAX_GROUPS + 10), {
+    type: 'tag',
+    tag: 'RX',
+  })
+  expect(groups).toHaveLength(MAX_GROUPS)
+  const overflow = groups.at(-1)!
+  expect(overflow.key).toBe(OVERFLOW_GROUP_KEY)
+  expect(overflow.label).toBe('11 more values')
+  // no read is dropped: the merged tail carries every one of its groups' reads
+  expect(groups.flatMap(g => g.features)).toHaveLength(MAX_GROUPS + 10)
+  expect(overflow.features).toHaveLength(11)
+  // the surviving named groups are the first MAX_GROUPS - 1 in key order
+  expect(groups[0]!.key).toBe('v000')
+  expect(groups[MAX_GROUPS - 2]!.key).toBe(
+    `v${String(MAX_GROUPS - 2).padStart(3, '0')}`,
+  )
+})
+
+test('exactly MAX_GROUPS values needs no overflow section', () => {
+  const groups = partitionFeatures(umiFeatures(MAX_GROUPS), {
+    type: 'tag',
+    tag: 'RX',
+  })
+  expect(groups).toHaveLength(MAX_GROUPS)
+  expect(groups.map(g => g.key)).not.toContain(OVERFLOW_GROUP_KEY)
+})
+
+test('the overflow bucket sorts after even the untagged group', () => {
+  // one untagged read plus enough tagged values to trip the cap
+  const features = [feat('none', {}), ...umiFeatures(MAX_GROUPS + 5)]
+  const groups = partitionFeatures(features, { type: 'tag', tag: 'RX' })
+  expect(groups.at(-1)!.key).toBe(OVERFLOW_GROUP_KEY)
+})
+
+test('partitionChains caps groups too, keeping each chain whole', () => {
+  // one two-read chain per tag value, so a naive per-read cap could split a chain
+  const features = Array.from({ length: MAX_GROUPS + 5 }, (_, i) => {
+    const tags = { RX: `v${String(i).padStart(3, '0')}` }
+    return [
+      feat(`r${i}a`, { name: `q${i}`, flags: 0x40, tags }),
+      feat(`r${i}b`, { name: `q${i}`, flags: 0x80, tags }),
+    ]
+  }).flat()
+  const groups = partitionChains(features, { type: 'tag', tag: 'RX' })
+  expect(groups).toHaveLength(MAX_GROUPS)
+  expect(groups.flatMap(g => g.features)).toHaveLength((MAX_GROUPS + 5) * 2)
+  // every group holds whole chains, i.e. an even number of reads (both mates)
+  for (const g of groups) {
+    expect(g.features.length % 2).toBe(0)
+  }
+})
+
+// The `groupBy` config slot is `frozen`, so anything can be in it. An unknown type
+// used to index the registry to `undefined` and throw inside the worker.
+test('normalizeGroupBy keeps a valid dimension', () => {
+  expect(normalizeGroupBy({ type: 'strand' })).toEqual({
+    type: 'strand',
+    tag: undefined,
+  })
+  expect(normalizeGroupBy({ type: 'tag', tag: 'HP' })).toEqual({
+    type: 'tag',
+    tag: 'HP',
+  })
+})
+
+test('normalizeGroupBy rejects anything the registry cannot key', () => {
+  expect(normalizeGroupBy({ type: 'bogus' })).toBeUndefined()
+  // trailing space: the kind of hand-written-config typo that used to throw
+  expect(normalizeGroupBy({ type: 'strand ' })).toBeUndefined()
+  expect(normalizeGroupBy({ type: 42 })).toBeUndefined()
+  expect(normalizeGroupBy({})).toBeUndefined()
+  expect(normalizeGroupBy(null)).toBeUndefined()
+  expect(normalizeGroupBy(undefined)).toBeUndefined()
+  expect(normalizeGroupBy('strand')).toBeUndefined()
+})
+
+// Without a tag name every read keys as '' and collapses into one ": none"
+// section — grouping that looks broken rather than absent.
+test('normalizeGroupBy rejects tag grouping with no tag name', () => {
+  expect(normalizeGroupBy({ type: 'tag' })).toBeUndefined()
+  expect(normalizeGroupBy({ type: 'tag', tag: '' })).toBeUndefined()
+})
+
+test('groupByForMode degrades a per-read dimension in chain mode only', () => {
+  const perRead = { type: 'strand' as const }
+  const chainSafe = { type: 'tag' as const, tag: 'HP' }
+  expect(groupByForMode(perRead, false)).toBe(perRead)
+  expect(groupByForMode(perRead, true)).toBeUndefined()
+  expect(groupByForMode(chainSafe, true)).toBe(chainSafe)
+  expect(groupByForMode(undefined, true)).toBeUndefined()
 })

@@ -15,6 +15,18 @@ export interface GroupByRadioItem extends GroupByRadioOption {
   onClick: () => void
 }
 
+// Which radio to tick. A stored dimension this menu doesn't offer — a per-read
+// grouping saved before chain mode was turned on (the worker degrades it to
+// ungrouped), or a `hidden` dimension like mateAssembly owned by another display's
+// menu — ticks "None" rather than leaving the whole group blank. Resolved here, so
+// no caller has to remember to filter `current` against what it passed in.
+function checkedType(
+  current: GroupByType | undefined,
+  offered: GroupByRadioOption[],
+) {
+  return offered.some(o => o.type === current) ? current : undefined
+}
+
 // The shared "Group by..." radio submenu for the alignments track menu and
 // LGVSyntenyDisplay. Grouping is one dimension at a time, so it's a single radio
 // group: "None" (ungroup) plus one radio per offered dimension, the active one
@@ -35,11 +47,12 @@ export function groupByRadioMenuItem({
   onNone: () => void
   extra?: GroupByRadioItem[]
 }) {
+  const checked = checkedType(current, [...options, ...extra])
   const radio = (
     type: GroupByType | undefined,
     label: string,
     onClick: () => void,
-  ) => ({ label, type: 'radio' as const, checked: current === type, onClick })
+  ) => ({ label, type: 'radio' as const, checked: checked === type, onClick })
   return {
     label: 'Group by...',
     icon: WorkspacesIcon,

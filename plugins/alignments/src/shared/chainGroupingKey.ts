@@ -1,5 +1,9 @@
 import { SAM_FLAG_SECONDARY } from '@jbrowse/alignments-core'
 
+import { getFlags } from './util.ts'
+
+import type { Feature } from '@jbrowse/core/util'
+
 /**
  * The key that groups alignments into a single chain (shared row + connecting
  * line + overlap tint) in view-as-pairs / link-supplementary mode. Mates and
@@ -17,4 +21,20 @@ import { SAM_FLAG_SECONDARY } from '@jbrowse/alignments-core'
  */
 export function chainGroupingKey(name: string, id: string, flags: number) {
   return flags & SAM_FLAG_SECONDARY ? `\0${id}` : name
+}
+
+/**
+ * `chainGroupingKey` for a raw fetched feature — the form both by-name grouping
+ * sites over `Feature`s (`partitionChains`, `filterChainFeatures`) need, so
+ * neither re-spells the field reads. A missing QNAME falls back to '', collapsing
+ * such reads into one shared chain; acceptable since QNAME is mandatory in SAM and
+ * linked-read data always carries it. (`buildChainMetadata` works from already
+ * extracted `ChainFeatureData`, so it calls `chainGroupingKey` directly.)
+ */
+export function featureChainKey(feature: Feature) {
+  return chainGroupingKey(
+    feature.get('name') ?? '',
+    feature.id(),
+    getFlags(feature),
+  )
 }

@@ -52,6 +52,7 @@ import {
   isModificationScheme,
   normalizeColorBy,
 } from '../shared/colorSchemes.ts'
+import { normalizeGroupBy } from '../shared/groupFeatures.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
@@ -961,10 +962,12 @@ export default function stateModelFactory(
          * In-track stacked grouping dimension (undefined = ungrouped). Falls
          * back to the `groupBy` config slot, so a track can be pre-grouped
          * declaratively. Sent to the worker via rpcProps; the worker partitions
-         * one fetch into N sections.
+         * one fetch into N sections. The slot is `frozen` (unvalidated JSON), so
+         * `normalizeGroupBy` is the chokepoint that keeps an unrecognized type or
+         * a tag grouping with no tag name from reaching the worker.
          */
         get groupBy(): GroupBy | undefined {
-          return getConf(self, 'groupBy') ?? undefined
+          return normalizeGroupBy(getConf(self, 'groupBy'))
         },
 
         /**
@@ -1269,9 +1272,8 @@ export default function stateModelFactory(
          * #getter
          * Row count of the primary group across its regions. This reads only the
          * first group (`laidOutPileupMap`), so it is meaningful only on the
-         * single-section/ungrouped path (`searchFeatureByID` and the no-data
-         * synthetic section in `sections`). Grouped layout sizes each section
-         * from its own `groupMaxY`; don't use this as a cross-group aggregate.
+         * single-section/ungrouped path. Grouped layout sizes each section from its
+         * own `groupMaxY`; don't use this as a cross-group aggregate.
          */
         get maxY() {
           return groupMaxY(this.laidOutPileupMap)
@@ -1457,6 +1459,7 @@ export default function stateModelFactory(
           if (start !== undefined && end !== undefined) {
             return {
               displayedRegionIndex,
+              groupKey,
               idx,
               rpcData,
               start,
@@ -1507,7 +1510,10 @@ export default function stateModelFactory(
               : groupMaxY(self.groupLaidOutMap(key))
           const groups =
             order.length === 0
-              ? [{ key: '', label: '', maxY: self.showPileup ? self.maxY : 0 }]
+              ? // No data (or a grouped fetch over an empty region): the synthetic
+                // section exists only so downstream getters see one section. It has
+                // no laid-out rows by construction, hence maxY 0.
+                [{ key: '', label: '', maxY: 0 }]
               : order.map(({ key, label }) => ({
                   key,
                   label,
@@ -1665,6 +1671,21 @@ export default function stateModelFactory(
          */
         get isGrouped() {
           return self.groupOrder.length > 1
+        },
+
+        /**
+         * #getter
+         * Whether the stacked section labels + dividers are drawn. Deliberately
+         * NOT `isGrouped`: grouping that happens to yield one section (a region
+         * with reads on one strand, a tag with a single value) still reserves the
+         * label offset (`prefersOffset`) and still wants its section named and
+         * collapsible — otherwise it reads as an ungrouped track with mysterious
+         * blank space above it. `isGrouped` stays about the scroll model (>1
+         * section scrolls coverage with its section), which one section doesn't
+         * change.
+         */
+        get showsGroupLabels() {
+          return self.groupBy !== undefined && self.groupOrder.length > 0
         },
 
         /**
@@ -1840,6 +1861,27 @@ export default function stateModelFactory(
 
         /**
          * #method
+         * Content-space Y of a group's pileup relative to the FIRST section's
+         * pileup top, i.e. how far a read's row shifts because its group is
+         * stacked below the others. 0 for the ungrouped/first section.
+         */
+        groupPileupOffset(groupKey: string) {
+          const section = this.sections.sections.find(
+            s => s.groupKey === groupKey,
+          )
+          return section === undefined
+            ? 0
+            : section.pileupTop - self.coverageDisplayHeight
+        },
+
+        /**
+         * #method
+         * Layout rect of a read, for cross-view overlays (BreakpointSplitView's
+         * connection curves). Y is relative to the pileup's own top — the caller
+         * adds the display's `coverageDisplayHeight` itself (see `computeOverlayY`)
+         * — so a grouped read only needs its section's extra stacking offset on
+         * top of its row. Without that offset every read outside the first section
+         * anchored as if it were in the first one.
          */
         searchFeatureByID(
           featureId: string,
@@ -1848,12 +1890,12 @@ export default function stateModelFactory(
           if (!hit) {
             return undefined
           }
-          const { rpcData, idx, start, end } = hit
+          const { rpcData, idx, start, end, groupKey } = hit
           const yRow = rpcData.readYs[idx]
           if (yRow === undefined) {
             return undefined
           }
-          const top = yRow * self.rowHeight
+          const top = this.groupPileupOffset(groupKey) + yRow * self.rowHeight
           return [start, top, end, top + self.featureHeight]
         },
 
@@ -2872,9 +2914,13 @@ export default function stateModelFactory(
             },
             // size === 0 keeps first paint gated until data arrives, so the
             // loading overlay stays up (canvasDrawn stays false); an empty but
-            // loaded region has size > 0 and paints an empty pileup.
+            // loaded region has size > 0 and paints an empty pileup. Keyed on the
+            // per-REGION map, not on a group's laid-out map: a grouped fetch over a
+            // region with no reads partitions to zero groups, so the first group's
+            // map is empty even though the fetch is done — gating on that left the
+            // loading overlay up forever (and hung any test waiting on first paint).
             render: b =>
-              self.laidOutPileupMap.size === 0
+              self.rpcDataMap.size === 0
                 ? false
                 : b.renderBlocks(self.renderBlocks, self.renderState),
           })

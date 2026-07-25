@@ -55,6 +55,19 @@ multimapper) never joins its primary's chain and renders standalone. This
 mirrors IGV and the connection resolver `readGroupConnections`, which also drops
 secondary.
 
+**Group count is capped at `MAX_GROUPS`** (`shared/groupFeatures.ts`). The spine
+runs per group, and each group's `runCoveragePipeline` allocates per-bp depth
+arrays sized to the whole region and then uploads its own per-bp GPU coverage
+buffer — the buffer that already approaches the device limit for a *single*
+section at chromosome scale. So grouping by a high-cardinality tag (a UMI-style
+`RX`/`MI`, a per-read `NM`) would pay that region-width cost once per distinct
+value. Groups past the cap merge into one `OVERFLOW_GROUP_KEY` section labelled
+"N more values", chosen in sorted key order so the survivors are a deterministic
+function of the key set rather than of per-region read counts. No reads are
+dropped. The cap is per worker call, so a many-region view whose regions expose
+disjoint value sets can still union above it on the main thread — bounded, but not
+capped there.
+
 Chain mode therefore only allows **chain-consistent** dimensions — ones where
 every read of a chain yields the same key (`tag`, `firstOfPairStrand`,
 `pairOrientation`). Per-read dimensions (`strand`, `supplementary`, `mapq`,

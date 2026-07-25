@@ -67,18 +67,18 @@ const useStyles = makeStyles()(theme => {
 
 // Inline section dividers + labels between stacked groups (in-track group-by).
 // Only rendered when grouping is active; ungrouped displays show nothing. The
-// labels sit at each section's scrolled coverage-band top, so they scroll with
-// the stack like the coverage they head.
+// labels sit at each section's coverage-band top, so they scroll with the stack
+// like the coverage they head (a lone section's coverage is sticky instead, which
+// `bandScreenTop` handles off `scrollModel.isGrouped`).
 const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
   const { classes } = useStyles()
-  if (!model.isGrouped) {
+  if (!model.showsGroupLabels) {
     return null
   }
-  // Grouping is active here, so the coverage band scrolls with its section.
   // With the pileup hidden every group's pileup height is 0, so collapse and
   // "show all"/"fit to view" have nothing to act on — render plain labels.
   const { scrollModel: scroll, showPileup } = model

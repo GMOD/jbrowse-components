@@ -30,7 +30,7 @@ import {
   buildChainMetadata,
 } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
-import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
+import { featureChainKey } from '../shared/chainGroupingKey.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { isModificationScheme } from '../shared/colorSchemes.ts'
 import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
@@ -38,7 +38,7 @@ import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import {
-  isChainGroupableType,
+  groupByForMode,
   partitionChains,
   partitionFeatures,
 } from '../shared/groupFeatures.ts'
@@ -143,9 +143,7 @@ export function filterChainFeatures(
   if (drawSingletons && drawProperPairs && !showOnlySplitAlignments) {
     return deduped
   }
-  const byChain = groupBy(deduped, (f: Feature) =>
-    chainGroupingKey(f.get('name') ?? '', f.id(), getFlags(f)),
-  )
+  const byChain = groupBy(deduped, featureChainKey)
   let rawChains = Object.values(byChain)
   if (!drawSingletons) {
     rawChains = rawChains.filter(c => c.length > 1)
@@ -481,13 +479,7 @@ export async function executeRenderAlignmentData({
   const isChain = linkedReads !== 'off'
   // Chain mode never expands soft clips or fetches sequence/sort-tag data.
   const effShowSoftClipping = isChain ? false : showSoftClipping
-  // Chain mode allows grouping only on chain-consistent dimensions (tag /
-  // firstOfPairStrand / pairOrientation), where every read of a chain yields the
-  // same key so partitionChains keeps the chain whole. A disallowed dimension
-  // (e.g. an old session with strand + chain) degrades to ungrouped rather than
-  // splitting chains. See ./CLAUDE.md.
-  const effectiveGroupBy =
-    isChain && !isChainGroupableType(groupByArg?.type) ? undefined : groupByArg
+  const effectiveGroupBy = groupByForMode(groupByArg, isChain)
 
   const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
     pluginManager,

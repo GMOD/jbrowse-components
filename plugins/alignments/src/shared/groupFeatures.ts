@@ -6,7 +6,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
-import { chainGroupingKey } from './chainGroupingKey.ts'
+import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { GROUP_BY_LABELS } from './groupByLabels.ts'
 import { getFlags, getOrCreate } from './util.ts'
@@ -16,18 +16,12 @@ import type { Feature } from '@jbrowse/core/util'
 
 export interface FeatureGroup {
   // Stable identity for the group (used for ordering + cross-fetch matching).
-  // Empty string is the "untagged"/"unknown" sentinel and always sorts last.
+  // Empty string is the "untagged"/"unknown" sentinel and sorts second-to-last,
+  // ahead of only the overflow bucket.
   key: string
   // Human-readable label shown on the section divider.
   label: string
   features: Feature[]
-}
-
-// QNAME used as the chain key. A missing name falls back to '', so any reads
-// lacking a QNAME collapse into one shared chain — acceptable since QNAME is
-// mandatory in SAM and linked-read data always carries it.
-function getName(feature: Feature) {
-  return feature.get('name') ?? ''
 }
 
 interface GroupKey {
@@ -80,10 +74,14 @@ function supplementaryKey(feature: Feature): GroupKey {
     : { key: 'primary', label: 'Primary' }
 }
 
+// Digit keys, not the words, purely for ordering: keys sort by `compareGroupKeys`
+// and 'duplicate' < 'nonduplicate' would stack the duplicates above the reads
+// that matter. Digits put the ordinary case first, matching supplementaryKey
+// above (where 'primary' < 'supplementary' happens to fall out of the alphabet).
 function duplicateKey(feature: Feature): GroupKey {
   return getFlags(feature) & SAM_FLAG_DUPLICATE
-    ? { key: 'duplicate', label: 'Duplicate' }
-    : { key: 'nonduplicate', label: 'Non-duplicate' }
+    ? { key: '1', label: 'Duplicate' }
+    : { key: '0', label: 'Non-duplicate' }
 }
 
 // Synteny features (PAF/all-vs-all) carry a `mate` referencing the other side's
@@ -101,52 +99,56 @@ function mateAssemblyKey(feature: Feature): GroupKey {
 }
 
 // MAPQ bucketed into decades. SAM uses 255 for "unavailable", bucketed on its
-// own so it never blends with a real high-confidence bin.
+// own so it never blends with a real high-confidence bin. Keys stay bare decimals
+// — `compareGroupKeys` orders all-digit keys by magnitude, so no zero-padding is
+// needed to keep 0,10,...,250 ahead of the 255 unavailable bucket.
 function mapqKey(feature: Feature): GroupKey {
   const mapq = feature.get('score') ?? 255
-  if (mapq === 255) {
-    return { key: '255', label: 'MAPQ unavailable' }
-  }
   const bin = Math.floor(mapq / 10) * 10
   // Real MAPQ caps at 254 (255 is the separate "unavailable" bucket), so the top
   // decade spans 250-254, not 250-259 — clamp the label's upper bound.
   const hi = Math.min(bin + 9, 254)
-  // Zero-pad to 3 digits so string sort matches numeric order across every bin
-  // (0-250) and the '255' unavailable bucket lands last.
-  return {
-    key: String(bin).padStart(3, '0'),
-    label: `MAPQ ${bin}-${hi}`,
-  }
+  return mapq === 255
+    ? { key: '255', label: 'MAPQ unavailable' }
+    : { key: String(bin), label: `MAPQ ${bin}-${hi}` }
 }
 
-function groupKeyFor(feature: Feature, groupBy: GroupBy): GroupKey {
-  return GROUP_BY_DIMENSIONS[groupBy.type].key(feature, groupBy)
-}
-
-// All-digit key: numeric tag values (a numeric RG, a count-based tag) and mapq's
-// zero-padded bins. Compared by magnitude below so '2' precedes '10' instead of
-// code-point '10' < '2'.
+// All-digit key: numeric tag values (a numeric RG, a count-based tag), mapq's
+// decade bins, and the duplicate flag. Compared by magnitude below so '2'
+// precedes '10' instead of code-point '10' < '2'.
 const ALL_DIGITS = /^\d+$/
 
-// Stable group-key ordering with the empty-key ("untagged"/"unknown") group
-// pinned last. Two all-digit keys compare by numeric magnitude so numeric tag
-// values order 1,2,10 not 1,10,2 (code-point) — the `tag` dimension emits raw
-// values and, unlike `mapq`, can't zero-pad an arbitrary tag to fix this. Every
-// other pair falls back to plain code-point comparison (not localeCompare),
-// which stays deterministic and orders '+' before '-' for strand grouping;
-// mapq's zero-padded keys are all-digit so they take the numeric branch and keep
-// their order. Exported so the main-thread cross-region merge (`orderedGroups`)
-// applies the identical order — the worker's per-region sort alone doesn't fix
-// merged order when a group is absent from an early region.
+// Hard ceiling on the sections one fetch may produce. Every group runs the whole
+// spine, and its coverage pipeline allocates per-bp depth arrays sized to the
+// region (then uploads a per-bp GPU coverage buffer, which alone approaches the
+// device limit at chromosome scale). So an accidentally high-cardinality grouping
+// — a UMI-style `RX`/`MI` tag, a per-read `NM` — would pay that region-width cost
+// thousands of times over and exhaust worker memory or the GPU. Groups past the
+// cap merge into one pinned-last overflow section instead.
+export const MAX_GROUPS = 40
+
+// The overflow bucket's key. '\0' cannot collide with a real tag value / refName,
+// and it is pinned dead last so the merged tail never displaces a named group.
+export const OVERFLOW_GROUP_KEY = '\u0000overflow'
+
+// Named groups first, then the "untagged"/"unknown" sentinel, then the overflow
+// bucket. Both catch-alls sort after every real value regardless of its key.
+function groupKeyRank(key: string) {
+  return key === '' ? 1 : key === OVERFLOW_GROUP_KEY ? 2 : 0
+}
+
+// Stable group-key ordering. Two all-digit keys compare by numeric magnitude so
+// numeric tag values order 1,2,10 not 1,10,2 (code-point) — the `tag` dimension
+// emits raw values, so it can't pad an arbitrary tag to fix this. Every other
+// pair falls back to plain code-point comparison (not localeCompare), which stays
+// deterministic and orders '+' before '-' for strand grouping. Exported so the
+// main-thread cross-region merge (`orderedGroups`) applies the identical order —
+// the worker's per-region sort alone doesn't fix merged order when a group is
+// absent from an early region.
 export function compareGroupKeys(a: string, b: string) {
-  if (a === b) {
-    return 0
-  }
-  if (a === '') {
-    return 1
-  }
-  if (b === '') {
-    return -1
+  const rankDiff = groupKeyRank(a) - groupKeyRank(b)
+  if (rankDiff !== 0) {
+    return rankDiff
   }
   if (ALL_DIGITS.test(a) && ALL_DIGITS.test(b)) {
     const na = Number(a)
@@ -155,11 +157,30 @@ export function compareGroupKeys(a: string, b: string) {
       return na < nb ? -1 : 1
     }
   }
-  return a < b ? -1 : 1
+  return a === b ? 0 : a < b ? -1 : 1
+}
+
+// Merge everything past MAX_GROUPS into one overflow section rather than dropping
+// its reads. Runs on the already-ordered list, so which groups survive is a
+// deterministic function of the key set (not of per-region read counts, which
+// would keep different groups in different regions). A region-local cap can still
+// leave the main thread's cross-region union above MAX_GROUPS when regions expose
+// wildly different value sets, but it bounds the per-group region-width cost that
+// actually blows up.
+function capGroups(groups: FeatureGroup[]) {
+  const overflow = groups.splice(MAX_GROUPS - 1)
+  groups.push({
+    key: OVERFLOW_GROUP_KEY,
+    label: `${overflow.length} more values`,
+    features: overflow.flatMap(g => g.features),
+  })
+  return groups
 }
 
 function orderGroups(groups: FeatureGroup[]) {
-  return groups.sort((a, b) => compareGroupKeys(a.key, b.key))
+  const ordered = groups.sort((a, b) => compareGroupKeys(a.key, b.key))
+  // > (not >=) so the cap only ever fires when it genuinely merges 2+ groups.
+  return ordered.length > MAX_GROUPS ? capGroups(ordered) : ordered
 }
 
 // Append a single feature into its group, creating the group (seeded with the
@@ -195,9 +216,10 @@ export function partitionFeatures(
   if (!groupBy) {
     return singleSection(features)
   }
+  const { key } = GROUP_BY_DIMENSIONS[groupBy.type]
   const groups = new Map<string, FeatureGroup>()
   for (const feature of features) {
-    appendFeature(groups, feature, groupKeyFor(feature, groupBy))
+    appendFeature(groups, feature, key(feature, groupBy))
   }
   return orderGroups([...groups.values()])
 }
@@ -303,6 +325,21 @@ export function isChainGroupableType(type: GroupByType | undefined) {
   return type !== undefined && GROUP_BY_DIMENSIONS[type].chainConsistent
 }
 
+// The grouping a fetch can actually honor. Chain mode allows only chain-consistent
+// dimensions, where every read of a chain yields one key so `partitionChains` keeps
+// the chain whole; a per-read dimension (an old session with strand + chain, say)
+// degrades to ungrouped rather than splitting chains across sections and breaking
+// their connecting lines. Named so the worker reads as "the grouping for this mode"
+// instead of an inline mode/registry ternary. See ../RenderAlignmentDataRPC/CLAUDE.md.
+export function groupByForMode(
+  groupBy: GroupBy | undefined,
+  isChainMode: boolean,
+) {
+  return isChainMode && !isChainGroupableType(groupBy?.type)
+    ? undefined
+    : groupBy
+}
+
 // Curated subset of dimensions, in the given order, with labels sourced from the
 // registry — for displays (e.g. synteny) that offer a handful of dimensions as
 // plain radios instead of the general Group-by dialog, and shouldn't re-spell
@@ -325,19 +362,43 @@ export function partitionChains(
   }
   const chains = new Map<string, Feature[]>()
   for (const feature of features) {
-    const key = chainGroupingKey(
-      getName(feature),
-      feature.id(),
-      getFlags(feature),
-    )
-    getOrCreate(chains, key, () => []).push(feature)
+    getOrCreate(chains, featureChainKey(feature), () => []).push(feature)
   }
+  const { key } = GROUP_BY_DIMENSIONS[groupBy.type]
   const groups = new Map<string, FeatureGroup>()
   for (const chain of chains.values()) {
-    const groupKey = groupKeyFor(chainRepresentative(chain), groupBy)
+    const groupKey = key(chainRepresentative(chain), groupBy)
     for (const feature of chain) {
       appendFeature(groups, feature, groupKey)
     }
   }
   return orderGroups([...groups.values()])
+}
+
+// Resolve a persisted/configured `groupBy` into one the partitioners can actually
+// run, or `undefined` (ungrouped) when it can't. The `groupBy` config slot is
+// `frozen`, so its contents are unvalidated JSON from a hand-written config or an
+// older session: an unrecognized `type` would index the registry to `undefined`
+// and throw inside the worker (failing the whole track), and `tag` grouping with
+// no tag name would silently collapse every read into one `"<tag>: none"` section.
+// Both degrade to ungrouped instead. The display's `groupBy` getter runs this, so
+// every consumer — the menu, the layout, `rpcProps` and hence the worker — sees
+// only values the registry can key.
+export function normalizeGroupBy(groupBy: unknown): GroupBy | undefined {
+  const obj =
+    typeof groupBy === 'object' && groupBy !== null ? groupBy : undefined
+  const type = readStringField(obj, 'type')
+  const tag = readStringField(obj, 'tag')
+  return type !== undefined && isGroupByType(type) && (type !== 'tag' || !!tag)
+    ? { type, tag }
+    : undefined
+}
+
+function readStringField(obj: object | undefined, field: string) {
+  const value = obj === undefined ? undefined : Reflect.get(obj, field)
+  return typeof value === 'string' ? value : undefined
+}
+
+function isGroupByType(type: string): type is GroupByType {
+  return Object.hasOwn(GROUP_BY_DIMENSIONS, type)
 }

@@ -141,20 +141,24 @@ export function getSortByMenuItem(
   }
 }
 
-// Non-hidden dimensions in registry order; chain mode keeps only the
-// chain-consistent ones (every read of a chain shares one key), matching the
-// worker guard. Every dimension selects directly except `tag`, which needs a tag
-// name (+ optional color-by-tag), so it goes last as a dialog-opener — mirroring
-// the sort menu's "Tag...". A stored dimension no longer offered (an old per-read
-// grouping now in chain mode, degraded to ungrouped in the worker) checks "None"
-// rather than leaving the group blank.
-export function getGroupByMenuItem(model: GroupByModel) {
-  const dims = Object.values(GROUP_BY_DIMENSIONS).filter(
-    d => !d.hidden && (!model.isChainMode || d.chainConsistent),
+// Dimensions this display offers: non-hidden ones in registry order, and in chain
+// mode only the chain-consistent ones (every read of a chain shares one key),
+// matching the worker guard (`groupByForMode`).
+function offeredGroupByDimensions(isChainMode: boolean) {
+  return Object.values(GROUP_BY_DIMENSIONS).filter(
+    d => !d.hidden && (!isChainMode || d.chainConsistent),
   )
-  const stored = model.groupBy?.type
+}
+
+// Every offered dimension selects directly except `tag`, which needs a tag name
+// (+ optional color-by-tag), so it goes last as a dialog-opener — mirroring the
+// sort menu's "Tag...". `groupByRadioMenuItem` resolves which radio is ticked
+// against what it was handed, so a stored-but-unoffered dimension ticks "None"
+// here without this call site restating the rule.
+export function getGroupByMenuItem(model: GroupByModel) {
+  const dims = offeredGroupByDimensions(model.isChainMode)
   return groupByRadioMenuItem({
-    current: stored && dims.some(d => d.type === stored) ? stored : undefined,
+    current: model.groupBy?.type,
     options: dims.filter(d => d.type !== 'tag'),
     onSelect: type => {
       model.setGroupBy({ type })

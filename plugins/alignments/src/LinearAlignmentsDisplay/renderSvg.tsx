@@ -160,7 +160,7 @@ function AlignmentsSvgBody({
           canvasWidth={canvasWidth}
         />
       ) : null}
-      {model.isGrouped ? (
+      {model.showsGroupLabels ? (
         <GroupLabelBoxes
           sections={renderSections}
           left={contentLeft}

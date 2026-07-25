@@ -169,11 +169,15 @@ export function buildChainIdMap(
 }
 
 // Regroup the fetched `rpcDataMap` (region idx → grouped result) into one raw
-// region map per group key (group key → region idx → that group's raw data).
-// Insertion order follows the worker's group order, so the first key is the
-// primary group — the same `groups[0]` slice the ungrouped arc/sashimi feeds
-// read. The arc compute (`computeArcsFromPileupData`) consumes one of these
-// per-group maps, so this is what lets arcs run per group.
+// region map per group key (group key → region idx → that group's raw data). The
+// arc compute (`computeArcsFromPileupData`) consumes one of these per-group maps,
+// so this is what lets arcs run per group.
+//
+// Key order here is first-seen-across-regions, which is NOT the stacking order:
+// a group absent from an early region lands later than it should, the very case
+// `orderedGroups` re-sorts to fix. Every consumer looks a key up (`.get(key)`,
+// driven by `groupOrder`), so nothing depends on this map's iteration order —
+// don't start depending on it.
 export function buildRawDataByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
 ): Map<string, Map<number, PileupDataResult>> {
