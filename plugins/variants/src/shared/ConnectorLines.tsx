@@ -7,6 +7,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { connectorLineAlpha } from './connectorLineAlpha.ts'
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
 
 // One connector: `mx` is the matrix-column center x, `gx` the genomic x on the
@@ -70,6 +71,21 @@ export const ConnectorLineField = observer(function ConnectorLineField({
     [lineCoords, lineZoneHeight],
   )
 
+  // Every line lands in one <path>, so the stroke alpha is shared: derive it
+  // from how deep the lines stack across their own horizontal extent, else a
+  // high-column-count matrix paints the zone solid (see connectorLineAlpha).
+  const strokeAlpha = useMemo(() => {
+    // indexed min/max rather than Math.max(...xs): lineCoords runs to ~10^4
+    // entries on a pangenome VCF, past what a spread can safely pass as args
+    let lo = Number.POSITIVE_INFINITY
+    let hi = Number.NEGATIVE_INFINITY
+    for (const { mx, gx } of lineCoords) {
+      lo = Math.min(lo, mx, gx)
+      hi = Math.max(hi, mx, gx)
+    }
+    return connectorLineAlpha(lineCoords.length, hi - lo)
+  }, [lineCoords])
+
   const onMouseMove = useCallback(
     (event: React.MouseEvent<SVGElement>) => {
       const pt = svgMousePoint(event)
@@ -114,7 +130,7 @@ export const ConnectorLineField = observer(function ConnectorLineField({
       />
       <path
         d={pathD}
-        {...getStrokeProps(alpha(theme.palette.text.primary, 0.4))}
+        {...getStrokeProps(alpha(theme.palette.text.primary, strokeAlpha))}
         strokeWidth={strokeWidth}
         fill="none"
         style={{ pointerEvents: 'none' }}
