@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   addAndShowTrack,
@@ -272,22 +276,22 @@ export function modelFactory(
        * #action
        */
       toggleShowForward() {
-        self.configuration.setSlot('showForward', !self.showForward)
-        self.configuration.setSlot('height', undefined)
+        setConf(self, 'showForward', !self.showForward)
+        setConf(self, 'height', undefined)
       },
       /**
        * #action
        */
       toggleShowReverse() {
-        self.configuration.setSlot('showReverse', !self.showReverse)
-        self.configuration.setSlot('height', undefined)
+        setConf(self, 'showReverse', !self.showReverse)
+        setConf(self, 'height', undefined)
       },
       /**
        * #action
        */
       toggleShowTranslation() {
-        self.configuration.setSlot('showTranslation', !self.showTranslation)
-        self.configuration.setSlot('height', undefined)
+        setConf(self, 'showTranslation', !self.showTranslation)
+        setConf(self, 'height', undefined)
       },
       /**
        * #action
