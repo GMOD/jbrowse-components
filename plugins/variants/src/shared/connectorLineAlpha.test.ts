@@ -1,26 +1,33 @@
 import { connectorLineAlpha } from './connectorLineAlpha.ts'
 
 test('a sparse field keeps the full fixed alpha', () => {
-  // fewer lines than pixels: nothing stacks, so nothing needs fading
+  // well under the ink budget: nothing stacks, so nothing needs fading
   expect(connectorLineAlpha(50, 1500)).toBe(0.4)
   expect(connectorLineAlpha(1, 1500)).toBe(0.4)
 })
 
-test('alpha falls as the lines stack deeper', () => {
-  const sparse = connectorLineAlpha(1000, 1500)
+test('alpha falls as the lines pack denser', () => {
+  const busy = connectorLineAlpha(1000, 1500)
   const dense = connectorLineAlpha(13000, 1500)
   const denser = connectorLineAlpha(50000, 1500)
-  expect(dense).toBeLessThan(sparse)
+  expect(busy).toBeLessThan(0.4)
+  expect(dense).toBeLessThan(busy)
   expect(denser).toBeLessThan(dense)
 })
 
-test('composite over the stack depth stays roughly constant', () => {
-  const composite = (count: number, span: number) =>
-    1 - (1 - connectorLineAlpha(count, span)) ** (count / span)
-  // the whole point: an HPRC-scale column count lands at the same readable
-  // density as a merely busy one, instead of saturating
-  expect(composite(13000, 1500)).toBeCloseTo(0.55, 2)
-  expect(composite(50000, 1500)).toBeCloseTo(0.55, 2)
+test('total ink is held constant once past the clamp', () => {
+  const ink = (count: number, span: number) =>
+    connectorLineAlpha(count, span) * (count / span)
+  // the whole point: quadrupling the column count does not quadruple the
+  // field's darkness
+  expect(ink(13000, 1500)).toBeCloseTo(ink(50000, 1500), 6)
+})
+
+test('the same density gives the same alpha at any scale', () => {
+  expect(connectorLineAlpha(13000, 1500)).toBeCloseTo(
+    connectorLineAlpha(26000, 3000),
+    6,
+  )
 })
 
 test('a zero-width span does not produce a transparent or NaN alpha', () => {
