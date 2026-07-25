@@ -160,6 +160,13 @@ export const gallerySections: readonly GallerySection[] = [
           'Four E. coli strains in one synteny view, every band backed by the same all-vs-all PAF. The view takes any number of assemblies, and a minimum alignment length filter drops the short alignments so the backbone stays readable.',
       },
       {
+        label: 'Synteny track in a plain linear view',
+        spec: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
+        guide: 'tutorials/allvsall_synteny',
+        description:
+          "The same all-vs-all track in an ordinary linear genome view instead of a synteny view: with no second row to pair against, it draws E. coli K-12's whole 4.6 Mb against every other strain at once, grouped into one labelled section per strain.",
+      },
+      {
         label: 'Same-species dotplot',
         spec: 'gallery/hg19_vs_hg38',
         guide: 'user_guides/dotplot_view',

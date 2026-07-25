@@ -462,17 +462,35 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'ecoli_ava',
                 type: 'LGVSyntenyDisplay',
                 groupBy: { type: 'mateAssembly' },
-                height: 250,
+                // sized to the four sections' actual rows. At 250 each section
+                // was mostly empty space, which is what made the figure read as
+                // an unexplained scatter of bars rather than four per-strain
+                // rows ("unclear what we are looking at" in review).
+                height: 210,
               },
             ],
           },
         ],
       },
     ),
-    viewportHeight: 500,
+    viewportHeight: 510,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 12000,
+    // One callout naming what the section labels don't say: these are not four
+    // tracks, they are one track split by which strain each block aligns to.
+    // Anchored to the bottom section's chip and pushed right into the bare
+    // stretch, so it labels the sections without covering any block. The biology
+    // (which operon, why two stop) stays in the caption.
+    annotations: [
+      {
+        type: 'text',
+        text: 'each bar: K-12 aligned to that strain',
+        anchor: { text: 'NCTC86' },
+        dx: 640,
+        dy: -14,
+      },
+    ],
   },
 
   // The whole-genome end of the same "One strain against all the others"
