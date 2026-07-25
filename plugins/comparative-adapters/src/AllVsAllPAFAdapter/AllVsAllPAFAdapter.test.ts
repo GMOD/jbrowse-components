@@ -85,6 +85,27 @@ test('cross-sample block sharing a contig name + coords is not dropped as a self
   })
 })
 
+test('hap1 vs hap2 of one sample at identical coords is not dropped as a self-diagonal', async () => {
+  const loc = writePaf([
+    // a diploid sample's two haplotypes aligned in a conserved region: same
+    // sample, same stripped contig, identical coords — everything the old
+    // sample+contig self-diagonal test keyed on — but a real alignment
+    'grape#1#chr1\t1000\t100\t200\t+\tgrape#2#chr1\t1000\t100\t200\t99\t100\t60',
+    // the true self-diagonal: one sequence against ITSELF, still dropped
+    'grape#1#chr1\t1000\t400\t500\t+\tgrape#1#chr1\t1000\t400\t500\t100\t100\t60',
+  ])
+  const fa = await feats(makeAdapter(['grape'], {}, loc), {
+    refName: 'chr1',
+    start: 0,
+    end: 2000,
+    assemblyName: 'grape',
+  })
+  // both haplotypes collapse into the one `grape` assembly at chr1, so the
+  // hap1-vs-hap2 block draws at each of its two loci
+  expect(fa.length).toBe(2)
+  expect(fa.map(f => f.get('start')).sort()).toEqual([100, 100])
+})
+
 test('one-vs-all: grape draws against peach, cacao, and its own paralog', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), {
     refName: 'chr1',

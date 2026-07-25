@@ -45,7 +45,17 @@ function assemblyNameToPanSN(adapter: BaseFeatureDataAdapter) {
 }
 
 // Resolve one assembly name to its PanSN sample prefix; undefined passes through
-// so callers can express "no anchor/target supplied".
+// so callers can express "no anchor/target supplied". Overloaded so a caller
+// with a definite name (the query's own assembly) gets a definite prefix back
+// and needn't re-narrow it.
+export function resolvePanSNPrefix(
+  adapter: BaseFeatureDataAdapter,
+  name: string,
+): string
+export function resolvePanSNPrefix(
+  adapter: BaseFeatureDataAdapter,
+  name: string | undefined,
+): string | undefined
 export function resolvePanSNPrefix(
   adapter: BaseFeatureDataAdapter,
   name: string | undefined,

@@ -26,6 +26,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
 
   protected pif: TabixIndexedFile
   private refSeqNamesP?: Promise<string[]>
+  private seqIndexP?: Promise<Map<string, Map<string, string[]>>>
 
   public constructor(
     config: AllVsAllIndexedPAFAdapterConfig,
@@ -62,10 +63,38 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
     return this.refSeqNamesP
   }
 
-  // The distinct PanSN seqids, tier letter (t/q/T/Q) stripped and deduped across
-  // tiers.
-  private async pansnSeqNames(opts?: BaseOptions) {
-    return [...new Set((await this.refSeqNames(opts)).map(n => n.slice(1)))]
+  // The distinct PanSN seqids (tier letter t/q/T/Q stripped, deduped across
+  // tiers) grouped sample -> contig -> seqids. One contig maps to several seqids
+  // when the sample is multi-haplotype. Built once rather than per query: a
+  // whole-genome pangenome has tens of thousands of seqids, and getRefNames and
+  // every getFeatures call — one per band, per region, per pan/zoom — would
+  // otherwise re-split and re-scan the entire contig list.
+  private async seqIndex(opts?: BaseOptions) {
+    this.seqIndexP ??= this.refSeqNames(opts)
+      .then(names => {
+        const index = new Map<string, Map<string, string[]>>()
+        for (const seq of new Set(names.map(n => n.slice(1)))) {
+          const sample = panSNSample(seq)
+          const contig = panSNContig(seq)
+          let byContig = index.get(sample)
+          if (!byContig) {
+            byContig = new Map()
+            index.set(sample, byContig)
+          }
+          const seqs = byContig.get(contig)
+          if (seqs) {
+            seqs.push(seq)
+          } else {
+            byContig.set(contig, [seq])
+          }
+        }
+        return index
+      })
+      .catch((e: unknown) => {
+        this.seqIndexP = undefined
+        throw e
+      })
+    return this.seqIndexP
   }
 
   private async hasCoarseTier(opts?: BaseOptions) {
@@ -73,22 +102,16 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    const { assemblyName } = opts
     // Report every anchor-side contig present in the file. Unlike the in-memory
     // adapter this does not pre-cull contigs whose only mate is the same sample
     // (that needs a range scan); hasDataForRefName stays true and getFeatures
     // filters, so over-reporting a ref is harmless.
-    if (assemblyName === undefined) {
-      return []
-    }
-    const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
-    const set = new Set<string>()
-    for (const seq of await this.pansnSeqNames(opts)) {
-      if (panSNSample(seq) === anchorPrefix) {
-        set.add(panSNContig(seq))
-      }
-    }
-    return [...set]
+    const anchorPrefix = resolvePanSNPrefix(this, opts.assemblyName)
+    const byContig =
+      anchorPrefix === undefined
+        ? undefined
+        : (await this.seqIndex(opts)).get(anchorPrefix)
+    return byContig === undefined ? [] : [...byContig.keys()]
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
@@ -113,9 +136,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
 
       // Resolve the anchor (assembly, refName) to its PanSN seqid(s); one contig
       // can map to several when the sample is multi-haplotype.
-      const seqs = (await this.pansnSeqNames(opts)).filter(
-        seq => panSNSample(seq) === anchorPrefix && panSNContig(seq) === qref,
-      )
+      const seqs = (await this.seqIndex(opts)).get(anchorPrefix)?.get(qref) ?? []
 
       const label = 'Downloading features'
       await updateStatus(label, statusCallback, () =>
@@ -136,20 +157,20 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
                   // viewing chr2 the chr2-anchored row (distinct fileOffsets =
                   // distinct ids). A synteny band narrows to its pair via
                   // targetAssemblyName, which also drops paralogy. A degenerate
-                  // self-diagonal (the SAME sample's locus aligned to itself) is
-                  // skipped — the sample check matters: two different samples
-                  // sharing a contig name (both `chr1`) can align at identical
-                  // coords in a conserved region, which is a real cross-sample
-                  // block, not a self-diagonal. Mirrors AllVsAllPAFAdapter.
+                  // self-diagonal (the SAME sequence aligned to itself at the
+                  // same coords) is skipped — tested on the full PanSN names,
+                  // since `grape#1#chr1` vs `grape#2#chr1` shares sample and
+                  // stripped contig yet is a real hap1-vs-hap2 alignment, and
+                  // two samples sharing a contig name (both `chr1`) can align at
+                  // identical coords in a conserved region. Mirrors
+                  // AllVsAllPAFAdapter.
+                  const selfDiagonal =
+                    parsed.indexedName.slice(1) === parsed.mateName &&
+                    parsed.mateStart === parsed.indexedStart &&
+                    parsed.mateEnd === parsed.indexedEnd
                   const drawsHere =
-                    (targetPrefix === undefined ||
-                      matePrefix === targetPrefix) &&
-                    !(
-                      matePrefix === anchorPrefix &&
-                      mateRefName === qref &&
-                      parsed.mateStart === parsed.indexedStart &&
-                      parsed.mateEnd === parsed.indexedEnd
-                    )
+                    !selfDiagonal &&
+                    (targetPrefix === undefined || matePrefix === targetPrefix)
 
                   if (drawsHere) {
                     observer.next(

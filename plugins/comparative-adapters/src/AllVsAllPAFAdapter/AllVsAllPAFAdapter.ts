@@ -97,6 +97,16 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
         const qPrefix = panSNSample(r.qname)
         const tPrefix = panSNSample(r.tname)
 
+        // A degenerate self-diagonal is the SAME sequence aligned to itself at
+        // the same coords (minimap2 without -X emits one per sequence); drop it
+        // from both sides. The test is on the full PanSN names, not
+        // sample+stripped-contig: `grape#1#chr1` vs `grape#2#chr1` shares both
+        // of those yet is a real hap1-vs-hap2 alignment, and two samples that
+        // share a contig name (both `chr1`) can align at identical coords in a
+        // conserved region. Flip-invariant, so it is hoisted out of the loop.
+        const selfDiagonal =
+          r.qname === r.tname && r.qstart === r.tstart && r.qend === r.tend
+
         // Each side of the record where the queried assembly sits is a locus the
         // record can draw at; the other side is the mate (flip mirrors
         // PAFAdapter: true = the PAF query/qname side is the feature). A
@@ -119,20 +129,9 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
           const mateRefName = panSNContig(flip ? r.tname : r.qname)
 
           const drawsHere =
+            !selfDiagonal &&
             sidePrefix === anchorPrefix &&
-            (targetPrefix === undefined || matePrefix === targetPrefix) &&
-            // skip a degenerate self-diagonal: the SAME sample's locus aligned
-            // to itself (same sample, contig AND coords). The sample check
-            // matters — two different samples that share a contig name (both
-            // `chr1`) can align at identical coords in a conserved region, and
-            // that is a real cross-sample block, not a self-diagonal. Real
-            // paralogy also has distinct coords/contig.
-            !(
-              matePrefix === sidePrefix &&
-              mateRefName === refName &&
-              mateStart === start &&
-              mateEnd === end
-            )
+            (targetPrefix === undefined || matePrefix === targetPrefix)
 
           if (
             drawsHere &&

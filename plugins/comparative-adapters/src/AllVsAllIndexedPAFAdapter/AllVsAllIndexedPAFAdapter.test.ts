@@ -38,6 +38,18 @@ function makeVolvoxAdapter(assemblyNames: string[]) {
   )
 }
 
+// diploid.pif.gz holds a hap1-vs-hap2 block at identical coords, a true
+// self-diagonal, and one cross-sample block, all anchored on grape chr1
+function makeDiploidAdapter() {
+  return new Adapter(
+    configSchema.create({
+      pifGzLocation: loc('./test_data/diploid.pif.gz'),
+      index: { location: loc('./test_data/diploid.pif.gz.tbi') },
+      assemblyNames: ['grape', 'peach'],
+    }),
+  )
+}
+
 const feats = (
   adapter: Adapter,
   region: Record<string, unknown>,
@@ -54,6 +66,22 @@ const byMateRef = (fa: Awaited<ReturnType<typeof feats>>) =>
       f.get('mate') as { refName: string; assemblyName: string },
     ]),
   )
+
+test('hap1 vs hap2 of one sample at identical coords is not dropped as a self-diagonal', async () => {
+  const fa = await feats(makeDiploidAdapter(), {
+    refName: 'chr1',
+    start: 0,
+    end: 2000,
+    assemblyName: 'grape',
+  })
+  // hap1#chr1 and hap2#chr1 both resolve to the one `grape` assembly's chr1, so
+  // the hap1-vs-hap2 block draws at each locus; the peach block draws once; the
+  // sequence-against-itself self-diagonal is dropped from both perspectives
+  expect(fa.length).toBe(3)
+  expect(fa.map(f => f.get('start')).sort((a, b) => a - b)).toEqual([
+    100, 100, 700,
+  ])
+})
 
 test('one-vs-all: grape draws against peach, cacao, and its own paralog', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), {
