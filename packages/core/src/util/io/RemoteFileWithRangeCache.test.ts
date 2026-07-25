@@ -43,6 +43,33 @@ function createMockFetch() {
   return { calls, mockFetch }
 }
 
+// Same, but exposing Content-Range so the size is discoverable (the common case
+// outside a misconfigured CORS setup)
+function createSizedMockFetch() {
+  const calls: { start: number; end: number }[] = []
+  const mockFetch = async (
+    _url: string | URL | Request,
+    init?: RequestInit,
+  ) => {
+    const range = new Headers(init?.headers).get('range')
+    const m = range ? /bytes=(\d+)-(\d+)/.exec(range) : null
+    if (m) {
+      const start = Number(m[1])
+      const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+      calls.push({ start, end })
+      // real servers answer 416 for a range starting past EOF
+      return start >= FILE_SIZE
+        ? new Response('', { status: 416 })
+        : new Response(slice(start, end), {
+            status: 206,
+            headers: { 'content-range': `bytes ${start}-${end}/${FILE_SIZE}` },
+          })
+    }
+    return new Response('', { status: 200 })
+  }
+  return { calls, mockFetch }
+}
+
 function makeFile(mockFetch: typeof globalThis.fetch) {
   return new RemoteFileWithRangeCache('https://example.com/data.bin', {
     fetch: mockFetch,
@@ -279,30 +306,8 @@ describe('RemoteFileWithRangeCache', () => {
   })
 
   test('stat() returns file size from Content-Range header', async () => {
-    const mockFetch = async (
-      _url: string | URL | Request,
-      init?: RequestInit,
-    ) => {
-      const range = new Headers(init?.headers).get('range')
-      if (range) {
-        const m = /bytes=(\d+)-(\d+)/.exec(range)
-        if (m) {
-          const start = Number(m[1])
-          const end = Math.min(Number(m[2]), FILE_SIZE - 1)
-          return new Response(slice(start, end), {
-            status: 206,
-            headers: {
-              'content-range': `bytes ${start}-${end}/${FILE_SIZE}`,
-            },
-          })
-        }
-      }
-      return new Response('', { status: 200 })
-    }
-    const file = new RemoteFileWithRangeCache('https://example.com/data.bin', {
-      fetch: mockFetch,
-    })
-    const stat = await file.stat()
+    const { mockFetch } = createSizedMockFetch()
+    const stat = await makeFile(mockFetch).stat()
     expect(stat.size).toBe(FILE_SIZE)
   })
 
@@ -320,26 +325,7 @@ describe('RemoteFileWithRangeCache', () => {
   // would short-circuit on the cached chunk and never observe Content-Range,
   // returning a bogus size of 0.
   test('stat() returns correct size after chunk cache is pre-populated by another instance', async () => {
-    const mockFetch = async (
-      _url: string | URL | Request,
-      init?: RequestInit,
-    ) => {
-      const range = new Headers(init?.headers).get('range')
-      if (range) {
-        const m = /bytes=(\d+)-(\d+)/.exec(range)
-        if (m) {
-          const start = Number(m[1])
-          const end = Math.min(Number(m[2]), FILE_SIZE - 1)
-          return new Response(slice(start, end), {
-            status: 206,
-            headers: {
-              'content-range': `bytes ${start}-${end}/${FILE_SIZE}`,
-            },
-          })
-        }
-      }
-      return new Response('', { status: 200 })
-    }
+    const { mockFetch } = createSizedMockFetch()
     // First instance: prime the module-level chunk cache for the URL.
     const file1 = makeFile(mockFetch)
     await fetchRange(file1, 0, 99)
@@ -467,6 +453,119 @@ describe('RemoteFileWithRangeCache', () => {
     releaseChunk1()
     const result = await readPromise
     expect(result).toEqual(slice(start, end))
+  })
+
+  // Regression: assembly used to accumulate `written` as it copied, so a first
+  // chunk shorter than the offset into it produced a negative copy length and a
+  // negative `written` — and result.subarray(0, negative) handed back a
+  // fabricated zero byte where the file has nothing. Now every copy offset is
+  // computed from absolute positions.
+  test('read starting past EOF inside a cached short chunk returns empty', async () => {
+    const smallFileSize = CHUNK + 100
+    const smallFile = new Uint8Array(smallFileSize)
+    for (let i = 0; i < smallFileSize; i++) {
+      smallFile[i] = i % 256
+    }
+    const url = 'https://example.com/tiny.bin'
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const m = /bytes=(\d+)-(\d+)/.exec(
+        new Headers(init?.headers).get('range')!,
+      )!
+      const reqStart = Number(m[1])
+      return reqStart >= smallFileSize
+        ? new Response('', { status: 416 })
+        : new Response(
+            smallFile.slice(
+              reqStart,
+              Math.min(Number(m[2]), smallFileSize - 1) + 1,
+            ),
+            { status: 206 },
+          )
+    }
+    const file = new RemoteFileWithRangeCache(url, { fetch: mockFetch })
+    const read = async (s: number, e: number) => {
+      const res = await file.fetch(url, {
+        headers: { range: `bytes=${s}-${e}` },
+      })
+      return new Uint8Array(await res.arrayBuffer())
+    }
+
+    // prime chunk 1; the server clips it to the 100 bytes that exist
+    expect(await read(CHUNK, 2 * CHUNK - 1)).toHaveLength(100)
+    // now read a range wholly past EOF but still inside chunk 1
+    expect(await read(CHUNK + 200, CHUNK + 300)).toHaveLength(0)
+  })
+
+  // Once the size is known from Content-Range, a read whose tail extends past
+  // EOF (the bam/tabix 1<<16 over-read) is clamped before planning, so no
+  // request is issued for a chunk that starts past EOF even on a cold cache.
+  test('known file size clamps a read extending past EOF', async () => {
+    const { calls, mockFetch } = createSizedMockFetch()
+    const file = makeFile(mockFetch)
+    expect(await file.stat()).toEqual({ size: FILE_SIZE })
+    calls.length = 0
+
+    // last 100 bytes of the file, over-read by 64 KiB past EOF
+    const start = FILE_SIZE - 100
+    const result = await fetchRange(file, start, start + 65_635)
+    expect(result).toEqual(slice(start, FILE_SIZE - 1))
+    // one request, clamped to the final chunk — nothing past FILE_SIZE
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.start).toBe(CHUNK * 7)
+  })
+
+  test('a read entirely past a known EOF makes no request', async () => {
+    const { calls, mockFetch } = createSizedMockFetch()
+    const file = makeFile(mockFetch)
+    await fetchRange(file, 0, 99)
+    calls.length = 0
+    const result = await fetchRange(file, FILE_SIZE + 10, FILE_SIZE + 200)
+    expect(result).toHaveLength(0)
+    expect(calls).toHaveLength(0)
+  })
+
+  // Range reads go through a rebuilt request. Auth headers an internet account
+  // (or the caller of RemoteFile.read) put on the request must survive it —
+  // dropping them turns a signed read into a 401/403.
+  test('caller headers are preserved on range requests', async () => {
+    const seen: (string | null)[] = []
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const headers = new Headers(init?.headers)
+      seen.push(headers.get('authorization'))
+      const m = /bytes=(\d+)-(\d+)/.exec(headers.get('range')!)!
+      const start = Number(m[1])
+      return new Response(slice(start, Math.min(Number(m[2]), FILE_SIZE - 1)), {
+        status: 206,
+      })
+    }
+    const file = makeFile(mockFetch)
+    await file.fetch('https://example.com/data.bin', {
+      headers: { authorization: 'Bearer token', range: 'bytes=0-99' },
+    })
+    expect(seen).toEqual(['Bearer token'])
+  })
+
+  test('open-ended and multi-range headers pass through uncached', async () => {
+    const seen: (string | null)[] = []
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      seen.push(new Headers(init?.headers).get('range'))
+      return new Response('', { status: 206 })
+    }
+    const file = makeFile(mockFetch)
+    for (const range of ['bytes=100-', 'bytes=0-9,20-29']) {
+      await file.fetch('https://example.com/data.bin', { headers: { range } })
+    }
+    // forwarded verbatim rather than partially honored from the chunk cache
+    expect(seen).toEqual(['bytes=100-', 'bytes=0-9,20-29'])
   })
 
   test('different URLs do not share cache', async () => {
