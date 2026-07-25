@@ -10,19 +10,17 @@ side is the one config mistake with no diagnostic at any layer. `setConf` was
 fixed in `4c8d5f06fd` and `LinearAlignmentsDisplay` was migrated as the proving
 ground.
 
-**Status: everything is migrated except 11 pinned sites in hic and arc**, which
-are blocked only by another agent's uncommitted edits. Every name typechecked,
-so none of them were broken. The widened group and the wiggle mixin are done
-too, for consistency rather than safety.
+**Status: done.** All 79 pinned sites are migrated, plus the 17 widened ones and
+the wiggle mixin. Every name typechecked, so none of them were broken.
 
-That means the invariant is now greppable, which is the real payoff. Every
-`self.configuration.setSlot('literal', ...)` left in non-test source is one of
-those 11. Every other surviving `.setSlot(` writes a genuinely dynamic name
-(`tracks.ts`, `promotableDefaults.ts`, the `slotFacade`, the `target.setSlot`
-copy loop in `MultiSampleVariantBaseModel`) or writes to a config node that is
-not `self.configuration` (`loadHubSpec.ts`), so `setConf` does not apply. If
-that grep ever turns up something else, it is an unmigrated site, not a
-judgement call.
+The real payoff is that the invariant is now greppable. No
+`self.configuration.setSlot('literal', ...)` remains in non-test source. Every
+surviving `.setSlot(` writes a genuinely dynamic name (`tracks.ts`,
+`promotableDefaults.ts`, the `slotFacade`, the `target.setSlot` copy loop in
+`MultiSampleVariantBaseModel`) or writes a config node that is not
+`self.configuration` (`loadHubSpec.ts`), so `setConf` does not apply. If that
+grep turns up a literal slot name, it is an unmigrated site, not a judgement
+call.
 
 ## What was wrong, and why it is worth finishing
 
@@ -66,20 +64,15 @@ typed.** Same lever as reads, see the "Config read type narrowing" section of
 `packages/core/src/configuration/CLAUDE.md`. That splits the remaining sites into
 three groups.
 
-### Pinned, so migrating gains the check (11 sites left of 79)
+### Pinned, so migrating gains the check (79 of 79, done)
 
-| Sites | File | State |
-| --- | --- | --- |
-| 9 | `plugins/hic/src/LinearHicDisplay/model.ts` | blocked, dirty |
-| 1 | `plugins/arc/src/LinearPairedArcDisplay/model.ts` | blocked, dirty |
-| 1 | `plugins/arc/src/LinearArcDisplay/model.ts` | blocked, dirty |
+The last 11 (hic 9, both arc models 1 each) landed in `c5444342dc`. All 79 names
+typechecked, so nothing in the pinned group was ever broken.
 
-All three carry parts of one in-flight refactor removing the SVG export's
-`overrideHeight` option (hic collapses `yScalarForHeight` into the `yScalar`
-getter, both arc models drop the `opts` pass-through). Committing any of them
-would publish that half-finished work. Re-check with `git status --short` and
-finish them once it lands; the recipe is unchanged and each is a one-file
-commit.
+Those three files were carrying an unrelated in-flight refactor at the time
+(removing the SVG export's `overrideHeight` option), which is why earlier passes
+skipped them. See "Committing a file another agent is editing" below for how
+that was resolved without waiting.
 
 Done, for reference: maf `stateModel.ts` (23), variants `LDDisplay/shared.ts`
 (14) and `MultiSampleVariantBaseModel.ts` (11), canvas
@@ -131,8 +124,34 @@ been committed and only hic and arc were still held.
 `git commit -- <paths>` takes the **working tree** at those paths, so committing
 a file that carries another agent's in-flight edits publishes their work under
 your message. Check `git status --short -- <file>` immediately before each
-commit, and skip any file that is already dirty. One commit per plugin keeps the
-blast radius small and lets you skip a busy file without stalling the rest.
+commit. One commit per plugin keeps the blast radius small and lets you skip a
+busy file without stalling the rest.
+
+### Committing a file another agent is editing
+
+Skipping is the cheap answer, but a file can stay busy for a long time. The last
+11 sites here sat blocked across several passes. You can commit **only your own
+hunks** and leave theirs untouched in the working tree, because `git commit` with
+no pathspec commits the **index**, while `git commit -- <path>` commits the
+working tree. Never `git stash` for this: it snapshots the whole worktree and
+yanks their edits out from under them.
+
+```sh
+git diff --cached --stat                  # MUST be empty first, or you sweep in
+git diff -- <file> > /tmp/theirs.patch    # snapshot theirs BEFORE you edit
+# ...make your edits...
+git add <file>                            # stages theirs + yours
+git apply --cached -R /tmp/theirs.patch   # unstages theirs, leaving only yours
+git diff --cached                         # eyeball: only your hunks
+git commit -m ...                         # no pathspec: commits the index
+```
+
+Then prove you did no harm: `git diff -- <file>` should be byte-identical to
+`/tmp/theirs.patch`, and the index should be empty again. It only works when the
+two edits touch different regions, and it does mean HEAD briefly holds your
+change without theirs, so typecheck first and make sure your hunks don't depend
+on theirs. Say so in the commit message, since the partial-commit is otherwise
+invisible to whoever reads it later.
 
 ## Verifying
 
@@ -179,33 +198,21 @@ These are alignments items, not config items. They belong in
   `LinearAlignmentsDisplayModel` type. That made it in-tree dead code the
   compiler could validate. Being in a plugin's `src/` does not by itself make a
   symbol ABI — check the three routes before deferring on that basis.
-- Three comments in `LinearAlignmentsDisplay/renderSvg.tsx` still use em-dashes,
-  against the house prose style. Every other file from that pass was converted,
-  but `renderSvg.tsx` was carrying another agent's uncommitted edit at the time
-  and committing it would have published their work. Convert when it is clean.
-- The coverage y-axis **side** still differs between screen and export. The
-  compact-vs-full divergence was fixed (`e347808337`, shared through
-  `coverageAxisStyle.ts`), the side was not. Diagnosed but not fixed, because
-  `renderSvg.tsx` was still carrying another agent's in-flight edit. Exactly
-  what to change:
+- ~~Em-dash comments in `renderSvg.tsx`~~ and ~~the coverage y-axis side~~ both
+  done in `8c042bfec1`.
 
-  On screen (`components/PileupComponent.tsx`) the side is a three-way choice.
-  Ungrouped and full-height draws left (`orientation="left"` at
-  `scalebarOverlapLeft`). Grouped and full-height draws **right**
-  (`orientation="right"` at `right: SCROLLBAR_WIDTH + 2`), deliberately, so the
-  axis clears the group label chips anchored at `left: 4`. The compact
-  `[0, max]` label is right in both cases (`classes.compactAxisLabel`, `right:
-  SCROLLBAR_WIDTH + 2`).
+  The axis turned out to be worse than a side mismatch, which is worth recording
+  because reasoning about it from the source alone under-called it. `YScaleBar`
+  grows its ticks and labels *away* from the spine (`orientation="left"` grows
+  leftward, so the spine is the axis's right edge). The export translated to the
+  band's left edge and drew left-oriented, so with `contentLeft` at its usual 0
+  the labels rendered at **x = -9, off the image entirely**; the compact label
+  meanwhile sat under the group label chips. A probe test rendering the real
+  component confirmed both before anything changed
+  (`coverageAxisExport.test.tsx`, which now guards the fix).
 
-  In export, `CoverageScaleBars` in `renderSvg.tsx` hardcodes all three to the
-  left: the compact `<text>` sits at `x={left}` and the full bar is
-  `orientation="left"`. So a grouped export puts the axis straight through the
-  group labels. Its comment claims it mirrors `CoverageAxisHost`, which is true
-  only of the compact-vs-full choice, so fix the comment too.
-
-  The pattern to copy is `InsertSizeScaleBar`, immediately below it in the same
-  file, which already switches side correctly and anchors its right-hand case at
-  `translate(canvasWidth - 50)`. `CoverageScaleBars` needs the grouped flag
-  threaded in and a right-hand branch; note there is no scrollbar in an export,
-  so `SCROLLBAR_WIDTH` is not the right inset, and the compact `<text>` will
-  want `textAnchor="end"` rather than a bare `x`.
+  It now mirrors `CoverageAxisHost`'s three-way choice: compact label
+  right-aligned via `textAnchor="end"`, full axis right when grouped so it
+  clears the chips, left otherwise with its spine inset by the label width. The
+  geometry lives in `coverageAxisStyle.ts` alongside `COMPACT_AXIS_HEIGHT`,
+  since that module exists precisely to stop these two paths drifting.
