@@ -143,10 +143,18 @@ export function doAfterAttach(self: LinearSyntenyViewModel) {
           if (init.autoDiagonalize) {
             await runAutoDiagonalize(self)
           }
-          self.setInit(undefined)
+          // the view may have been removed while the assemblies/tracks resolved,
+          // and writing to a detached node throws, which would land in the
+          // catch below and report a teardown as a view error
+          if (isAlive(self)) {
+            self.setInit(undefined)
+          }
         } catch (e) {
           console.error(e)
-          getSession(self).notifyError(`${e}`, e)
+          // setError is the whole report: it flips showImportForm, and the form
+          // renders model.error in its own banner, so a notifyError snackbar
+          // would state the same failure twice (and the banner persists).
+          //
           // Keep init on failure: a transient error (assembly not yet
           // registered, a network blip) must stay recoverable. Clearing it here,
           // while views is still empty, permanently strands the view on the
