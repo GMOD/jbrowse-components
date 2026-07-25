@@ -3,6 +3,7 @@ export { launchBreakpointSplitView } from './launchBreakpointSplitView.ts'
 export {
   SV_SYMBOLIC_ALLELES,
   breakpointBpPerPx,
+  breakpointSplitViewId,
   getAssemblyName,
   getBreakendAssemblyRegions,
   getBreakendCoveringRegions,

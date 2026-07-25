@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -78,6 +77,13 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         ),
         /**
          * #property
+         * share of the view's width given to the spreadsheet, the rest goes to
+         * the circular view. Persisted so dragging the divider survives both a
+         * window resize and a session reload
+         */
+        spreadsheetWidthFraction: types.stripDefault(types.number, 0.66),
+        /**
+         * #property
          */
         spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -125,17 +131,23 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get assemblyName() {
-        const { assembly } = self.spreadsheetView
-        return assembly
-          ? (readConfObject(assembly, 'name') as string)
-          : undefined
+      get currentAssembly() {
+        const name = self.spreadsheetView.spreadsheet?.assemblyName
+        return name ? getSession(self).assemblyManager.get(name) : undefined
       },
       /**
        * #getter
        */
+      get assemblyName() {
+        return this.currentAssembly?.name
+      },
+      /**
+       * #getter
+       * gated on the same condition the spreadsheet renders its grid on, so the
+       * circle never appears alongside the import form
+       */
       get showCircularView() {
-        return !!self.spreadsheetView.spreadsheet?.rowSet
+        return !!self.spreadsheetView.spreadsheet?.initialized
       },
 
       /**
@@ -176,16 +188,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get currentAssembly() {
-        const { assemblyManager } = getSession(self)
-        return this.assemblyName
-          ? assemblyManager.get(this.assemblyName)
-          : undefined
-      },
-
-      /**
-       * #getter
-       */
       get canonicalFeatureRefNameSet() {
         const asm = this.currentAssembly
         return new Set(
@@ -193,6 +195,21 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             ? this.featureRefNames.map(r => asm.getCanonicalRefName2(r))
             : [],
         )
+      },
+      /**
+       * #getter
+       * the regions the paired circular view should show. An empty relevant-set
+       * means the features aren't parsed yet, so show everything rather than an
+       * empty circle
+       */
+      get circularDisplayedRegions() {
+        const regions = this.currentAssembly?.regions
+        const relevant = self.onlyDisplayRelevantRegionsInCircularView
+          ? this.canonicalFeatureRefNameSet
+          : undefined
+        return regions && relevant?.size
+          ? regions.filter(r => relevant.has(r.refName))
+          : regions
       },
       /**
        * #getter
@@ -250,6 +267,17 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
       /**
        * #action
+       * move the divider between the two subviews. Stored as a fraction so the
+       * width binding can reapply it, rather than resizing the subviews directly
+       * and having the next parent resize overwrite it
+       */
+      resizeSpreadsheetWidth(distance: number) {
+        const fraction = (self.spreadsheetView.width + distance) / self.width
+        self.spreadsheetWidthFraction = Math.min(Math.max(fraction, 0.2), 0.8)
+      },
+
+      /**
+       * #action
        */
       setInit(init?: SvInspectorViewInit) {
         self.init = init
@@ -265,7 +293,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             label: 'Return to import form',
             icon: FolderOpenIcon,
             onClick: () => {
-              self.spreadsheetView.displaySpreadsheet(undefined)
+              self.spreadsheetView.returnToImportForm()
             },
           },
         ]
@@ -301,10 +329,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           autorun(
             () => {
               if (self.showCircularView) {
-                const spreadsheetWidth = Math.round(self.width * 0.66)
-                const circularViewWidth = self.width - spreadsheetWidth
+                const spreadsheetWidth = Math.round(
+                  self.width * self.spreadsheetWidthFraction,
+                )
                 self.spreadsheetView.setWidth(spreadsheetWidth - borderWidth)
-                self.circularView.setWidth(circularViewWidth)
+                self.circularView.setWidth(self.width - spreadsheetWidth)
               } else {
                 self.spreadsheetView.setWidth(self.width)
               }
@@ -334,26 +363,22 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const {
-                onlyDisplayRelevantRegionsInCircularView,
-                circularView,
-                canonicalFeatureRefNameSet,
-                currentAssembly,
-              } = self
-              if (circularView.initialized && currentAssembly?.regions) {
-                if (onlyDisplayRelevantRegionsInCircularView) {
-                  if (circularView.tracks.length === 1) {
-                    circularView.setDisplayedRegions(
-                      structuredClone(
-                        currentAssembly.regions.filter(r =>
-                          canonicalFeatureRefNameSet.has(r.refName),
-                        ),
-                      ),
-                    )
-                  }
-                } else {
+              const { circularView, circularDisplayedRegions } = self
+              // setDisplayedRegions re-fits the circle, so only write when the
+              // region list really changed. With the toggle on, the relevant-set
+              // recomputes on every grid filter change and would otherwise
+              // throw away the user's pan and zoom on each keystroke
+              if (circularView.initialized && circularDisplayedRegions) {
+                const cur = circularView.displayedRegions
+                const changed =
+                  cur.length !== circularDisplayedRegions.length ||
+                  cur.some(
+                    (r, i) =>
+                      r.refName !== circularDisplayedRegions[i]!.refName,
+                  )
+                if (changed) {
                   circularView.setDisplayedRegions(
-                    structuredClone(currentAssembly.regions),
+                    structuredClone(circularDisplayedRegions),
                   )
                 }
               }
@@ -376,9 +401,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               if (assemblyName) {
                 circularView.addTrackConf(
                   self.featuresCircularTrackConfiguration,
-                  {
-                    assemblyName,
-                  },
                 )
               }
             },

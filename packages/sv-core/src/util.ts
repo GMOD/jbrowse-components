@@ -260,3 +260,16 @@ export function splitRegionAtPosition<
     },
   ]
 }
+
+/**
+ * #api
+ * Stable id for the breakpoint split view spawned from a row of a spreadsheet,
+ * shared by every entry point (the sheet's row menu, and the SV inspector's
+ * chord clicks) so they reuse one view instead of stacking a new one each.
+ */
+export function breakpointSplitViewId(
+  spreadsheetViewId: string,
+  assemblyName: string,
+) {
+  return `${spreadsheetViewId}_${assemblyName}_breakpointsplitview`
+}

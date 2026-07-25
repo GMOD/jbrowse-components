@@ -3,7 +3,10 @@ import { lazy } from 'react'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getParent } from '@jbrowse/mobx-state-tree'
-import { launchBreakpointSplitView } from '@jbrowse/sv-core'
+import {
+  breakpointSplitViewId,
+  launchBreakpointSplitView,
+} from '@jbrowse/sv-core'
 
 import stateModelFactory from './model.ts'
 
@@ -16,16 +19,21 @@ function defaultOnChordClick(feature: Feature, chordTrack: object) {
   try {
     session.setSelection(feature)
     const view = getContainingView(chordTrack) as CircularViewModel
-    const parentView = getParent<{ id: string; type: string }>(view)
+    const parentView = getParent<{
+      type: string
+      spreadsheetView: { id: string }
+    }>(view)
+    const assemblyName = view.assemblyNames[0]!
     launchBreakpointSplitView({
       session,
       feature,
-      assemblyName: view.assemblyNames[0]!,
-      // only SvInspector reuses a stable spawned-view id; other circular views
-      // get a fresh view per click
+      assemblyName,
+      // in the SV inspector, reuse the same view the sheet's own row menu opens
+      // so a chord click and a row click don't stack two of them. Other
+      // circular views get a fresh view per click
       stableViewId:
         parentView.type === 'SvInspectorView'
-          ? `${parentView.id}_spawned`
+          ? breakpointSplitViewId(parentView.spreadsheetView.id, assemblyName)
           : undefined,
     })
   } catch (e) {

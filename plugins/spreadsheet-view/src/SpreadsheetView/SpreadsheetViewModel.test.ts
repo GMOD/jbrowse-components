@@ -70,6 +70,26 @@ test('reloading the same file preserves column visibility and SV-type filter', (
   expect(model.spreadsheet!.svTypeFilter).toBeUndefined()
 })
 
+test('returning to the import form drops the cached location', () => {
+  const { Session, SpreadsheetView } = makeSession()
+  const session = Session.create({ rpcManager: {}, configuration: {} })
+  const model = session.setView(
+    SpreadsheetView.create({ type: 'SpreadsheetView' }),
+  )
+
+  model.importWizard.setCachedFileLocation({
+    uri: 'test.vcf',
+    locationType: 'UriLocation',
+  })
+  model.displaySpreadsheet({ columns: [{ name: 'CHROM' }], rowSet: { rows: [] } })
+
+  // leaving the cache behind makes afterAttach re-fetch the dismissed file on
+  // the next session load
+  model.returnToImportForm()
+  expect(model.spreadsheet).toBeUndefined()
+  expect(model.importWizard.cachedFileLocation).toBeUndefined()
+})
+
 test('width churn does not re-trigger the load (reaction tracks init, not width)', () => {
   const { Session, SpreadsheetView } = makeSession()
   const session = Session.create({ rpcManager: {}, configuration: {} })

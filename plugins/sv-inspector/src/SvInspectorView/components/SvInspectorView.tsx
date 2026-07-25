@@ -46,8 +46,7 @@ const SvInspectorView = observer(function SvInspectorView({
               bar
               vertical
               onDrag={distance => {
-                const ret1 = model.circularView.resizeWidth(-distance)
-                return model.spreadsheetView.resizeWidth(-ret1)
+                model.resizeSpreadsheetWidth(distance)
               }}
             />
             <div style={{ width: model.circularView.width }}>

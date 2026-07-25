@@ -20,6 +20,19 @@ width. Falls back to a zoomed-in default when no window is requested.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
+### breakpointSplitViewId
+
+Stable id for the breakpoint split view spawned from a row of a spreadsheet,
+shared by every entry point (the sheet's row menu, and the SV inspector's chord
+clicks) so they reuse one view instead of stacking a new one each.
+
+```js
+// type signature
+(spreadsheetViewId: string, assemblyName: string) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ### getBreakendAssemblyRegions
 
 Loads the assembly for a breakend feature and resolves the two regions its

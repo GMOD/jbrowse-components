@@ -1,5 +1,5 @@
 import {
-  assembleLocStringFast,
+  assembleLocString,
   getSession,
   measureGridWidth,
   toLocale,
@@ -15,8 +15,6 @@ import type { GridColDef } from '@mui/x-data-grid'
 export interface Row {
   feature?: SimpleFeatureSerialized
   cellData?: Record<string, unknown>
-  // old snapshot format
-  cells?: { text: unknown }[]
 }
 
 export interface RowSet {
@@ -27,6 +25,24 @@ export interface GridRow {
   id: number
   feature?: SimpleFeatureSerialized
   [key: string]: unknown
+}
+
+// shapes written by older versions: cells were positional (aligned with
+// columns) and VCF features hid under extendedData
+interface LegacyRow extends Row {
+  cells?: { text: unknown }[]
+  extendedData?: { vcfFeature?: SimpleFeatureSerialized }
+}
+
+function migrateRow(row: LegacyRow, columns: { name: string }[]): Row {
+  const { feature, cellData, cells, extendedData } = row
+  return {
+    feature: feature ?? extendedData?.vcfFeature,
+    cellData:
+      cellData ??
+      (cells &&
+        Object.fromEntries(columns.map((c, i) => [c.name, cells[i]?.text]))),
+  }
 }
 
 /**
@@ -45,7 +61,7 @@ export default function stateModelFactory() {
       /**
        * #property
        */
-      columns: types.frozen<{ name: string }[]>(),
+      columns: types.optional(types.frozen<{ name: string }[]>(), () => []),
       /**
        * #property
        */
@@ -75,15 +91,11 @@ export default function stateModelFactory() {
        * #getter
        */
       get rows(): GridRow[] | undefined {
+        // id/feature last so a same-named data column can't shadow them
         return self.rowSet?.rows.map((row, i) => ({
+          ...row.cellData,
           id: i,
           feature: row.feature,
-          ...Object.fromEntries(
-            self.columns.map((c, idx) => [
-              c.name,
-              row.cellData?.[c.name] ?? row.cells?.[idx]?.text,
-            ]),
-          ),
         }))
       },
 
@@ -112,9 +124,16 @@ export default function stateModelFactory() {
                 width:
                   measureGridWidth(
                     rows.map(row =>
-                      row.feature ? assembleLocStringFast(row.feature) : 0,
+                      row.feature ? assembleLocString(row.feature) : 'N/A',
                     ),
                   ) + 40,
+                // renderCell alone leaves the column empty in the toolbar's CSV
+                // export and unsortable, so give the grid the plain locstring
+                // too (the same string the cell renders)
+                valueGetter: (
+                  _val: unknown,
+                  row: { feature?: SimpleFeatureSerialized },
+                ) => (row.feature ? assembleLocString(row.feature) : undefined),
                 renderCell: ({ row }) => {
                   const { feature } = row
                   return feature ? (
@@ -211,7 +230,11 @@ export default function stateModelFactory() {
        * #action
        */
       setVisibleRows(arg?: Record<number, boolean>) {
-        self.visibleRowFlags = arg
+        // the grid reports an empty lookup when nothing is filtered (its own
+        // selectors read it that way), so normalize that back to undefined:
+        // otherwise mounting the grid reads as a filter change and rebuilds the
+        // SV inspector's chord track for no reason
+        self.visibleRowFlags = arg && Object.keys(arg).length ? arg : undefined
       },
       /**
        * #action
@@ -230,31 +253,25 @@ export default function stateModelFactory() {
       (
         snap:
           | ({
-              columns?: { isDerived?: boolean }[]
-              rowSet?: {
-                rows?: {
-                  feature?: SimpleFeatureSerialized
-                  extendedData?: { vcfFeature?: SimpleFeatureSerialized }
-                }[]
-              }
+              columns?: { name: string; isDerived?: boolean }[]
+              rowSet?: { rows?: LegacyRow[] }
             } & Record<string, unknown>)
           | undefined,
-      ) =>
-        snap
+      ) => {
+        const columns = snap?.columns?.filter(f => !f.isDerived) ?? []
+        return snap
           ? {
               ...snap,
-              columns: snap.columns?.filter(f => !f.isDerived),
+              columns,
               rowSet: snap.rowSet
                 ? {
                     ...snap.rowSet,
-                    rows: snap.rowSet.rows?.map(r => ({
-                      ...r,
-                      feature: r.feature ?? r.extendedData?.vcfFeature,
-                    })),
+                    rows: snap.rowSet.rows?.map(r => migrateRow(r, columns)),
                   }
                 : undefined,
             }
-          : snap,
+          : snap
+      },
     )
 }
 

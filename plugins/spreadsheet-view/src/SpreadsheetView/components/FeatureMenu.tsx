@@ -1,6 +1,9 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { SimpleFeature, assembleLocStringFast } from '@jbrowse/core/util'
-import { launchBreakpointSplitView } from '@jbrowse/sv-core'
+import {
+  breakpointSplitViewId,
+  launchBreakpointSplitView,
+} from '@jbrowse/sv-core'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
 import { locationLinkClick } from '../util.ts'
@@ -47,7 +50,10 @@ export default function FeatureMenu({
               session,
               feature: new SimpleFeature(feature),
               assemblyName,
-              stableViewId: `${spreadsheetViewId}_${assemblyName}_breakpointsplitview`,
+              stableViewId: breakpointSplitViewId(
+                spreadsheetViewId,
+                assemblyName,
+              ),
             })
           },
         },

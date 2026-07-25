@@ -39,13 +39,16 @@ export function bufferToLines(buffer: Uint8Array) {
     .filter(f => f !== '')
 }
 
-export function filterBedHeaderLines(lines: string[]) {
-  return lines.filter(
-    line =>
-      !line.startsWith('#') &&
-      !line.startsWith('browser') &&
-      !line.startsWith('track'),
+function isBedHeaderLine(line: string) {
+  return (
+    line.startsWith('#') ||
+    line.startsWith('browser') ||
+    line.startsWith('track')
   )
+}
+
+export function filterBedHeaderLines(lines: string[]) {
+  return lines.filter(line => !isBedHeaderLine(line))
 }
 
 // shared scaffolding for BED-like formats: strips header lines, derives the
@@ -53,7 +56,12 @@ export function filterBedHeaderLines(lines: string[]) {
 // and returns the data lines plus the resolved column list
 export function computeBedColumns(lines: string[], coreColumns: string[]) {
   const rest = filterBedHeaderLines(lines)
-  const lastHeaderLine = lines.findLast(line => line.startsWith('#'))
+  // the column-name header is the last `#` line of the leading header block; a
+  // `#` comment further down the file is a comment, not the header
+  const firstDataLine = lines.findIndex(line => !isBedHeaderLine(line))
+  const lastHeaderLine = lines
+    .slice(0, firstDataLine === -1 ? lines.length : firstDataLine)
+    .findLast(line => line.startsWith('#'))
   const numExtraColumns = Math.max(
     0,
     (rest[0]?.split('\t').length ?? 0) - coreColumns.length,

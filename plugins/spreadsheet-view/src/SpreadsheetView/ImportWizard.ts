@@ -234,7 +234,7 @@ export default function stateModelFactory() {
       /**
        * #action
        */
-      setCachedFileHandle(arg: FileLocation) {
+      setCachedFileLocation(arg?: FileLocation) {
         self.cachedFileLocation = arg
       },
     }))
@@ -282,13 +282,13 @@ export default function stateModelFactory() {
             }
             if (stat && stat.size > IMPORT_SIZE_LIMIT) {
               self.setError(
-                `File is too big. Tabular files are limited to at most ${(
-                  IMPORT_SIZE_LIMIT / 1000
-                ).toLocaleString()}kb.`,
+                `File is too big. Tabular files are limited to at most ${
+                  IMPORT_SIZE_LIMIT / 1_000_000
+                }MB.`,
               )
             } else {
               if ('uri' in src) {
-                self.setCachedFileHandle(src)
+                self.setCachedFileLocation(src)
               }
               const data = await fetchAndMaybeUnzip(filehandle)
               result = {

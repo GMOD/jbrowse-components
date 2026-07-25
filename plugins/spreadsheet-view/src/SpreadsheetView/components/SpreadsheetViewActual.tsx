@@ -28,7 +28,7 @@ const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
         <SpreadsheetDataGrid model={spreadsheet} />
       </div>
       {hideVerticalResizeHandle ? null : (
-        <ResizeHandle bar onDrag={delta => model.setHeight(height - delta)} />
+        <ResizeHandle bar onDrag={delta => model.resizeHeight(delta)} />
       )}
     </>
   ) : null

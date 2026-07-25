@@ -53,19 +53,11 @@ export default function stateModelFactory() {
           /**
            * #property
            */
-          offsetPx: types.stripDefault(types.number, 0),
-          /**
-           * #property
-           */
           height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
            */
           hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
-          /**
-           * #property
-           */
-          hideFilterControls: types.stripDefault(types.boolean, false),
 
           /**
            * #property
@@ -88,17 +80,6 @@ export default function stateModelFactory() {
            * #volatile
            */
           width: 400,
-        }))
-        .views(self => ({
-          /**
-           * #getter
-           */
-          get assembly() {
-            const name = self.spreadsheet?.assemblyName
-            return name
-              ? getSession(self).assemblyManager.get(name)?.configuration
-              : undefined
-          },
         }))
         .actions(self => ({
           /**
@@ -206,11 +187,23 @@ export default function stateModelFactory() {
             // file instead of dropping to the import form. init is cleared
             // synchronously by the reaction, so the cache is the only
             // reconstruction source.
-            self.importWizard.setCachedFileHandle(fileLocation)
+            self.importWizard.setCachedFileLocation(fileLocation)
             if (init.fileType) {
               self.importWizard.setFileType(init.fileType)
             }
             await self.loadSpreadsheet(init.assembly)
+          },
+        }))
+        .actions(self => ({
+          /**
+           * #action
+           * drop the loaded sheet and the cached location together: leaving the
+           * cache behind makes afterAttach re-fetch the dismissed file on the
+           * next session load, putting the user back where they left
+           */
+          returnToImportForm() {
+            self.displaySpreadsheet(undefined)
+            self.importWizard.setCachedFileLocation(undefined)
           },
         }))
         .actions(self => ({
@@ -261,7 +254,7 @@ export default function stateModelFactory() {
                 label: 'Return to import form',
                 icon: FolderOpenIcon,
                 onClick: () => {
-                  self.displaySpreadsheet(undefined)
+                  self.returnToImportForm()
                 },
               },
             ]

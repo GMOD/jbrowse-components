@@ -1,12 +1,15 @@
 import { isNumber } from './isNumber.ts'
 import { bufferToLines, parseStrand } from './util.ts'
 
+// breakpoints look like `chr17:38243106:+` and the coordinate is 1-based, so
+// convert to our interbase start
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
+  const pos = +fields[1]!
   return {
     refName: fields[0]!,
-    start: +fields[1]!,
-    end: +fields[1]! + 1,
+    start: pos - 1,
+    end: pos,
     strand: parseStrand(fields[2]),
   }
 }
