@@ -12,8 +12,8 @@ import type { YScaleTicks } from '@jbrowse/wiggle-core'
 // overlay-mode color legend is NOT here: it's composed by each path directly —
 // on screen via the hoisted MultiWiggleLegendOverlay (which paints above the
 // inter-region separators), in export inline in renderSvg. Callers pass their
-// own `canvasWidth`/`scalebarLeft`/`labelOffset` (CSS-pixel track width on
-// screen vs view width on export, etc.).
+// own `legendRight`/`scalebarLeft`/`labelOffset` (the axis indent differs
+// between screen and export, see ONSCREEN_AXIS_LEFT_PX).
 interface ScaleModel {
   sources: {
     name: string
@@ -35,12 +35,14 @@ interface ScaleModel {
 
 export default observer(function MultiWiggleSvgScales({
   model,
-  canvasWidth,
+  legendRight,
   scalebarLeft,
   labelOffset,
 }: {
   model: ScaleModel
-  canvasWidth: number
+  // x the right-aligned score legend is pinned to (the content's right edge)
+  legendRight: number
+  // x the per-row axes are anchored at
   scalebarLeft: number
   labelOffset: number
 }) {
@@ -58,7 +60,7 @@ export default observer(function MultiWiggleSvgScales({
   } = model
 
   const labels =
-    sources.length > 1 && !isOverlay ? (
+    numSources > 1 && !isOverlay ? (
       <SvgRowLabels
         sources={sources}
         rowHeight={rowHeight}
@@ -66,21 +68,21 @@ export default observer(function MultiWiggleSvgScales({
       />
     ) : null
 
-  const scoreLegend = domain ? (
+  // Density encodes score as color, and a short row has no room for an axis, so
+  // both fall back to the one-line score legend.
+  const scoreLegendOnly = isDensityMode || rowHeightTooSmallForScalebar
+
+  // A domain is what makes any scale real (`ticks` derives from it, so the axis
+  // branch needs no separate tick guard). Overlay draws a single scalebar over
+  // the full height (rowHeight === height, so getRowTop(0) === 0); rows draw one
+  // per source down the track.
+  const scalebars = !domain ? null : scoreLegendOnly ? (
     <ScoreLegend
       domain={domain}
       dataRange={dataRange}
       scaleType={scaleType}
-      canvasWidth={canvasWidth}
+      canvasWidth={legendRight}
     />
-  ) : null
-
-  // overlay draws one scalebar over the full height (rowHeight === height, so
-  // getRowTop(0) === 0); rows draw one per source down the track.
-  const scalebars = !domain ? null : isDensityMode ? (
-    scoreLegend
-  ) : !ticks ? null : rowHeightTooSmallForScalebar ? (
-    scoreLegend
   ) : (
     <g transform={`translate(${scalebarLeft})`}>
       {Array.from({ length: isOverlay ? 1 : numSources }).map((_, idx) => (

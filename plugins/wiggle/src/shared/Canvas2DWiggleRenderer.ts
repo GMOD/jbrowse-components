@@ -6,6 +6,7 @@ import {
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
+  getRowHeight,
 } from './wiggleComponentUtils.ts'
 import {
   drawDensity,
@@ -42,7 +43,11 @@ function drawWiggleBlocks(
     lineWidth,
     origin,
   } = state
-  const rowHeight = canvasHeight / numRows
+  // getRowHeight, not a bare divide: a source list that filters to empty (a
+  // subtree filter naming nothing present) leaves numRows 0 while
+  // buildSourceRenderData still falls back to the payload's sources, and
+  // Infinity here propagates to NaN rect geometry.
+  const rowHeight = getRowHeight(canvasHeight, numRows)
 
   forEachClippedBlock(
     ctx,

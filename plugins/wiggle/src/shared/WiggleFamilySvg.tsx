@@ -8,6 +8,8 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { CrossHatchLines, YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
+import { legendRightEdgePx } from './wiggleComponentUtils.ts'
+
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
@@ -37,11 +39,15 @@ export interface WiggleFamilySvgLayout {
   renderBlocks: RenderBlock[]
 }
 
-// Layout values a legend/axis needs. The callback closes over its own model for
-// domain/scaleType/mode, so the scaffold only supplies the shared positions.
+// Layout values a legend/axis needs. The scaffold supplies only the shared
+// positions; each display spreads these into its own legend component (which
+// reads its model for domain/scaleType/mode).
 export interface WiggleFamilySvgLegendInfo {
+  // x a left-oriented y-axis is anchored at (the content's left edge)
   scalebarLeft: number
-  canvasWidth: number
+  // x a right-aligned legend is pinned to (the content's right edge, which at
+  // whole-genome zoom stops short of the viewport)
+  legendRight: number
   ticks: YScaleTicks | undefined
 }
 
@@ -71,18 +77,23 @@ export async function renderWiggleFamilySvg({
 }): Promise<React.ReactNode> {
   await awaitSvgReady(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   // anchors scale bars to the left edge of content; non-zero only when scrolled
-  // before genome start
+  // before genome start. Left-oriented, so the labels grow into the export
+  // margin rather than over the plot (the on-screen axis instead indents by
+  // ONSCREEN_AXIS_LEFT_PX and grows rightward).
   const scalebarLeft = Math.max(-view.offsetPx, 0)
   // canvas spans the viewport (visibleRegions coords are viewport-relative and
   // clipped to view.width below), matching the on-screen canvas rather than the
   // full-genome totalWidthPx
   const canvasWidth = view.width
+  // right-aligned legends pin to the content's right edge, not the viewport's:
+  // at whole-genome zoom the regions can end before it, and a legend parked out
+  // in the empty gutter reads as detached from the plot
+  const legendRight = legendRightEdgePx(view.visibleRegions, canvasWidth)
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  // drawHeight tracks the export height, not the on-screen one, so an
-  // overrideHeight export scales the plot instead of drawing it at the display
-  // height inside a taller/shorter frame
+  // the plot itself is inset by the scalebar label gutter at top and bottom, so
+  // it never overlaps the axis labels drawn in those bands
   const drawHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
   const { ticks, displayCrossHatches } = model
   return (
@@ -114,7 +125,7 @@ export async function renderWiggleFamilySvg({
       {displayCrossHatches && ticks ? (
         <CrossHatchLines ticks={ticks} width={canvasWidth} />
       ) : null}
-      {legend?.({ scalebarLeft, canvasWidth, ticks })}
+      {legend?.({ scalebarLeft, legendRight, ticks })}
     </SvgChrome>
   )
 }

@@ -23,7 +23,6 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | [resolution](#property-resolution)                   | Properties | WiggleScoreConfigMixin |                                    |
 | [displayCrossHatches](#property-displaycrosshatches) | Properties | WiggleScoreConfigMixin |                                    |
 | [loadedBpPerPx](#volatile-loadedbpperpx)             | Volatiles  | WiggleScoreConfigMixin |                                    |
-| [scalebarOverlapLeft](#getter-scalebaroverlapleft)   | Getters    | WiggleScoreConfigMixin |                                    |
 | [posColor](#getter-poscolor)                         | Getters    | WiggleScoreConfigMixin |                                    |
 | [negColor](#getter-negcolor)                         | Getters    | WiggleScoreConfigMixin |                                    |
 | [bicolorPivot](#getter-bicolorpivot)                 | Getters    | WiggleScoreConfigMixin |                                    |
@@ -76,25 +75,24 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 <details>
 <summary>WiggleScoreConfigMixin - Getters</summary>
 
-| Member                                                           | Type                  |
-| ---------------------------------------------------------------- | --------------------- |
-| <span id="getter-scalebaroverlapleft">scalebarOverlapLeft</span> | `number`              |
-| <span id="getter-poscolor">posColor</span>                       | `string`              |
-| <span id="getter-negcolor">negColor</span>                       | `string`              |
-| <span id="getter-bicolorpivot">bicolorPivot</span>               | `number`              |
-| <span id="getter-scaletype">scaleType</span>                     | `string`              |
-| <span id="getter-autoscaletype">autoscaleType</span>             | `string`              |
-| <span id="getter-numstddev">numStdDev</span>                     | `number`              |
-| <span id="getter-numquantile">numQuantile</span>                 | `number`              |
-| <span id="getter-scatterpointsize">scatterPointSize</span>       | `number`              |
-| <span id="getter-linewidth">lineWidth</span>                     | `number`              |
-| <span id="getter-summaryscoremode">summaryScoreMode</span>       | `string`              |
-| <span id="getter-renderingtype">renderingType</span>             | `string`              |
-| <span id="getter-minscore">minScore</span>                       | `number`              |
-| <span id="getter-maxscore">maxScore</span>                       | `number`              |
-| <span id="getter-minscorebound">minScoreBound</span>             | `number \| undefined` |
-| <span id="getter-maxscorebound">maxScoreBound</span>             | `number \| undefined` |
-| <span id="getter-hasresolution">hasResolution</span>             | `boolean`             |
+| Member                                                     | Type                  |
+| ---------------------------------------------------------- | --------------------- |
+| <span id="getter-poscolor">posColor</span>                 | `string`              |
+| <span id="getter-negcolor">negColor</span>                 | `string`              |
+| <span id="getter-bicolorpivot">bicolorPivot</span>         | `number`              |
+| <span id="getter-scaletype">scaleType</span>               | `string`              |
+| <span id="getter-autoscaletype">autoscaleType</span>       | `string`              |
+| <span id="getter-numstddev">numStdDev</span>               | `number`              |
+| <span id="getter-numquantile">numQuantile</span>           | `number`              |
+| <span id="getter-scatterpointsize">scatterPointSize</span> | `number`              |
+| <span id="getter-linewidth">lineWidth</span>               | `number`              |
+| <span id="getter-summaryscoremode">summaryScoreMode</span> | `string`              |
+| <span id="getter-renderingtype">renderingType</span>       | `string`              |
+| <span id="getter-minscore">minScore</span>                 | `number`              |
+| <span id="getter-maxscore">maxScore</span>                 | `number`              |
+| <span id="getter-minscorebound">minScoreBound</span>       | `number \| undefined` |
+| <span id="getter-maxscorebound">maxScoreBound</span>       | `number \| undefined` |
+| <span id="getter-hasresolution">hasResolution</span>       | `boolean`             |
 
 </details>
 

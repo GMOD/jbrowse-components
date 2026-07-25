@@ -1,9 +1,7 @@
-import { YScaleBar } from '@jbrowse/wiggle-core'
-
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
-import ScoreLegend from '../shared/ScoreLegend.tsx'
 import { renderWiggleFamilySvg } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import WiggleSvgScale from './WiggleSvgScale.tsx'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -34,22 +32,6 @@ export async function renderSvg(
         state,
       )
     },
-    // density mode draws a top score legend (color encodes score); otherwise the
-    // left y-axis. Both appear only once a real domain / ticks exist.
-    legend: ({ scalebarLeft, canvasWidth, ticks }) =>
-      model.isDensityMode ? (
-        model.domain ? (
-          <ScoreLegend
-            domain={model.domain}
-            dataRange={model.dataRange}
-            scaleType={model.scaleType}
-            canvasWidth={canvasWidth}
-          />
-        ) : null
-      ) : ticks ? (
-        <g transform={`translate(${scalebarLeft})`}>
-          <YScaleBar ticks={ticks} orientation="left" />
-        </g>
-      ) : null,
+    legend: info => <WiggleSvgScale model={model} {...info} />,
   })
 }

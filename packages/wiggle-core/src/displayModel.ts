@@ -31,5 +31,4 @@ export interface WiggleGpuDisplayModel<
   raiseForceLoadLimits: (s?: RegionByteEstimate) => void
   forceLoad: () => void
   displayCrossHatches: boolean
-  scalebarOverlapLeft: number
 }

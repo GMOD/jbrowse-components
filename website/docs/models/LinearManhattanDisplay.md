@@ -144,7 +144,6 @@ the genome, with a feature widget on click.
 | [resolution](#property-resolution)                                     | Properties | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [displayCrossHatches](#property-displaycrosshatches)                   | Properties | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [loadedBpPerPx](#volatile-loadedbpperpx)                               | Volatiles  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
-| [scalebarOverlapLeft](#getter-scalebaroverlapleft)                     | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [posColor](#getter-poscolor)                                           | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [negColor](#getter-negcolor)                                           | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [bicolorPivot](#getter-bicolorpivot)                                   | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
@@ -1386,25 +1385,24 @@ type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 
 **Getters**
 
-| Member                                                           | Type                  |
-| ---------------------------------------------------------------- | --------------------- |
-| <span id="getter-scalebaroverlapleft">scalebarOverlapLeft</span> | `number`              |
-| <span id="getter-poscolor">posColor</span>                       | `string`              |
-| <span id="getter-negcolor">negColor</span>                       | `string`              |
-| <span id="getter-bicolorpivot">bicolorPivot</span>               | `number`              |
-| <span id="getter-scaletype">scaleType</span>                     | `string`              |
-| <span id="getter-autoscaletype">autoscaleType</span>             | `string`              |
-| <span id="getter-numstddev">numStdDev</span>                     | `number`              |
-| <span id="getter-numquantile">numQuantile</span>                 | `number`              |
-| <span id="getter-scatterpointsize">scatterPointSize</span>       | `number`              |
-| <span id="getter-linewidth">lineWidth</span>                     | `number`              |
-| <span id="getter-summaryscoremode">summaryScoreMode</span>       | `string`              |
-| <span id="getter-renderingtype">renderingType</span>             | `string`              |
-| <span id="getter-minscore">minScore</span>                       | `number`              |
-| <span id="getter-maxscore">maxScore</span>                       | `number`              |
-| <span id="getter-minscorebound">minScoreBound</span>             | `number \| undefined` |
-| <span id="getter-maxscorebound">maxScoreBound</span>             | `number \| undefined` |
-| <span id="getter-hasresolution">hasResolution</span>             | `boolean`             |
+| Member                                                     | Type                  |
+| ---------------------------------------------------------- | --------------------- |
+| <span id="getter-poscolor">posColor</span>                 | `string`              |
+| <span id="getter-negcolor">negColor</span>                 | `string`              |
+| <span id="getter-bicolorpivot">bicolorPivot</span>         | `number`              |
+| <span id="getter-scaletype">scaleType</span>               | `string`              |
+| <span id="getter-autoscaletype">autoscaleType</span>       | `string`              |
+| <span id="getter-numstddev">numStdDev</span>               | `number`              |
+| <span id="getter-numquantile">numQuantile</span>           | `number`              |
+| <span id="getter-scatterpointsize">scatterPointSize</span> | `number`              |
+| <span id="getter-linewidth">lineWidth</span>               | `number`              |
+| <span id="getter-summaryscoremode">summaryScoreMode</span> | `string`              |
+| <span id="getter-renderingtype">renderingType</span>       | `string`              |
+| <span id="getter-minscore">minScore</span>                 | `number`              |
+| <span id="getter-maxscore">maxScore</span>                 | `number`              |
+| <span id="getter-minscorebound">minScoreBound</span>       | `number \| undefined` |
+| <span id="getter-maxscorebound">maxScoreBound</span>       | `number \| undefined` |
+| <span id="getter-hasresolution">hasResolution</span>       | `boolean`             |
 
 **Actions**
 

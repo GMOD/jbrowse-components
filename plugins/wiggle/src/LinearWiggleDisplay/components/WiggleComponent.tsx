@@ -16,6 +16,7 @@ import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
 import {
   findSourceHit,
   hitTestMouse,
+  legendRightEdgePx,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
@@ -73,6 +74,9 @@ const WiggleComponent = observer(function WiggleComponent({
           model={model}
           canvasRef={canvasRef}
           width={width}
+          // Pin the right-aligned score legend to the content's right edge, not
+          // the full track width (see legendRightEdgePx).
+          legendWidth={legendRightEdgePx(view.visibleRegions, width)}
           height={height}
           clientMouseCoord={clientMouseCoord}
           offsetMouseCoord={offsetMouseCoord}
@@ -86,6 +90,7 @@ const WiggleBody = observer(function WiggleBody({
   model,
   canvasRef,
   width,
+  legendWidth,
   height,
   clientMouseCoord,
   offsetMouseCoord,
@@ -93,11 +98,11 @@ const WiggleBody = observer(function WiggleBody({
   model: WiggleDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   width: number
+  legendWidth: number
   height: number
   clientMouseCoord: [number, number]
   offsetMouseCoord: [number, number]
 }) {
-  const scalebarLeft = model.scalebarOverlapLeft
   return (
     <>
       <canvas
@@ -125,15 +130,11 @@ const WiggleBody = observer(function WiggleBody({
             domain={model.domain}
             dataRange={model.dataRange}
             scaleType={model.scaleType}
-            canvasWidth={width}
+            canvasWidth={legendWidth}
           />
         </svg>
       ) : model.ticks ? (
-        <YScaleBarOverlay
-          ticks={model.ticks}
-          height={height}
-          scalebarLeft={scalebarLeft}
-        />
+        <YScaleBarOverlay ticks={model.ticks} height={height} />
       ) : null}
       {model.displayCrossHatches && model.ticks ? (
         <CrossHatches ticks={model.ticks} width={width} height={height} />

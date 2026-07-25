@@ -40,7 +40,7 @@ export async function renderSvg(
     },
     // left y-axis (Manhattan is always linear, never density) plus the r² key
     // when LD coloring is active
-    legend: ({ scalebarLeft, canvasWidth, ticks }) => (
+    legend: ({ scalebarLeft, legendRight, ticks }) => (
       <>
         {ticks ? (
           <g transform={`translate(${scalebarLeft})`}>
@@ -48,7 +48,7 @@ export async function renderSvg(
           </g>
         ) : null}
         {model.ldColoringActive && model.showLdLegend ? (
-          <SvgLdLegend width={canvasWidth} />
+          <SvgLdLegend width={legendRight} />
         ) : null}
       </>
     ),

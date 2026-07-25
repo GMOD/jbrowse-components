@@ -1,26 +1,25 @@
+import { ONSCREEN_AXIS_LEFT_PX } from './constants.ts'
 import YScaleBar from './YScaleBar.tsx'
 
 import type { YScaleTicks } from './index.ts'
 
-// Y-axis tick labels positioned absolutely. `scalebarLeft` tracks the left
-// edge of visible track content (non-zero only when track labels overlap or
-// the view is scrolled before the genome start); falls back to 50px when 0
-// so the labels stay readable in the default layout.
+// Y-axis tick labels positioned absolutely, indented from the track's left edge
+// so a right-oriented axis reads inside the plot. The SVG export instead anchors
+// a left-oriented axis at the content edge, putting the labels in the export
+// margin — see renderWiggleFamilySvg.
 export default function YScaleBarOverlay({
   ticks,
   height,
-  scalebarLeft,
 }: {
   ticks: YScaleTicks
   height: number
-  scalebarLeft: number
 }) {
   return (
     <svg
       style={{
         position: 'absolute',
         top: 0,
-        left: scalebarLeft || 50,
+        left: ONSCREEN_AXIS_LEFT_PX,
         pointerEvents: 'none',
         height,
         width: 70,

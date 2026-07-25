@@ -12,6 +12,7 @@ import { SvgTreePath } from '@jbrowse/tree-sidebar'
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import { legendRightEdgePx } from '../shared/wiggleComponentUtils.ts'
 import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 
@@ -30,7 +31,7 @@ export async function renderSvg(
 ): Promise<React.ReactNode> {
   await awaitSvgReady(model)
   const view = getContainingView(model) as LGV
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}
@@ -59,9 +60,11 @@ function MultiWiggleSvgBody({
   height: number
   opts: ExportSvgDisplayOptions | undefined
 }) {
-  const { offsetPx } = view
-  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
-  const scalebarLeft = Math.max(-offsetPx, 0)
+  // anchors scale bars to left edge of content; non-zero only when scrolled
+  // before genome start. Left-oriented, so the labels grow into the export
+  // margin rather than over the plot (the on-screen axis instead indents by
+  // ONSCREEN_AXIS_LEFT_PX and grows rightward).
+  const scalebarLeft = Math.max(-view.offsetPx, 0)
   const { rpcDataMap, renderState } = model
 
   // No data-size gate: renderState is always defined (a [0,1] stub until
@@ -79,6 +82,10 @@ function MultiWiggleSvgBody({
   // clipped to view.width below), matching the on-screen canvas rather than the
   // full-genome totalWidthPx
   const canvasWidth = view.width
+  // right-aligned legends pin to the content's right edge, not the viewport's:
+  // at whole-genome zoom the regions can end before it, and a legend parked out
+  // in the empty gutter reads as detached from the plot (same rule as on screen)
+  const legendRight = legendRightEdgePx(view.visibleRegions, canvasWidth)
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = {
     ...renderState,
@@ -90,7 +97,7 @@ function MultiWiggleSvgBody({
     <>
       <SvgClipRect
         id={`wiggle-clip-${model.id}`}
-        width={view.width}
+        width={canvasWidth}
         height={height}
       >
         <PaintLayer
@@ -112,22 +119,23 @@ function MultiWiggleSvgBody({
       </SvgClipRect>
       {/* Row separators and Y-scale cross-hatches, shared with the on-screen
           path so an exported SVG matches the track when either is enabled. */}
-      <MultiWiggleOverlayLines model={model} width={view.width} />
+      <MultiWiggleOverlayLines model={model} width={canvasWidth} />
       <MultiWiggleSvgScales
         model={model}
-        canvasWidth={view.width}
+        legendRight={legendRight}
         scalebarLeft={scalebarLeft}
         labelOffset={treeShowing ? treeAreaWidth : 0}
       />
-      {/* Overlay-mode color legend, drawn inline here (no inter-region masks in
-          the flat export SVG). On screen this same legend is the hoisted
-          MultiWiggleLegendOverlay instead, whose `showLegend` guard is mirrored
-          here so a dismissed legend stays out of the export. */}
-      {model.isOverlay && model.sources.length > 1 && model.showLegend ? (
+      {/* Overlay-mode color legend, drawn inline here. On screen this same
+          legend is the hoisted MultiWiggleLegendOverlay instead (lifted above
+          the inter-region masks, which the flat export SVG doesn't have), whose
+          `showLegend` guard is mirrored here so a dismissed legend stays out of
+          the export. */}
+      {model.isOverlay && model.numSources > 1 && model.showLegend ? (
         <OverlayColorLegend
           sources={model.sources}
           fallbackColor={model.posColor}
-          canvasWidth={view.width}
+          canvasWidth={legendRight}
           maxHeight={height}
         />
       ) : null}

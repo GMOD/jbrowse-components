@@ -3,7 +3,6 @@ import {
   getContainingTrack,
   getContainingView,
   getEnv,
-  measureText,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -24,9 +23,6 @@ const confNode = (self: object) => self as ConfNode
 const setConf = (self: object, slot: string, val: unknown) => {
   confNode(self).configuration.setSlot(slot, val)
 }
-// `prefersOffset` is the optional per-display convention (BaseLinearDisplay)
-// signalling the track label is drawn above the plot, not overlapping it.
-const offsetNode = (self: object) => self as { prefersOffset?: boolean }
 
 /**
  * #stateModel WiggleScoreConfigMixin
@@ -56,23 +52,6 @@ export function WiggleScoreConfigMixin() {
       loadedBpPerPx: undefined as number | undefined,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get scalebarOverlapLeft() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        // `prefersOffset` displays move the label above the plot, so the axis
-        // no longer overlaps it and needn't dodge right (matches the label
-        // placement in TrackContainer).
-        if (
-          view.effectiveTrackLabels === 'overlapping' &&
-          !offsetNode(self).prefersOffset
-        ) {
-          const track = getContainingTrack(self)
-          return measureText(getConf(track, 'name'), 12.8) + 100
-        }
-        return 0
-      },
       /**
        * #getter
        */

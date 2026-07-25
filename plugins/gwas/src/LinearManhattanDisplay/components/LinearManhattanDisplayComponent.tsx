@@ -125,7 +125,6 @@ const ManhattanBody = observer(function ManhattanBody({
 }) {
   const { ticks, featureUnderMouse, displayCrossHatches, ldColoringActive } =
     model
-  const scalebarLeft = model.scalebarOverlapLeft
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
 
   return (
@@ -140,13 +139,7 @@ const ManhattanBody = observer(function ManhattanBody({
           top: YSCALEBAR_LABEL_OFFSET,
         }}
       />
-      {ticks ? (
-        <YScaleBarOverlay
-          ticks={ticks}
-          height={height}
-          scalebarLeft={scalebarLeft}
-        />
-      ) : null}
+      {ticks ? <YScaleBarOverlay ticks={ticks} height={height} /> : null}
       {displayCrossHatches && ticks ? (
         <CrossHatches ticks={ticks} width={width} height={height} />
       ) : null}

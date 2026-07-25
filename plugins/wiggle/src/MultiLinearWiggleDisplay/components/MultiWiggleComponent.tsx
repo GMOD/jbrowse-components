@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
+import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
@@ -94,7 +95,6 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   clientMouseCoord: [number, number]
   offsetMouseCoord: [number, number]
 }) {
-  const scalebarLeft = model.scalebarOverlapLeft
   const treeShowing = model.showTree && !!model.hierarchy
   const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
@@ -131,8 +131,8 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       >
         <MultiWiggleSvgScales
           model={model}
-          canvasWidth={legendWidth}
-          scalebarLeft={Math.max(scalebarLeft, 50)}
+          legendRight={legendWidth}
+          scalebarLeft={ONSCREEN_AXIS_LEFT_PX}
           labelOffset={labelOffset}
         />
 
