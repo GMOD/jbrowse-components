@@ -1,6 +1,6 @@
 import { setAbgrFill } from '@jbrowse/core/util/colorBits'
 import {
-  clipBlockForCanvas,
+  forEachClippedBlock,
   makeBpMapper,
   spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
@@ -38,52 +38,46 @@ export function drawMultiRowBlocks(
   const h = rowHeight * rowProportion
   const offset = (rowHeight - h) / 2
 
-  for (const renderBlock of renderBlocks) {
-    const regionData = regions.get(renderBlock.displayedRegionIndex)
-    if (regionData) {
-      const clip = clipBlockForCanvas(renderBlock, canvasWidth)
-      if (clip) {
-        const bpToPx = makeBpMapper(renderBlock)
-        const {
-          featureStarts,
-          featureEnds,
-          featureColors,
-          partitionValues,
-          featurePartitionIndex,
-        } = regionData
-        const rowForLocal = resolveLocalRowIndices(
-          partitionValues,
-          rowIndexByValue,
-        )
+  forEachClippedBlock(
+    ctx,
+    renderBlocks,
+    canvasWidth,
+    canvasHeight,
+    block => regions.get(block.displayedRegionIndex),
+    (regionData, renderBlock) => {
+      const bpToPx = makeBpMapper(renderBlock)
+      const {
+        featureStarts,
+        featureEnds,
+        featureColors,
+        partitionValues,
+        featurePartitionIndex,
+      } = regionData
+      const rowForLocal = resolveLocalRowIndices(
+        partitionValues,
+        rowIndexByValue,
+      )
 
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-        ctx.clip()
-
-        for (let i = 0; i < featureStarts.length; i++) {
-          const rowIndex = rowForLocal[featurePartitionIndex[i]!]
-          if (
-            rowIndex !== undefined &&
-            !isFeatureColorHidden(
-              rowIndex,
-              featureColors[i]!,
-              hiddenColors,
-              rowColorsByIndex,
-            )
-          ) {
-            const xa = bpToPx(featureStarts[i]!)
-            const xb = bpToPx(featureEnds[i]!)
-            const width = Math.max(1, Math.abs(xb - xa))
-            const left = spanLeft(xa, xb, width)
-            const top = offset + rowHeight * rowIndex
-            setAbgrFill(ctx, rowColorsByIndex?.[rowIndex] ?? featureColors[i]!)
-            ctx.fillRect(left, top, width, h)
-          }
+      for (let i = 0; i < featureStarts.length; i++) {
+        const rowIndex = rowForLocal[featurePartitionIndex[i]!]
+        if (
+          rowIndex !== undefined &&
+          !isFeatureColorHidden(
+            rowIndex,
+            featureColors[i]!,
+            hiddenColors,
+            rowColorsByIndex,
+          )
+        ) {
+          const xa = bpToPx(featureStarts[i]!)
+          const xb = bpToPx(featureEnds[i]!)
+          const width = Math.max(1, Math.abs(xb - xa))
+          const left = spanLeft(xa, xb, width)
+          const top = offset + rowHeight * rowIndex
+          setAbgrFill(ctx, rowColorsByIndex?.[rowIndex] ?? featureColors[i]!)
+          ctx.fillRect(left, top, width, h)
         }
-
-        ctx.restore()
       }
-    }
-  }
+    },
+  )
 }

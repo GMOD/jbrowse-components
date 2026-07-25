@@ -1,5 +1,5 @@
 import {
-  clipBlockForCanvas,
+  forEachClippedBlock,
   makeCellLeftMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
@@ -39,38 +39,30 @@ export function drawMafBlocks(
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
 
-  for (const renderBlock of renderBlocks) {
-    const regionData = regions.get(renderBlock.displayedRegionIndex)
-    if (!regionData) {
-      continue
-    }
-    const clip = clipBlockForCanvas(renderBlock, canvasWidth)
-    if (!clip) {
-      continue
-    }
-    const scale = clip.fullBlockWidth / clip.bpLength
-    const bpToCellLeftPx = makeCellLeftMapper(renderBlock)
-    const renderingContext = { ctx, scale, h, cellColorConfig, bpToCellLeftPx }
+  forEachClippedBlock(
+    ctx,
+    renderBlocks,
+    canvasWidth,
+    canvasHeight,
+    block => regions.get(block.displayedRegionIndex),
+    (regionData, renderBlock, clip) => {
+      const scale = clip.fullBlockWidth / clip.bpLength
+      const bpToCellLeftPx = makeCellLeftMapper(renderBlock)
+      const renderingContext = { ctx, scale, h, cellColorConfig, bpToCellLeftPx }
 
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-    ctx.clip()
-
-    for (const mafBlock of regionData.blocks) {
-      const { refSeqBytes, startBp: blockStartBp } = mafBlock
-      for (const row of mafBlock.rows) {
-        const rowTop = offset + rowHeight * row.rowIndex
-        renderBases(
-          renderingContext,
-          row.alignmentBytes,
-          refSeqBytes,
-          blockStartBp,
-          rowTop,
-        )
+      for (const mafBlock of regionData.blocks) {
+        const { refSeqBytes, startBp: blockStartBp } = mafBlock
+        for (const row of mafBlock.rows) {
+          const rowTop = offset + rowHeight * row.rowIndex
+          renderBases(
+            renderingContext,
+            row.alignmentBytes,
+            refSeqBytes,
+            blockStartBp,
+            rowTop,
+          )
+        }
       }
-    }
-
-    ctx.restore()
-  }
+    },
+  )
 }

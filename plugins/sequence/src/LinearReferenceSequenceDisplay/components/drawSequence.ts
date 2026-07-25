@@ -2,7 +2,7 @@ import { complement, revcom } from '@jbrowse/core/util'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
   bpToScreenPx,
-  clipBlockForCanvas,
+  forEachClippedBlock,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
@@ -256,71 +256,63 @@ export function drawSequenceBlocks(
   const reverseFrames: Frame[] =
     showTranslation && showReverse ? [-1, -2, -3] : []
 
-  for (const block of blocks) {
-    const data = sequenceData.get(block.displayedRegionIndex)
-    if (!data) {
-      continue
-    }
-    const clip = clipBlockForCanvas(block, canvasWidth)
-    if (!clip) {
-      continue
-    }
-    const { reversed } = block
-    const [topFrames, bottomFrames] = reversed
-      ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
-      : [forwardFrames, reverseFrames]
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    canvasHeight,
+    block => sequenceData.get(block.displayedRegionIndex),
+    (data, block) => {
+      const { reversed } = block
+      const [topFrames, bottomFrames] = reversed
+        ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
+        : [forwardFrames, reverseFrames]
 
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-    ctx.clip()
+      let currentY = 0
+      const common = {
+        ctx,
+        block,
+        seqStart: data.start,
+        rowHeight,
+        showBorders,
+        palette,
+        textColors,
+        codonTable: getGeneticCode(data.geneticCodeId).codonTable,
+      }
 
-    let currentY = 0
-    const common = {
-      ctx,
-      block,
-      seqStart: data.start,
-      rowHeight,
-      showBorders,
-      palette,
-      textColors,
-      codonTable: getGeneticCode(data.geneticCodeId).codonTable,
-    }
+      for (const frame of topFrames) {
+        drawTranslationRow({
+          ...common,
+          seq: data.seq,
+          frame,
+          y: currentY,
+          reversed,
+        })
+        currentY += rowHeight
+      }
 
-    for (const frame of topFrames) {
-      drawTranslationRow({
-        ...common,
-        seq: data.seq,
-        frame,
-        y: currentY,
-        reversed,
-      })
-      currentY += rowHeight
-    }
+      if (showForward) {
+        const fwdSeq = reversed ? complement(data.seq) : data.seq
+        drawBaseRow({ ...common, seq: fwdSeq, y: currentY, isDna })
+        currentY += rowHeight
+      }
 
-    if (showForward) {
-      const fwdSeq = reversed ? complement(data.seq) : data.seq
-      drawBaseRow({ ...common, seq: fwdSeq, y: currentY, isDna })
-      currentY += rowHeight
-    }
+      if (showReverse) {
+        const revSeq = reversed ? data.seq : complement(data.seq)
+        drawBaseRow({ ...common, seq: revSeq, y: currentY, isDna })
+        currentY += rowHeight
+      }
 
-    if (showReverse) {
-      const revSeq = reversed ? data.seq : complement(data.seq)
-      drawBaseRow({ ...common, seq: revSeq, y: currentY, isDna })
-      currentY += rowHeight
-    }
-
-    for (const frame of bottomFrames) {
-      drawTranslationRow({
-        ...common,
-        seq: data.seq,
-        frame,
-        y: currentY,
-        reversed: !reversed,
-      })
-      currentY += rowHeight
-    }
-
-    ctx.restore()
-  }
+      for (const frame of bottomFrames) {
+        drawTranslationRow({
+          ...common,
+          seq: data.seq,
+          frame,
+          y: currentY,
+          reversed: !reversed,
+        })
+        currentY += rowHeight
+      }
+    },
+  )
 }
