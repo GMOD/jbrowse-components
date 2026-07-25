@@ -44,6 +44,7 @@ export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
 export { continuousRampConfig } from './colorRamps.ts'
 export type { Rgb } from './colorRamps.ts'
 export { ColorByLegend } from './ColorByLegend.tsx'
+export { SVGColorByLegend } from './SVGColorByLegend.tsx'
 export {
   CIGAR_OP_D,
   CIGAR_OP_I,

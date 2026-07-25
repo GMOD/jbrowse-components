@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 
@@ -15,21 +13,25 @@ export default function SVGSyntenyLevel({
   levelHeight,
   trackLabelOffset,
   rendering,
+  legend,
 }: {
   clipId: string
   width: number
   levelHeight: number
   trackLabelOffset: number
-  rendering: ReactNode[]
+  rendering: { key: string; node: ReactNode }[]
+  // the color-by key, floated over the band as it is on screen. Outside the
+  // clip so a legend taller than a short level isn't cropped.
+  legend?: ReactNode
 }) {
   return (
     <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
       <SvgClipRect id={clipId} width={width} height={levelHeight}>
-        {rendering.map((r, j) => (
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed-order rendering list, never reordered
-          <Fragment key={j}>{r}</Fragment>
+        {rendering.map(({ key, node }) => (
+          <g key={key}>{node}</g>
         ))}
       </SvgClipRect>
+      {legend}
     </g>
   )
 }

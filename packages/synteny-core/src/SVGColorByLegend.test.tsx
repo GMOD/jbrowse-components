@@ -3,7 +3,10 @@ import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import { SVGColorByLegend } from './SVGColorByLegend.tsx'
+import { CIGAR_OP_I } from './colorLegend.ts'
 
+// dotplot flavor (flat points, no CIGAR ops); the ribbon flavor is exercised
+// separately below
 function renderLegend(
   colorBy: Parameters<typeof SVGColorByLegend>[0]['colorBy'],
   alpha?: number,
@@ -11,7 +14,12 @@ function renderLegend(
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
-        <SVGColorByLegend colorBy={colorBy} viewWidth={800} alpha={alpha} />
+        <SVGColorByLegend
+          colorBy={colorBy}
+          viewWidth={800}
+          alpha={alpha}
+          pointBased
+        />
       </svg>
     </ThemeProvider>,
   )
@@ -48,6 +56,24 @@ test('chips are unblended at full alpha', () => {
   const { container } = renderLegend('strand')
   expect(container.querySelector('rect[fill="#ff0000"]')).toBeTruthy()
   expect(container.querySelector('rect[fill="#0000ff"]')).toBeTruthy()
+})
+
+// the ribbon (synteny) flavor lists the indel ops actually painted, exactly as
+// the on-screen ColorByLegend does
+test('ribbon mode lists the CIGAR indel chips it is handed', () => {
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <svg>
+        <SVGColorByLegend
+          colorBy="strand"
+          viewWidth={800}
+          cigarOps={CIGAR_OP_I}
+        />
+      </svg>
+    </ThemeProvider>,
+  )
+  expect(container.textContent).toContain('insertion')
+  expect(container.textContent).not.toContain('deletion')
 })
 
 test('categorical mode falls back to the per-sequence note', () => {

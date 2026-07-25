@@ -134,6 +134,12 @@ function baseSvgOpts(opts: Opts) {
   }
 }
 
+// Rasterized layers draw into a real node-canvas rather than whatever jsdom
+// hands back from document.createElement, so PNG-embedded layers (alignments,
+// wiggle, synteny ribbons) come out drawn instead of blank.
+const nodeCanvas = (w: number, h: number) =>
+  createCanvas(w, h) as unknown as HTMLCanvasElement
+
 // Errors reported through the session that must be fatal in the headless tool
 // rather than producing a blank render. Two sources:
 //  - session.notifyError (bad track config, navigation failure, a comparative
@@ -312,8 +318,7 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
 
   const svg = await renderLinearToSvg(view, {
     ...baseSvgOpts(opts),
-    createCanvas: (w: number, h: number) =>
-      createCanvas(w, h) as unknown as HTMLCanvasElement,
+    createCanvas: nodeCanvas,
     showGridlines,
     trackLabels,
   })
@@ -423,6 +428,7 @@ const renderSynteny: ModeRenderer = async ctx => {
   )
   const svg = await renderSyntenyToSvg(view, {
     ...baseSvgOpts(ctx.opts),
+    createCanvas: nodeCanvas,
     trackLabels: ctx.opts.trackLabels,
     showGridlines: ctx.opts.showGridlines,
   })

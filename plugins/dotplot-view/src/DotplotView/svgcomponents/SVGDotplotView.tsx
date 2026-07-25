@@ -2,11 +2,11 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getEnv, getSession } from '@jbrowse/core/util'
+import { SVGColorByLegend } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
-import { SVGColorByLegend } from './SVGColorByLegend.tsx'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../model.ts'
 
@@ -63,6 +63,7 @@ export async function renderToSvg(
               colorBy={legendColorBy}
               viewWidth={viewWidth}
               alpha={model.alpha}
+              pointBased
             />
           ) : null}
         </g>

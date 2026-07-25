@@ -67,4 +67,7 @@ export interface ExportSvgOptions {
   fontFamily?: string
   trackLabels?: TrackLabelMode
   showGridlines?: boolean
+  // headless canvas factory for `rasterizeLayers` (jbrowse-img passes
+  // node-canvas); without it the raster path needs a DOM canvas
+  createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }

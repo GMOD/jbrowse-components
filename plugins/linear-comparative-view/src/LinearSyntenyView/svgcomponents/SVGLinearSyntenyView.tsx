@@ -5,6 +5,7 @@ import {
   totalHeight,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
+import { SVGColorByLegend, coerceColorBy } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
@@ -14,7 +15,6 @@ import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
-import type { ReactNode } from 'react'
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -53,29 +53,29 @@ export async function renderToSvg(
   // concurrently rather than blocking one behind the other.
   const [displayResults, renderings] = await Promise.all([
     Promise.all(
-      views.map(
-        async (view, i) =>
-          ({
-            view,
-            data: await Promise.all(
-              visibleTracksByView[i]!.map(async track => {
-                const d = track.displays[0]
-                return {
-                  track,
-                  result: await d.renderSvg({ ...opts, theme: themeVar }),
-                }
-              }),
-            ),
-          }) as const,
-      ),
+      views.map(async (view, i) => ({
+        view,
+        data: await Promise.all(
+          visibleTracksByView[i]!.map(async track => {
+            const d = track.displays[0]
+            return {
+              track,
+              result: await d.renderSvg({ ...opts, theme: themeVar }),
+            }
+          }),
+        ),
+      })),
     ),
     Promise.all(
       levels.map(level =>
         Promise.all(
           // linearSyntenyDisplays' getter return type widens to any through the
           // view's Instance type (MST drops getter types), so annotate d.
-          level.linearSyntenyDisplays.map((d: LinearSyntenyDisplayModel) =>
-            renderSyntenyDisplaySvg(d, opts),
+          level.linearSyntenyDisplays.map(
+            async (d: LinearSyntenyDisplayModel) => ({
+              key: d.id,
+              node: await renderSyntenyDisplaySvg(d, opts),
+            }),
           ),
         ),
       ),
@@ -125,6 +125,18 @@ export async function renderToSvg(
                 levelHeight={level.height}
                 trackLabelOffset={trackLabelOffset}
                 rendering={renderings[i]!}
+                // one legend for the whole view, in the topmost ribbon band —
+                // the same placement the on-screen LevelSection uses
+                legend={
+                  i === 0 && model.showColorLegend ? (
+                    <SVGColorByLegend
+                      colorBy={coerceColorBy(model.colorBy)}
+                      viewWidth={width}
+                      alpha={model.alpha}
+                      cigarOps={model.presentCigarKinds}
+                    />
+                  ) : undefined
+                }
               />
             ),
           },
@@ -132,29 +144,27 @@ export async function renderToSvg(
       : [viewRow]
   })
 
-  // stack the rows top to bottom: one fold threads `y` (the running top offset)
-  // through them, producing both the positioned groups and the final height in a
-  // single pass — so the canvas size and the layout share one source of truth.
-  const stacked = rows.reduce<{ y: number; children: ReactNode[] }>(
-    (acc, row) => ({
-      y: acc.y + row.height,
-      children: [
-        ...acc.children,
-        <g key={row.key} transform={`translate(0 ${acc.y})`}>
-          {row.node}
-        </g>,
-      ],
-    }),
-    { y: 0, children: [] },
-  )
+  // stack the rows top to bottom: one running top offset positions each group
+  // and ends as the total content height, so the canvas size and the layout
+  // share one source of truth.
+  let y = 0
+  const children = rows.map(row => {
+    const top = y
+    y += row.height
+    return (
+      <g key={row.key} transform={`translate(0 ${top})`}>
+        {row.node}
+      </g>
+    )
+  })
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
     theme: themeVar,
     width: w,
-    height: stacked.y + exportMargin,
+    height: y + exportMargin,
     fontFamily,
     Wrapper,
-    children: stacked.children,
+    children,
   })
 }

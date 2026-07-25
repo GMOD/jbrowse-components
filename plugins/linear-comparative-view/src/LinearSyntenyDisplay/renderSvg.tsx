@@ -1,11 +1,9 @@
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 
 import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
@@ -14,7 +12,7 @@ export async function renderSvg(
   opts?: PaintLayerOpts,
 ) {
   await awaitSvgReady(model)
-  const view = getContainingView(model) as LinearSyntenyViewModel
+  const { view } = model
   const data = model.renderInstanceData
   const params = model.renderParams
   // PaintLayer dispatches to a 2× raster canvas when opts.rasterizeLayers is

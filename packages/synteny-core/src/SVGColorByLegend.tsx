@@ -4,14 +4,13 @@ import {
   measureText,
   stripAlpha,
 } from '@jbrowse/core/util'
-import {
-  blendOverWhite,
-  colorByShortLabel,
-  getColorBySwatch,
-} from '@jbrowse/synteny-core'
 import { useTheme } from '@mui/material'
 
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
+import { blendOverWhite } from './colorUtils.ts'
+
+import type { CigarOpMask } from './colorLegend.ts'
+import type { SyntenyColorBy } from './colorUtils.ts'
 
 const pad = 6
 const titleSize = 11
@@ -29,15 +28,21 @@ export function SVGColorByLegend({
   colorBy,
   viewWidth,
   alpha = 1,
+  pointBased = false,
+  cigarOps,
 }: {
   colorBy: SyntenyColorBy
   viewWidth: number
-  // the display's point alpha — chips are blended over white by it, matching
-  // what the HTML legend does, so the exported key reads like the exported plot
+  // the display's alpha — chips are blended over white by it, matching what the
+  // HTML legend does, so the exported key reads like the exported plot
   alpha?: number
+  // dotplot draws flat points, never CIGAR ops
+  pointBased?: boolean
+  // bitmask of indel ops actually drawn, as the ribbon legend passes on screen
+  cigarOps?: CigarOpMask
 }) {
   const theme = useTheme()
-  const swatch = getColorBySwatch(colorBy, { pointBased: true })
+  const swatch = getColorBySwatch(colorBy, { pointBased, cigarOps })
   const title = colorByShortLabel[colorBy]
   const text = stripAlpha(theme.palette.text.primary)
   const gradientId = `colorby-ramp-${colorBy}`

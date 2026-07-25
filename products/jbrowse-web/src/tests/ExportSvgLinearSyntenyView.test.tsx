@@ -18,6 +18,9 @@ setup()
 beforeEach(() => {
   jest.clearAllMocks()
   doBeforeEach()
+  // the export dialog persists its checkboxes in localStorage, so without this
+  // the gridlines test's toggle leaks into whatever test runs after it
+  localStorage.clear()
 })
 
 const delay = { timeout: 40000 }
@@ -196,5 +199,36 @@ test('export svg of synteny with gridlines', async () => {
         fireEvent.click(await findByText('Show gridlines', ...opts))
       },
     })
+  })
+}, 45000)
+
+// the floating color-by key is a menu-driven setting, so an export taken with
+// it on has to carry it — otherwise the figure has no key to its ribbon colors
+test('export svg of synteny bakes in the color-by legend', async () => {
+  await mockConsoleWarn(async () => {
+    const { findByTestId, findAllByText, findByText } = await createView({
+      ...volvoxConfig,
+      defaultSession: {
+        ...syntenySession,
+        views: [
+          {
+            ...syntenySession.views[0],
+            colorBy: 'strand',
+            showColorLegend: true,
+          },
+        ],
+      },
+    })
+
+    const svg = await exportAndVerifySvg({
+      findByTestId,
+      findAllByText,
+      findByText,
+      filename: 'synteny_color_legend',
+      delay,
+    })
+    expect(svg).toContain('Strand')
+    expect(svg).toContain('forward')
+    expect(svg).toContain('reverse')
   })
 }, 45000)
