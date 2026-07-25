@@ -6,26 +6,45 @@ import type {
 } from '../RenderHicDataRPC/types.ts'
 
 /**
- * Grid-cell key for the hover index: `${r1}|${r2}|${bin1}|${bin2}`. Built on the
- * main thread only — the worker ships compact per-contact typed arrays instead
- * of a string-keyed Record, so this key format never crosses the worker
- * boundary.
+ * Scatter a grid cell across the table. Deliberately NOT injective: `probe`
+ * re-compares all four coordinate arrays, so a collision only costs a step. That
+ * is what makes this safe where packing the tuple into one number is not — bins
+ * are absolute chromosome indices (~10^6 at fine binsizes), so a `bin1 * K +
+ * bin2` key needs ~2^52 and stops being an exact integer.
  */
-function contactLookupKey(r1: number, r2: number, bin1: number, bin2: number) {
-  return `${r1}|${r2}|${bin1}|${bin2}`
+function hashCell(r1: number, r2: number, bin1: number, bin2: number) {
+  return (
+    Math.imul(bin1, 0x9e3779b1) ^
+    Math.imul(bin2, 0x85ebca6b) ^
+    Math.imul(r1 * 256 + r2, 0xc2b2ae35)
+  )
 }
 
-// Cell → contact-index map, rebuilt lazily from the worker's per-contact arrays
-// and memoized against the result object. A WeakMap releases the map as soon as
-// a new fetch replaces `rpcData`, and skips the build entirely when the user
-// never hovers.
-const lookupCache = new WeakMap<HicDataResult, Map<string, number>>()
+/**
+ * Open-addressed cell → contact-index table over a single `Uint32Array`. Slots
+ * hold `contactIndex + 1`, so 0 reads as empty.
+ *
+ * This replaced a `Map<string, number>` keyed by `${r1}|${r2}|${bin1}|${bin2}`.
+ * That allocated one string per contact, and contact counts are large — the
+ * auto binsize targets ~0.5 bins per screen pixel, so a full-width triangle is
+ * ~(width/2)^2/2 ≈ 300k contacts, and each step of `resolutionBias` toward finer
+ * multiplies that by ~4 (two steps ≈ 4.5M). Measured build cost for the string
+ * map was ~515ms at 300k and ~8.7s at 4.5M, paid as a freeze on the first mouse
+ * move over the track; the typed table is ~25x faster (~20ms / ~350ms) and uses
+ * less memory (one 1.5x-sized Uint32Array vs a Map of N strings).
+ */
+interface ContactTable {
+  slots: Uint32Array
+  mask: number
+}
 
-function getContactLookup(data: HicDataResult) {
-  const cached = lookupCache.get(data)
-  if (cached) {
-    return cached
-  }
+// 1.5x capacity, rounded up to a power of two so `& mask` replaces a modulo.
+// Measured no faster at 2x, and this halves the allocation.
+//
+// Capacity strictly greater than `numContacts` is what terminates both loops
+// below: at least one slot is always empty, so a full-table walk can't spin. It
+// holds for an empty result too (capacity floors at 1).
+function buildContactTable(data: HicDataResult): ContactTable {
   const {
     numContacts,
     contactBin1,
@@ -33,20 +52,69 @@ function getContactLookup(data: HicDataResult) {
     contactRegion1,
     contactRegion2,
   } = data
-  const map = new Map<string, number>()
+  let capacity = 1
+  while (capacity < numContacts * 1.5) {
+    capacity *= 2
+  }
+  const slots = new Uint32Array(capacity)
+  const mask = capacity - 1
   for (let i = 0; i < numContacts; i++) {
-    map.set(
-      contactLookupKey(
+    let h =
+      hashCell(
         contactRegion1[i]!,
         contactRegion2[i]!,
         contactBin1[i]!,
         contactBin2[i]!,
-      ),
-      i,
-    )
+      ) & mask
+    while (slots[h] !== 0) {
+      h = (h + 1) & mask
+    }
+    slots[h] = i + 1
   }
-  lookupCache.set(data, map)
-  return map
+  return { slots, mask }
+}
+
+// Built lazily from the worker's per-contact arrays and memoized against the
+// result object. A WeakMap releases the table as soon as a new fetch replaces
+// `rpcData`, and skips the build entirely when the user never hovers — which is
+// also why the table stays on the main thread rather than riding along with
+// every RPC payload.
+const lookupCache = new WeakMap<HicDataResult, ContactTable>()
+
+function getContactTable(data: HicDataResult) {
+  let table = lookupCache.get(data)
+  if (!table) {
+    table = buildContactTable(data)
+    lookupCache.set(data, table)
+  }
+  return table
+}
+
+function probe(
+  data: HicDataResult,
+  r1: number,
+  r2: number,
+  bin1: number,
+  bin2: number,
+) {
+  const { slots, mask } = getContactTable(data)
+  const { contactBin1, contactBin2, contactRegion1, contactRegion2 } = data
+  let h = hashCell(r1, r2, bin1, bin2) & mask
+  let slot = slots[h]!
+  while (slot !== 0) {
+    const i = slot - 1
+    if (
+      contactBin1[i] === bin1 &&
+      contactBin2[i] === bin2 &&
+      contactRegion1[i] === r1 &&
+      contactRegion2[i] === r2
+    ) {
+      return i
+    }
+    h = (h + 1) & mask
+    slot = slots[h]!
+  }
+  return undefined
 }
 
 /**
@@ -103,9 +171,7 @@ export function findContactAt(
   // ux ≤ uy below the apex), so only a same-region pair can need the swap.
   const swap = regionX === regionY && binX > binY
   const [bin1, bin2] = swap ? [binY, binX] : [binX, binY]
-  const idx = getContactLookup(data).get(
-    contactLookupKey(regionX, regionY, bin1, bin2),
-  )
+  const idx = probe(data, regionX, regionY, bin1, bin2)
   return idx === undefined
     ? undefined
     : {
