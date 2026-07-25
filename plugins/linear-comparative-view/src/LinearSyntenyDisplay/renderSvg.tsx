@@ -3,18 +3,29 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 
 import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 
-import type { LinearSyntenyDisplayModel } from './model.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
+
+// Exactly what the export reads off LinearSyntenyDisplay — duck-typed, as the
+// other GPU displays' renderSvg models are, so the compiler catches a missing
+// field and a test can drive this without standing up an MST tree. No
+// `regionTooLarge`/`error`: synteny has no too-large state, and the error
+// terminal belongs to the level (see below).
+export interface SyntenySvgModel {
+  svgReady: boolean
+  height: number
+  renderInstanceData: SyntenyInstanceData | undefined
+  renderParams: SyntenyTrackRenderParams | undefined
+  view: { width: number; overdrawPx: number }
+}
 
 // One synteny track's ribbons, drawn into the band its level owns. The terminal
 // states (error) belong to the level, not to this display: every display in a
 // level paints over the same full-height band, so a per-display error box would
 // cover its siblings' ribbons. SVGSyntenyLevel owns that gate, the same way
 // LevelSyntenyCanvas shows one combined banner per level on screen.
-export async function renderSvg(
-  model: LinearSyntenyDisplayModel,
-  opts?: PaintLayerOpts,
-) {
+export async function renderSvg(model: SyntenySvgModel, opts?: PaintLayerOpts) {
   await awaitSvgReady(model)
   const { view } = model
   const data = model.renderInstanceData
