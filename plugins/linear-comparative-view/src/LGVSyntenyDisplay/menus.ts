@@ -14,6 +14,8 @@ interface GroupByModel {
   setGroupBy: (groupBy?: { type: GroupByType }) => void
   collapseGroupRows: boolean
   setCollapseGroupRows: (flag: boolean) => void
+  hideSelfAlignments: boolean
+  setHideSelfAlignments: (flag: boolean) => void
 }
 
 // Synteny grouping is a plain radio group, not the alignments Group-by dialog:
@@ -34,25 +36,30 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
     onNone: () => {
       model.setGroupBy(undefined)
     },
+    collapseRows: {
+      checked: model.collapseGroupRows,
+      onToggle: () => {
+        model.setCollapseGroupRows(!model.collapseGroupRows)
+      },
+    },
   })
-  // Sits under the dimension radios because it modifies them: it is how tall
-  // each group the radios produce is drawn, not a dimension of its own.
+  // Appended after the shared builder's own "One row per group" toggle: this one
+  // is synteny-specific, since only an all-vs-all track has a self lane.
   return {
     ...item,
     subMenu: [
       ...item.subMenu,
-      { type: 'divider' as const },
       checkboxItem(
-        'One row per group',
-        model.collapseGroupRows,
+        'Hide self-alignment lane',
+        model.hideSelfAlignments,
         () => {
-          model.setCollapseGroupRows(!model.collapseGroupRows)
+          model.setHideSelfAlignments(!model.hideSelfAlignments)
         },
         {
           helpText:
-            'Draw each group as a single band, shading overlapping alignments ' +
-            'darker instead of stacking them. Expand one group back to a full ' +
-            'stack from its label.',
+            "Drop the mate-assembly lane for the view's own assembly. An " +
+            "aligner skips each sequence's own diagonal, so that lane holds " +
+            "no self-alignment line — only the assembly's internal repeats.",
         },
       ),
     ] satisfies MenuItem[],

@@ -73,6 +73,17 @@ Group keys are also the identity for the volatile per-group state
 (`collapsedGroups`, `groupMaxHeightOverrides`), which is why `setGroupBy` clears
 both — a key means something different under a new dimension.
 
+### `hiddenGroupKeys`: a lane the fetch produced but the display drops
+
+`hiddenGroupKeys` (empty here; LGVSyntenyDisplay hides an all-vs-all track's
+self-alignment lane) is filtered out of `groupOrder`, so the lane never draws —
+but it must also be filtered out of the **cross-group derivations** that walk
+`rpcDataMap` directly (`coverageStats`, `colorLegendCategories`, the sashimi
+down-strip), or a hidden lane still sizes the axis the visible ones share. Pass
+the set as the last argument to `eachGroup`/`eachGroupData`/`someGroupData`. The
+per-group regroupers keep every lane on purpose — consumers look them up by an
+already-filtered `groupOrder` key.
+
 ### One row per group (`collapseGroupRows`)
 
 A fourth question, orthogonal to the three above: how tall is each group?

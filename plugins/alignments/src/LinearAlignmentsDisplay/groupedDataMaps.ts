@@ -13,22 +13,33 @@ import type { LinkedReadsMode, SashimiArcsMode } from './constants.ts'
 // re-nesting the two loops, so the traversal shape lives in exactly one spot.
 // Yields each group's region index, identity (key/label), and data in worker
 // emit order; ungrouped fetches are the single-group ('') case per region.
+//
+// `hidden` is the display's `hiddenGroupKeys`, so a lane it drops stays out of
+// the derivations shared across the visible lanes (coverage domain, color
+// legend, sashimi strip). Defaults to hiding nothing, which is what the
+// per-group regroupers below want — they're looked up by `groupOrder` key.
 export function* eachGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  hidden: ReadonlySet<string> = NOTHING_HIDDEN,
 ) {
   for (const [displayedRegionIndex, grouped] of rpcDataMap) {
     for (const { key, label, data } of grouped.groups) {
-      yield { displayedRegionIndex, key, label, data }
+      if (!hidden.has(key)) {
+        yield { displayedRegionIndex, key, label, data }
+      }
     }
   }
 }
+
+const NOTHING_HIDDEN: ReadonlySet<string> = new Set()
 
 // Just the per-region data, for scans that don't care about region/group
 // identity (coverage/insert-size maxima, color legend categories).
 export function* eachGroupData(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  hidden?: ReadonlySet<string>,
 ) {
-  for (const { data } of eachGroup(rpcDataMap)) {
+  for (const { data } of eachGroup(rpcDataMap, hidden)) {
     yield data
   }
 }
@@ -38,8 +49,9 @@ export function* eachGroupData(
 export function someGroupData(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   predicate: (data: PileupDataResult) => boolean,
+  hidden?: ReadonlySet<string>,
 ) {
-  for (const data of eachGroupData(rpcDataMap)) {
+  for (const data of eachGroupData(rpcDataMap, hidden)) {
     if (predicate(data)) {
       return true
     }
@@ -53,9 +65,12 @@ export function someGroupData(
 export function anyGroupHasSashimi(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   minSashimiScore: number,
+  hidden?: ReadonlySet<string>,
 ) {
-  return someGroupData(rpcDataMap, d =>
-    d.sashimiCounts.some(c => c >= minSashimiScore),
+  return someGroupData(
+    rpcDataMap,
+    d => d.sashimiCounts.some(c => c >= minSashimiScore),
+    hidden,
   )
 }
 
@@ -74,12 +89,13 @@ export function anyGroupHasSashimiDownArcs(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   minSashimiScore: number,
   mode: SashimiArcsMode,
+  hidden?: ReadonlySet<string>,
 ) {
   return mode === 'up'
     ? false
     : mode === 'down'
-      ? anyGroupHasSashimi(rpcDataMap, minSashimiScore)
-      : anyGroupHasCrossingSashimi(rpcDataMap, minSashimiScore)
+      ? anyGroupHasSashimi(rpcDataMap, minSashimiScore, hidden)
+      : anyGroupHasCrossingSashimi(rpcDataMap, minSashimiScore, hidden)
 }
 
 // 'auto' pools a group's junctions across its regions before assigning sides, so
@@ -88,9 +104,10 @@ export function anyGroupHasSashimiDownArcs(
 function anyGroupHasCrossingSashimi(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   minSashimiScore: number,
+  hidden?: ReadonlySet<string>,
 ) {
   const spansByGroup = new Map<string, { left: number; right: number }[]>()
-  for (const { key, data } of eachGroup(rpcDataMap)) {
+  for (const { key, data } of eachGroup(rpcDataMap, hidden)) {
     const spans = getOrCreate(spansByGroup, key, () => [])
     for (const [i, count] of data.sashimiCounts.entries()) {
       if (count >= minSashimiScore) {

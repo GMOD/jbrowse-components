@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
@@ -105,6 +109,32 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           return 'feature'
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * Whether the view's own assembly lane is hidden — see the slot.
+         */
+        get hideSelfAlignments(): boolean {
+          return getConf(self, 'hideSelfAlignments')
+        },
+
+        /**
+         * #getter
+         * The lane an all-vs-all track draws for the view's own assembly: its
+         * mate-assembly group key IS that assembly name. Hidden as a group key
+         * rather than filtered out of the fetch, so unchecking the option shows
+         * it again without a refetch.
+         */
+        get hiddenGroupKeys(): ReadonlySet<string> {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const assemblyName = view.assemblyNames[0]
+          return this.hideSelfAlignments &&
+            self.groupBy?.type === 'mateAssembly' &&
+            assemblyName !== undefined
+            ? new Set([assemblyName])
+            : new Set()
+        },
+      }))
       .views(self => {
         const superRpcProps = self.rpcProps
         return {
@@ -137,6 +167,16 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           },
         }
       })
+      .actions(self => ({
+        /**
+         * #action
+         * Show/hide the view's own assembly lane of an all-vs-all track.
+         */
+        setHideSelfAlignments(flag: boolean) {
+          setConf(self, 'hideSelfAlignments', flag)
+          self.scrollTop = 0
+        },
+      }))
       .views(self => ({
         /**
          * #method

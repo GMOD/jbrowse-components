@@ -310,6 +310,23 @@ test('anyGroupHasSashimi: true when any group has a junction at/above threshold'
   expect(anyGroupHasSashimi(m, 6)).toBe(false)
 })
 
+// A lane the display hides (LGVSyntenyDisplay's self-alignment lane) must not
+// drive the derivations shared across the visible lanes — it was still sizing
+// the coverage axis and reserving the sashimi strip.
+test('anyGroupHasSashimi: a hidden group does not count', () => {
+  const m = new Map([
+    [
+      0,
+      grouped([
+        { key: 'self', data: sashimiData([9]) },
+        { key: 'other', data: sashimiData([1]) },
+      ]),
+    ],
+  ])
+  expect(anyGroupHasSashimi(m, 5)).toBe(true)
+  expect(anyGroupHasSashimi(m, 5, new Set(['self']))).toBe(false)
+})
+
 test('anyGroupHasSashimi: false when no group has any junction', () => {
   const m = new Map([[0, grouped([{ key: '', data: sashimiData([]) }])]])
   expect(anyGroupHasSashimi(m, 0)).toBe(false)

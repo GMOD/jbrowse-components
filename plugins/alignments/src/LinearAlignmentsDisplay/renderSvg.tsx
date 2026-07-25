@@ -48,7 +48,7 @@ export async function renderSvg(
   // whole-genome / multi-region exports aren't partially drawn.
   await awaitSvgReady(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const height = opts?.overrideHeight ?? model.height
+  const height = model.height
   return (
     <SvgChrome
       error={model.error}

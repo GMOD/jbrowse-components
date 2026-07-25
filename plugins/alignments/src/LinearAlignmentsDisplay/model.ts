@@ -222,6 +222,10 @@ export { ColorScheme } from './constants.ts'
 // what config may declare.
 const MIN_BAND_HEIGHT = 20
 
+// Shared by every display that hides no group, so `groupOrder` compares against
+// a stable identity rather than allocating a set per read.
+const EMPTY_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
+
 // So the floor never exceeds a band config already set smaller: flooring such a
 // band at MIN_BAND_HEIGHT made the first drag jump it up to 20 before honoring
 // the drag. A band at or above the floor is unaffected, and one below it can
@@ -734,6 +738,17 @@ export default function stateModelFactory(
         get numStdDev() {
           return getConf(self, 'numStdDev')
         },
+
+        /**
+         * #getter
+         * Group keys that `groupOrder` drops, so a display can hide a lane its
+         * own grouping produces without every consumer of the order learning
+         * about it. Empty here; LGVSyntenyDisplay overrides it to hide the
+         * self-alignment lane of an all-vs-all track.
+         */
+        get hiddenGroupKeys(): ReadonlySet<string> {
+          return EMPTY_HIDDEN_GROUPS
+        },
       }))
       .views(self => ({
         /**
@@ -1046,9 +1061,12 @@ export default function stateModelFactory(
           // the per-bp depth scan doesn't recompute on every animation frame
           // during pan/zoom — same approach as wiggle's visibleScoreRange.
           //
-          // The domain spans EVERY group (expand each block into one entry per
-          // group's coverage): a shared scale is what makes stacked sections
-          // visually comparable. Ungrouped is the one-group case.
+          // The domain spans every SHOWN group (expand each block into one entry
+          // per group's coverage): a shared scale is what makes stacked sections
+          // visually comparable. Ungrouped is the one-group case. Hidden lanes
+          // are excluded — sizing the visible lanes' axis against a lane the
+          // user hid is exactly the comparability this scale exists to give.
+          const hidden = self.hiddenGroupKeys
           const covBlocks: {
             start: number
             end: number
@@ -1060,8 +1078,10 @@ export default function stateModelFactory(
                 ? undefined
                 : self.rpcDataMap.get(b.displayedRegionIndex)
             if (grouped) {
-              for (const { data } of grouped.groups) {
-                covBlocks.push({ start: b.start, end: b.end, cov: data })
+              for (const { key, data } of grouped.groups) {
+                if (!hidden.has(key)) {
+                  covBlocks.push({ start: b.start, end: b.end, cov: data })
+                }
               }
             }
           }
@@ -1115,7 +1135,10 @@ export default function stateModelFactory(
               flipStrandLongReadChains: self.flipStrandLongReadChains,
               colorSupplementaryChains: self.colorSupplementaryChains,
             }
-            for (const data of eachGroupData(self.rpcDataMap)) {
+            for (const data of eachGroupData(
+              self.rpcDataMap,
+              self.hiddenGroupKeys,
+            )) {
               for (let i = 0; i < data.readFlags.length; i++) {
                 present.add(readColorCategory(i, data, colorScheme, opts))
               }
@@ -1211,6 +1234,7 @@ export default function stateModelFactory(
               self.rpcDataMap,
               self.minSashimiScore,
               self.sashimiArcsMode,
+              self.hiddenGroupKeys,
             ),
           }
         },
@@ -1271,7 +1295,8 @@ export default function stateModelFactory(
          * layout pass), so group identity/order stays stable across relayouts.
          */
         get groupOrder() {
-          return orderedGroups(self.rpcDataMap)
+          const hidden = self.hiddenGroupKeys
+          return orderedGroups(self.rpcDataMap).filter(g => !hidden.has(g.key))
         },
 
         /**

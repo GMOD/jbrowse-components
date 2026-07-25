@@ -2,12 +2,19 @@ import { getSyntenyGroupByMenuItem } from './menus.ts'
 
 import type { GroupByType } from '@jbrowse/plugin-alignments'
 
-function makeModel(type?: GroupByType, collapseGroupRows = true) {
+function makeModel(
+  type?: GroupByType,
+  collapseGroupRows = true,
+  hideSelfAlignments = false,
+) {
   return {
     groupBy: type ? { type } : undefined,
     setGroupBy: jest.fn(),
     collapseGroupRows,
     setCollapseGroupRows: jest.fn(),
+    prefersOffset: type !== undefined,
+    hideSelfAlignments,
+    setHideSelfAlignments: jest.fn(),
   }
 }
 
@@ -18,12 +25,13 @@ function items(model: ReturnType<typeof makeModel>) {
 }
 
 test('offers None plus the synteny-applicable dimensions, then the row toggle', () => {
-  expect(items(makeModel()).map(i => i.label)).toEqual([
+  expect(items(makeModel('mateAssembly')).map(i => i.label)).toEqual([
     'None',
     'Mate assembly',
     'Strand',
-    'MAPQ (binned)',
+    'Mapping quality',
     'One row per group',
+    'Hide self-alignment lane',
   ])
 })
 
@@ -68,4 +76,18 @@ test('the row toggle reflects and flips collapseGroupRows', () => {
     .find(i => i.label === 'One row per group')!
     .onClick()
   expect(off.setCollapseGroupRows).toHaveBeenCalledWith(true)
+})
+
+test('the self-lane toggle reflects and flips hideSelfAlignments', () => {
+  const off = makeModel('mateAssembly')
+  const item = items(off).find(i => i.label === 'Hide self-alignment lane')!
+  expect(item.checked).toBe(false)
+  item.onClick()
+  expect(off.setHideSelfAlignments).toHaveBeenCalledWith(true)
+
+  const on = makeModel('mateAssembly', true, true)
+  items(on)
+    .find(i => i.label === 'Hide self-alignment lane')!
+    .onClick()
+  expect(on.setHideSelfAlignments).toHaveBeenCalledWith(false)
 })

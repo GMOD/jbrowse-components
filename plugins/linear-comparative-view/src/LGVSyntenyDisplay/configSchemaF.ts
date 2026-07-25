@@ -106,6 +106,20 @@ function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Hide the lane an all-vs-all track draws for the view's own assembly.
+       * That lane holds no self-alignment line — aligners skip each sequence's
+       * own diagonal — so it carries only the assembly's internal paralogy, and
+       * readers consistently read it as missing data. Only meaningful when
+       * grouping by mate assembly.
+       */
+      hideSelfAlignments: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          "Hide the group matching the view's own assembly when grouping by mate assembly",
+      },
+      /**
+       * #slot
        * Synteny lays large alignments out first so big syntenic blocks cluster
        * at the top instead of interleaving with small ones; overrides the base
        * alignments display's `largeFeaturesFirst` default of `false`.
