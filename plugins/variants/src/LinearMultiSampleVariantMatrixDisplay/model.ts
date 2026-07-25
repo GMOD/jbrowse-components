@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -30,17 +31,23 @@ export default function stateModelFactory(
         MultiSampleVariantBaseModelF(configSchema, 'matrix'),
         types.model({
           type: types.literal('LinearMultiSampleVariantMatrixDisplay'),
-          lineZoneHeight: types.stripDefault(types.number, 20),
         }),
       )
       // Remap the old type literal on active (view-level) display instances. The
       // DisplayType `aliases` only covers the track *config*; the view's display
-      // union dispatches on the raw `type`, so it needs this rewrite too.
-      .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
-        snap?.type === 'LinearVariantMatrixDisplay'
-          ? { ...snap, type: 'LinearMultiSampleVariantMatrixDisplay' }
-          : snap,
-      )
+      // union dispatches on the raw `type`, so it needs this rewrite too. A
+      // `lineZoneHeight` left over from when it was an instance property is
+      // dropped: it's a config slot now (like `height`), and a display snapshot
+      // can't write the track config, so the zone returns to the configured
+      // height rather than half-restoring.
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
+        const { lineZoneHeight, ...rest } = snap ?? {}
+        return snap === undefined
+          ? snap
+          : rest.type === 'LinearVariantMatrixDisplay'
+            ? { ...rest, type: 'LinearMultiSampleVariantMatrixDisplay' }
+            : rest
+      })
       .views(self => ({
         /**
          * #getter
@@ -172,8 +179,11 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         setLineZoneHeight(n: number) {
-          self.lineZoneHeight = clampLineZoneHeight(n)
+          setConf(self, 'lineZoneHeight', clampLineZoneHeight(n))
         },
         /**
          * #action

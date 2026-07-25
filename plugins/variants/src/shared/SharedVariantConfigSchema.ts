@@ -28,6 +28,18 @@ export default function sharedVariantConfigFactory() {
       },
       /**
        * #slot
+       * Height of the zone above the rows holding the lines that tie each
+       * matrix column to its genomic position. 0 (the default here) means no
+       * zone at all — only the matrix display, which lays columns out by
+       * feature index rather than at their genomic positions, raises it.
+       */
+      lineZoneHeight: {
+        type: 'number',
+        defaultValue: 0,
+        advanced: true,
+      },
+      /**
+       * #slot
        */
       showTree: {
         type: 'boolean',

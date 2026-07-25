@@ -329,7 +329,6 @@ export default function MultiSampleVariantBaseModelF(
             types.maybe(types.array(types.string)),
             undefined,
           ),
-          lineZoneHeight: types.stripDefault(types.number, 0),
           // Transient declarative launch spec, same idea as LinearGenomeView's
           // `init`: session/config sets this to run the real "Cluster by
           // genotype" RPC once automatically (no dialog), applied by
@@ -495,6 +494,19 @@ export default function MultiSampleVariantBaseModelF(
          */
         get renderingMode(): string {
           return getConf(self, 'renderingMode')
+        },
+
+        /**
+         * #getter
+         * Height of the connector-line zone above the rows; 0 for a display that
+         * draws variants at their genomic positions and needs no connectors. On
+         * the config rather than a bespoke property for the same reason `height`
+         * is (see TrackHeightMixin): a drag-resize outlives the display
+         * instance, so unticking and reticking the track keeps the zone the user
+         * set. LD declares the same slot and the same clamped `setConf` setter.
+         */
+        get lineZoneHeight(): number {
+          return getConf(self, 'lineZoneHeight')
         },
 
         /**

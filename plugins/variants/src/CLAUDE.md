@@ -68,9 +68,15 @@ per row dominates — an earlier comparison-sort version was ~4x slower.
 A setting can live in a config slot (`SharedVariantConfigSchema.ts`, read via
 `getConf` / written via `self.configuration.setSlot` — these survive hide/retick
 and can take a declarative config default), a bespoke MST property (`rowHeight`,
-`jexlFilters`, `lineZoneHeight`), or a volatile (`showLegend`, `cellData`).
-There's no single rule, and the two display families disagree (`showLegend` is
-volatile here, a config slot in LD). What matters when adding one is the tier it
+`jexlFilters`), or a volatile (`showLegend`, `cellData`). There's no single
+rule, and the two display families still disagree in places (`showLegend` is
+volatile here, a config slot in LD). One rule that did settle: a **drag-resized
+dimension goes on the config slot**, because the config node outlives the
+display instance — that's why `height` (`TrackHeightMixin`) and `lineZoneHeight`
+are slots in both families, each written by an identical clamped setter
+(`clampLineZoneHeight`, `shared/lineZoneHeight.test.ts`). The matrix raises the
+shared slot's 0 default by redeclaring it in its own schema, the same way it
+redeclares `height`. What matters when adding a setting is the tier it
 invalidates:
 
 | Tier             | Change triggers           | Wired in                                      |

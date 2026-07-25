@@ -96,6 +96,17 @@ export default function configSchemaF() {
         type: 'number',
         defaultValue: 250,
       },
+      /**
+       * #slot
+       * Raises the shared slot's 0 default: this display lays columns out by
+       * feature index, so it needs the zone for the lines tying each column
+       * back to its genomic position. Drag-resizable, like `height`.
+       */
+      lineZoneHeight: {
+        type: 'number',
+        defaultValue: 20,
+        advanced: true,
+      },
     },
     {
       /**
