@@ -1,25 +1,18 @@
 import { getSession } from '@jbrowse/core/util'
-import {
-  Link,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material'
+import { Link, List, ListItem, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { navToFeature } from '../ucscShared.ts'
-import { LOCATION_COLUMN, columnsFor } from './resultColumns.ts'
+import { featureLocString, navToFeature } from '../ucscShared.ts'
+import { hitSummary } from './hitSummary.ts'
 
 import type { UcscResultsWidgetModel } from './stateModel.ts'
 
 // The hit list for a BLAT / in-silico PCR query. The query itself navigates to
 // the best hit; this keeps the rest of them readable after the dialog closes,
-// which the snackbar naming only the best one could not. Every location is a
-// link that navigates the same view, so a second-best placement is one click
-// away rather than a re-run.
+// which the snackbar naming only the best one could not. Each location is a link
+// that navigates the open view, so a second-best placement is one click away
+// rather than a re-run. A list rather than a table because the drawer is narrow
+// and a hit's numbers read fine on one line under its coordinates.
 const UcscResultsWidget = observer(function UcscResultsWidget({
   model,
 }: {
@@ -27,46 +20,36 @@ const UcscResultsWidget = observer(function UcscResultsWidget({
 }) {
   const { features, assembly, trackName } = model
   const session = getSession(model)
-  const columns = columnsFor(features)
   return (
     <div style={{ margin: 12 }}>
       <Typography>
         {features.length === 1
-          ? `1 hit on ${assembly}, added as track "${trackName}"`
-          : `${features.length} hits on ${assembly}, added as track "${trackName}"`}
+          ? `1 hit on ${assembly}, added as the track "${trackName}"`
+          : `${features.length} hits on ${assembly}, added as the track "${trackName}"`}
       </Typography>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {columns.map(column => (
-              <TableCell key={column.label}>{column.label}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {features.map(feature => (
-            <TableRow key={feature.uniqueId} hover>
-              {columns.map(column => (
-                <TableCell key={column.label}>
-                  {column === LOCATION_COLUMN ? (
-                    <Link
-                      href="#"
-                      onClick={event => {
-                        event.preventDefault()
-                        void navToFeature(session, assembly, feature)
-                      }}
-                    >
-                      {column.cell(feature)}
-                    </Link>
-                  ) : (
-                    column.cell(feature)
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <List dense>
+        {features.map(feature => (
+          <ListItem
+            key={feature.uniqueId}
+            disableGutters
+            style={{ display: 'block' }}
+          >
+            <Link
+              href="#"
+              onClick={event => {
+                event.preventDefault()
+                void navToFeature(session, assembly, feature)
+              }}
+            >
+              {featureLocString(feature)}
+              {feature.strand === -1 ? ' (-)' : ' (+)'}
+            </Link>
+            <Typography variant="body2" color="textSecondary">
+              {hitSummary(feature)}
+            </Typography>
+          </ListItem>
+        ))}
+      </List>
     </div>
   )
 })

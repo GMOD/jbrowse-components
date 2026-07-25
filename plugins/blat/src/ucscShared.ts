@@ -123,13 +123,15 @@ export async function addResultTrack({
   const view = findNavigableView(session, assembly)
   if (view) {
     view.showTrack(trackId)
+    await navToFeature(session, assembly, features[0]!)
   } else {
+    // navToFeature would say the same thing less usefully, so it is skipped
+    // rather than left to report the missing view a second time
     session.notify(
       `Added track "${trackId}" but no open view displays ${assembly}`,
       'warning',
     )
   }
-  await navToFeature(session, assembly, features[0]!)
   if (isSessionModelWithWidgets(session)) {
     session.showWidget(
       session.addWidget('UcscResultsWidget', 'ucscResults', {
