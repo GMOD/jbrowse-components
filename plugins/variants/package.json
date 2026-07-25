@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@gmod/hclust": "4.0.0",
-    "@gmod/tabix": "^3.4.2",
+    "@gmod/tabix": "^3.5.0",
     "@gmod/vcf": "^7.0.9",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/ld-core": "workspace:^",

@@ -820,8 +820,8 @@ importers:
         specifier: ^2.2.6
         version: 2.2.6
       '@gmod/tabix':
-        specifier: ^3.4.2
-        version: 3.4.2
+        specifier: ^3.5.0
+        version: 3.5.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -970,8 +970,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.4.2
-        version: 3.4.2
+        specifier: ^3.5.0
+        version: 3.5.0
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1169,8 +1169,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.4.2
-        version: 3.4.2
+        specifier: ^3.5.0
+        version: 3.5.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1223,8 +1223,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.4.2
-        version: 3.4.2
+        specifier: ^3.5.0
+        version: 3.5.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1697,8 +1697,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       '@gmod/tabix':
-        specifier: ^3.4.2
-        version: 3.4.2
+        specifier: ^3.5.0
+        version: 3.5.0
       '@gmod/vcf':
         specifier: ^7.0.9
         version: 7.0.9
@@ -4209,8 +4209,8 @@ packages:
   '@gmod/nclist@3.0.10':
     resolution: {integrity: sha512-L2D7a6O9pzzCxPxBh75T3fFRayF3oLqY77UsL9wXMTBHCr7gifeetCcBPoZfxNImWWcB0+U3uAQ8OEAGjTzmaw==}
 
-  '@gmod/tabix@3.4.2':
-    resolution: {integrity: sha512-WDPdOL1eKUkloTH9PY5VpAIxStN+PgvhQ7Tf1pzjA5u2VTUnQyBMQix+SvOQEZrqtHOOMMlbcUeQUADvNkhLuA==}
+  '@gmod/tabix@3.5.0':
+    resolution: {integrity: sha512-pZbSboKhbYF/8we9kgI5q5io5MPtzV/6fzt+tCvTjS/crpzwtwQstUB7l/QaRL6gl2FYIe1iOdcHChyM91BnbA==}
 
   '@gmod/trix@3.0.18':
     resolution: {integrity: sha512-xHtQ7Ah7SO9xRxYLOONvuCcL0T5nPGzhGQ2dEDIkgzERQGa2yZDPU/TGtN+SBUmztg+MHVfO9gSayNoXYOtHKA==}
@@ -12141,7 +12141,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.4.2':
+  '@gmod/tabix@3.5.0':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.3.0
