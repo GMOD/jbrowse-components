@@ -1,7 +1,54 @@
-import type { Annotation } from './screenshot-specs.ts'
+import type { Annotation, AnnotationAnchor } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
 const ANNOTATION_OVERLAY_ID = '__screenshot_annotation_overlay'
+
+interface Region {
+  refName: string
+  start: number
+  end: number
+}
+
+// A locus authored on an anchor, pre-parsed here in node so the page-context
+// code stays a pure lookup. 1-based inclusive in, interbase out, matching
+// core's parseLocString (which needs an assembly-aware isValidRefName callback
+// we don't have out here — the refName is instead resolved through the
+// assembly's aliases inside the view's own getHighlightCoords).
+//
+// Splits on the LAST colon, so a refName may contain colons as long as
+// coordinates follow it.
+function parseLocus(locus: string): Region {
+  const cleaned = locus.replaceAll(/[\s,]/g, '')
+  const idx = cleaned.lastIndexOf(':')
+  const refName = cleaned.slice(0, idx)
+  const coords = cleaned.slice(idx + 1)
+  const match = /^(\d+)(?:\.\.|-)?(\d+)?$/.exec(coords)
+  if (idx === -1 || !match) {
+    throw new Error(
+      `annotation anchor locus "${locus}" is not <refName>:<start>[-<end>]`,
+    )
+  }
+  const start = Number(match[1]) - 1
+  return { refName, start, end: match[2] ? Number(match[2]) : start }
+}
+
+type ResolvedAnchor = AnnotationAnchor & { region?: Region }
+
+// What actually crosses into page context: the spec's annotation with both of
+// its anchors' loci already parsed.
+type PayloadAnnotation = Omit<Annotation, 'anchor' | 'fromAnchor'> & {
+  anchor?: ResolvedAnchor
+  fromAnchor?: ResolvedAnchor
+}
+
+// Attach the parsed region so page context never parses strings.
+function withRegion(
+  anchor: AnnotationAnchor | undefined,
+): ResolvedAnchor | undefined {
+  return anchor
+    ? { ...anchor, region: anchor.locus ? parseLocus(anchor.locus) : undefined }
+    : undefined
+}
 
 // Remove any annotation overlay left over from a previous frame so staged
 // figures don't carry one stage's callouts into the next.
@@ -14,11 +61,20 @@ export async function clearAnnotations(page: Page) {
 // Draw spec.annotations as a fixed SVG overlay covering the viewport so the
 // callouts composite into the screenshot, reproducing the red arrows / boxes /
 // text labels of hand-made teaching figures without an external image editor.
-// Anchored annotations resolve their geometry from a live DOM element's bounding
-// box at capture time, removing the need to hand-tune viewport coordinates.
+//
+// An anchored annotation resolves its geometry at capture time — from the live
+// view model for a genomic locus, or from a DOM element's bounding box for page
+// chrome — so no viewport coordinate has to be hand-tuned against a previous
+// capture. An anchor that resolves to nothing throws rather than quietly
+// parking its callout at the origin.
 export async function drawAnnotations(page: Page, annotations: Annotation[]) {
   await clearAnnotations(page)
-  await page.evaluate(
+  const items: PayloadAnnotation[] = annotations.map(a => ({
+    ...a,
+    anchor: withRegion(a.anchor),
+    fromAnchor: withRegion(a.fromAnchor),
+  }))
+  const unresolved = await page.evaluate(
     (items, overlayId) => {
       const NS = 'http://www.w3.org/2000/svg'
       const svg = document.createElementNS(NS, 'svg')
@@ -28,16 +84,88 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
         'position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483647;pointer-events:none',
       )
 
+      interface Rect {
+        left: number
+        top: number
+        width: number
+        height: number
+      }
+      type Anchor = ResolvedAnchor | undefined
+      // The structural slice of the live view model this needs. Declared here
+      // rather than imported because it has to survive serialization into the
+      // page, and `window.JBrowseSession` (set by jbrowse-web's JBrowse.tsx) is
+      // untyped from a website script.
+      interface AnchorableView {
+        id: string
+        views?: AnchorableView[]
+        trackRefs?: Record<string, Element | undefined>
+        getHighlightCoords?: (region: {
+          refName: string
+          start: number
+          end: number
+        }) => { left: number; width: number } | undefined
+      }
+
+      // Model anchoring. The app already knows where a locus is painted, so ask
+      // it rather than re-deriving the layout from measured pixels: the track's
+      // rendering container is the element the blocks draw into, and
+      // getHighlightCoords maps a region into that same space (aliases
+      // resolved, scroll subtracted). `window.JBrowseSession` is published by
+      // jbrowse-web's JBrowse.tsx.
+      function modelRect(anchor: NonNullable<Anchor>): Rect | undefined {
+        const path = Array.isArray(anchor.view)
+          ? anchor.view
+          : [anchor.view ?? 0]
+        let view = (window as unknown as { JBrowseSession?: AnchorableView })
+          .JBrowseSession
+        for (const i of path) {
+          view = view?.views?.[i]
+        }
+        if (!view) {
+          return undefined
+        }
+        const el = anchor.track
+          ? view.trackRefs?.[anchor.track]
+          : (document.querySelector(
+              `[data-testid="view-container-${CSS.escape(view.id)}"] [data-testid="tracksContainer"]`,
+            ) ?? undefined)
+        if (!el) {
+          return undefined
+        }
+        const r = el.getBoundingClientRect()
+        // no fracY anchors the whole track band (what a box wants); a fracY
+        // collapses it to one horizontal line through the track (what an arrow
+        // head or a text baseline wants)
+        const band =
+          anchor.fracY === undefined
+            ? { top: r.top, height: r.height }
+            : { top: r.top + anchor.fracY * r.height, height: 0 }
+        if (!anchor.region) {
+          return { left: r.left, width: r.width, ...band }
+        }
+        const coords = view.getHighlightCoords?.(anchor.region)
+        if (!coords) {
+          return undefined
+        }
+        return {
+          left: r.left + coords.left,
+          // getHighlightCoords floors width at 3px so a zoomed-out band stays
+          // visible; a point locus wants a true zero so the callout centers on it
+          width: anchor.region.end > anchor.region.start ? coords.width : 0,
+          ...band,
+        }
+      }
+
       // Resolve an anchor to a live element: a CSS selector, or the
       // smallest-area element whose visible text matches (so a callout can point
       // at a menu item / button without a testid).
-      function resolveAnchor(anchor: { selector?: string; text?: string }) {
+      function domRect(anchor: NonNullable<Anchor>): Rect | undefined {
         if (anchor.selector) {
-          return document.querySelector(anchor.selector)
+          return document.querySelector(anchor.selector)?.getBoundingClientRect()
         }
         if (anchor.text) {
           const want = anchor.text.trim().toLowerCase()
-          let best: Element | undefined
+          let best: Rect | undefined
           let bestArea = Number.POSITIVE_INFINITY
           for (const el of document.querySelectorAll('body *')) {
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -46,21 +174,52 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
               .toLowerCase()
             const matches =
               txt === want || (el.childElementCount === 0 && txt.includes(want))
-            const rect = el.getBoundingClientRect()
-            const area = rect.width * rect.height
-            if (
-              matches &&
-              rect.width > 0 &&
-              rect.height > 0 &&
-              area < bestArea
-            ) {
-              best = el
-              bestArea = area
+            // getBoundingClientRect forces layout, so only measure the elements
+            // that actually matched — this scan walks the whole document, and on
+            // a page like the 1104-row TCGA stack measuring every node instead
+            // costs thousands of synchronous layouts
+            if (matches) {
+              const rect = el.getBoundingClientRect()
+              const area = rect.width * rect.height
+              if (rect.width > 0 && rect.height > 0 && area < bestArea) {
+                best = rect
+                bestArea = area
+              }
             }
           }
-          return best ?? null
+          return best
         }
-        return null
+        return undefined
+      }
+
+      // a selector/text anchor is always a DOM lookup, so the two kinds can't
+      // be silently mixed into an anchor that resolves through neither
+      const isModel = (anchor: NonNullable<Anchor>) =>
+        anchor.selector === undefined &&
+        anchor.text === undefined &&
+        (anchor.track !== undefined ||
+          anchor.locus !== undefined ||
+          anchor.view !== undefined)
+
+      const misses: string[] = []
+      function anchorRect(anchor: Anchor) {
+        if (!anchor) {
+          return undefined
+        }
+        const rect = isModel(anchor) ? modelRect(anchor) : domRect(anchor)
+        if (!rect) {
+          misses.push(JSON.stringify(anchor))
+          return undefined
+        }
+        // built field by field, not spread: domRect hands back a live DOMRect,
+        // whose left/top/width/height are prototype getters and so survive
+        // neither a spread nor Object.assign
+        return {
+          left: rect.left + (anchor.dx ?? 0),
+          top: rect.top + (anchor.dy ?? 0),
+          width: rect.width,
+          height: rect.height,
+        }
       }
 
       // Apply anchoring: fill in x/y (element center) and, for box/ring shapes,
@@ -68,20 +227,21 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       const resolved = items.map(a => {
         const dx = a.dx ?? 0
         const dy = a.dy ?? 0
-        if (!a.anchor) {
-          return { ...a, x: (a.x ?? 0) + dx, y: (a.y ?? 0) + dy }
+        const from = a.fromAnchor ? anchorRect(a.fromAnchor) : undefined
+        const tail = from
+          ? { x: from.left + from.width / 2, y: from.top + from.height / 2 }
+          : a.from
+        const r = anchorRect(a.anchor)
+        if (!r) {
+          return { ...a, from: tail, x: (a.x ?? 0) + dx, y: (a.y ?? 0) + dy }
         }
-        const el = resolveAnchor(a.anchor)
-        if (!el) {
-          return { ...a, x: (a.x ?? 0) + dx, y: (a.y ?? 0) + dy }
-        }
-        const r = el.getBoundingClientRect()
         const pad = 6
         // a numbered badge stays a fixed small disc; a hollow ring grows to wrap
         // the anchored element
         const ringRadius = Math.max(r.width, r.height) / 2 + pad
         return {
           ...a,
+          from: tail,
           x: a.type === 'box' ? r.left - pad + dx : r.left + r.width / 2 + dx,
           y: a.type === 'box' ? r.top - pad + dy : r.top + r.height / 2 + dy,
           width: a.width ?? r.width + pad * 2,
@@ -279,10 +439,20 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           text.before(rect)
         }
       }
+      return misses
     },
-    annotations,
+    items,
     ANNOTATION_OVERLAY_ID,
   )
+  // An anchor that resolves to nothing silently falls back to (x ?? 0, y ?? 0),
+  // which parks the callout in the top-left corner rather than removing it — a
+  // failure that looks like a styling mistake in review instead of a stale
+  // spec. Surface it as the error it is.
+  if (unresolved.length > 0) {
+    throw new Error(
+      `annotation anchors resolved to nothing: ${unresolved.join(', ')}`,
+    )
+  }
 }
 
 export async function hideLingeringTooltip(page: Page) {

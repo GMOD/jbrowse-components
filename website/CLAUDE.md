@@ -84,6 +84,44 @@ names what the reader is looking at ("17q21.31 inversion: one non-recombining
 block") and put every further sentence in the `<Figure caption>`, which is
 selectable text beside the image rather than paint on top of it.
 
+**Never hand-measure a callout's position off a previous capture.** A raw
+`x`/`y` encodes the whole layout — viewport width, header height, every track
+above it — into one number that nothing checks, and it decalibrates silently on
+any of them. Every annotation should `anchor`, in this order of preference:
+
+- **In-app, not a callout at all.** A `highlight: ['17:39,688,094-39,728,658']`
+  region on the view, or `featureHighlights` on a display, is drawn by JBrowse
+  from real coordinates, appears in the figure's live link, and cannot drift.
+  Reach for an overlay only for arrows and labels the app has no concept of.
+- **`anchor: { track, locus }`** — model anchoring. Resolves through the live
+  `window.JBrowseSession`: the track's own rendering container (the element
+  blocks draw into) plus `getHighlightCoords`, which is the same bp→px layout
+  that painted the feature, with refName aliases resolved and scroll subtracted.
+  `view` indexes `session.views`, and an array descends into a
+  comparative/breakpoint-split view's nested LGVs. `fromAnchor` anchors an
+  arrow's tail the same way. `dx`/`dy` are readability nudges off the true
+  position — a `dx` of -162 to clear a neighboring label is legible; an `x` of
+  790 is not.
+
+  For the vertical position, omit `fracY` to wrap the whole track band (what a
+  `box` wants), or set it to pick a height within the track. **A fraction only
+  means something when the track fits the capture** — `tcga/cohort_cnv_genome`'s
+  1104-row stack is ~1105px tall against a 1120px viewport and runs off the
+  bottom edge, so a fraction of its height lands below the frame. There, use
+  `fracY: 0` with a `dy`: the anchor sits on the track's top edge and `dy` walks
+  down from it, which keeps the offset measured against the track rather than
+  against the viewport.
+- **`anchor: { selector }`**, then **`anchor: { text }`** for menu items and
+  buttons with no testid. The text scan walks the whole document, so prefer a
+  selector where one exists.
+
+An anchor that resolves to nothing **throws** and fails the spec, rather than
+parking the callout at (0,0) where it reads as a styling mistake in review.
+
+Note `--check` renders a spec twice and compares those two runs against each
+other — it detects flakiness, not whether the figure is still correct. To verify
+a change to a callout you have to regenerate and look at the PNG.
+
 **Many of these PNGs are too large to analyze directly — downscale first.**
 Capture is 1500px-wide at `deviceScaleFactor: 2`, so most images are ~3000px
 wide and the Read tool rejects them (oversized). Before reading one for visual

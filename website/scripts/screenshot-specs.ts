@@ -1,5 +1,6 @@
 export type {
   Annotation,
+  AnnotationAnchor,
   BrowserScreenshotSpec,
   CliSpec,
   CommonSpecFields,

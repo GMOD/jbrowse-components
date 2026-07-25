@@ -40,14 +40,60 @@ export interface ScreenshotAction {
   // edge
 }
 
+// What an annotation attaches itself to, resolved at capture time so the
+// callout tracks the real thing instead of a hand-measured pixel. Three kinds,
+// in decreasing order of preference:
+//
+// - `track` + `locus`: MODEL anchoring. Reads the live LGV model
+//   (`window.JBrowseSession`) for the track's rendering container and the
+//   locus's pixel position, so a callout lands on a genomic coordinate. Nothing
+//   to re-measure when a track height, viewport width, or zoom changes. Use
+//   this for anything pointing at data.
+// - `selector`: the first matching element.
+// - `text`: the smallest-area element whose visible text matches — for menu
+//   items and buttons with no testid. Scans the whole document, so prefer
+//   `selector` where one exists.
+export interface AnnotationAnchor {
+  selector?: string
+  text?: string
+  // which view to resolve against: an index into `session.views` (default 0).
+  // An array descends through nested `.views` — `[0, 1]` is the second LGV of a
+  // comparative/breakpoint-split view.
+  view?: number | number[]
+  // config `trackId` of the track supplying the y band and the x origin. Its
+  // rendering container is the same element the blocks draw into, so a locus
+  // resolved against it lands exactly where the feature is painted. On its own
+  // (no `locus`) it anchors to the whole track.
+  track?: string
+  // '8:127,735,434' or '8:127,700,000-127,800,000' — 1-based, commas optional,
+  // aliases resolved through the assembly (so 'chr8' works on a bare-named
+  // assembly). Without `track` the view's whole tracks area is used.
+  locus?: string
+  // where in the track's height to put the anchor point: 0 = top, 1 = bottom.
+  // Omit to anchor to the whole track band (what a `box` wants).
+  //
+  // A fraction only means something when the track FITS the capture. A display
+  // taller than the viewport runs off the bottom edge, and a fraction of its
+  // height then lands outside the frame — there, use `fracY: 0` with a `dy`, so
+  // the offset is measured down from the track's top edge (see
+  // `tcga/cohort_cnv_genome`, ~1105px of stack in a 1120px viewport).
+  fracY?: number
+  // px nudge off the resolved position, for readability only — separating two
+  // labels whose loci are a few px apart, or lifting an arrow tail clear of the
+  // pill it leaves from. On the annotation's primary `anchor` this is equivalent
+  // to the annotation's own `dx`/`dy`; on `fromAnchor` it is the only way to
+  // nudge the tail.
+  dx?: number
+  dy?: number
+}
+
 // A callout drawn over the captured page (SVG overlay) before the screenshot,
 // to reproduce the red arrows / boxes / text labels that hand-made teaching
 // figures use. Coordinates are viewport CSS px.
 //
-// Instead of hand-tuning pixel coordinates, an annotation can `anchor` to a live
-// DOM element (by CSS selector or visible text): its position (and a box/ring's
-// size) is then computed from that element's bounding box at capture time, so
-// the callout tracks the real UI. `dx`/`dy` nudge the anchored position.
+// Prefer `anchor` over raw x/y in every case: an anchored callout resolves its
+// geometry at capture time, a hand-tuned coordinate goes stale silently.
+// `dx`/`dy` nudge the anchored position.
 export interface Annotation {
   // arrow: tail -> head; box/highlight: x/y/width/height (ring around a region);
   // text: x/y baseline; circle: filled numbered badge (with text) or an outline
@@ -75,7 +121,11 @@ export interface Annotation {
   fontSize?: number // text/circle label, default 22 for text (min 18)
   strokeWidth?: number // box/circle stroke width (default 5); arrow line+head (default 4)
   fillOpacity?: number // box: tint the interior with a translucent wash of color
-  anchor?: { selector?: string; text?: string }
+  anchor?: AnnotationAnchor
+  // for 'arrow' with an anchored head: the tail can be anchored too, so a
+  // callout's whole geometry is model-derived. Same shape as `anchor`; `from`
+  // is the raw-pixel fallback.
+  fromAnchor?: AnnotationAnchor
   dx?: number
   dy?: number
 }

@@ -14,55 +14,6 @@ const HG38_MAIN_CHROMS = [
   'X',
 ]
 
-// hg38 lengths for HG38_MAIN_CHROMS, used only to place the genome-wide figure's
-// callouts (below). Same order as HG38_MAIN_CHROMS.
-const HG38_CHROM_LENGTHS: Record<string, number> = {
-  '1': 248956422,
-  '2': 242193529,
-  '3': 198295559,
-  '4': 190214555,
-  '5': 181538259,
-  '6': 170805979,
-  '7': 159345973,
-  '8': 145138636,
-  '9': 138394717,
-  '10': 133797422,
-  '11': 135086622,
-  '12': 133275309,
-  '13': 114364328,
-  '14': 107043718,
-  '15': 101991189,
-  '16': 90338345,
-  '17': 83257441,
-  '18': 80373285,
-  '19': 58617616,
-  '20': 64444167,
-  '21': 46709983,
-  '22': 50818468,
-  X: 156040895,
-}
-
-// Viewport x of a genomic position in the whole-genome view. Annotations are
-// placed in viewport pixels, and hand-tuning those is what silently goes stale —
-// so derive them instead. A whole-genome LGV lays its regions out edge to edge
-// with no inter-region padding, so position maps linearly onto one strip:
-// WG_DATA_LEFT/WG_DATA_WIDTH were read off the rendered figure's own region
-// boundaries (a least-squares fit over all 23 of them, max residual 0.6 capture
-// px = 0.3 CSS px), which is why an arbitrary locus lands on its stripe rather
-// than near it. They are tied to `viewportWidth: 1900` below — change that and
-// these must be re-measured.
-const WG_DATA_LEFT = 100
-const WG_DATA_WIDTH = 1699.3
-const WG_TOTAL_BP = Object.values(HG38_CHROM_LENGTHS).reduce((a, b) => a + b, 0)
-
-function wgX(refName: string, pos: number) {
-  const before = HG38_MAIN_CHROMS.slice(
-    0,
-    HG38_MAIN_CHROMS.indexOf(refName),
-  ).reduce((a, c) => a + HG38_CHROM_LENGTHS[c]!, 0)
-  return WG_DATA_LEFT + ((before + pos) / WG_TOTAL_BP) * WG_DATA_WIDTH
-}
-
 // One row per TCGA-BRCA primary tumor (1104 of them), painted from the caller's
 // raw Segment_Mean on a diverging blue/red log2 scale. Built by
 // scripts/build_tcga_cohort_cnv.sh from GDC open-access Masked Copy Number
@@ -149,11 +100,42 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
 // capture on real completion rather than on a duration guess.
 const CLUSTERED = '[data-testid="tree_sidebar_dendrogram"]'
 
-// Where the cohort stack's first row lands in the capture, measured off the
-// rendered figure. The callouts below sit at offsets from it, so the two
-// track heights above the stack are the only thing that has to be kept in
-// sync with the annotation coordinates.
-const STACK_TOP = 335
+// The four recurrent stripes to name in the genome-wide figure. Each callout
+// anchors to the gene's own coordinates in the live view — the app resolves
+// them through the same bp->px layout it painted the stripe with — so nothing
+// here has to be re-measured when the viewport width, the track heights, or the
+// wiggle track above the stack change.
+//
+// Each locus was checked against the rendered pixels first: the labeled column
+// carries 3.5-7x its neighborhood's fraction of saturated rows. BRCA1 is
+// deliberately absent — it drives breast cancer through germline point
+// mutations, not a recurrent copy-number event, and at this scale it lands 2px
+// from ERBB2 anyway. PTEN (10q23) is the fifth classic locus but reaches only
+// ~1.4x here, too faint to point at honestly.
+//
+// `labelDy`/`headDy` are px BELOW THE TOP OF THE STACK (anchored with
+// `fracY: 0`), not a fraction of it: 1104 rows make this track ~1105px tall
+// against a 1120px viewport, so it runs off the bottom edge and a fraction of
+// its height would put a callout below the capture. Labels sit low where the
+// stack is palest, with an arrow up into the stripe. `labelDx` is a
+// readability nudge only — MYC's is large because CDKN2A's stripe is ~20px away
+// at this scale and the two pills would otherwise collide, which is also why
+// CDKN2A's label drops to its own row.
+const RECURRENT_LOCI = [
+  { gene: 'MYC (8q24)', locus: '8:127,735,434', labelDx: -162, tailDx: -22 },
+  {
+    gene: 'CDKN2A (9p21)',
+    locus: '9:21,967,752',
+    labelDx: -44,
+    tailDx: 26,
+    labelDy: 645,
+    headDy: 457,
+  },
+  { gene: 'CCND1 (11q13)', locus: '11:69,641,156', labelDx: -63, tailDx: -3 },
+  { gene: 'ERBB2 (17q12)', locus: '17:39,688,094', labelDx: -69, tailDx: -4 },
+]
+
+const COHORT_TRACK_ID = 'tcga_brca_cnv'
 
 export const tcgaSpecs: ScreenshotSpec[] = [
   // The cohort view: every TCGA-BRCA primary tumor as one 1px row across the
@@ -215,68 +197,33 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // 1104 rows floored to 1px: sub-pixel row-boundary jitter between runs, so
     // the gate sits above the default
     diffThreshold: 0.02,
-    // Name the four recurrent stripes. BRCA1 is deliberately NOT one of them:
-    // it drives breast cancer through germline point mutations, not a recurrent
-    // copy-number event, and at this scale it lands 2px from ERBB2 anyway. Each
-    // locus here was checked against the rendered pixels first — the labeled
-    // column carries 3.5-7x its neighborhood's fraction of saturated rows. (PTEN
-    // at 10q23 is the fifth classic locus but reaches only ~1.4x here, too faint
-    // to point at honestly, so it is left unlabeled.) Callouts sit low, where
-    // the stack is palest, with an arrow up into the stripe.
-    annotations: [
-      {
-        type: 'text',
-        x: 790,
-        y: STACK_TOP + 532,
-        fontSize: 20,
-        maxWidth: 200,
-        text: 'MYC (8q24)',
+    // A label beside each recurrent stripe, with an arrow up into it. Both ends
+    // of both shapes anchor to the gene's locus in the cohort track, so the
+    // whole callout is derived from the view rather than measured off a
+    // previous capture (see RECURRENT_LOCI).
+    annotations: RECURRENT_LOCI.flatMap(
+      ({ gene, locus, labelDx, tailDx, labelDy = 532, headDy = 422 }) => {
+        // fracY 0 puts the anchor on the stack's top edge; dy then walks down
+        // from there, so every offset is measured against the track itself
+        const at = { track: COHORT_TRACK_ID, locus, fracY: 0 }
+        return [
+          {
+            type: 'text' as const,
+            text: gene,
+            fontSize: 20,
+            maxWidth: 200,
+            anchor: { ...at, dy: labelDy },
+            dx: labelDx,
+          },
+          {
+            type: 'arrow' as const,
+            // tail leaves from just above the label's pill
+            fromAnchor: { ...at, dx: tailDx, dy: labelDy - 13 },
+            anchor: { ...at, dy: headDy },
+          },
+        ]
       },
-      {
-        type: 'arrow',
-        from: { x: 930, y: STACK_TOP + 519 },
-        to: { x: wgX('8', 127735434), y: STACK_TOP + 422 },
-      },
-      {
-        type: 'text',
-        x: 930,
-        y: STACK_TOP + 645,
-        fontSize: 20,
-        maxWidth: 200,
-        text: 'CDKN2A (9p21)',
-      },
-      {
-        type: 'arrow',
-        from: { x: 1000, y: STACK_TOP + 627 },
-        to: { x: wgX('9', 21967752), y: STACK_TOP + 457 },
-      },
-      {
-        type: 'text',
-        x: 1090,
-        y: STACK_TOP + 532,
-        fontSize: 20,
-        maxWidth: 200,
-        text: 'CCND1 (11q13)',
-      },
-      {
-        type: 'arrow',
-        from: { x: 1150, y: STACK_TOP + 519 },
-        to: { x: wgX('11', 69641156), y: STACK_TOP + 422 },
-      },
-      {
-        type: 'text',
-        x: 1450,
-        y: STACK_TOP + 532,
-        fontSize: 20,
-        maxWidth: 200,
-        text: 'ERBB2 (17q12)',
-      },
-      {
-        type: 'arrow',
-        from: { x: 1515, y: STACK_TOP + 519 },
-        to: { x: wgX('17', 39688094), y: STACK_TOP + 422 },
-      },
-    ],
+    ),
   },
 
   // chr17:39.0-40.5Mb, spanning ERBB2 (39.69-39.73Mb), the HER2 of HER2-positive
