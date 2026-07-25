@@ -1,6 +1,6 @@
-export { getColorByMenuItem } from './colorBy.tsx'
-export type { ModificationsModel } from './colorBy.tsx'
-export { getContextMenuItems } from './contextMenu.ts'
+export { getColorByMenuItem } from './colorBy.ts'
+export type { ModificationsModel } from './colorBy.ts'
+export { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 export { getCoverageMenuItem } from './coverage.ts'
 export {
   COMPACTNESS_PRESETS,
@@ -11,6 +11,7 @@ export {
 export { getFiltersMenuItem } from './filters.ts'
 export { groupByRadioMenuItem } from './groupByMenu.ts'
 export type { GroupByRadioItem } from './groupByMenu.ts'
+export { checkboxItem } from './menuHelpers.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getMaxHeightMenuItem, getReadsMenuItem } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'

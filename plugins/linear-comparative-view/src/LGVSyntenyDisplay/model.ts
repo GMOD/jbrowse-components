@@ -11,18 +11,16 @@ import {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
+  getHitMenuItems,
   getSortByMenuItem,
   linearAlignmentsDisplayStateModelFactory,
   pickColorOptions,
 } from '@jbrowse/plugin-alignments'
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import {
-  canLaunchSyntenyForMate,
-  findVisibleBlockForFeature,
-  getMate,
-} from './components/util.ts'
+import { canLaunchSyntenyForMate, getMate } from './components/util.ts'
 import { resolveDisplayLodMode } from './lodMode.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
@@ -96,6 +94,16 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             id: 'syntenyFeature',
           }
         },
+
+        /**
+         * #getter
+         * A row here is a PAF block, not a read — the group-label chips say
+         * "Show all features". Matches the `noun` the menu builders below are
+         * passed.
+         */
+        get featureNoun() {
+          return 'feature'
+        },
       }))
       .views(self => {
         const superRpcProps = self.rpcProps
@@ -134,69 +142,75 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * #method
          */
         contextMenuItems() {
+          // The mismatch / interbase-indicator details come from the base
+          // alignments display: this display renders those same layers off the
+          // PAF cs/CIGAR (see its "Show..." menu), so a right-click on one has
+          // to reach its details — before this, a right-click on an interbase
+          // indicator (which carries no feature) produced no menu at all. The
+          // read-specific half of the base menu (mate, read/HP/RG filters, read
+          // name + sequence copies) is what a PAF block has no answer for, and
+          // is replaced by the feature items below. `sort: false` because the
+          // curated "Sort by..." menu offers no position-anchored mode.
+          const items: MenuItem[] = getHitMenuItems(self, { sort: false })
           const feature = self.contextMenuFeature
-          const mateAssembly = feature
-            ? getMate(feature).assemblyName
-            : undefined
-          const canLaunchSynteny = canLaunchSyntenyForMate(
-            getConf(getContainingTrack(self), 'assemblyNames'),
-            mateAssembly,
-          )
-          return feature
-            ? [
-                {
-                  label: 'Open feature details',
-                  icon: MenuOpenIcon,
-                  onClick: () => {
-                    self.selectFeature(feature)
-                  },
+          if (feature) {
+            // The visible block the user right-clicked in, which the launch
+            // dialog offers to clip the synteny view to. Snapshotted here rather
+            // than read in the onClick because closeContextMenu nulls it first,
+            // and taken from the click rather than searched for by refName: a
+            // feature abutting a region boundary overlaps two visible blocks,
+            // and only the cursor says which one it was drawn in.
+            const block = self.contextMenuBlock
+            const canLaunchSynteny = canLaunchSyntenyForMate(
+              getConf(getContainingTrack(self), 'assemblyNames'),
+              getMate(feature).assemblyName,
+            )
+            items.push({
+              label: 'Open feature details',
+              icon: MenuOpenIcon,
+              onClick: () => {
+                self.selectFeature(feature)
+              },
+            })
+            if (canLaunchSynteny) {
+              items.push({
+                label: 'Launch synteny view for this position',
+                icon: CompareArrowsIcon,
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    LaunchSyntenyViewDialog,
+                    {
+                      region: block
+                        ? { start: block.bpRange[0], end: block.bpRange[1] }
+                        : undefined,
+                      trackId: getConf(getContainingTrack(self), 'trackId'),
+                      handleClose,
+                      session: getSession(self),
+                      feature,
+                    },
+                  ])
                 },
-                ...(canLaunchSynteny
-                  ? [
-                      {
-                        label: 'Launch synteny view for this position',
-                        onClick: () => {
-                          getSession(self).queueDialog(handleClose => [
-                            LaunchSyntenyViewDialog,
-                            {
-                              visibleRegion: findVisibleBlockForFeature(
-                                getContainingView(
-                                  self,
-                                ) as LinearGenomeViewModel,
-                                feature,
-                              ),
-                              trackId: getConf(
-                                getContainingTrack(self),
-                                'trackId',
-                              ),
-                              handleClose,
-                              session: getSession(self),
-                              feature,
-                            },
-                          ])
-                        },
-                      },
-                    ]
-                  : []),
-                {
-                  label: 'Copy info to clipboard',
-                  icon: ContentCopyIcon,
-                  onClick: async () => {
-                    const session = getSession(self)
-                    try {
-                      const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
-                      const { default: copy } =
-                        await import('@jbrowse/core/util/copyToClipboard')
-                      copy(JSON.stringify(rest, null, 4))
-                      session.notify('Copied to clipboard', 'success')
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    }
-                  },
-                },
-              ]
-            : []
+              })
+            }
+            items.push({
+              label: 'Copy info to clipboard',
+              icon: ContentCopyIcon,
+              onClick: async () => {
+                const session = getSession(self)
+                try {
+                  const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
+                  const { default: copy } =
+                    await import('@jbrowse/core/util/copyToClipboard')
+                  copy(JSON.stringify(rest, null, 4))
+                  session.notify('Copied to clipboard', 'success')
+                } catch (e) {
+                  console.error(e)
+                  session.notifyError(`${e}`, e)
+                }
+              },
+            })
+          }
+          return items
         },
         /**
          * #method

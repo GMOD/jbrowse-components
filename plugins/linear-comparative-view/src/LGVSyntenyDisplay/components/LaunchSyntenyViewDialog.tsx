@@ -6,6 +6,7 @@ import { Checkbox, FormControlLabel } from '@mui/material'
 
 import { navToSynteny } from './util.ts'
 
+import type { RegionOfInterest } from './util.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 const DEFAULT_WINDOW_SIZE = 1000
@@ -19,13 +20,13 @@ const useStyles = makeStyles()({
 
 export default function LaunchSyntenyViewDialog({
   session,
-  visibleRegion,
+  region,
   feature,
   trackId,
   handleClose,
 }: {
   session: AbstractSessionModel
-  visibleRegion?: { refName: string; start: number; end: number }
+  region?: RegionOfInterest
   feature: Feature
   trackId: string
   handleClose: () => void
@@ -54,13 +55,13 @@ export default function LaunchSyntenyViewDialog({
             horizontallyFlip,
             trackId,
             session,
-            region: useRegionOfInterest ? visibleRegion : undefined,
+            region: useRegionOfInterest ? region : undefined,
           })
           handleClose()
         }
       }}
     >
-      {visibleRegion && hasCIGAR ? (
+      {region && hasCIGAR ? (
         <FormControlLabel
           className={classes.formControl}
           control={

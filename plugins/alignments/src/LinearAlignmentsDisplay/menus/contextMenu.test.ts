@@ -1,4 +1,4 @@
-import { getContextMenuItems } from './contextMenu.ts'
+import { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
@@ -331,4 +331,38 @@ test('copy submenu includes 1-based location when the feature has a refName', ()
     'Copy location',
     'Copy feature info',
   ])
+})
+
+// LGVSyntenyDisplay reuses the hit items but curates the sort out (its own
+// "Sort by..." menu offers no position-anchored mode), so each hit collapses
+// from a submenu to the bare details item.
+describe('getHitMenuItems with sort: false', () => {
+  test('a cigar hit becomes a flat details item', () => {
+    const items = getHitMenuItems(
+      makeModel({
+        contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42 },
+      }),
+      { sort: false },
+    )
+    expect(items.map(i => (i as { label?: string }).label)).toEqual([
+      'Open snp/mismatch details',
+    ])
+    expect(items.every(i => !('subMenu' in i))).toBe(true)
+  })
+
+  test('an indicator hit still reaches its details, with no sort peer', () => {
+    const items = getHitMenuItems(
+      makeModel({
+        contextMenuIndicatorHit: {
+          type: 'indicator',
+          position: 100,
+          indicatorType: 'insertion',
+        },
+      }),
+      { sort: false },
+    )
+    expect(items.map(i => (i as { label?: string }).label)).toEqual([
+      'Open insertion details',
+    ])
+  })
 })

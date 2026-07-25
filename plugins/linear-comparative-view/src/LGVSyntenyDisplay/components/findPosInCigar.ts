@@ -14,8 +14,8 @@ import {
 //   [featX, mateX] — how far we advanced on the target axis (capped at
 //   startX) and the corresponding distance on the query/mate axis.
 //
-// Used by navToSynteny to translate a user-visible region into the matching
-// mate region via CIGAR walk.
+// Used by buildSyntenyViewSpec to translate a user-visible region into the
+// matching mate region via CIGAR walk.
 //
 // Insertion-at-the-boundary rule: an insertion is zero-width on the feature
 // axis, so a feature-offset that lands exactly on one maps ambiguously to
@@ -25,7 +25,7 @@ import {
 // region's start therefore keeps a leading insertion (start lands to its
 // left); mapping its end drops a trailing insertion (end lands to its left).
 // Adjacent regions thus never double-count or drop a boundary insertion.
-// navToSynteny pads both ends by windowSize regardless, so this sub-insertion
+// The launch pads both ends by windowSize regardless, so this sub-insertion
 // precision is immaterial in practice.
 //
 // M/=/X/I/D/N ops are recognized — H/S/P (clips/padding, zero-width on the

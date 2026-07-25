@@ -101,6 +101,11 @@ async function copyText(self: ContextMenuModel, text: string, what: string) {
 // the pileup by what's under the cursor, or open its details widget. `block` is
 // captured once by getContextMenuItems and read inside the onClicks because
 // closeContextMenu nulls self.contextMenuBlock before they fire.
+//
+// `sort` false collapses the pair to the bare details item — for a display whose
+// sort menu doesn't offer the position-anchored modes (LGVSyntenyDisplay), where
+// the submenu's sort peer would set an ordering its own "Sort by..." radio group
+// can't show as checked.
 function sortAndDetailsSubMenu({
   self,
   block,
@@ -110,6 +115,7 @@ function sortAndDetailsSubMenu({
   position,
   detailsLabel,
   openDetails,
+  sort,
 }: {
   self: ContextMenuModel
   block: ResolvedBlock | undefined
@@ -119,35 +125,39 @@ function sortAndDetailsSubMenu({
   position: number
   detailsLabel: string
   openDetails: (block: ResolvedBlock) => void
+  sort: boolean
 }): MenuItem {
-  return {
-    label,
-    type: 'subMenu',
-    subMenu: [
-      {
-        label: sortLabel,
-        icon: SwapVertIcon,
-        onClick: () => {
-          if (block) {
-            self.setSortedByAtPosition({
-              type: sortType,
-              pos: position,
-              refName: block.refName,
-            })
-          }
-        },
-      },
-      {
-        label: detailsLabel,
-        icon: MenuOpenIcon,
-        onClick: () => {
-          if (block) {
-            openDetails(block)
-          }
-        },
-      },
-    ],
+  const detailsItem = {
+    label: detailsLabel,
+    icon: MenuOpenIcon,
+    onClick: () => {
+      if (block) {
+        openDetails(block)
+      }
+    },
   }
+  return sort
+    ? {
+        label,
+        type: 'subMenu',
+        subMenu: [
+          {
+            label: sortLabel,
+            icon: SwapVertIcon,
+            onClick: () => {
+              if (block) {
+                self.setSortedByAtPosition({
+                  type: sortType,
+                  pos: position,
+                  refName: block.refName,
+                })
+              }
+            },
+          },
+          detailsItem,
+        ],
+      }
+    : detailsItem
 }
 
 // Quick per-read filters (read name / HP / RG) plus a clear item, shown only
@@ -247,11 +257,15 @@ function getCopySubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
   return sub
 }
 
-// Right-click menu over the pileup: sort/details for the CIGAR op or coverage
-// indicator under the cursor, plus mate-view and feature-detail actions for the
-// read itself. Split out of the model to mirror trackMenuItems (menus/index.ts).
-export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
-  const feat = self.contextMenuFeature
+// Items for what sits under the cursor — the CIGAR op, the modified base, the
+// coverage interbase indicator — as opposed to the read the cursor is over.
+// Nothing here reads a read/pair field, so LGVSyntenyDisplay (which draws the
+// same mismatch and interbase layers off a PAF cs/CIGAR) reuses them, with
+// `sort: false` since its sort menu offers no position-anchored mode.
+export function getHitMenuItems(
+  self: ContextMenuModel,
+  { sort = true }: { sort?: boolean } = {},
+): MenuItem[] {
   const cigarHit = self.contextMenuCigarHit
   const indicatorHit = self.contextMenuIndicatorHit
   const modHit = self.contextMenuModHit
@@ -275,6 +289,7 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         openDetails: b => {
           openCigarWidget(self, cigarHit, b.refName)
         },
+        sort,
       }),
     )
   }
@@ -311,9 +326,21 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         openDetails: b => {
           openIndicatorWidget(self, indicatorHit, b.refName, b.rpcData)
         },
+        sort,
       }),
     )
   }
+
+  return items
+}
+
+// Right-click menu over the pileup: the hit items above, plus mate-view,
+// filter, copy and feature-detail actions for the read itself. Split out of the
+// model to mirror trackMenuItems (menus/index.ts).
+export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
+  const feat = self.contextMenuFeature
+  const block = self.contextMenuBlock
+  const items = getHitMenuItems(self)
 
   if (feat) {
     items.push({
