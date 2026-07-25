@@ -144,43 +144,6 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
   ],
 }
 
-// 979 of the same primary tumors, from GDC open-access Masked Somatic Mutation
-// MAFs pivoted into one multi-sample VCF by scripts/maf_to_vcf.py. The clinical
-// TSV rides on the adapter (samplesTsvLocation), which is what lets groupBy/
-// colorBy name a clinical attribute rather than a barcode.
-const TCGA_BRCA_MUTATION_TRACK = {
-  type: 'VariantTrack',
-  trackId: 'tcga_brca_mutations',
-  name: 'TCGA-BRCA somatic mutations (979 primary tumors)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'VcfTabixAdapter',
-    vcfGzLocation: {
-      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz.tbi',
-        locationType: 'UriLocation',
-      },
-    },
-    samplesTsvLocation: {
-      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv',
-      locationType: 'UriLocation',
-    },
-  },
-  displays: [
-    {
-      type: 'LinearMultiSampleVariantMatrixDisplay',
-      height: 520,
-      groupBy: 'subtype',
-      colorBy: 'subtype',
-    },
-  ],
-}
-
 // The tree sidebar only mounts once clustering has produced a hierarchy
 // (TreeSidebar returns null on `!hierarchy`), so waiting on its canvas gates the
 // capture on real completion rather than on a duration guess.
@@ -397,49 +360,5 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // 1104 rows floored to 1px alias differently run to run, same as the
     // clustered genome figure above
     diffThreshold: 0.02,
-  },
-
-  // chr3:179.15-179.24Mb, the PIK3CA kinase and helical domains, as a mutation
-  // matrix over 979 tumors grouped and colored by clinical receptor subtype.
-  // The H1047R column (118 tumors) is the one that fills; everything around it
-  // is the private-passenger background that makes a cohort MAF mostly singleton
-  // columns. This is the figure for the clinical samples-TSV join: without it
-  // the rows are 979 barcodes in alphabetical order.
-  {
-    mode: 'url',
-    name: 'tcga/mutations_pik3ca',
-    url: kgUrl({
-      sessionTracks: [TCGA_BRCA_MUTATION_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '3:179,148,000-179,240,000',
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'MANE.GRCh38.v1.4.refseq',
-              type: 'LinearBasicDisplay',
-              height: 84,
-            },
-            {
-              trackId: 'tcga_brca_mutations',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 520,
-            },
-          ],
-        },
-      ],
-    }),
-    // the track label only mounts once the session's tracks are on the view, so
-    // this gates out the blank "Loading" frame a slow config fetch can otherwise
-    // leave as the capture
-    readyText: 'somatic mutations',
-    readyTimeout: 120000,
-    viewportWidth: 1500,
-    // the matrix is 520px of rows plus the gene lane, ruler and legends: at 760
-    // the last rows fell off the bottom edge
-    viewportHeight: 900,
-    settleMs: 15000,
   },
 ]

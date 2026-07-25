@@ -53,15 +53,13 @@ The full TCGA-BRCA run takes about 15 minutes, almost all of it downloading, and
 produces 379,318 segments across 1104 tumors in a 5.7 MB file. Swap in any other
 project id (`TCGA-OV`, `TCGA-LUAD`, ...) for a different cohort.
 
-To skip the build entirely and just load the finished files, all four are hosted
+To skip the build entirely and just load the finished files, both are hosted
 under `https://jbrowse.org/demos/tcga/`:
 
-| File                                   | What                                     |
-| -------------------------------------- | ---------------------------------------- |
-| `tcga_brca_cnv.bed.gz`                 | the segment stack below                  |
-| `tcga_brca_cnv_recurrence.bedGraph.gz` | cohort gain/loss frequencies             |
-| `tcga_brca_mutations.vcf.gz`           | somatic mutations, 979 tumors            |
-| `tcga_brca_clinical.tsv`               | receptor subtype and histology per tumor |
+| File                                   | What                         |
+| -------------------------------------- | ---------------------------- |
+| `tcga_brca_cnv.bed.gz`                 | the segment stack below      |
+| `tcga_brca_cnv_recurrence.bedGraph.gz` | cohort gain/loss frequencies |
 
 ## What the script is doing
 
@@ -298,93 +296,6 @@ This is a frequency plot, not
 model, no significance test, and no peak calling, and amplitude enters only
 through the gain/loss cutoff. It answers "in what fraction of the cohort", not
 "more often than chance".
-
-## Add the mutations
-
-Copy number is one of two somatic layers the GDC releases open-access for the
-same tumors. The other is point mutations, and they stack the same way: one row
-per tumor, one column per site, so a recurrent driver reads as a filled column
-instead of a stripe. A second script builds it:
-
-```bash
-bash scripts/build_tcga_somatic_mutations.sh TCGA-BRCA
-# -> tcga_brca_mutations.vcf.gz (+ .tbi), tcga_brca_clinical.tsv
-```
-
-That downloads 986 **Masked Somatic Mutation** MAFs (32 MB, ~5 minutes) and
-produces 87,574 sites across 979 primary tumors in an 8 MB VCF, plus a clinical
-TSV covering every one of those tumors.
-
-**Why a VCF.** The matrix display reads genotypes, and a MAF is the transpose of
-that: one file per tumor, listing only its mutated sites.
-[`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
-pivots them into one record per site with a genotype for every tumor. Three
-things in that step are worth knowing if you adapt it:
-
-- A tumor with no call at a site is written `0/0`. A masked MAF carries only
-  variants, no reference or coverage evidence, so `0/0` means "this MAF reports
-  no mutation here", not "sequenced and reference".
-- MAF writes indels as the changed bases alone (`-` on the other side) and VCF
-  needs the base before the event. The MAF's own `CONTEXT` column is an 11-mer
-  of reference around the site, so the anchor base is already in the file and no
-  FASTA is needed.
-- The MAF's VEP columns are carried through as an `INFO/CSQ` field in default
-  VEP field order, which is what the display's **Color by consequence impact**
-  menu item reads.
-
-**The clinical TSV.** `samplesTsvLocation` joins per-sample metadata onto the
-rows by name, which is what turns 979 barcodes into readable groups.
-[`gdc_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gdc_clinical_tsv.py)
-writes one row per primary-tumor barcode with `histology`, `er`, `pr`, `her2`,
-`subtype` and `stage`, all from the GDC's open clinical endpoint. Receptor
-status lives in `follow_ups.molecular_tests`, one row per assay, so the script
-resolves a case to positive if any assay called positive, else negative, else
-equivocal. That is a summary of the assays, not a curated clinical call. For
-TCGA-BRCA it labels the 979 tumors as 596 HR+/HER2-, 179 HER2+, 140
-triple-negative, and 64 unknown.
-
-```json
-{
-  "type": "VariantTrack",
-  "trackId": "tcga_brca_mutations",
-  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
-  "assemblyNames": ["hg38"],
-  "category": ["TCGA"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "tcga_brca_mutations.vcf.gz",
-    "samplesTsvLocation": { "uri": "tcga_brca_clinical.tsv" }
-  },
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
-      "height": 500,
-      "groupBy": "subtype",
-      "colorBy": "subtype"
-    }
-  ]
-}
-```
-
-[`groupBy`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-groupby)
-makes each subtype's rows contiguous, so a mutation that concentrates in one
-subtype reads as a block rather than as scattered rows;
-[`colorBy`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-colorby)
-paints the sidebar strip with the same attribute. Any other column of the TSV
-works in either slot: `histology` against 16q loss is the other pairing this
-cohort is known for.
-
-Navigate to PIK3CA (chr3:179,148,000-179,240,000) and the hotspot columns are
-the ones that fill: H1047R in 118 of the 979 tumors, E545K in 67, E542K in 41,
-N345K in 17. AKT1 E17K reaches 24 and TP53 R175H 19, while GATA3's frameshifts
-spread over neighboring positions instead of stacking into one column. That
-spread is the general case: 87,574 sites, a median of 44 mutations per tumor,
-and only 84 sites mutated in 3 or more tumors, so most columns carry a single
-cell. Raising
-[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
-drops the singletons and leaves the recurrent columns.
-
-<Figure caption="PIK3CA across 979 primary tumors as a variant matrix, rows grouped and colored by clinical receptor subtype (the sidebar strip). The dense column near the right edge is the H1047R hotspot in 118 tumors; the scattered single cells are the private passenger mutations that most of the 87,574 sites are." src="/img/tcga/mutations_pik3ca.png" />
 
 ## Using your own cohort
 
