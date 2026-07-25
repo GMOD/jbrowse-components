@@ -96,11 +96,13 @@ base deliberately stay widened. Do not pin them just to enable this.
 exactly what the untyped action exists for. So does the config editor's slot
 facade. `setSlot` is not deprecated, it is just not for named slots.
 
-`plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts` is a third case. It is a
-mixin, so its `self` is not typed with `configuration` at all. Centralizing that
-cast is the original reason `setConf` exists, so this one can migrate, but
-confirm the mixin's `self` satisfies `{ configuration: AnyConfigurationModel }`
-first.
+`plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts` was a third case, now
+done. It is a mixin, so its `self` is not typed with `configuration` at all, and
+it had grown its own local `setConf` plus a `ConfNode` cast carrying `setSlot` —
+duplicating the cast core `setConf` exists to centralize. It now calls
+`setConf(confNode(self), ...)` and `ConfNode` is down to
+`{ configuration: AnyConfigurationModel }`. Slot names stay unchecked there,
+since that type is widened; the win was deleting the duplicate cast.
 
 ## Concurrency hazard, read this before starting
 
@@ -152,8 +154,29 @@ These are alignments items, not config items. They belong in
   against the house prose style. Every other file from that pass was converted,
   but `renderSvg.tsx` was carrying another agent's uncommitted edit at the time
   and committing it would have published their work. Convert when it is clean.
-- The coverage y-axis **side** still differs between screen and export. On
-  screen an ungrouped axis is on the left, a grouped one is on the right, and the
-  compact `[0, max]` label is always on the right. The export always draws on the
-  left. The compact-vs-full divergence was fixed (`e347808337`, shared through
-  `coverageAxisStyle.ts`), the side was not.
+- The coverage y-axis **side** still differs between screen and export. The
+  compact-vs-full divergence was fixed (`e347808337`, shared through
+  `coverageAxisStyle.ts`), the side was not. Diagnosed but not fixed, because
+  `renderSvg.tsx` was still carrying another agent's in-flight edit. Exactly
+  what to change:
+
+  On screen (`components/PileupComponent.tsx`) the side is a three-way choice.
+  Ungrouped and full-height draws left (`orientation="left"` at
+  `scalebarOverlapLeft`). Grouped and full-height draws **right**
+  (`orientation="right"` at `right: SCROLLBAR_WIDTH + 2`), deliberately, so the
+  axis clears the group label chips anchored at `left: 4`. The compact
+  `[0, max]` label is right in both cases (`classes.compactAxisLabel`, `right:
+  SCROLLBAR_WIDTH + 2`).
+
+  In export, `CoverageScaleBars` in `renderSvg.tsx` hardcodes all three to the
+  left: the compact `<text>` sits at `x={left}` and the full bar is
+  `orientation="left"`. So a grouped export puts the axis straight through the
+  group labels. Its comment claims it mirrors `CoverageAxisHost`, which is true
+  only of the compact-vs-full choice, so fix the comment too.
+
+  The pattern to copy is `InsertSizeScaleBar`, immediately below it in the same
+  file, which already switches side correctly and anchors its right-hand case at
+  `translate(canvasWidth - 50)`. `CoverageScaleBars` needs the grouped flag
+  threaded in and a right-hand branch; note there is no scrollbar in an export,
+  so `SCROLLBAR_WIDTH` is not the right inset, and the compact `<text>` will
+  want `textAnchor="end"` rather than a bare `x`.
