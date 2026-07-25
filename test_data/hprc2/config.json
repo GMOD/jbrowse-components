@@ -49,7 +49,10 @@
           "forceLoad": true,
           "legend": [
             { "label": "Yoruba (NA19240)", "color": "rgb(0,232,178)" },
-            { "label": "Kinh Vietnamese (HG02135)", "color": "rgb(255,114,53)" },
+            {
+              "label": "Kinh Vietnamese (HG02135)",
+              "color": "rgb(255,114,53)"
+            },
             { "label": "Iberian (HG01530)", "color": "rgb(229,161,255)" }
           ]
         }
