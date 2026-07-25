@@ -25,11 +25,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // The RenderMultiWiggleData RPC result for a region the adapter has no features
 // in: getFallbackSourceArrays groups zero features into zero source arrays and
-// getSources([region]) finds no `source` values, so the executor returns an
+// getSources(regions) finds no `source` values, so the executor returns an
 // empty sources list. This is exactly what a bedMethyl file returns for a
-// chromosome it doesn't cover.
-function makeEmptyMultiWiggleData(): WiggleDataResult {
-  return { sources: [] }
+// chromosome it doesn't cover. The RPC is batched (one call, all regions), so
+// the result is an array — one entry per requested region.
+function makeEmptyMultiWiggleData(): WiggleDataResult[] {
+  return [{ sources: [] }]
 }
 
 // A RenderMultiWiggleData RPC result naming the given sources (feature arrays

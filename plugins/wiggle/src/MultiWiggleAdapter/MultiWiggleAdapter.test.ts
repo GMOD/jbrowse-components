@@ -468,8 +468,14 @@ describe('MultiWiggleAdapter.getSources', () => {
   })
 })
 
-describe('MultiWiggleAdapter.getMultiSourceFeatureArrays', () => {
+describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
   const region = { refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }
+  const region2 = {
+    refName: 'chr1',
+    start: 500,
+    end: 600,
+    assemblyName: 'hg38',
+  }
 
   function makeRaw(score: number) {
     return {
@@ -482,7 +488,43 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArrays', () => {
     }
   }
 
-  it('takes the fast path on inner adapters that expose getFeatureArrays', async () => {
+  function makeAdapter(inner: Record<string, unknown>, sources = ['a', 'b']) {
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async (conf: { source?: string }) =>
+        ({
+          dataAdapter: { id: conf.source ?? 'mock', ...inner },
+        }) as any,
+    )
+    return new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: sources.map(source => ({
+          type: 'BigWigAdapter',
+          source,
+          bigWigLocation: { uri: `${source}.bw` },
+        })),
+      }),
+      mockGetSubAdapter,
+    )
+  }
+
+  // The point of the batch: a subadapter that can serve every region in one
+  // pass (BigWig coalesces adjacent on-disk blocks across region boundaries)
+  // gets called ONCE with all of them, not once per region.
+  it('hands all regions to a subadapter that exposes getFeatureArraysMulti', async () => {
+    const multi = jest.fn().mockResolvedValue([makeRaw(1), makeRaw(2)])
+    const adapter = makeAdapter({ getFeatureArraysMulti: multi }, ['a'])
+    const result = await adapter.getMultiSourceFeatureArraysMulti(
+      [region, region2],
+      { bpPerPx: 1, resolution: 1 },
+    )
+    expect(multi).toHaveBeenCalledTimes(1)
+    expect(multi.mock.calls[0]![0]).toEqual([region, region2])
+    expect(result).toHaveLength(1)
+    expect(result[0]!.source).toBe('a')
+    expect(result[0]!.raws.map(r => r.scores[0])).toEqual([1, 2])
+  })
+
+  it('falls back to one getFeatureArrays call per region', async () => {
     const fastA = jest.fn().mockResolvedValue(makeRaw(1))
     const fastB = jest.fn().mockResolvedValue(makeRaw(2))
     const mockGetSubAdapter = jest.fn().mockImplementation(
@@ -511,56 +553,32 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArrays', () => {
       }),
       mockGetSubAdapter,
     )
-    const result = await adapter.getMultiSourceFeatureArrays(region, {
-      bpPerPx: 1,
-      resolution: 1,
-    })
-    expect(fastA).toHaveBeenCalledTimes(1)
-    expect(fastB).toHaveBeenCalledTimes(1)
+    const result = await adapter.getMultiSourceFeatureArraysMulti(
+      [region, region2],
+      { bpPerPx: 1, resolution: 1 },
+    )
+    expect(fastA).toHaveBeenCalledTimes(2)
+    expect(fastB).toHaveBeenCalledTimes(2)
     expect(result.map(r => r.source)).toEqual(['a', 'b'])
-    expect(result[0]!.raw.scores[0]).toBe(1)
-    expect(result[1]!.raw.scores[0]).toBe(2)
+    expect(result[0]!.raws).toHaveLength(2)
+    expect(result[0]!.raws[0]!.scores[0]).toBe(1)
+    expect(result[1]!.raws[1]!.scores[0]).toBe(2)
   })
 
-  it('falls back to getFeatures+featuresToRaw when getFeatureArrays is absent', async () => {
-    const slowGetFeatures = jest.fn().mockReturnValue({
-      pipe: () => ({
-        subscribe: (subscriber: any) => {
-          subscriber.next?.([
-            { get: (k: string) => ({ start: 5, end: 15, score: 7 })[k] },
-          ])
-          subscriber.complete?.()
-        },
-      }),
-    })
-    const mockGetSubAdapter = jest.fn().mockImplementation(
-      async () =>
-        ({
-          dataAdapter: {
-            id: 'slow',
-            getFeatures: slowGetFeatures,
-          },
-        }) as any,
-    )
-    const adapter = new MultiWiggleAdapter(
-      configSchema.create({
-        subadapters: [
-          {
-            type: 'OtherAdapter',
-            source: 'slow',
-            bigWigLocation: { uri: 's.bw' },
-          },
-        ],
-      }),
-      mockGetSubAdapter,
-    )
-    const result = await adapter.getMultiSourceFeatureArrays(region, {
+  it('falls back to getFeaturesArray+featuresToRaw when neither array method exists', async () => {
+    const getFeaturesArray = jest
+      .fn()
+      .mockResolvedValue([
+        { get: (k: string) => ({ start: 5, end: 15, score: 7 })[k] },
+      ])
+    const adapter = makeAdapter({ getFeaturesArray }, ['slow'])
+    const result = await adapter.getMultiSourceFeatureArraysMulti([region], {
       bpPerPx: 1,
       resolution: 1,
     })
-    expect(slowGetFeatures).toHaveBeenCalledTimes(1)
+    expect(getFeaturesArray).toHaveBeenCalledTimes(1)
     expect(result[0]!.source).toBe('slow')
-    expect(result[0]!.raw.scores[0]).toBe(7)
+    expect(result[0]!.raws[0]!.scores[0]).toBe(7)
   })
 
   it('filters inner adapters by opts.sources', async () => {
@@ -592,7 +610,7 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArrays', () => {
       }),
       mockGetSubAdapter,
     )
-    const result = await adapter.getMultiSourceFeatureArrays(region, {
+    const result = await adapter.getMultiSourceFeatureArraysMulti([region], {
       bpPerPx: 1,
       resolution: 1,
       sources: [{ name: 'b' }],
@@ -611,29 +629,12 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArrays', () => {
       maxScores: undefined,
       count: 2,
     })
-    const mockGetSubAdapter = jest.fn().mockImplementation(
-      async () =>
-        ({
-          dataAdapter: { id: 'a', getFeatureArrays: fast },
-        }) as any,
-    )
-    const adapter = new MultiWiggleAdapter(
-      configSchema.create({
-        subadapters: [
-          {
-            type: 'BigWigAdapter',
-            source: 'a',
-            bigWigLocation: { uri: 'a.bw' },
-          },
-        ],
-      }),
-      mockGetSubAdapter,
-    )
-    const result = await adapter.getMultiSourceFeatureArrays(region, {
+    const adapter = makeAdapter({ getFeatureArrays: fast }, ['a'])
+    const result = await adapter.getMultiSourceFeatureArraysMulti([region], {
       bpPerPx: 1,
       resolution: 1,
     })
-    expect(result[0]!.raw.count).toBe(2)
-    expect(Array.from(result[0]!.raw.scores)).toEqual([3, -2])
+    expect(result[0]!.raws[0]!.count).toBe(2)
+    expect(Array.from(result[0]!.raws[0]!.scores)).toEqual([3, -2])
   })
 })

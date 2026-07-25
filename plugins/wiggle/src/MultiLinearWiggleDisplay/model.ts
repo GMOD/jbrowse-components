@@ -9,7 +9,7 @@ import {
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
-  fetchEachRegion,
+  fetchAllRegions,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   TreeSidebarMixin,
@@ -353,17 +353,23 @@ export default function stateModelFactory(
             const { bpPerPx } = view
             const sessionId = getRpcSessionId(self)
             const { rpcManager } = getSession(self)
-            return fetchEachRegion(self, needed, {
-              call: (region, ctx, displayedRegionIndex) =>
+            // Batched, not per-region: every subtrack adapter gets all the
+            // visible regions in one call, so a whole-genome or
+            // collapsed-intron view coalesces each file's on-disk blocks into
+            // one pass instead of one pass per region per subtrack. The
+            // regions land together rather than painting progressively.
+            return fetchAllRegions(self, needed, {
+              call: (regions, ctx) =>
                 rpcManager.call(sessionId, 'RenderMultiWiggleData', {
                   adapterConfig,
-                  region,
+                  regions,
                   sources: sourcesWithoutLayout,
                   ...self.rpcProps(),
                   stopToken: ctx.stopToken,
                   bpPerPx,
-                  statusCallback:
-                    self.makeRegionStatusCallback(displayedRegionIndex),
+                  statusCallback: self.makeRegionStatusCallback(
+                    needed[0]!.displayedRegionIndex,
+                  ),
                 }),
               onResult: (idx, result) => {
                 self.setRpcData(idx, result)

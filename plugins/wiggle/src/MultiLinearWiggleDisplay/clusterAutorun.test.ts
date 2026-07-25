@@ -42,8 +42,10 @@ function makeSource(name: string): WiggleSourceData {
   }
 }
 
-function makeMultiWiggleData(...names: string[]): WiggleDataResult {
-  return { sources: names.map(makeSource) }
+// RenderMultiWiggleData is batched — one call for every visible region — so the
+// result is an array with one entry per requested region.
+function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
+  return [{ sources: names.map(makeSource) }]
 }
 
 function createTestEnvironment() {

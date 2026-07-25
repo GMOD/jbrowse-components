@@ -6,8 +6,6 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import { featuresToRaw, processFeaturesFromArrays } from '../util.ts'
 
@@ -17,29 +15,33 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-// Multi-source wiggle adapters fan out to inner adapters themselves and
-// expose this method. The executor never groups features by source — that
-// would be a third walk over already-typed-array data.
+interface FetchOpts {
+  bpPerPx: number
+  resolution: number
+  sources?: SourceInfo[]
+  stopToken?: StopToken
+}
+
+// Multi-source wiggle adapters fan out to inner adapters themselves and expose
+// this method, handing each of them every region at once so a subtrack whose
+// adapter coalesces reads (BigWig) serves the whole view in one pass. The
+// executor never groups features by source — that would be a third walk over
+// already-typed-array data. `raws` is aligned to the requested regions.
 interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
-  getMultiSourceFeatureArrays(
-    region: Region,
-    opts: {
-      bpPerPx: number
-      resolution: number
-      sources?: SourceInfo[]
-      stopToken?: StopToken
-    },
-  ): Promise<{ source: string; raw: RawFeatureArrays }[]>
+  getMultiSourceFeatureArraysMulti(
+    regions: Region[],
+    opts: FetchOpts,
+  ): Promise<{ source: string; raws: RawFeatureArrays[] }[]>
 }
 
 function isMultiSource(
   adapter: BaseFeatureDataAdapter,
 ): adapter is MultiSourceWiggleAdapter {
-  return 'getMultiSourceFeatureArrays' in adapter
+  return 'getMultiSourceFeatureArraysMulti' in adapter
 }
 
 // `primary` order first (the caller's stable list), then any sources present in
-// this region that the caller didn't know about, appended in adapter order.
+// these regions that the caller didn't know about, appended in adapter order.
 function unionSourcesByName(
   primary: SourceInfo[],
   extra: SourceInfo[],
@@ -51,24 +53,25 @@ function unionSourcesByName(
 // Plain feature adapter (e.g. BedTabixAdapter/BedGraphAdapter) used directly
 // inside a MultiQuantitativeTrack — the modkit bedMethyl use-case. Synthesize
 // per-source arrays by grouping features on their `source` field, mirroring the
-// pre-webgl renderMultiWiggle path.
+// pre-webgl renderMultiWiggle path. A source is listed once it appears in any
+// region, with empty arrays for the regions it's missing from.
 async function getFallbackSourceArrays(
   dataAdapter: BaseFeatureDataAdapter,
-  region: Region,
-  opts: {
-    bpPerPx: number
-    resolution: number
-    sources?: SourceInfo[]
-    stopToken?: StopToken
-  },
-): Promise<{ source: string; raw: RawFeatureArrays }[]> {
-  const features = await firstValueFrom(
-    dataAdapter.getFeatures(region, opts).pipe(toArray()),
+  regions: Region[],
+  opts: FetchOpts,
+): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
+  const groupsPerRegion = await Promise.all(
+    regions.map(async region => {
+      const features = await dataAdapter.getFeaturesArray(region, opts)
+      return groupBy(features, f => `${f.get('source')}`)
+    }),
   )
-  const groups = groupBy(features, f => `${f.get('source')}`)
-  return Object.entries(groups).map(([source, feats]) => ({
+  const sources = [
+    ...new Set(groupsPerRegion.flatMap(groups => Object.keys(groups))),
+  ]
+  return sources.map(source => ({
     source,
-    raw: featuresToRaw(feats),
+    raws: groupsPerRegion.map(groups => featuresToRaw(groups[source] ?? [])),
   }))
 }
 
@@ -77,7 +80,7 @@ interface ExecuteParams {
   args: {
     sessionId: string
     adapterConfig: Record<string, unknown>
-    region: Region
+    regions: Region[]
     sources?: SourceInfo[]
     bicolorPivot?: number
     stopToken?: StopToken
@@ -103,7 +106,7 @@ export async function executeRenderMultiWiggleData({
   const {
     sessionId,
     adapterConfig,
-    region,
+    regions,
     sources: sourcesArg,
     bicolorPivot = 0,
     stopToken,
@@ -127,37 +130,39 @@ export async function executeRenderMultiWiggleData({
     () => {
       const opts = { bpPerPx, resolution, sources: sourcesArg, stopToken }
       return isMulti
-        ? dataAdapter.getMultiSourceFeatureArrays(region, opts)
-        : getFallbackSourceArrays(dataAdapter, region, opts)
+        ? dataAdapter.getMultiSourceFeatureArraysMulti(regions, opts)
+        : getFallbackSourceArrays(dataAdapter, regions, opts)
     },
   )
   checkStopToken2(stopTokenCheck)
 
-  const rawBySource = new Map(perSource.map(p => [p.source, p.raw]))
+  const rawsBySource = new Map(perSource.map(p => [p.source, p.raws]))
   // A multi-source adapter's getSources is authoritative and static, so the
   // caller's list (or getSources) is the whole story. A plain fallback adapter
   // has no source list — its sources are discovered per region — so union the
-  // caller's list with whatever sources this region actually contains.
-  // Otherwise a source with zero features in the first-fetched region would be
-  // absent from that region's list, get echoed back on every later fetch, and
-  // stay invisible even after navigating to where it has data.
+  // caller's list with whatever sources these regions actually contain.
+  // Otherwise a source with zero features in the fetched regions would be
+  // absent from the payload, get echoed back on every later fetch, and stay
+  // invisible even after navigating to where it has data.
   const presentSources: SourceInfo[] = perSource.map(({ source }) => ({
     name: source,
   }))
   const orderedSources: SourceInfo[] = isMulti
     ? sourcesArg?.length
       ? sourcesArg
-      : await dataAdapter.getSources([region])
+      : await dataAdapter.getSources(regions)
     : unionSourcesByName(sourcesArg ?? [], presentSources)
 
-  const result: WiggleDataResult = {
+  // Every region carries the full source list — a source with no features here
+  // still gets an entry, so row placement stays aligned across regions.
+  const results: WiggleDataResult[] = regions.map((_region, regionIndex) => ({
     sources: orderedSources.map(source => ({
       ...source,
       ...processFeaturesFromArrays(
-        rawBySource.get(source.name) ?? EMPTY_RAW,
+        rawsBySource.get(source.name)?.[regionIndex] ?? EMPTY_RAW,
         bicolorPivot,
       ),
     })),
-  }
-  return rpcResult(result, collectWiggleTransferables(result))
+  }))
+  return rpcResult(results, results.flatMap(collectWiggleTransferables))
 }

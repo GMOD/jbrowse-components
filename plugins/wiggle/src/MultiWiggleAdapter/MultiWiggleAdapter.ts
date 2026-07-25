@@ -5,10 +5,11 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { firstValueFrom, merge } from 'rxjs'
-import { map, toArray } from 'rxjs/operators'
+import { merge } from 'rxjs'
+import { map } from 'rxjs/operators'
 
-import { featuresToRaw, getFilename } from '../util.ts'
+import { fetchRegionRaws } from '../fetchRegionRaws.ts'
+import { getFilename } from '../util.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
@@ -105,17 +106,6 @@ interface AdapterEntry {
   [key: string]: unknown
 }
 
-function hasFeatureArrays(
-  adapter: BaseFeatureDataAdapter,
-): adapter is BaseFeatureDataAdapter & {
-  getFeatureArrays(
-    region: Region,
-    opts: WiggleOptions,
-  ): Promise<RawFeatureArrays>
-} {
-  return 'getFeatureArrays' in adapter
-}
-
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['hasResolution']
 
@@ -205,25 +195,19 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
-  public async getMultiSourceFeatureArrays(
-    region: Region,
+  // Every visible region in one call per subtrack: each subadapter is its own
+  // file, so handing it all the regions lets it coalesce reads across them
+  // (BigWig does — see fetchRegionRaws). `raws` is aligned to `regions`.
+  public async getMultiSourceFeatureArraysMulti(
+    regions: Region[],
     opts: WiggleOptions = {},
-  ): Promise<{ source: string; raw: RawFeatureArrays }[]> {
+  ): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
     const adapters = await this.getFilteredAdapters(opts.sources)
     return Promise.all(
-      adapters.map(async adp => {
-        const { source, dataAdapter } = adp
-        if (hasFeatureArrays(dataAdapter)) {
-          return {
-            source,
-            raw: await dataAdapter.getFeatureArrays(region, opts),
-          }
-        }
-        const features = await firstValueFrom(
-          dataAdapter.getFeatures(region, opts).pipe(toArray()),
-        )
-        return { source, raw: featuresToRaw(features) }
-      }),
+      adapters.map(async ({ source, dataAdapter }) => ({
+        source,
+        raws: await fetchRegionRaws(dataAdapter, regions, opts),
+      })),
     )
   }
 

@@ -7,24 +7,16 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
+import { fetchRegionRaws } from '../fetchRegionRaws.ts'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
-  featuresToRaw,
   processFeaturesFromArrays,
 } from '../util.ts'
 
-import type { RawFeatureArrays, WiggleDataResult } from '../util.ts'
+import type { WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-
-interface FetchOpts {
-  bpPerPx: number
-  resolution: number
-  statusCallback?: StatusCallback
-  stopToken?: StopToken
-}
 
 interface ExecuteParams {
   pluginManager: PluginManager
@@ -39,50 +31,6 @@ interface ExecuteParams {
     resolution?: number
     statusCallback?: StatusCallback
   }
-}
-
-// Coalesced multi-region fast path (BigWig): one bbi pass over all regions,
-// adjacent on-disk blocks deduped/merged across region boundaries.
-function hasFeatureArraysMulti(
-  adapter: BaseFeatureDataAdapter,
-): adapter is BaseFeatureDataAdapter & {
-  getFeatureArraysMulti(
-    regions: Region[],
-    opts: FetchOpts,
-  ): Promise<RawFeatureArrays[]>
-} {
-  return 'getFeatureArraysMulti' in adapter
-}
-
-function hasFeatureArrays(
-  adapter: BaseFeatureDataAdapter,
-): adapter is BaseFeatureDataAdapter & {
-  getFeatureArrays(region: Region, opts: FetchOpts): Promise<RawFeatureArrays>
-} {
-  return 'getFeatureArrays' in adapter
-}
-
-// Returns one RawFeatureArrays per region, aligned to input order. Adapters
-// that coalesce (BigWig) serve all regions in a single pass; the rest fall back
-// to the per-region loop that was always here — no behavior change for them.
-function fetchRaws(
-  adapter: BaseFeatureDataAdapter,
-  regions: Region[],
-  opts: FetchOpts,
-): Promise<RawFeatureArrays[]> {
-  if (hasFeatureArraysMulti(adapter)) {
-    return adapter.getFeatureArraysMulti(regions, opts)
-  }
-  if (hasFeatureArrays(adapter)) {
-    return Promise.all(
-      regions.map(region => adapter.getFeatureArrays(region, opts)),
-    )
-  }
-  return Promise.all(
-    regions.map(region =>
-      adapter.getFeaturesArray(region, opts).then(featuresToRaw),
-    ),
-  )
 }
 
 export async function executeRenderWiggleData({
@@ -115,7 +63,7 @@ export async function executeRenderWiggleData({
   const raws = await updateStatus(
     'Downloading wiggle data',
     statusCallback,
-    () => fetchRaws(dataAdapter, regions, fetchOpts),
+    () => fetchRegionRaws(dataAdapter, regions, fetchOpts),
   )
 
   checkStopToken2(stopTokenCheck)
