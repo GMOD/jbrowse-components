@@ -111,23 +111,41 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       // Range Not Satisfiable: requested range starts past end of file
       return new Uint8Array(0)
     }
-    if (!res.ok) {
-      const hint = ' (should be 206 for range requests)'
-      const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${res.status === 200 ? hint : ''}`
+    // A 200 means the server ignored the Range header and sent the whole file
+    // (some servers do this rather than clamping a range whose end is past EOF).
+    // The body then starts at byte 0, but callers slice it at the offsets they
+    // asked for, so every chunk past the first would be filled with data from the
+    // wrong position — silently, and typically surfacing much later as a parse
+    // error like "invalid bgzf header". Only tolerate it when the request started
+    // at 0, where the body genuinely covers the requested bytes. This mirrors
+    // generic-filehandle2's RemoteFile.read, whose equivalent check this class
+    // bypasses by synthesizing its own 206 Response in fetch() below.
+    if (!res.ok || (res.status !== 206 && start !== 0)) {
+      const hint =
+        res.status === 200
+          ? ' (the server ignored the Range header and returned the whole file; byte-range support is required for BAM/CRAM/tabix/bigwig files)'
+          : ''
+      const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${hint}`
       throw Object.assign(new Error(msg), { status: res.status })
     }
+    const buffer = new Uint8Array(await res.arrayBuffer())
     // Parse total file size from Content-Range (e.g. "bytes 0-255/12345"). Always
     // refresh the module-level sizeCache here, so any successful range fetch —
     // including those triggered by a leaked promise from a prior test — leaves
     // the cache in a consistent state for future stat() callers.
     if (!sizeCache.has(url)) {
-      const contentRange = res.headers.get('content-range')
-      const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
-      if (match) {
-        sizeCache.set(url, parseInt(match[1]!, 10))
+      if (res.status === 200) {
+        // no Content-Range on a 200, but the body is the entire file
+        sizeCache.set(url, buffer.byteLength)
+      } else {
+        const contentRange = res.headers.get('content-range')
+        const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
+        if (match) {
+          sizeCache.set(url, parseInt(match[1]!, 10))
+        }
       }
     }
-    return new Uint8Array(await res.arrayBuffer())
+    return buffer
   }
 
   private async getCachedRange(

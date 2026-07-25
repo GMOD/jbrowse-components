@@ -484,4 +484,35 @@ describe('RemoteFileWithRangeCache', () => {
     expect(result).toEqual(slice(0, 99))
     expect(calls).toHaveLength(2)
   })
+
+  // A server that ignores Range and replies 200 with the whole file would
+  // otherwise have its body sliced at the requested offsets, silently serving
+  // bytes from position 0 as if they came from `start` (classic symptom
+  // downstream: "invalid bgzf header").
+  describe('server that ignores range requests', () => {
+    function rangeIgnoringFetch() {
+      return async () => new Response(fileData, { status: 200 })
+    }
+
+    test('throws instead of returning wrong bytes for a range past byte 0', async () => {
+      const file = makeFile(rangeIgnoringFetch())
+      await expect(fetchRange(file, CHUNK, CHUNK + 99)).rejects.toThrow(
+        /ignored the Range header/,
+      )
+    })
+
+    test('accepts a 200 when the request started at 0', async () => {
+      const file = makeFile(rangeIgnoringFetch())
+      // the body does start at byte 0, so slicing it at the requested offsets
+      // is correct — no need to fail a server whose file fits in one chunk
+      expect(await fetchRange(file, 0, 99)).toEqual(slice(0, 99))
+    })
+
+    test('uses the 200 body length as the file size', async () => {
+      const file = makeFile(rangeIgnoringFetch())
+      await fetchRange(file, 0, 99)
+      // there is no Content-Range on a 200, but the body is the whole file
+      expect(await file.stat()).toEqual({ size: FILE_SIZE })
+    })
+  })
 })
