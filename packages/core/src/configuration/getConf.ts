@@ -74,11 +74,11 @@ export function getConf<
  * on an undeclared property, so nothing throws, nothing persists, and the
  * matching `getConf` read keeps returning the default. That is the one config
  * mistake with no diagnostic at any layer. `setSlot` itself stays untyped on
- * purpose — the config editor's slot facade routes dynamic slot names through it
+ * purpose. The config editor's slot facade routes dynamic slot names through it
  * (`configurationSchema.ts`).
  *
  * A wrong *value* type still throws at runtime (MST type-checks the assignment)
- * rather than at compile time; `value` is deliberately `unknown` because the
+ * rather than at compile time. `value` is deliberately `unknown` because the
  * inherit sentinel (`undefined`/`null`) is a legitimate write on every
  * promotable slot, which the declared slot value type doesn't include.
  *

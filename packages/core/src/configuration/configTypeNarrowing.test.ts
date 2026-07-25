@@ -142,12 +142,12 @@ describe('getConf slot-value type narrowing', () => {
 
   // Slot-name typo guard, for BOTH directions. `setConf`'s constraint once
   // carried a stray `| string` (where `getConf`'s is `| string[]`, for slot
-  // paths), which silently admitted any string — and an unknown slot name is the
-  // one config mistake with no diagnostic at runtime either: `setSlot` assigns to
-  // an undeclared property, so nothing throws, nothing persists, and the matching
+  // paths), which silently admitted any string. An unknown slot name is the one
+  // config mistake with no diagnostic at runtime either: `setSlot` assigns to an
+  // undeclared property, so nothing throws, nothing persists, and the matching
   // `getConf` read keeps returning the default. These `@ts-expect-error`s fail
   // `pnpm typecheck` if either constraint is ever re-loosened, since the expected
-  // error would no longer occur. Type-only; never executed.
+  // error would no longer occur. Type-only, never executed.
   test('an unknown slot name is a compile error through getConf and setConf', () => {
     const check = (model: Instance<typeof Container>) => {
       // @ts-expect-error -- 'notASlot' is not in the schema

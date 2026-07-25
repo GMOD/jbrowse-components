@@ -192,7 +192,7 @@ async function fetchFeatureDetails(
     return undefined
   }
   // refName + assemblyName come from the loaded region the read was fetched
-  // from (see getFeatureInfoById), so there's nothing to look up here — the old
+  // from (see getFeatureInfoById), so there's nothing to look up here. The old
   // refName scan over loadedRegions could pick a different region's assembly and
   // threw on the one it couldn't resolve.
   const region = {
@@ -1983,8 +1983,8 @@ export default function stateModelFactory(
           return name === undefined ? [] : (self.chainIdMap.get(name) ?? [])
         },
 
-        // refName/assemblyName come from `loadedRegions` — the region this read
-        // was actually fetched from — rather than from `view.displayedRegions`,
+        // refName/assemblyName come from `loadedRegions` (the region this read
+        // was actually fetched from) rather than from `view.displayedRegions`,
         // which needs a sentinel for a since-changed index and carries no
         // assembly, leaving `fetchFeatureDetails` to re-find one by refName.
         getFeatureInfoById(featureId: string) {

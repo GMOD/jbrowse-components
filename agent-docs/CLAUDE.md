@@ -68,6 +68,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md) — browser + unit tests, WebGPU CI
 - [TOOLCHAIN.md](guides/TOOLCHAIN.md) — why `typescript` 6.x and `typescript7` coexist
 - [PERF_INSTRUMENTATION.md](guides/PERF_INSTRUMENTATION.md) — diagnosing render / scroll jank
+- [CONFIG_WRITE_PATH_HANDOFF.md](guides/CONFIG_WRITE_PATH_HANDOFF.md), finishing the raw `setSlot` to typed `setConf` migration
 - [SCREENSHOT_REVIEW_HANDOFF.md](guides/SCREENSHOT_REVIEW_HANDOFF.md) / [SCREENSHOT_CAPTURE_RACE.md](guides/SCREENSHOT_CAPTURE_RACE.md) — website figure pipeline
 - [DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md) — desktop IPC, preload, plugin loading
 

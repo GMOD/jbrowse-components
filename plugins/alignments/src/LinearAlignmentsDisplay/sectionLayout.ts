@@ -61,7 +61,7 @@ export function computeBandStack(s: BandStackInput) {
 
 // Whether the paired-end arcs reserve a band of their own rather than overlaying
 // the coverage histogram: down mode always, up mode only when there is no
-// coverage band to overlay. The single spelling of that rule — both
+// coverage band to overlay. The single spelling of that rule. Both
 // `belowCoverageBandsGeometry` (sticky geometry, resize handles, fit budget) and
 // `computeStackedSections` (per-section stacking) read it, and `computeArcBand`,
 // which decides where the arcs actually draw, must agree with both.
@@ -158,8 +158,8 @@ export function computeStackedSections(
     readConnectionsDown: opts.readConnectionsDown,
     readConnectionsHeight: opts.readConnectionsHeight,
   })
-  // Band heights are display-global, so every section reserves the same stack —
-  // hoisted out of the loop below, which only advances `coverageTop`.
+  // Band heights are display-global, so every section reserves the same stack.
+  // Hoisted out of the loop below, which only advances `coverageTop`.
   const stack = computeBandStack({
     coverageHeight: coverageBand,
     hasArcsBand: reservesArcsBand({

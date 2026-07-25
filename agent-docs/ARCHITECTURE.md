@@ -525,7 +525,7 @@ region and refetches stale ones.
 - Don't mutate per-region values in place; emit fresh objects.
 - Don't make a renderer class the *owner* of per-region data. The model's
   `rpcDataMap` / `laidOutDataMap` is the single source of truth. Most displays
-  pass it in per frame — `renderBlocks(blocks, regions, state)` — and that is the
+  pass it in per frame (`renderBlocks(blocks, regions, state)`), and that is the
   default to reach for. A renderer-held `private regions` map is legal only when
   it is written **exclusively by the upload callback** and never mutated in
   place: `RenderLifecycleMixin` bumps `renderTick` after every upload, so the
