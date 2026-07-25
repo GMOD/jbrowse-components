@@ -184,7 +184,7 @@ export function readConfObject(
 /**
  * Get a plain-object snapshot of a configuration model that includes ALL
  * values, even defaults. Unlike getSnapshot() which strips default values
- * via postProcessSnapshot, this returns every slot's current value so the
+ * via `types.stripDefault`, this returns every slot's current value so the
  * result can be sent to an RPC worker as a self-contained config object.
  *
  * For JEXL callback slots, the raw "jexl:..." string is included so the

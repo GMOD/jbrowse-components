@@ -18,6 +18,38 @@ worker via `resolvePromotableConfigSnapshot`, a shared/exported session via
 share/worker helpers). Full model + the `ignorePromotedDefaults` opt-out:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
+## A config snapshot is transport, not a value-read API
+
+Slots are built with `types.stripDefault` (`configurationSlot.ts`), which omits
+a slot from the parent's snapshot whenever it still equals its default — by
+design, so saved sessions stay minimal. A read that lands on a whole sub-config
+rather than a leaf therefore hands back that stripped form: `readSlot` returns
+`getSnapshot(subConfigNode)` for object-valued slots, so a display's
+`adapterConfig` (`getConf(parentTrack, 'adapter')`) is the persistence
+representation, not a resolved value bag.
+
+Every intended consumer either re-hydrates it or reads only required fields, so
+this is normally invisible: `getAdapter` does `configSchema.create(snapshot)`
+before constructing an adapter, which restores every default (that is why an
+adapter's own `this.getConf('...')` is always correct), and `.type` is required
+so it is never stripped.
+
+The one thing that breaks is picking a **defaulted** slot off the snapshot on
+the main thread — it reads `undefined` for every track that left the slot alone,
+which is most of them. `LGVSyntenyDisplay` read its coarse-tier threshold that
+way and got `undefined` instead of `10000`, so it sent no detail tier at all and
+the feature silently never fired. Use an array slot path to reach into the live
+sub-config instead:
+
+```js
+getConf(track, ['adapter', 'coarseBpPerPxThreshold'])
+```
+
+which resolves the default, and still returns `undefined` when the adapter's
+schema has no such slot. `getConfSnapshot` is the bulk form (every slot
+resolved) for handing a self-contained config across a boundary that will _not_
+re-hydrate it.
+
 ## `getConf` vs `readConfObject`
 
 Two reader functions, intentionally distinct:
