@@ -21,9 +21,9 @@ static const int RENDERING_TYPE_SCATTER = 3;
 static const int RENDERING_TYPE_LINE_CENTER = 4;
 static const int SCALE_TYPE_LOG = 1;
 
-// prevMidBp sentinel: no adjacent previous feature (run start / gap). Larger
-// than any genomic coordinate, so it never collides with a real midpoint.
-static const uint NO_PREV_MID = 0xffffffffu;
+// prevStartEnd.x sentinel: no previous feature (source start). Larger than any
+// genomic coordinate, so it never collides with a real start.
+static const uint NO_PREV_START = 0xffffffffu;
 
 // Scatter glyph shapes carved by the fragment shader (matches manhattan.slang):
 // point-like features become an AA disc, tiny points a crisp square.
@@ -44,7 +44,7 @@ struct WiggleInstance {
   float nextScore : ATTR3;
   uint  color     : ATTR4;
   float rowIndex  : ATTR5;
-  uint  prevMidBp : ATTR6;
+  uint2 prevStartEnd : ATTR6;
   float prevScoreLine : ATTR7;
 };
 
@@ -154,7 +154,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     }
   } else if (u.renderingType == RENDERING_TYPE_LINE_CENTER) {
     // Point-to-point line drawn as one CAPSULE per feature: the segment from the
-    // previous feature's bp midpoint (prevMidBp, prevScoreLine) to this one's
+    // previous feature's bp midpoint (prevStartEnd, prevScoreLine) to this one's
     // (midX, score), thickened to lineWidth with round caps of radius = half
     // width, connecting every consecutive pair in the source. Because adjacent
     // capsules share a round cap centred on the joint vertex, the max-blend
@@ -164,9 +164,16 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     // (localPos) + segHalfLen to evaluate the capsule SDF. Standard instanced
     // SDF-line technique: https://github.com/rreusser/webgpu-instanced-lines /
     // https://almarklein.org/line_rendering.html.
-    bool hasPrev = inst.prevMidBp != NO_PREV_MID;
+    bool hasPrev = inst.prevStartEnd.x != NO_PREV_START;
     float midCurrX = (sx1 + sx2) * 0.5;
-    float midPrevX = hasPrev ? bpToClipX(inst.prevMidBp, u) : midCurrX;
+    // The previous midpoint is averaged in CLIP space from its start/end, the
+    // same way midCurrX is, so consecutive capsules meet exactly. Averaging in
+    // bp space instead would need a rounded integer midpoint, putting every
+    // joint up to half a base off — invisible at wide zoom, tens of pixels of
+    // overshoot at base resolution, where odd-width bins are the norm.
+    float midPrevX = hasPrev
+      ? (bpToClipX(inst.prevStartEnd.x, u) + bpToClipX(inst.prevStartEnd.y, u)) * 0.5
+      : midCurrX;
     float currYpx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
     float prevYpx = hasPrev
       ? scoreToY(inst.prevScoreLine, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop

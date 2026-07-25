@@ -33,14 +33,15 @@ function readInstance(buf: ArrayBuffer, i: number) {
     score: f32[base + FIELD_OFFSET_F32.score]!,
     prevScore: f32[base + FIELD_OFFSET_F32.prevScore]!,
     nextScore: f32[base + FIELD_OFFSET_F32.nextScore]!,
-    prevMidBp: u32[base + FIELD_OFFSET_F32.prevMidBp]!,
+    prevStart: u32[base + FIELD_OFFSET_F32.prevStartEnd]!,
+    prevEnd: u32[base + FIELD_OFFSET_F32.prevStartEnd + 1]!,
     prevScoreLine: f32[base + FIELD_OFFSET_F32.prevScoreLine]!,
   }
 }
 
-// Sentinel written when there's no adjacent previous feature; must match
-// NO_PREV_MID in wiggle.slang.
-const NO_PREV_MID = 0xffffffff
+// Sentinel written when there's no previous feature; must match NO_PREV_START
+// in wiggle.slang.
+const NO_PREV_START = 0xffffffff
 
 describe('interleaveInstances', () => {
   test('single isolated feature has prevScore=0 and nextScore=0', () => {
@@ -132,38 +133,54 @@ describe('interleaveInstances', () => {
     expect(f2.nextScore).toBe(0)
   })
 
-  // prevMidBp + prevScoreLine drive the center-line (RENDERING_TYPE_LINE_CENTER)
-  // pass, which connects each feature's bp midpoint to the previous feature's.
-  // It links *every* consecutive pair in a source (only the first is a run
-  // start), so sporadic non-tiling bins don't dash the line.
-  describe('center-line (prevMidBp / prevScoreLine)', () => {
+  // prevStartEnd + prevScoreLine drive the center-line
+  // (RENDERING_TYPE_LINE_CENTER) pass, which connects each feature's bp midpoint
+  // to the previous feature's. It links *every* consecutive pair in a source
+  // (only the first is a run start), so sporadic non-tiling bins don't dash the
+  // line. The span is passed whole, not pre-averaged: the shader averages it in
+  // clip space the same way it averages the current feature's, so an odd-width
+  // bin's half-base midpoint can't shift one end of a segment relative to the
+  // other.
+  describe('center-line (prevStartEnd / prevScoreLine)', () => {
     test('first feature has no previous → sentinel', () => {
       const f = readInstance(
         interleaveInstances([makeSource([5], [0], [100])], 1),
         0,
       )
-      expect(f.prevMidBp).toBe(NO_PREV_MID)
+      expect(f.prevStart).toBe(NO_PREV_START)
       expect(f.prevScoreLine).toBe(0)
     })
 
-    test('adjacent feature carries the previous midpoint (floored) and score', () => {
-      // prev [0,100] midpoint = 50; [100,201] midpoint = 150 (floored from 150.5)
+    test('adjacent feature carries the previous span and score', () => {
       const buf = interleaveInstances(
         [makeSource([5, 8], [0, 100], [100, 201])],
         2,
       )
-      expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
-      expect(readInstance(buf, 1).prevMidBp).toBe(50)
+      expect(readInstance(buf, 0).prevStart).toBe(NO_PREV_START)
+      expect(readInstance(buf, 1).prevStart).toBe(0)
+      expect(readInstance(buf, 1).prevEnd).toBe(100)
       expect(readInstance(buf, 1).prevScoreLine).toBe(5)
     })
 
-    test('non-adjacent (gapped) features still connect: prev midpoint + real score', () => {
+    test('odd-width bins keep their half-base midpoint intact', () => {
+      // 1bp bins: midpoints are 100.5 / 101.5, unrepresentable as integer bp.
+      // The span reaches the shader whole, so the average stays exact.
+      const buf = interleaveInstances(
+        [makeSource([5, 8], [100, 101], [101, 102])],
+        2,
+      )
+      expect(readInstance(buf, 1).prevStart).toBe(100)
+      expect(readInstance(buf, 1).prevEnd).toBe(101)
+    })
+
+    test('non-adjacent (gapped) features still connect: prev span + real score', () => {
       // gap between bp 100 and 200; the center-line bridges it rather than break
       const buf = interleaveInstances(
         [makeSource([5, 8], [0, 200], [100, 300])],
         2,
       )
-      expect(readInstance(buf, 1).prevMidBp).toBe(50) // prev [0,100] midpoint
+      expect(readInstance(buf, 1).prevStart).toBe(0)
+      expect(readInstance(buf, 1).prevEnd).toBe(100)
       expect(readInstance(buf, 1).prevScoreLine).toBe(5) // real prev score, not 0
     })
 
@@ -172,18 +189,19 @@ describe('interleaveInstances', () => {
         [makeSource([5], [0], [100]), makeSource([8], [0], [100])],
         2,
       )
-      expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
-      expect(readInstance(buf, 1).prevMidBp).toBe(NO_PREV_MID)
+      expect(readInstance(buf, 0).prevStart).toBe(NO_PREV_START)
+      expect(readInstance(buf, 1).prevStart).toBe(NO_PREV_START)
     })
 
-    test('large coordinates near uint32 range keep an exact floored midpoint', () => {
+    test('large coordinates near uint32 range survive intact', () => {
       const a = 4_000_000_000
       const b = 4_000_000_100
       const buf = interleaveInstances(
         [makeSource([5, 8], [a, b], [b, b + 100])],
         2,
       )
-      expect(readInstance(buf, 1).prevMidBp).toBe(Math.floor((a + b) / 2))
+      expect(readInstance(buf, 1).prevStart).toBe(a)
+      expect(readInstance(buf, 1).prevEnd).toBe(b)
     })
   })
 })

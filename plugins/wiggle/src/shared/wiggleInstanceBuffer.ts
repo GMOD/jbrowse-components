@@ -43,15 +43,17 @@ export function interleaveInstances(
       // feature from the previous feature's bp midpoint to this one's. It
       // connects *every* consecutive pair within a source — NOT only bp-adjacent
       // ones — so sporadic non-tiling bins (small gaps in reduced BigWig data)
-      // don't dash the line. prevMidBp carries the previous midpoint;
-      // prevScoreLine the previous real score (prevScore is zeroed at gaps for
-      // the step-line, so the center-line needs its own). NO_PREV_MID
-      // (0xffffffff, larger than any genomic coord) marks the source start so the
-      // shader collapses that first quad to nothing. Both unused by other modes.
-      u32[off + FIELD_OFFSET_F32.prevMidBp] =
-        i > 0
-          ? Math.floor((positions[pi - 2]! + positions[pi - 1]!) / 2)
-          : 0xffffffff
+      // don't dash the line. prevStartEnd carries the previous feature's span
+      // (the shader averages it in clip space, exactly as it does the current
+      // feature's, so the joint lands on one point); prevScoreLine the previous
+      // real score (prevScore is zeroed at gaps for the step-line, so the
+      // center-line needs its own). NO_PREV_START (0xffffffff, larger than any
+      // genomic coord) marks the source start so the shader collapses that first
+      // quad to nothing. Both unused by other modes.
+      u32[off + FIELD_OFFSET_F32.prevStartEnd] =
+        i > 0 ? positions[pi - 2]! : 0xffffffff
+      u32[off + FIELD_OFFSET_F32.prevStartEnd + 1] =
+        i > 0 ? positions[pi - 1]! : 0
       f32[off + FIELD_OFFSET_F32.prevScoreLine] = i > 0 ? scores[i - 1]! : 0
       // The shader's line pass draws three segments per feature:
       //   v0–v1: vertical at startX from prevScore → score (transition in)

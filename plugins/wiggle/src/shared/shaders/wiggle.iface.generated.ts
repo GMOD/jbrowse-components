@@ -62,8 +62,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[13] = uniforms.origin
 }
 
-export const INSTANCE_STRIDE_BYTES = 36
-export const INSTANCE_STRIDE_F32 = 9
+export const INSTANCE_STRIDE_BYTES = 40
+export const INSTANCE_STRIDE_F32 = 10
 
 export const FIELD_OFFSET_F32 = {
   startEnd: 0,
@@ -72,8 +72,8 @@ export const FIELD_OFFSET_F32 = {
   nextScore: 4,
   color: 5,
   rowIndex: 6,
-  prevMidBp: 7,
-  prevScoreLine: 8,
+  prevStartEnd: 7,
+  prevScoreLine: 9,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
@@ -83,8 +83,8 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_nextScore', components: 1, type: 'float', offsetBytes: 16, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 20, integer: true },
   { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 24, integer: false },
-  { name: 'a_prevMidBp', components: 1, type: 'uint', offsetBytes: 28, integer: true },
-  { name: 'a_prevScoreLine', components: 1, type: 'float', offsetBytes: 32, integer: false },
+  { name: 'a_prevStartEnd', components: 2, type: 'uint', offsetBytes: 28, integer: true },
+  { name: 'a_prevScoreLine', components: 1, type: 'float', offsetBytes: 36, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -94,7 +94,7 @@ export interface InstanceArrays {
   nextScore: ArrayLike<number>
   color: ArrayLike<number>
   rowIndex: ArrayLike<number>
-  prevMidBp: ArrayLike<number>
+  prevStartEnd: ArrayLike<number>
   prevScoreLine: ArrayLike<number>
 }
 
@@ -105,7 +105,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { startEnd, score, prevScore, nextScore, color, rowIndex, prevMidBp, prevScoreLine } = arrays
+  const { startEnd, score, prevScore, nextScore, color, rowIndex, prevStartEnd, prevScoreLine } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_F32
     u32[o + 0] = startEnd[i * 2 + 0]!
@@ -115,8 +115,9 @@ export function packInstances(
     f32[o + 4] = nextScore[i]!
     u32[o + 5] = color[i]!
     f32[o + 6] = rowIndex[i]!
-    u32[o + 7] = prevMidBp[i]!
-    f32[o + 8] = prevScoreLine[i]!
+    u32[o + 7] = prevStartEnd[i * 2 + 0]!
+    u32[o + 8] = prevStartEnd[i * 2 + 1]!
+    f32[o + 9] = prevScoreLine[i]!
   }
   return buf
 }
