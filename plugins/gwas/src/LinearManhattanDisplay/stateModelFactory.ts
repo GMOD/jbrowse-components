@@ -4,6 +4,7 @@ import {
   ConfigurationReference,
   getConf,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -368,7 +369,7 @@ export function stateModelFactory(
        * #action
        */
       setColorBy(mode: 'normal' | 'ld') {
-        self.configuration.setSlot('colorBy', mode)
+        setConf(self, 'colorBy', mode)
       },
       /**
        * #action
@@ -385,7 +386,7 @@ export function stateModelFactory(
        * fetch fires.
        */
       colorByLdToHit(hit: ManhattanHit) {
-        self.configuration.setSlot('colorBy', 'ld')
+        setConf(self, 'colorBy', 'ld')
         self.indexSnp = `${hit.refName}:${hit.start + 1}`
         self.indexSnpPinned = true
       },
