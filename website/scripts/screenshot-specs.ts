@@ -1,4 +1,15 @@
-export type * from './screenshot-spec-types.ts'
+export type {
+  Annotation,
+  BrowserScreenshotSpec,
+  CliSpec,
+  CommonSpecFields,
+  ComposeSpec,
+  EmbeddedSpec,
+  ScreenshotAction,
+  ScreenshotSpec,
+  ScreenshotStage,
+  SessionUrlSpec,
+} from './screenshot-spec-types.ts'
 
 import { CODE_BASE } from '../src/lib/code-base.ts'
 // jbrowse-img CLI example figures (products/jbrowse-img/README.md)

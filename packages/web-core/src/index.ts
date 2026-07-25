@@ -1,5 +1,18 @@
 export { PreferencesDialog } from '@jbrowse/product-core'
-export * from './SessionConnections.ts'
-export * from './BaseWebSession/index.ts'
-export type * from './WebRootModel.ts'
-export * from './WebSessionManagement.ts'
+export {
+  WebSessionConnectionsMixin,
+  isWebSessionWithConnections,
+} from './SessionConnections.ts'
+export type { WebSessionWithConnections } from './SessionConnections.ts'
+export {
+  BaseWebSession,
+  BaseWebSessionModel,
+  finalizeWebSession,
+} from './BaseWebSession/index.ts'
+export type {
+  AbstractJBrowseModel,
+  AbstractWebRootModel,
+  AbstractWebSessionDbRootModel,
+  SessionMetadata,
+} from './WebRootModel.ts'
+export { WebSessionManagementMixin } from './WebSessionManagement.ts'

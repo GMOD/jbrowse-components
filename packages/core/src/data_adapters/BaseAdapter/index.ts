@@ -10,7 +10,13 @@ export {
   isRegionsAdapter,
   isTextSearchAdapter,
 } from './util.ts'
-export type * from './types.ts'
+export type {
+  BaseOptions,
+  BaseOptionsWithRegions,
+  BaseTextSearchArgs,
+  RegionByteEstimate,
+  SearchType,
+} from './types.ts'
 export { BaseAdapter } from './BaseAdapter.ts'
 export { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 export { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'

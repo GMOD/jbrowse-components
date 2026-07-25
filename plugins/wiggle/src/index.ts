@@ -46,7 +46,46 @@ export default class WigglePlugin extends Plugin {
   }
 }
 
-export * from './util.ts'
+export {
+  MULTI_WIGGLE_RENDERING_GROUPS,
+  MULTI_WIGGLE_RENDERING_TYPES,
+  SINGLE_WIGGLE_SOURCE_NAME,
+  WIGGLE_FUDGE_FACTOR,
+  WIGGLE_MIN_PX,
+  WIGGLE_NEG_COLOR_DEFAULT,
+  WIGGLE_POS_COLOR_DEFAULT,
+  WIGGLE_RENDERINGS,
+  WIGGLE_RENDERING_TYPES,
+  YSCALEBAR_LABEL_OFFSET,
+  computeAutoscaleDomain,
+  computeScoreExtent,
+  domainFromStats,
+  featuresToRaw,
+  formatScore,
+  getEffectiveScores,
+  getFilename,
+  getNiceDomain,
+  getOrigin,
+  getScale,
+  makeScoreNormalizer,
+  processFeaturesFromArrays,
+  toP,
+} from './util.ts'
+export type {
+  Dataset,
+  EditableSource,
+  FeatureArrays,
+  RawFeatureArrays,
+  ScaleOpts,
+  ScoreStats,
+  Source,
+  SourceInfo,
+  WiggleDataResult,
+  WiggleFeatureArrays,
+  WiggleFeatureUnderMouse,
+  WiggleSourceData,
+  WiggleTooltipRow,
+} from './util.ts'
 
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,

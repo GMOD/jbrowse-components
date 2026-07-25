@@ -1,14 +1,70 @@
-export * from './ReferenceManagement.ts'
-export * from './Connections.ts'
-export * from './DrawerWidgets.ts'
-export * from './Themes.ts'
-export * from './Tracks.ts'
-export * from './MultipleViews.ts'
-export * from './Preferences.ts'
-export * from './BaseSession.ts'
-export * from './SessionTracks.ts'
-export * from './shareableSnapshot.ts'
-export * from './TrackMenu.ts'
-export * from './TrackMenuSessionMixin.ts'
-export * from './finalizeSession.ts'
-export type * from './assertSessionModel.ts'
+export {
+  ReferenceManagementSessionMixin,
+  isSessionWithReferenceManagement,
+} from './ReferenceManagement.ts'
+export type {
+  ReferringNode,
+  SessionWithReferenceManagement,
+  SessionWithReferenceManagementType,
+} from './ReferenceManagement.ts'
+export {
+  ConnectionManagementSessionMixin,
+  isSessionWithConnections,
+} from './Connections.ts'
+export type {
+  ConnectionTrackConfigEntry,
+  SessionWithConnections,
+  SessionWithConnectionsType,
+} from './Connections.ts'
+export {
+  DrawerWidgetSessionMixin,
+  isSessionWithDrawerWidgets,
+} from './DrawerWidgets.ts'
+export type {
+  SessionWithDrawerWidgets,
+  SessionWithDrawerWidgetsType,
+} from './DrawerWidgets.ts'
+export { ThemeManagerSessionMixin, isSessionWithThemes } from './Themes.ts'
+export type { SessionWithThemes, SessionWithThemesType } from './Themes.ts'
+export { TracksManagerSessionMixin, isSessionWithTracks } from './Tracks.ts'
+export type { SessionWithTracks, SessionWithTracksType } from './Tracks.ts'
+export {
+  MultipleViewsSessionMixin,
+  isSessionWithMultipleViews,
+} from './MultipleViews.ts'
+export type {
+  SessionWithMultipleViews,
+  SessionWithMultipleViewsType,
+} from './MultipleViews.ts'
+export { PreferencesSessionMixin } from './Preferences.ts'
+export {
+  BaseSessionModel,
+  DISPLAY_TYPE_DEFAULTS_PATH_HEAD,
+  displayTypeDefaultKey,
+  isBaseSession,
+  isSession,
+  parseDisplayTypeDefaultKey,
+} from './BaseSession.ts'
+export type { BaseSession, BaseSessionType } from './BaseSession.ts'
+export {
+  SessionTracksManagerSessionMixin,
+  isSessionWithSessionTracks,
+} from './SessionTracks.ts'
+export type {
+  PlainTrackConfig,
+  SessionWithSessionTracks,
+  SessionWithSessionTracksType,
+} from './SessionTracks.ts'
+export { bakePromotedDefaultsIntoSnapshot } from './shareableSnapshot.ts'
+export {
+  TrackMenuItemsSessionMixin,
+  aboutTrackMenuItem,
+  copyTrackSnapshot,
+  pluginExtraTrackItems,
+  trackActionItems,
+  trackActionMenuItems,
+  trackListMenuItems,
+} from './TrackMenu.ts'
+export { TrackMenuSessionMixin } from './TrackMenuSessionMixin.ts'
+export { finalizeSession } from './finalizeSession.ts'
+export type { AssertSessionModel } from './assertSessionModel.ts'

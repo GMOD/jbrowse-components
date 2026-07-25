@@ -1,2 +1,2 @@
-export * from './MultiWiggleGetScoreMatrix.ts'
-export * from './MultiWiggleClusterScoreMatrix.ts'
+export { MultiWiggleGetScoreMatrix } from './MultiWiggleGetScoreMatrix.ts'
+export { MultiWiggleClusterScoreMatrix } from './MultiWiggleClusterScoreMatrix.ts'

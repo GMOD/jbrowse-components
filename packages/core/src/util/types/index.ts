@@ -26,7 +26,12 @@ import type {
 import type { Theme, ThemeOptions } from '@mui/material'
 import type React from 'react'
 
-export type * from './util.ts'
+export type {
+  AnyReactComponentType,
+  ClassReturnedBy,
+  InstanceTypeRestrictive,
+  TypeTestedByPredicate,
+} from './util.ts'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer extends IStateTreeNode {

@@ -90,7 +90,20 @@ export { default as ExternalLink } from './ExternalLink.tsx'
 export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 export { default as BaseTooltip } from './BaseTooltip.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
-export type * from './MenuTypes.ts'
+export type {
+  BaseMenuItem,
+  CheckboxMenuItem,
+  ClickableMenuItem,
+  CustomMenuItem,
+  MenuDivider,
+  MenuItem,
+  MenuItemClickHandler,
+  MenuItemsGetter,
+  MenuSubHeader,
+  NormalMenuItem,
+  RadioMenuItem,
+  SubMenuItem,
+} from './MenuTypes.ts'
 export { pushLaunchViewMenuItem } from './launchViewMenu.ts'
 export { default as Crosshairs } from './Crosshairs.tsx'
 export { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'

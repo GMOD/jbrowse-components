@@ -8,5 +8,8 @@ export { drawerGridTemplateColumns } from './drawerLayout.ts'
 export { default as ModalWidget } from './ModalWidget.tsx'
 export { default as ModalWidgetAppBar } from './ModalWidgetAppBar.tsx'
 export { default as PreferencesDialog } from './PreferencesDialog.tsx'
-export * from './PreferencesDialog.tsx'
+export type {
+  PreferencesDialogSession,
+  PreferencesPanelDescriptor,
+} from './PreferencesDialog.tsx'
 export { default as WidgetHeading } from './WidgetHeading.tsx'

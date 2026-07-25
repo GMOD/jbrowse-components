@@ -90,7 +90,14 @@ export { slangPass } from './slangPass.ts'
 export type { ShaderModule, SlangPassOpts } from './slangPass.ts'
 
 // --- HAL (WebGL2 / WebGPU / mock) ---
-export * from './hal/index.ts'
+export { MockHal, WebGL2Hal, WebGPUHal, createGpuHal } from './hal/index.ts'
+export type {
+  BlendState,
+  GlAttributeLayout,
+  GpuHal,
+  PassDescriptor,
+  TextureBinding,
+} from './hal/index.ts'
 
 // --- GPU device singleton ---
 export {

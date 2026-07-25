@@ -1,4 +1,32 @@
-export * from './core.ts'
-export * from './parse.ts'
-export * from './format.ts'
-export * from './functions.ts'
+export {
+  OFFSET_A,
+  OFFSET_B,
+  OFFSET_G,
+  OFFSET_R,
+  from,
+  getAlpha,
+  getBlue,
+  getGreen,
+  getRed,
+  newColor,
+  setAlpha,
+  setBlue,
+  setGreen,
+  setRed,
+  toNumber,
+} from './core.ts'
+export type { Color } from './core.ts'
+export { parse, parseColor, parseHex } from './parse.ts'
+export {
+  format,
+  formatHEX,
+  formatHEXA,
+  formatHSLA,
+  formatHWBA,
+  formatRGBA,
+  toGLrgb,
+  toHSLA,
+  toHWBA,
+  toRGBA,
+} from './format.ts'
+export { alpha, blend, darken, getLuminance, lighten } from './functions.ts'

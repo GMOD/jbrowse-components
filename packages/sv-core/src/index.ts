@@ -1,5 +1,22 @@
 export { default as BreakpointSplitViewChoiceDialog } from './BreakpointSplitViewChoiceDialog.tsx'
-export * from './launchBreakpointSplitView.ts'
-export * from './util.ts'
-export * from './navToSingleLevelBreak.ts'
-export * from './navToMultiLevelBreak.ts'
+export { launchBreakpointSplitView } from './launchBreakpointSplitView.ts'
+export {
+  SV_SYMBOLIC_ALLELES,
+  breakpointBpPerPx,
+  getAssemblyName,
+  getBreakendAssemblyRegions,
+  getBreakendCoveringRegions,
+  hasBreakpointSplitView,
+  makeTitle,
+  navToLoc,
+  parseSvAlt,
+  readTranslocationMate,
+  splitRegionAtPosition,
+} from './util.ts'
+export type { Region, ViewWithAssemblyNames } from './util.ts'
+export {
+  navToSingleLevelBreak,
+  singleLevelEncompassingSnapshotFromBreakendFeature,
+  singleLevelFocusedSnapshotFromBreakendFeature,
+} from './navToSingleLevelBreak.ts'
+export { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'

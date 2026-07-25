@@ -1,1 +1,1 @@
-export * from './AssembliesMixin.ts'
+export { AssembliesMixin } from './AssembliesMixin.ts'

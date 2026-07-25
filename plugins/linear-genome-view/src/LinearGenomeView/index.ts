@@ -45,8 +45,22 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
   })
 }
 
-export * from './model.ts'
-export type * from './types.ts'
+export { AUTO_FORCE_LOAD_BP, stateModelFactory } from './model.ts'
+export type {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from './model.ts'
+export type {
+  BpOffset,
+  ExportSvgOptions,
+  HighlightType,
+  InitState,
+  LinearGenomeViewLaunchProps,
+  NavLocation,
+  TrackInit,
+  TrackLabelMode,
+  VolatileGuide,
+} from './types.ts'
 export {
   type SyncableViewAction,
   installLinkedViewSync,

@@ -36,6 +36,11 @@ const noReadableFromWeb = {
   message:
     "Do not use Readable.fromWeb on a fetch body. In renderer/worker code the global fetch returns Chromium's DOM ReadableStream, a different realm than node:stream/web, and fromWeb's instanceof check throws the misleading 'must be an instance of ReadableStream. Received an instance of ReadableStream'. Drive body.getReader() into a node Readable instead (see packages/text-indexing-core webStreamToNodeReadable).",
 }
+const noExportStar = {
+  selector: 'ExportAllDeclaration',
+  message:
+    "Do not use `export *` / `export type *`. List the names explicitly (`export { a, b } from './x.ts'`) so a barrel's public surface is greppable and a new internal export can't silently become package API. Regenerate a list with the TS checker rather than hand-writing it.",
+}
 
 export default defineConfig(
   {
@@ -322,6 +327,21 @@ export default defineConfig(
   // no-restricted-imports only covers import statements, not call expressions.
   {
     rules: {
+      'no-restricted-syntax': [
+        'error',
+        noMockFromSrc,
+        noReadableFromWeb,
+        noExportStar,
+      ],
+    },
+  },
+  // Shader codegen emits `export *` and must not be hand-edited (run
+  // `pnpm gen:shaders`), and each product's webpack entry deliberately
+  // re-exports the third-party `react-dom/client` surface — pinning a name list
+  // there would freeze someone else's API.
+  {
+    files: ['**/*.generated.ts', 'products/*/src/webpack.ts'],
+    rules: {
       'no-restricted-syntax': ['error', noMockFromSrc, noReadableFromWeb],
     },
   },
@@ -338,6 +358,7 @@ export default defineConfig(
         'error',
         noMockFromSrc,
         noReadableFromWeb,
+        noExportStar,
         {
           selector: "NewExpression[callee.name='SvgCanvas']",
           message:

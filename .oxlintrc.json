@@ -131,6 +131,7 @@
     "aws",
     "products/jbrowse-aws-lambda-functions",
     "**/test_data",
+    "*_build",
     "test/data",
     "packages/__mocks__",
     "integration.test.js",

@@ -78,12 +78,12 @@ import { baseUrl } from '../lib/base-url.ts'
     }
     const all = `${baseUrl}/search/?q=${encodeURIComponent(query)}`
     panel.innerHTML = items.length
-      ? items
+      ? `${items
           .map(
             it =>
               `<a class="hs-hit" href="${it.url}"><span class="hs-hit-title">${it.meta?.title ?? shortPath(it.url)}</span><span class="hs-hit-path">${shortPath(it.url)}</span></a>`,
           )
-          .join('') + `<a class="hs-all" href="${all}">See all results</a>`
+          .join('')}<a class="hs-all" href="${all}">See all results</a>`
       : `<a class="hs-all" href="${all}">No quick matches — search all docs</a>`
     panel.hidden = false
   }
