@@ -50,8 +50,7 @@ export function getTrackAssemblyNames(
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
-    | string[]
-    | undefined
+    string[] | undefined
   if (!trackAssemblyNames) {
     const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
       conf,
@@ -521,8 +520,7 @@ export function generateUnknownTrackConf(
 
 export function getTrackName(
   conf:
-    | AnyConfigurationModel
-    | { name?: string; type?: string; trackId?: string },
+    AnyConfigurationModel | { name?: string; type?: string; trackId?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
   const isMst = isStateTreeNode(conf)
@@ -707,4 +705,28 @@ export function toggleTrackGeneric(self: GenericView, trackId: string) {
   return hideTrackGeneric(self, trackId)
     ? false
     : !!showTrackGeneric(self, trackId)
+}
+
+/**
+ * Every track config the session can show, connection-supplied ones included.
+ *
+ * `session.tracks` is only sessionTracks plus the admin config (see
+ * product-core's SessionTracks), so a track that arrived from a hub or registry
+ * connection is absent from it while still being toggleable from the track
+ * selector, which unions the same two sources. Anything answering "what tracks
+ * exist for X" wants this, or a feature silently can't see connection tracks.
+ *
+ * Note `session.tracks` already contains `sessionTracks` — unioning those two
+ * yields every session track twice.
+ */
+export function allSessionTracks(session: {
+  tracks: AnyConfigurationModel[]
+  connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+}) {
+  const connectionTracks = (session.connectionInstances ?? []).flatMap(
+    conn => conn.tracks,
+  )
+  return connectionTracks.length
+    ? [...session.tracks, ...connectionTracks]
+    : session.tracks
 }

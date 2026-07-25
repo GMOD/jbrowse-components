@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { allSessionTracks } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Container, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -46,7 +47,9 @@ const BreakpointSplitViewImportForm = observer(
     // assembly can invalidate a previously-picked track, and we must neither
     // display nor launch a stale trackId.
     const sharedTracks = getSharedTracks(
-      session.tracks,
+      // allSessionTracks, not session.tracks: a track from a connection can be
+      // opened in every row just as well as a config one
+      allSessionTracks(session),
       rows.map(r => r.assembly),
     )
     const validTrackId = sharedTracks.some(t => t.trackId === trackId)

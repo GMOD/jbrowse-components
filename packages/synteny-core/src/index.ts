@@ -103,7 +103,9 @@ export {
   resolveSyntenyTrackActions,
 } from './resolveRowTrackAction.ts'
 export type { RowTrackAction } from './resolveRowTrackAction.ts'
-export { allSessionTracks } from './allSessionTracks.ts'
+// Promoted to core (any feature listing tracks wants it, not just synteny);
+// re-exported here so the synteny/comparative consumers keep one import.
+export { allSessionTracks } from '@jbrowse/core/util/tracks'
 export { syntenyPairs } from './syntenyPairs.ts'
 export { remapUploadsToPairs } from './remapUploadsToPairs.ts'
 export { default as NoSyntenyTrackMessage } from './NoSyntenyTrackMessage.tsx'

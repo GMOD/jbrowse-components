@@ -1,11 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { fetchAndMaybeUnzip, getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { allSessionTracks, getTrackName } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -139,12 +138,9 @@ export default function stateModelFactory() {
       tracksForAssembly(selectedAssembly: string) {
         const session = getSession(self)
         const { pluginManager } = getEnv(self)
-        const { tracks, sessionTracks = [] } = session
-        const allTracks = [
-          ...tracks,
-          ...sessionTracks,
-        ] as AnyConfigurationModel[]
-        return allTracks
+        // not [...tracks, ...sessionTracks]: session.tracks already contains
+        // sessionTracks, so that listed every session track twice
+        return allSessionTracks(session)
           .flatMap(track => {
             const assemblyNames = readConfObject(track, 'assemblyNames') ?? []
             if (!assemblyNames.includes(selectedAssembly)) {
