@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import SequencePanel from './SequencePanel.tsx'
 import { SequenceFeatureDetailsF } from './model.ts'
@@ -259,6 +259,35 @@ test('reverse strand genomic coords count down across rows', () => {
 
   // reverse strand genomic coordinates must decrement, not increment
   expect(rowStarts).toEqual([300, 200, 100])
+})
+
+test('switching relative to genomic coordinates updates the row labels', () => {
+  // the model's showCoordinates getter is the same `true` either side of this
+  // switch, so only a component reading the tri-state setting itself sees it;
+  // reading it outside an observer left the panel rendering relative rows while
+  // the menu radio said genomic
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('relative')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="gene"
+      sequence={{ seq: 'A'.repeat(300) }}
+      feature={f}
+    />,
+  )
+  act(() => {
+    model.setShowCoordinates('genomic')
+  })
+
+  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
+    .split('\n')
+    .slice(1)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => +s.split(/\s+/, 1)[0]!)
+
+  expect(rowStarts).toEqual([1201, 1301, 1401])
 })
 
 test('a sticky genomic setting renders relative coords in cDNA mode', () => {

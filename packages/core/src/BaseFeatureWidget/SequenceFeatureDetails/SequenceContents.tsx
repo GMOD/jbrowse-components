@@ -63,7 +63,12 @@ function featureTranslExcept(feature: SimpleFeatureSerialized): TranslExcept[] {
     : []
 }
 
-function RenderedSequenceComponent({
+// Dispatches to the renderer for the current sequence type. An observer because
+// it reads showCoordinatesSetting: that setting moving relative<->genomic
+// leaves the coarse showCoordinates boolean every other observer here reads
+// untouched, so as a plain component this kept rendering the old coordinates
+// while the menu radio said otherwise.
+const RenderedSequenceComponent = observer(function RenderedSequenceComponent({
   mode,
   feature,
   model,
@@ -146,7 +151,7 @@ function RenderedSequenceComponent({
     default:
       return <div>Unknown type</div>
   }
-}
+})
 
 const SequenceContents = observer(function SequenceContents({
   mode,
