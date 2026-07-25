@@ -1,4 +1,8 @@
-ecoli_*
+# build artifacts the scripts/build_ecoli_pangenome_*.sh tutorials write into the
+# repo root (ecoli_pangenome_build/, ecoli_cactus_ava.paf, ...). Anchored:
+# unanchored it also swallowed website/static/img/**/ecoli_*.png, so a new
+# tutorial figure silently never got committed.
+/ecoli_*
 website/static/video
 scripts/__pycache__
 **/.env

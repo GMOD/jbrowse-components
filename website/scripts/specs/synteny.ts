@@ -423,6 +423,58 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The "One strain against all the others" section of allvsall_synteny.md: the
+  // same all-vs-all track in a PLAIN LGV. With no second row there is no target
+  // assembly, so the adapter draws K-12 against every other sample at once, and
+  // LGVSyntenyDisplay's "Group by... > Mate assembly" splits that into one
+  // section per strain. Baked into the session (groupBy on the track entry)
+  // rather than driven through the menu, so the figure can't drift from it.
+  //
+  // The window is read off the PAF, not chosen for looks. K-12's phenylacetate
+  // catabolism operon (paaABCDEFGHIJK + paaXY, chr:1,446,378-1,465,230, with
+  // feaR/feaB/tynA just upstream) has no alignment at all in Sakai
+  // (1,446,100-1,467,908 bare) or CFT073 (1,446,270-1,465,276 bare), while
+  // NCTC86 runs through it in one 33 kb block (1,434,958-1,467,909). Neither
+  // Sakai's nor CFT073's annotation carries a phenylacetate gene. Framing the
+  // 45 kb window puts the shared flanks on both sides of that break, so two
+  // sections visibly stop where the third continues.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_one_vs_all',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'K12',
+            loc: 'chr:1,433,000-1,467,500',
+            tracks: [
+              {
+                trackId: 'K12_genes',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+                showDescriptions: false,
+              },
+              {
+                trackId: 'ecoli_ava',
+                type: 'LGVSyntenyDisplay',
+                groupBy: { type: 'mateAssembly' },
+                height: 250,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    viewportHeight: 500,
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 12000,
+  },
+
   // The Linear synteny view import form for the allvsall_synteny.md "From the
   // UI" section, using the all-vs-all Quick start path. A bare LinearSyntenyView
   // session spec is rejected (needs >=2 views), so open it the way a user does:
@@ -806,7 +858,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportWidth: 1800,
     // fit the taller curved synteny band + both LGV panels without a tall
     // white margin
-    viewportHeight: 620,
+    viewportHeight: 500,
     // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
     // long rather than gate on it
     settleMs: 45000,

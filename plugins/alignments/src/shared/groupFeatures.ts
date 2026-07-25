@@ -8,6 +8,7 @@ import {
 
 import { chainGroupingKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { GROUP_BY_LABELS } from './groupByLabels.ts'
 import { getFlags, getOrCreate } from './util.ts'
 
 import type { GroupBy, GroupByType } from './types.ts'
@@ -243,53 +244,55 @@ export interface GroupByDimension {
 // GroupByType, so adding a member to the union is a compile error until it is
 // classified here — a new dimension can't be silently half-wired (missing a
 // label, a chain-mode classification, or a key generator). Insertion order is
-// the menu order (Object.values preserves it).
+// the menu order (Object.values preserves it). Labels come from the React-free
+// groupByLabels.ts so the website's figure recipes can name a menu path without
+// importing this module (see its header).
 export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
   strand: {
     type: 'strand',
-    label: 'Strand',
+    label: GROUP_BY_LABELS.strand,
     chainConsistent: false,
     key: strandKey,
   },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
-    label: 'First-of-pair strand',
+    label: GROUP_BY_LABELS.firstOfPairStrand,
     chainConsistent: true,
     key: firstOfPairStrandKey,
   },
   tag: {
     type: 'tag',
-    label: 'Tag (HP, RG, ...)',
+    label: GROUP_BY_LABELS.tag,
     chainConsistent: true,
     key: (feature, groupBy) => tagKey(feature, groupBy.tag ?? ''),
   },
   pairOrientation: {
     type: 'pairOrientation',
-    label: 'Pair orientation',
+    label: GROUP_BY_LABELS.pairOrientation,
     chainConsistent: true,
     key: pairOrientationKey,
   },
   supplementary: {
     type: 'supplementary',
-    label: 'Supplementary',
+    label: GROUP_BY_LABELS.supplementary,
     chainConsistent: false,
     key: supplementaryKey,
   },
   duplicate: {
     type: 'duplicate',
-    label: 'Duplicate',
+    label: GROUP_BY_LABELS.duplicate,
     chainConsistent: false,
     key: duplicateKey,
   },
   mapq: {
     type: 'mapq',
-    label: 'MAPQ (binned)',
+    label: GROUP_BY_LABELS.mapq,
     chainConsistent: false,
     key: mapqKey,
   },
   mateAssembly: {
     type: 'mateAssembly',
-    label: 'Mate assembly',
+    label: GROUP_BY_LABELS.mateAssembly,
     chainConsistent: true,
     hidden: true,
     key: mateAssemblyKey,

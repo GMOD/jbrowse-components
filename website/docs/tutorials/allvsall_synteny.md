@@ -316,6 +316,16 @@ offers to launch a synteny view against its mate, but only for mates the track
 lists in `assemblyNames`, since the view needs a real assembly to open a row
 for.
 
+All those alignments land in one pileup, so nothing says which strain each block
+came from. The track menu's **Group by... > Mate assembly** splits them into one
+labelled section per sample, and a gap becomes attributable to the strain that
+has it. A synteny track in a plain view renders through the same display as a
+read pileup, so the rest of that menu is the one you already know from
+alignments: **Show... > Show coverage**, for instance, adds a histogram of how
+many other strains cover each base of the strain you are viewing.
+
+<Figure caption="K-12 against every other strain in the file, in one plain linear view grouped by mate assembly. Sakai and CFT073 both stop at 1,446,100, where K-12's phenylacetate (paa) operon begins; NCTC86 aligns straight through it in a single block. The K12 section is K-12's own paralogy." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+
 ## Reproduce it end to end
 
 Every command above is wrapped in one script,

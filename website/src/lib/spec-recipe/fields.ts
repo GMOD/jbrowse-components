@@ -1,5 +1,6 @@
 import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
+import { GROUP_BY_LABELS } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
 import {
@@ -75,6 +76,40 @@ function colorByStep(value: unknown): FieldStep | undefined {
         ? 'Needs MM/ML modification tags in your BAM/CRAM.'
         : undefined,
   }
+}
+
+// The alignments display and LGVSyntenyDisplay build their "Group by..." submenu
+// from the same groupByRadioMenuItem over the same dimension registry, so one
+// path serves both: every dimension is a radio carrying its registry label.
+// 'tag' is the exception — getGroupByMenuItem drops it from the radios in favor
+// of a 'Tag...' item that opens a dialog for the tag itself.
+function groupByStep(value: unknown): FieldStep | undefined {
+  const groupBy = asRecord(value)
+  const type = asString(groupBy?.type)
+  const tag = asString(groupBy?.tag)
+  if (type === 'tag' || (type === undefined && tag !== undefined)) {
+    return tag
+      ? {
+          path: `${TRACK_MENU} → Group by... → Tag... → enter "${tag}"`,
+          note:
+            tag === 'HP'
+              ? 'HP is the haplotype tag written by phasing tools like WhatsHap or Longphase.'
+              : undefined,
+        }
+      : undefined
+  }
+  // matched by key rather than indexed, so no cast into GroupByType is needed to
+  // look one up by arbitrary JSON (same reason colorByStep scans by value)
+  const label = Object.entries(GROUP_BY_LABELS).find(([k]) => k === type)?.[1]
+  return label
+    ? {
+        path: `${TRACK_MENU} → Group by... → ${label}`,
+        note:
+          type === 'mateAssembly'
+            ? 'Synteny tracks only: one section per assembly on the other side of the alignment.'
+            : undefined,
+      }
+    : undefined
 }
 
 function geneGlyphStep(value: unknown): FieldStep | undefined {
@@ -163,6 +198,7 @@ const numberField =
 
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
+  groupBy: groupByStep,
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync
@@ -199,18 +235,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   readConnectionsDown: checkbox(
     'Read connections → Arc / read cloud band options → Draw arcs below coverage band',
   ),
-  groupBy: value => {
-    const tag = asString(asRecord(value)?.tag)
-    return tag
-      ? {
-          path: `${TRACK_MENU} → Group by... → Tag... → enter "${tag}"`,
-          note:
-            tag === 'HP'
-              ? 'HP is the haplotype tag written by phasing tools like WhatsHap or Longphase.'
-              : undefined,
-        }
-      : undefined
-  },
   minSashimiScore: numberField(n => ({
     path: `${TRACK_MENU} → Sashimi arcs → Filter by score → ${n}`,
     note: 'Hides splice junctions supported by fewer reads than this.',
