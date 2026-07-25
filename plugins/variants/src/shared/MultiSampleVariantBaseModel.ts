@@ -31,12 +31,9 @@ import {
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
-import {
-  GENOTYPE_SPLITTER,
-  INTERNAL_SOURCE_KEYS,
-  VARIANT_FEATURE_WIDGET,
-} from './constants.ts'
-import { buildSampleIndex, decodeGenotypes } from './genotypeCodec.ts'
+import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
+import { INTERNAL_SOURCE_KEYS, VARIANT_FEATURE_WIDGET } from './constants.ts'
+import { buildSampleIndex } from './genotypeCodec.ts'
 import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
 import {
   variantContextMenuItems,
@@ -99,37 +96,30 @@ const PORTABLE_CONFIG_KEYS = [
   'featureColor',
 ] as const
 
-function encodeGenotype(gt: string) {
-  const alleles = gt.split(GENOTYPE_SPLITTER)
-  let nonRefCount = 0
-  let uncalledCount = 0
-  for (const allele of alleles) {
-    if (allele === '.') {
-      uncalledCount++
-    } else if (allele !== '0') {
-      nonRefCount++
+// Loaded features in genomic order plus their interned genotype codes: what an
+// anchored sort needs. `simplifiedFeatures` is the single ordered list spanning
+// every fetched region, while the codes live per-region in regular mode and in
+// one flat array in matrix mode.
+function getOrderedGenotypeCodes(cellData: CellDataResult) {
+  const genotypeCodesByFeatureId = new Map<string, Uint16Array>()
+  if (cellData.mode === 'regular') {
+    for (const regionData of Object.values(cellData.perRegionCellData)) {
+      for (const featureId in regionData.featureGenotypeMap) {
+        genotypeCodesByFeatureId.set(
+          featureId,
+          regionData.featureGenotypeMap[featureId]!.genotypeCodes,
+        )
+      }
+    }
+  } else {
+    for (const info of cellData.featureData) {
+      genotypeCodesByFeatureId.set(info.featureId, info.genotypeCodes)
     }
   }
-  return uncalledCount === alleles.length ? -1 : nonRefCount
-}
-
-// Sort `sources` by per-sample genotype, descending (more non-ref alleles
-// first). Sources in phased mode carry haplotype-keyed `name` (e.g.
-// "HG001 HP0"); the genotype map is keyed by sample name, so look up via
-// `sampleName` rather than `name`. A missing genotype ranks -1 (last), matching
-// a fully-uncalled call. Rank is computed once per source (not per comparison)
-// so the comparator doesn't re-split genotype strings O(S·logS) times.
-export function sortSourcesByGenotype(
-  sources: ProcessedSource[],
-  genotypes: Record<string, string>,
-): ProcessedSource[] {
-  return sources
-    .map(source => {
-      const gt = genotypes[source.sampleName]
-      return { source, rank: gt === undefined ? -1 : encodeGenotype(gt) }
-    })
-    .sort((a, b) => b.rank - a.rank)
-    .map(d => d.source)
+  return {
+    featureIds: cellData.simplifiedFeatures.map(f => f.id),
+    genotypeCodesByFeatureId,
+  }
 }
 
 // Group sample rows by a metadata attribute (e.g. 'super_pop'), so every member
@@ -269,25 +259,6 @@ async function callMultiSampleVariantCellData(args: {
       statusCallback,
     },
   )
-}
-
-function getGenotypeMapForFeature(
-  cellData: CellDataResult | undefined,
-  featureId: string,
-) {
-  if (cellData) {
-    if (cellData.mode === 'regular') {
-      for (const regionData of Object.values(cellData.perRegionCellData)) {
-        const result = regionData.featureGenotypeMap[featureId]
-        if (result) {
-          return result
-        }
-      }
-      return undefined
-    }
-    return cellData.featureData.find(f => f.featureId === featureId)
-  }
-  return undefined
 }
 
 /**
@@ -1083,18 +1054,31 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         * Order the rows by their genotype at one variant, breaking ties by how
+         * far each row agrees with its neighbours to either side of it. The
+         * flanking tiebreak is what makes the local haplotype structure legible:
+         * rows sharing the anchor allele sit together, and their shared block
+         * frays outward at the recombination breakpoints that end it.
+         */
         sortByGenotype(featureId: string) {
           const { cellData } = self
           const sources = self.sourcesWithoutLayout
           if (cellData && sources) {
-            const info = getGenotypeMapForFeature(cellData, featureId)
-            if (info) {
-              const genotypes = decodeGenotypes(
-                cellData.genotypeDict,
-                cellData.sampleNames,
-                info.genotypeCodes,
-              )
-              self.setLayout(sortSourcesByGenotype(sources, genotypes))
+            const { featureIds, genotypeCodesByFeatureId } =
+              getOrderedGenotypeCodes(cellData)
+            const sorted = sortSourcesAroundVariant({
+              sources,
+              sampleNames: cellData.sampleNames,
+              genotypeDict: cellData.genotypeDict,
+              featureIds,
+              genotypeCodesByFeatureId,
+              anchorFeatureId: featureId,
+              phased: self.renderingMode === 'phased',
+            })
+            if (sorted) {
+              self.setLayout(sorted)
             }
           }
         },

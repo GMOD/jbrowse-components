@@ -349,6 +349,8 @@ export function variantContextMenuItems(
         {
           label: 'Sort by genotype',
           icon: SwapVertIcon,
+          helpText:
+            'Sort rows by their genotype at this variant, then by how far each row matches its neighbours to either side. The shared haplotype block around this variant reads as a solid rectangle and frays outward where recombination ends it',
           onClick: () => {
             self.sortByGenotype(feat.id())
           },

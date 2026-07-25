@@ -24,7 +24,44 @@ sample→genotype `Record` crossing the RPC→model boundary must key by
 `sampleName`; `name` silently breaks in phased mode. Holds for
 `featureGenotypeMap[id].genotypes` (compute\*Cells), the `VariantComponent.tsx`
 hover lookup (resolve `sampleName` via `sourceMap` first), and
-`sortSourcesByGenotype`.
+`anchoredHaplotypeSort.ts`.
+
+## Genotype matrices: NaN is the only missing marker
+
+`getGenotypeMatrix` / `getPhasedGenotypeMatrix` emit `Float32Array` rows with
+`NaN` for anything with no usable value (no-call, sample absent, unphased call
+in phased mode). Don't reintroduce a sentinel on the value scale: the old `-1`
+put a no-call further from a hom-alt genotype (3) than any two real genotypes
+are from each other (2) under hclust's Euclidean metric, so samples clustered by
+missingness. Consumers each resolve `NaN` their own way —
+`executeClusterGenotypeMatrix` imputes to the site mean (the WASM rejects
+non-finite input), `clusterRScript.ts` writes `NA`. See
+`VariantRPC/genotypeMatrixEncoding.ts`.
+
+Phased rows carry a **binary alt indicator**, not the raw allele index — an
+allele index is a category, so Euclidean distance over it is meaningless. Where
+allele identity matters, `anchoredHaplotypeSort.ts` compares alleles exactly.
+
+`buildGenotypeMatrix.ts` is the single place that picks the matrix for a
+rendering mode. Both the auto (WASM) and manual (R export) paths must go
+through it; when only the auto path branched, manual clustering in phased mode
+silently produced a sample-level tree wearing haplotype labels.
+
+## Row sorting is anchored, not clustered
+
+`sortByGenotype` orders rows by their genotype at the clicked variant, then
+refines ties by the flanking sites reading outward. Hierarchical clustering
+answers a different question — it wants one distance over the whole window, but
+a haplotype is a mosaic, so past the first recombination breakpoint that
+distance describes no position in particular. The anchored sort makes the mosaic
+legible instead: the shared block reads as a rectangle and frays where
+recombination ends it. Both are kept; clustering is the right tool zoomed out,
+where it becomes a kinship ordering.
+
+The refinement counting-sorts (site values are a handful of small categories)
+and reuses every buffer across sites and buckets. The deep passes produce
+thousands of two- and three-row buckets, so anything allocating per bucket or
+per row dominates — an earlier comparison-sort version was ~4x slower.
 
 ## Settings: classify by invalidation tier
 
