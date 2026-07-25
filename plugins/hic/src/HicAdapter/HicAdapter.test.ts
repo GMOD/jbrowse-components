@@ -3,6 +3,7 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import HicAdapter from './HicAdapter.ts'
 import configSchema from './configSchema.ts'
+import { NO_DATA_FOR_RESOLUTION } from './hic-straw/index.ts'
 
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -35,7 +36,7 @@ function makeMockParser() {
     ) => {
       if (ref.chr !== ref2.chr) {
         throw new Error(
-          `No data available for resolution: map ${ref.chr}-${ref2.chr}`,
+          `${NO_DATA_FOR_RESOLUTION}: map ${ref.chr}-${ref2.chr}`,
         )
       }
       return Promise.resolve([{ bin1: 0, bin2: 0, counts: 5 }])

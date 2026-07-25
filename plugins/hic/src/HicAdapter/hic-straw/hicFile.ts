@@ -24,6 +24,15 @@ import type {
   HicRegion,
 } from './types.ts'
 
+/**
+ * Prefix of the error thrown when a region pair has no matrix at the requested
+ * binsize. `HicAdapter.getRegionPairRecords` degrades that pair to `[]` rather
+ * than failing a whole multi-region fetch, and it can only tell this apart from
+ * a real failure by the message — so the two share this constant instead of
+ * matching a hand-copied string.
+ */
+export const NO_DATA_FOR_RESOLUTION = 'No data available for resolution'
+
 const Short_MIN_VALUE = -32768
 const DOUBLE = 8
 const FLOAT = 4
@@ -393,7 +402,7 @@ export default class HicFile {
         const zd = matrix.getZoomData(binSize, unit)
         if (!zd) {
           throw new Error(
-            `No data available for resolution: ${binSize} for map ${region1.chr}-${region2.chr}`,
+            `${NO_DATA_FOR_RESOLUTION}: ${binSize} for map ${region1.chr}-${region2.chr}`,
           )
         }
 

@@ -92,13 +92,23 @@ export async function executeRenderHicData({
   // Sort a Float32Array copy of `counts` once and read both maxScore and the
   // 95th percentile off it. Avoids a separate max-scan plus an Array<number>
   // sort (Float32Array.sort is significantly faster).
+  //
+  // `.filter(Number.isFinite)` doubles as that copy, and keeps one bad value
+  // from poisoning the whole track. A typed-array sort puts NaN *last*, so a
+  // single non-finite count would become `maxScore` — and NaN propagates through
+  // `Math.max(colorMaxScore, …)` in both the shader and `mapHicCount`, so every
+  // bin's color maps to NaN and the legend silently disappears
+  // (`hasLegendData` reads `NaN > 0`). Both non-finites are reachable: NaN is
+  // the .hic dense-block "no value" marker and only the dense path filters it
+  // (`hicFile.readBlock`), and a tiny normalization divisor yields Infinity.
+  // Scoring off the finite subset keeps the damage to the offending bin.
   let maxScore = 0
   let percentile95 = 0
-  if (numContacts > 0) {
-    const sorted = new Float32Array(counts)
-    sorted.sort()
-    maxScore = sorted[numContacts - 1]!
-    percentile95 = sorted[Math.floor(0.95 * (numContacts - 1))]!
+  const finite = counts.filter(c => Number.isFinite(c))
+  if (finite.length > 0) {
+    finite.sort()
+    maxScore = finite[finite.length - 1]!
+    percentile95 = finite[Math.floor(0.95 * (finite.length - 1))]!
   }
 
   const result: HicDataResult = {

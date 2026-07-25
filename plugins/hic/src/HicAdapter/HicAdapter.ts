@@ -4,7 +4,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { openHicFilehandle } from './HicFilehandle.ts'
-import HicStraw from './hic-straw/index.ts'
+import HicStraw, { NO_DATA_FOR_RESOLUTION } from './hic-straw/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -236,7 +236,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         region2Idx,
       }))
     } catch (e) {
-      if (`${e}`.includes('No data available for resolution')) {
+      if (`${e}`.includes(NO_DATA_FOR_RESOLUTION)) {
         return []
       }
       throw e
