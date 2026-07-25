@@ -55,30 +55,68 @@ const MHC_REGION = {
 }
 
 export const graphSpecs: ScreenshotSpec[] = [
-  // The pggb subgraph: a plain GFA, so it has no rank tags to anchor to and the
-  // force engine is the only layout that can draw it (layoutMode 'auto' falls
-  // through to FMMM on its own). Colored by depth, how many of the four strains
-  // traverse each node. The FMMM run drifts ~3% between runs, so diffThreshold
-  // is raised well above it to keep the committed PNG stable across regens.
+  // The pggb subgraph, over the linear view of the same locus (reviewer: "we need
+  // a linear genome view to correspond with what is shown"). A pggb GFA tags no
+  // segment with a position, so there is no per-node correspondence to draw —
+  // but the locus is not unknown: the file's five P lines ARE named for it, and
+  // K12#1#chr:1004500-1004961 is the window the LGV above opens. The graph's five
+  // paths and the MAF's five rows are the same five strains through the same
+  // 461 bp, one as a bubble chain and one as an alignment.
+  //
+  // Layout left on 'auto'. With no rank tags to anchor to it settles into the
+  // engine's own backbone inference, and that is the one setting whose result
+  // reliably lands inside the view's 600px canvas — asking for 'force'
+  // explicitly draws a taller layout that the auto-fit then clips. It drifts a
+  // few percent between captures, hence the raised diffThreshold.
   {
     mode: 'url',
     name: 'pangenome/local_subgraph',
     url: sessionSpec(CONFIG, {
+      // the shared graphgenomeview fixture config carries only the K12
+      // assembly, so the pggb MAF comes in as a session track
+      sessionTracks: [
+        {
+          type: 'MafTrack',
+          trackId: 'ecoli_pggb_maf',
+          name: 'pggb graph: whole-genome alignment (MAF, vs K12)',
+          assemblyNames: ['K12'],
+          adapter: {
+            type: 'BgzipTaffyAdapter',
+            samples: ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39'],
+            tafGzLocation: { uri: `${DATA}/ecoli_pggb.taf.gz` },
+            taiLocation: { uri: `${DATA}/ecoli_pggb.taf.gz.tai` },
+          },
+        },
+      ],
       views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1,004,450-1,005,010',
+          tracks: [{ trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' }],
+        },
         {
           type: 'GraphGenomeView',
           gfaLocation: { uri: `${DATA}/ecoli_pggb_subgraph.gfa` },
           colorScheme: 'depth',
+          // zoomToFit fits the layout to canvasHeight, and the view measures
+          // that before the linear view above it has laid out — so left to
+          // itself it fits to a canvas taller than the panel it ends up with
+          // and the bottom of the graph is cut off. Pinned to the height the
+          // panel actually gets at this viewport.
+          canvasHeight: 560,
         },
       ],
     }),
     readySelector: TOOLBAR_READY,
-    readyTimeout: 60000,
+    readyTimeout: 90000,
     allowUnsettled: true,
     settleMs: 8000,
     diffThreshold: 0.1,
     viewportWidth: 1000,
-    viewportHeight: 760,
+    // the graph view draws into a fixed 600px canvas, so the frame has to be
+    // the linear view plus that plus both headers or the layout is clipped
+    viewportHeight: 950,
     hideTooltip: true,
   },
   // The indexed route on the tutorial's own four-strain graph: the rGFA

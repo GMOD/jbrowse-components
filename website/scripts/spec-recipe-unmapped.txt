@@ -9,7 +9,9 @@ alpha
 arcColorByType
 autoDiagonalize
 autoscale
+canvasHeight
 cigarMode
+collapseGroupRows
 color
 colorBy
 colorByChromosome
@@ -27,6 +29,8 @@ featureSpacing
 gfaLocation
 height
 heightOverride
+hideSelfAlignments
+jexlFilters
 jexlFiltersSetting
 layout
 layoutMode

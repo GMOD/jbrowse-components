@@ -49,6 +49,62 @@ agents (not mine):
 `website/docs/user_guides/{alignments_track,hic_track,gc_content_track}.md`,
 root `package.json`/`pnpm-lock.yaml`/`.github`, etc.
 
+## 2026-07-25 later pass — 5 more bad items cleared
+
+`pangenome/maf` in the same batch was taken by another agent in this shared
+worktree (they had already edited `specs/pangenome.ts` and had the generator
+running under `--localport 3356`) — **check `ps` for a running
+`generate-screenshots` before claiming an item**, and pass your own
+`--localport`, the default 3334 is a hard `EADDRINUSE`.
+
+- **`pangenome_cactus/variant_matrix`** — the window was the problem, not the
+  rendering. `chr:995,000-1,015,000` had NCTC86 reference at 574 of 582 calls (a
+  flat grey row), zero missing genotypes (so the legend advertised a "No call"
+  yellow that appeared nowhere), and a 6 kb stretch whose every call sat inside
+  one top-level bubble, which the sub-100bp filter removed and left a hole that
+  read as a bug. Rescoring 20 kb windows on "every strain carries alt, some
+  strain carries no-calls, no empty 2 kb sub-window" gives
+  `chr:2,200,000-2,220,000`: IAI39 goes no-call over the last 6 kb and its MAF
+  row below drops out across the same stretch, so the figure now shows one
+  strain leaving the alignment twice over. The redundant raw-calls lane is gone
+  (at this window it is a solid gold wall), the filter moved to
+  `jexl:alleleLength(feature) < 100` (the big records here are INSERTIONS, which
+  `end - start` scores as 1), and the lane carries `forceLoad: true` — 1,341
+  records over 1,000 px is past the 1-feature-per-pixel gate. **NCTC86 being
+  nearly all-reference is real**: it is alt at only 7.3% of sites genome-wide
+  against CFT073's 63%, i.e. it is the strain closest to K-12. Do not go looking
+  for a rendering bug there.
+- **`pangenome_cactus/graph` + `graph_correspondence`** — three outlined boxes
+  cut to one translucent gold band, in both halves, same paint.
+  `build_ecoli_pangenome_cactus.sh` draws the raster band and emits the K12
+  window to `graph_landmarks.tsv`; the JBrowse `highlight` uses the identical
+  `rgba(255,193,7,0.60)`. **Gold, not blue**: the two images have opposite
+  backgrounds (saturated rows on white vs the solid dark blue of the depth
+  track) and blue vanished into the second. The band-drawing step needs only
+  `ecoli_cactus_graph.png` + `graph_landmarks.tsv`, both of which survive in
+  `~/ecoli_cactus5/`, so re-rendering it does NOT mean re-running cactus.
+- **`multiway_synteny/ecoli_one_vs_all_whole_genome`** — the one-vs-all lanes
+  now sit on the K-12 row of a `LinearSyntenyView` instead of in a view of their
+  own, so both readings of the same PAF share one axis. **IAI39 goes second, not
+  last**: bands are between adjacent rows, so that is the only order in which a
+  K12<->IAI39 band exists at all, and its crossings then sit directly under the
+  blue stretches of the IAI39 lane. `colorBy: 'strand'` on the bands because
+  LGVSyntenyDisplay already colors its lanes that way.
+- **`pangenome/local_subgraph`** — paired with an LGV of the same locus. The
+  earlier WON'T FIX was half right: a pggb GFA tags no segment with a position,
+  so there is no per-node correspondence — but the locus is in the file, inside
+  the five `P` line names (`K12#1#chr:1004500-1004961`), and the MAF's five rows
+  are the graph's five paths. **Pin `canvasHeight`** (560 at
+  `viewportHeight: 950`): `zoomToFit` fits to `canvasHeight`, which the view
+  measures before the linear view above it has laid out, so left alone it fits
+  to a taller canvas than it ends up with and the bottom of the graph is cut
+  off. An explicit `layoutMode: 'force'` makes that worse, not better. The graph
+  panel is still a thin curve — a 54-node near-linear subgraph is what it is,
+  and the FMMM run drifts between captures (hence `diffThreshold: 0.1`). A
+  `LinearMultiSampleVariantDisplay` on a session-declared `VariantTrack` at this
+  locus rendered its legend but **no rows at all**; not chased, the lane was
+  dropped as redundant with the MAF, but it looks like a real bug.
+
 ## 2026-07-25 session — 15 of 17 bad items cleared
 
 Three app changes came out of it:
@@ -60,10 +116,11 @@ Three app changes came out of it:
   self-alignment lane" checkbox: an aligner run with `minimap2 -X` skips each
   sequence's own diagonal, so the view's own lane in an all-vs-all track holds
   only internal paralogy and every reviewer read it as missing data.
-- **`alleleLength` jexl function** (`plugins/variants/src/shared/alleleLength.ts`)
-  — longest allele in bp, so `jexl:alleleLength(feature) >= 50` selects the SV
-  tier of a decomposed pangenome callset. A filter on `end - start` keeps only
-  deletions: an insertion consumes no reference, so its span is 1.
+- **`alleleLength` jexl function**
+  (`plugins/variants/src/shared/alleleLength.ts`) — longest allele in bp, so
+  `jexl:alleleLength(feature) >= 50` selects the SV tier of a decomposed
+  pangenome callset. A filter on `end - start` keeps only deletions: an
+  insertion consumes no reference, so its span is 1.
 - **QuickStartPanel track Select capped at 500px** — it was `fullWidth` with no
   cap and stretched the whole import-form dialog.
 
@@ -80,20 +137,20 @@ what it is.
 Deleted (redundant, per the reviewer's delete-when-redundant call):
 `pangenome/graph_rgfa`, `pangenome/graph_force` (graph-only; the
 `rgfa_subgraph_launch` and `hprc_mhc_bandage` figures pair the same layouts with
-a linear view), `pangenome_cactus/boxed_locus_synteny`,
-`hprc2/mhc_matrix`. `pangenome_cactus/depth` was folded into
-`pangenome_cactus/pav` (depth curve above the per-strain rows in one frame).
+a linear view), `pangenome_cactus/boxed_locus_synteny`, `hprc2/mhc_matrix`.
+`pangenome_cactus/depth` was folded into `pangenome_cactus/pav` (depth curve
+above the per-strain rows in one frame).
 
-**Right-click coordinates in `genomes_synteny/launch_sequence`**: only the pileup
-row hit-tests (y 331 at that viewport). The band a few px above it returns no
-context menu at all, which is what makes "the coordinate is wrong" look like
-"the feature is missing". Aim at a LONG chain block — the launch frames the new
-view on the block under the cursor, so a short fragment gives a tiny view.
+**Right-click coordinates in `genomes_synteny/launch_sequence`**: only the
+pileup row hit-tests (y 331 at that viewport). The band a few px above it
+returns no context menu at all, which is what makes "the coordinate is wrong"
+look like "the feature is missing". Aim at a LONG chain block — the launch
+frames the new view on the block under the cursor, so a short fragment gives a
+tiny view.
 
 Still bad: `desktop-blat-results` (wants BLAT results in a sidebar widget — app
-feature, untouched), `tcga/cnv_recurrence_genome` (renderer dies past ~860px of
-canvas for 1104 auto-fit rows; unchanged), plus whatever the reviewer flags on
-the newly regenerated figures.
+feature, untouched), plus whatever the reviewer flags on the newly regenerated
+figures. (`tcga/cnv_recurrence_genome` has since been dropped from the json.)
 
 ## Done this session (uncommitted) — the big one was a real bug
 

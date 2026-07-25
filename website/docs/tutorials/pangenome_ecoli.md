@@ -173,7 +173,7 @@ a 164 bp backbone segment on one picture, with the SNP alleles as the specks, in
 proportion. A few hundred bp is what makes that structure legible, not what the
 view can load.
 
-<Figure caption="A 400 bp slice of the five-strain graph (K12:1,004,500-1,004,961), 54 nodes over 5 paths. The layout is set to Anchored, but a pggb GFA tags no segment with a stable position, so there is nothing to anchor to and what you get is graph structure rather than K12 coordinates: the only coordinates in the file are inside the path names. Node color is depth, how many of the five strains traverse that node, so the shared backbone runs yellow and green and the short divergent segments strung along it are darker. This is the structure the projections below re-express as a variant column, a synteny break, or a coverage dip." src="/img/pangenome/local_subgraph.png" />
+<Figure caption="A 461 bp slice of the five-strain graph, 54 nodes over 5 paths, under the MAF alignment of the same locus. The graph's five paths and the MAF's five rows are the same five strains: IAI39 is the row that diverges, and the darker specks strung along the graph backbone are what it diverges by. A pggb GFA tags no segment with a position, so the two panels line up as a locus, not node by node; the only coordinates in the file are the ones inside the path names, which is where K12:1,004,500-1,004,961 comes from. Node color is depth, how many strains traverse that node." src="/img/pangenome/local_subgraph.png" />
 
 ### rGFA graphs carry their own coordinates
 
