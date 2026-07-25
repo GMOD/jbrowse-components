@@ -1,15 +1,9 @@
 import {
-  SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_MATE_REVERSE,
-  SAM_FLAG_REVERSE,
-} from '@jbrowse/alignments-core'
-import {
   clipLengthAtStartOfReadNumeric,
   numericCigarToString,
 } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
-import { getPairOrientation } from '../shared/pairOrientation.ts'
 import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
@@ -64,19 +58,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get pair_orientation() {
-    if (!this.record.isPaired()) {
-      return undefined
-    }
-    const { flags, mate } = this.record
-    return getPairOrientation({
-      isRead1: !!(flags & SAM_FLAG_FIRST_IN_PAIR),
-      isSelfRev: !!(flags & SAM_FLAG_REVERSE),
-      isMateRev: !!(flags & SAM_FLAG_MATE_REVERSE),
-      selfRefId: this.record.sequenceId,
-      selfPos: this.record.alignmentStart,
-      mateRefId: mate?.sequenceId,
-      matePos: mate?.alignmentStart,
-    })
+    return this.record.getPairOrientation()
   }
 
   get template_length() {

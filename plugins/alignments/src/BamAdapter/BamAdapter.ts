@@ -200,9 +200,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
             }
             // @gmod/bam applies only flags + a single tagFilter; multiple tag
             // filters are AND-ed here (excluded if any one rejects the read).
+            // getTag decodes just the one tag; record.tags would decode every
+            // unrelated tag on the read (NM/AS/ms/de/…) to test one of them.
             if (
               tagFilters?.some(tf =>
-                filterTagValue(record.tags[tf.tag], tf.value),
+                filterTagValue(record.getTag(tf.tag), tf.value),
               )
             ) {
               continue

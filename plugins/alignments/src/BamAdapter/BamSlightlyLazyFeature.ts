@@ -1,17 +1,10 @@
 import { BamRecord } from '@gmod/bam'
 import {
-  SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_MATE_REVERSE,
-  SAM_FLAG_REVERSE,
-} from '@jbrowse/alignments-core'
-import {
   clipLengthAtStartOfReadNumeric,
   forEachMismatchNumeric,
 } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
-import { decodeSeq } from '../shared/decodeSeq.ts'
-import { getPairOrientation } from '../shared/pairOrientation.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type BamAdapter from './BamAdapter.ts'
@@ -31,10 +24,6 @@ export default class BamSlightlyLazyFeature
 
   id() {
     return `${this.adapter.id}-${this.fileOffset}`
-  }
-
-  get seq() {
-    return decodeSeq(this.NUMERIC_SEQ, this.seq_length)
   }
 
   // performance profiling showed that using forEachMismatch rather than
@@ -72,21 +61,6 @@ export default class BamSlightlyLazyFeature
 
   get clipLengthAtStartOfRead() {
     return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
-  }
-
-  get pair_orientation() {
-    if (!this.isPaired()) {
-      return undefined
-    }
-    return getPairOrientation({
-      isRead1: !!(this.flags & SAM_FLAG_FIRST_IN_PAIR),
-      isSelfRev: !!(this.flags & SAM_FLAG_REVERSE),
-      isMateRev: !!(this.flags & SAM_FLAG_MATE_REVERSE),
-      selfRefId: this.ref_id,
-      selfPos: this.start,
-      mateRefId: this.next_refid,
-      matePos: this.next_pos,
-    })
   }
 
   get refName() {

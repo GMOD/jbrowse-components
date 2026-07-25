@@ -696,11 +696,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.3.4
-        version: 7.3.4
+        specifier: ^7.4.0
+        version: 7.4.0
       '@gmod/cram':
-        specifier: ^8.4.0
-        version: 8.4.0
+        specifier: ^8.6.0
+        version: 8.6.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -4181,8 +4181,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.3.4':
-    resolution: {integrity: sha512-TtYku3YFJ/V2xB32cemwVCjc7nIsrjB7ZuBbiIvfk9CCpoR1bPwJMEZPvW6vDN7s1Z9jJhIMEfYWGHSEaBY0FQ==}
+  '@gmod/bam@7.4.0':
+    resolution: {integrity: sha512-+Kb/W1fFU5cB56G+JyLNiSPkcHPg9MrRiIbS4VK2ZPM2fOLE9OcyekWaCMjvHSr3NslytOoQMo70CdwTpMoLJQ==}
 
   '@gmod/bbi@10.0.0':
     resolution: {integrity: sha512-qI2wzkxKXa1uzxEwChc85jnzS8Woe/I3l49ZDLZ/RZFR9EfdTFcSBwOgH7iSuGEeFhY64TGROQBV84Q0cEPMfQ==}
@@ -4193,8 +4193,8 @@ packages:
   '@gmod/bgzf-filehandle@6.3.0':
     resolution: {integrity: sha512-dsmGAGebRzOjdgIhdlq99Lr8NvpFIeAvNMG+dRaVOojML9jylrl7up3P+adD66qAbrC12qjNUSPps8CGCPhmzA==}
 
-  '@gmod/cram@8.4.0':
-    resolution: {integrity: sha512-KugUao+xhQtWWxIrePPrxF2GIfIG95p2oiA0jeHc2XrfP+6E8QXmbfmFi2/0IILfZ6abKS30QsZy2AzfQ1bXwQ==}
+  '@gmod/cram@8.6.0':
+    resolution: {integrity: sha512-EqwZ2VQ9MHGyxIUaEdYfPrtoi04Ny+L8+GLohFY9jIjcR0hOpxpGjEF4CCEv4+Hnq3m9/wOg08tM6i3p86PfsA==}
 
   '@gmod/faidx@2.0.0':
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
@@ -12094,7 +12094,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.3.4':
+  '@gmod/bam@7.4.0':
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.0
       '@jbrowse/quick-lru': 7.3.5
@@ -12116,7 +12116,7 @@ snapshots:
       generic-filehandle2: 2.2.0
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.4.0':
+  '@gmod/cram@8.6.0':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
