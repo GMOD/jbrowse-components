@@ -8,6 +8,7 @@ import {
   ConfigurationReference,
   getConf,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
@@ -326,7 +327,7 @@ export default function stateModelFactory(
          * #action
          */
         setRowHeight(n: number) {
-          self.configuration.setSlot('rowHeight', n)
+          setConf(self, 'rowHeight', n)
         },
         /**
          * #action
@@ -338,19 +339,19 @@ export default function stateModelFactory(
          * #action
          */
         setRowProportion(n: number) {
-          self.configuration.setSlot('rowProportion', n)
+          setConf(self, 'rowProportion', n)
         },
         /**
          * #action
          */
         setShowAllLetters(f: boolean) {
-          self.configuration.setSlot('showAllLetters', f)
+          setConf(self, 'showAllLetters', f)
         },
         /**
          * #action
          */
         setMismatchRendering(f: boolean) {
-          self.configuration.setSlot('mismatchRendering', f)
+          setConf(self, 'mismatchRendering', f)
         },
         /**
          * #action
@@ -386,91 +387,91 @@ export default function stateModelFactory(
          * #action
          */
         setShowAsUpperCase(arg: boolean) {
-          self.configuration.setSlot('showAsUpperCase', arg)
+          setConf(self, 'showAsUpperCase', arg)
         },
         /**
          * #action
          */
         setShowTree(arg: boolean) {
-          self.configuration.setSlot('showTree', arg)
+          setConf(self, 'showTree', arg)
         },
         /**
          * #action
          */
         setShowBranchLength(arg: boolean) {
-          self.configuration.setSlot('showBranchLength', arg)
+          setConf(self, 'showBranchLength', arg)
         },
         /**
          * #action
          */
         setShowCoverage(arg: boolean) {
-          self.configuration.setSlot('showCoverage', arg)
+          setConf(self, 'showCoverage', arg)
         },
         /**
          * #action
          */
         setShowAlignments(arg: boolean) {
-          self.configuration.setSlot('showAlignments', arg)
+          setConf(self, 'showAlignments', arg)
         },
         /**
          * #action
          */
         setCoverageHeight(arg: number) {
-          self.configuration.setSlot('coverageHeight', arg)
+          setConf(self, 'coverageHeight', arg)
         },
         /**
          * #action
          */
         setShowConservation(arg: boolean) {
-          self.configuration.setSlot('showConservation', arg)
+          setConf(self, 'showConservation', arg)
         },
         /**
          * #action
          */
         setConservationMode(arg: ConservationMode) {
-          self.configuration.setSlot('conservationMode', arg)
+          setConf(self, 'conservationMode', arg)
         },
         /**
          * #action
          */
         setRowIdentityMode(arg: RowIdentityModeWithOff) {
-          self.configuration.setSlot('rowIdentityMode', arg)
+          setConf(self, 'rowIdentityMode', arg)
         },
         /**
          * #action
          */
         setRowIdentityAutoZoom(arg: boolean) {
-          self.configuration.setSlot('rowIdentityAutoZoom', arg)
+          setConf(self, 'rowIdentityAutoZoom', arg)
         },
         /**
          * #action
          */
         setShowAnnotations(arg: boolean) {
-          self.configuration.setSlot('showAnnotations', arg)
+          setConf(self, 'showAnnotations', arg)
         },
         /**
          * #action
          */
         setShowTranslation(arg: boolean) {
-          self.configuration.setSlot('showTranslation', arg)
+          setConf(self, 'showTranslation', arg)
         },
         /**
          * #action
          */
         setColorByChromosome(arg: boolean) {
-          self.configuration.setSlot('colorByChromosome', arg)
+          setConf(self, 'colorByChromosome', arg)
         },
         /**
          * #action
          */
         setShowInversions(arg: boolean) {
-          self.configuration.setSlot('showInversions', arg)
+          setConf(self, 'showInversions', arg)
         },
         /**
          * #action
          */
         setConservationHeight(arg: number) {
-          self.configuration.setSlot('conservationHeight', arg)
+          setConf(self, 'conservationHeight', arg)
         },
       }))
       .actions(self => {
@@ -800,11 +801,8 @@ export default function stateModelFactory(
         setFitToHeight() {
           // Seed from the current content height so toggling on never jumps,
           // even if a prior fixed-mode drag left a stale explicit height.
-          self.configuration.setSlot(
-            'height',
-            Math.max(self.height, MIN_DISPLAY_HEIGHT),
-          )
-          self.configuration.setSlot('rowHeight', 0)
+          setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
+          setConf(self, 'rowHeight', 0)
           self.scrollTop = 0
         },
         /**
@@ -820,7 +818,7 @@ export default function stateModelFactory(
         resizeHeight(distance: number) {
           const oldHeight = self.height
           const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
-          self.configuration.setSlot('height', newHeight)
+          setConf(self, 'height', newHeight)
           // Only the rows area scales on a drag; the stacked coverage/conservation
           // bands (`rowsTopOffset`) are a fixed inset that doesn't move. Scale the
           // pinned rowHeight by the *rows-area* ratio, not the full-height ratio —
@@ -835,7 +833,8 @@ export default function stateModelFactory(
           // resolved height mirrors the fit-mode path.
           const oldRows = oldHeight - self.rowsTopOffset
           if (self.rowHeight > 0 && oldRows > 0) {
-            self.configuration.setSlot(
+            setConf(
+              self,
               'rowHeight',
               Math.max(
                 1,
