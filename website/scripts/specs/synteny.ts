@@ -505,25 +505,51 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 // lane STOPS, and a 7px bar makes that a hairline.
                 featureHeight: 14,
                 // One row per strain (the LGVSyntenyDisplay default), so the
-                // track is its four lanes and nothing else. Stacked, the same
-                // four groups needed 210px, almost all of it empty: the row
+                // track is its five lanes and nothing else. Stacked, four
+                // groups already needed 210px, almost all of it empty: the row
                 // count came from the IS-element pile at the right edge, not
                 // from the synteny anyone is looking at.
-                height: 110,
+                height: 135,
               },
             ],
           },
         ],
       },
     ),
-    viewportHeight: 432,
+    // taller than the lanes need, so the callout below sits in the track's own
+    // empty area rather than over a lane (16px pitch leaves no room for a pill)
+    viewportHeight: 460,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 12000,
-    // No on-image callout. The stacked version needed one to explain that the
-    // scattered bars were four per-strain sections; four labelled lanes 16px
-    // apart say it themselves, and at this density any text box drawn over the
-    // track covers a lane. "One track, one lane per strain" moved to the caption.
+    // The one thing the figure cannot say for itself: reviewers keep asking why
+    // K-12 has no line against itself. It cannot — all_vs_all.paf is built with
+    // `minimap2 -X`, which skips each sequence's own diagonal, so the K12 lane
+    // holds only K-12's internal paralogy (the IS copies at the right edge).
+    // Box the lane label, keep the reason in one line, leave the rest to the
+    // caption. No arrow: the label is at the far left, so a line to it would
+    // cross the other lanes' labels.
+    annotations: [
+      // the lane labels are 16px apart, so the default box (element + 6px pad,
+      // ~30px tall) swallows its neighbours' labels: pin it to the label's own
+      // height and thin the stroke
+      {
+        type: 'box',
+        anchor: { text: 'K12' },
+        height: 19,
+        dy: 5,
+        strokeWidth: 2,
+      },
+      {
+        type: 'text',
+        fontSize: 18,
+        maxWidth: 520,
+        anchor: { text: 'K12' },
+        dx: 40,
+        dy: 60,
+        text: "K12 lane: no self-alignment line, only K-12's own repeats",
+      },
+    ],
   },
 
   // The whole-genome end of the same "One strain against all the others"
@@ -584,19 +610,43 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 // the WHITE, and a 3px gap in a 7px bar is not a gap anyone
                 // sees. 14px lanes make each strain-specific stretch read.
                 featureHeight: 14,
-                // four lanes, one row each — sized to them, so the figure is
+                // five lanes, one row each — sized to them, so the figure is
                 // the lanes rather than mostly empty track
-                height: 110,
+                height: 135,
               },
             ],
           },
         ],
       },
     ),
-    viewportHeight: 280,
+    // room below the lanes for the same self-alignment callout as the zoomed
+    // figure above (see its comment); at 4.6 Mb the empty K12 lane is the first
+    // thing a reader asks about
+    viewportHeight: 310,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 15000,
+    annotations: [
+      // the lane labels are 16px apart, so the default box (element + 6px pad,
+      // ~30px tall) swallows its neighbours' labels: pin it to the label's own
+      // height and thin the stroke
+      {
+        type: 'box',
+        anchor: { text: 'K12' },
+        height: 19,
+        dy: 5,
+        strokeWidth: 2,
+      },
+      {
+        type: 'text',
+        fontSize: 18,
+        maxWidth: 520,
+        anchor: { text: 'K12' },
+        dx: 40,
+        dy: 60,
+        text: "K12 lane: no self-alignment line, only K-12's own repeats",
+      },
+    ],
   },
 
   // The Linear synteny view import form for the allvsall_synteny.md "From the

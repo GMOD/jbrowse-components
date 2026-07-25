@@ -362,7 +362,7 @@ pileup, so the rest of that menu is the one you already know from alignments:
 **Show... > Show coverage**, for instance, adds a histogram of how many other
 strains cover each base of the strain you are viewing.
 
-<Figure caption="One track, one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. The shaded band is K-12's phenylacetate (paa) operon. Sakai and CFT073 both stop at its left edge, NCTC86 runs straight through, and the K12 lane is K-12's own paralogy. The near-black blocks just right of the band are the insD2/insC2/insI2 IS elements, where enough alignments overlap to saturate the shading." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+<Figure caption="One track, one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. The shaded band is K-12's phenylacetate (paa) operon. Sakai, CFT073 and IAI39 all stop at its left edge and NCTC86 runs straight through. The K12 lane carries no full-length line because minimap2 -X dropped each genome's self-diagonal, so what draws there is K-12's own paralogy: the near-black insD2/insC2/insI2 IS-element blocks just right of the band, where enough alignments overlap to saturate the shading." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 The same mode zoomed out to the whole chromosome gives a per-strain overview of
 where each one diverges. At this size the whole PAF is in memory on every pan;
@@ -370,7 +370,7 @@ for a real pangenome, index it first with
 [make-pif](#large-files-index-with-make-pif) so each screen is a tabix range
 query instead:
 
-<Figure caption="The same track and the same four lanes, zoomed out to K-12's whole 4.64 Mb. The white gaps fall in different places in each lane, so each strain breaks from the K-12 backbone somewhere the others do not." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
+<Figure caption="The same track and the same five lanes, zoomed out to K-12's whole 4.64 Mb. The white gaps fall in different places in each lane, so each strain breaks from the K-12 backbone somewhere the others do not. The blue stretches in the IAI39 lane are its large inversions relative to K-12. The K12 lane is near-empty for the same reason as above: minimap2 -X keeps no self-diagonal, so only K-12's internal repeats draw." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ## Reproduce it end to end
 

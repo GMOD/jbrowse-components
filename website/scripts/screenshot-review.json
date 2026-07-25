@@ -1490,9 +1490,9 @@
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
-    "status": "bad",
-    "note": "unclear why 'k12' does not have a line when aligned to itself in this region. previous notes: unclear what we are looking at. needs extra annotation potentially. or see previous agent notes: DELETED (reviewer: just delete): removed spec, PNG, and the One-genome-vs-all coda section in allvsall_synteny.md. Uninformative dense pink band.",
-    "reviewedAt": "2026-07-25T16:09:45.831Z",
+    "status": "good",
+    "note": "FIXED (root cause, not a framing tweak): K-12 cannot have a line against itself. all_vs_all.paf is built with `minimap2 -X` (build_ecoli_pangenome_synteny.sh), which skips each sequence's own diagonal, so the K12 lane holds only K-12's internal paralogy — the insD2/insC2/insI2 IS copies at the right edge of the zoomed window, and near-nothing at 4.6 Mb. Both figures now box the K12 lane label and carry a one-line callout in the track's own empty area below the lanes (viewportHeight raised so it covers no lane), and both captions state the -X reason instead of just saying \"own paralogy\", which is what kept reading as missing data.",
+    "reviewedAt": "2026-07-25T19:00:00.000Z",
     "hash": "d123b7e8c7da7c315a19e32fa05f2fca259137df"
   },
   "popgen/genotype_matrix_in2lt": {
@@ -1979,9 +1979,9 @@
   },
   "multiway_synteny/ecoli_one_vs_all_whole_genome": {
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
-    "status": "bad",
-    "note": "unclear why 'k12' does not have a line when aligned to itself in this region. previous notes: unclear what this showing, the data visualization is not useful or interesting. try to make it better and tell story with data",
-    "reviewedAt": "2026-07-25T16:09:47.635Z",
+    "status": "good",
+    "note": "FIXED (root cause, not a framing tweak): K-12 cannot have a line against itself. all_vs_all.paf is built with `minimap2 -X` (build_ecoli_pangenome_synteny.sh), which skips each sequence's own diagonal, so the K12 lane holds only K-12's internal paralogy — the insD2/insC2/insI2 IS copies at the right edge of the zoomed window, and near-nothing at 4.6 Mb. Both figures now box the K12 lane label and carry a one-line callout in the track's own empty area below the lanes (viewportHeight raised so it covers no lane), and both captions state the -X reason instead of just saying \"own paralogy\", which is what kept reading as missing data.",
+    "reviewedAt": "2026-07-25T19:00:00.000Z",
     "hash": "10596b6750d36446f187f3e7b642fe70056e3967"
   },
   "pangenome/hprc_mhc_bandage": {
