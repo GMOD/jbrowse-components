@@ -24,9 +24,20 @@ export const MAX_CANVAS_DIM_PX = 8192
 let warnedCanvasClamp = false
 
 // CSS px → backing-store px, clamped to the safe ceiling (warning once if the
-// clamp engages). The model-level sizing (e.g. MAF `rowHeight`) should keep
-// canvases within the limit on its own; this is the last-resort guard so a
-// pathological size degrades to a clipped canvas instead of a thrown exception.
+// clamp engages).
+//
+// This is a last-resort guard against `InvalidStateError: Canvas exceeds max
+// size`, NOT a graceful degradation: once clamped the backing store stops
+// tracking the CSS size, so the browser *stretches* the smaller image over the
+// larger element, and every GPU scissor/viewport rect — computed as
+// `cssPx * getDpr()` by `clipBlock` and friends, against the true dpr rather
+// than the effective one — can now exceed the backing store (WebGL clamps
+// silently, WebGPU rejects the rect and blanks the frame). So model-level
+// sizing must keep canvases within the limit on its own; MAF's `maxRowsHeight`
+// (`MAX_CANVAS_DIM_PX / getDpr()`) is the pattern to copy for any display that
+// sizes a canvas to its *content* rather than its viewport. Registered in
+// agent-docs/reference/ARCHITECTURAL_LIMITS.md with the effective-dpr fix that
+// retires it.
 function backingPx(cssSize: number, dpr: number, axis: 'width' | 'height') {
   const value = Math.round(cssSize * dpr)
   if (value > MAX_CANVAS_DIM_PX) {

@@ -166,21 +166,28 @@ describe('Canvas2DDotplotRenderer', () => {
     expect(strokeCalls.length).toBe(3)
   })
 
-  test('resize sets canvas dimensions', () => {
+  // Sizing is deferred to render (prepareCanvas), so dpr is re-read every frame
+  // rather than latched at resize time.
+  test('render sizes the backing store from the last resize', () => {
     const { canvas } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(400, 300)
+    expect(canvas.width).toBe(0)
+    renderer.render(DEFAULT_STATE)
     expect(canvas.width).toBe(400)
     expect(canvas.height).toBe(300)
   })
 
-  test('resize is idempotent for same dimensions', () => {
+  // prepareCanvas compares against the required backing size each frame rather
+  // than trusting a cached one, so a clobbered backing store self-corrects.
+  test('render restores a backing store that drifted from the CSS size', () => {
     const { canvas } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(400, 300)
+    renderer.render(DEFAULT_STATE)
     canvas.width = 999
-    renderer.resize(400, 300)
-    expect(canvas.width).toBe(999)
+    renderer.render(DEFAULT_STATE)
+    expect(canvas.width).toBe(400)
   })
 
   test('dispose clears data so render is a no-op', () => {
