@@ -2,7 +2,7 @@ import { stringify } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import GuideLabel from '../../shared/GuideLabel.tsx'
+import { GuideLabel } from '../../shared/coordLabels.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 

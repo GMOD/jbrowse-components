@@ -1,10 +1,11 @@
 import { useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
+import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import RubberbandSpan from './RubberbandSpan.tsx'
+import RubberbandSpan from '../shared/RubberbandSpan.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 
@@ -53,11 +54,16 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
         <VerticalGuide model={model} coordX={guideX} />
       ) : rubberbandOn ? (
         <RubberbandSpan
-          leftBpOffset={leftBpOffset}
-          rightBpOffset={rightBpOffset}
-          numOfBpSelected={numOfBpSelected}
+          leftLabel={
+            <PerLevelRows rows={leftBpOffset.map(l => stringify(l, true))} />
+          }
+          rightLabel={
+            <PerLevelRows rows={rightBpOffset.map(r => stringify(r, true))} />
+          }
+          size={<PerLevelRows rows={numOfBpSelected.map(getBpDisplayStr)} />}
           width={width}
           left={left}
+          stickyTop={undefined}
         />
       ) : null}
       {anchorPosition ? (
@@ -86,5 +92,14 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
     </>
   )
 })
+
+// one row per rubberband level, in level order. values repeat across levels
+// whenever the assemblies line up, so the index is the only stable key
+function PerLevelRows({ rows }: { rows: string[] }) {
+  return rows.map((row, idx) => (
+    // eslint-disable-next-line @eslint-react/no-array-index-key
+    <div key={idx}>{row}</div>
+  ))
+}
 
 export default MultiLevelRubberband

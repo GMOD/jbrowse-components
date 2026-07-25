@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { getSession, stringify } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import RubberbandSpan from '../../shared/RubberbandSpan.tsx'
 import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip.tsx'
-import RubberbandSpan from './RubberbandSpan.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -128,10 +128,11 @@ const OverviewRubberband = observer(function OverviewRubberband({
       ) : null}
       {mouseDragging ? (
         <RubberbandSpan
-          leftBpOffset={pxToBp(overview, leftPx - cytobandOffset)}
-          rightBpOffset={pxToBp(overview, rightPx - cytobandOffset)}
+          leftLabel={stringify(pxToBp(overview, leftPx - cytobandOffset))}
+          rightLabel={stringify(pxToBp(overview, rightPx - cytobandOffset))}
           width={rightPx - leftPx}
           left={leftPx}
+          stickyTop={undefined}
         />
       ) : null}
       <div

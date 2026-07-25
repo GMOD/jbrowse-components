@@ -165,15 +165,13 @@ labels will overflow the boxes laid out for them.
 No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
 per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
 
-## The rubberband bp labels are the last always-open popper on a hot path
+## Rubberband labels near a view edge run off it
 
-`RubberbandTooltip` (`packages/core/src/ui/RubberbandTooltip.tsx`) is two
-permanently-open MUI `Tooltip`s anchored to the selection span, and
-`RubberbandSpan` re-renders them on every mousemove of a drag-select. An open
-popper re-runs its whole modifier chain on every render of its parent (MUI's
-`BasePopper` has a dep-less `forceUpdate` effect), measured at ~17
-`getBoundingClientRect` calls per render, so that is ~34 per move for the pair.
-`VerticalGuide` had the same shape and now uses `shared/GuideLabel.tsx`
-instead; the same treatment fits here, but the two labels flank the span
-(`left-start` / `right-start` with a popper offset), so it needs edge-flip
-handling `GuideLabel`'s single centered-and-clamped label doesn't cover.
+`SpanEdgeLabels` (`plugins/linear-genome-view/src/shared/coordLabels.tsx`) hangs
+one label just outside each edge of the selection, so a drag that starts at the
+left edge or ends at the right edge pushes that label off-screen. The popper
+these replaced didn't handle it either (`preventOverflow` had nowhere to shift
+it), so this is a standing limitation, not a regression. The fix is to flip a
+label inside its edge when the span is wide enough to hold it — a threshold on
+the span width, no measurement needed. `GuideLabel` in the same file clamps
+instead, which works because it's one centered label, not a pair.

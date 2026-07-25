@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
+import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import VerticalGuide from './VerticalGuide.tsx'
@@ -8,7 +9,7 @@ import VerticalGuide from './VerticalGuide.tsx'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { useRangeSelect } from './useRangeSelect.ts'
 
-const RubberbandSpan = lazy(() => import('./RubberbandSpan.tsx'))
+const RubberbandSpan = lazy(() => import('../../shared/RubberbandSpan.tsx'))
 
 type LGV = LinearGenomeViewModel
 
@@ -41,9 +42,12 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
       ) : rubberbandOn && rubberband ? (
         <Suspense fallback={null}>
           <RubberbandSpan
-            {...rubberband}
-            top={rubberbandTop}
-            sticky={stickyViewHeaders}
+            left={rubberband.left}
+            width={rubberband.width}
+            stickyTop={stickyViewHeaders ? rubberbandTop : undefined}
+            leftLabel={stringify(rubberband.leftBpOffset)}
+            rightLabel={stringify(rubberband.rightBpOffset)}
+            size={getBpDisplayStr(rubberband.numOfBpSelected)}
           />
         </Suspense>
       ) : null}

@@ -1,8 +1,9 @@
 import { getSession, stringify } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { GuideLabel } from '../../shared/coordLabels.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -43,19 +44,21 @@ const OverviewRubberbandHoverTooltip = observer(
     )
 
     return (
-      <Tooltip
-        open
-        placement="top"
-        title={[stringify(px), cytoband?.get('name'), cytoband?.get('type')]
-          .filter(Boolean)
-          .join(' ')}
-        arrow
-      >
+      <>
+        <GuideLabel
+          coordX={guideX}
+          viewWidth={overview.width}
+          stickyTop={undefined}
+        >
+          {[stringify(px), cytoband?.get('name'), cytoband?.get('type')]
+            .filter(Boolean)
+            .join(' ')}
+        </GuideLabel>
         <div
           className={classes.guide}
           style={{ transform: `translateX(${guideX}px)` }}
         />
-      </Tooltip>
+      </>
     )
   },
 )
