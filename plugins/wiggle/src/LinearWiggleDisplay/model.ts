@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -232,28 +236,28 @@ export default function stateModelFactory(
        * #action
        */
       setUseBicolor(val?: boolean) {
-        self.configuration.setSlot('useBicolor', val)
+        setConf(self, 'useBicolor', val)
       },
 
       /**
        * #action
        */
       setColor(color?: string) {
-        self.configuration.setSlot('color', color)
+        setConf(self, 'color', color)
       },
 
       /**
        * #action
        */
       setPosColor(color?: string) {
-        self.configuration.setSlot('posColor', color)
+        setConf(self, 'posColor', color)
       },
 
       /**
        * #action
        */
       setNegColor(color?: string) {
-        self.configuration.setSlot('negColor', color)
+        setConf(self, 'negColor', color)
       },
     }))
     .actions(self => ({
