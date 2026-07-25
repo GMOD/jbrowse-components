@@ -4,6 +4,8 @@ import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { DEFAULT_HIC_COLOR_SCHEME } from './components/colorRamp.ts'
+
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -25,7 +27,7 @@ interface HicMenuSelf {
   setShowLegend: (f: boolean) => void
   setShowResolutionControls: (f: boolean) => void
   setFitToHeight: (f: boolean) => void
-  setColorScheme: (s?: HicColorScheme) => void
+  setColorScheme: (s: HicColorScheme) => void
   setActiveNormalization: (s: string) => void
   setResolution: (binSize: number) => void
   resetResolutionBias: () => void
@@ -88,7 +90,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
             self.setShowLegend(!self.showLegend)
           },
         },
-        ...(avail
+        ...(avail?.length
           ? [
               {
                 label: 'Show resolution controls',
@@ -142,9 +144,9 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
         {
           label: 'Juicebox (default)',
           type: 'radio',
-          checked: self.colorScheme === 'juicebox',
+          checked: self.colorScheme === DEFAULT_HIC_COLOR_SCHEME,
           onClick: () => {
-            self.setColorScheme(undefined)
+            self.setColorScheme(DEFAULT_HIC_COLOR_SCHEME)
           },
         },
         {

@@ -1,6 +1,6 @@
 import { GRADIENT_LEGEND_WIDTH, SvgGradientLegend } from '@jbrowse/core/ui'
 
-import { DEFAULT_HIC_COLOR_SCHEME, getLegendSvgStops } from './colorRamp.ts'
+import { getLegendSvgStops } from './colorRamp.ts'
 import { getHicScaleLabels } from './scaleLabels.ts'
 
 import type { HicColorScheme } from './colorRamp.ts'
@@ -16,21 +16,20 @@ export default function HicSVGColorLegend({
   idSuffix,
 }: {
   maxScore: number
-  colorScheme?: HicColorScheme
+  colorScheme: HicColorScheme
   useLogScale?: boolean
   width: number
   positionOutside?: boolean
   idSuffix: string
 }) {
-  const resolvedScheme = colorScheme ?? DEFAULT_HIC_COLOR_SCHEME
   const { minLabel, maxLabel } = getHicScaleLabels(maxScore, useLogScale)
   return (
     <SvgGradientLegend
       // idSuffix (the display id) keeps the gradient def unique when two Hi-C
       // tracks export into one SVG document.
-      gradientId={`hic-gradient-${resolvedScheme}-${idSuffix}`}
+      gradientId={`hic-gradient-${colorScheme}-${idSuffix}`}
       title="Contacts"
-      stops={getLegendSvgStops(resolvedScheme)}
+      stops={getLegendSvgStops(colorScheme)}
       labels={[
         { text: minLabel, position: 'start' },
         { text: maxLabel, position: 'end' },

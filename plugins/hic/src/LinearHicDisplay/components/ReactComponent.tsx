@@ -1,12 +1,8 @@
 import { useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import {
-  getContainingView,
-  reducePrecision,
-  toLocale,
-} from '@jbrowse/core/util'
-import { BlockMsg, DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { reducePrecision, toLocale } from '@jbrowse/core/util'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import HicOverlayPanel from './HicOverlayPanel.tsx'
@@ -17,9 +13,6 @@ import type {
   HicDataResult,
 } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 // `item` is absent over an empty bin, where the guide still draws (reading a
 // position off the axes is exactly what you want somewhere with no contact) but
@@ -56,28 +49,6 @@ function HicTooltip({
       <div>{formatLocus(data, item.region2Idx, item.bin2)}</div>
       <div>Score: {reducePrecision(item.counts)}</div>
     </BaseTooltip>
-  )
-}
-
-// A .hic file legitimately has no contacts for many region pairs at a given
-// binsize (HicAdapter returns [] for those), which otherwise paints an empty
-// track indistinguishable from one still fetching.
-function EmptyMessage() {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        pointerEvents: 'none',
-      }}
-    >
-      <BlockMsg
-        severity="info"
-        message="No contacts in this region at this resolution"
-      />
-    </div>
   )
 }
 
@@ -122,9 +93,8 @@ const HicCanvas = observer(function HicCanvas({
   model: LinearHicDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
-  const view = getContainingView(model) as LGV
+  const { height, yScalar, view } = model
   const width = view.totalWidthPx
-  const { height, yScalar } = model
   const [hover, setHover] = useState<Hover>()
 
   return (
@@ -170,7 +140,6 @@ const HicCanvas = observer(function HicCanvas({
           left: 0,
         }}
       />
-      {model.isEmpty ? <EmptyMessage /> : null}
       <HicOverlayPanel model={model} />
       {hover ? (
         <>

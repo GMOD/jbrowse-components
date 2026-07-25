@@ -15,9 +15,7 @@ const REGION_KEY = 0
 const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
 const U = hicShader.UNIFORM_OFFSET_F32
 const UU = hicShader.UNIFORM_OFFSET_U32
-const F = hicShader.FIELD_OFFSET_F32
 const STRIDE = hicShader.INSTANCE_STRIDE_F32
-const STRIDE_BYTES = hicShader.INSTANCE_STRIDE_BYTES
 
 export const HIC_PASSES: PassDescriptor[] = [
   slangPass({
@@ -30,19 +28,6 @@ export const HIC_PASSES: PassDescriptor[] = [
 export {
   STRIDE as HIC_INSTANCE_STRIDE_F32,
   UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE,
-}
-
-function interleaveHicInstances(data: HicUploadData) {
-  const count = data.numContacts
-  const buf = new ArrayBuffer(count * STRIDE_BYTES)
-  const f32 = new Float32Array(buf)
-  for (let i = 0; i < count; i++) {
-    const off = i * STRIDE
-    f32[off + F.position] = data.positions[i * 2]!
-    f32[off + F.position + 1] = data.positions[i * 2 + 1]!
-    f32[off + F.count] = data.counts[i]!
-  }
-  return buf
 }
 
 export class GpuHicRenderer
@@ -63,7 +48,13 @@ export class GpuHicRenderer
       this.hal.deleteRegion(REGION_KEY)
       return
     }
-    const buf = interleaveHicInstances(data)
+    // `positions` is already the shader's `float2 position` field and `counts`
+    // its `float count`, so the generated SoA packer applies directly — no
+    // hand-rolled interleave to keep in step with the .slang layout.
+    const buf = hicShader.packInstances(
+      { position: data.positions, count: data.counts },
+      data.numContacts,
+    )
     this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numContacts)
   }
 

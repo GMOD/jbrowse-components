@@ -63,10 +63,6 @@ export type HicColorScheme = keyof typeof SCHEMES
 
 export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
 
-function getScheme(name?: HicColorScheme) {
-  return SCHEMES[name ?? DEFAULT_HIC_COLOR_SCHEME]
-}
-
 function lerp(a: number, b: number, t: number) {
   return a * (1 - t) + b * t
 }
@@ -109,14 +105,14 @@ const RAMPS: Record<HicColorScheme, Uint8Array> = {
   viridis: buildRamp(VIRIDIS_FULL_STOPS),
 }
 
-export function generateColorRamp(colorScheme?: HicColorScheme): Uint8Array {
-  return RAMPS[colorScheme ?? DEFAULT_HIC_COLOR_SCHEME]
+export function generateColorRamp(colorScheme: HicColorScheme): Uint8Array {
+  return RAMPS[colorScheme]
 }
 
 // Sample 11 evenly-spaced legend stops from the same source as the GPU ramp.
-export function getLegendStops(colorScheme: HicColorScheme | undefined) {
+export function getLegendStops(colorScheme: HicColorScheme) {
   const n = 11
-  const scheme = getScheme(colorScheme)
+  const scheme = SCHEMES[colorScheme]
   const out: { offset: number; rgba: RGBA }[] = []
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1)
@@ -135,7 +131,7 @@ function rgbOverWhite([r, g, b, a]: RGBA) {
   return `rgb(${flat(r)},${flat(g)},${flat(b)})`
 }
 
-export function getLegendCssGradient(colorScheme: HicColorScheme | undefined) {
+export function getLegendCssGradient(colorScheme: HicColorScheme) {
   const stops = getLegendStops(colorScheme)
   const parts = stops.map(
     s => `${rgbOverWhite(s.rgba)} ${(s.offset * 100).toFixed(0)}%`,
@@ -143,7 +139,7 @@ export function getLegendCssGradient(colorScheme: HicColorScheme | undefined) {
   return `linear-gradient(to right, ${parts.join(', ')})`
 }
 
-export function getLegendSvgStops(colorScheme: HicColorScheme | undefined) {
+export function getLegendSvgStops(colorScheme: HicColorScheme) {
   const stops = getLegendStops(colorScheme)
   // Alpha goes in stop-opacity, not baked into an rgba() stop-color: SVG
   // stop-color alpha is unevenly supported by exporters, so the juicebox
