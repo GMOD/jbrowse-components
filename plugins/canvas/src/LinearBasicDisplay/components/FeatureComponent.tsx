@@ -21,6 +21,7 @@ import GeneGlyphControl from './GeneGlyphControl.tsx'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
 import {
+  hgvsHitLabel,
   hoverTooltip,
   isHitFeature,
   performMultiRegionHitDetection,
@@ -435,6 +436,9 @@ const FeatureBody = observer(function FeatureBody({
         e.clientX,
         e.clientY,
         result.subfeature ?? undefined,
+        // resolved here rather than in the menu: only the hit knows which base
+        // was clicked and at what zoom
+        hgvsHitLabel(result),
       )
     }
   }

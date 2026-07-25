@@ -1,6 +1,6 @@
 import { mockDisplayConfig } from '../testUtils.ts'
-import { transcriptExonBounds } from './exonBounds.ts'
 import { findGlyph } from './findGlyph.ts'
+import { transcriptCoords } from './transcriptCoords.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -28,8 +28,12 @@ function mockFeature(opts: {
 
 const config = mockDisplayConfig()
 
-function boundsOf(feature: Feature) {
-  return transcriptExonBounds(findGlyph(feature, config)({ feature, config }))
+function coordsOf(feature: Feature) {
+  return transcriptCoords(findGlyph(feature, config)({ feature, config }))
+}
+
+function exonsOf(feature: Feature) {
+  return coordsOf(feature)?.exons
 }
 
 // exon rows present: the authoritative source, used as-is
@@ -48,13 +52,13 @@ function exonTranscript(strand: number) {
   })
 }
 
-describe('transcriptExonBounds', () => {
+describe('transcriptCoords', () => {
   it('numbers + strand exons left to right', () => {
-    expect(boundsOf(exonTranscript(1))).toEqual([0, 100, 200, 300, 400, 500])
+    expect(exonsOf(exonTranscript(1))).toEqual([0, 100, 200, 300, 400, 500])
   })
 
   it('numbers - strand exons from the highest coordinate', () => {
-    expect(boundsOf(exonTranscript(-1))).toEqual([400, 500, 200, 300, 0, 100])
+    expect(exonsOf(exonTranscript(-1))).toEqual([400, 500, 200, 300, 0, 100])
   })
 
   // The default subParts renders CDS + UTR rows, not exons. The coding and
@@ -73,17 +77,34 @@ describe('transcriptExonBounds', () => {
         mockFeature({ type: 'three_prime_UTR', start: 450, end: 500 }),
       ],
     })
-    expect(boundsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
+    expect(exonsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
   })
 
-  it('reports nothing for a single-exon transcript', () => {
+  // Reported even though "exon 1/1" is worth nothing to show: the c. coordinate
+  // is built from the same walk and is perfectly meaningful here, so the display
+  // decides what to say, not the data.
+  it('reports the single exon of an unspliced transcript', () => {
     const transcript = mockFeature({
       type: 'mRNA',
       start: 0,
       end: 100,
       subfeatures: [mockFeature({ type: 'CDS', start: 0, end: 100 })],
     })
-    expect(boundsOf(transcript)).toBeUndefined()
+    expect(exonsOf(transcript)).toEqual([0, 100])
+  })
+
+  it('carries the coding extent, and omits it for a non-coding transcript', () => {
+    expect(coordsOf(exonTranscript(1))?.coding).toEqual([50, 450])
+    const lncRNA = mockFeature({
+      type: 'lnc_RNA',
+      start: 0,
+      end: 300,
+      subfeatures: [
+        mockFeature({ type: 'exon', start: 0, end: 100 }),
+        mockFeature({ type: 'exon', start: 200, end: 300 }),
+      ],
+    })
+    expect(coordsOf(lncRNA)?.coding).toBeUndefined()
   })
 
   // A match → match_part chain has blocks, not exons; numbering them would be a
@@ -98,7 +119,7 @@ describe('transcriptExonBounds', () => {
         mockFeature({ type: 'match_part', start: 200, end: 300 }),
       ],
     })
-    expect(boundsOf(match)).toBeUndefined()
+    expect(exonsOf(match)).toBeUndefined()
   })
 
   it('reports exons for a non-coding transcript that carries exon rows', () => {
@@ -111,6 +132,6 @@ describe('transcriptExonBounds', () => {
         mockFeature({ type: 'exon', start: 200, end: 300 }),
       ],
     })
-    expect(boundsOf(lncRNA)).toEqual([0, 100, 200, 300])
+    expect(exonsOf(lncRNA)).toEqual([0, 100, 200, 300])
   })
 })

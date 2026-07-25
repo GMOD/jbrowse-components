@@ -6,7 +6,7 @@ import {
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
-  exonAt,
+  hgvsHitLabel,
   hoverTooltip,
   isHitFeature,
   performMultiRegionHitDetection,
@@ -17,6 +17,7 @@ import type {
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
+  TranscriptCoords,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type {
   FlatbushRegionIndexes,
@@ -490,6 +491,8 @@ function makeHit(over: Partial<HitFeatureResult>): HitFeatureResult {
     subfeature: null,
     peptide: null,
     bpPos: 0,
+    // base zoom, so the HGVS readout is in play unless a test says otherwise
+    bpPerPx: 0.1,
     displayedRegionIndex: 0,
     ...over,
   }
@@ -526,68 +529,80 @@ test('hoverTooltip omits a missing isoform, leaving only the residue', () => {
   )
 })
 
-// Three exons at 0-10, 20-30, 40-50, listed in transcription order.
-const FORWARD_EXONS = [0, 10, 20, 30, 40, 50]
+// Three exons at 0-10, 20-30, 40-50, coding 5-45, on the + strand: c.1 is
+// genomic 5, and each exon contributes 10 transcribed bases.
+const CODING_TRANSCRIPT: TranscriptCoords = {
+  exons: [0, 10, 20, 30, 40, 50],
+  strand: 1,
+  coding: [5, 45],
+}
+
+const isoformHit = (over: Partial<HitFeatureResult>) =>
+  makeHit({
+    subfeature: {
+      ...makeSub('mRNA1', 'gene1', 0, 100, 0, 20),
+      displayLabel: 'BRCA1-201',
+      transcript: CODING_TRANSCRIPT,
+    },
+    ...over,
+  })
 
 test('hoverTooltip names the exon under the cursor', () => {
-  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
-  const at = (bpPos: number) =>
-    hoverTooltip(
-      makeHit({
-        subfeature: {
-          ...sub,
-          displayLabel: 'BRCA1-201',
-          exonBounds: FORWARD_EXONS,
-        },
-        bpPos,
-      }),
-    )
-  expect(at(5)).toBe('BRCA1-201 exon 1/3')
-  expect(at(25)).toBe('BRCA1-201 exon 2/3')
-  expect(at(45)).toBe('BRCA1-201 exon 3/3')
-  // an intron names no exon
-  expect(at(15)).toBe('BRCA1-201')
+  const at = (bpPos: number) => hoverTooltip(isoformHit({ bpPos }))
+  expect(at(5)).toBe('BRCA1-201 exon 1/3 c.1')
+  expect(at(25)).toBe('BRCA1-201 exon 2/3 c.11')
+  expect(at(45)).toBe('BRCA1-201 exon 3/3 c.*1')
+  // an intron names no exon -- the c. offset already says which boundary it is
+  // past, and "exon 2" would read as though the cursor were inside one. The
+  // offset is measured from whichever exon is nearer, so the 10bp intron at
+  // 10..19 reads +n in its first half and -n in its second.
+  expect(at(11)).toBe('BRCA1-201 c.5+2')
+  expect(at(18)).toBe('BRCA1-201 c.6-2')
 })
 
-test('hoverTooltip reads exon bounds off the feature for a standalone transcript', () => {
+test('hoverTooltip reads the transcript off the feature when it stands alone', () => {
   expect(
     hoverTooltip(
       makeHit({
         feature: {
           ...makeItem('mRNA1', 0, 100, 0, 20),
           tooltip: 'mRNA mouseover',
-          exonBounds: FORWARD_EXONS,
+          transcript: CODING_TRANSCRIPT,
         },
         bpPos: 25,
       }),
     ),
-  ).toBe('mRNA mouseover exon 2/3')
+  ).toBe('mRNA mouseover exon 2/3 c.11')
 })
 
-test('hoverTooltip keeps the exon alongside a hovered residue', () => {
-  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+test('hoverTooltip keeps exon and HGVS alongside a hovered residue', () => {
+  expect(
+    hoverTooltip(isoformHit({ peptide: makeAa('K', 0, 3, 123), bpPos: 25 })),
+  ).toBe('BRCA1-201 exon 2/3 c.11 K124')
+})
+
+// Zoomed out, the cursor covers many bases at once, so a position reported to
+// the base would be silently wrong. The exon is still safe to name.
+test('hoverTooltip drops the HGVS position below base zoom', () => {
+  expect(hoverTooltip(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toBe(
+    'BRCA1-201 exon 2/3',
+  )
+})
+
+test('hoverTooltip says nothing extra for a single-exon transcript', () => {
   expect(
     hoverTooltip(
-      makeHit({
+      isoformHit({
         subfeature: {
-          ...sub,
-          displayLabel: 'BRCA1-201',
-          exonBounds: FORWARD_EXONS,
+          ...makeSub('mRNA1', 'gene1', 0, 100, 0, 20),
+          displayLabel: 'SOX2-201',
+          transcript: { exons: [0, 50], strand: 1, coding: [5, 45] },
         },
-        peptide: makeAa('K', 0, 3, 123),
         bpPos: 25,
       }),
     ),
-  ).toBe('BRCA1-201 exon 2/3 K124')
-})
-
-// On the - strand the exon list is reversed by the worker, so the highest
-// coordinate is exon 1 -- the numbering a clinical report uses.
-test('exonAt numbers reverse-strand exons from the transcription start', () => {
-  const reversed = [40, 50, 20, 30, 0, 10]
-  expect(exonAt(reversed, 45)).toEqual({ number: 1, count: 3 })
-  expect(exonAt(reversed, 5)).toEqual({ number: 3, count: 3 })
-  expect(exonAt(undefined, 5)).toBeUndefined()
+    // "exon 1/1" is noise; the coordinate still carries
+  ).toBe('SOX2-201 c.21')
 })
 
 test('subfeature label hit area is reserved when the label is present', () => {
@@ -623,4 +638,29 @@ test('subfeature label hit area is reserved when the label is present', () => {
     showLabels: false,
   })
   expect(shown.feature).not.toBeNull()
+})
+
+describe('hgvsHitLabel', () => {
+  it('prefixes the coordinate with the transcript accession', () => {
+    expect(hgvsHitLabel(isoformHit({ bpPos: 25 }))).toBe('BRCA1-201:c.11')
+  })
+
+  it('falls back to the bare coordinate for an unnamed transcript', () => {
+    expect(
+      hgvsHitLabel(
+        makeHit({
+          feature: {
+            ...makeItem('mRNA1', 0, 100, 0, 20),
+            transcript: CODING_TRANSCRIPT,
+          },
+          bpPos: 25,
+        }),
+      ),
+    ).toBe('c.11')
+  })
+
+  it('offers nothing below base zoom, or off a transcript', () => {
+    expect(hgvsHitLabel(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toBeUndefined()
+    expect(hgvsHitLabel(makeHit({ bpPos: 25 }))).toBeUndefined()
+  })
 })

@@ -203,6 +203,19 @@ export interface AminoAcidOverlayItem {
   flatbushIdx: number
 }
 
+// A transcript's geometry in the form the hover needs to name a genomic position
+// the way a clinical report would — "exon 5/12", "c.1234+5". Raw spans only; the
+// c./n. arithmetic is main-thread (hgvsPosition.ts).
+export interface TranscriptCoords {
+  // exons in TRANSCRIPTION order, flattened [start,end,…] — on the - strand the
+  // highest-coordinate exon comes first, so it is exon 1
+  exons: number[]
+  strand: number
+  // genomic [start, end) of the coding extent; absent for a non-coding
+  // transcript, which is numbered `n.` from its first transcribed base
+  coding?: [number, number]
+}
+
 export interface HitItemBase {
   featureId: string
   type: string | undefined
@@ -210,12 +223,10 @@ export interface HitItemBase {
   endBp: number
   topPx: number
   bottomPx: number
-  // Transcript exons in transcription order, flattened to [start,end,…], so the
-  // hover can name the exon under the cursor (see transcriptExonBounds). Present
-  // only on transcript-shaped glyphs with more than one exon — it rides on the
-  // shared base so a nested transcript carries it on its SubfeatureInfo and a
-  // standalone one on its FlatbushItem.
-  exonBounds?: number[]
+  // Present only on transcript-shaped glyphs. Rides on the shared base so a
+  // nested transcript carries it on its SubfeatureInfo and a standalone one on
+  // its FlatbushItem, and the hover reads whichever resolved.
+  transcript?: TranscriptCoords
 }
 
 export interface FlatbushItem extends HitItemBase {

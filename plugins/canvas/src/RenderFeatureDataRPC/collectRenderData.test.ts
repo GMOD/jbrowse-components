@@ -770,10 +770,11 @@ describe('collectRenderData density-fade eligibility', () => {
   })
 })
 
-// Exon numbering rides on the hit-test entries so the hover can name the exon
-// under the cursor: on the transcript's SubfeatureInfo when it sits under a
-// gene, on the feature's own FlatbushItem when it stands alone.
-describe('collectRenderData exon bounds', () => {
+// Transcript coordinates ride on the hit-test entries so the hover can name the
+// exon and HGVS position under the cursor: on the transcript's SubfeatureInfo
+// when it sits under a gene, on the feature's own FlatbushItem when it stands
+// alone.
+describe('collectRenderData transcript coords', () => {
   const exon = (id: string, start: number, end: number) =>
     mockFeature({ type: 'exon', id, start, end })
 
@@ -795,7 +796,7 @@ describe('collectRenderData exon bounds', () => {
   const collect = (layout: FeatureLayout) =>
     collectRenderData([layout], 0, 1000, config, theme, false, undefined, jexl)
 
-  it('puts the transcript exons on its subfeature entry under a gene', () => {
+  it('puts the transcript coords on its subfeature entry under a gene', () => {
     const gene = mockFeature({
       type: 'gene',
       id: 'g1',
@@ -807,13 +808,21 @@ describe('collectRenderData exon bounds', () => {
       findGlyph(gene, config)({ feature: gene, config: config }),
     )
     const info = result.subfeatureInfos.find(s => s.featureId === 'tx1')
-    expect(info!.exonBounds).toEqual([0, 100, 200, 300, 400, 500])
+    expect(info!.transcript).toEqual({
+      exons: [0, 100, 200, 300, 400, 500],
+      strand: 1,
+      coding: [50, 450],
+    })
   })
 
   it('puts them on the feature entry for a standalone transcript', () => {
     const tx = transcript('tx1')
     const result = collect(findGlyph(tx, config)({ feature: tx, config }))
     const item = result.flatbushItems.find(i => i.featureId === 'tx1')
-    expect(item!.exonBounds).toEqual([0, 100, 200, 300, 400, 500])
+    expect(item!.transcript).toEqual({
+      exons: [0, 100, 200, 300, 400, 500],
+      strand: 1,
+      coding: [50, 450],
+    })
   })
 })

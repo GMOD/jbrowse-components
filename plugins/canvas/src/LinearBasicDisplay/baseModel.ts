@@ -391,6 +391,11 @@ export default function baseStateModelFactory(
               // at rather than its whole gene. Absent for gene-level entry
               // points (the label layer) and for featureless glyphs.
               subfeature?: SubfeatureInfo
+              // The HGVS position the right-click landed on, resolved at click
+              // time (see hgvsHitLabel) because only the hit knows the genomic
+              // position and the zoom it was read at. Absent for the label
+              // layer, which is a click on a name rather than on a base.
+              hgvsLabel?: string
               displayedRegionIndex: number
               clientX: number
               clientY: number
@@ -1955,10 +1960,12 @@ export default function baseStateModelFactory(
             clientX: number,
             clientY: number,
             subfeature?: SubfeatureInfo,
+            hgvsLabel?: string,
           ) {
             self.contextMenuInfo = {
               item: featureInfo,
               subfeature,
+              hgvsLabel,
               displayedRegionIndex,
               clientX,
               clientY,

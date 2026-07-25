@@ -40,6 +40,7 @@ export interface FeatureMenuSelf extends IAnyStateTreeNode {
     | {
         item: FlatbushItem
         subfeature?: SubfeatureInfo
+        hgvsLabel?: string
         displayedRegionIndex: number
         clientX: number
         clientY: number
@@ -106,6 +107,7 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
   const {
     item: { featureId, startBp, endBp, name, type },
     subfeature,
+    hgvsLabel,
     displayedRegionIndex,
   } = info
   const pinned = self.pinnedFeatureIdSet.has(featureId)
@@ -317,6 +319,32 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
         ...showHiddenFeaturesMenuItems(self),
       ],
     },
+    // The clicked base in transcript coordinates, which is how a clinical report
+    // names it. Absent — rather than disabled — when the click didn't land on a
+    // transcript at base zoom, since there is no honest position to offer then.
+    // The value is in the label so it's clear what lands on the clipboard.
+    ...(hgvsLabel
+      ? [
+          {
+            label: `Copy ${hgvsLabel}`,
+            icon: ContentCopyIcon,
+            onClick: () => {
+              void (async () => {
+                const session = getSession(self)
+                try {
+                  const { default: copy } =
+                    await import('@jbrowse/core/util/copyToClipboard')
+                  copy(hgvsLabel)
+                  session.notify(`Copied ${hgvsLabel}`, 'success')
+                } catch (e) {
+                  console.error(e)
+                  session.notifyError(`${e}`, e)
+                }
+              })()
+            },
+          },
+        ]
+      : []),
     {
       label: 'Copy info to clipboard',
       icon: ContentCopyIcon,

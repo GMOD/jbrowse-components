@@ -1,5 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { isBaseResolved } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
+import { hgvsPosition, locateOnTranscript } from '../hgvsPosition.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 
 import type {
@@ -54,8 +56,11 @@ export interface HitFeatureResult {
   subfeature: SubfeatureInfo | null
   // amino-acid codon under the cursor, when hovering peptide-level CDS
   peptide: AminoAcidOverlayItem | null
-  // genomic position under the cursor, so the hover can name the exon it lands in
+  // genomic position under the cursor, which the transcript readouts are
+  // measured from, and the zoom it was read at, which decides how precise a
+  // readout is honest
   bpPos: number
+  bpPerPx: number
   displayedRegionIndex: number
 }
 
@@ -65,40 +70,71 @@ export function isHitFeature(r: HitResult): r is HitFeatureResult {
   return r.feature !== null
 }
 
-// The 1-based exon containing `bpPos`, out of the transcript's total. Bounds are
-// in transcription order (see transcriptExonBounds), so index 0 is exon 1 on
-// either strand. A position in an intron matches nothing and reports no exon.
-export function exonAt(bounds: number[] | undefined, bpPos: number) {
-  let hit: { number: number; count: number } | undefined
-  if (bounds) {
-    const count = bounds.length / 2
-    for (let i = 0; i < count && !hit; i++) {
-      if (bpPos >= bounds[i * 2]! && bpPos < bounds[i * 2 + 1]!) {
-        hit = { number: i + 1, count }
-      }
-    }
+// The transcript the cursor resolved to, if any: the subfeature's when it landed
+// on an isoform of a gene, else the top-level feature's own.
+export function hitTranscript(result: HitFeatureResult) {
+  return result.subfeature?.transcript ?? result.feature.transcript
+}
+
+// What the hover says about a position on a transcript: the exon it is in, and
+// its HGVS coordinate.
+//
+// The exon is named only for an EXONIC position — naming the flanking exon of an
+// intron would read as "you are in exon 5" when you are not, and the c. offset
+// (`c.87+1`) already says which boundary you are past. A single-exon transcript
+// says nothing: "exon 1/1" is noise.
+//
+// The c./n. coordinate needs the cursor to resolve to one base, so it appears
+// only at base zoom (see isBaseResolved) — off by a base, it would be worse than
+// absent.
+function transcriptReadouts(result: HitFeatureResult) {
+  const coords = hitTranscript(result)
+  const located = coords && locateOnTranscript(coords, result.bpPos)
+  return {
+    exon:
+      located?.offset === 0 && located.exonCount > 1
+        ? `exon ${located.exonNumber}/${located.exonCount}`
+        : undefined,
+    hgvs:
+      coords && isBaseResolved(result.bpPerPx)
+        ? hgvsPosition(coords, result.bpPos)
+        : undefined,
   }
-  return hit
+}
+
+// The position as a clinical report would write it: the transcript's accession
+// — whatever the annotation names it, which for RefSeq/Ensembl GFF3 is the
+// versioned accession — joined to its c./n. coordinate, `NM_004006.2:c.93+1`.
+// Falls back to the bare coordinate when the transcript is unnamed. Undefined
+// unless the cursor resolved to a transcript at base zoom.
+//
+// This is the position half of an HGVS variant name; the change itself
+// (`…c.93+1G>T`) needs an allele, which a gene annotation doesn't carry.
+export function hgvsHitLabel(result: HitFeatureResult) {
+  const coords = hitTranscript(result)
+  const position =
+    coords && isBaseResolved(result.bpPerPx)
+      ? hgvsPosition(coords, result.bpPos)
+      : undefined
+  const accession = result.subfeature?.displayLabel ?? result.feature.name
+  return position && accession ? `${accession}:${position}` : position
 }
 
 // Tooltip text for a hit: the subfeature under the cursor names its containing
 // feature (a transcript/isoform, or a mature-peptide product), else the
-// top-level feature's resolved `mouseover` slot. On a transcript the exon under
-// the cursor is named too — clinical reporting is written in exon numbers, and
-// counting boxes across a wide gene isn't practical. A hovered amino-acid letter
-// adds its residue (e.g. `K124`) on top of that, so the isoform stays visible.
+// top-level feature's resolved `mouseover` slot. On a transcript the exon and
+// HGVS coordinate under the cursor are named too — clinical reporting is written
+// in those terms, and neither is practical to work out by eye. A hovered
+// amino-acid letter adds its residue (e.g. `K124`) on top of that, so the
+// isoform stays visible.
 export function hoverTooltip(result: HitFeatureResult) {
   const isoform = result.subfeature?.displayLabel
   const { peptide } = result
-  const exon = exonAt(
-    result.subfeature?.exonBounds ?? result.feature.exonBounds,
-    result.bpPos,
-  )
-  const exonText = exon ? `exon ${exon.number}/${exon.count}` : undefined
+  const { exon, hgvs } = transcriptReadouts(result)
   return (
     peptide
-      ? [isoform, exonText, `${peptide.aminoAcid}${peptide.proteinIndex + 1}`]
-      : [isoform ?? result.feature.tooltip, exonText]
+      ? [isoform, exon, hgvs, `${peptide.aminoAcid}${peptide.proteinIndex + 1}`]
+      : [isoform ?? result.feature.tooltip, exon, hgvs]
   )
     .filter(Boolean)
     .join(' ')
@@ -281,6 +317,7 @@ export function performMultiRegionHitDetection(
               ),
               peptide: findPeptideAt(data, bpPos, yPos, idx),
               bpPos,
+              bpPerPx: bpSpan / blockWidth,
               displayedRegionIndex: vr.displayedRegionIndex,
             }
           }

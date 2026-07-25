@@ -1,8 +1,8 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
-import { transcriptExonBounds } from '../glyphs/exonBounds.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
+import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
   getFeatureName,
   readFeatureLabels,
@@ -137,7 +137,7 @@ function processTranscriptLayout(
       topPx: transcriptTopPx,
       bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
       displayLabel: transcriptName,
-      exonBounds: transcriptExonBounds(transcript),
+      transcript: transcriptCoords(transcript),
     })
 
     emitSubfeatureLabel(
@@ -220,9 +220,7 @@ function registerSubfeature(
 // direction entirely, unlike a gene → mRNA whose transcript always shows one.
 // baseTopPx shifts the rows when the CDS is nested inside a container glyph.
 // rootFeature is the top-level feature (the one GetCanvasFeatureDetails resolves
-// by id, and the key into peptideDataMap — for a gene with multiple polyprotein
-// CDS children, e.g. SARS-CoV-2 ORF1a/ORF1ab, translation is keyed at the gene
-// level); each region is registered as a subfeature off it so it is individually
+// by id); each region is registered as a subfeature off it so it is individually
 // hoverable and selectable. cdsFeature is the polyprotein CDS that directly owns
 // the mature-region children — same object as rootFeature for a standalone CDS,
 // but the immediate child layout's feature (not the enclosing gene) when nested,
@@ -709,7 +707,7 @@ export function processFeatureRecord(
     strand: strand !== 0 ? strand : undefined,
     // A standalone transcript (no gene wrapper) registers no SubfeatureInfo, so
     // its exon bounds ride here instead — same lookup either way for the hover.
-    exonBounds: transcriptExonBounds(layout),
+    transcript: transcriptCoords(layout),
     // Fade *eligibility*, per feature: Box is the only glyph whose top-level box
     // layout may collapse onto row 0 and fade (see isSubPixelFade). The actual
     // per-rect decision is layout's alone. The worker writes no rect-level flag.
