@@ -105,8 +105,15 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       addTrackConfs(trackConfs: TrackConf[]) {
-        for (const trackConf of trackConfs) {
-          self.tracks.push(trackConf)
+        // Append in chunks rather than one push per track: MST reconciles the
+        // array on every mutation, and on an 8k-track hub a push per track
+        // measured ~14.7s against ~10.8s for a single assignment, with chunks of
+        // 500 matching the single-assignment number. Chunked rather than one
+        // spread of the whole array so the argument count stays bounded no
+        // matter how large the hub is. What remains is per-config MST node
+        // creation, roughly 1ms per track.
+        for (let i = 0; i < trackConfs.length; i += 500) {
+          self.tracks.push(...trackConfs.slice(i, i + 500))
         }
       },
       /**
