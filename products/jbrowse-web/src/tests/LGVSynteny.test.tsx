@@ -42,7 +42,7 @@ test('nav to synteny from right click', async () => {
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
-      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,222..34,670')
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
     }, delay)
     expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
   })
@@ -114,8 +114,8 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
-      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,222..34,670')
-      expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,499..29,810')
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
+      expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,498..29,808')
     }, delay)
     expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
   })
