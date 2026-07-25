@@ -123,6 +123,17 @@ export const hprc2Specs: ScreenshotSpec[] = [
   // only applies named BED fields at exactly 12, so the color lands in `field8`
   // and the automatic BED color path claims it with no columnNames and no jexl.
   //
+  // Windowed to chr1:210Mb-end rather than the whole chromosome. Across all of
+  // chr1 the view is ~226kb/px, so ancestry tracts (median ~0.24Mb) collapse
+  // below a pixel and all but a handful of rows read as one solid colour - the
+  // "just flat colour bands" the review flagged. Picked by counting colour
+  // switches per window in the BED: 44 of the 64 haplotypes switch inside
+  // 210Mb-end versus 29 in 170-200Mb and 33 in 110-140Mb, and at 44kb/px the
+  // median tract is ~5px, so the mosaic and its breakpoints are actually
+  // visible. Coverage is continuous here (no assembly gap to leave a white
+  // band). The hosted BED is chr1-only (build_hprc2_pclai.sh takes one
+  // chromosome), so a different chromosome would need a rebuild + rehost.
+  //
   // rowHeight defaults to 0 (auto-fit), so all 64 haplotypes stretch to fill the
   // display. No legend: the colormap is continuous, so the auto-derived key
   // exceeds MAX_LEGEND_ENTRIES and renders nothing. That rules out the
@@ -137,7 +148,7 @@ export const hprc2Specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:1-248,956,422',
+          loc: 'chr1:210,000,000-248,945,532',
           tracks: [
             {
               trackId: 'hprc2_pclai_painting',
@@ -173,7 +184,7 @@ export const hprc2Specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:1-248,956,422',
+          loc: 'chr1:210,000,000-248,945,532',
           tracks: [
             {
               trackId: 'hprc2_pclai_painting',
