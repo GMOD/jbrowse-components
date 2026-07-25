@@ -36,10 +36,11 @@ export const LD_LEGEND: LdSwatch[] = [
   LD_MISSING_SWATCH,
 ]
 
-// Shared by both legend renderers (SVG export in renderSvg, DOM overlay in
-// LdColorLegend) so the title and swatch size stay in lockstep across them.
+// Shared by both legend renderers (SVG export in SvgLdLegend, DOM overlay in
+// LdColorLegend) so they title the same key the same way. Swatch sizes are each
+// renderer's own (FloatingLegend's CSS box, SvgColorLegend's LEGEND_SWATCH) and
+// were never actually shared, despite a constant here that claimed to be.
 export const LD_LEGEND_TITLE = 'r² to index'
-export const LD_LEGEND_SWATCH_PX = 10
 
 const GREY = cssColorToABGR(LD_MISSING_SWATCH.color)
 const BINS = LD_BIN_DEFS.map(b => [b.min, cssColorToABGR(b.color)] as const)

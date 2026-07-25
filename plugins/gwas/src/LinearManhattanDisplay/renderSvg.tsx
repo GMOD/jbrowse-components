@@ -1,26 +1,22 @@
 import { renderWiggleFamilySvg } from '@jbrowse/plugin-wiggle'
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 import SvgLdLegend from './components/SvgLdLegend.tsx'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
+import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleFamilySvgModel } from '@jbrowse/plugin-wiggle'
 import type React from 'react'
 
-// Duck-typed model contract: importing the full LinearManhattanDisplayModel
-// here would close a type cycle (factory return type → renderSvg action →
-// model instance → factory return type), so we depend only on the fields read
-// (the shared SvgChrome/axis/cross-hatch fields via WiggleFamilySvgModel, plus
-// the Manhattan-specific paint/legend inputs below).
-interface RenderSvgModel extends WiggleFamilySvgModel {
-  rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
-  renderState: ManhattanRenderState
-  ldColoringActive: boolean
-  showLdLegend: boolean
-}
+// Importing the full LinearManhattanDisplayModel here would close a type cycle
+// (factory return type → renderSvg action → model instance → factory return
+// type), so this reuses the component's hand-rolled slice of the same model —
+// which already covers every paint/legend input — plus the shared
+// SvgChrome/axis/cross-hatch fields. Reusing it rather than re-declaring the
+// fields keeps the export under the `_ModelSatisfiesComponentContract` guard in
+// stateModelFactory.ts instead of adding a second slice that drifts on its own.
+type RenderSvgModel = ManhattanDisplayModel & WiggleFamilySvgModel
 
 export async function renderSvg(
   model: RenderSvgModel,
@@ -48,7 +44,14 @@ export async function renderSvg(
           </g>
         ) : null}
         {model.ldColoringActive && model.showLdLegend ? (
-          <SvgLdLegend width={legendRight} />
+          <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
+            <SvgLdLegend
+              canvasWidth={legendRight}
+              maxHeight={model.height - YSCALEBAR_LABEL_OFFSET}
+              indexSnpMissing={model.indexSnpMissing}
+              indexSnpOffscreen={model.indexSnpOffscreen}
+            />
+          </g>
         ) : null}
       </>
     ),

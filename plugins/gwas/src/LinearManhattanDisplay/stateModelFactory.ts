@@ -530,13 +530,6 @@ export function stateModelFactory(
       },
       /**
        * #action
-       */
-      async renderSvg(opts?: ExportSvgDisplayOptions) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
-      },
-      /**
-       * #action
        * identity encode — RPC result is the upload payload
        */
       startRenderingBackend(backend: ManhattanRenderingBackend) {
@@ -552,6 +545,19 @@ export function stateModelFactory(
               self.renderState,
             ),
         )
+      },
+    }))
+    // Its own block, after `startRenderingBackend`: the export types `self` as
+    // the same `ManhattanDisplayModel` slice the component takes, and MST
+    // doesn't type a block's own members onto its `self`, so declaring this
+    // alongside them left that contract unsatisfied.
+    .actions(self => ({
+      /**
+       * #action
+       */
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
       },
     }))
     .actions(self => {
