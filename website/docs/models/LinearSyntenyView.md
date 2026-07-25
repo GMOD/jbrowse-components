@@ -57,6 +57,7 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [allSyntenyDisplays](#getter-allsyntenydisplays)                               | Getters    | LinearSyntenyView                                       | Every synteny display across every level, flattened.                                                                                                                                                    |
 | [hasCigarData](#getter-hascigardata)                                           | Getters    | LinearSyntenyView                                       | True if any currently-loaded synteny display has at least one feature with a CIGAR.                                                                                                                     |
 | [presentCigarKinds](#getter-presentcigarkinds)                                 | Getters    | LinearSyntenyView                                       | Union across every loaded synteny display of which CIGAR indel ops are actually drawn on screen.                                                                                                        |
+| [fadeThinAlignments](#getter-fadethinalignments)                               | Getters    | LinearSyntenyView                                       | Resolved fade-thin flag that every display's renderParams reads.                                                                                                                                        |
 | [anchorAssemblyName](#getter-anchorassemblyname)                               | Getters    | LinearSyntenyView                                       | The "anchor" assembly for colorBy:'reference': the assembly bordering the most synteny levels.                                                                                                          |
 | [showLoading](#getter-showloading)                                             | Getters    | LinearSyntenyView                                       | Whether to show a loading indicator instead of the import form or view                                                                                                                                  |
 | [loadingMessage](#getter-loadingmessage)                                       | Getters    | LinearSyntenyView                                       | Label for the generic loading spinner.                                                                                                                                                                  |
@@ -209,9 +210,8 @@ doesn't read as a hard full-opacity hairball. 'auto' enables the fade once a
 display is dominated by sub-pixel ribbons (see
 LinearSyntenyDisplay.autoFadeThinAlignments); a genuinely sparse comparison
 (only a handful of ribbons) keeps full alpha so the fade doesn't wash it out.
-'on'/'off' pin it. Resolved per display by LinearSyntenyDisplay's
-`fadeThinAlignments` — each level's ribbon density decides its own fade, so a
-dense level doesn't wash out a sparse one stacked below it.
+'on'/'off' pin it. Resolved view-wide by the `fadeThinAlignments` getter, so all
+levels fade together.
 
 ```ts
 // type signature
@@ -334,6 +334,22 @@ visible-width op of that kind is painted somewhere in the view.
 
 ```ts
 type presentCigarKinds = number
+```
+
+#### getter: fadeThinAlignments
+
+Resolved fade-thin flag that every display's renderParams reads. In 'auto' mode
+the fade turns on once ANY loaded synteny display is dominated by sub-pixel
+ribbons (`autoFadeThinAlignments` — a thin hairball that benefits from
+decluttering); a sparse view keeps its few ribbons at full alpha. 'on'/'off' pin
+it.
+
+Deliberately view-wide rather than per display: stacked levels are read as one
+picture, so levels resolving the fade independently would paint the same ribbon
+density differently from row to row.
+
+```ts
+type fadeThinAlignments = boolean
 ```
 
 #### getter: anchorAssemblyName

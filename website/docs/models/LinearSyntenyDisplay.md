@@ -66,7 +66,6 @@ and the `renderParams` the view reads out.
 | [totalAlignmentBp](#getter-totalalignmentbp)                   | Getters    | LinearSyntenyDisplay          | Summed genomic length (axis 0) of every loaded alignment block.                                                                                                                                       |
 | [meanAlignmentPx](#getter-meanalignmentpx)                     | Getters    | LinearSyntenyDisplay          | Mean on-screen width (px, axis 0) of this display's alignment blocks, or 0 until a fetch lands and both views connect.                                                                                |
 | [autoFadeThinAlignments](#getter-autofadethinalignments)       | Getters    | LinearSyntenyDisplay          | 'auto' fade-thin signal for this display: on when the ribbons are predominantly sub-pixel (`meanAlignmentPx` < 1) and there are enough of them to form a hairball.                                    |
-| [fadeThinAlignments](#getter-fadethinalignments)               | Getters    | LinearSyntenyDisplay          | Resolved fade-thin flag that renderParams reads.                                                                                                                                                      |
 | [presentCigarKinds](#getter-presentcigarkinds)                 | Getters    | LinearSyntenyDisplay          | Which CIGAR indel ops are actually painted in the current geometry.                                                                                                                                   |
 | [warnings](#getter-warnings)                                   | Getters    | LinearSyntenyDisplay          | Warnings surfaced in the view header.                                                                                                                                                                 |
 | [ready](#getter-ready)                                         | Getters    | LinearSyntenyDisplay          | A fetch has completed (data is present, even if it mapped zero features).                                                                                                                             |
@@ -208,16 +207,6 @@ widen past 1px.
 
 ```ts
 type autoFadeThinAlignments = boolean
-```
-
-#### getter: fadeThinAlignments
-
-Resolved fade-thin flag that renderParams reads. 'auto' defers to this display's
-own ribbon density (`autoFadeThinAlignments`), so a dense level fades without
-washing out a sparse one stacked below it; 'on'/'off' pin it view-wide.
-
-```ts
-type fadeThinAlignments = boolean
 ```
 
 #### getter: presentCigarKinds

@@ -321,17 +321,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Resolved fade-thin flag that renderParams reads. 'auto' defers to this
-       * display's own ribbon density (`autoFadeThinAlignments`), so a dense level
-       * fades without washing out a sparse one stacked below it; 'on'/'off' pin
-       * it view-wide.
-       */
-      get fadeThinAlignments(): boolean {
-        const mode = this.view.fadeThinAlignmentsMode
-        return mode === 'auto' ? this.autoFadeThinAlignments : mode === 'on'
-      },
-      /**
-       * #getter
        * Which CIGAR indel ops are actually painted in the current geometry.
        * The worker only emits an indel instance for an op wide enough to draw
        * (sub-pixel indels are dropped), so a set bit means a visible-width op
@@ -649,7 +638,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           yTop: 0,
           height: this.height,
           alpha: view.alpha,
-          fadeThinAlignments: this.fadeThinAlignments,
+          fadeThinAlignments: view.fadeThinAlignments,
           minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId: toFeatureId(hoveredFeatureIdx),
           clickedFeatureId: toFeatureId(clickedFeatureIdx),

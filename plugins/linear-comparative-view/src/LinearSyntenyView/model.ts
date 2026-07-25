@@ -135,10 +135,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * 'auto' enables the fade once a display is dominated by sub-pixel
          * ribbons (see LinearSyntenyDisplay.autoFadeThinAlignments); a genuinely
          * sparse comparison (only a handful of ribbons) keeps full alpha so the
-         * fade doesn't wash it out. 'on'/'off' pin it. Resolved per display by
-         * LinearSyntenyDisplay's `fadeThinAlignments` — each level's ribbon
-         * density decides its own fade, so a dense level doesn't wash out a
-         * sparse one stacked below it.
+         * fade doesn't wash it out. 'on'/'off' pin it. Resolved view-wide by the
+         * `fadeThinAlignments` getter, so all levels fade together.
          */
         fadeThinAlignmentsMode: types.stripDefault(
           types.enumeration('FadeThinMode', ['auto', 'on', 'off']),
@@ -251,6 +249,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           (mask, d) => mask | d.presentCigarKinds,
           0,
         )
+      },
+      /**
+       * #getter
+       * Resolved fade-thin flag that every display's renderParams reads. In
+       * 'auto' mode the fade turns on once ANY loaded synteny display is
+       * dominated by sub-pixel ribbons (`autoFadeThinAlignments` — a thin
+       * hairball that benefits from decluttering); a sparse view keeps its few
+       * ribbons at full alpha. 'on'/'off' pin it.
+       *
+       * Deliberately view-wide rather than per display: stacked levels are read
+       * as one picture, so levels resolving the fade independently would paint
+       * the same ribbon density differently from row to row.
+       */
+      get fadeThinAlignments(): boolean {
+        const { fadeThinAlignmentsMode } = self
+        return fadeThinAlignmentsMode === 'auto'
+          ? this.allSyntenyDisplays.some(d => d.autoFadeThinAlignments)
+          : fadeThinAlignmentsMode === 'on'
       },
       /**
        * #getter
