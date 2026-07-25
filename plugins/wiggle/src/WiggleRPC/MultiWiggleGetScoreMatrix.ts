@@ -15,7 +15,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
+export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiWiggleGetScoreMatrix'> {
   name = 'MultiWiggleGetScoreMatrix'
 
   async execute(args: GetScoreMatrixArgs, rpcDriverClassName: string) {

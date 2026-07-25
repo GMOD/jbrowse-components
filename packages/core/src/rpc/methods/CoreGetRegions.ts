@@ -2,7 +2,7 @@ import { isRegionsAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
-export default class CoreGetRegions extends RpcMethodType {
+export default class CoreGetRegions extends RpcMethodType<'CoreGetRegions'> {
   name = 'CoreGetRegions'
 
   async execute(

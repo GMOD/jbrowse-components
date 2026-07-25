@@ -1,4 +1,4 @@
-import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
+import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
 import type { SourceInfo, WiggleDataResult } from '../util.ts'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -7,7 +7,10 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 interface RenderMultiWiggleDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
-  region: Region
+  // All visible regions in one call so each subtrack's adapter can coalesce
+  // reads across them (BigWig). Returns one WiggleDataResult per region, in
+  // input order.
+  regions: Region[]
   sources?: SourceInfo[]
   bicolorPivot?: number
   stopToken?: StopToken
@@ -20,12 +23,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderMultiWiggleData: {
       args: RenderMultiWiggleDataArgs
-      return: WiggleDataResult
+      return: WiggleDataResult[]
     }
   }
 }
 
-export default class RenderMultiWiggleData extends RpcMethodTypeWithRenameRegion {
+export default class RenderMultiWiggleData extends RpcMethodTypeWithRenameRegions<'RenderMultiWiggleData'> {
   name = 'RenderMultiWiggleData'
 
   async execute(args: RenderMultiWiggleDataArgs, _rpcDriver: string) {

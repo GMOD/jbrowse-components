@@ -14,6 +14,7 @@ import {
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { RpcExecuteReturn } from '../rpc/RpcRegistry.ts'
 import type { Region } from '../util/index.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken } from '../util/stopToken.ts'
@@ -176,7 +177,19 @@ export function convertFileHandleLocations(
   walkLocationObjects(obj, { blobMap })
 }
 
-export default abstract class RpcMethodType extends PluggableElementBase {
+/**
+ * Base for an RPC method. Parameterize with the method's own registry name —
+ * `class CoreGetRegions extends RpcMethodType<'CoreGetRegions'>` — and `execute`
+ * is then checked against that entry's declared `return` (bare or wrapped in
+ * rpcResult), so the registry stays an assertion about the worker rather than a
+ * hand-maintained guess. Left unparameterized, `execute` resolves to `unknown`
+ * as before; that's the escape hatch for a method whose worker-side shape
+ * intentionally differs from what the client sees because `deserializeReturn`
+ * transforms it (CoreGetFeatures, BreakpointGetFeatures).
+ */
+export default abstract class RpcMethodType<
+  MethodName extends string = string,
+> extends PluggableElementBase {
   pluginManager: PluginManager
 
   constructor(pluginManager: PluginManager) {
@@ -239,7 +252,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   abstract execute(
     serializedArgs: unknown,
     rpcDriverClassName: string,
-  ): Promise<unknown>
+  ): Promise<RpcExecuteReturn<MethodName>>
 
   async deserializeReturn(
     serializedReturn: unknown,

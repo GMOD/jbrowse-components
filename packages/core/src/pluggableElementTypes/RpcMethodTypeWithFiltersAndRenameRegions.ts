@@ -15,7 +15,9 @@ interface FilterRenameArgs {
   filters?: SerializableFilterChain
 }
 
-export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends RpcMethodTypeWithRenameRegions {
+export default abstract class RpcMethodTypeWithFiltersAndRenameRegions<
+  MethodName extends string = string,
+> extends RpcMethodTypeWithRenameRegions<MethodName> {
   async deserializeArguments<T>(
     // filters is `unknown` rather than SerializedFilterChain: callers' T types
     // it as the deserialized SerializableFilterChain, so a string[] intersection

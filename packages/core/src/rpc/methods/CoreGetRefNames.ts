@@ -4,7 +4,7 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
-export default class CoreGetRefNames extends RpcMethodType {
+export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
   name = 'CoreGetRefNames'
 
   async execute(

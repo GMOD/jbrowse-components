@@ -11,14 +11,21 @@ interface WorkerSelf {
 const workerSelf =
   typeof self !== 'undefined' ? (self as unknown as WorkerSelf) : null
 
-export interface RpcResult {
+// The wrapper an RPC method returns to hand transferables to postMessage. `T`
+// is the value the caller ultimately receives, so it flows out of an executor's
+// return type and gets checked against the method's declared RpcRegistry
+// `return` (see RpcMethodType) instead of decaying to `unknown` at the wrapper.
+export interface RpcResult<T = unknown> {
   __rpcResult: true
-  value: unknown
+  value: T
   transferables: Transferable[]
 }
 
-export function rpcResult(value: unknown, transferables: Transferable[]) {
-  return { __rpcResult: true, value, transferables } as RpcResult
+export function rpcResult<T>(
+  value: T,
+  transferables: Transferable[],
+): RpcResult<T> {
+  return { __rpcResult: true, value, transferables }
 }
 
 // rpcResult with transferables auto-derived from the result's top-level
@@ -26,7 +33,7 @@ export function rpcResult(value: unknown, transferables: Transferable[]) {
 // zero-copy) rather than silently structurally cloned just because a
 // hand-maintained buffer list wasn't extended. Use for any worker RPC whose
 // result is a flat object of typed arrays (canvas/synteny/dotplot/wiggle packers).
-export function rpcResultWithArrayBuffers(value: object) {
+export function rpcResultWithArrayBuffers<T extends object>(value: T) {
   const transferables = Object.values(value)
     .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
     .map(v => v.buffer as ArrayBuffer)

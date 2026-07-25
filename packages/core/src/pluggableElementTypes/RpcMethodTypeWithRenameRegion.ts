@@ -5,7 +5,9 @@ import type { RenameRegionArgs } from './RpcMethodType.ts'
 // Singular-region counterpart of RpcMethodTypeWithRenameRegions, for RPC methods
 // whose wire contract carries one `region` (e.g. block-at-a-time wiggle
 // rendering). Subclasses get region renaming for free.
-export default abstract class RpcMethodTypeWithRenameRegion extends RpcMethodType {
+export default abstract class RpcMethodTypeWithRenameRegion<
+  MethodName extends string = string,
+> extends RpcMethodType<MethodName> {
   async serializeArguments<T extends RenameRegionArgs>(
     args: T,
     rpcDriverClassName: string,

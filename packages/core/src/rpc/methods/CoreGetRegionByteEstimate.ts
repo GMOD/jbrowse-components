@@ -6,7 +6,7 @@ import type { Region } from '../../util/index.ts'
 import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
-export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRegions {
+export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRegions<'CoreGetRegionByteEstimate'> {
   name = 'CoreGetRegionByteEstimate'
 
   async execute(

@@ -4,7 +4,7 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
 import type { StopToken } from '../../util/stopToken.ts'
 
-export default class CoreGetMetadata extends RpcMethodType {
+export default class CoreGetMetadata extends RpcMethodType<'CoreGetMetadata'> {
   name = 'CoreGetMetadata'
 
   async execute(

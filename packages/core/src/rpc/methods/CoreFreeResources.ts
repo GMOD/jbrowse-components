@@ -4,7 +4,7 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 /**
  * Drop cached data adapters associated with the given session.
  */
-export default class CoreFreeResources extends RpcMethodType {
+export default class CoreFreeResources extends RpcMethodType<'CoreFreeResources'> {
   name = 'CoreFreeResources'
 
   async execute(args: { sessionId?: string }) {

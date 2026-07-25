@@ -27,7 +27,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class RenderWiggleData extends RpcMethodTypeWithRenameRegions {
+export default class RenderWiggleData extends RpcMethodTypeWithRenameRegions<'RenderWiggleData'> {
   name = 'RenderWiggleData'
 
   async execute(args: RenderWiggleDataArgs, _rpcDriver: string) {

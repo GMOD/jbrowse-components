@@ -3,7 +3,7 @@ import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMetho
 
 import type { Region } from '../../util/index.ts'
 
-export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions {
+export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'CoreGetExportData'> {
   name = 'CoreGetExportData'
 
   async execute(
