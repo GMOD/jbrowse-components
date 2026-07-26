@@ -72,7 +72,6 @@ export { default as SettingRow } from './SettingRow.tsx'
 export { default as SettingToggleGroup } from './SettingToggleGroup.tsx'
 export { default as HelpTooltip } from './HelpTooltip.tsx'
 export { default as OpacitySlider } from './OpacitySlider.tsx'
-export { default as RefetchIndicator } from './RefetchIndicator.tsx'
 export { default as DiagonalizeLoadingScreen } from './DiagonalizeLoadingScreen.tsx'
 export { default as DiagonalizeDialog } from './DiagonalizeDialog.tsx'
 export type {

@@ -1,5 +1,34 @@
 # tree-sidebar
 
+## Two ways to start a cluster run — both already have a home here
+
+A clusterable display triggers clustering one of two ways, and neither should
+grow a per-plugin copy of the lifecycle (each had two before they were folded in
+here):
+
+- **A dialog** ("Cluster rows by ..." → Run clustering) uses `useClusterRun` +
+  `ClusterProgress`. The hook owns start/status/stop and aborts the RPC when the
+  dialog goes away; the display supplies only a
+  `run({stopToken, statusCallback})` callback doing its own RPC. Preconditions
+  (uninitialized view, too few rows) belong inside that callback as `throw`s, so
+  they land in the same error state as an RPC failure instead of a second
+  branch.
+- **A `runClustering: true` flag** (track menu or a saved session/config) uses
+  `setupRunClusteringAutorun`, which owns the re-entrancy guard, the
+  `view.initialized` gate, the stop token, the one-shot flag clear, **and** the
+  status channel — it writes `setStatusMessage`, which `DisplayChrome` surfaces
+  as a corner `ProgressChip` (that path has no dialog to report into). A flavor
+  supplies only `ready` and `run`; don't pass a `() => {}` status sink.
+
+Row filtering shares one helper too: `filterRowsBySubtree(rows, subtreeFilter)`,
+keyed on `name` (haplotype rows are `"HG001 HP0"`, and that is what
+`subtreeFilter` holds), used by variants, MAF, multi-row features, and wiggle.
+
+`validateClusterOrder` guards the R-paste path in both plugins — wiggle's dialog
+calls it directly, variants inside `applyClusterOrder` (only that function knows
+the _expanded_ haplotype row count an order must cover). An unvalidated paste
+silently drops or doubles rows.
+
 ## Hand-written hierarchy layout (`src/hierarchy.ts`)
 
 `src/hierarchy.ts` is a small hand-written subset of what d3-hierarchy used to

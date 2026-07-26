@@ -113,6 +113,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
             >
               <Button
                 variant="contained"
+                disabled={!results}
                 onClick={async () => {
                   const { saveAs } = await import('@jbrowse/core/util')
                   saveAs(
@@ -128,6 +129,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
               or{' '}
               <CopyToClipboardButton
                 variant="contained"
+                disabled={!results}
                 value={() => results || ''}
               >
                 Copy Rscript to clipboard
@@ -135,6 +137,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
               or{' '}
               <Button
                 variant="contained"
+                disabled={!resultsTsv}
                 onClick={async () => {
                   const { saveAs } = await import('@jbrowse/core/util')
                   saveAs(
@@ -229,12 +232,14 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
       <DialogActions>
         <Button
           variant="contained"
+          disabled={!paste.trim()}
           onClick={() => {
             const { sourcesBase, sampleInfo, renderingMode } = model
             if (sourcesBase) {
               try {
                 // parseClusterOrder yields 1-based R indices; applyClusterOrder
-                // (shared with the auto path) expects 0-based.
+                // (shared with the auto path) expects 0-based, and validates the
+                // order covers every row before anything is applied.
                 model.setLayout(
                   applyClusterOrder({
                     sourcesBase,
@@ -244,12 +249,13 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
                     sampleInfo,
                   }),
                 )
+                // keep the dialog open on a bad paste so the user can fix it
+                handleClose()
               } catch (e) {
                 console.error(e)
                 getSession(model).notifyError(`${e}`, e)
               }
             }
-            handleClose()
           }}
         >
           Apply clustering

@@ -1,5 +1,4 @@
-import { LoadingOverlay } from '@jbrowse/core/ui'
-import { RefetchIndicator } from '@jbrowse/synteny-core'
+import { LoadingOverlay, ProgressChip } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
@@ -35,7 +34,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       {/* Refetch: stale ribbons stay on screen, so a small shared corner chip
           carries the same statusCallback message + determinate fraction. */}
       {refetching ? (
-        <RefetchIndicator
+        <ProgressChip
           statusMessage={statusMessage}
           statusProgress={statusProgress}
         />

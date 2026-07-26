@@ -1,6 +1,5 @@
-import { ErrorBanner, LoadingProgress } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingProgress, ProgressChip } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { RefetchIndicator } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -42,7 +41,7 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
             />
           </div>
         ) : display.refetching ? (
-          <RefetchIndicator
+          <ProgressChip
             key={display.id}
             statusMessage={display.statusMessage}
             statusProgress={display.statusProgress}

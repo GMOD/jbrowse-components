@@ -43,7 +43,7 @@ const DiagonalizeLoadingScreen = observer(function DiagonalizeLoadingScreen({
   const fraction = statusFraction(status)
   // LoadingEllipses supplies its own animated dots, so the source phase labels
   // carry no trailing ellipsis. progressLabel appends the percent when
-  // determinate, mirroring RefetchIndicator.
+  // determinate, mirroring ProgressChip.
   const label = progressLabel(
     statusMessageText(status) || 'Reordering chromosomes',
     fraction,

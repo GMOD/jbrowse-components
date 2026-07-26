@@ -2,11 +2,13 @@ import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
+import DisplayBackgroundProgress from './DisplayBackgroundProgress.tsx'
 import DisplayErrorBar from './DisplayErrorBar.tsx'
 import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
+import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
 import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
 import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -27,7 +29,8 @@ export type ChromeModel = {
   canvasDrawn: boolean
 } & DisplayErrorBarModel &
   TooLargeMessageModel &
-  DisplayLoadingOverlayModel
+  DisplayLoadingOverlayModel &
+  DisplayBackgroundProgressModel
 
 interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
@@ -149,6 +152,9 @@ function DisplayChromeInner<B extends { dispose(): void }>({
         // a refetch over already-drawn content keeps the anti-flash delay
         immediate={!model.canvasDrawn}
       />
+      {/* the same status channel, for work with no fetch behind it (clustering)
+          — a corner chip, since the drawn content stays usable meanwhile */}
+      <DisplayBackgroundProgress model={model} visible={phase === 'ready'} />
     </div>
   )
 }

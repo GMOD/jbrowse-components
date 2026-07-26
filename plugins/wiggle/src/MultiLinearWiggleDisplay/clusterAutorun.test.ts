@@ -2,6 +2,8 @@ import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment, makeMultiWiggleData } from './testEnv.ts'
 
+import type { RpcStatus } from '@jbrowse/core/util'
+
 beforeEach(() => {
   jest.useFakeTimers()
 })
@@ -45,6 +47,47 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
         ([, method]) => method === 'MultiWiggleClusterScoreMatrix',
       ),
     ).toHaveLength(1)
+  })
+
+  // The declarative path has no dialog to report into, so the RPC's status
+  // lands on the display, where DisplayChrome shows it as a corner chip.
+  it('reports clustering progress on the display, then clears it', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const duringRun: (string | undefined)[] = []
+    mockRpcCall.mockImplementation(
+      (
+        _sid: string,
+        method: string,
+        args: { statusCallback?: (status: RpcStatus) => void },
+      ) => {
+        if (method === 'MultiWiggleClusterScoreMatrix') {
+          args.statusCallback?.({
+            message: 'Clustering rows',
+            current: 1,
+            total: 4,
+          })
+          duringRun.push(display.statusMessage, `${display.statusProgress}`)
+          return Promise.resolve({ order: [1, 0], tree: '(b,a);' })
+        }
+        return Promise.resolve(makeMultiWiggleData('a', 'b'))
+      },
+    )
+
+    const { display } = createDisplay({ runClustering: true })
+
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.sourcesVolatile.length).toBe(2)
+    })
+    jest.advanceTimersByTime(700)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.clusterTree).toBe('(b,a);')
+    })
+    expect(duringRun).toEqual(['Clustering rows', '0.25'])
+    // a status left set outlives the run and would pin the chip up
+    expect(display.statusMessage).toBeUndefined()
   })
 
   it('does not call the clustering RPC when runClustering is unset', async () => {

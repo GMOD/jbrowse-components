@@ -1,4 +1,7 @@
-import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
+import {
+  buildClusteredLayout,
+  validateClusterOrder,
+} from '@jbrowse/tree-sidebar'
 
 import { expandSourcesToHaplotypes } from './getSources.ts'
 
@@ -16,6 +19,12 @@ import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 //   aren't in the tree, but `layout` is the persisted record of every row's
 //   position and color — dropping them here erases them for good once the
 //   filter is cleared.
+//
+// Validation lives here rather than at the paste box because the length an order
+// must cover is the *expanded* row count, which only this function knows: in
+// phased mode a 2x-ploidy haplotype set is what the matrix (and so the order)
+// was built over. An order from the RPC always covers it; a hand-pasted one is
+// where a short or duplicated list would otherwise silently drop or double rows.
 export function applyClusterOrder({
   sourcesBase,
   layout,
@@ -33,6 +42,7 @@ export function applyClusterOrder({
     renderingMode === 'phased' && sampleInfo
       ? expandSourcesToHaplotypes({ sources: sourcesBase, sampleInfo })
       : sourcesBase
+  validateClusterOrder(order, baseSources.length)
   const clustered = buildClusteredLayout(baseSources, layout, order)
   const clusteredNames = new Set(clustered.map(s => s.name))
   return [...clustered, ...layout.filter(s => !clusteredNames.has(s.name))]

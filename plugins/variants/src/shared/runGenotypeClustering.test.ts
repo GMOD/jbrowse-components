@@ -86,7 +86,11 @@ describe('runGenotypeClustering', () => {
       minorAlleleFrequencyFilter: 0.05,
       maxMissingnessFilter: 0.2,
     })
-    const rpcManager = makeRpcManager(async () => ({ order: [0], tree: ';' }))
+    // a complete order — applyClusterOrder validates it covers every row
+    const rpcManager = makeRpcManager(async () => ({
+      order: [0, 1, 2],
+      tree: '(a,b,c);',
+    }))
 
     await runGenotypeClustering({
       model,

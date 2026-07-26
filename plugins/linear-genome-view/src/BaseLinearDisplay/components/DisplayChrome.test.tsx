@@ -5,7 +5,7 @@ import {
   setGpuOverride,
 } from '@jbrowse/render-core/gpuDevice'
 import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
-import { act, render } from '@testing-library/react'
+import { act, render, waitFor } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
 
@@ -43,6 +43,7 @@ const TestChromeModel = types
     regionTooLargeReason: '',
     canvasDrawn: false,
     statusMessage: types.maybe(types.string),
+    statusProgress: types.maybe(types.number),
   })
   .volatile(
     (): {
@@ -88,6 +89,10 @@ const TestChromeModel = types
     },
     setLoadingCondition(value: boolean) {
       self.loadingCondition = value
+    },
+    setStatus(message?: string, progress?: number) {
+      self.statusMessage = message
+      self.statusProgress = progress
     },
   }))
 
@@ -163,6 +168,40 @@ test('ready phase shows the canvas with no banners; canvasDrawn toggles the -don
   // canvasDrawn:true -> `-done` suffix appended by the chrome
   await findByTestId('chrome-done')
   expect(queryByTestId('chrome')).toBeNull()
+})
+
+// Background work (clustering) reports through the same status channel as a
+// fetch, but has no fetch behind it, so the phase stays `ready` and the scrim
+// never comes up. The corner chip is what makes it visible.
+test('a status set while ready shows the corner chip, not the scrim', async () => {
+  const model = TestChromeModel.create({})
+  act(() => {
+    model.setStatus('Clustering samples', 0.25)
+  })
+  const { findByTestId, queryByTestId, getByText } = renderChrome(model)
+
+  await findByTestId('progress-chip')
+  expect(getByText(/Clustering samples 25%/)).toBeTruthy()
+  expect(queryByTestId('loading-overlay')).toBeNull()
+
+  act(() => {
+    model.setStatus(undefined, undefined)
+  })
+  await waitFor(() => {
+    expect(queryByTestId('progress-chip')).toBeNull()
+  })
+})
+
+test('a fetch status shows only the scrim, never both indicators', async () => {
+  const model = TestChromeModel.create({})
+  act(() => {
+    model.setStatus('Downloading', 0.5)
+    model.setLoadingCondition(true)
+  })
+  const { findByTestId, queryByTestId } = renderChrome(model)
+
+  await findByTestId('loading-overlay')
+  expect(queryByTestId('progress-chip')).toBeNull()
 })
 
 // The distinction the screenshot generator depends on: `-done` is first paint,

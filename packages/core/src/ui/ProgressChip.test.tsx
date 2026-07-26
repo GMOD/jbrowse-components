@@ -1,11 +1,11 @@
 import { render } from '@testing-library/react'
 
-import RefetchIndicator from './RefetchIndicator.tsx'
+import ProgressChip from './ProgressChip.tsx'
 
-describe('RefetchIndicator', () => {
+describe('ProgressChip', () => {
   it('shows the message with no progress bar when indeterminate', () => {
     const { container, getByText } = render(
-      <RefetchIndicator statusMessage="Downloading features" />,
+      <ProgressChip statusMessage="Downloading features" />,
     )
     // message text is present (LoadingEllipses appends animated dots, so match
     // a substring rather than the exact node text)
@@ -15,16 +15,16 @@ describe('RefetchIndicator', () => {
 
   it('shows a determinate bar and percent when progress is present', () => {
     const { container, getByText } = render(
-      <RefetchIndicator statusMessage="Downloading" statusProgress={0.42} />,
+      <ProgressChip statusMessage="Downloading" statusProgress={0.42} />,
     )
     expect(getByText(/Downloading 42%/)).toBeTruthy()
     const bar = container.querySelector('[role="progressbar"]')
     expect(bar).toBeTruthy()
-    expect(bar!.getAttribute('aria-valuenow')).toBe('42')
+    expect(bar?.getAttribute('aria-valuenow')).toBe('42')
   })
 
   it('falls back to a generic label when message is absent but progress is set', () => {
-    const { getByText } = render(<RefetchIndicator statusProgress={0.5} />)
+    const { getByText } = render(<ProgressChip statusProgress={0.5} />)
     expect(getByText(/Loading 50%/)).toBeTruthy()
   })
 })

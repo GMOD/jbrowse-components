@@ -2,10 +2,11 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { setupRunClusteringAutorun } from '@jbrowse/tree-sidebar'
 
-import { runWiggleClustering } from './runWiggleClustering.ts'
 import { DEFAULT_SAMPLES_PER_PIXEL } from './components/WiggleClusterDialog/clusterOptions.ts'
+import { runWiggleClustering } from './runWiggleClustering.ts'
 
 import type { ReducedModel } from './components/WiggleClusterDialog/types.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // The multi-wiggle "Cluster columns" flavor of the shared declarative-
@@ -18,19 +19,20 @@ export function getWiggleClusterAutorun(
     ReducedModel & {
       runClustering?: boolean
       setRunClustering: (arg?: boolean) => void
+      setStatusMessage: (status?: RpcStatus) => void
     },
 ) {
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiWiggleClustering',
     ready: () => self.sourcesWithoutLayout.length > 1,
-    run: (_view, stopToken) =>
+    run: (_view, stopToken, statusCallback) =>
       runWiggleClustering({
         model: self,
         rpcManager: getSession(self).rpcManager,
         sessionId: getRpcSessionId(self),
         samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
         stopToken,
-        statusCallback: () => {},
+        statusCallback,
       }),
   })
 }
