@@ -441,6 +441,49 @@ test('navToLocations([]) is a no-op and does not blank the view', async () => {
   expect(model.displayedRegions[0]!.refName).toBe('ctgA')
 })
 
+// the multi-location branch used to spread the parsed location straight into
+// displayedRegions, which kept the user's alias refName, dragged the whole
+// nested parentRegion object into the persisted snapshot, and let `grow` push
+// coordinates past the end of the chromosome
+test('navToLocations with multiple locations writes clean, in-bounds regions', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'navToLocationsMulti',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(800)
+
+  // ctgB is 6079bp, so grow=1 on 6000-6070 would reach 6140 unclamped
+  await model.navToLocations(
+    [
+      { refName: 'contiga', start: 100, end: 200 },
+      { refName: 'ctgb', start: 6000, end: 6070 },
+    ],
+    'volvox',
+    1,
+  )
+
+  expect(model.displayedRegions).toEqual([
+    {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 0,
+      end: 300,
+      reversed: undefined,
+    },
+    {
+      assemblyName: 'volvox',
+      refName: 'ctgB',
+      start: 5930,
+      end: 6079,
+      reversed: undefined,
+    },
+  ])
+})
+
 test('can instantiate a model that has multiple displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({

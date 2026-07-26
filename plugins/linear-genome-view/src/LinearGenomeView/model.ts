@@ -40,7 +40,6 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   cast,
   getParent,
-  getSnapshot,
   hasParent,
   isAlive,
   types,
@@ -142,6 +141,10 @@ const BP_PER_PX_EPSILON = 0.000001
 // getSelectedRegions' clamp so the two bounds can't drift apart.
 const MAX_OFFSET_PADDING_PX = 10
 
+// px of the leftmost content kept on-screen at max scroll-left, mirroring
+// MAX_OFFSET_PADDING_PX at the other end
+const MIN_OFFSET_PADDING_PX = 30
+
 /**
  * Resolve a NavLocation's refName to the assembly's canonical name, falling
  * back to the raw refName (and the view's default assembly) when the assembly
@@ -169,17 +172,24 @@ function navLocationRefName(
  */
 function resolveNavEndpoint({
   location,
-  refName,
+  assemblyManager,
+  defaultAssemblyName,
   side,
   displayedRegions,
   grow,
 }: {
   location: NavLocation
-  refName: string
+  assemblyManager: AssemblyManager
+  defaultAssemblyName: string
   side: 'left' | 'right'
   displayedRegions: Region[]
   grow?: number
 }) {
+  const refName = navLocationRefName(
+    assemblyManager,
+    defaultAssemblyName,
+    location,
+  )
   const region = displayedRegions.find(r => r.refName === refName)
   if (!region) {
     throw new Error(`could not find a region with refName "${refName}"`)
@@ -209,19 +219,12 @@ function resolveNavEndpoint({
 }
 
 /**
- * Add (or reuse) the hierarchical track-selector widget for this view. Throws
- * for a non-hierarchical selector type or a session without widget support —
- * matching the single error both callers previously raised inline. Returns the
- * widget alongside the (narrowed) session so callers can show/hide it.
+ * Add (or reuse) the hierarchical track-selector widget for this view. Returns
+ * the widget alongside the (narrowed) session so callers can show/hide it.
  */
-function openTrackSelectorWidget(
-  self: IAnyStateTreeNode & { trackSelectorType: string },
-) {
+function openTrackSelectorWidget(self: IAnyStateTreeNode) {
   const session = getSession(self)
-  if (
-    self.trackSelectorType === 'hierarchical' &&
-    isSessionModelWithWidgets(session)
-  ) {
+  if (isSessionModelWithWidgets(session)) {
     const selector = session.addWidget(
       'HierarchicalTrackSelectorWidget',
       'hierarchicalTrackSelector',
@@ -229,7 +232,7 @@ function openTrackSelectorWidget(
     )
     return { session, selector }
   }
-  throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+  throw new Error('session does not support widgets')
 }
 
 /**
@@ -904,8 +907,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get minOffset() {
         // objectively determined to keep the linear genome on the main screen
-        const rightPadding = 30
-        return -self.width + rightPadding
+        return -self.width + MIN_OFFSET_PADDING_PX
       },
 
       /**
@@ -1135,7 +1137,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             .reverse()
             .map(region => ({ ...region, reversed: !region.reversed })),
         )
-        this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
+        this.scrollTo(self.displayedRegionsTotalPx - self.offsetPx - self.width)
       },
 
       /**
@@ -1299,14 +1301,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!leftOffset || !rightOffset) {
           return []
         }
-        const snap = getSnapshot(self)
-        const snapWithLayout = {
-          ...snap,
+        const layout = {
+          displayedRegions: self.displayedRegions,
+          bpPerPx: self.bpPerPx,
+          offsetPx: self.offsetPx,
           width: self.width,
           minimumBlockWidth: self.minimumBlockWidth,
         }
         const { bpPerPx, offsetPx: rawOffsetPx } = computeMoveToLayout(
-          snapWithLayout,
+          layout,
           leftOffset,
           rightOffset,
         )
@@ -1318,7 +1321,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.totalBp / bpPerPx - MAX_OFFSET_PADDING_PX,
         )
         return calculateDynamicBlocks({
-          ...snapWithLayout,
+          ...layout,
           bpPerPx,
           offsetPx,
         }).contentBlocks.map(region => ({
@@ -1446,7 +1449,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
-      let cancelLastAnimation = () => {}
+      let cancelLastSlide = () => {}
+      let cancelLastZoom = () => {}
 
       /**
        * #action
@@ -1461,22 +1465,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           undefined,
           200,
         )
-        cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
+        cancelLastSlide()
+        cancelLastSlide = cancelAnimation
         animate()
       }
-
-      return { slide }
-    })
-    .actions(self => {
-      let cancelLastAnimation = () => {}
 
       /**
        * #action
        * perform animated zoom
        */
       function zoom(targetBpPerPx: number) {
-        cancelLastAnimation()
+        cancelLastZoom()
 
         // Clamp to zoom limits
         const effectiveTarget = clamp(
@@ -1500,7 +1499,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           1000,
           50,
         )
-        cancelLastAnimation = cancelAnimation
+        cancelLastZoom = cancelAnimation
         animate()
       }
 
@@ -1512,10 +1511,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * the direct interaction on the next frame.
        */
       function cancelZoomAnimation() {
-        cancelLastAnimation()
+        cancelLastZoom()
       }
 
-      return { zoom, cancelZoomAnimation }
+      return { slide, zoom, cancelZoomAnimation }
     })
     .views(self => ({
       /**
@@ -2032,19 +2031,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ),
           })
         }
-        // Handle multiple locations case
+        // Handle multiple locations case. Each region is built from
+        // parentRegion (not the parsed location) so it carries the canonical
+        // refName rather than whatever alias/casing the user typed, doesn't
+        // drag the whole nested parentRegion object into the persisted
+        // displayedRegions, and stays clamped to the chromosome bounds that
+        // `grow` may have pushed it past.
         else {
           self.setDisplayedRegions(
-            locations.map(location => {
-              const { start, end } = location
-              return start === undefined || end === undefined
-                ? location.parentRegion
+            locations.map(({ start, end, reversed, parentRegion }) =>
+              start === undefined || end === undefined
+                ? { ...parentRegion, reversed }
                 : {
-                    ...location,
-                    start,
-                    end,
-                  }
-            }),
+                    ...parentRegion,
+                    reversed,
+                    start: clamp(start, parentRegion.start, parentRegion.end),
+                    end: clamp(end, parentRegion.start, parentRegion.end),
+                  },
+            ),
           )
           self.showAllRegions()
         }
@@ -2103,28 +2107,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { displayedRegions } = self
         // The range spans from the first location's left edge to the last
         // location's right edge (any locations in between are ignored).
+        const common = {
+          assemblyManager,
+          defaultAssemblyName,
+          displayedRegions,
+          grow,
+        }
         this.moveTo(
           resolveNavEndpoint({
+            ...common,
             location: firstLocation,
-            refName: navLocationRefName(
-              assemblyManager,
-              defaultAssemblyName,
-              firstLocation,
-            ),
             side: 'left',
-            displayedRegions,
-            grow,
           }),
           resolveNavEndpoint({
+            ...common,
             location: lastLocation,
-            refName: navLocationRefName(
-              assemblyManager,
-              defaultAssemblyName,
-              lastLocation,
-            ),
             side: 'right',
-            displayedRegions,
-            grow,
           }),
         )
       },
