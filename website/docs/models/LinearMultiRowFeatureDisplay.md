@@ -37,6 +37,7 @@ dendrogram + reorder) is the shared `TreeSidebarMixin`.
 | [showTree](#getter-showtree)                                           | Getters    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [showBranchLength](#getter-showbranchlength)                           | Getters    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [partitionField](#getter-partitionfield)                               | Getters    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [lengthField](#getter-lengthfield)                                     | Getters    | LinearMultiRowFeatureDisplay                          | Feature attribute holding a signed bp length change vs the reference.                                                                                                                                                                                                                                                                                                                                                                         |
 | [rowOrder](#getter-roworder)                                           | Getters    | LinearMultiRowFeatureDisplay                          | Optional explicit row order from config; values listed here are placed first, remaining discovered values follow in sorted order.                                                                                                                                                                                                                                                                                                             |
 | [colorConfig](#getter-colorconfig)                                     | Getters    | LinearMultiRowFeatureDisplay                          | Raw `color` slot (a CSS color or `jexl:` string, or undefined when unset), forwarded to the worker which resolves it per feature.                                                                                                                                                                                                                                                                                                             |
 | [sampleColorMap](#getter-samplecolormap)                               | Getters    | LinearMultiRowFeatureDisplay                          | Map of partition value → color, forwarded to the worker which applies it over the per-feature `color`.                                                                                                                                                                                                                                                                                                                                        |
@@ -60,6 +61,7 @@ dendrogram + reorder) is the shared `TreeSidebarMixin`.
 | [sidebarOffset](#getter-sidebaroffset)                                 | Getters    | LinearMultiRowFeatureDisplay                          | Pixel width reserved on the left for the tree (0 when no tree shows).                                                                                                                                                                                                                                                                                                                                                                         |
 | [spatialIndex](#getter-spatialindex)                                   | Getters    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [renderState](#getter-renderstate)                                     | Getters    | LinearMultiRowFeatureDisplay                          | Render state passed to the GPU/Canvas2D backend each frame.                                                                                                                                                                                                                                                                                                                                                                                   |
+| [indelGlyphRegions](#getter-indelglyphregions)                         | Getters    | LinearMultiRowFeatureDisplay                          | Per-region data for the indel-glyph overlay, or undefined when the `lengthField` slot is unset and there is no glyph pass.                                                                                                                                                                                                                                                                                                                    |
 | [rpcProps](#method-rpcprops)                                           | Methods    | LinearMultiRowFeatureDisplay                          | Fetch-input cache keys (tier-1, via SettingsInvalidate → refetch).                                                                                                                                                                                                                                                                                                                                                                            |
 | [featureAt](#method-featureat)                                         | Methods    | LinearMultiRowFeatureDisplay                          | Hit-test the feature under a canvas-relative pixel: row from `mouseY / rowHeight`, genomic bp from the view, then the first feature on that row whose `[start,end)` covers the bp.                                                                                                                                                                                                                                                            |
 | [isCacheValid](#method-iscachevalid)                                   | Methods    | LinearMultiRowFeatureDisplay                          | A region is cache-valid only once its features are committed.                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -351,6 +353,16 @@ never shows here.
 type densityGateEnabled = boolean
 ```
 
+#### getter: lengthField
+
+Feature attribute holding a signed bp length change vs the reference. Empty =
+the indel-glyph pass is off. A fetch input: it decides whether the worker packs
+`featureDeltas` at all.
+
+```ts
+type lengthField = string
+```
+
 #### getter: rowOrder
 
 Optional explicit row order from config; values listed here are placed first,
@@ -536,6 +548,21 @@ Render state passed to the GPU/Canvas2D backend each frame.
 type renderState = MultiRowRenderState
 ```
 
+#### getter: indelGlyphRegions
+
+Per-region data for the indel-glyph overlay, or undefined when the `lengthField`
+slot is unset and there is no glyph pass.
+
+A computed returning a plain `Map` rather than `rpcDataMap` itself: the overlay
+draws inside an effect, so nothing it touches there is tracked, and handing it
+the ObservableMap would mean a refetch never redrew the glyphs. Rebuilding here
+makes the read happen where MobX sees it and gives the overlay a value whose
+identity changes exactly when the data does.
+
+```ts
+type indelGlyphRegions = Map<number, MultiRowGetFeaturesResult> | undefined
+```
+
 </details>
 
 <details>
@@ -565,6 +592,7 @@ resolved in the worker, so the raw color slot is a key.
 ```ts
 type rpcProps = () => {
   partitionField: string
+  lengthField: string
   colorConfig: string | undefined
 }
 ```

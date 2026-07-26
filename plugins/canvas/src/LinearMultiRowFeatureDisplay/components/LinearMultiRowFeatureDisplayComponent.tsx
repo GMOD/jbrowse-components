@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 
 import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
+import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
@@ -91,6 +92,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           cursor: hoveredFeature ? 'pointer' : 'default',
         }}
       />
+      <MultiRowIndelGlyphOverlay model={model} />
       {sources.length ? (
         // The display's doneness signal for capture gates. `sources` is derived
         // from fetched features (the partition values), so this subtree cannot

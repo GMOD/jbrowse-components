@@ -25,6 +25,7 @@ export async function executeMultiRowGetFeatures({
     region,
     byteLimit,
     partitionField,
+    lengthField,
     colorConfig,
     stopToken,
     statusCallback = () => {},
@@ -74,6 +75,7 @@ export async function executeMultiRowGetFeatures({
   const result = packMultiRowFeatures({
     features,
     partitionField,
+    lengthField,
     colorConfig,
     jexl: pluginManager.jexl,
     report: createProgressReporter({

@@ -82,17 +82,18 @@ so configure it with an explicit `displays` entry (rather than the
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                       | Type          | Description                                                                                                                          |
-| ------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [partitionField](#slot-partitionfield)     | `string`      | Feature attribute whose value assigns each feature to a row (e.g. a BED column name).                                                |
-| [color](#slot-color)                       | `maybeColor`  | Per-block fill: a CSS color, or a `jexl:` expression for per-feature coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). |
-| [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.                                                      |
-| [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order.                                                                                                         |
-| [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row.                                                                                                  |
-| [showLegend](#slot-showlegend)             | `boolean`     | Show the categorical color key (swatch + label per distinct per-feature color).                                                      |
-| [legend](#slot-legend)                     | `frozen`      | Explicit color key: an array of `{ label, color }`.                                                                                  |
-| [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                                        |
-| [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs.                                                                         |
+| Slot                                       | Type          | Description                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [partitionField](#slot-partitionfield)     | `string`      | Feature attribute whose value assigns each feature to a row (e.g. a BED column name).                                                                                                                                                                                                                                                                                                                  |
+| [lengthField](#slot-lengthfield)           | `string`      | Feature attribute holding a **signed bp length change** against the reference, which turns on alignment-style indel glyphs over the blocks: a positive value draws the insertion marker `plugins/alignments` and `plugins/maf` draw (a bar whose width follows the length, with the bp count when the row is tall enough), a negative one draws a deletion line across the block, and 0 draws nothing. |
+| [color](#slot-color)                       | `maybeColor`  | Per-block fill: a CSS color, or a `jexl:` expression for per-feature coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``).                                                                                                                                                                                                                                                                   |
+| [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.                                                                                                                                                                                                                                                                                                                        |
+| [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order.                                                                                                                                                                                                                                                                                                                                                                           |
+| [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row.                                                                                                                                                                                                                                                                                                                                                                    |
+| [showLegend](#slot-showlegend)             | `boolean`     | Show the categorical color key (swatch + label per distinct per-feature color).                                                                                                                                                                                                                                                                                                                        |
+| [legend](#slot-legend)                     | `frozen`      | Explicit color key: an array of `{ label, color }`.                                                                                                                                                                                                                                                                                                                                                    |
+| [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                                                                                                                                                                                                                                                                                                          |
+| [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs.                                                                                                                                                                                                                                                                                                                                           |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -113,6 +114,32 @@ name). Features sharing a value stack into the same row.
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'name'`
+
+#### slot: lengthField
+
+Feature attribute holding a **signed bp length change** against the reference,
+which turns on alignment-style indel glyphs over the blocks: a positive value
+draws the insertion marker `plugins/alignments` and `plugins/maf` draw (a bar
+whose width follows the length, with the bp count when the row is tall enough),
+a negative one draws a deletion line across the block, and 0 draws nothing.
+
+This exists because a block's own width can only ever show how much _reference_
+a feature covers. An insertion covers almost none of it, so a 113 kb allele and
+a 1 bp one draw identically without this — the length has to come from a
+separate attribute.
+
+Empty (the default) leaves the display a plain block painter.
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+**Example:**
+
+A pangenome-graph path BED, where `delta` is each haplotype's bp gained or lost
+at that bubble (`scripts/build_minigraph_paths.sh`):
+
+```js
+{ partitionField: 'strain', lengthField: 'delta' }
+```
 
 #### slot: color
 

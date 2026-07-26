@@ -10,6 +10,7 @@ import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
+import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type {
@@ -87,7 +88,7 @@ function MultiRowSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, {
+            const state = {
               ...self.renderState,
               // canvasWidth is the block scissor bound, so it has to be the
               // width this layer is actually painted at. renderState carries
@@ -96,7 +97,16 @@ function MultiRowSvgBody({
               // 2px column off the export.
               canvasWidth: view.width,
               canvasHeight: height,
-            })
+            }
+            drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, state)
+            // Same layer, after the blocks, so the export stacks them the way
+            // the on-screen overlay composites over the canvas.
+            drawMultiRowIndelGlyphs(
+              ctx,
+              self.rpcDataMap,
+              self.renderBlocks,
+              state,
+            )
           }}
         />
       </SvgClipRect>

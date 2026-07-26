@@ -26,6 +26,7 @@ test('dedupes partition values and indexes features into them', () => {
   const r = packMultiRowFeatures({
     features,
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: 'goldenrod',
     jexl: createJexlInstance(),
   })
@@ -39,6 +40,7 @@ test('resolves a jexl color expression per feature (the demo rgb() form)', () =>
   const r = packMultiRowFeatures({
     features,
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: `jexl:'rgb('+get(feature,'itemRgb')+')'`,
     jexl: createJexlInstance(),
   })
@@ -56,6 +58,7 @@ test('a feature with empty itemRgb (-> "rgb()") degrades to magenta, not a crash
       feat({ start: 5, end: 9, sample: 'mom', itemRgb: '' }),
     ],
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: `jexl:'rgb('+get(feature,'itemRgb')+')'`,
     jexl: createJexlInstance(),
   })
@@ -69,6 +72,7 @@ test('an unset color slot paints from the feature itemRgb, no jexl needed', () =
   const r = packMultiRowFeatures({
     features,
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: undefined,
     jexl: createJexlInstance(),
   })
@@ -85,6 +89,7 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 0, end: 5, sample: 'mom' })],
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: undefined,
     jexl: createJexlInstance(),
   })
@@ -101,6 +106,7 @@ test('a placeholder itemRgb does not hijack the per-row palette', () => {
       feat({ start: 5, end: 9, sample: 'dad', itemRgb: '0' }),
     ],
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: undefined,
     jexl: createJexlInstance(),
   })
@@ -111,6 +117,7 @@ test('the jexl template-string form reads a non-itemRgb color column', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 0, end: 5, sample: 'mom', ancestryRgb: '1,2,3' })],
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: 'jexl:`rgb(${get(feature,"ancestryRgb")})`',
     jexl: createJexlInstance(),
   })
@@ -121,6 +128,7 @@ test('plain (non-jexl) color applies to every feature, beating itemRgb', () => {
   const r = packMultiRowFeatures({
     features,
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: 'red',
     jexl: createJexlInstance(),
   })
@@ -133,6 +141,7 @@ test('missing partition value collapses to a single empty-string row', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 1, end: 2 }), feat({ start: 3, end: 4 })],
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: 'red',
     jexl: createJexlInstance(),
   })
@@ -147,6 +156,7 @@ test('captures feature id for the click → details fetch', () => {
       feat({ id: 'feat2', start: 5, end: 9, sample: 'mom' }),
     ],
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: 'red',
     jexl: createJexlInstance(),
   })
@@ -160,6 +170,7 @@ test('captures feature name for tooltips ("" when absent)', () => {
       feat({ start: 5, end: 9, sample: 'mom' }),
     ],
     partitionField: 'sample',
+    lengthField: '',
     colorConfig: 'red',
     jexl: createJexlInstance(),
   })
@@ -196,6 +207,7 @@ describe('makeFeatureColorResolver (shared with clustering)', () => {
     const r = packMultiRowFeatures({
       features,
       partitionField: 'sample',
+      lengthField: '',
       colorConfig: undefined,
       jexl: createJexlInstance(),
     })
@@ -203,4 +215,35 @@ describe('makeFeatureColorResolver (shared with clustering)', () => {
       resolve(undefined).map(c => cssColorToABGR(c.css)),
     )
   })
+})
+
+test('packs no deltas when lengthField is unset', () => {
+  const r = packMultiRowFeatures({
+    features,
+    partitionField: 'sample',
+    lengthField: '',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  // length 0, not n zeros: this is what tells the render side the glyph pass is
+  // off, and a zero delta is a legitimate reference-length allele
+  expect(r.featureDeltas).toHaveLength(0)
+})
+
+test('packs signed deltas from lengthField, coercing strings', () => {
+  const r = packMultiRowFeatures({
+    // a BED column arrives as a string from some parsers and a number from
+    // others, and an absent value must not become a glyph
+    features: [
+      feat({ start: 0, end: 50, sample: 'a', delta: '113174' }),
+      feat({ start: 0, end: 30, sample: 'b', delta: -3217 }),
+      feat({ start: 30, end: 50, sample: 'c' }),
+      feat({ start: 30, end: 50, sample: 'd', delta: 'ref' }),
+    ],
+    partitionField: 'sample',
+    lengthField: 'delta',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  expect([...r.featureDeltas]).toEqual([113174, -3217, 0, 0])
 })

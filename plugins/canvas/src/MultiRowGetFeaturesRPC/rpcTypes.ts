@@ -25,6 +25,9 @@ export interface MultiRowGetFeaturesArgs {
   byteLimit?: number
   // feature attribute whose value assigns each feature to a row
   partitionField: string
+  // feature attribute holding a signed bp length change against the reference,
+  // which turns on the indel-glyph pass. Empty string = off (no deltas packed).
+  lengthField: string
   // raw `color` config slot (a CSS color or `jexl:...`), evaluated per feature
   // in the worker against the feature. Per-row color (sampleColorMap / palette /
   // dialog) is applied on the main thread at render time, not here.
@@ -37,6 +40,13 @@ export interface MultiRowGetFeaturesResult {
   featureStarts: Uint32Array
   featureEnds: Uint32Array
   featureColors: Uint32Array
+  // signed bp length change per feature (the `lengthField` slot): positive is an
+  // insertion the reference span understates, negative a deletion. **Length 0
+  // when the slot is unset**, which is the render side's gate for the whole
+  // indel-glyph pass — so read it as `featureDeltas.length === featureStarts
+  // .length`, never as "index i is 0 so this feature has no indel" (0 is also a
+  // legitimate reference-length allele).
+  featureDeltas: Int32Array
   partitionValues: string[]
   featurePartitionIndex: Uint32Array
   // per-feature display name (feature `name` attribute), for hover tooltips

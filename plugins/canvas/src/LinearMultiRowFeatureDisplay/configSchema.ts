@@ -76,6 +76,35 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Feature attribute holding a **signed bp length change** against the
+       * reference, which turns on alignment-style indel glyphs over the blocks:
+       * a positive value draws the insertion marker `plugins/alignments` and
+       * `plugins/maf` draw (a bar whose width follows the length, with the bp
+       * count when the row is tall enough), a negative one draws a deletion line
+       * across the block, and 0 draws nothing.
+       *
+       * This exists because a block's own width can only ever show how much
+       * *reference* a feature covers. An insertion covers almost none of it, so
+       * a 113 kb allele and a 1 bp one draw identically without this — the
+       * length has to come from a separate attribute.
+       *
+       * Empty (the default) leaves the display a plain block painter.
+       *
+       * #example
+       * A pangenome-graph path BED, where `delta` is each haplotype's bp gained
+       * or lost at that bubble (`scripts/build_minigraph_paths.sh`):
+       * ```js
+       * { partitionField: 'strain', lengthField: 'delta' }
+       * ```
+       */
+      lengthField: {
+        type: 'string',
+        defaultValue: '',
+        description:
+          'feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off',
+      },
+      /**
+       * #slot
        * Per-block fill: a CSS color, or a `jexl:` expression for per-feature
        * coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). Unset,
        * a feature's own `itemRgb` is used if it has one, and otherwise each row

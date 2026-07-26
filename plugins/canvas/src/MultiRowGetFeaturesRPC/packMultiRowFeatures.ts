@@ -80,12 +80,14 @@ export function makeFeatureColorResolver(
 export function packMultiRowFeatures({
   features,
   partitionField,
+  lengthField,
   colorConfig,
   jexl,
   report,
 }: {
   features: Feature[]
   partitionField: string
+  lengthField: string
   colorConfig: string | undefined
   jexl: JexlInstance
   report?: ProgressReporter
@@ -95,6 +97,11 @@ export function packMultiRowFeatures({
   const featureEnds = new Uint32Array(n)
   const featureColors = new Uint32Array(n)
   const featurePartitionIndex = new Uint32Array(n)
+  // Length-zero when the slot is unset, which is how the render side knows the
+  // indel-glyph pass is off — cheaper than a parallel boolean, and it can't
+  // disagree with the array it gates.
+  const packDeltas = lengthField !== ''
+  const featureDeltas = new Int32Array(packDeltas ? n : 0)
   const featureNames: string[] = new Array(n)
   const featureIds: string[] = new Array(n)
   const partitionValues: string[] = []
@@ -112,6 +119,14 @@ export function packMultiRowFeatures({
     featureIds[i] = feature.id()
     const name = feature.get('name')
     featureNames[i] = typeof name === 'string' ? name : ''
+
+    if (packDeltas) {
+      // A BED column arrives as a string or a number depending on the parser, so
+      // coerce either way; anything unparseable is 0, which draws no glyph rather
+      // than a glyph of garbage length.
+      const num = Number(feature.get(lengthField))
+      featureDeltas[i] = Number.isFinite(num) ? num : 0
+    }
 
     const raw = feature.get(partitionField)
     const value = raw === undefined || raw === null ? '' : String(raw)
@@ -131,6 +146,7 @@ export function packMultiRowFeatures({
     featureStarts,
     featureEnds,
     featureColors,
+    featureDeltas,
     partitionValues,
     featurePartitionIndex,
     featureNames,

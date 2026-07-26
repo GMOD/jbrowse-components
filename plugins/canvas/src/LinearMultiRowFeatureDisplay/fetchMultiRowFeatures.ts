@@ -57,6 +57,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
         region,
         byteLimit,
         partitionField: self.partitionField,
+        lengthField: self.lengthField,
         colorConfig: self.colorConfig,
         stopToken: ctx.stopToken,
         // keyed by region so the parallel per-region fetches aggregate into one

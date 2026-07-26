@@ -216,6 +216,15 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Feature attribute holding a signed bp length change vs the reference.
+       * Empty = the indel-glyph pass is off. A fetch input: it decides whether
+       * the worker packs `featureDeltas` at all.
+       */
+      get lengthField(): string {
+        return readConfObject(self.conf, 'lengthField')
+      },
+      /**
+       * #getter
        * Optional explicit row order from config; values listed here are placed
        * first, remaining discovered values follow in sorted order.
        */
@@ -477,6 +486,23 @@ export default function stateModelFactory(
         }
       },
       /**
+       * #getter
+       * Per-region data for the indel-glyph overlay, or undefined when the
+       * `lengthField` slot is unset and there is no glyph pass.
+       *
+       * A computed returning a plain `Map` rather than `rpcDataMap` itself: the
+       * overlay draws inside an effect, so nothing it touches there is tracked,
+       * and handing it the ObservableMap would mean a refetch never redrew the
+       * glyphs. Rebuilding here makes the read happen where MobX sees it and
+       * gives the overlay a value whose identity changes exactly when the data
+       * does.
+       */
+      get indelGlyphRegions() {
+        return self.lengthField
+          ? new Map<number, MultiRowRegionData>(self.rpcDataMap.entries())
+          : undefined
+      },
+      /**
        * #method
        * Fetch-input cache keys (tier-1, via SettingsInvalidate → refetch).
        * Color is resolved in the worker, so the raw color slot is a key.
@@ -484,6 +510,7 @@ export default function stateModelFactory(
       rpcProps() {
         return {
           partitionField: self.partitionField,
+          lengthField: self.lengthField,
           colorConfig: self.colorConfig,
         }
       },
