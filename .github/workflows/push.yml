@@ -138,6 +138,14 @@ jobs:
             git diff packages/core/package.json
             exit 1
           fi
+      # Only component_tests/*/packed/ is uploaded to the component-test job,
+      # which runs off a fresh checkout — so it installs from the *committed*
+      # manifests and pack.ts's rewrite never reaches it. Without this, a new
+      # cross-package dependency edge falls through to the npm registry for an
+      # unpublished version and only surfaces when that job fails, one missing
+      # name per run.
+      - name: Check component-test pins cover the dependency closure
+        run: pnpm gen-component-test-pins --check
       - name: Check guide indexes are up to date
         run: node website/scripts/generate-guide-indexes.ts --check
       - name: Check README-derived docs are up to date
