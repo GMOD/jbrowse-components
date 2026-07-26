@@ -22,8 +22,7 @@
 #
 # Requires: docker (the pggb image, which also carries odgi for the depth
 #           projection, and the cactus image for minigraph/gfatools), the NCBI
-#           `datasets` CLI, samtools, taffy (the
-#           Cactus/taffy toolkit), bedGraphToBigWig (UCSC kentUtils), python3,
+#           `datasets` CLI, samtools, bedGraphToBigWig (UCSC kentUtils), python3,
 #           bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx unless
 #           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
@@ -125,14 +124,16 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 sed "s/${REF}#1#chr/chr/g" pggb/*.smooth.final."$REF".vcf | bgzip > ecoli_pggb.vcf.gz
 tabix -f -p vcf ecoli_pggb.vcf.gz
 
-# ── Projection 3: whole-genome MAF, re-rooted on REF, as a bgzipped TAF ───────
+# ── Projection 3: whole-genome MAF, re-rooted on REF, as a tabixed BED ────────
 # pggb's -M MAF orders each block from its longest path, so row 0 is not a fixed
-# reference; JBrowse indexes a MAF on row 0, so re-root every block on REF (drop
-# blocks that lack it, flip blocks where REF is on '-'), then rename PanSN
-# 'sample#1#chr' -> 'sample.chr' (JBrowse splits the species off on the '.').
+# reference; a MAF track indexes on row 0, so re-root every block on REF (drop
+# blocks that lack it, flip blocks where REF is on '-', give each REF row in a
+# repeat-collapsed block its own block), then rename PanSN 'sample#1#chr' ->
+# 'sample.chr' (JBrowse splits the species off on the '.').
 python3 "$SCRIPT_DIR/reroot_maf.py" "$(ls pggb/*.smooth.maf)" ecoli_pggb.maf "${REF}#1#chr"
-taffy view -i ecoli_pggb.maf -o ecoli_pggb.taf.gz -c
-taffy index -i ecoli_pggb.taf.gz
+python3 "$SCRIPT_DIR/maf_to_bed.py" ecoli_pggb.maf ecoli_pggb.maf.bed
+bgzip -f ecoli_pggb.maf.bed
+tabix -f -p bed ecoli_pggb.maf.bed.gz
 
 # ── Projection 4: pangenome depth (core vs accessory) as a bigWig ─────────────
 # odgi depth counts how many path-steps traverse the graph nodes under each REF
@@ -291,10 +292,10 @@ jb add-track-json ava_track.json --update --out "$APP"
 jb add-track ecoli_pggb.vcf.gz --trackId ecoli_pggb_variants \
   --name "pggb graph: pangenome variants (vs K12)" -a K12 --load copy --force --out "$APP"
 
-# projection 3: whole-genome MAF (BgzipTaffyAdapter carries the sample list).
-# add-track-json takes a file/inline JSON (no --load copy), so drop the taf files
+# projection 3: whole-genome MAF (MafTabixAdapter carries the sample list).
+# add-track-json takes a file/inline JSON (no --load copy), so drop the bed files
 # beside config.json where the relative uris point.
-cp ecoli_pggb.taf.gz ecoli_pggb.taf.gz.tai "$APP/"
+cp ecoli_pggb.maf.bed.gz ecoli_pggb.maf.bed.gz.tbi "$APP/"
 cat > maf_track.json <<'JSON'
 {
   "type": "MafTrack",
@@ -302,10 +303,13 @@ cat > maf_track.json <<'JSON'
   "name": "pggb graph: whole-genome alignment (MAF, vs K12)",
   "assemblyNames": ["K12"],
   "adapter": {
-    "type": "BgzipTaffyAdapter",
+    "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "tafGzLocation": { "uri": "ecoli_pggb.taf.gz" },
-    "taiLocation": { "uri": "ecoli_pggb.taf.gz.tai" }
+    "bedGzLocation": { "uri": "ecoli_pggb.maf.bed.gz" },
+    "index": {
+      "indexType": "TBI",
+      "location": { "uri": "ecoli_pggb.maf.bed.gz.tbi" }
+    }
   }
 }
 JSON

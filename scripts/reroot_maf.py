@@ -2,15 +2,17 @@
 """Re-root a pggb/smoothxg MAF on a chosen reference path.
 
 pggb's `-M` MAF orders each block's rows from the longest path, so row 0 is not a
-fixed reference. JBrowse (and taffy's .tai) index a MAF on row 0's coordinates,
-so every block must be rooted on the same genome. This:
+fixed reference. A MAF track indexes on row 0's coordinates, so every block must
+be rooted on the same genome. This:
   - keeps only blocks that contain the reference path,
   - reverse-complements a block when the reference row is on '-' so the reference
     is always '+',
   - emits one block per reference row, each rooted on its own copy,
-  - sorts blocks by reference start (required for the tabix-style .tai),
+  - sorts blocks by reference start (what an interval index needs),
   - renames PanSN 'sample#1#contig' -> 'sample.contig' (JBrowse splits the
     species off on the first '.').
+
+Feed the output to maf_to_bed.py, then bgzip + tabix, for a MafTabixAdapter track.
 
 Where the reference path traverses a collapsed repeat, one pggb block carries
 several rows for it (48 of the 4,736 blocks in the five-strain E. coli graph, up
@@ -18,45 +20,27 @@ to five in one block). THREE things have been tried here. Splitting is the one
 that stuck; do not re-apply either of the other two without re-running the
 measurements below.
 
-Splitting one block per reference row: KEPT. taffy's .tai files a block under row
-0's coordinates only, and its iterator stops scanning on file offset
-(`file_pos >= tair_2->file_pos` in impl/tai.c), so a surplus copy is unreachable
-by region query as long as it shares a block, and it cannot be indexed in place
-without breaking that offset ordering. Giving each copy its own block, then
-sorting as this script already does, is the fix. Measured on the five-strain
-graph, walking the whole axis in 100 kb windowed queries against a full stream:
-unreachable K12 positions 1,773 -> 0, and K12 stream coverage 4,640,495 ->
-4,641,652 (complete). 4,736 blocks -> 4,791, file 3.82 MB -> 3.89 MB. The
-non-reference strains churn by under 0.05% in both directions (Sakai +4,892,
-NCTC86 +962, CFT073 -1,592, IAI39 -2,086) purely from taffy's re-blocking: at the
-MAF level, before taffy, per-strain coverage is byte-for-byte identical to the
-unsplit output, so this script loses nothing. Upstream issue:
-https://github.com/ComparativeGenomicsToolkit/taffy/issues/89
+Splitting one block per reference row: KEPT. A block is found through row 0's
+interval alone, whether that index is a tabix BED line or a taffy .tai record, so
+a surplus copy sharing a block cannot be retrieved by a region query. One block
+per copy makes each one reachable. Measured on the five-strain graph by walking
+the whole axis in 100 kb windowed queries against a full stream: unreachable K12
+positions 1,773 -> 0, K12 coverage complete at 4,641,652, and 4,736 blocks ->
+4,791 for +2% of file size.
 
 Dropping the surplus rows: rejected, fixes nothing. The theory was "JBrowse maps
 a row to a sample by name, so a second reference-named row collides in that
-sample's lane". It does not: BgzipTaffyAdapter's blockToFeature keys
-`alignments` by assembly name (tafParsing.ts), so a duplicate silently
-overwrites — last row wins, one lane, no collision. Verified by calling
-blockToFeature on a two-K12-row block. Several rows per species is legal MAF
-anyway; it is how paralogy is represented. Dropping them cost 20,822 bases,
-0.45% of K12, gone from a file people download, to fix a bug that did not exist.
+sample's lane". It does not: the MAF adapters key `alignments` by assembly name,
+so a duplicate silently overwrites — last row wins, one lane, no collision.
+Several rows per species is legal MAF anyway; it is how paralogy is represented.
+Dropping them cost 20,822 bases, 0.45% of K12, gone from a file people download,
+to fix a bug that did not exist.
 
-Anchoring on the LEFTMOST reference row instead of the first: rejected,
-measurably worse. It is the more principled choice — the .tai sorts on row 0, so
-row 0 arguably should be the leftmost copy — but taffy re-blocks the alignment
-during `taffy view`, and its TAF encoding is differential across consecutive
-blocks, so changing the anchor of 20 blocks perturbs the encoding globally. It
-produced out-of-order blocks in taffy's own output and lost region queries that
-the current form answers (2/300 vs 1/300 random K12 positions on one seed,
-3/300 vs 0/300 on another; never better on any position). Correct-looking input
-does not survive taffy's re-blocking, so leave the anchor alone.
-
-The 431 overlapping blocks an earlier revision blamed on pggb are the same
-artifact: they appear only after `taffy view`, not in pggb's output. The raw MAF
-has 4,791 K12 rows covering 4,641,600 of 4,641,652 bases with ONE overlapping
-pair and 52 doubly-covered bases — already almost exactly a partition. (That
-revision also claimed 13.6% of K12 was covered twice. It is not.)
+Anchoring on the LEFTMOST reference row instead of the first: rejected, measurably
+worse when the demo went through taffy, which re-blocks the alignment with a
+differential encoding, so re-anchoring 20 blocks perturbed it globally and lost
+region queries the current form answers. The demo no longer uses taffy, so this is
+history rather than a live constraint, but nothing recommends leftmost either.
 
 MEASURING THIS CORRECTLY IS THE HARD PART, and three passes got it wrong. A row
 with strand '-' covers [srcsize-start-size, srcsize-start), NOT [start,
@@ -65,11 +49,6 @@ region query returns whole blocks, so a returned row must be clipped to the
 queried window before it counts as reachable, or coverage retrieved by a query
 for some other locus is credited to this one. Get either wrong and the answer
 moves by thousands of positions. See agent-docs/guides/TAFFY_INDEX_GAPS_HANDOFF.md.
-
-Reproducibility: the HOSTED .taf.gz predates the split and has md5 d64c811a…;
-rebuilding with this script now gives 461e60e4d3e50cd82e5b1204cb3d3bfb. The
-hosted demo has not been regenerated yet, so that md5 is the tripwire for the
-NEXT change, not a check that this script still matches production.
 
 Usage: reroot_maf.py <in.maf> <out.maf> [reference_path]   (default K12#1#chr)
 """

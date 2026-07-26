@@ -11,6 +11,7 @@ Usage: python3 scripts/check-build-scripts.py
 """
 import ast
 import glob
+import io
 import importlib.util
 import json
 import os
@@ -110,11 +111,12 @@ def load(path, name):
 # reroot_maf.py: a repeat-collapsed block carries several reference rows. Three
 # treatments have been tried; these pin the surviving one and the two reverted
 # ones (module docstring):
-#   - SPLIT into one block per reference row. taffy's .tai files a block under row
-#     0 only, so a copy sharing a block is unreachable by region query.
-#   - keep every row in every emitted block. BgzipTaffyAdapter keys `alignments`
-#     by sample name, so a duplicate is one lane at display time; dropping
-#     deletes data to fix nothing.
+#   - SPLIT into one block per reference row. Any MAF index keys a block on row 0
+#     (a .tai record, a tabix BED interval), so a copy sharing a block is
+#     unreachable by region query.
+#   - keep every row in every emitted block. The adapters key `alignments` by
+#     sample name, so a duplicate is one lane at display time; dropping deletes
+#     data to fix nothing.
 #   - anchor the first emitted block on the FIRST reference row, not the leftmost.
 #     Leftmost perturbs taffy's differential TAF encoding and loses region
 #     queries.
@@ -142,6 +144,22 @@ check("reroot normalizes the reference to '+'", kept[0][0][4], "+")
 check("reroot remaps the flipped start", kept[0][0][2], str(1000 - 100 - 10))
 check("reroot drops a block with no reference row",
       list(reroot_maf.reroot([row("other#1#chr", 20)])), [])
+
+# maf_to_bed.py: MafTabixAdapter reads column 6 as comma-separated
+# sample.chr:start:size:strand:srcSize:seq, and finds a block by the interval on
+# the line, which is row 0's. Pin the encoding and that a block becomes one line.
+sys.argv = ["maf_to_bed.py", "-", "-"]
+maf_to_bed = load("scripts/maf_to_bed.py", "maf_to_bed")
+blocks = list(maf_to_bed.parse_blocks(io.StringIO(
+    "a\ns\tREF.chr\t500\t10\t+\t1000\tAAAAAAAAAA\n"
+    "s\tother.chr\t20\t10\t-\t1000\tCCCCCCCCCC\n\n"
+    "a\ns\tREF.chr\t600\t10\t+\t1000\tGGGGGGGGGG\n")))
+check("maf_to_bed reads one block per 'a' line", len(blocks), 2)
+check("maf_to_bed spans row 0's interval", maf_to_bed.bed_line(blocks[0])[:3],
+      ("chr", 500, 510))
+check("maf_to_bed encodes every row, strand and srcSize kept",
+      maf_to_bed.bed_line(blocks[0])[3],
+      "REF.chr:500:10:+:1000:AAAAAAAAAA,other.chr:20:10:-:1000:CCCCCCCCCC")
 
 # gfa_nodes_to_bed.py: itemRgb has to be the graph view's own viridis Depth ramp
 # sampled over the subgraph's min/max, or the linear strip stops matching the

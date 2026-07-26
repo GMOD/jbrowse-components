@@ -45,8 +45,7 @@ Python ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or R
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- `samtools`, [`taffy`](https://github.com/ComparativeGenomicsToolkit/taffy),
-  `bedGraphToBigWig` (UCSC kentUtils)
+- `samtools`, `bedGraphToBigWig` (UCSC kentUtils)
 - `python3`, htslib (`bgzip`, `tabix`), `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
@@ -352,6 +351,12 @@ since those have no reference coordinates of their own to draw at.
 
 <Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins." src="/img/pangenome/rgfa_hover_correspondence.png" />
 
+The reverse works from any track, not just the graph's own segments. A gene
+gives only a coordinate, and that is enough: rGFA segments do not overlap on a
+stable sequence, so one backbone segment covers it.
+
+<Figure caption="Hovering the gene csgG in the linear view brightens the backbone segment covering it in the graph, and the graph reports that segment's span back as the band across the linear view. The tooltip names it: s406, 36,989 bp." src="/img/pangenome/rgfa_hover_from_linear.png" />
+
 ### Which strain takes which path
 
 The two indexes above say what the graph contains, not who carries what: rGFA's
@@ -636,14 +641,14 @@ is a short script that ships with the reproducible build below. One block per
 reference row matters because an index keys a block on its first row, so a
 repeat's second copy is only queryable once it anchors a block of its own.
 
-Then convert the MAF to the bgzipped-TAF the
-[`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter) reads, with
-[taffy](https://github.com/ComparativeGenomicsToolkit/taffy) from the Cactus
-toolkit (the same tool that turns a `hal2maf` MAF into TAF):
+Then convert the MAF to the tabix-indexed BED the
+[`MafTabixAdapter`](/docs/config/maftabixadapter) reads, one line per block
+carrying that block's rows:
 
 ```bash
-taffy view -i ecoli_pggb.maf -o ecoli_pggb.taf.gz -c   # -c bgzips
-taffy index -i ecoli_pggb.taf.gz                        # -> .taf.gz.tai
+python3 maf_to_bed.py ecoli_pggb.maf ecoli_pggb.maf.bed
+bgzip ecoli_pggb.maf.bed
+tabix -p bed ecoli_pggb.maf.bed.gz
 ```
 
 ```json
@@ -653,12 +658,23 @@ taffy index -i ecoli_pggb.taf.gz                        # -> .taf.gz.tai
   "name": "pggb graph: whole-genome alignment (MAF, vs K12)",
   "assemblyNames": ["K12"],
   "adapter": {
-    "type": "BgzipTaffyAdapter",
+    "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "uri": "ecoli_pggb.taf.gz"
+    "bedGzLocation": { "uri": "ecoli_pggb.maf.bed.gz" },
+    "index": {
+      "indexType": "TBI",
+      "location": { "uri": "ecoli_pggb.maf.bed.gz.tbi" }
+    }
   }
 }
 ```
+
+A MAF track also reads [bgzipped TAF](/docs/config/bgziptaffyadapter) (what
+[taffy](https://github.com/ComparativeGenomicsToolkit/taffy) writes, used by the
+[Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus)) and
+[BigMaf](/docs/config/bigmafadapter). Tabix suits this graph: pggb collapses
+repeats, so several blocks share reference coordinates, and a tabix interval
+index handles that directly.
 
 <Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb spanning the fim, mcr and hsd loci: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12, with the variant calls above. Where a row goes blank the strain has no alignment to K12 at all, so the accessory structure and the SNP divergence read in the same picture. Numbered boxes are insertions, labeled with the bases the allele adds beyond K12. An insertion consumes no reference, so its length can only be drawn as a marker." src="/img/pangenome/maf.png" />
 
