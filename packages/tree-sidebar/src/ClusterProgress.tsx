@@ -24,7 +24,7 @@ export default function ClusterProgress({
   status,
   onStop,
 }: {
-  status: RpcStatus
+  status?: RpcStatus
   onStop: () => void
 }) {
   const fraction = statusFraction(status)

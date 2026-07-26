@@ -1,0 +1,173 @@
+import { createTestEnvironment, makeSource } from './testEnv.ts'
+
+import type { MenuItem } from '@jbrowse/core/ui'
+
+// Driven off a real display instance rather than a structural stand-in: the menu
+// is built inline in the model's `trackMenuItems`, and its gates read getters
+// (`isOverlay`, `sourcesWithoutLayout`, `clusterTree`) that a stub would have to
+// restate — and then wouldn't notice drifting from.
+function makeDisplay({
+  sources = ['a', 'b'],
+  renderingType,
+  clusterTree,
+}: {
+  sources?: string[]
+  renderingType?: string
+  clusterTree?: string
+} = {}) {
+  const { createDisplay } = createTestEnvironment()
+  const { display, session } = createDisplay()
+  display.setRpcData(0, { sources: sources.map(makeSource) })
+  if (renderingType) {
+    display.setRenderingType(renderingType)
+  }
+  if (clusterTree) {
+    display.setClusterTree(clusterTree)
+  }
+  return { display, session }
+}
+
+function labels(items: MenuItem[]) {
+  return items.flatMap(i => ('label' in i ? [i.label] : []))
+}
+
+function subMenuOf(items: MenuItem[], label: string) {
+  const item = items.find(i => 'label' in i && i.label === label)
+  if (item && 'subMenu' in item) {
+    return item.subMenu
+  } else {
+    throw new Error(`submenu "${label}" not found`)
+  }
+}
+
+function itemIn(items: MenuItem[], label: string) {
+  const item = items.find(i => 'label' in i && i.label === label)
+  if (item) {
+    return item
+  } else {
+    throw new Error(`item "${label}" not found`)
+  }
+}
+
+describe('multi-wiggle Clustering submenu', () => {
+  it('offers the run item and both tree controls in a row mode', () => {
+    const { display } = makeDisplay({ renderingType: 'multirowxy' })
+    const subMenu = subMenuOf(display.trackMenuItems(), 'Clustering')
+
+    expect(labels(subMenu)).toEqual([
+      'Cluster rows by score...',
+      'Show tree',
+      'Tree branch lengths',
+    ])
+  })
+
+  it('drops both tree controls in an overlay mode, where no dendrogram draws', () => {
+    const { display } = makeDisplay({
+      renderingType: 'multixyplot',
+      clusterTree: '(b,a);',
+    })
+
+    // the tree is hidden because overlay collapses every source onto one row —
+    // `hierarchy` is the gate, and these controls follow it
+    expect(display.hierarchy).toBeUndefined()
+    // "Clear clustering" stays: it resets the row order, which still matters for
+    // the row mode the user will switch back to
+    expect(labels(subMenuOf(display.trackMenuItems(), 'Clustering'))).toEqual([
+      'Cluster rows by score...',
+      'Clear clustering (reset row order)',
+    ])
+  })
+
+  it('keeps the tree controls once a clustered row mode comes back', () => {
+    const { display } = makeDisplay({
+      renderingType: 'multixyplot',
+      clusterTree: '(b,a);',
+    })
+    display.setRenderingType('multirowxy')
+
+    expect(display.hierarchy).toBeDefined()
+    expect(labels(subMenuOf(display.trackMenuItems(), 'Clustering'))).toContain(
+      'Show tree',
+    )
+  })
+
+  it('refuses to cluster a single subtrack instead of opening a dialog that would', () => {
+    const { display } = makeDisplay({
+      sources: ['a'],
+      renderingType: 'multirowxy',
+    })
+    const item = itemIn(
+      subMenuOf(display.trackMenuItems(), 'Clustering'),
+      'Cluster rows by score...',
+    )
+
+    expect(item).toMatchObject({
+      disabled: true,
+      disabledHelpText: 'Needs at least two subtracks to cluster',
+    })
+  })
+
+  it('refuses to cluster in an overlay mode, which has no rows to reorder', () => {
+    const { display } = makeDisplay({ renderingType: 'multixyplot' })
+    const item = itemIn(
+      subMenuOf(display.trackMenuItems(), 'Clustering'),
+      'Cluster rows by score...',
+    )
+
+    expect(item).toMatchObject({
+      disabled: true,
+      disabledHelpText: 'Only available for multi-row rendering types',
+    })
+  })
+
+  it('offers a way out of a clustered row order only once there is one', () => {
+    const { display } = makeDisplay({ renderingType: 'multirowxy' })
+    expect(
+      labels(subMenuOf(display.trackMenuItems(), 'Clustering')),
+    ).not.toContain('Clear clustering (reset row order)')
+
+    display.setClusterTree('(b,a);')
+    const subMenu = subMenuOf(display.trackMenuItems(), 'Clustering')
+    expect(labels(subMenu)).toContain('Clear clustering (reset row order)')
+
+    const item = itemIn(subMenu, 'Clear clustering (reset row order)')
+    if ('onClick' in item) {
+      item.onClick()
+    }
+    expect(display.clusterTree).toBeUndefined()
+  })
+})
+
+describe('multi-wiggle track menu', () => {
+  it('opens the color editor on the display itself', () => {
+    const { display, session } = makeDisplay()
+    const item = itemIn(display.trackMenuItems(), 'Edit colors/arrangement...')
+    if ('onClick' in item) {
+      item.onClick()
+    }
+
+    expect(session.queuedDialogs).toHaveLength(1)
+    expect(session.queuedDialogs[0]![1]).toMatchObject({ model: display })
+  })
+
+  it('offers the overlay legend toggle only where a color key means anything', () => {
+    const overlay = makeDisplay({ renderingType: 'multixyplot' }).display
+    expect(labels(subMenuOf(overlay.trackMenuItems(), 'Show'))).toContain(
+      'Show legend',
+    )
+
+    // one source needs no key, and multirow identifies sources by row label
+    const oneSource = makeDisplay({
+      sources: ['a'],
+      renderingType: 'multixyplot',
+    }).display
+    expect(labels(subMenuOf(oneSource.trackMenuItems(), 'Show'))).not.toContain(
+      'Show legend',
+    )
+
+    const row = makeDisplay({ renderingType: 'multirowxy' }).display
+    expect(labels(subMenuOf(row.trackMenuItems(), 'Show'))).not.toContain(
+      'Show legend',
+    )
+  })
+})

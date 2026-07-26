@@ -30,6 +30,7 @@ import {
   applyColorPalette,
   buildSpatialIndex,
   computeClusterHierarchy,
+  filterRowsBySubtree,
 } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
@@ -888,14 +889,10 @@ export default function MultiSampleVariantBaseModelF(
             layout: self.layout.length ? self.layout : undefined,
             renderingMode: 'alleleCount',
           })
-          if (!self.subtreeFilter?.length) {
-            return base
-          }
-          const filterSet = new Set(self.subtreeFilter)
-          // Use s.name (not s.sampleName): phased clustering stores haplotype
-          // names ("HG001 HP0") as tree leaves and subtreeFilter contains those
-          // names. In alleleCount mode s.name === s.sampleName, so both work.
-          return base.filter(s => filterSet.has(s.name))
+          // filterRowsBySubtree keys on `name`, not `sampleName`: phased
+          // clustering stores haplotype names ("HG001 HP0") as tree leaves and
+          // that is what subtreeFilter holds.
+          return filterRowsBySubtree(base, self.subtreeFilter)
         },
       }))
       .views(self => ({

@@ -1,11 +1,14 @@
 import { ErrorBanner } from '@jbrowse/core/ui'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { ClusterProgress, useClusterRun } from '@jbrowse/tree-sidebar'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ClusterProgress from './ClusterProgress.tsx'
-import { useClusterRun } from './useClusterRun.ts'
+import { runGenotypeClustering } from '../../runGenotypeClustering.ts'
 
 import type { ReducedModel } from './types.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ClusterDialogAuto = observer(function ClusterDialogAuto({
   model,
@@ -18,7 +21,25 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
 }) {
   const { status, loading, error, run, stop } = useClusterRun({
     model,
-    onSuccess: handleClose,
+    onSuccess: () => {
+      handleClose()
+    },
+    run: async ({ stopToken, statusCallback }) => {
+      const view = getContainingView(model) as LinearGenomeViewModel
+      if (!view.initialized) {
+        throw new Error(
+          'The view is not initialized yet, please wait and try again',
+        )
+      }
+      await runGenotypeClustering({
+        model,
+        rpcManager: getSession(model).rpcManager,
+        sessionId: getRpcSessionId(model),
+        regions: view.dynamicBlocks.contentBlocks,
+        stopToken,
+        statusCallback,
+      })
+    },
   })
   const { sourcesVolatile, renderingMode } = model
   const isHaplotypeClustering = renderingMode === 'phased'
@@ -33,7 +54,14 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
           </div>
         ) : null}
         <div>
-          {loading ? <ClusterProgress status={status} onStop={stop} /> : null}
+          {loading ? (
+            <ClusterProgress
+              status={status}
+              onStop={() => {
+                stop()
+              }}
+            />
+          ) : null}
           {error ? <ErrorBanner error={error} /> : null}
         </div>
       </DialogContent>
@@ -41,7 +69,9 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
         <Button
           variant="contained"
           disabled={loading || !sourcesVolatile}
-          onClick={run}
+          onClick={() => {
+            void run()
+          }}
         >
           Run clustering
         </Button>
@@ -49,8 +79,8 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
           variant="contained"
           color="secondary"
           onClick={() => {
-            handleClose()
             stop()
+            handleClose()
           }}
         >
           Cancel

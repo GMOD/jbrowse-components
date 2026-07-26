@@ -1,0 +1,87 @@
+import { useEffect, useState } from 'react'
+
+import { isAbortException } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { isAlive } from '@jbrowse/mobx-state-tree'
+
+import type { RpcStatus } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+/**
+ * Owns one cluster run's lifecycle for a "Run clustering" dialog: start it,
+ * report its status, stop it, and abort it if the dialog goes away. Not
+ * `useFetch` — that fires off a key and has no cancellation or status channel,
+ * whereas this run is button-triggered and stoppable mid-flight.
+ *
+ * `run` does the display-specific RPC with the token and status sink it's
+ * handed. It should **throw** for preconditions (an uninitialized view, too few
+ * rows to cluster) so they land in the same error state as an RPC failure
+ * instead of needing their own branch here.
+ *
+ * The effect is why this is a hook and not a plain object: aborting an in-flight
+ * worker call when the component goes away is cleanup of something outside
+ * React. Re-subscribing per token keeps the cleanup holding the live one; the
+ * cleanup that fires when a run ends and clears the token stops something
+ * already finished, which is a no-op. Dialogs still call `stop()` from their
+ * Cancel button — that's the direct expression of the user's intent, and this
+ * covers every other way the dialog can disappear (title-bar X, Escape, the
+ * display being removed mid-run).
+ */
+export function useClusterRun({
+  model,
+  onSuccess,
+  run,
+}: {
+  // read only for `isAlive`: a run that failed because its display went away
+  // has no dialog to report an error into
+  model: IAnyStateTreeNode
+  onSuccess: () => void
+  run: (args: {
+    stopToken: StopToken
+    statusCallback: (arg: RpcStatus) => void
+  }) => Promise<void>
+}) {
+  const [status, setStatus] = useState<RpcStatus>()
+  const [error, setError] = useState<unknown>()
+  const [loading, setLoading] = useState(false)
+  const [stopToken, setStopToken] = useState<StopToken>()
+
+  useEffect(
+    () => () => {
+      stopStopToken(stopToken)
+    },
+    [stopToken],
+  )
+
+  return {
+    status,
+    error,
+    loading,
+    stop: () => {
+      stopStopToken(stopToken)
+    },
+    run: async () => {
+      const token = createStopToken()
+      try {
+        setError(undefined)
+        setStatus('Initializing')
+        setLoading(true)
+        setStopToken(token)
+        await run({ stopToken: token, statusCallback: setStatus })
+        // success unmounts the dialog, so there is no progress state left to
+        // reset — only the catch below (a real error, or Stop) has a dialog to
+        // put back in order
+        onSuccess()
+      } catch (e) {
+        setLoading(false)
+        setStatus(undefined)
+        setStopToken(undefined)
+        if (!isAbortException(e) && isAlive(model)) {
+          console.error(e)
+          setError(e)
+        }
+      }
+    },
+  }
+}

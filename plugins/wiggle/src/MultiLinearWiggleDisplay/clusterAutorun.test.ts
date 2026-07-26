@@ -1,35 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
-import { createTestEnvironment } from './testEnv.ts'
-
-import type { WiggleDataResult, WiggleSourceData } from '../util.ts'
-
-// A minimal but fully-typed zero-feature source — this test only cares that
-// `sourcesVolatile` gets populated (which unblocks clustering), not the
-// feature arrays themselves.
-function makeSource(name: string): WiggleSourceData {
-  return {
-    name,
-    featurePositions: new Uint32Array(0),
-    featureScores: new Float32Array(0),
-    featureMinScores: new Float32Array(0),
-    featureMaxScores: new Float32Array(0),
-    numFeatures: 0,
-    hasSummaryScores: false,
-    posFeaturePositions: new Uint32Array(0),
-    posFeatureScores: new Float32Array(0),
-    posNumFeatures: 0,
-    negFeaturePositions: new Uint32Array(0),
-    negFeatureScores: new Float32Array(0),
-    negNumFeatures: 0,
-  }
-}
-
-// RenderMultiWiggleData is batched — one call for every visible region — so the
-// result is an array with one entry per requested region.
-function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
-  return [{ sources: names.map(makeSource) }]
-}
+import { createTestEnvironment, makeMultiWiggleData } from './testEnv.ts'
 
 beforeEach(() => {
   jest.useFakeTimers()

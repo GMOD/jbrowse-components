@@ -17,8 +17,36 @@ import {
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
+import type { WiggleDataResult, WiggleSourceData } from '../util.ts'
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+// A minimal but fully-typed zero-feature source: enough to populate
+// `sourcesVolatile` (which is what unblocks clustering and the row-count menu
+// gates), with no features to render.
+export function makeSource(name: string): WiggleSourceData {
+  return {
+    name,
+    featurePositions: new Uint32Array(0),
+    featureScores: new Float32Array(0),
+    featureMinScores: new Float32Array(0),
+    featureMaxScores: new Float32Array(0),
+    numFeatures: 0,
+    hasSummaryScores: false,
+    posFeaturePositions: new Uint32Array(0),
+    posFeatureScores: new Float32Array(0),
+    posNumFeatures: 0,
+    negFeaturePositions: new Uint32Array(0),
+    negFeatureScores: new Float32Array(0),
+    negNumFeatures: 0,
+  }
+}
+
+// RenderMultiWiggleData is batched — one call for every visible region — so the
+// result is an array with one entry per requested region.
+export function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
+  return [{ sources: names.map(makeSource) }]
+}
 
 // Shared display-instantiation harness: builds a PluginManager with a
 // MultiQuantitativeTrack + MultiLinearWiggleDisplay and a minimal
@@ -100,6 +128,9 @@ export function createTestEnvironment() {
       configuration: types.map(types.frozen()),
     })
     .volatile(() => ({
+      // what queueDialog was called with, resolved to [Component, props] so a
+      // test can assert on the props a menu item passes its dialog
+      queuedDialogs: [] as [unknown, Record<string, unknown>][],
       rpcManager: {
         call: mockRpcCall,
       },
@@ -134,7 +165,11 @@ export function createTestEnvironment() {
         return view
       },
       notifyError() {},
-      queueDialog() {},
+      queueDialog(
+        cb: (handleClose: () => void) => [unknown, Record<string, unknown>],
+      ) {
+        self.queuedDialogs.push(cb(() => {}))
+      },
     }))
 
   function createDisplay(displaySnapshot?: Record<string, unknown>) {

@@ -24,6 +24,8 @@ export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 export { clusterProgressStatus } from './clusterProgressStatus.ts'
 export type { RpcMethodCaller } from './rpcMethodCaller.ts'
 export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
+export { default as ClusterProgress } from './ClusterProgress.tsx'
+export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
   clusteringMenuItem,

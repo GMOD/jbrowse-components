@@ -1,13 +1,16 @@
-import { ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
-import { statusFraction, statusProgressLabel } from '@jbrowse/core/util'
+import { ErrorBanner } from '@jbrowse/core/ui'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { ClusterProgress, useClusterRun } from '@jbrowse/tree-sidebar'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { runWiggleClustering } from '../../runWiggleClustering.ts'
 import SamplesPerPixelField from './SamplesPerPixelField.tsx'
 import { useClusterSamplingOptions } from './clusterOptions.ts'
-import { useWiggleClusterRun } from './useWiggleClusterRun.ts'
 
 import type { ReducedModel } from './types.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   model,
@@ -20,11 +23,29 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
 }) {
   const { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel } =
     useClusterSamplingOptions()
-  const { status, error, loading, run, stop } = useWiggleClusterRun({
+  const { status, error, loading, run, stop } = useClusterRun({
     model,
-    samplesPerPixel,
     onSuccess: () => {
       handleClose()
+    },
+    run: async ({ stopToken, statusCallback }) => {
+      const view = getContainingView(model) as LinearGenomeViewModel
+      if (!view.initialized) {
+        throw new Error(
+          'The view is not initialized yet, please wait and try again',
+        )
+      }
+      if (model.sourcesWithoutLayout.length < 2) {
+        throw new Error('Need at least two subtracks to cluster')
+      }
+      await runWiggleClustering({
+        model,
+        rpcManager: getSession(model).rpcManager,
+        sessionId: getRpcSessionId(model),
+        samplesPerPixel,
+        stopToken,
+        statusCallback,
+      })
     },
   })
   return (
@@ -51,21 +72,12 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
         </div>
         <div>
           {loading ? (
-            <div style={{ padding: 50 }}>
-              <span>{statusProgressLabel(status) || 'Loading...'}</span>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  stop()
-                }}
-              >
-                Stop
-              </Button>
-              <StatusProgressBar
-                fraction={statusFraction(status)}
-                style={{ marginTop: 8 }}
-              />
-            </div>
+            <ClusterProgress
+              status={status}
+              onStop={() => {
+                stop()
+              }}
+            />
           ) : null}
           {error ? <ErrorBanner error={error} /> : null}
         </div>
