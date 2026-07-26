@@ -1,14 +1,21 @@
-import { Menu } from '@jbrowse/core/ui'
+import { useRef } from 'react'
+
+import { Crosshairs, Menu, useMouseTracking } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import {
   DisplayChrome,
   FloatingSvgOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
+import {
+  SvgRowLabels,
+  TreeSidebar,
+  treeSidebarRightEdge,
+} from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
+import MultiRowHoverHighlight from './MultiRowHoverHighlight.tsx'
 import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
@@ -25,7 +32,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
-    hoveredFeature,
     height,
     sources,
     rowHeight,
@@ -89,20 +95,19 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           height,
           position: 'absolute',
           left: 0,
-          cursor: hoveredFeature ? 'pointer' : 'default',
         }}
       />
       <MultiRowIndelGlyphOverlay model={model} />
+      <MultiRowHoverHighlight model={model} />
       {sources.length ? (
         // The display's doneness signal for capture gates. `sources` is derived
         // from fetched features (the partition values), so this subtree cannot
         // exist before data has loaded and been binned into rows -- unlike
-        // `canvasDrawn`/`-done`, which flips on an empty first paint, and unlike
-        // the DisplayChrome wrapper, which collapses to height 0 and so never
-        // passes a `visible: true` selector wait. The color legend serves this
-        // role for categorical paintings but renders nothing when the palette is
-        // continuous (MAX_LEGEND_ENTRIES), so the row labels are the signal that
-        // holds in both modes. See agent-docs/guides/SCREENSHOT_CAPTURE_RACE.md.
+        // `canvasDrawn`/`-done`, which flips on an empty first paint. The color
+        // legend serves this role for categorical paintings but renders nothing
+        // when the palette is continuous (MAX_LEGEND_ENTRIES), so the row labels
+        // are the signal that holds in both modes. See
+        // agent-docs/guides/SCREENSHOT_CAPTURE_RACE.md.
         <svg
           data-testid="multirow-row-labels"
           style={{
@@ -167,14 +172,37 @@ const LinearMultiRowFeatureDisplayComponent = observer(
   }: {
     model: LinearMultiRowFeatureDisplayModel
   }) {
+    const view = getContainingView(model) as LinearGenomeViewModel
+    const ref = useRef<HTMLDivElement>(null)
+    const { mouseState, handleMouseMove, handleMouseLeave } =
+      useMouseTracking(ref)
     return (
+      // an explicit height so the chrome div (whose content is all absolutely
+      // positioned, so it would otherwise collapse) is the box the mouse
+      // handlers and the crosshair geometry both work in
       <DisplayChrome
         model={model}
         factory={MultiRowRendererFactory}
         testid="multirow-display"
+        ref={ref}
+        style={{ height: model.height }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
         {({ canvasRef }) => (
-          <MultiRowCanvas model={model} canvasRef={canvasRef} />
+          <>
+            <MultiRowCanvas model={model} canvasRef={canvasRef} />
+            {mouseState ? (
+              <Crosshairs
+                mouseX={mouseState.x}
+                mouseY={mouseState.y}
+                width={view.trackWidthPx}
+                height={model.height}
+                zIndex={800}
+                minLeft={treeSidebarRightEdge(model)}
+              />
+            ) : null}
+          </>
         )}
       </DisplayChrome>
     )

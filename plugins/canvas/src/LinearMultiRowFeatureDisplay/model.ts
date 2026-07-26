@@ -74,6 +74,9 @@ export interface MultiRowHit {
   id: string
   regionIndex: number
   row: string
+  // display row the feature paints on, so the hover highlight can position its
+  // box in the same geometry the render paths use
+  rowIndex: number
   name: string
   refName: string
   start: number
@@ -576,6 +579,7 @@ export default function stateModelFactory(
               id: featureIds[i]!,
               regionIndex: p.index,
               row: source.label ?? source.name,
+              rowIndex: targetRow,
               name: featureNames[i]!,
               refName: p.refName,
               start: featureStarts[i]!,
