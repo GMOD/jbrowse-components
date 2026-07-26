@@ -1,10 +1,10 @@
 # BLAT plugin
 
-UCSC hgBlat and In-Silico PCR, bundled in **jbrowse-desktop only** (web cold-load
-bundle size; BLAT is niche). Results become an **AlignmentsTrack**: `pslToSam.ts`
-converts the PSL hits to SAM text and hands it to a `SamAdapter` as inline
-`samText`, so blocks, indels and soft-clipped query ends render as a real
-alignment. The hit list and its navigation still run off the PSL features.
+UCSC hgBlat and In-Silico PCR, bundled in **jbrowse-desktop only** (web
+cold-load bundle size; BLAT is niche). Results become an **AlignmentsTrack**:
+`pslToSam.ts` converts the PSL hits to SAM text and hands it to a `SamAdapter`
+as inline `samText`, so blocks, indels and soft-clipped query ends render as a
+real alignment. The hit list and its navigation still run off the PSL features.
 
 ## Access
 

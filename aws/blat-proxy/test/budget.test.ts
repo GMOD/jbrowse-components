@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
 import { cacheKey, reserveUpstreamCall, utcDay } from '../src/budget.ts'
-
 import { memoryStore } from './memoryStore.ts'
 
 const NOON = Date.parse('2026-07-26T12:00:00Z')

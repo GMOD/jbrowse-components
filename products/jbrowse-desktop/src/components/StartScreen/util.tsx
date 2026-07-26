@@ -13,14 +13,13 @@ import corePlugins from '../../corePlugins.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
+import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
 import { fetchConfig } from './fetchConfig.ts'
 import { launchFromLink } from './launchFromLink.ts'
 import { newSessionName, resolveSessionName } from './sessionName.ts'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { JBrowseConfig } from './types.ts'
-
-import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
 
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site

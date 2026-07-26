@@ -45,7 +45,8 @@ export interface ESMUrlPluginDefinition {
 }
 
 export type ESMPluginDefinition =
-  ESMLocPluginDefinition | ESMUrlPluginDefinition
+  | ESMLocPluginDefinition
+  | ESMUrlPluginDefinition
 
 export function isESMPluginDefinition(
   def: PluginDefinition,
@@ -291,7 +292,8 @@ export default class PluginLoader {
     )
 
     const plugin = (globalThis as Record<string, unknown>)[umdName] as
-      { default: PluginConstructor } | undefined
+      | { default: PluginConstructor }
+      | undefined
     if (!plugin) {
       throw new Error(
         `Failed to load UMD bundle for ${moduleName}, ${umdName} is undefined`,

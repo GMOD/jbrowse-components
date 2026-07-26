@@ -4,9 +4,9 @@ import {
   pluginUrl,
 } from '@jbrowse/core/PluginLoader'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
-
 import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
+
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 export class UntrustedPluginsError extends Error {
   constructor() {

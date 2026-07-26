@@ -37,7 +37,9 @@ export function memoryStore() {
         daily.set(day, count + 1)
       }
       return Promise.resolve(
-        count < max ? ({ ok: true, count: count + 1 } as const) : ({ ok: false } as const),
+        count < max
+          ? ({ ok: true, count: count + 1 } as const)
+          : ({ ok: false } as const),
       )
     },
 

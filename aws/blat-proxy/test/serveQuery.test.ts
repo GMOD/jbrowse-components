@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MAX_CACHEABLE_BODY_BYTES } from '../src/budget.ts'
 import { serveQuery } from '../src/index.ts'
 import { ISPCR_ROUTE } from '../src/routes.ts'
-
 import { memoryStore } from './memoryStore.ts'
 
 import type { BlatStore } from '../src/store.ts'

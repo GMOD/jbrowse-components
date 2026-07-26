@@ -17,8 +17,8 @@ import {
   parseIsPcrProducts,
   pcrProductsToFeatures,
 } from './ispcrQuery.ts'
-import { canRenderAlignments } from './ucscShared.ts'
 import { ispcrToSam } from './ispcrToSam.ts'
+import { canRenderAlignments } from './ucscShared.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'

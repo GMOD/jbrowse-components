@@ -19,7 +19,8 @@ test.each(fontSizes)(
   'an offset label at fontSize %i clears the track body below it',
   fontSize => {
     const textHeight = defaultTextHeight(fontSize)
-    const inkBottom = offsetLabelBaselineY(textHeight, fontSize) + descent(fontSize)
+    const inkBottom =
+      offsetLabelBaselineY(textHeight, fontSize) + descent(fontSize)
     expect(textHeight - inkBottom).toBeGreaterThanOrEqual(2)
   },
 )

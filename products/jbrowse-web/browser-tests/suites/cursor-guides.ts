@@ -160,7 +160,7 @@ export const suite: TestSuite = {
         await delay(800)
         assert(
           await page.evaluate(() =>
-            document.body.textContent!.includes('Sort rows by color here'),
+            document.body.textContent.includes('Sort rows by color here'),
           ),
           'right-click did not open the display context menu',
         )
@@ -179,8 +179,8 @@ export const suite: TestSuite = {
         assert(
           await page.evaluate(
             () =>
-              document.body.textContent!.includes('Feature details') &&
-              document.body.textContent!.includes('Core details'),
+              document.body.textContent.includes('Feature details') &&
+              document.body.textContent.includes('Core details'),
           ),
           'click did not open the feature details widget',
         )
@@ -219,7 +219,7 @@ export const suite: TestSuite = {
         )
         const tip = await tooltipText(page)
         assert(
-          /ctgA:/.test(tip) && /\d/.test(tip),
+          tip.includes('ctgA:') && /\d/.test(tip),
           `tooltip missing locus or score: ${tip}`,
         )
         await page.mouse.move(5, 5)

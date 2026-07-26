@@ -27,8 +27,8 @@ says wait (see below), or a JSON error on failure.
 body, relayed with only the apiKey overwritten. Two things differ from `/blat`,
 both because hgPcr has no JSON mode: nothing forces `output=json`, and the
 response comes back as `text/html`, because hgPcr's **result** is an HTML page
-of FASTA amplicons. A "No matches" page is a 200, not an error — an empty
-result is an answer. Only an actual Cloudflare challenge is a 502.
+of FASTA amplicons. A "No matches" page is a 200, not an error — an empty result
+is an answer. Only an actual Cloudflare challenge is a 502.
 
 `OPTIONS` on either path — CORS preflight.
 
@@ -57,7 +57,7 @@ HOSTED_ZONE_ID=<route53 zone for the domain> \
 ```
 
 Region defaults to **us-east-1**: the rest of the JBrowse infrastructure is
-there, and an HTTP API custom domain is *regional*, so its ACM certificate has
+there, and an HTTP API custom domain is _regional_, so its ACM certificate has
 to be issued in the same region as the API. Deploying elsewhere means issuing a
 second certificate.
 
@@ -80,13 +80,13 @@ aws cloudformation describe-stacks --stack-name jbrowse-blat-proxy \
 
 ### Bundling
 
-`--main-fields=module,main` is load-bearing. esbuild's `--platform=node` defaults
-to `main` first, which resolves the AWS SDK's CJS build; bundling that into an
-ESM output produces a Lambda that dies at init with `Dynamic require of
-"node:https" is not supported`. Pointing at `module` first picks the SDK's
-`dist-es`, which is real ESM and also tree-shakes (1.2 MB → 821 kb). `postbuild`
-imports the bundle so a repeat of that class of failure is caught by
-`pnpm build` rather than by a deploy.
+`--main-fields=module,main` is load-bearing. esbuild's `--platform=node`
+defaults to `main` first, which resolves the AWS SDK's CJS build; bundling that
+into an ESM output produces a Lambda that dies at init with
+`Dynamic require of "node:https" is not supported`. Pointing at `module` first
+picks the SDK's `dist-es`, which is real ESM and also tree-shakes (1.2 MB → 821
+kb). `postbuild` imports the bundle so a repeat of that class of failure is
+caught by `pnpm build` rather than by a deploy.
 
 ## Rate limiting
 
@@ -108,7 +108,7 @@ enforced centrally, in DynamoDB, before the upstream call:
 A refused request gets **429** with `Retry-After` and a message saying which
 limit it hit. `X-Blat-Cache: hit|miss` says whether a 200 cost anything.
 
-Spacing is claimed *before* the daily count on purpose: a slot spent on a call
+Spacing is claimed _before_ the daily count on purpose: a slot spent on a call
 the daily budget then refuses costs one 15 s window on a day that is already
 exhausted, whereas counting first would leak a permanent unit of the day's
 budget on every spacing refusal.
@@ -118,9 +118,9 @@ refused rather than passed through, since an unmetered burst risks the one key
 everyone depends on. A cache failure only makes things slow, so it fails open.
 
 `ReservedConcurrentExecutions` is 5: at one upstream call per 15 s a larger
-fleet has nothing to do but return 429s. The stage also throttles at 20 rps /
-40 burst, because a request that the budget refuses still costs a Lambda
-invocation and a DynamoDB read — a flood is cheaper to shed at the API.
+fleet has nothing to do but return 429s. The stage also throttles at 20 rps / 40
+burst, because a request that the budget refuses still costs a Lambda invocation
+and a DynamoDB read — a flood is cheaper to shed at the API.
 
 **With `BLAT_LIMIT_TABLE` unset the proxy is unmetered** (fine locally, not for
 a deployment). `template.yaml` wires it, so a SAM deploy is metered by default.
