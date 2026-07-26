@@ -183,26 +183,33 @@ and unsplit output have identical per-strain coverage. Verified end to end by
 driving `MafTabixAdapter` over generated output, including that the split repeat
 copy is retrievable at its own locus.
 
-**Hosted data not yet regenerated.** The demo config still points at
-`ecoli_pggb.taf.gz`, so production keeps the 1,773 bp defect until
-`ecoli_pggb.maf.bed.gz{,.tbi}` plus the updated `config.json` are uploaded and
-CloudFront is invalidated. That also needs `pangenome/pangenome_variants`
-regenerated: its window is one where taffy's re-blocking differed from the MAF, so
-the figure changes slightly (IAI39 loses 210 bp of drawn coverage, three strains
-gain ~708). `pangenome/maf`'s window is byte-identical either way.
+**Shipped 2026-07-26.** `demos/ecoli_pangenome/` serves
+`ecoli_pggb.maf.bed.gz{,.tbi}`, `ecoli_cactus.maf.bed.gz{,.tbi}`, and a
+`config.json` whose two MAF tracks are `MafTabixAdapter`. The stale
+`ecoli_pggb.taf.gz{,.tai}` and `ecoli_cactus.taf.gz{,.tai}` are still in the
+bucket, unreferenced.
+
+Two figures moved with it, both reviewed: `pangenome/maf` (5.53%) and
+`pangenome/pangenome_variants` (7.77%). The cactus pair did not (0.150%, 0.067%),
+its MAF having no duplicate reference rows. MAF rows and insertion markers look
+the same; the coverage band's axis max reads 13 where the TAF read 10, since the
+BED carries the MAF's blocks rather than taffy's re-blocked ones.
+
+**Open, minor:** that axis max exceeds the strain count in both versions (10 and
+13, against five strains), while the data has at most 5 rows with a base at any
+one reference position in that window and no overlapping BED intervals. So the
+number comes from the band's own stacked-SNP scaling in `computeMafCoverage`'s
+consumer rather than from the data. Predates this switch, not diagnosed.
 
 ## Should anyone care
 
-The defect as it stands in production is small and away from anything shown. Both
-published pggb MAF figure loci are **100% reachable**: `chr:2,120,000-2,140,000`
-(20,000 of 20,000) and `chr:4,540,000-4,600,000` (60,000 of 60,000). The
-unreachable runs are two isolated repeat collapses, 0.038% of the axis.
+Not any more for the demo, which no longer carries the defect. Both published pggb
+MAF figure loci were **100% reachable** even before the fix:
+`chr:2,120,000-2,140,000` (20,000 of 20,000) and `chr:4,540,000-4,600,000`
+(60,000 of 60,000), the unreachable runs being two isolated repeat collapses,
+0.038% of the axis.
 
-It matters more if a new MAF figure lands inside `1211940-1212074` or
-`4170830-4172469`, or if a user brings a repeat-rich pggb MAF, where blocks with
-duplicate reference rows are denser and 0.038% could be much larger. For a user's
-own data the answer is now concrete: split the blocks.
-
-`BgzipTaffyAdapter` reads through the same `.tai`, so whatever the index cannot
-return, JBrowse cannot draw. For a user's own pggb data the answer is either
-adapter: split the blocks, and prefer `MafTabixAdapter`.
+It still matters for a user bringing a repeat-rich pggb MAF, where blocks with
+duplicate reference rows are denser. The answer for their own data is the same as
+ours: split the blocks so each reference copy anchors one, keeping exactly one
+reference row per block, and prefer `MafTabixAdapter`.
