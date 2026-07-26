@@ -1,6 +1,8 @@
 import { ChildProcess, execSync, spawn } from 'child_process'
+import { mkdtempSync } from 'fs'
 import http from 'http'
 import { createRequire } from 'module'
+import { tmpdir } from 'os'
 import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -64,12 +66,29 @@ export async function startChromedriver(): Promise<ChildProcess> {
 }
 
 export async function createDriver(): Promise<WebDriver> {
-  const chromeArgs = ['--no-sandbox', '--disable-extensions']
+  // A throwaway profile per run, not the developer's own JBrowse Desktop one.
+  // createMainWindow sizes itself from windowStateKeeper, which persists into
+  // userData, so a machine where the app was last left 845px wide captured
+  // every figure 845px wide next to committed ones at 1400. Selenium can't fix
+  // it after the fact (electron's chromedriver has no Browser.getWindowForTarget,
+  // so window().setRect throws); an empty profile falls back to the electron
+  // defaults, and the run stops inheriting recent sessions too.
+  const chromeArgs = [
+    '--no-sandbox',
+    '--disable-extensions',
+    `--user-data-dir=${mkdtempSync(join(tmpdir(), 'jbrowse-desktop-test-'))}`,
+  ]
   if (isHeadless) {
     chromeArgs.push(
+      // These turn off WebGPU *and* WebGL2, so a headless desktop figure is
+      // captured through the Canvas2D fallback rather than the backend a real
+      // user renders on. Swapping them for the web generator's
+      // --use-gl=swiftshader --enable-unsafe-swiftshader was tried and crashes
+      // the electron app mid-run (the window dies during the first dialog), so
+      // headless desktop figures stay on Canvas2D until that is understood.
       '--disable-gpu',
-      '--disable-dev-shm-usage',
       '--disable-software-rasterizer',
+      '--disable-dev-shm-usage',
       '--disable-backgrounding-occluded-windows',
       '--disable-renderer-backgrounding',
       '--force-device-scale-factor=1',

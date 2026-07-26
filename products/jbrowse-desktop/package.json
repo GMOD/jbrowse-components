@@ -38,7 +38,7 @@
     "test:e2e:build:win": "pnpm package:win:no-installer && pnpm test:e2e",
     "test:e2e:ci:win": "pnpm package:win:no-installer && pnpm test:e2e:headless:win",
     "screenshots": "node test/screenshots.ts",
-    "screenshots:headless": "xvfb-run --auto-servernum node test/screenshots.ts --headless",
+    "screenshots:headless": "xvfb-run --auto-servernum -s \"-screen 0 1920x1200x24\" node test/screenshots.ts --headless",
     "screenshots:build": "pnpm package:linux:no-installer && pnpm screenshots:headless"
   },
   "dependencies": {
