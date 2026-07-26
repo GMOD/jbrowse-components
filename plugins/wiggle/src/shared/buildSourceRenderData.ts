@@ -96,9 +96,11 @@ export interface WiggleGpuProps {
   summaryScoreMode: string
   renderingType: string
   isDensityMode: boolean
-  // Threshold the whiskers bands are colored around (= bicolorPivot). Lives in
-  // gpuProps (not rpcProps) so a pivot change re-encodes the color buffer
-  // without an RPC roundtrip.
+  // Threshold the whiskers bands are colored around, and the baseline bars
+  // pivot on (= bicolorPivot). Present here *as well as* in rpcProps: the
+  // worker owns the avg-path pos/neg split (ADR-016, so it stays in rpcProps
+  // and a change refetches), but the whiskers bands are colored on the main
+  // thread and need the same threshold.
   bicolorPivot: number
 }
 

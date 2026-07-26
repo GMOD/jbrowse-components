@@ -1,4 +1,4 @@
-import { setAbgrFill } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { bpToScreenPx, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import { appendPointMarker } from '@jbrowse/wiggle-core'
 
@@ -29,6 +29,13 @@ interface RowDraw {
   origin: number
 }
 
+// Per-instance colors (whiskers bands) exist on every layer the GPU encodes
+// them for, so each draw fn must honor them or the Canvas2D fallback and the
+// SVG export diverge from the on-screen shader. A band holds only two packed
+// values, so switching on change batches into a couple of runs rather than one
+// state change per feature. `-1` can't collide with a u32 ABGR value.
+const NO_COLOR = -1
+
 function makeScoreToY(
   rowHeight: number,
   domainY: [number, number],
@@ -57,11 +64,8 @@ export function drawXYPlot({
   const originY = scoreToY(origin) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
-  // Per-instance colors (bicolor whiskers): set fillStyle only when the packed
-  // color changes — a band has just two possible colors, so this rebuilds the
-  // style a handful of times, not once per feature.
   const colorsAbgr = source.colorsAbgr
-  let lastAbgr = -1
+  let lastAbgr = NO_COLOR
   if (!colorsAbgr) {
     ctx.fillStyle = rgb
   }
@@ -158,6 +162,12 @@ export function drawDensity({
 // for each feature; the implicit continuation between iterations draws the
 // vertical step at the junction. Drop-to-zero is just another lineTo when
 // the next feature is non-adjacent.
+//
+// A per-instance color change also ends a stroke batch: the accumulated path is
+// stroked and reopened from the pen position, so the segment carries the color
+// of the feature it belongs to. That matches the shader, which colors all three
+// of a feature's segments (transition-in, horizontal, transition-out) from that
+// instance's packed color.
 export function drawLine({
   ctx,
   source,
@@ -173,7 +183,10 @@ export function drawLine({
   if (n === 0) {
     return
   }
-  ctx.strokeStyle = rgb
+  const colorsAbgr = source.colorsAbgr
+  if (!colorsAbgr) {
+    ctx.strokeStyle = rgb
+  }
   ctx.lineWidth = lineWidth
   ctx.beginPath()
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
@@ -183,6 +196,9 @@ export function drawLine({
   const { screenStartPx, screenEndPx, reversed, start, end } = block
 
   let inRun = false
+  let lastAbgr = NO_COLOR
+  let penX = 0
+  let penY = 0
   for (let i = 0; i < n; i++) {
     const startBp = positions[i * 2]!
     const endBp = positions[i * 2 + 1]!
@@ -204,19 +220,37 @@ export function drawLine({
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
 
-    if (!inRun) {
+    if (colorsAbgr) {
+      const c = colorsAbgr[i]!
+      if (c !== lastAbgr) {
+        if (lastAbgr !== NO_COLOR) {
+          ctx.stroke()
+          ctx.beginPath()
+          if (inRun) {
+            ctx.moveTo(penX, penY)
+          }
+        }
+        ctx.strokeStyle = abgrToCssRgba(c)
+        lastAbgr = c
+      }
+    }
+
+    if (inRun) {
+      ctx.lineTo(x1, scoreY)
+    } else {
       ctx.moveTo(x1, zeroY)
       ctx.lineTo(x1, scoreY)
       inRun = true
-    } else {
-      ctx.lineTo(x1, scoreY)
     }
     ctx.lineTo(x2, scoreY)
+    penX = x2
+    penY = scoreY
 
     const nextStartBp = i < n - 1 ? positions[(i + 1) * 2]! : -1
     const gapAfter = nextStartBp !== endBp
     if (gapAfter) {
       ctx.lineTo(x2, zeroY)
+      penY = zeroY
       inRun = false
     }
   }
@@ -242,7 +276,10 @@ export function drawLineCenter({
   if (n === 0) {
     return
   }
-  ctx.strokeStyle = rgb
+  const colorsAbgr = source.colorsAbgr
+  if (!colorsAbgr) {
+    ctx.strokeStyle = rgb
+  }
   ctx.lineWidth = lineWidth
   // Round joins/caps match the GPU capsule so sharp bends don't nick.
   ctx.lineJoin = 'round'
@@ -252,6 +289,9 @@ export function drawLineCenter({
   const positions = source.featurePositions
   const scores = source.featureScores
   const { screenStartPx, screenEndPx, reversed, start, end } = block
+  let lastAbgr = NO_COLOR
+  let penX = 0
+  let penY = 0
   for (let i = 0; i < n; i++) {
     const x1 = bpToScreenPx(
       positions[i * 2]!,
@@ -271,11 +311,27 @@ export function drawLineCenter({
     )
     const cx = (x1 + x2) / 2
     const cy = scoreToY(scores[i]!) + rowTop
+    // Each segment runs from the previous midpoint to this one and takes this
+    // instance's color, same as the shader's per-feature capsule.
+    if (colorsAbgr) {
+      const c = colorsAbgr[i]!
+      if (c !== lastAbgr) {
+        if (lastAbgr !== NO_COLOR) {
+          ctx.stroke()
+          ctx.beginPath()
+          ctx.moveTo(penX, penY)
+        }
+        ctx.strokeStyle = abgrToCssRgba(c)
+        lastAbgr = c
+      }
+    }
     if (i > 0) {
       ctx.lineTo(cx, cy)
     } else {
       ctx.moveTo(cx, cy)
     }
+    penX = cx
+    penY = cy
   }
   ctx.stroke()
 }
@@ -291,7 +347,10 @@ export function drawScatter({
   rgb,
   pointSize,
 }: RowDraw & { rgb: string; pointSize: number }) {
-  ctx.fillStyle = rgb
+  const colorsAbgr = source.colorsAbgr
+  if (!colorsAbgr) {
+    ctx.fillStyle = rgb
+  }
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const positions = source.featurePositions
   const scores = source.featureScores
@@ -299,8 +358,22 @@ export function drawScatter({
   const n = source.numFeatures
   // Every feature draws as a point marker (square/disc via appendPointMarker)
   // centered on the bp midpoint. Mirrors the GPU wiggle.slang scatter branch.
+  // Points don't connect, so a per-instance color change just flushes the
+  // accumulated batch and opens a fresh path.
   ctx.beginPath()
+  let lastAbgr = NO_COLOR
   for (let i = 0; i < n; i++) {
+    if (colorsAbgr) {
+      const c = colorsAbgr[i]!
+      if (c !== lastAbgr) {
+        if (lastAbgr !== NO_COLOR) {
+          ctx.fill()
+          ctx.beginPath()
+        }
+        setAbgrFill(ctx, c)
+        lastAbgr = c
+      }
+    }
     const x1 = bpToScreenPx(
       positions[i * 2]!,
       start,

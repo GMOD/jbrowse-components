@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -15,6 +16,8 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { waitFor } from '@testing-library/react'
 
+import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import { processFeaturesFromArrays } from '../util.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
@@ -379,5 +382,77 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     expect(display.rpcDataMap.size).toBeGreaterThan(0)
     expect(display.domain).toBeUndefined()
     expect(display.renderState).toBeDefined()
+  })
+})
+
+// Signed data with real summary bands, so whiskers produces its full layer set.
+function makeSignedWiggleData(useBicolor: boolean): WiggleDataResult {
+  return {
+    sources: [
+      {
+        name: 'default',
+        ...processFeaturesFromArrays(
+          {
+            starts: new Int32Array([0, 10]),
+            ends: new Int32Array([10, 20]),
+            scores: new Float32Array([5, -5]),
+            minScores: new Float32Array([2, -8]),
+            maxScores: new Float32Array([9, -1]),
+            count: 2,
+          },
+          0,
+          useBicolor,
+        ),
+      },
+    ],
+  }
+}
+
+// Regression: `useBicolor: false` only reached the 'avg' path, where the worker
+// pre-splits into the pos arrays. whiskers — the default summaryScoreMode —
+// re-derives the split on the main thread, so a solid green track came back
+// green above the pivot and the negColor slot's red below it.
+describe('LinearWiggleDisplay solid color', () => {
+  // Bands are still tinted by magnitude (lighten/darken), so the assertion is
+  // on hue: a green-family color has equal red and blue channels, red does not.
+  const isGreenHue = (c: readonly [number, number, number]) =>
+    c[0] === c[2] && c[1] > c[0]
+
+  test.each(['whiskers', 'avg', 'min', 'max'])(
+    'every layer keeps the single hue in %s mode',
+    mode => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      display.setUseBicolor(false)
+      display.setColor('green')
+      display.setSummaryScoreMode(mode)
+
+      const layers = buildSourceRenderData(
+        makeSignedWiggleData(false),
+        display.gpuProps(),
+      )
+
+      expect(layers.length).toBeGreaterThan(0)
+      for (const layer of layers) {
+        expect(isGreenHue(layer.color)).toBe(true)
+        for (const packed of layer.colorsAbgr ?? []) {
+          expect(abgrRed(packed)).toBe(abgrBlue(packed))
+          expect(abgrGreen(packed)).toBeGreaterThan(abgrRed(packed))
+        }
+      }
+    },
+  )
+
+  test('bicolor still splits the whisker bands by sign', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setSummaryScoreMode('whiskers')
+
+    const layers = buildSourceRenderData(
+      makeSignedWiggleData(true),
+      display.gpuProps(),
+    )
+    const colors = new Set(layers.map(l => JSON.stringify(l.color)))
+    expect(colors.size).toBeGreaterThan(1)
   })
 })

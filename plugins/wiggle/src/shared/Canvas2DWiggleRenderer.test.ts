@@ -1,3 +1,5 @@
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+
 import {
   Canvas2DWiggleRenderer,
   drawWiggleToCtx,
@@ -5,17 +7,25 @@ import {
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
 } from './wiggleComponentUtils.ts'
 
-import type { SourceRenderData } from '@jbrowse/wiggle-core'
+import type {
+  SourceRenderData,
+  WiggleRenderingType,
+} from '@jbrowse/wiggle-core'
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []
   const rectCalls: [number, number, number, number][] = []
   const arcCalls: [number, number, number][] = []
+  // The style in effect at each batch flush — how the per-instance color tests
+  // tell one stroke/fill batch from the next.
+  const strokeStyles: string[] = []
+  const fillStyles: string[] = []
   const ctx = {
     setTransform: jest.fn(),
     clearRect: jest.fn(),
@@ -33,19 +43,33 @@ function createMockCanvas() {
     arc: jest.fn((x: number, y: number, r: number) => {
       arcCalls.push([x, y, r])
     }),
-    fill: jest.fn(),
+    fill: jest.fn(() => {
+      fillStyles.push(ctx.fillStyle)
+    }),
     clip: jest.fn(),
-    stroke: jest.fn(),
+    stroke: jest.fn(() => {
+      strokeStyles.push(ctx.strokeStyle)
+    }),
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 1,
+    lineJoin: '',
+    lineCap: '',
   }
   const canvas = {
     width: 0,
     height: 0,
     getContext: jest.fn(() => ctx),
   } as unknown as HTMLCanvasElement
-  return { canvas, ctx, fillRectCalls, rectCalls, arcCalls }
+  return {
+    canvas,
+    ctx,
+    fillRectCalls,
+    rectCalls,
+    arcCalls,
+    strokeStyles,
+    fillStyles,
+  }
 }
 
 function makeSource(scores: number[], startBps: number[], endBps: number[]) {
@@ -510,5 +534,68 @@ describe('drawLine path commands', () => {
     expect(lines[3]![0]).toBe(240)
     expect(lines[3]![1]).toBeCloseTo(score8Y)
     expect(lines[5]).toEqual([320, zeroY])
+  })
+})
+
+// Whiskers attaches a per-instance packed color to every layer it emits, and
+// the shader colors each instance from it. Only drawXYPlot used to read it, so
+// line / linecenter / scatter painted a whole band in one tint — an on-screen
+// (GPU) vs Canvas2D-fallback vs SVG-export divergence on signed data.
+describe('per-instance colors reach every Canvas2D draw fn', () => {
+  const red = cssColorToABGR('red')
+  const blue = cssColorToABGR('blue')
+
+  function drawTwoTone(renderingType: WiggleRenderingType) {
+    const mock = createMockCanvas()
+    // adjacent so the step-line stays one run: only the color splits the batch
+    const source = {
+      ...makeSource([5, 8], [0, 100], [100, 200]),
+      colorsAbgr: new Uint32Array([red, blue]),
+    }
+    drawWiggleToCtx(
+      mock.ctx as unknown as CanvasRenderingContext2D,
+      {
+        rpcDataMap: new Map([[0, [source]]]),
+        encode: (s: SourceRenderData[]) => s,
+      },
+      [lineBlock],
+      { ...lineState, renderingType },
+    )
+    return mock
+  }
+
+  test.each([
+    ['line', RENDERING_TYPE_LINE],
+    ['linecenter', RENDERING_TYPE_LINE_CENTER],
+  ] as const)('%s strokes one batch per color', (_name, renderingType) => {
+    const { strokeStyles } = drawTwoTone(renderingType)
+    expect(strokeStyles).toEqual([abgrToCssRgba(red), abgrToCssRgba(blue)])
+  })
+
+  test('scatter fills one batch per color', () => {
+    const { fillStyles } = drawTwoTone(RENDERING_TYPE_SCATTER)
+    expect(fillStyles).toEqual([abgrToCssRgba(red), abgrToCssRgba(blue)])
+  })
+
+  test('xyplot switches fillStyle per feature', () => {
+    const { ctx, fillRectCalls } = drawTwoTone(RENDERING_TYPE_XYPLOT)
+    expect(fillRectCalls).toHaveLength(2)
+    expect(ctx.fillStyle).toBe(abgrToCssRgba(blue))
+  })
+
+  // Without per-instance colors nothing changes: still one batch in the layer
+  // color, so the common (non-whiskers) path keeps its single stroke/fill.
+  test('a layer with no per-instance colors still draws in one batch', () => {
+    const mock = createMockCanvas()
+    drawWiggleToCtx(
+      mock.ctx as unknown as CanvasRenderingContext2D,
+      {
+        rpcDataMap: new Map([[0, [makeSource([5, 8], [0, 100], [100, 200])]]]),
+        encode: (s: SourceRenderData[]) => s,
+      },
+      [lineBlock],
+      lineState,
+    )
+    expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
   })
 })

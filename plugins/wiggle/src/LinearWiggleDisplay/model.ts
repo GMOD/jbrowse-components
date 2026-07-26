@@ -203,6 +203,12 @@ export default function stateModelFactory(
        * - solid: worker put all features in pos arrays (useBicolor=false);
        *   non-density modes use the user's color; density uses posColor
        *   (multi default, so leave source.color undefined)
+       *
+       * Solid mode overrides `negColor` too, not just the source color. The
+       * worker's pos/neg split only covers the 'avg' path; whiskers (the
+       * default summaryScoreMode) re-derives the split on the main thread from
+       * bicolorPivot and would otherwise paint every sub-pivot band in the
+       * negColor slot, so `color: 'green'` on signed data came back green/red.
        */
       gpuProps() {
         const wantsSolidColor = !self.useBicolor && !self.isDensityMode
@@ -214,7 +220,7 @@ export default function stateModelFactory(
             },
           ],
           posColor: self.posColor,
-          negColor: self.negColor,
+          negColor: wantsSolidColor ? self.color : self.negColor,
           summaryScoreMode: self.summaryScoreMode,
           isDensityMode: self.isDensityMode,
           renderingType: self.renderingType,
