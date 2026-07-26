@@ -31,6 +31,23 @@ in `browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`. Cross-backend compare
 (`compare-backends.ts`): identical / `<5%` similar / `≥5%` different. Intentional
 change → `--update-snapshots`.
 
+**A 10-25% alignments diff is usually a blank capture, not a regression.** The
+suite flakes: a run captures the app before the view has painted, so the
+"actual" is an empty frame and the test reports a large percentage. The tell is
+in `__snapshots__/<backend>/<name>.diff.png` — **look at it before believing the
+number**, and before running `-u`, which would overwrite a good golden with a
+blank page. It moves between tests run to run (observed on
+`fullpage_alignments-bam`, `-volvox-sv`, `-pileup-coverage`), and a rerun of the
+same suite passes, including immediately after those goldens were captured from
+good renders. Running a single test out of its suite with `--test=` reproduces it
+almost every time, because the suite's earlier navigation is what loads the
+track.
+
+Goldens also carry ordinary drift from unrelated commits: after ~10 days of
+alignments work every test still passed while the BAM golden sat at ~2.7% RMSE
+(mostly toolbar chrome). So a diff percentage alone attributes nothing — check
+whether your change can even reach the pixels in question.
+
 ### WebGL / WebGPU
 
 - **WebGL** — fully supported (Chrome headless / Firefox), CI default.
