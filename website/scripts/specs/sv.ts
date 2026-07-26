@@ -98,15 +98,16 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Before/after horizontal flip, stacked into one figure: top frame is the
-  // normal orientation, bottom frame after the view-menu "Horizontally flip"
-  // (reverse complement) — the gene arrows and overview triangles reverse
-  // direction. Rebuilt from the old server-side share link as a self-contained
-  // sessionSpec over the hg19 ACTB locus (single longest-coding transcript so the
-  // strand arrow reads clearly).
+  // Before/after horizontal flip, as two independent declarative sessions
+  // composed into one figure: the "after" state is just the same locus with a
+  // `[rev]` locstring, so both halves are directly openable live links rather
+  // than one state being reachable only by driving the view menu. Rebuilt from
+  // the old server-side share link as a self-contained sessionSpec over the
+  // hg19 ACTB locus (single longest-coding transcript so the strand arrow reads
+  // clearly).
   {
     mode: 'url',
-    name: 'horizontally_flip',
+    name: 'horizontally_flip_before',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr7:5,562,000-5,575,000',
@@ -123,39 +124,42 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     // trim the empty viewport below the single track
     crop: { x: 0, y: 0, width: 1500, height: 300 },
-    stages: [
+    annotations: [
+      { type: 'text', x: 20, y: 30, fontSize: 22, text: 'Normal orientation' },
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'horizontally_flip_after',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,562,000-5,575,000[rev]',
+      tracks: [
+        {
+          trackId: 'ncbi_gff_hg19',
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+        },
+      ],
+    }),
+    readyText: 'ACTB',
+    readyTimeout: 60000,
+    settleMs: 8000,
+    crop: { x: 0, y: 0, width: 1500, height: 300 },
+    annotations: [
       {
-        // top frame: normal orientation, with the view-menu icon ringed and a
-        // callout telling the reader to select "Horizontally flip" from it
-        actions: [{ type: 'delay', ms: 500 }],
-        annotations: [
-          {
-            type: 'circle',
-            anchor: { selector: '[data-testid="view_menu_icon"]' },
-          },
-          {
-            type: 'text',
-            text: 'Select "Horizontally flip"',
-            anchor: { selector: '[data-testid="view_menu_icon"]' },
-            dx: 40,
-            dy: 0,
-            background: 'rgba(0,0,0,0.78)',
-            textColor: '#fff',
-          },
-        ],
-      },
-      {
-        // bottom frame: after the view-menu "Horizontally flip" the gene arrows /
-        // overview triangles reverse direction. The menu auto-closes on click so
-        // it never appears in the result frame.
-        actions: [
-          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          { type: 'waitForText', text: 'Horizontally flip' },
-          { type: 'click', text: 'Horizontally flip' },
-          { type: 'delay', ms: 3000 },
-        ],
+        type: 'text',
+        x: 20,
+        y: 30,
+        fontSize: 22,
+        text: 'Horizontally flipped ([rev] locstring)',
       },
     ],
+  },
+  {
+    mode: 'compose',
+    name: 'horizontally_flip',
+    parts: ['horizontally_flip_before', 'horizontally_flip_after'],
   },
 
   // Whole-genome CNV: COLO829 melanoma tumor vs matched normal coverage as a

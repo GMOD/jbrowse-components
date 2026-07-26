@@ -262,7 +262,7 @@ The view can be horizontally flipped (reverse complemented), reversing the
 coordinate direction. Triangles in the overview bar indicate the current
 orientation.
 
-<Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" />
+<Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" links="Normal orientation=horizontally_flip_before,Flipped=horizontally_flip_after" />
 
 ### Drawer widget position
 

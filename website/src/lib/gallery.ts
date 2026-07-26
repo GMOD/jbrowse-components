@@ -377,12 +377,11 @@ export const gallerySections: readonly GallerySection[] = [
     items: [
       {
         label: 'Horizontally flipped view',
+        // `horizontally_flip` (the compose parent, for the stacked card image)
+        // has no url of its own; open the flipped half directly since that's the
+        // state the figure teaches.
         spec: 'horizontally_flip',
-        // the spec's base capture is the un-flipped top frame (the figure flips
-        // via a capture-time menu action); open the flipped end-state directly
-        // with a [rev] locstring so the live view shows what the figure teaches
-        session:
-          '?config=test_data/config_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5,562,000-5,575,000[rev]","tracks":[{"trackId":"ncbi_gff_hg19","displaySnapshot":{"type":"LinearBasicDisplay","geneGlyphMode":"longestCoding"}}]}]}',
+        session: specSessionUrls.horizontally_flip_after,
         description:
           'The whole view mirrored so coordinates run right-to-left and a reverse-strand gene (here ACTB) reads left-to-right in its own 5′→3′ direction. Reads, sequence, and annotations flip with it, and the location box records the state as a [rev] locstring.',
       },
