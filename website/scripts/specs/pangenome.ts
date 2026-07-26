@@ -19,6 +19,56 @@ const CONFIG = encodeURIComponent(
 )
 
 export const pangenomeSpecs: ScreenshotSpec[] = [
+  // Projection 1: the graph's own all-vs-all alignment, the wfmash PAF pggb
+  // built the graph FROM (ecoli_pggb_ava), stacked the same way the all-vs-all
+  // tutorial stacks its minimap2 PAF.
+  //
+  // This page used to illustrate that section with the minimap2 figure
+  // (multiway_synteny/ecoli_pangenome) under a caption claiming it was wfmash's
+  // — the same picture doing duty for two different files. They are worth
+  // seeing side by side precisely because they nearly agree: an independent
+  // pairwise aligner and the graph's own input alignment put the backbone and
+  // IAI39's inversions in the same places.
+  //
+  // wfmash's segments are shorter than minimap2's asm20 blocks, so the same
+  // 10 kb minAlignmentLength leaves a denser band rather than a few clean
+  // ribbons; that density IS the difference between the two files and is left
+  // alone rather than filtered away.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_synteny',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          // same row order as the minimap2 stack, so the two figures are
+          // comparable line for line
+          views: [
+            { assembly: 'K12' },
+            { assembly: 'Sakai' },
+            { assembly: 'CFT073' },
+            { assembly: 'NCTC86' },
+            { assembly: 'IAI39' },
+          ],
+          tracks: [
+            ['ecoli_pggb_ava'],
+            ['ecoli_pggb_ava'],
+            ['ecoli_pggb_ava'],
+            ['ecoli_pggb_ava'],
+          ],
+          drawCurves: false,
+          colorBy: 'default',
+          minAlignmentLength: 10000,
+          levelHeights: [110, 110, 110, 110],
+        },
+      ],
+    }),
+    // five rows and four 110px bands
+    viewportHeight: 1030,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
   // Projection 2: the graph's pangenome variants as a multi-sample display, with
   // the MAF alignment stacked below as an orthogonal view of the same window.
   // One row per non-K12 strain, each variant drawn at its genomic position and

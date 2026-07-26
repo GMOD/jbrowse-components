@@ -13,6 +13,16 @@ const CONFIG = encodeURIComponent(
   'https://jbrowse.org/demos/ecoli_pangenome/config.json',
 )
 
+// The odgi viz raster's own path rows, in its order and its colors, sampled out
+// of the committed graph.png. K12 is absent on purpose — in a K12-anchored view
+// it is the coordinate line, not a row.
+const ODGI_PATH_COLORS = [
+  { name: 'CFT073', color: 'rgb(163,68,151)' },
+  { name: 'IAI39', color: 'rgb(114,190,79)' },
+  { name: 'NCTC86', color: 'rgb(200,132,51)' },
+  { name: 'Sakai', color: 'rgb(164,163,56)' },
+]
+
 export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // Projection 1: all-vs-all synteny (halSynteny from the HAL). The four strains
   // stacked K12 -> NCTC86, one halSynteny ribbon per adjacent pair. K12/Sakai/
@@ -163,14 +173,45 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // point of the pair — 2.2% of the K12 axis, 5.1% of the graph's, same locus,
   // because one axis counts K12 bases and the other counts pangenome bases.
   //
-  // Depth is the right partner track precisely because it CANNOT show the
-  // expansion: it counts paths over K12's own nodes, and the 366 kb the other
-  // strains carry through this locus is not on any of them. That gap is what the
-  // graph axis is for.
+  // The partner track is the odgi pav rows, not the aggregate depth wiggle it
+  // used to be (reviewer: the correspondence with odgi viz was unreadable). odgi
+  // viz IS per-path presence rows — one row per path, painted where the path is
+  // there and white where it is not — so the JBrowse panel is built to be the
+  // same picture: the same four non-reference strains, in the raster's own row
+  // order, each in the color odgi gave it, sampled straight out of graph.png. A
+  // blue depth wall shares no channel with that raster; these rows share all
+  // three (row, color, white gap), and the ONE thing that differs, the x axis,
+  // is what the pair is about.
+  //
+  // K12 has no row here because K12 is the axis: the raster's K12#0#chr row is
+  // this view's coordinate line.
   {
     mode: 'url',
     name: 'pangenome_cactus/graph_correspondence',
     url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'ecoli_cactus_pav_odgi_colors',
+          name: 'MC graph: per-strain presence (odgi pav, vs K12)',
+          assemblyNames: ['K12'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            // Row order and colors are the raster's, read off graph.png itself
+            // rather than guessed: CFT073 magenta, IAI39 green, NCTC86 orange,
+            // Sakai olive, top to bottom, minus the K12 row.
+            subadapters: ODGI_PATH_COLORS.map(({ name, color }) => ({
+              type: 'BigWigAdapter',
+              name,
+              color,
+              bigWigLocation: {
+                uri: `https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_${name}.bw`,
+                locationType: 'UriLocation',
+              },
+            })),
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -178,11 +219,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           loc: 'chr:1-4,641,652',
           highlight: [
             // Gold, and explicitly alpha'd: getHighlightColor uses a supplied
-            // color AS-IS, so a bare hex paints an opaque bar over the depth
-            // track it is meant to point at. Gold because the same wash has to
-            // read over two opposite backgrounds — this track's solid dark blue
-            // and the raster's saturated rows on white — and blue vanished into
-            // the first of them.
+            // color AS-IS, so a bare hex paints an opaque bar over the rows it
+            // is meant to point at. Gold because the same wash has to read over
+            // the raster's saturated rows on white and over these.
             {
               refName: 'chr',
               start: 1000000,
@@ -192,15 +231,23 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           ],
           tracks: [
             {
-              trackId: 'ecoli_cactus_depth',
-              type: 'LinearWiggleDisplay',
+              trackId: 'ecoli_cactus_pav_odgi_colors',
+              type: 'MultiLinearWiggleDisplay',
+              // density, not xy: odgi viz paints presence as a filled band, and
+              // a 0/1 signal drawn as a bar chart is the same band with ragged
+              // edges. Pinning the domain to 0-1 keeps every present base fully
+              // saturated instead of shaded by an autoscaled maximum.
+              defaultRendering: 'multirowdensity',
+              minScore: 0,
+              maxScore: 1,
+              // four rows at the raster's own 40px-per-row scale
               height: 160,
             },
           ],
         },
       ],
     }),
-    readyText: 'pangenome depth',
+    readyText: 'per-strain presence',
     readyTimeout: 90000,
     // 1040 CSS px captures at 2080, the odgi raster's exact width, so the two
     // figures stack cleanly in the docs at the same scale

@@ -224,7 +224,7 @@ Each per-read copy is the same alignment track re-colored for one context.
 Because the call is made per read, zooming in to the gene→element boundary lets
 you follow the methylation on individual molecules.
 
-<Figure caption="The same three pileups zoomed to the boundary between AT1G12930 and the silenced element, with taller reads. In the CHG and CHH copies a read stays blank while it covers the gene body and picks up red marks where it crosses into the element." src="/img/methylation/arabidopsis_wgbs_boundary.png" />
+<Figure caption="The MethylDackel rows over the same three pileups, zoomed to the boundary between AT1G12930 and the silenced element with taller reads. At 2.4 kb each aggregate bar is one cytosine, and the CHG/CHH rows start where the element does. In the pileups below, a single read stays blank across the gene body and picks up red marks as it crosses into the element." src="/img/methylation/arabidopsis_wgbs_boundary.png" />
 
 ## Reproduce it end to end
 

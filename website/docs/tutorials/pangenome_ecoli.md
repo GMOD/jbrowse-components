@@ -300,6 +300,41 @@ Stable rank colors, so a segment is the same color in both panels:
 
 <Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes, so the blue blocks above are the blue rank-0 backbone below, same ids at the same offsets. The orange, red and purple alleles have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
+### One row per strain
+
+The **Layout** dropdown offers three ways to draw the same subgraph, and they
+differ in what the axes mean:
+
+| Layout          | x              | y                       |
+| --------------- | -------------- | ----------------------- |
+| Anchored        | reference bp   | one row per stable rank |
+| **Sample rows** | reference bp   | one row per assembly    |
+| Force-directed  | nothing (FMMM) | nothing                 |
+
+Rank is a property of how the graph was built, not of any genome: at a dense
+locus one rank holds alleles from many different haplotypes, so a rank row means
+nothing biological. **Sample rows** rows by the assembly each allele came from
+instead, so reading across a row says what that strain does to the reference.
+
+<Figure caption="The five-strain graph in the Sample rows layout, under the genes and the segments track it was launched from. Row K12 is the reference backbone and each row below it is one strain: a deletion leaves that strain's row empty across the span it removes, and an insertion is a mark where it attaches." src="/img/pangenome/rgfa_sample_rows.png" />
+
+Both reference-anchored layouts draw an allele across **the reference it
+replaces, never its own sequence length**. An insertion consumes no reference,
+so it cannot advance along a reference axis; it draws as a mark at the point it
+attaches, and its size lives in the node tooltip and in the
+[allele inventory](#when-all-you-have-is-the-graph) track below, where a CIGAR
+gives the alignments display a channel for length that is not the x axis.
+
+### Hovering one panel highlights the other
+
+The two views are connected both ways. Hover a node in the graph and the
+reference interval it occupies is highlighted in every linear view beside it;
+hover the linear view and the segment under the cursor lights up in the graph.
+Nothing to configure, and it is what makes a rank>0 allele locatable at all,
+since those have no reference coordinates of their own to draw at.
+
+<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins." src="/img/pangenome/rgfa_hover_correspondence.png" />
+
 ### Which strain takes which path
 
 The two indexes above say what the graph contains, not who carries what: rGFA's
@@ -512,7 +547,15 @@ Stack the five strains in a linear synteny view exactly as the
 describes. The PanSN `sample#` prefix on every PAF record is how the adapter
 maps a record to its strain.
 
-<Figure caption="The all-vs-all synteny projection: the five strains stacked K12 to IAI39, a ribbon between each adjacent pair drawn from the graph's wfmash PAF. Continuous diagonal ribbons are shared backbone, and the crossings and gaps are where the strains rearrange or carry accessory sequence." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="The graph's own all-vs-all alignment: the five strains stacked K12 to IAI39, a ribbon between each adjacent pair drawn from the wfmash PAF pggb built the graph from. Continuous diagonal ribbons are shared backbone, the crossings in the bottom band are IAI39's inversions, and the gaps are accessory sequence." src="/img/pangenome/pggb_synteny.png" />
+
+The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
+draws the same five strains from a `minimap2 -c` PAF of the same assemblies, and
+the two pictures nearly agree: an independent pairwise aligner and the graph's
+own input alignment place the backbone and IAI39's inversions the same way. The
+visible difference is grain, since wfmash emits shorter segments, so the same
+`minAlignmentLength` leaves a denser band here than minimap2's long `asm20`
+blocks do there.
 
 ## Pangenome variants projection
 

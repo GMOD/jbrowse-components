@@ -150,11 +150,59 @@ record is how the adapter maps a record to its strain:
 }
 ```
 
-Stack the five strains in a linear synteny view exactly as the
-[all-vs-all tutorial](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
-describes.
+Stack the five strains in a linear synteny view: one panel per strain, and one
+`tracks` entry per band, each band naming the same track. Put this in the view's
+`init` (the launch settings a session applies once) or reach the same state from
+the UI with **Add > Linear synteny view**, whose Quick start fills in a row per
+assembly the track lists.
+
+```json
+{
+  "type": "LinearSyntenyView",
+  "init": {
+    "views": [
+      { "assembly": "K12" },
+      { "assembly": "Sakai" },
+      { "assembly": "CFT073" },
+      { "assembly": "NCTC86" },
+      { "assembly": "IAI39" }
+    ],
+    "tracks": [
+      ["ecoli_cactus_ava"],
+      ["ecoli_cactus_ava"],
+      ["ecoli_cactus_ava"],
+      ["ecoli_cactus_ava"]
+    ],
+    "minAlignmentLength": 10000,
+    "levelHeights": [110, 110, 110, 110]
+  }
+}
+```
 
 <Figure caption="The Minigraph-Cactus graph's synteny projection: the five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair drawn from the graph's HAL. The continuous diagonals of the top three bands are the backbone the four closest strains share. The bottom band crosses because IAI39 carries large inversions relative to the others, the same rearrangement the pggb graph reports." src="/img/pangenome_cactus/synteny.png" />
+
+### The same view, a different alignment
+
+This is the same view, the same five strains and the same row order as the
+[all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
+and the
+[pggb one](/docs/tutorials/pangenome_ecoli#all-vs-all-synteny-projection), and
+the three agree on the backbone and on IAI39's inversions. What differs is where
+the blocks came from, and that is the reason to look at this one:
+
+- minimap2 aligns each pair of assemblies directly, so its blocks are one
+  aligner's opinion about two genomes at a time.
+- These blocks are read out of the HAL with `halSynteny`, so they are the
+  graph's own base-level alignment. Every other projection on this page, the
+  variants, the MAF, the depth and PAV tracks, is a view of that same alignment,
+  so a boundary here is the boundary those tracks report too.
+- Cactus emits no all-vs-all PAF of its own, and `odgi untangle` on a
+  near-colinear bacterial graph collapses each pair to a few whole-chromosome
+  blocks, which is why `halSynteny` is the route rather than either of those.
+
+A practical difference: `ecoli_cactus_ava` is indexed with `make-pif`, so each
+screen is a tabix range query, while the all-vs-all tutorial's plain
+`AllVsAllPAFAdapter` holds the whole PAF in memory.
 
 ## Pangenome variants projection
 
@@ -289,11 +337,17 @@ builders produce the same kind of graph and the same odgi renders it.
 
 <Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the JBrowse figure below." src="/img/pangenome_cactus/graph.png" />
 
-The two axes are easiest to tell apart by putting the same locus on both. The
-gold band above and the gold band below are the same 100 kb of K12,
-`chr:1,000,000-1,100,000`:
+The two axes are easiest to tell apart by drawing the same rows twice. The
+`odgi pav` track is `odgi viz`'s own picture, one row per path, painted where
+the path is present and white where it is not, so putting it on K12's
+coordinates in the raster's row order and colors leaves exactly one thing
+different between the two figures: the horizontal axis. The gold band is the
+same 100 kb of K12, `chr:1,000,000-1,100,000`, in both.
 
-<Figure caption="The same locus on K12's coordinates, over the pangenome depth track. The band is 100 kb, 2.2% of the K12 axis, but the matching band above spans 5.1% of the graph axis, because the graph counts the other strains' accessory sequence through the same locus as well." src="/img/pangenome_cactus/graph_correspondence.png" />
+K12 itself has no row below because K12 is the axis there: the raster's
+`K12#0#chr` row is the JBrowse figure's coordinate line.
+
+<Figure caption="The same paths, the same colors, on K12's coordinates instead of the graph's. The gold band is 100 kb, 2.2% of the K12 axis, while the matching band above spans 5.1% of the graph axis, because the graph counts the other strains' accessory sequence through this locus as well and the linear view has nowhere to put it." src="/img/pangenome_cactus/graph_correspondence.png" />
 
 The band is wider on the graph axis, by 2.4 times. That difference is the whole
 distinction: the graph axis counts pangenome bases, so a locus where the other

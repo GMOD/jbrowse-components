@@ -148,7 +148,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
   // The same three per-read copies zoomed to the gene body -> silenced element
   // boundary (~4,404,800-4,407,200), with reads tall enough to follow one
   // molecule at a time: a read crossing the boundary stays blank on the left in
-  // the CHG/CHH copies and picks up red as it enters the element.
+  // the CHG/CHH copies and picks up red as it enters the element. The aggregate
+  // MethylDackel rows stay on top (reviewer: they bring the story home) — at
+  // 2.4 kb each bar is one cytosine, so the per-molecule pileup underneath reads
+  // as the same calls resolved read by read.
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_boundary',
@@ -161,6 +164,14 @@ export const methylationSpecs: ScreenshotSpec[] = [
           loc: 'NC_003070.9:4,404,800-4,407,200',
           tracks: [
             { trackId: 'arabidopsis_genes' },
+            {
+              trackId: 'arabidopsis_methyldackel',
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multirowxy',
+              minScore: 0,
+              maxScore: 100,
+              height: 170,
+            },
             ...WGBS_BOUNDARY_COPIES.map(c => c.display),
           ],
         },
@@ -169,22 +180,36 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyText: 'Per-read WGBS',
     readyTimeout: 90000,
     settleMs: 20000,
-    viewportHeight: 975,
-    annotations: (
-      [
-        ['cg', 'CpG'],
-        ['chg', 'CHG'],
-        ['chh', 'CHH'],
-      ] as const
-    ).map(([ctx, text]) => ({
-      type: 'text' as const,
-      anchor: {
-        selector: `[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_wgbs_${ctx}"]`,
-      },
-      dx: -690,
-      fontSize: 22,
-      text,
-    })),
+    // genes + the 170px aggregate stack + three 175px pileups + chrome
+    viewportHeight: 1165,
+    annotations: [
+      ...(['CpG', 'CHG', 'CHH'] as const).map((text, i) => ({
+        type: 'text' as const,
+        anchor: {
+          selector:
+            '[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_methyldackel"]',
+        },
+        dx: -690,
+        dy: (i - 1) * 57,
+        fontSize: 22,
+        text,
+      })),
+      ...(
+        [
+          ['cg', 'CpG'],
+          ['chg', 'CHG'],
+          ['chh', 'CHH'],
+        ] as const
+      ).map(([ctx, text]) => ({
+        type: 'text' as const,
+        anchor: {
+          selector: `[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_wgbs_${ctx}"]`,
+        },
+        dx: -690,
+        fontSize: 22,
+        text,
+      })),
+    ],
   },
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The
   // enzyme-treated sample (PAY22766, top) carries 6mA (A+a) calls that the

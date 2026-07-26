@@ -256,7 +256,7 @@ so reach for Manual only when you want to start from a track and then adjust it.
 
 To open the stacked view automatically on load, add a top-level `defaultSession`
 key to your `config.json` holding a `LinearSyntenyView` snapshot. Five rows
-means three bands, so `tracks` has three entries, all served by the same track:
+means four bands, so `tracks` has four entries, all served by the same track:
 
 ```json
 {
@@ -273,7 +273,12 @@ means three bands, so `tracks` has three entries, all served by the same track:
             { "assembly": "NCTC86" },
             { "assembly": "IAI39" }
           ],
-          "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
+          "tracks": [
+            ["ecoli_ava"],
+            ["ecoli_ava"],
+            ["ecoli_ava"],
+            ["ecoli_ava"]
+          ],
           "drawCurves": false,
           "minAlignmentLength": 10000
         }
@@ -284,10 +289,11 @@ means three bands, so `tracks` has three entries, all served by the same track:
 ```
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1, `tracks[1]` rows
-1–2, and `tracks[2]` rows 2–3, all served by `ecoli_ava`. `minAlignmentLength`
-hides minimap2's many short alignments, which would otherwise bury the shared
-backbone under a dense noise band. Tune it to taste. The one-time load settings
-(row order, tracks, `drawCurves`, `minAlignmentLength`) go under `init`. See the
+1–2, and so on to `tracks[3]` for rows 3–4, all served by `ecoli_ava`.
+`minAlignmentLength` hides minimap2's many short alignments, which would
+otherwise bury the shared backbone under a dense noise band. Tune it to taste.
+The one-time load settings (row order, tracks, `drawCurves`,
+`minAlignmentLength`) go under `init`. See the
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
 walk-through of the `defaultSession` structure.
 
@@ -409,7 +415,14 @@ Clicking a single alignment instead of selecting a region still offers **Launch
 synteny view for this position**, which opens the one pair that alignment
 describes rather than every assembly at the locus.
 
-<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Linear synteny view of selection. The dialog lists the four strains that align there, all checked, in the order their rows will stack; the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. Ribbons exist only between adjacent rows, which is what the up/down arrows are for." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+A launched view is a few kilobases wide, which is where the alignment's own
+CIGAR starts to matter. `minimap2 -c` wrote one for every record in this PAF, so
+the ribbons are not solid blocks: each insertion and deletion is drawn where it
+falls, and the palette button's **Show color legend** names the colors. **CIGAR
+display mode** in the view menu switches between colored indels, transparent
+ones, and none.
+
+<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Linear synteny view of selection. The dialog lists the four strains that align there, all checked, in the order their rows will stack, and the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. At this zoom the CIGAR shows: the wedges inside the ribbons are the insertions and deletions named in the legend." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
 ## Reproduce it end to end
 

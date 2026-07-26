@@ -169,6 +169,18 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
         // rather than mostly the source
         { type: 'click', selector: '[data-testid="close_view"]' },
         { type: 'delay', ms: 3000 },
+        // Turn the color legend on. The launched view already draws the PAF's
+        // CIGAR (cigarMode defaults to 'full', and all_vs_all.paf is built with
+        // `minimap2 -c`), so the wedges inside these ribbons are insertions and
+        // deletions — but unlabeled they read as rendering noise. The legend
+        // lists only the ops actually painted, so it names them. The palette
+        // button carries no testid; its tooltip becomes the aria-label.
+        { type: 'click', selector: '[aria-label^="Color by"]' },
+        {
+          type: 'click',
+          selector: '[data-testid="cascading-menuitem-show_color_legend"]',
+        },
+        { type: 'delay', ms: 2000 },
       ],
     },
   ]

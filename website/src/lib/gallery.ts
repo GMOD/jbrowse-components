@@ -153,13 +153,11 @@ export const gallerySections: readonly GallerySection[] = [
           'Three genomes (grape, peach, cacao) stacked in one synteny view, connected by MCScan anchors, one track per adjacent pair, auto-diagonalized and colored by the genome shared between both pairs.',
       },
       {
-        label: 'Multi-way synteny (all-vs-all PAF)',
-        spec: 'multiway_synteny/ecoli_pangenome',
-        guide: 'tutorials/allvsall_synteny',
-        description:
-          'Four E. coli strains in one synteny view, every band backed by the same all-vs-all PAF. The view takes any number of assemblies, and a minimum alignment length filter drops the short alignments so the backbone stays readable.',
-      },
-      {
+        // The plain five-row ecoli_pangenome stack used to have a card here
+        // too. It is the same dataset and the same stack as the card below,
+        // which additionally shows the one-vs-all lanes, and the multi-way
+        // capability itself is already the MCScan card above: three cards for
+        // two capabilities.
         label: 'Synteny track in a plain linear view',
         spec: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
         guide: 'tutorials/allvsall_synteny',
@@ -444,7 +442,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'pangenome_cactus/synteny',
         guide: 'tutorials/pangenome_cactus',
         description:
-          'A Minigraph-Cactus human pangenome rendered as synteny between haplotypes, the graph alignment re-plotted on genome coordinates so shared backbone and rearrangements read against the gene track rather than in abstract graph-node order.',
+          "Five E. coli strains from a Minigraph-Cactus graph, its base-level alignment read out of the HAL with halSynteny and stacked on genome coordinates: shared backbone as continuous diagonals, IAI39's inversions as the crossings in the bottom band.",
       },
     ],
   },
