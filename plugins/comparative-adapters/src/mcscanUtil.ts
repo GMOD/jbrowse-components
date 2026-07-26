@@ -44,10 +44,16 @@ export function getBlockRefNames(
 // The links overlapping `region`, oriented so the feature faces the queried
 // assembly and its partner is the mate. strand is the product of the two BED
 // strands (-1 when the pair is inverted).
+//
+// `idPrefix` distinguishes one pair's ids from another's when a caller emits
+// several pairs into the same fetch (a blocks table queried with no target
+// assembly): row 12 of the grape/peach join and row 12 of the grape/cacao join
+// are different links. Empty for a caller with only one pair to emit.
 export function makeBlockFeatures(
   assemblyNames: string[],
   feats: BlockRow[],
   region: Region,
+  idPrefix = '',
 ) {
   const index = assemblyNames.indexOf(region.assemblyName)
   const out: Feature[] = []
@@ -62,7 +68,7 @@ export function makeBlockFeatures(
         out.push(
           new SimpleFeature({
             ...f1,
-            uniqueId: `${index}-${rowNum}`,
+            uniqueId: `${idPrefix}${index}-${rowNum}`,
             syntenyId: rowNum,
             strand: f1.strand * f2.strand,
             assemblyName: assemblyNames[+!flip]!,

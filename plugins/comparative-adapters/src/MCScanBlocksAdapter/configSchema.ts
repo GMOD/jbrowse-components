@@ -29,6 +29,12 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * is transitive (both orthologous to the same reference gene) rather than a
  * direct alignment. Listing just two assemblies pins the track to that pair.
  *
+ * Somewhere that names no pair, such as the track shown in a plain linear
+ * genome view or the "Linear synteny view of selection" launcher asking what a
+ * locus aligns to, gets every pair the track declares at once, one set of links
+ * per other genome. Group the display by mate assembly to read them as a lane
+ * apiece.
+ *
  * #example
  * `uri` is the shorthand for the anchor `.blocks` file:
  * ```js

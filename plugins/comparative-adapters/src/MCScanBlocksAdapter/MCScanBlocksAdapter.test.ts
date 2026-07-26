@@ -101,6 +101,41 @@ test('full-list track, transitive band (peach query, cacao target)', async () =>
   })
 })
 
+// No target is "what aligns here at all" — what an LGVSyntenyDisplay and the
+// region-launch mate discovery ask. Answering with one arbitrary column left a
+// three-genome table drawing only grape/peach, with nothing saying cacao was in
+// the file.
+test('full-list track with no target draws every pair', async () => {
+  const fa = await feats(['grape', 'peach', 'cacao'], {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  })
+  expect(
+    [
+      ...new Set(
+        fa.map(f => (f.get('mate') as { assemblyName: string }).assemblyName),
+      ),
+    ].sort(),
+  ).toEqual(['cacao', 'peach'])
+  // 3 grape/peach links + 3 grape/cacao links, kept apart by id
+  expect(fa.length).toBe(6)
+  expect(new Set(fa.map(f => f.id())).size).toBe(6)
+})
+
+test('a pair-pinned track is unaffected by the no-target fan-out', async () => {
+  const fa = await feats(['grape', 'peach'], {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  })
+  expect(
+    fa.map(f => (f.get('mate') as { assemblyName: string }).assemblyName),
+  ).toEqual(['peach', 'peach', 'peach'])
+})
+
 test('getRefNames scopes to the target pair on a full-list track', async () => {
   const names = await makeAdapter(['grape', 'peach', 'cacao']).getRefNames({
     assemblyName: 'grape',

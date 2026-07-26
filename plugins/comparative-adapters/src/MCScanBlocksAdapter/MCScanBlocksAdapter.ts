@@ -14,9 +14,11 @@ import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 // A .blocks file has one column per genome (column 0 is the reference). Because
 // it describes N genomes at once, one track can back every band of a multi-way
 // view: parse all columns + BEDs once, then resolve which pair to draw per query
-// from the queried assembly and the band's target assembly. A given track draws
-// the pair (query assembly, target assembly); with a legacy 2-entry
-// assemblyNames config and no target, the sole other assembly is the mate.
+// from the queried assembly and the band's target assembly. A given band draws
+// the pair (query assembly, target assembly); a query with no target — a plain
+// LGVSyntenyDisplay, or the region launch asking what a locus aligns to — draws
+// every pair the track declares, which for a legacy 2-entry assemblyNames config
+// is the same single mate it always was.
 export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBlocksAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -82,13 +84,20 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
       .filter((f): f is BlockRow => f !== undefined)
   }
 
-  // The mate assembly of a band: the target the view passes, or (legacy pairwise
-  // config) the sole other entry in assemblyNames.
-  private mateAssembly(queryAssembly: string, targetAssemblyName?: string) {
-    return (
-      targetAssemblyName ??
-      this.getConf('assemblyNames').find(n => n !== queryAssembly)
-    )
+  // The columns a query draws against: the single band target when a view
+  // passes one, otherwise every other assembly the track declares.
+  //
+  // "No target" means "what aligns here at all", which is the answer the
+  // all-vs-all adapters already give and what an LGVSyntenyDisplay and the
+  // region-launch mate discovery ask for. Collapsing it to one arbitrary column
+  // left a three-genome table drawing only its first pair in both places, with
+  // no sign that the rest of the table existed. A track pinned to a pair (two
+  // entries in assemblyNames, the legacy shape) is unaffected — that list is
+  // what bounds this.
+  private mateAssemblies(queryAssembly: string, targetAssemblyName?: string) {
+    return targetAssemblyName === undefined
+      ? this.getConf('assemblyNames').filter(n => n !== queryAssembly)
+      : [targetAssemblyName]
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -130,25 +139,34 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     return ObservableCreate<Feature>(async observer => {
       const { blockAssemblies, bedMaps, blockLines } = await this.setup(opts)
       const queryAssembly = region.assemblyName
-      const mateAssembly = this.mateAssembly(
+      const mateAssemblies = this.mateAssemblies(
         queryAssembly,
         opts.targetAssemblyName,
       )
       const colA = blockAssemblies.indexOf(queryAssembly)
-      const colB =
-        mateAssembly === undefined ? -1 : blockAssemblies.indexOf(mateAssembly)
-      if (mateAssembly === undefined || colA === -1 || colB === -1) {
+      if (colA === -1 || !mateAssemblies.length) {
         throw new Error(
-          `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain both ${queryAssembly} and ${mateAssembly}, with matching bedLocations`,
+          `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain ${queryAssembly}, and assemblyNames must name another assembly to draw it against`,
         )
       }
-      const rows = this.buildPairRows(colA, colB, bedMaps, blockLines)
-      for (const feat of makeBlockFeatures(
-        [queryAssembly, mateAssembly],
-        rows,
-        region,
-      )) {
-        observer.next(feat)
+      for (const mateAssembly of mateAssemblies) {
+        const colB = blockAssemblies.indexOf(mateAssembly)
+        if (colB === -1) {
+          throw new Error(
+            `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain both ${queryAssembly} and ${mateAssembly}, with matching bedLocations`,
+          )
+        }
+        const rows = this.buildPairRows(colA, colB, bedMaps, blockLines)
+        // the mate column keys the ids apart, so the same source row joined to
+        // two different genomes stays two features
+        for (const feat of makeBlockFeatures(
+          [queryAssembly, mateAssembly],
+          rows,
+          region,
+          `${colB}-`,
+        )) {
+          observer.next(feat)
+        }
       }
       observer.complete()
     })

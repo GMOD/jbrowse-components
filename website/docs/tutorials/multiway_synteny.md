@@ -277,6 +277,25 @@ genes.
 
 <Figure caption="Gene-level view of the same block: ten consecutive orthologs run in the same order across grape, peach, and cacao, so each synteny ribbon links one gene to its ortholog in the row above and below." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
+## Restacking around a locus
+
+The stack above is fixed at load time, and rebuilding it by hand to put a
+different genome in the middle is tedious. Instead, drag-select the locus in one
+row's scale bar and pick **Linear synteny view of selection**: because the track
+lists all three genomes, the dialog finds both of the others and opens a row for
+each, with up/down arrows to order them before launching.
+
+The row you selected in is in that list too, so the whole stack is orderable
+from one place: select in any row, drag grape to the middle, and you get the
+reference-in-the-middle arrangement from
+[Direct vs transitive pairs](#direct-vs-transitive-pairs) with both bands
+direct.
+
+The same track dropped into a plain linear genome view (as an
+`LGVSyntenyDisplay`) draws every pair at once rather than one, so a grape row
+shows both its peach and its cacao links; **Group by... > Mate assembly** splits
+them into a lane per genome.
+
 ## Reproduce it end to end
 
 [`build_grape_peach_cacao_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_cacao_synteny.sh)
