@@ -16,6 +16,23 @@ export const SV_SYMBOLIC_ALLELES = [
 
 /**
  * #api
+ * parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
+ * user data and malformed breakends do occur; @gmod/vcf <=7.0.10 throws on them
+ * instead of returning undefined, which would otherwise fail a whole render or
+ * feature-parse pass over one bad allele. Use this everywhere rather than
+ * importing parseBreakend directly; it can become a plain re-export once the
+ * upstream fix ships.
+ */
+export function safeParseBreakend(alt: string) {
+  try {
+    return parseBreakend(alt)
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * #api
  * Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
  * Returns undefined when no mate coordinate info is found.
  */
@@ -30,7 +47,7 @@ export function parseSvAlt(
       joinDirection?: number // for BND arrow rendering: -1=left, 1=right
     }
   | undefined {
-  const bnd = alt !== undefined ? parseBreakend(alt) : undefined
+  const bnd = alt !== undefined ? safeParseBreakend(alt) : undefined
   const refName = feature.get('refName')
 
   if (alt !== undefined && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {

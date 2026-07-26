@@ -1,10 +1,10 @@
-import { parseBreakend } from '@gmod/vcf'
 import {
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
 import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
 import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
+import { safeParseBreakend } from '@jbrowse/sv-core'
 
 import type { ChainSegment, LayoutMatch } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -170,7 +170,7 @@ export function findMatchingAlt(feat1: Feature, feat2: Feature) {
   const alts = feat1.get('ALT') as string[] | undefined
   const target = `${feat2.get('refName')}:${feat2.get('start') + 1}`
   return alts
-    ?.map(alt => parseBreakend(alt))
+    ?.map(alt => safeParseBreakend(alt))
     .filter(notEmpty)
     .find(bnd => bnd.MatePosition === target)
 }
@@ -187,7 +187,7 @@ export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
     }
     const cur = `${f.get('refName')}:${f.get('start') + 1}`
     for (const a of alts) {
-      const bnd = parseBreakend(a)
+      const bnd = safeParseBreakend(a)
       if (bnd?.MatePosition) {
         // canonical key so feature A→B and feature B→A land in the same bucket
         bucket(candidates, [cur, bnd.MatePosition].sort().join('\t'), f)

@@ -1,9 +1,9 @@
 import { Suspense, lazy } from 'react'
 
-import { parseBreakend } from '@gmod/vcf'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
+import { safeParseBreakend } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -68,7 +68,7 @@ function LaunchBreakendWidgetArea({
   return type === 'breakend' ? (
     <LaunchBreakendPanel
       feature={feat}
-      locStrings={ALT.map(alt => parseBreakend(alt)?.MatePosition || '')}
+      locStrings={ALT.map(alt => safeParseBreakend(alt)?.MatePosition ?? '')}
       model={model}
     />
   ) : type === 'translocation' && traMate !== undefined ? (

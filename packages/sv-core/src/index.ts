@@ -12,6 +12,7 @@ export {
   navToLoc,
   parseSvAlt,
   readTranslocationMate,
+  safeParseBreakend,
   splitRegionAtPosition,
 } from './util.ts'
 export type { Region, ViewWithAssemblyNames } from './util.ts'
