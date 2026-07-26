@@ -497,9 +497,10 @@ complete haplotype loss.
 <Figure caption="KRAS on chr12: the HiFiCNV depth track over the BAF track over the CNV calls. The gain (SV_101, CN 3, 2+1) reads as raised depth and a BAF that shifts only modestly off 0.5, the partial imbalance of a 2+1 gain." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 `SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
-TP53 event, though more muted than the chr17 example.
+TP53 event. Here the balanced p-arm is in the same picture, so the contrast is
+read within one chromosome rather than against a second figure.
 
-<Figure caption="Chromosome 18: the HiFiCNV depth track over the BAF track over the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) spans most of the chromosome but reads as only a modest depth dip and a sparse BAF shift off 0.5." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="Chromosome 18: the HiFiCNV depth track over the BAF track over the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) runs from ~30 Mb to the telomere: depth halves against the CN 2 p-arm beside it, and the BAF spreads off the single band the p-arm holds." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 See also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for
