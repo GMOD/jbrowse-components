@@ -33,6 +33,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = resolve(__dirname, '../../../website/static/img')
 const DATA_PORT = 9444
 const BLAT_PORT = 9445
+const ISPCR_PORT = 9446
 
 // `--only <substring>[,<substring>]` still walks the whole flow but writes only
 // the matching figures, so regenerating one image can't churn the others with
@@ -53,6 +54,7 @@ const ONLY =
 const FIGURES = [
   'desktop-landing.png',
   'desktop-ispcr.png',
+  'desktop-ispcr-results.png',
   'desktop-blat-search.png',
   'desktop-blat-results.png',
   'desktop-open-genome.png',
@@ -67,6 +69,7 @@ const LAST_SELECTED = selected.at(-1)
 let chromedriverProcess: ChildProcess | null = null
 let dataServer: http.Server | null = null
 let blatServer: http.Server | null = null
+let ispcrServer: http.Server | null = null
 let driver: WebDriver | null = null
 
 // Every capture logs the size it is about to write, whether or not --only lets
@@ -101,6 +104,7 @@ async function shutdown(code: number): Promise<never> {
   chromedriverProcess?.kill('SIGKILL')
   dataServer?.close()
   blatServer?.close()
+  ispcrServer?.close()
   await killProcesses()
   console.log('Done.')
   process.exit(code)
@@ -293,11 +297,46 @@ const MOCK_BLAT_RESPONSE = JSON.stringify({
   ],
 })
 
-async function startMockBlatServer(port: number): Promise<http.Server> {
+// A real primer pair for a real job: amplify TP53 exon 8 (hg19
+// chr17:7,577,019-7,577,155, the codon 273/282 mutation hotspot) with ~40bp of
+// flanking intron either side, which is what you order to Sanger-sequence the
+// hotspot in a tumour sample. Both primers are the reference's own bases, with
+// one deliberate exception — the 6th base of the forward primer does not match
+// the template, standing in for a primer sitting over a SNP or carrying a design
+// typo.
+//
+// That mismatch is at the 5' end on purpose. hgPcr's wp_perfect=15 requires 15
+// perfect bases at the 3' end, which is the biology: a 3'-end mismatch stops
+// extension and the product disappears, while a 5'-end one still amplifies. Put
+// the same substitution at base 12 and UCSC returns nothing at all (verified).
+const ISPCR_FWD = 'CCCTTAGTCTCCTCCACCGCTT'
+const ISPCR_REV = 'TCCTTACTGCCTCTTGCTTCTC'
+
+// A stand-in hgPcr, for the same reason as the BLAT one: UCSC's is CAPTCHA-gated,
+// so a result figure can't be captured against it. The body is not invented — it
+// is the response genome.ucsc.edu actually returned for the pair above, so the
+// figure shows a real placement of real primers, and the shape stays honest down
+// to the position being a link and the FASTA '>' arriving unescaped. UCSC
+// lowercases the one base that did not match, which is its own way of saying the
+// anneal was imperfect.
+const MOCK_ISPCR_RESPONSE = `<HTML><BODY><PRE>
+><A HREF="../cgi-bin/hgTracks?db=hg19&position=chr17:7576979-7577195&hgPcrResult=pack">chr17:7576979+7577195</A> 217bp ${ISPCR_FWD} ${ISPCR_REV}
+CCCTTgGTCTCCTCCACCGCTTcttgtcctgcttgcttacctcgcttagt
+gctccctgggggcagctcgtggtgaggctcccctttcttgcggagattct
+cttcctctgtgcgccggtctctcccaggacaggcacaaacacgcacctca
+aagctgttccgtcccagtagattaccactactcaggataggaaaaGAGAA
+GCAAGAGGCAGTAAGGA
+</PRE></BODY></HTML>`
+
+// One stand-in server per UCSC CGI: same trivial handler, different body, since
+// hgBlat answers JSON under a text/html content-type and hgPcr answers a page.
+async function startMockServer(
+  port: number,
+  body: string,
+): Promise<http.Server> {
   const server = http.createServer((_req, res) => {
-    // hgBlat serves its JSON body under a text/html content-type
     res.setHeader('Content-Type', 'text/html')
-    res.end(MOCK_BLAT_RESPONSE)
+    res.end(body)
   })
   await new Promise<void>((done, fail) => {
     server.on('error', fail)
@@ -315,8 +354,7 @@ async function startMockBlatServer(port: number): Promise<http.Server> {
 // the guide prose covers the "advanced settings" apiKey/CAPTCHA path the toggle
 // reveals — then submit the BLAT one to get the result figure, and hand the run
 // back a clean start screen for the remaining shots.
-async function captureBlatDialogs(driver: WebDriver): Promise<void> {
-  console.log('Launching hg19 for BLAT/in-silico PCR dialogs...')
+async function launchHg19(driver: WebDriver): Promise<void> {
   const hg19Link = await driver.wait(
     until.elementLocated(By.xpath("//a[contains(., 'GRCh37/hg19')]")),
     30000,
@@ -328,18 +366,138 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   await findByText(driver, 'Tools')
   await waitForAppReady(driver)
   await freezeAnimations(driver)
+}
 
-  // Tools -> In-silico PCR first: the hgPcr primer-pair dialog, whose
-  // forward/reverse fields carry their own example placeholders. It goes before
-  // BLAT because the BLAT visit ends by submitting a query, which adds a track
-  // and moves the view — anything captured after that shows the result state
-  // rather than the pristine one.
+async function returnToStartScreen(driver: WebDriver): Promise<void> {
+  console.log('Returning to start screen...')
+  await openMenuItem(driver, 'File', 'Return to start screen')
+  await waitForStartScreen(driver)
+  await delay(1000)
+}
+
+// Points a dialog's UCSC server-url field (revealed by "Show advanced settings")
+// at one of the stand-in servers. A clearInput that didn't take leaves the real
+// UCSC url with the mock one appended, and the resulting failure reads as an
+// unrelated network error, so the field is read back.
+async function useMockServer(
+  driver: WebDriver,
+  urlLabel: string,
+  mockUrl: string,
+): Promise<void> {
+  await clickButton(driver, 'Show advanced settings')
+  const urlField = await driver.wait(
+    until.elementLocated(
+      By.xpath(`//label[contains(., '${urlLabel}')]/following::input[1]`),
+    ),
+    10000,
+  )
+  await clearInput(driver, urlField)
+  await urlField.sendKeys(mockUrl)
+  const typedUrl = await urlField.getAttribute('value')
+  if (typedUrl !== mockUrl) {
+    throw new Error(
+      `${urlLabel} field reads "${typedUrl}", wanted "${mockUrl}"`,
+    )
+  }
+}
+
+// A query no longer moves the view on its own: it adds the track and lists the
+// results, and the view goes where the reader clicks. So the result figures take
+// that click, which is the flow a reader follows rather than a shortcut around it.
+async function openFirstResult(
+  driver: WebDriver,
+  locPrefix: string,
+): Promise<void> {
+  const link = await driver.wait(
+    until.elementLocated(
+      By.xpath(`//a[starts-with(normalize-space(.), '${locPrefix}')]`),
+    ),
+    20000,
+  )
+  await driver.executeScript('arguments[0].click();', link)
+}
+
+// In-silico PCR gets its own hg19 visit: the result state has a track and a moved
+// view, so the pristine dialog and the BLAT figures cannot share a session with
+// it.
+async function captureIsPcrFigures(driver: WebDriver): Promise<void> {
+  console.log('Launching hg19 for in-silico PCR...')
+  await launchHg19(driver)
+
+  // the hgPcr primer-pair dialog, whose forward/reverse fields carry their own
+  // example placeholders, captured before anything is typed into it
   console.log('Capturing In-silico PCR dialog...')
   await openMenuItem(driver, 'Tools', 'In-silico PCR')
   await findByText(driver, 'In-silico PCR (UCSC)')
   await delay(500)
   await capture(driver, 'desktop-ispcr.png')
-  await cleanupUI(driver)
+
+  // Then the same dialog driven to a result. A product is a primer pair with an
+  // insert between them, so the track is an alignments track in view-as-pairs
+  // mode: the figure has to show the two footprints facing inward across the
+  // amplicon, which is how a primer pair is drawn everywhere else a bench
+  // scientist meets one.
+  console.log('Capturing In-silico PCR results...')
+  for (const [label, primer] of [
+    ['Forward primer', ISPCR_FWD],
+    ['Reverse primer', ISPCR_REV],
+  ]) {
+    const field = await driver.wait(
+      until.elementLocated(
+        By.xpath(`//label[contains(., '${label}')]/following::input[1]`),
+      ),
+      10000,
+    )
+    await field.click()
+    await field.sendKeys(primer!)
+  }
+  await useMockServer(
+    driver,
+    'In-silico PCR server URL',
+    `http://127.0.0.1:${ISPCR_PORT}/hgPcr`,
+  )
+  await submitUcscQuery(driver)
+
+  // the query itself only produces a track and a list; the view has not moved
+  const probe = await waitForSession(
+    driver,
+    s =>
+      s.trackIds.some(id => id.startsWith('ispcr-')) &&
+      s.widgetTypes.includes('UcscResultsWidget'),
+  )
+  if (!probe) {
+    throw new Error(
+      'no window.JBrowseSession — is the binary built from source?',
+    )
+  }
+  console.log(`    DEBUG: session ${JSON.stringify(probe)}`)
+  if (!probe.trackIds.some(id => id.startsWith('ispcr-'))) {
+    throw new Error(
+      `in-silico PCR added no track: ${probe.trackIds.join(', ')}`,
+    )
+  }
+  await openFirstResult(driver, 'chr17:7576979')
+  const navigated = await waitForSession(driver, s =>
+    s.locStrings.some(loc => loc.includes('chr17')),
+  )
+  if (!navigated?.locStrings.some(loc => loc.includes('chr17'))) {
+    throw new Error(
+      `clicking the product left the view at ${navigated?.locStrings.join('; ')}`,
+    )
+  }
+  await waitForAppReady(driver)
+  await collapseGeneGlyph(driver)
+  await waitForAppReady(driver)
+  const settled = await waitForStableSession(driver)
+  console.log(`    DEBUG: settled at ${settled?.locStrings.join('; ')}`)
+  await capture(driver, 'desktop-ispcr-results.png')
+  await flushBrowserLogs(driver)
+  await returnToStartScreen(driver)
+}
+
+async function captureBlatDialogs(driver: WebDriver): Promise<void> {
+  console.log('Launching hg19 for BLAT...')
+  await launchHg19(driver)
 
   // Tools -> BLAT search: paste a sample sequence so the figure shows a query
   // being set up against hg19, capture that, then drive the same dialog to a
@@ -357,37 +515,25 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   await delay(500)
   await capture(driver, 'desktop-blat-search.png')
 
-  // The result of a search is a track plus a navigation, so capture the state
-  // after submitting too: the hits as an on-the-fly track with the view sitting
-  // on the best one. Submitted against the stand-in server (see
-  // MOCK_BLAT_RESPONSE) via the url field under advanced settings.
+  // The result of a search is a track plus a list, so capture the state after
+  // submitting too, with the best hit opened from that list. Submitted against
+  // the stand-in server (see MOCK_BLAT_RESPONSE) via the url field under
+  // advanced settings.
   console.log('Capturing BLAT results...')
-  await clickButton(driver, 'Show advanced settings')
-  const urlField = await driver.wait(
-    until.elementLocated(
-      By.xpath("//label[contains(., 'BLAT server URL')]/following::input[1]"),
-    ),
-    10000,
+  await useMockServer(
+    driver,
+    'BLAT server URL',
+    `http://127.0.0.1:${BLAT_PORT}/hgBlat`,
   )
-  const mockUrl = `http://127.0.0.1:${BLAT_PORT}/hgBlat`
-  await clearInput(driver, urlField)
-  await urlField.sendKeys(mockUrl)
-  // a clearInput that didn't take leaves the default UCSC url with the mock one
-  // appended, and the resulting failure reads as an unrelated network error
-  const typedUrl = await urlField.getAttribute('value')
-  if (typedUrl !== mockUrl) {
-    throw new Error(`BLAT url field reads "${typedUrl}", wanted "${mockUrl}"`)
-  }
   await submitUcscQuery(driver)
 
   // What the query is supposed to have produced, asked of the model rather than
-  // of rendered text: the view on the best hit, the hits as a track, and the hit
-  // list in the drawer. The location box would answer the first question with the
-  // debounced locstring, and nothing in the DOM answers the other two.
+  // of rendered text: the hits as a track and the hit list in the drawer, neither
+  // of which the DOM answers. The view is not part of it — a query does not move
+  // the view any more, the click below does.
   const probe = await waitForSession(
     driver,
     s =>
-      s.locStrings.some(loc => loc.includes('chr17')) &&
       s.trackIds.some(id => id.startsWith('blat-')) &&
       s.widgetTypes.includes('UcscResultsWidget'),
   )
@@ -397,19 +543,24 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
     )
   }
   console.log(`    DEBUG: session ${JSON.stringify(probe)}`)
-  if (!probe.locStrings.some(loc => loc.includes('chr17'))) {
-    throw new Error(
-      `BLAT left the view at ${probe.locStrings.join('; ')}, wanted chr17`,
-    )
-  }
   if (!probe.trackIds.some(id => id.startsWith('blat-'))) {
     throw new Error(`BLAT added no track: ${probe.trackIds.join(', ')}`)
   }
   if (!probe.widgetTypes.includes('UcscResultsWidget')) {
     throw new Error(`BLAT opened no results widget: ${probe.widgetTypes}`)
   }
+  await openFirstResult(driver, 'chr17:7579839')
+  const navigated = await waitForSession(driver, s =>
+    s.locStrings.some(loc => loc.includes('chr17')),
+  )
+  if (!navigated?.locStrings.some(loc => loc.includes('chr17'))) {
+    throw new Error(
+      `clicking the hit left the view at ${navigated?.locStrings.join('; ')}`,
+    )
+  }
   await waitForAppReady(driver) // the new track fetches and paints
   await collapseGeneGlyph(driver)
+  await waitForAppReady(driver)
   // last, because collapsing the glyph is itself a height change: the span has
   // to be done moving at the moment the frame is taken, not before the edits
   // that move it
@@ -420,11 +571,7 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   // only flushed by the fatal handler, so a run that captured a wrong-looking
   // figure without throwing left no trace of what the renderer saw
   await flushBrowserLogs(driver)
-
-  console.log('Returning to start screen...')
-  await openMenuItem(driver, 'File', 'Return to start screen')
-  await waitForStartScreen(driver)
-  await delay(1000)
+  await returnToStartScreen(driver)
 }
 
 async function main(): Promise<void> {
@@ -456,7 +603,10 @@ async function main(): Promise<void> {
   dataServer = await startStaticServer(REPO_ROOT, DATA_PORT)
 
   console.log(`Serving stand-in hgBlat on http://127.0.0.1:${BLAT_PORT}...`)
-  blatServer = await startMockBlatServer(BLAT_PORT)
+  blatServer = await startMockServer(BLAT_PORT, MOCK_BLAT_RESPONSE)
+
+  console.log(`Serving stand-in hgPcr on http://127.0.0.1:${ISPCR_PORT}...`)
+  ispcrServer = await startMockServer(ISPCR_PORT, MOCK_ISPCR_RESPONSE)
 
   console.log('Starting ChromeDriver...')
   chromedriverProcess = await startChromedriver()
@@ -471,6 +621,7 @@ async function main(): Promise<void> {
   await capture(driver, 'desktop-landing.png')
 
   // BLAT / in-silico PCR dialogs on hg19, then back to the start screen
+  await captureIsPcrFigures(driver)
   await captureBlatDialogs(driver)
 
   // "Open genome(s)" dialog (custom genome from files/URLs)

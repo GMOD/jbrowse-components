@@ -7,8 +7,8 @@ guide_category: Other features
 
 **TL;DR:** The `blat` plugin adds two **Tools** menu items that answer "where is
 this sequence in the genome", **BLAT search** and **In-silico PCR**. Both query
-UCSC-style sequence-search servers, turn the hits into a track built on the fly,
-and navigate the view to the best hit.
+UCSC-style sequence-search servers and turn the hits into a track built on the
+fly, with every hit listed so you can go to the one you want.
 
 The plugin ships with JBrowse Desktop, where both items are in the Tools menu
 with nothing to install. JBrowse Web does not bundle it, so the menu items are
@@ -20,11 +20,13 @@ Choose **Tools → BLAT search…**, paste a DNA sequence or FASTA, pick the
 assembly, and submit.
 
 What comes back is a new track named after the query, holding the hits, and a
-**Search results** panel listing them. Hits are ranked by UCSC's `pslScore` and
-the view navigates to the top-scoring one, so a single sequence lands you on its
-coordinates without any further clicks. The panel keeps the rest of them in
-view, each location a link that navigates there, labelled with the percent
-identity and the fraction of the query the hit covers.
+**Search results** panel listing them, ranked by UCSC's `pslScore`. Each
+location is a link that takes the view there, labelled with the percent identity
+and the fraction of the query the hit covers.
+
+The view does not move on its own. Which hit matters is yours to decide, and the
+top-scoring one is not always it, so a query adds the track and shows you the
+list rather than jumping somewhere and losing the locus you were looking at.
 
 The track is an alignments track. A PSL hit is a list of aligned blocks in query
 and target coordinates, which is what a CIGAR encodes, so each hit is drawn the
@@ -77,15 +79,34 @@ forward and reverse primer and an optional maximum product size. This uses
 UCSC's `hgPcr` service and follows the same database-selection and apiKey/proxy
 options as BLAT search.
 
-Predicted amplicons arrive as a feature track with the view navigated to the
-first product, and the same **Search results** panel listing every product with
-its size and primer pair. There is no query sequence to align here, so this
-stays a feature track rather than a pileup. Each amplicon feature spans the
-whole product and is named by its size, with the forward and reverse primer
-footprints as labelled subfeatures at either end, so you can see which primer
-sits where on both strands.
+Predicted amplicons arrive as a track, with the same **Search results** panel
+listing every product with its size and primer pair. As with BLAT, clicking a
+product is what takes the view to it.
+
+A PCR product has the shape of a paired-end read: two short oriented footprints
+pointing at each other with an unsequenced insert between them. So each product
+is drawn as a read pair, with view-as-pairs on, which gives the arrows-facing-
+inward figure a primer pair is drawn as everywhere else. The two arrows converge
+whatever strand the product is reported on, because a primer's direction is its
+own and not the amplicon's, and the line between them is the interior you never
+sequence.
+
+Because the primers themselves are carried as the reads' bases, a base where a
+primer disagrees with the template is drawn as a mismatch rather than assumed
+away. UCSC tolerates a mismatch toward a primer's 5' end and still reports the
+product, so that is the case worth seeing: the pair amplifies, but one base of
+it is not annealing, which is what a primer sitting over a SNP looks like. A
+mismatch in the last 15 bases at the 3' end is a different matter, since UCSC
+requires those to match exactly and reports no product at all.
+
+More than one product means more than one band. The results panel counts the
+products and lists each size, which is what you compare a gel against, and says
+so explicitly when there is more than one. Two products of similar size will not
+resolve.
 
 <Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19. Forward and reverse primer fields with a max product size, sharing the same assembly picker and advanced apiKey/proxy options as BLAT search."/>
+
+<Figure src="/img/desktop-ispcr-results.png" caption="A primer pair for TP53 exon 8, the codon 273 hotspot, drawn as a read pair: the two footprints face inward across the 217 bp they bracket. One product, so one band. The tick near the left primer's outer end is a base that does not match the template, which still amplifies there but would not at the 3' end."/>
 
 ## Notes
 
