@@ -18,15 +18,23 @@ const UcscResultsWidget = observer(function UcscResultsWidget({
 }: {
   model: UcscResultsWidgetModel
 }) {
-  const { features, assembly, trackName } = model
+  const { features, assembly, trackName, resultNoun } = model
   const session = getSession(model)
+  const count = features.length
+  const noun = count === 1 ? resultNoun : `${resultNoun}s`
   return (
     <div style={{ margin: 12 }}>
       <Typography>
-        {features.length === 1
-          ? `1 hit on ${assembly}, added as the track "${trackName}"`
-          : `${features.length} hits on ${assembly}, added as the track "${trackName}"`}
+        {`${count} ${noun} on ${assembly}, added as the track "${trackName}"`}
       </Typography>
+      {resultNoun === 'product' && count > 1 ? (
+        // The reason a bench scientist runs this at all: a second product is a
+        // second band, and two of similar size will not resolve. The sizes are on
+        // the rows below, so this only has to say to go and read them.
+        <Typography variant="body2" color="warning.main">
+          These primers amplify more than once, so expect a band per product.
+        </Typography>
+      ) : null}
       <List dense>
         {features.map(feature => (
           <ListItem

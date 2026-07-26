@@ -91,6 +91,16 @@ test('a result page mentioning the CAPTCHA FAQ is not a challenge', () => {
   ).toEqual([])
 })
 
+// A primer pair converges, so the two footprints point at each other whatever
+// strand the product is reported on. They used to inherit the product's strand,
+// which drew both arrows the same way — read as two primers pointing downstream,
+// which does not amplify anything.
+test.each([0, 1])('the footprints of product %i point inward', index => {
+  const [low, high] = parseIsPcrResponse(response)[index]!.subfeatures!
+  expect(low!.strand).toBe(1)
+  expect(high!.strand).toBe(-1)
+})
+
 test('throws BlatChallengeError on a Cloudflare turnstile page', () => {
   expect(() =>
     parseIsPcrResponse('<html><div class="cf-turnstile"></div></html>'),

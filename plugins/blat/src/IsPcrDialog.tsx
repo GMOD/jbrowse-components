@@ -13,8 +13,10 @@ import {
   DEFAULT_MAX_PRODUCT_SIZE,
   MINIMUM_PRIMER_LENGTH,
   buildIsPcrBody,
-  parseIsPcrResponse,
+  parseIsPcrProducts,
+  pcrProductsToFeatures,
 } from './ispcrQuery.ts'
+import { ispcrToSam } from './ispcrToSam.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -54,8 +56,15 @@ const IsPcrDialog = observer(function IsPcrDialog({
     // type rather than guarding a reachable state
     if (maxProductSize !== undefined) {
       await query.runQuery({
-        fetchResult: async () => ({
-          features: await runUcscFetch({
+        // A product is a primer pair with an insert between them, which is a read
+        // pair: shown as an alignments track with view-as-pairs on, each product
+        // draws as the two primers facing inward joined by the amplicon. The
+        // primers' own bases come along, so a base where one disagrees with the
+        // template draws as a mismatch rather than being assumed away. The size,
+        // which is the band on a gel, is TLEN and is reported by the results panel
+        // — the pair glyph itself carries no size label.
+        fetchResult: async () => {
+          const products = await runUcscFetch({
             urlBase,
             body: buildIsPcrBody({
               db,
@@ -64,12 +73,26 @@ const IsPcrDialog = observer(function IsPcrDialog({
               maxProductSize,
               apiKey,
             }),
-            parse: parseIsPcrResponse,
-          }),
-        }),
+            parse: parseIsPcrProducts,
+          })
+          return {
+            features: pcrProductsToFeatures(products),
+            trackConf: {
+              type: 'AlignmentsTrack',
+              adapter: {
+                type: 'SamAdapter',
+                samText: ispcrToSam(products),
+              },
+              // a handful of products has no depth to read, and the pair glyph is
+              // the whole point, so it is on rather than a menu step away
+              displayDefaults: { showCoverage: false, linkedReads: 'normal' },
+            },
+          }
+        },
         trackIdPrefix: 'ispcr',
         trackName: `PCR ${fwd.slice(0, 10)}…/${rev.slice(0, 10)}…`,
         emptyMessage: `No PCR products found in ${db}`,
+        resultNoun: 'product',
       })
     }
   }

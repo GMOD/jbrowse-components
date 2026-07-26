@@ -34,6 +34,13 @@ export function stateModelFactory() {
      * name of the on-the-fly track these hits were added as
      */
     trackName: types.string,
+    /**
+     * #property
+     * what one result is called. A BLAT result is a hit; an hgPcr result is a
+     * product, which is a band on a gel — the word a bench scientist reasons in,
+     * and "2 hits" understates what two of them mean for a PCR run
+     */
+    resultNoun: types.optional(types.enumeration(['hit', 'product']), 'hit'),
   })
 }
 

@@ -19,7 +19,58 @@ export const DEFAULT_MAX_PRODUCT_SIZE = 4000
 // primers shorter than this are rejected by hgPcr as too unspecific
 export const MINIMUM_PRIMER_LENGTH = 15
 
-export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
+/** One amplicon, in the terms the header states it. */
+export interface PcrProduct {
+  refName: string
+  /** interbase, half-open */
+  start: number
+  end: number
+  /** the strand hgPcr reports the product on, i.e. which primer was forward */
+  strand: 1 | -1
+  size: number
+  /** the primers as submitted, 5'->3' */
+  forwardPrimer: string
+  reversePrimer: string
+}
+
+/**
+ * The two primer footprints, low coordinate first.
+ *
+ * A primer pair converges: the footprint at the low coordinate reads rightward
+ * and the one at the high coordinate reads leftward, whichever of the two the
+ * submitter called forward. Only *which* is which follows the product strand —
+ * on a plus product the forward primer sits at the low end, on a minus product
+ * it sits at the high end.
+ *
+ * Each footprint also carries the reference's own plus-strand bases there, which
+ * is what lets a mismatch between primer and template be drawn: a primer at the
+ * low end matches the plus strand as submitted, one at the high end is the
+ * reverse complement of it.
+ */
+export function productFootprints(product: PcrProduct) {
+  const { start, end, strand, forwardPrimer, reversePrimer } = product
+  const lowIsForward = strand === 1
+  const lowPrimer = lowIsForward ? forwardPrimer : reversePrimer
+  const highPrimer = lowIsForward ? reversePrimer : forwardPrimer
+  return {
+    low: {
+      name: lowIsForward ? 'forward primer' : 'reverse primer',
+      role: lowIsForward ? ('fwd' as const) : ('rev' as const),
+      start,
+      end: start + lowPrimer.length,
+      primer: lowPrimer,
+    },
+    high: {
+      name: lowIsForward ? 'reverse primer' : 'forward primer',
+      role: lowIsForward ? ('rev' as const) : ('fwd' as const),
+      start: end - highPrimer.length,
+      end,
+      primer: highPrimer,
+    },
+  }
+}
+
+export function parseIsPcrProducts(text: string): PcrProduct[] {
   // a successful result is HTML (FASTA inside <PRE>), and so are the "no
   // results" and Cloudflare Turnstile pages, so we can't reject on the leading
   // '<' the way BLAT's JSON path does. Scan for amplicon headers first; only if
@@ -36,61 +87,73 @@ export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
     .replaceAll(/<[^>]*>/g, '')
     .replaceAll('&gt;', '>')
     .replaceAll('&lt;', '<')
-  const features: SimpleFeatureSerialized[] = []
+  const products: PcrProduct[] = []
   for (const match of decoded.matchAll(AMPLICON_HEADER)) {
     const [, refName, startStr, sign, endStr, sizeStr, fwd, rev] = match
-    const strand = sign === '-' ? -1 : 1
-    // headers are 1-based inclusive; convert to interbase half-open
-    const start = Number(startStr) - 1
-    const end = Number(endStr)
-    const size = Number(sizeStr)
-
-    // the primer at the low-coordinate end is the forward primer on a plus
-    // product and the reverse primer on a minus product; label each footprint by
-    // the primer that actually sits there so it stays correct on both strands
-    const startIsFwd = strand === 1
-    const startPrimer = startIsFwd ? fwd! : rev!
-    const endPrimer = startIsFwd ? rev! : fwd!
-    const uniqueId = `ispcr-${refName}-${start}-${end}-${strand}`
-
-    features.push({
-      uniqueId,
+    products.push({
       refName: refName!,
+      // headers are 1-based inclusive; convert to interbase half-open
+      start: Number(startStr) - 1,
+      end: Number(endStr),
+      strand: sign === '-' ? -1 : 1,
+      size: Number(sizeStr),
+      forwardPrimer: fwd!,
+      reversePrimer: rev!,
+    })
+  }
+  // the raw text, not `decoded`: a challenge page IS markup, so stripping tags
+  // would throw away the very thing that identifies it
+  if (!products.length && isChallengePage(text)) {
+    throw challengeError()
+  }
+  return products
+}
+
+export function pcrProductsToFeatures(
+  products: PcrProduct[],
+): SimpleFeatureSerialized[] {
+  return products.map(product => {
+    const { refName, start, end, strand, size } = product
+    const uniqueId = `ispcr-${refName}-${start}-${end}-${strand}`
+    const { low, high } = productFootprints(product)
+    return {
+      uniqueId,
+      refName,
       start,
       end,
       strand,
       type: 'PCR_product',
       name: `${size} bp`,
-      forwardPrimer: fwd,
-      reversePrimer: rev,
+      forwardPrimer: product.forwardPrimer,
+      reversePrimer: product.reversePrimer,
+      // the footprints converge, so their strands are +1 and -1 whatever the
+      // product's is: a primer's direction is its own, not the amplicon's
       subfeatures: [
         {
-          uniqueId: `${uniqueId}-${startIsFwd ? 'fwd' : 'rev'}`,
-          name: startIsFwd ? 'forward primer' : 'reverse primer',
-          refName: refName!,
-          start,
-          end: start + startPrimer.length,
-          strand,
+          uniqueId: `${uniqueId}-${low.role}`,
+          name: low.name,
+          refName,
+          start: low.start,
+          end: low.end,
+          strand: 1,
           type: 'primer',
         },
         {
-          uniqueId: `${uniqueId}-${startIsFwd ? 'rev' : 'fwd'}`,
-          name: startIsFwd ? 'reverse primer' : 'forward primer',
-          refName: refName!,
-          start: end - endPrimer.length,
-          end,
-          strand,
+          uniqueId: `${uniqueId}-${high.role}`,
+          name: high.name,
+          refName,
+          start: high.start,
+          end: high.end,
+          strand: -1,
           type: 'primer',
         },
       ],
-    })
-  }
-  // the raw text, not `decoded`: a challenge page IS markup, so stripping tags
-  // would throw away the very thing that identifies it
-  if (!features.length && isChallengePage(text)) {
-    throw challengeError()
-  }
-  return features
+    }
+  })
+}
+
+export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
+  return pcrProductsToFeatures(parseIsPcrProducts(text))
 }
 
 export function buildIsPcrBody({

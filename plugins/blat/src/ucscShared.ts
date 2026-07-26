@@ -95,13 +95,13 @@ export interface ResultTrackConf {
   displayDefaults?: Record<string, unknown>
 }
 
-// Turns a UCSC query result into an on-the-fly track, shows it, navigates to the
-// leading hit, and opens the hit list in the drawer. Answering "where is this
-// sequence" is the point of the query, so landing on the coordinates is part of
-// the result rather than a follow-up the user has to perform — and the widget
-// keeps the rest of the hits readable after the dialog closes, which a snackbar
-// naming only the best one could not. Callers pass `features` best-first
-// (pslToFeatures sorts by score; hgPcr returns its products in order).
+// Turns a UCSC query result into an on-the-fly track, shows it, and opens the
+// result list in the drawer. Deliberately does NOT navigate: "first" is the
+// server's ordering, not the user's intent, so jumping there picks a result for
+// them — an off-target product can take the view — and it throws away wherever
+// they were when they asked. The drawer lists every result as a link, so going to
+// one is a click, and which one is theirs to choose. Callers pass `features`
+// best-first (pslToFeatures sorts by score; hgPcr returns its products in order).
 export async function addResultTrack({
   session,
   assembly,
@@ -109,6 +109,7 @@ export async function addResultTrack({
   trackIdPrefix,
   trackName,
   trackConf,
+  resultNoun,
 }: {
   session: AbstractSessionModel
   assembly: string
@@ -116,6 +117,8 @@ export async function addResultTrack({
   trackIdPrefix: string
   trackName: string
   trackConf?: ResultTrackConf
+  // what the results panel calls one of these; hgPcr's are products, not hits
+  resultNoun?: 'hit' | 'product'
 }) {
   if (!isSessionWithAddTracks(session)) {
     throw new Error("Can't add tracks to this session")
@@ -134,10 +137,7 @@ export async function addResultTrack({
   const view = findNavigableView(session, assembly)
   if (view) {
     view.showTrack(trackId)
-    await navToFeature(session, assembly, features[0]!)
   } else {
-    // navToFeature would say the same thing less usefully, so it is skipped
-    // rather than left to report the missing view a second time
     session.notify(
       `Added track "${trackId}" but no open view displays ${assembly}`,
       'warning',
@@ -149,6 +149,7 @@ export async function addResultTrack({
         features,
         assembly,
         trackName,
+        resultNoun,
       }),
     )
   }

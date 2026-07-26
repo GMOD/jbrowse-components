@@ -139,6 +139,7 @@ export function useUcscQuery({
     trackIdPrefix,
     trackName,
     emptyMessage,
+    resultNoun,
   }: {
     fetchResult: () => Promise<{
       features: SimpleFeatureSerialized[]
@@ -147,6 +148,8 @@ export function useUcscQuery({
     trackIdPrefix: string
     trackName: string
     emptyMessage: string
+    // what the results panel calls one of these; hgPcr's are products, not hits
+    resultNoun?: 'hit' | 'product'
   }) {
     setLoading(true)
     setError(undefined)
@@ -162,6 +165,7 @@ export function useUcscQuery({
           trackIdPrefix,
           trackName,
           trackConf,
+          resultNoun,
         })
         handleClose()
       } else {
