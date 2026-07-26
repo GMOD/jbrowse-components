@@ -1,3 +1,4 @@
+import { addAdapterGuesser, addTrackTypeGuesser } from '@jbrowse/core/util'
 import { getFileName, makeIndex } from '@jbrowse/core/util/tracks'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -12,33 +13,15 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
       index?: FileLocation,
     ) => Record<string, unknown>,
   ) {
-    pluginManager.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      adapterGuesser => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const fileName = getFileName(file)
-          if (
-            (regexGuess.test(fileName) && !adapterHint) ||
-            adapterHint === adapterName
-          ) {
-            return { type: adapterName, ...makeConfig(file, index) }
-          }
-          return adapterGuesser(file, index, adapterHint)
-        }
-      },
-    )
-    pluginManager.addToExtensionPoint(
-      'Core-guessTrackTypeForLocation',
-      trackTypeGuesser => {
-        return (testAdapterName: string) =>
-          testAdapterName === adapterName
-            ? 'ReferenceSequenceTrack'
-            : trackTypeGuesser(testAdapterName)
-      },
+    addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
+      const fileName = getFileName(file)
+      return (regexGuess.test(fileName) && !adapterHint) ||
+        adapterHint === adapterName
+        ? { type: adapterName, ...makeConfig(file, index) }
+        : undefined
+    })
+    addTrackTypeGuesser(pluginManager, testAdapterName =>
+      testAdapterName === adapterName ? 'ReferenceSequenceTrack' : undefined,
     )
   }
 

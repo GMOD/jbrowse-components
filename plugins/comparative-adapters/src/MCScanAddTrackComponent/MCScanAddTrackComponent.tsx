@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 
 import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
 
-import type { AddTrackComponentModel } from '../addTrackMixinContribution.ts'
+import type { AddTrackComponentModel } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util'
 
 interface AnchorsForm {

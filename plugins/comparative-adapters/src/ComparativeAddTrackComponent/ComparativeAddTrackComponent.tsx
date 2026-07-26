@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
 
-import type { AddTrackComponentModel } from '../addTrackMixinContribution.ts'
+import type { AddTrackComponentModel } from '@jbrowse/core/util'
 
 // The pair goes on the track as well as the adapter: a synteny view only offers
 // tracks that cover every assembly it displays (filterTracks), so a track left

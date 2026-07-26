@@ -1,5 +1,7 @@
 import { lazy } from 'react'
 
+import { addAddTrackComponent } from '@jbrowse/core/util'
+
 import { pairwiseTypes } from '../syntenyTypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -12,17 +14,8 @@ const ComparativeAddTrackComponent = lazy(
 export default function ComparativeAddTrackComponentF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addToExtensionPoint(
-    /** #extensionPoint Core-addTrackComponent | sync | Inject a custom React component into a track's rendering area */
-    'Core-addTrackComponent',
-    (
-      comp: unknown,
-      { model }: { model?: { trackAdapterType?: string } },
-    ): unknown => {
-      const t = model?.trackAdapterType
-      return t !== undefined && pairwiseTypes.includes(t)
-        ? ComparativeAddTrackComponent
-        : comp
-    },
-  )
+  addAddTrackComponent(pluginManager, {
+    adapterTypes: pairwiseTypes,
+    component: ComparativeAddTrackComponent,
+  })
 }

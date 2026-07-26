@@ -25,6 +25,7 @@ import TrackAdapterSelector from './TrackAdapterSelector.tsx'
 import TrackTypeSelector from './TrackTypeSelector.tsx'
 
 import type { AddTrackModel } from '../model.ts'
+import type { AddTrackComponentProps } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   spacing: {
@@ -40,9 +41,7 @@ const useStyles = makeStyles()(theme => ({
 const DefaultAddTrackExtensionComponent = observer(
   function DefaultAddTrackExtensionComponent({
     model,
-  }: {
-    model: AddTrackModel
-  }) {
+  }: AddTrackComponentProps) {
     const session = getSession(model)
     return (
       <AssemblySelector

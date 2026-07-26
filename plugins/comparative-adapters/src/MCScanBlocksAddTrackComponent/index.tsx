@@ -1,5 +1,7 @@
 import { lazy } from 'react'
 
+import { addAddTrackComponent } from '@jbrowse/core/util'
+
 import { mcscanBlocksTypes } from '../syntenyTypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -12,16 +14,8 @@ const MCScanBlocksAddTrackComponent = lazy(
 export default function MCScanBlocksAddTrackComponentF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addToExtensionPoint(
-    'Core-addTrackComponent',
-    (
-      comp: unknown,
-      { model }: { model?: { trackAdapterType?: string } },
-    ): unknown => {
-      const t = model?.trackAdapterType
-      return t !== undefined && mcscanBlocksTypes.includes(t)
-        ? MCScanBlocksAddTrackComponent
-        : comp
-    },
-  )
+  addAddTrackComponent(pluginManager, {
+    adapterTypes: mcscanBlocksTypes,
+    component: MCScanBlocksAddTrackComponent,
+  })
 }

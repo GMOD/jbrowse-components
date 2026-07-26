@@ -4,7 +4,10 @@ import { observer } from 'mobx-react'
 import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
 import { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 
-import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
+import type {
+  ImportFormSyntenyModel,
+  SyntenyFileFormatsExtensionPoint,
+} from './SelectorTypes.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -22,7 +25,7 @@ const ImportFormOpenCustomTrack = observer(function ImportFormOpenCustomTrack({
 }: {
   model: ImportFormSyntenyModel & IAnyStateTreeNode
   rowIndex: number
-  extensionPoint: string
+  extensionPoint: SyntenyFileFormatsExtensionPoint
   assembly1: string
   assembly2: string
 }) {

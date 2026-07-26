@@ -90,7 +90,7 @@ site. The detailed sections that follow are hand-written.
 <!-- prettier-ignore -->
 | Extension point | Type | Description |
 | --- | --- | --- |
-| `Core-addTrackComponent` | sync | Inject a custom React component into a track's rendering area |
+| `Core-addTrackComponent` | sync | Inject a custom React component into the add-track widget |
 | `Core-customizeAbout` | sync | Transform the config shown in a track's About dialog |
 | `Core-extendPluggableElement` | sync | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | Extend the session model with extra state or actions |
@@ -116,10 +116,13 @@ site. The detailed sections that follow are hand-written.
 | `LaunchView-LinearSyntenyView` | async | Programmatically launch a linear synteny view |
 | `LaunchView-SpreadsheetView` | async | Programmatically launch a spreadsheet view |
 | `LaunchView-SvInspectorView` | async | Programmatically launch the SV inspector view |
+| `LinearGenomeView-crisprGuidePanel` | sync | Replace the CRISPR guide RNA panel of the sequence search dialog |
 | `LinearGenomeView-HighlightSVGComponent` | sync | Add an SVG highlight overlay in the LGV SVG export |
+| `LinearGenomeView-motifListPanel` | sync | Replace the motif list panel of the sequence search dialog |
 | `LinearGenomeView-OverviewScalebarComponent` | sync | Add a component to the overview scalebar |
 | `LinearGenomeView-ScalebarHighlightComponent` | sync | Add a highlight component to the scalebar |
 | `LinearGenomeView-searchResultSelected` | async | Invoked when a search result is selected |
+| `LinearGenomeView-sequenceSearchPanel` | sync | Replace the sequence-pattern panel of the sequence search dialog |
 | `LinearGenomeView-TracksContainerComponent` | sync | Add a component into the LGV tracks container |
 | `LinearSyntenyView-ImportFormSyntenyOptions` | sync | Add options to the linear synteny view import form |
 | `LinearSyntenyView-SyntenyFileFormats` | sync | Add synteny file formats to the linear synteny import form |
@@ -146,24 +149,50 @@ https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/Do
 
 type: synchronous
 
-- `args` - adapter config
+- `args` - `AdapterGuesser` - the guesser accumulated so far
 
-Infer an adapter type from a location in the "Add track" workflow: your callback
-is asked whether it can provide an adapter config for a given location. See the
+Infer an adapter type from a location in the "Add track" workflow. See the
 [add track workflow guide](/docs/developer_guides/creating_addtrack_workflow).
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/index.ts#L27-L53
+Use `addAdapterGuesser` rather than calling `addToExtensionPoint` directly:
+these two points are chains of responsibility, where each callback wraps the
+previously registered guesser and delegates to it when it has no match. The
+helper does that wiring, so your callback just returns a config when it
+recognizes the file and `undefined` when it doesn't. Delegating by hand is easy
+to get subtly wrong — dropping the optional `file` argument on the way through
+hides it from every guesser registered before yours.
 
 ### Core-guessTrackTypeForLocation
 
 type: synchronous
 
-- `args` - `FileLocation` object
+- `args` - `TrackTypeGuesser` - the guesser accumulated so far
 
-Infer a track type from a location in the "Add track" workflow.
+Infer a track type from an adapter name (and, optionally, the file) in the "Add
+track" workflow. Register it with `addTrackTypeGuesser`, the companion to
+`addAdapterGuesser` above.
 
-Example:
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/index.ts#L108-L118
+A format plugin normally registers both together:
+
+<!-- include: plugins/hic/src/GuessAdapter/index.ts#guessers -->
+
+```typescript
+export default function GuessAdapterF(pluginManager: PluginManager) {
+  addAdapterGuesser(pluginManager, (file, _index, adapterHint) => {
+    const fileName = getFileName(file)
+    return (/\.hic$/i.test(fileName) && !adapterHint) ||
+      adapterHint === 'HicAdapter'
+      ? {
+          type: 'HicAdapter',
+          hicLocation: file,
+        }
+      : undefined
+  })
+  addTrackTypeGuesser(pluginManager, adapterName =>
+    adapterName === 'HicAdapter' ? 'HicTrack' : undefined,
+  )
+}
+```
 
 ### Core-extendSession
 
@@ -420,6 +449,38 @@ pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
   }
 })
 ```
+
+### Core-addTrackComponent
+
+type: synchronous
+
+- `args` - `ComponentType<AddTrackComponentProps>` - the picker rendered so far
+- `props` - `{ model }` - the add-track widget model
+
+Adapter-specific fields shown in the "Add track" widget, below the adapter and
+track-type selectors. It is a single-component fold: return your own component
+when the selected adapter is one you handle, and the accumulated component
+otherwise.
+
+Register with `addAddTrackComponent` (from `@jbrowse/core/util`), which states
+only which adapters you claim:
+
+<!-- include: plugins/gwas/src/GWASAddTrackComponent/index.tsx#register -->
+
+```typescript
+export default function GWASAddTrackComponentF(pluginManager: PluginManager) {
+  addAddTrackComponent(pluginManager, {
+    adapterTypes: ['GWASAdapter'],
+    component: GWASAddTrackComponent,
+  })
+}
+```
+
+Your component writes the config fragments it collects to `model.mixinData`,
+which the widget merges into the track config on submit. Write the whole
+fragment on every edit — a later write replaces the previous one rather than
+merging with it — and clear it on unmount, so switching to another adapter
+doesn't leave stale fields behind.
 
 ### TrackSelector-multiTrackMenuItems
 

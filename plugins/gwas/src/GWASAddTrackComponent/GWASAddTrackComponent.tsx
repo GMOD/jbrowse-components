@@ -10,13 +10,20 @@ import {
   scoreAdapterFields,
 } from '../GWASAdapter/configSchema.ts'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { AddTrackComponentProps } from '@jbrowse/core/util'
 
-interface GWASAddTrackComponentProps {
-  model: IAnyStateTreeNode & {
-    mixinData: { adapter?: { scoreColumn?: string; scoreTransform?: string } }
-    setMixinData: (data: Record<string, unknown>) => void
-  }
+interface ScoreAdapterFields {
+  scoreColumn?: string
+  scoreTransform?: string
+}
+
+// mixinData is the widget's untyped bag of adapter config fragments; this
+// component owns the `adapter` key, so it reads back its own shape here
+function readScoreFields(mixinData: Record<string, unknown>) {
+  const { adapter } = mixinData
+  return (
+    typeof adapter === 'object' && adapter !== null ? adapter : {}
+  ) as ScoreAdapterFields
 }
 
 // The defaults live in the GWASAdapter schema, so accepting them still produces
@@ -25,7 +32,7 @@ interface GWASAddTrackComponentProps {
 // left with a stale scoreColumn/scoreTransform.
 const GWASAddTrackComponent = observer(function ({
   model,
-}: GWASAddTrackComponentProps) {
+}: AddTrackComponentProps) {
   useEffect(() => {
     return () => {
       if (isAlive(model)) {
@@ -34,9 +41,9 @@ const GWASAddTrackComponent = observer(function ({
     }
   }, [model])
 
-  const { adapter } = model.mixinData
-  const scoreColumn = adapter?.scoreColumn ?? DEFAULT_SCORE_COLUMN
-  const scoreTransform = adapter?.scoreTransform ?? DEFAULT_SCORE_TRANSFORM
+  const adapter = readScoreFields(model.mixinData)
+  const scoreColumn = adapter.scoreColumn ?? DEFAULT_SCORE_COLUMN
+  const scoreTransform = adapter.scoreTransform ?? DEFAULT_SCORE_TRANSFORM
 
   // Both fields live in one adapter object, so each edit rewrites the pair to
   // avoid dropping the other; fields at their schema default are omitted so

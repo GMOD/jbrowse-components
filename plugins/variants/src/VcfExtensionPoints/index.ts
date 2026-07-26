@@ -1,4 +1,8 @@
-import { testAdapter } from '@jbrowse/core/util'
+import {
+  addAdapterGuesser,
+  addTrackTypeGuesser,
+  testAdapter,
+} from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
@@ -8,90 +12,64 @@ import {
 import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function VcfExtensionPointsF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'Core-guessAdapterForLocation',
-    adapterGuesser => {
-      return (
-        file: FileLocation,
-        index?: FileLocation,
-        adapterHint?: string,
-      ) => {
-        const fileName = getFileName(file)
-        const indexName = index && getFileName(index)
-        if (
-          testAdapter(fileName, /\.vcf\.b?gz$/i, adapterHint, 'VcfTabixAdapter')
-        ) {
-          return {
-            type: 'VcfTabixAdapter',
-            vcfGzLocation: file,
-            index: {
-              location: index ?? makeIndex(file, '.tbi'),
-              indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-            },
-          }
-        } else if (
-          testAdapter(fileName, /\.vcf(\.gz)?$/i, adapterHint, 'VcfAdapter')
-        ) {
-          return {
-            type: 'VcfAdapter',
-            vcfLocation: file,
-          }
-        } else if (
-          testAdapter(
-            fileName,
-            /\.ld\.b?gz$/i,
-            adapterHint,
-            'PlinkLDTabixAdapter',
-          )
-        ) {
-          // Gzipped LD files use tabix adapter
-          return {
-            type: 'PlinkLDTabixAdapter',
-            ldLocation: file,
-            index: {
-              location: index ?? makeIndex(file, '.tbi'),
-              indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-            },
-          }
-        } else if (
-          testAdapter(fileName, /\.ld$/i, adapterHint, 'PlinkLDAdapter')
-        ) {
-          // Plain .ld files use in-memory adapter
-          return {
-            type: 'PlinkLDAdapter',
-            ldLocation: file,
-          }
-        } else if (
-          testAdapter(fileName, /\.h5$/i, adapterHint, 'LdmatAdapter')
-        ) {
-          // HDF5 files in ldmat format
-          return {
-            type: 'LdmatAdapter',
-            ldmatLocation: file,
-          }
-        } else {
-          return adapterGuesser(file, index, adapterHint)
-        }
+  addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
+    const fileName = getFileName(file)
+    const indexName = index && getFileName(index)
+    if (
+      testAdapter(fileName, /\.vcf\.b?gz$/i, adapterHint, 'VcfTabixAdapter')
+    ) {
+      return {
+        type: 'VcfTabixAdapter',
+        vcfGzLocation: file,
+        index: {
+          location: index ?? makeIndex(file, '.tbi'),
+          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+        },
       }
-    },
-  )
-  pluginManager.addToExtensionPoint(
-    'Core-guessTrackTypeForLocation',
-    trackTypeGuesser => {
-      return (adapterName: string) => {
-        if (['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)) {
-          return 'VariantTrack'
-        }
-        if (
-          (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(adapterName)
-        ) {
-          return 'LDTrack'
-        }
-        return trackTypeGuesser(adapterName)
+    } else if (
+      testAdapter(fileName, /\.vcf(\.gz)?$/i, adapterHint, 'VcfAdapter')
+    ) {
+      return {
+        type: 'VcfAdapter',
+        vcfLocation: file,
       }
-    },
-  )
+    } else if (
+      testAdapter(fileName, /\.ld\.b?gz$/i, adapterHint, 'PlinkLDTabixAdapter')
+    ) {
+      // Gzipped LD files use tabix adapter
+      return {
+        type: 'PlinkLDTabixAdapter',
+        ldLocation: file,
+        index: {
+          location: index ?? makeIndex(file, '.tbi'),
+          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+        },
+      }
+    } else if (testAdapter(fileName, /\.ld$/i, adapterHint, 'PlinkLDAdapter')) {
+      // Plain .ld files use in-memory adapter
+      return {
+        type: 'PlinkLDAdapter',
+        ldLocation: file,
+      }
+    } else if (testAdapter(fileName, /\.h5$/i, adapterHint, 'LdmatAdapter')) {
+      // HDF5 files in ldmat format
+      return {
+        type: 'LdmatAdapter',
+        ldmatLocation: file,
+      }
+    } else {
+      return undefined
+    }
+  })
+  addTrackTypeGuesser(pluginManager, adapterName => {
+    if (['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)) {
+      return 'VariantTrack'
+    }
+    if ((PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(adapterName)) {
+      return 'LDTrack'
+    }
+    return undefined
+  })
 }

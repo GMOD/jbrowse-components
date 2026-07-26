@@ -8,9 +8,22 @@ interface DisplayConfigSnapshot {
   type?: string
   [key: string]: unknown
 }
-interface TrackConfigSnapshot {
+export interface TrackConfigSnapshot {
   displays?: DisplayConfigSnapshot[]
   [key: string]: unknown
+}
+
+// A data transform, not a component fold: each callback receives the previous
+// callback's rewritten snapshot. The snapshot is already a defensive clone at
+// both fire sites, so a callback may return a mutated `snap` as well as a new
+// object.
+declare module '../../PluginManager.ts' {
+  interface ExtensionPointRegistry {
+    'Core-preProcessTrackConfig': {
+      args: TrackConfigSnapshot
+      result: TrackConfigSnapshot
+    }
+  }
 }
 
 // Registers a back-compat migration for a display's CONFIG snapshot that runs
@@ -35,18 +48,15 @@ export function addDisplayConfigMigration(
   const match = new Set(displayTypes)
   const matches = (d: DisplayConfigSnapshot) =>
     typeof d.type === 'string' && match.has(d.type)
-  pluginManager.addToExtensionPoint<TrackConfigSnapshot>(
-    'Core-preProcessTrackConfig',
-    snap => {
-      const { displays } = snap
-      return Array.isArray(displays) && displays.some(matches)
-        ? {
-            ...snap,
-            displays: displays.map(d => (matches(d) ? migrate(d) : d)),
-          }
-        : snap
-    },
-  )
+  pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
+    const { displays } = snap
+    return Array.isArray(displays) && displays.some(matches)
+      ? {
+          ...snap,
+          displays: displays.map(d => (matches(d) ? migrate(d) : d)),
+        }
+      : snap
+  })
 }
 
 export interface LegacyDisplaySnapshot {

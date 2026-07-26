@@ -558,12 +558,19 @@ export {
   stopStopToken,
 } from './stopToken.ts'
 export {
+  type AddTrackComponentModel,
+  type AddTrackComponentProps,
+  addAddTrackComponent,
+} from './addTrackComponent.ts'
+export {
   type AdapterConfig,
   type AdapterGuesser,
   type LooseTrackInput,
   type TrackTypeGuesser,
   UNKNOWN,
   UNSUPPORTED,
+  addAdapterGuesser,
+  addTrackTypeGuesser,
   clearFileFromCache,
   ensureFileHandleReady,
   findFileHandleIds,

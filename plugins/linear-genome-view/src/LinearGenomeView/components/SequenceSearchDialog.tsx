@@ -10,7 +10,10 @@ import CrisprGuidePanel from './CrisprGuidePanel.tsx'
 import MotifListPanel from './MotifListPanel.tsx'
 import SequencePatternPanel from './SequencePatternPanel.tsx'
 
-import type { SequenceSearchModeProps } from './searchModes.ts'
+import type {
+  SequenceSearchExtensionPoint,
+  SequenceSearchModeProps,
+} from './searchModes.ts'
 import type { ComponentType } from 'react'
 
 const useStyles = makeStyles()({
@@ -26,7 +29,7 @@ const useStyles = makeStyles()({
 interface SearchMode {
   id: string
   label: string
-  extensionPoint: string
+  extensionPoint: SequenceSearchExtensionPoint
   ReactComponent: ComponentType<SequenceSearchModeProps>
 }
 

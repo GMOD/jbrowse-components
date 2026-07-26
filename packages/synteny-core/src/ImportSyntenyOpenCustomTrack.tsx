@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 import type {
   ImportFormSyntenyTrack,
   SyntenyFileFormatOption,
+  SyntenyFileFormatsExtensionPoint,
 } from './SelectorTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -28,7 +29,7 @@ const ImportSyntenyOpenCustomTrack = observer(
   }: {
     assembly1: string
     assembly2: string
-    extensionPoint: string
+    extensionPoint: SyntenyFileFormatsExtensionPoint
     baseFormats: SyntenyFileFormatOption[]
     pluginManager: PluginManager
     onSetTrack: (val: ImportFormSyntenyTrack) => void
@@ -38,7 +39,7 @@ const ImportSyntenyOpenCustomTrack = observer(
     const formats = pluginManager.evaluateExtensionPoint(
       extensionPoint,
       baseFormats,
-    ) as SyntenyFileFormatOption[]
+    )
 
     const selectedFormat = formats.find(f => f.extension === radioOption)
 

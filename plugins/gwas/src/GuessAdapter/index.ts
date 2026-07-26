@@ -1,4 +1,8 @@
-import { testAdapter } from '@jbrowse/core/util'
+import {
+  addAdapterGuesser,
+  addTrackTypeGuesser,
+  testAdapter,
+} from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
@@ -6,46 +10,29 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function GuessAdapterF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'Core-guessAdapterForLocation',
-    adapterGuesser => {
-      return (
-        file: FileLocation,
-        index?: FileLocation,
-        adapterHint?: string,
-      ) => {
-        const fileName = getFileName(file)
-        const indexName = index && getFileName(index)
-        // Only `.txt.gz` (the Pan-UKBB GWAS flat-file convention) auto-guesses
-        // to GWASAdapter. `.bed.gz` is intentionally left to BedTabixAdapter —
-        // distinguishing a GWAS BED from a generic BED would need column-level
-        // sniffing, not just the extension. An explicit adapterHint still forces
-        // GWASAdapter for a `.bed.gz`.
-        return testAdapter(fileName, /\.txt\.gz$/i, adapterHint, 'GWASAdapter')
-          ? {
-              type: 'GWASAdapter',
-              bedGzLocation: file,
-              index: {
-                location: index ?? makeIndex(file, '.tbi'),
-                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-              },
-            }
-          : adapterGuesser(file, index, adapterHint)
-      }
-    },
-  )
+  addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
+    const fileName = getFileName(file)
+    const indexName = index && getFileName(index)
+    // Only `.txt.gz` (the Pan-UKBB GWAS flat-file convention) auto-guesses to
+    // GWASAdapter. `.bed.gz` is intentionally left to BedTabixAdapter —
+    // distinguishing a GWAS BED from a generic BED would need column-level
+    // sniffing, not just the extension. An explicit adapterHint still forces
+    // GWASAdapter for a `.bed.gz`.
+    return testAdapter(fileName, /\.txt\.gz$/i, adapterHint, 'GWASAdapter')
+      ? {
+          type: 'GWASAdapter',
+          bedGzLocation: file,
+          index: {
+            location: index ?? makeIndex(file, '.tbi'),
+            indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+          },
+        }
+      : undefined
+  })
 
-  pluginManager.addToExtensionPoint(
-    'Core-guessTrackTypeForLocation',
-    trackTypeGuesser => {
-      return (adapterName: string) => {
-        return adapterName === 'GWASAdapter'
-          ? 'GWASTrack'
-          : trackTypeGuesser(adapterName)
-      }
-    },
+  addTrackTypeGuesser(pluginManager, adapterName =>
+    adapterName === 'GWASAdapter' ? 'GWASTrack' : undefined,
   )
 }

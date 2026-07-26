@@ -1,5 +1,7 @@
 import { lazy } from 'react'
 
+import { addAddTrackComponent } from '@jbrowse/core/util'
+
 import { allVsAllTypes } from '../syntenyTypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -12,16 +14,8 @@ const AllVsAllAddTrackComponent = lazy(
 export default function AllVsAllAddTrackComponentF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addToExtensionPoint(
-    'Core-addTrackComponent',
-    (
-      comp: unknown,
-      { model }: { model?: { trackAdapterType?: string } },
-    ): unknown => {
-      const t = model?.trackAdapterType
-      return t !== undefined && allVsAllTypes.includes(t)
-        ? AllVsAllAddTrackComponent
-        : comp
-    },
-  )
+  addAddTrackComponent(pluginManager, {
+    adapterTypes: allVsAllTypes,
+    component: AllVsAllAddTrackComponent,
+  })
 }

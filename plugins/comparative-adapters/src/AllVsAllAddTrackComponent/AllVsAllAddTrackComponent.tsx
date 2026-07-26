@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 
 import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
 
-import type { AddTrackComponentModel } from '../addTrackMixinContribution.ts'
+import type { AddTrackComponentModel } from '@jbrowse/core/util'
 
 // Add-track form for an all-vs-all PAF: the file contains every pairwise
 // alignment, so one track can back every band of a multi-way view. List all the

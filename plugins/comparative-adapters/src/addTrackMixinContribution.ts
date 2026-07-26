@@ -2,11 +2,7 @@ import { useEffect } from 'react'
 
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-export type AddTrackComponentModel = IAnyStateTreeNode & {
-  setMixinData: (data: Record<string, unknown>) => void
-}
+import type { AddTrackComponentModel } from '@jbrowse/core/util'
 
 // A synteny add-track picker contributes adapter-specific fields (assembly
 // pairs, BED locations) to the track config the widget builds on submit. It

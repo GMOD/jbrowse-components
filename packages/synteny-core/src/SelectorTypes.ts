@@ -53,3 +53,22 @@ export interface SyntenyFileFormatOption {
     onAdapterChange: (r: { adapter: object; name: string } | undefined) => void
   }>
 }
+
+// The dotplot and linear synteny import forms each expose their own point, but
+// share one option shape — ImportSyntenyOpenCustomTrack takes the name as a prop
+// and fires whichever one it was handed, so both are declared together here.
+export type SyntenyFileFormatsExtensionPoint =
+  'DotplotView-SyntenyFileFormats' | 'LinearSyntenyView-SyntenyFileFormats'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'DotplotView-SyntenyFileFormats': {
+      args: SyntenyFileFormatOption[]
+      result: SyntenyFileFormatOption[]
+    }
+    'LinearSyntenyView-SyntenyFileFormats': {
+      args: SyntenyFileFormatOption[]
+      result: SyntenyFileFormatOption[]
+    }
+  }
+}

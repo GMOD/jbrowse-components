@@ -50,8 +50,7 @@ export function getTrackAssemblyNames(
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
-    | string[]
-    | undefined
+    string[] | undefined
   if (!trackAssemblyNames) {
     const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
       conf,
@@ -339,6 +338,44 @@ declare module '../PluginManager.ts' {
   }
 }
 
+/**
+ * Register a guess on `Core-guessAdapterForLocation`. Return an adapter config
+ * to claim the file, or `undefined` to defer to the plugins registered before
+ * this one.
+ *
+ * Prefer this over calling `addToExtensionPoint` directly: the chaining is done
+ * once here, so a plugin cannot break the chain by forgetting to delegate, nor
+ * drop an argument on the way through.
+ */
+export function addAdapterGuesser(
+  pluginManager: PluginManager,
+  guess: AdapterGuesser,
+) {
+  pluginManager.addToExtensionPoint(
+    'Core-guessAdapterForLocation',
+    next => (file, index, adapterHint) =>
+      guess(file, index, adapterHint) ?? next(file, index, adapterHint),
+  )
+}
+
+/**
+ * Register a guess on `Core-guessTrackTypeForLocation`. Return a track type
+ * name to claim the adapter, or `undefined` to defer. See `addAdapterGuesser`
+ * for why this wrapper exists — hand-written delegates here used to drop the
+ * optional `file`, which hid it from every guesser registered earlier in the
+ * chain.
+ */
+export function addTrackTypeGuesser(
+  pluginManager: PluginManager,
+  guess: TrackTypeGuesser,
+) {
+  pluginManager.addToExtensionPoint(
+    'Core-guessTrackTypeForLocation',
+    next => (adapterName, file) =>
+      guess(adapterName, file) ?? next(adapterName, file),
+  )
+}
+
 // Handles both forward slashes and Windows backslashes in file:// URLs
 function filenameFromPath(path: string) {
   return path.replaceAll('\\', '/').split('/').at(-1) ?? ''
@@ -521,8 +558,7 @@ export function generateUnknownTrackConf(
 
 export function getTrackName(
   conf:
-    | AnyConfigurationModel
-    | { name?: string; type?: string; trackId?: string },
+    AnyConfigurationModel | { name?: string; type?: string; trackId?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
   const isMst = isStateTreeNode(conf)

@@ -1,12 +1,24 @@
 import { observer } from 'mobx-react'
 
 import type PluginManager from '../PluginManager'
+import type {
+  ExtensionPointArgs,
+  ExtensionPointName,
+  ExtensionPointProps,
+} from '../PluginManager'
 import type React from 'react'
 
+// A point rendered here is a single-component fold: its registry entry declares
+// `args`/`result` as the component type and `props` as that component's prop
+// bag (see Core-replaceWidget for the canonical shape). Taking the name as a
+// registry key rather than a bare string is what checks the default component
+// and the props against the contract, instead of trusting the call site.
+//
 // observer so that observable reads inside evaluateExtensionPoint callbacks
 // (e.g. model.trackAdapterType) are tracked here — re-evaluates when they
 // change without relying on the parent being an observer
 const PluggableComponent = observer(function PluggableComponent<
+  N extends ExtensionPointName,
   P extends object,
 >({
   pluginManager,
@@ -15,19 +27,17 @@ const PluggableComponent = observer(function PluggableComponent<
   props,
 }: {
   pluginManager: PluginManager
-  name: string
+  name: N
   component:
-    | React.ComponentType<P>
-    | React.LazyExoticComponent<React.ComponentType<P>>
-  props: P
+    React.ComponentType<P> | React.LazyExoticComponent<React.ComponentType<P>>
+  props: P & ExtensionPointProps<N>
 }) {
-  // props is forwarded verbatim as the extension-point context bag; any object
-  // is a valid bag, so widen to the untyped-overload param type here rather
-  // than constraining callers' component props to carry an index signature
+  // the result is the point's declared component type; TS can't narrow that
+  // through the generic key, so it is restated here
   const Component = pluginManager.evaluateExtensionPoint(
     name,
-    DefaultComponent,
-    props as Record<string, unknown>,
+    DefaultComponent as ExtensionPointArgs<N>,
+    props,
   ) as React.ComponentType<P>
   return <Component {...props} />
 })

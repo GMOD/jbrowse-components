@@ -44,12 +44,50 @@ function collectFromFile(file: string, points: ExtensionPoint[]) {
   }
 }
 
+// Keys declared in an `ExtensionPointRegistry` augmentation. The registry is the
+// closest thing to a manifest of extension points, so it is what makes "the
+// listing can never silently omit a point" enforceable rather than aspirational
+// — a typed point with no `#extensionPoint` tag is an error below. (A point that
+// is neither typed nor tagged still slips through; typing it is the fix, and is
+// wanted anyway.)
+function collectRegistryKeys(file: string, keys: Set<string>) {
+  const text = fs.readFileSync(file, 'utf8')
+  const blocks = /interface ExtensionPointRegistry\s*\{/g
+  let m: RegExpExecArray | null
+  while ((m = blocks.exec(text)) !== null) {
+    // walk to the matching close brace so nested props don't end the block early
+    let depth = 1
+    let i = m.index + m[0].length
+    const start = i
+    while (i < text.length && depth > 0) {
+      if (text[i] === '{') {
+        depth++
+      } else if (text[i] === '}') {
+        depth--
+      }
+      i++
+    }
+    for (const k of text.slice(start, i).matchAll(/^\s*'([\w-]+)':/gm)) {
+      keys.add(k[1]!)
+    }
+  }
+}
+
 function collectExtensionPoints(): ExtensionPoint[] {
   const points: ExtensionPoint[] = []
+  const registryKeys = new Set<string>()
   for (const dir of SOURCE_DIRS) {
     for (const file of listSources(dir)) {
       collectFromFile(file, points)
+      collectRegistryKeys(file, registryKeys)
     }
+  }
+  const tagged = new Set(points.map(p => p.id))
+  const untagged = [...registryKeys].filter(k => !tagged.has(k)).sort()
+  if (untagged.length > 0) {
+    throw new Error(
+      `these extension points are in ExtensionPointRegistry but carry no \`#extensionPoint <id> | <sync|async> | <description>\` JSDoc tag, so they are missing from the docs index: ${untagged.join(', ')}`,
+    )
   }
   // a tag duplicated across sites would otherwise double a row; keep the first
   const byId = new Map<string, ExtensionPoint>()

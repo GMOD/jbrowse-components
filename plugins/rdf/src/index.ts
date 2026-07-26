@@ -1,36 +1,24 @@
 import Plugin from '@jbrowse/core/Plugin'
+import { addAdapterGuesser } from '@jbrowse/core/util'
 import { getFileName } from '@jbrowse/core/util/tracks'
 
 import SPARQLAdapterF from './SPARQLAdapter/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class RdfPlugin extends Plugin {
   name = 'RdfPlugin'
 
   install(pluginManager: PluginManager) {
     SPARQLAdapterF(pluginManager)
-    pluginManager.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      adapterGuesser => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const regexGuess = /\/sparql$/i
-          const adapterName = 'SPARQLAdapter'
-          const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              endpoint: file,
-            }
+    addAdapterGuesser(pluginManager, (file, _index, adapterHint) => {
+      const fileName = getFileName(file)
+      return /\/sparql$/i.test(fileName) || adapterHint === 'SPARQLAdapter'
+        ? {
+            type: 'SPARQLAdapter',
+            endpoint: file,
           }
-          return adapterGuesser(file, index, adapterHint)
-        }
-      },
-    )
+        : undefined
+    })
   }
 }
