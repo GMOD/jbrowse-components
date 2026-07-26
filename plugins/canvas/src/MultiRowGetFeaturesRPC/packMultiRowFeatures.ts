@@ -122,7 +122,7 @@ export function packMultiRowFeatures({
 
     if (packDeltas) {
       // A BED column arrives as a string or a number depending on the parser, so
-      // coerce either way; anything unparseable is 0, which draws no glyph rather
+      // coerce either way; anything unparsable is 0, which draws no glyph rather
       // than a glyph of garbage length.
       const num = Number(feature.get(lengthField))
       featureDeltas[i] = Number.isFinite(num) ? num : 0
