@@ -128,14 +128,18 @@ export const screenshotSlowSpecNames = new Set(
 // interactive jbrowse.org link.
 export const screenshotSpecNames = new Set(specs.map(spec => spec.name))
 
-// Split a `--filter a,b,c` value into trimmed, non-empty tokens.
-export function parseFilterTokens(filter: string | undefined) {
-  return filter
-    ? filter
-        .split(',')
-        .map(t => t.trim())
-        .filter(Boolean)
-    : []
+// Split `--filter a,b,c` into trimmed, non-empty tokens. Takes an array because
+// the flag is declared `multiple`, so repeating it (`--filter a --filter b`)
+// unions the tokens. It used to be a plain string, where node's parseArgs keeps
+// only the last occurrence — a repeated flag silently rendered one spec and
+// skipped the other, which reads as the skipped one being up to date.
+export function parseFilterTokens(filter: string[] | undefined) {
+  return (filter ?? []).flatMap(f =>
+    f
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean),
+  )
 }
 
 // True when `name` matches any filter token (exact name or substring). An empty

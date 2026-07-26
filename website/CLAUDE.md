@@ -70,6 +70,23 @@ Pass `--force` to rewrite every PNG regardless. A code change still needs a
 `pnpm build` in `products/jbrowse-web` first (the generator renders the built
 bundle, not source).
 
+**A spec's own raised `diffThreshold` will keep a change you meant to make.** A
+spec that sets `diffThreshold: 0.1` to absorb FMMM/remote-data jitter raises the
+bar for real edits too: recoloring one track moves single-digit percentages of
+pixels, so the gate keeps the old image and the run still reads as successful.
+That is how an orange recolor shipped as goldenrod in three graph figures. The
+generator now logs `⚠ kept` (not `≈ kept`) whenever the keep needed the raised
+value — i.e. the diff cleared the run default but not the spec's own — and
+repeats those specs in a `KEPT BEHIND A RAISED diffThreshold` report at the end
+of the run. **Re-run those with `--force`.** The warning is only a prompt to
+look; nothing can tell an intended recolor from jitter automatically.
+
+**`--filter` is repeatable and unions.** `--filter a --filter b` renders both,
+as does `--filter a,b`. It was a single-valued flag, where node's `parseArgs`
+keeps only the last occurrence, so a repeated flag silently rendered one spec
+and skipped the other — which is indistinguishable from the skipped one being up
+to date.
+
 **Keep captions and gallery descriptions concise.** Name the tracks and the one
 visual takeaway (e.g. "the loop arc reappears as the matrix corner dot"). Don't
 write extended biological background — the figure should make the biology

@@ -63,7 +63,8 @@ const { values } = parseArgs({
   options: {
     help: { type: 'boolean', short: 'h', default: false },
     headed: { type: 'boolean', default: false },
-    filter: { type: 'string', short: 'f' },
+    // multiple, so `--filter a --filter b` unions rather than keeping only b
+    filter: { type: 'string', short: 'f', multiple: true },
     exact: { type: 'boolean', default: false },
     // point the proxy at an already-running app server instead of build/
     port: { type: 'string' },
@@ -122,7 +123,8 @@ Usage: pnpm generate-screenshots [options]
 Options:
   -h, --help              Show this help and exit
   -f, --filter <a,b,c>    Only render specs whose name matches any token
-                          (substring match; see --exact)
+                          (substring match; see --exact). Repeatable; every
+                          occurrence's tokens are unioned
       --exact             Make --filter tokens match spec names exactly
       --force             Overwrite every PNG, bypassing the content-stable
                           diff gate
@@ -764,6 +766,7 @@ function commit(renderPath: string, outputPath: string, spec: ScreenshotSpec) {
   return commitScreenshot(renderPath, outputPath, spec.name, {
     force,
     diffThreshold: specThreshold(spec),
+    baseThreshold: diffThreshold,
   })
 }
 
@@ -863,14 +866,15 @@ function printReport(title: string, lines: string[]) {
 
 async function main() {
   // `--filter a,b,c` matches a spec when any comma-separated token matches, so
-  // "re-render these few" is one invocation instead of a shell loop.
+  // "re-render these few" is one invocation instead of a shell loop. The flag is
+  // repeatable and the tokens union.
   const filterTokens = parseFilterTokens(filter)
   const selected = specs.filter(s =>
     matchesFilterTokens(s.name, filterTokens, exact),
   )
 
   if (selected.length === 0) {
-    console.error(`No specs match filter: ${filter}`)
+    console.error(`No specs match filter: ${filterTokens.join(',')}`)
     process.exit(1)
   }
 
@@ -888,7 +892,7 @@ async function main() {
   const filteredSpecs = [...selected, ...impliedCompose]
 
   console.log(
-    `Generating ${filteredSpecs.length} screenshot(s)${filter ? ` (filter: ${filter})` : ''}`,
+    `Generating ${filteredSpecs.length} screenshot(s)${filterTokens.length ? ` (filter: ${filterTokens.join(',')})` : ''}`,
   )
   if (impliedCompose.length > 0) {
     console.log(
@@ -983,6 +987,9 @@ async function main() {
   const failures: { name: string; error: string }[] = []
   const flaky: { name: string; frac: number }[] = []
   const changed: { name: string; result: CommitResult }[] = []
+  // kept only because the spec raised its own diffThreshold above the run
+  // default — the case where a real change hides behind a jitter allowance
+  const suppressed: { name: string; frac: number }[] = []
 
   // Zero-padded `[ 7/40]` so the counter column stays aligned as it grows,
   // keeping the interleaved per-worker lines readable.
@@ -1104,6 +1111,9 @@ async function main() {
       if (result) {
         if (result.status === 'kept') {
           kept++
+          if (result.raisedGate) {
+            suppressed.push({ name: spec.name, frac: result.frac })
+          }
         } else {
           changed.push({ name: spec.name, result })
         }
@@ -1149,6 +1159,15 @@ async function main() {
         result.status === 'updated'
           ? `• ${name}.png (${result.detail})`
           : `• ${name}.png (new)`,
+      ),
+    )
+  }
+  if (suppressed.length > 0) {
+    printReport(
+      `KEPT BEHIND A RAISED diffThreshold (${suppressed.length}) — re-run these with --force if you changed them on purpose`,
+      suppressed.map(
+        ({ name, frac }) =>
+          `• ${name}.png: ${(frac * 100).toFixed(3)}% differs, over the ${(diffThreshold * 100).toFixed(3)}% default`,
       ),
     )
   }

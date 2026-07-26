@@ -75,16 +75,27 @@ function moveIntoPlace(tmpPath: string, outputPath: string) {
 export type CommitResult =
   | { status: 'new' }
   | { status: 'updated'; detail: string }
-  | { status: 'kept' }
+  | { status: 'kept'; frac: number; raisedGate: boolean }
 
 // Move a freshly captured PNG into place only when its content actually changed
 // (or with force / for a brand-new spec), so a regen doesn't rewrite every PNG.
 // Returns what happened so callers can roll it into an end-of-run summary.
+//
+// `baseThreshold` is the run's global gate. A spec that raises its own
+// `diffThreshold` to absorb layout jitter also raises it for real changes, so a
+// keep that only happened because of the raised value is flagged `raisedGate`
+// for the caller to surface. That case is a genuine trap: a deliberate recolor
+// of one bar moves ~2.4% of pixels, which a jitter-driven 10% threshold silently
+// keeps, and the run reads as successful while publishing the old image.
 export function commitScreenshot(
   tmpPath: string,
   outputPath: string,
   name: string,
-  { force, diffThreshold }: { force: boolean; diffThreshold: number },
+  {
+    force,
+    diffThreshold,
+    baseThreshold = diffThreshold,
+  }: { force: boolean; diffThreshold: number; baseThreshold?: number },
 ): CommitResult {
   const isNew = !fs.existsSync(outputPath)
   if (force || isNew) {
@@ -95,10 +106,14 @@ export function commitScreenshot(
     const frac = pngDiffFraction(tmpPath, outputPath)
     if (frac !== null && frac < diffThreshold) {
       fs.rmSync(tmpPath, { force: true })
+      const raisedGate = frac >= baseThreshold
+      const pct = (n: number) => `${(n * 100).toFixed(3)}%`
       console.log(
-        `  ≈ ${name}.png (kept; ${(frac * 100).toFixed(3)}% < ${(diffThreshold * 100).toFixed(3)}% threshold)`,
+        raisedGate
+          ? `  ⚠ ${name}.png (kept; ${pct(frac)} exceeds the ${pct(baseThreshold)} default and was kept only by this spec's diffThreshold ${pct(diffThreshold)} — re-run with --force if the change was intended)`
+          : `  ≈ ${name}.png (kept; ${pct(frac)} < ${pct(diffThreshold)} threshold)`,
       )
-      return { status: 'kept' }
+      return { status: 'kept', frac, raisedGate }
     } else {
       moveIntoPlace(tmpPath, outputPath)
       const detail =
