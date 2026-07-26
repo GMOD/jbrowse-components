@@ -27,7 +27,11 @@
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
-    "clean": "rimraf esm *.tsbuildinfo"
+    "build:umd": "node scripts/build-umd.ts",
+    "clean": "rimraf esm dist *.tsbuildinfo"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",

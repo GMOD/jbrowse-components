@@ -29,12 +29,33 @@ const START = 7676520
 const END = 7676667
 const PRIMER_LENGTH = 22
 
-async function post(route: string, body: string, contentType: string) {
-  const res = await fetch(`${base}/${route}`, {
+function send(route: string, body: string) {
+  return fetch(`${base}/${route}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   })
+}
+
+async function post(route: string, body: string, contentType: string) {
+  const first = await send(route, body)
+  // The proxy allows one upstream call every 15s across BOTH routes, since both
+  // spend one shared UCSC key — so two scenarios back to back are legitimately
+  // refused, and waiting is the contract rather than padding against flake. The
+  // delay comes from the proxy's own Retry-After, so it tracks the deployed
+  // spacing instead of a number copied here that could drift from it.
+  const res =
+    first.status === 429
+      ? await new Promise<Response>(resolve => {
+          const seconds = Number(first.headers.get('Retry-After'))
+          setTimeout(
+            () => {
+              resolve(send(route, body))
+            },
+            (Number.isFinite(seconds) ? seconds : 15) * 1000 + 500,
+          )
+        })
+      : first
   const text = await res.text()
   // a proxy failure answers JSON with a reason; surface it rather than letting a
   // parse of an error body fail as "no results"

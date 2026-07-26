@@ -1,3 +1,5 @@
+import { isElectron } from '@jbrowse/core/util'
+
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // UCSC hgBlat with output=json returns a fixed set of PSL columns plus the
@@ -306,4 +308,21 @@ export function parseBlatResponse(text: string): PslRow[] {
   return parsePslRows(data)
 }
 
-export const DEFAULT_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
+export const UCSC_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
+
+/**
+ * Where the dialog points when the user has not typed a server of their own.
+ *
+ * Desktop goes straight to UCSC: `blatFetch` runs in the main process, so there
+ * is no CORS to route around, and a user with their own apiKey should spend it
+ * rather than the shared one. A browser cannot call genome.ucsc.edu at all
+ * (no CORS headers) and must not carry a key in a public bundle, so it gets the
+ * jbrowse.org proxy, which injects the key server-side and meters the budget
+ * that every browser user shares (`aws/blat-proxy`).
+ *
+ * Either default is only a default — the dialog's server field overrides it,
+ * which is how someone runs their own proxy or their own gfServer.
+ */
+export const DEFAULT_BLAT_URL = isElectron
+  ? UCSC_BLAT_URL
+  : 'https://api.jbrowse.org/ucsc/v1/blat'

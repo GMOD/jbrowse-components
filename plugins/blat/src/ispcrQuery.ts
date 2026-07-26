@@ -1,3 +1,5 @@
+import { isElectron } from '@jbrowse/core/util'
+
 import { challengeError, isChallengePage } from './blatQuery.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -11,7 +13,13 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 const AMPLICON_HEADER =
   /^>\s*(\S+):(\d+)([+-])(\d+)\s+(\d+)bp\s+(\S+)\s+(\S+)/gm
 
-export const DEFAULT_ISPCR_URL = 'https://genome.ucsc.edu/cgi-bin/hgPcr'
+export const UCSC_ISPCR_URL = 'https://genome.ucsc.edu/cgi-bin/hgPcr'
+
+// Desktop reaches UCSC directly, the browser goes through the jbrowse.org
+// proxy. Same split, and same reasons, as DEFAULT_BLAT_URL.
+export const DEFAULT_ISPCR_URL = isElectron
+  ? UCSC_ISPCR_URL
+  : 'https://api.jbrowse.org/ucsc/v1/ispcr'
 
 // hgPcr's default cap; also the server-side max the CGI accepts without error
 export const DEFAULT_MAX_PRODUCT_SIZE = 4000

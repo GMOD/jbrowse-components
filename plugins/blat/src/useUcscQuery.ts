@@ -65,22 +65,56 @@ function serverMessage(text: string) {
   return message
 }
 
+// A shared-proxy answer the direct UCSC server could still satisfy: its budget
+// is spent (429), it is broken (5xx), or it never answered at all (0, the
+// synthesized status for a throw). A 4xx other than 429 is the query's own
+// fault and would fail identically upstream, so it is not retried.
+function worthRetryingDirect(status: number) {
+  return status === 0 || status === 429 || status >= 500
+}
+
+function ucscFetch(url: string, body: string) {
+  return isElectron
+    ? desktopBlatFetch({ url, body })
+    : browserUcscFetch(url, body)
+}
+
 // Runs one UCSC query, routing through the desktop main process (to bypass the
 // renderer's CORS restriction and reuse a solved-challenge cookie) or a direct
 // browser fetch that expects a CORS-enabled proxy. The mode-specific pieces are
 // just the POST body and the response parser.
+//
+// `fallbackUrl` is the desktop escape hatch: the dialog defaults to the shared
+// jbrowse.org proxy so BLAT works with no apiKey and no CAPTCHA, but a desktop
+// client can reach UCSC itself, so a proxy that is out of budget or down
+// degrades to the direct path (and its CAPTCHA) instead of failing. A browser
+// has nowhere to fall back to, and an explicitly chosen server is not
+// second-guessed.
 export async function runUcscFetch<T>({
   urlBase,
+  fallbackUrl,
   body,
   parse,
 }: {
   urlBase: string
+  fallbackUrl?: string
   body: string
   parse: (text: string) => T
 }) {
-  const { ok, status, text } = isElectron
-    ? await desktopBlatFetch({ url: urlBase, body })
-    : await browserUcscFetch(urlBase, body)
+  // an unreachable proxy throws rather than answering, and that is exactly the
+  // case the fallback exists for — but with no fallback the throw carries the
+  // CORS explanation, so it is only swallowed when there is somewhere to go
+  const first = fallbackUrl
+    ? await ucscFetch(urlBase, body).catch(() => ({
+        ok: false,
+        status: 0,
+        text: '',
+      }))
+    : await ucscFetch(urlBase, body)
+  const { ok, status, text } =
+    fallbackUrl && !first.ok && worthRetryingDirect(first.status)
+      ? await ucscFetch(fallbackUrl, body)
+      : first
   // the Cloudflare Turnstile challenge can arrive with a non-2xx status, so
   // probe the body for a challenge before failing generically — otherwise the
   // solve-CAPTCHA affordance never appears. A 2xx challenge is caught by parse().
@@ -100,10 +134,13 @@ export function useUcscQuery({
   session,
   handleClose,
   defaultUrl,
+  directUrl,
 }: {
   session: AbstractSessionModel
   handleClose: () => void
   defaultUrl: string
+  // the UCSC CGI itself, for the desktop paths that bypass the shared proxy
+  directUrl: string
 }) {
   const { assemblyNames } = session
   const [assembly, setAssembly] = useState(assemblyNames[0] ?? '')
@@ -121,9 +158,17 @@ export function useUcscQuery({
   // it stays out of `error` (which renders as a red ErrorMessage)
   const [notFound, setNotFound] = useState('')
 
+  // The shared proxy overwrites whatever apiKey a client sends with its own, so
+  // a key typed here only means anything against UCSC directly. On desktop we
+  // can go there, so entering a key moves the server field with it — visibly,
+  // rather than quietly sending the query somewhere other than the URL shown.
+  // A server the user typed themselves is left alone.
   function changeApiKey(key: string) {
     setApiKey(key)
     localStorageSetItem(API_KEY_STORAGE, key)
+    if (isElectron && (urlBase === defaultUrl || urlBase === directUrl)) {
+      setUrlBase(key ? directUrl : defaultUrl)
+    }
   }
 
   function changeAssembly(name: string) {
@@ -191,10 +236,16 @@ export function useUcscQuery({
     }
   }
 
+  // only the untouched shared-proxy default falls back: an explicitly chosen
+  // server, and the browser (which cannot reach UCSC), get one attempt
+  const fallbackUrl =
+    isElectron && urlBase === defaultUrl ? directUrl : undefined
+
   return {
     assembly,
     db,
     urlBase,
+    fallbackUrl,
     apiKey,
     loading,
     challenged,

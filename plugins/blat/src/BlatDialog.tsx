@@ -10,6 +10,7 @@ import UcscQueryFields from './UcscQueryFields.tsx'
 import UcscQueryStatus from './UcscQueryStatus.tsx'
 import {
   DEFAULT_BLAT_URL,
+  UCSC_BLAT_URL,
   MAXIMUM_BLAT_LENGTH,
   MAXIMUM_BLAT_QUERIES,
   MINIMUM_BLAT_LENGTH,
@@ -36,8 +37,9 @@ const BlatDialog = observer(function BlatDialog({
     session,
     handleClose,
     defaultUrl: DEFAULT_BLAT_URL,
+    directUrl: UCSC_BLAT_URL,
   })
-  const { db, urlBase, apiKey } = query
+  const { db, urlBase, fallbackUrl, apiKey } = query
   const [seq, setSeq] = useState('')
 
   const residues = stripFasta(seq)
@@ -64,6 +66,7 @@ const BlatDialog = observer(function BlatDialog({
       fetchResult: async () => {
         const rows = await runUcscFetch({
           urlBase,
+          fallbackUrl,
           body: buildBlatBody({ db, seq: seq.trim(), apiKey }),
           parse: parseBlatResponse,
         })
