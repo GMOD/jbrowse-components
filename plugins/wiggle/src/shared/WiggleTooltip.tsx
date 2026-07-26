@@ -14,15 +14,8 @@ const MAX_ROWS = 8
 type Coord = [number, number]
 
 const useStyles = makeStyles()({
-  // Static bits only — `left`/`height`/`background` stay inline since they
-  // change per mouse move / per source and would churn emitted CSS.
-  cursorLine: {
-    position: 'absolute',
-    top: 0,
-    width: 1,
-    background: '#777',
-    pointerEvents: 'none',
-  },
+  // Static bits only — `background` stays inline since it changes per source and
+  // would churn emitted CSS.
   row: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -65,11 +58,6 @@ function SourceRow({ row }: { row: WiggleTooltipRow }) {
   )
 }
 
-function CursorLine({ height, left }: { height: number; left: number }) {
-  const { classes } = useStyles()
-  return <div className={classes.cursorLine} style={{ height, left }} />
-}
-
 function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
   const { classes } = useStyles()
   const { refName, start, end, rows } = feature
@@ -92,28 +80,24 @@ function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
 
 // Non-plot areas (e.g. the tree sidebar) are excluded by the caller's
 // `computeHit` returning undefined, not by a geometry check here — so hover, the
-// vertical guide, and click-to-select share one definition of "over the plot".
+// cursor guides, and click-to-select share one definition of "over the plot".
+// The guides themselves belong to each display component (a vertical line for
+// the single-source plots, the full crosshair for multi-wiggle), gated on the
+// same `featureUnderMouse` this reads.
 const WiggleTooltip = observer(function WiggleTooltip({
   model,
   clientMouseCoord,
-  offsetMouseCoord,
-  height,
 }: {
   model: { featureUnderMouse?: WiggleFeatureUnderMouse }
   clientMouseCoord: Coord
-  offsetMouseCoord: Coord
-  height: number
 }) {
   const { featureUnderMouse } = model
   return featureUnderMouse ? (
-    <>
-      <BaseTooltip
-        clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}
-      >
-        <TooltipContents feature={featureUnderMouse} />
-      </BaseTooltip>
-      <CursorLine height={height} left={offsetMouseCoord[0]} />
-    </>
+    <BaseTooltip
+      clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}
+    >
+      <TooltipContents feature={featureUnderMouse} />
+    </BaseTooltip>
   ) : null
 })
 

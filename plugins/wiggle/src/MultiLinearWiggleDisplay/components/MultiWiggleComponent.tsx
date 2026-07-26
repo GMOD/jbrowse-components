@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { Crosshairs } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
@@ -147,12 +148,19 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       {/* portals the overlay color legend above the inter-region masks */}
       <MultiWiggleLegendOverlay model={model} />
 
-      <WiggleTooltip
-        model={model}
-        height={height}
-        clientMouseCoord={clientMouseCoord}
-        offsetMouseCoord={offsetMouseCoord}
-      />
+      {/* the full crosshair, not just a genomic guide: cursor y picks the row
+          being read in multi-row mode and a score level in overlay mode, and
+          both are hard to eyeball across a tall stack of plots */}
+      {model.featureUnderMouse ? (
+        <Crosshairs
+          mouseX={offsetMouseCoord[0]}
+          mouseY={offsetMouseCoord[1]}
+          width={totalWidth}
+          height={height}
+          zIndex={800}
+        />
+      ) : null}
+      <WiggleTooltip model={model} clientMouseCoord={clientMouseCoord} />
     </>
   )
 })
