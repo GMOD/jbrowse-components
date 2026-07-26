@@ -20,8 +20,9 @@ endpoint.
 ## Endpoint
 
 `POST /blat` — body is the same `application/x-www-form-urlencoded` hgBlat body
-the plugin builds. Returns hgBlat's JSON (or a JSON error on failure).
-`OPTIONS /blat` — CORS preflight.
+the plugin builds. Returns hgBlat's JSON, a `429` when the shared key's budget
+says wait (see below), or a JSON error on failure. `OPTIONS /blat` — CORS
+preflight.
 
 ## Deploy
 
@@ -36,14 +37,48 @@ UCSC_API_KEY=your_key ./deploy.sh        # first time: sam deploy --guided
 The `BlatProxyApiUrl` stack output is the URL to configure in the plugin (or set
 as `DEFAULT_BLAT_URL` in `plugins/blat/src/blatQuery.ts` once it's stable).
 
-## Rate limiting (follow-on, not yet implemented)
+## Rate limiting
 
-UCSC caps program-driven BLAT at **1 hit / 15 s, 5000 / day**, and this proxy
-uses ONE shared key for all users. Under real load that budget will be exceeded.
-Before broad rollout, add either a DynamoDB token-bucket in front of the
-upstream `fetch`, a short-TTL response cache keyed by `db`+`userSeq`, or both.
+UCSC caps program-driven BLAT at **1 hit / 15 s, 5000 / day**, and the cap
+belongs to the key — which every browser user here shares. So the budget is
+enforced centrally, in DynamoDB, before the upstream call:
+
+- **Response cache** (`cache#<sha256 of the query>`, 24h TTL by default). A
+  repeat of the same assembly + sequence is served from the table and spends no
+  budget. This is the biggest lever: a sequence pasted from the docs, or a user
+  re-running what they just ran, costs one upstream call per day.
+- **Spacing lock** (`slot`). A conditional update takes the single slot only if
+  the last call is ≥15 s old, so two concurrent Lambdas can't both proceed.
+- **Daily counter** (`day#<UTC date>`). Conditional increment, refused at
+  `DailyMax` — **4500**, deliberately under UCSC's 5000, because their day
+  boundary isn't documented and a UTC window that doesn't line up with theirs
+  would otherwise overlap.
+
+A refused request gets **429** with `Retry-After` and a message saying which
+limit it hit. `X-Blat-Cache: hit|miss` says whether a 200 cost anything.
+
+Spacing is claimed *before* the daily count on purpose: a slot spent on a call
+the daily budget then refuses costs one 15 s window on a day that is already
+exhausted, whereas counting first would leak a permanent unit of the day's
+budget on every spacing refusal.
+
+The budget check **fails closed** — if DynamoDB can't be reached the request is
+refused rather than passed through, since an unmetered burst risks the one key
+everyone depends on. A cache failure only makes things slow, so it fails open.
+
+`ReservedConcurrentExecutions` is 5: at one upstream call per 15 s a larger
+fleet has nothing to do but return 429s.
+
+**With `BLAT_LIMIT_TABLE` unset the proxy is unmetered** (fine locally, not for
+a deployment). `template.yaml` wires it, so a SAM deploy is metered by default.
+
 The desktop "own apiKey" path (in the plugin dialog) is the pressure valve that
 avoids the shared budget entirely.
+
+### Tuning
+
+Deploy-time parameters: `SpacingMs`, `DailyMax`, `CacheTtlSeconds`,
+`MaxConcurrency`. Each maps to the `BLAT_*` env var of the same meaning.
 
 ## Local
 

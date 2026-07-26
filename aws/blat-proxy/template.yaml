@@ -15,6 +15,32 @@ Parameters:
       UCSC apiKey (Genome Browser account -> Hub Development -> generate).
       Passed at deploy time and stored as the function's UCSC_API_KEY env var;
       bypasses the Cloudflare Turnstile that fronts hgBlat.
+  SpacingMs:
+    Type: Number
+    Default: 15000
+    Description: >-
+      Minimum gap between upstream hgBlat calls, in ms. UCSC allows one every
+      15s per key, and this deployment spends ONE key for every user.
+  DailyMax:
+    Type: Number
+    Default: 4500
+    Description: >-
+      Upstream calls allowed per UTC day. Under UCSC's 5000 on purpose: their
+      day boundary is undocumented, so the headroom absorbs a window that does
+      not line up with UTC.
+  CacheTtlSeconds:
+    Type: Number
+    Default: 86400
+    Description: >-
+      How long an identical query's result is reused. A BLAT hit for a given
+      assembly + sequence is stable, so a cache hit spends no budget at all.
+  MaxConcurrency:
+    Type: Number
+    Default: 5
+    Description: >-
+      Reserved concurrency. At one upstream call per 15s there is nothing for a
+      larger fleet to do but return 429s, and this caps the blast radius of a
+      traffic spike on the rest of the account.
 
 Globals:
   Function:
@@ -32,10 +58,21 @@ Resources:
       CodeUri: dist/
       Handler: index.handler
       Description: Proxies BLAT queries to UCSC hgBlat with a server-side apiKey
+      ReservedConcurrentExecutions: !Ref MaxConcurrency
       Environment:
         Variables:
           NODE_ENV: production
           UCSC_API_KEY: !Ref UcscApiKey
+          BLAT_LIMIT_TABLE: !Ref BlatBudgetTable
+          BLAT_SPACING_MS: !Ref SpacingMs
+          BLAT_DAILY_MAX: !Ref DailyMax
+          BLAT_CACHE_TTL_SECONDS: !Ref CacheTtlSeconds
+      # the budget lives in the table, so the function must be able to write it;
+      # with BLAT_LIMIT_TABLE unset the proxy runs UNMETERED, which is why this
+      # is wired here rather than left to the operator
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BlatBudgetTable
       Events:
         BlatQuery:
           Type: HttpApi
@@ -58,6 +95,26 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref Stage
+
+  # One table, three kinds of item keyed by prefix: `slot` (the single spacing
+  # lock, rewritten forever), `day#<UTC date>` (the daily counter), and
+  # `cache#<query hash>`. The last two carry `expiresAt` so TTL sweeps them; the
+  # conditional writes in dynamoStore.ts are what make a reservation atomic
+  # across concurrent invocations, which a per-container counter could not be.
+  BlatBudgetTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: jbrowse-blat-proxy-budget
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
 
   BlatProxyFunctionLogGroup:
     Type: AWS::Logs::LogGroup
