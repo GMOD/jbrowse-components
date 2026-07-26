@@ -69,6 +69,18 @@ Returns undefined when no mate coordinate info is found.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
+### safeParseBreakend
+
+parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
+user data and malformed breakends do occur;
+
+```js
+// type signature
+(alt: string) => Breakend | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ### splitRegionAtPosition
 
 Splits a region at `pos` into two halves that both include `pos`, so a breakend
