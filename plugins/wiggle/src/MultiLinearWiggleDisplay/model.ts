@@ -11,7 +11,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
-  PromotableDefaultsMixin,
   TrackHeightMixin,
   fetchAllRegions,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -103,7 +102,6 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       WiggleCommonMixin(),
-      PromotableDefaultsMixin(configSchema),
       TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),

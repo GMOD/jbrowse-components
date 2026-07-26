@@ -1,14 +1,10 @@
 import {
   getConf,
   getDisplayTypeDefaultChanges,
+  openPromotableDisplays,
 } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  isViewContainer,
-  mergeTrackConfig,
-} from '@jbrowse/core/util'
+import { getContainingTrack, mergeTrackConfig } from '@jbrowse/core/util'
 
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 interface Bake {
@@ -45,42 +41,33 @@ interface Bake {
  * left to pick up the recipient's defaults when opened — matching "export the
  * actual state of the (open) tracks".
  *
- * Reach is `session.views[].tracks[]` — the same set `openDisplaysOfType` (the
- * cascade's own "apply to open tracks") walks, so the two stay consistent. A
- * display nested inside a composite view (breakpoint-split, SV-inspector,
- * synteny read-vs-ref) is therefore not baked; that's an accepted limitation
- * shared with the rest of the subsystem, not a special case to add here.
+ * Reach is `openPromotableDisplays` — literally the same walk the cascade's own
+ * "apply to open tracks" uses, so the two can't drift. A display nested inside a
+ * composite view (breakpoint-split, SV-inspector, synteny read-vs-ref) is
+ * therefore not baked; that's an accepted limitation shared with the rest of the
+ * subsystem, not a special case to add here.
  */
 export function bakePromotedDefaultsIntoSnapshot(
   session: AbstractSessionModel,
   snapshot: Record<string, unknown>,
 ): Record<string, unknown> {
   const snap = structuredClone(snapshot)
-  if (!isViewContainer(session)) {
-    return snap
-  }
-
   const bakes: Bake[] = []
   const openDisplayIds = new Set<string>()
 
-  for (const view of session.views) {
-    if (!hasOpenTracks(view)) {
-      continue
-    }
-    for (const track of view.tracks) {
-      for (const display of track.displays) {
-        const displayId = getConf(display, 'displayId') as string
-        openDisplayIds.add(displayId)
-        const changes = getDisplayTypeDefaultChanges(display)
-        if (changes.length > 0) {
-          bakes.push({
-            trackId: getConf(getContainingTrack(display), 'trackId') as string,
-            displayId,
-            displayType: display.type,
-            values: Object.fromEntries(changes.map(c => [c.path[0], c.to])),
-          })
-        }
-      }
+  // one shared walk with the cascade's own "apply to open tracks", so the set
+  // this bakes and the set that acts on a promoted default can't drift
+  for (const display of openPromotableDisplays(session)) {
+    const displayId = getConf(display, 'displayId') as string
+    openDisplayIds.add(displayId)
+    const changes = getDisplayTypeDefaultChanges(display)
+    if (changes.length > 0) {
+      bakes.push({
+        trackId: getConf(getContainingTrack(display), 'trackId') as string,
+        displayId,
+        displayType: display.type,
+        values: Object.fromEntries(changes.map(c => [c.path[0], c.to])),
+      })
     }
   }
 
@@ -148,19 +135,6 @@ function bakeValues(snap: Record<string, unknown>, bake: Bake) {
     })
     snap.trackConfigDeltas = deltas
   }
-}
-
-// A view whose open tracks we can enumerate — narrowed structurally, mirroring
-// promotableDefaults' openDisplaysOfType (the generic view interface doesn't
-// surface `tracks`).
-function hasOpenTracks<T extends object>(
-  view: T,
-): view is T & {
-  tracks: {
-    displays: PromotableDisplay[]
-  }[]
-} {
-  return 'tracks' in view && Array.isArray(view.tracks)
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {

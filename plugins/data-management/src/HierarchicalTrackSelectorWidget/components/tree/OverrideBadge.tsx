@@ -1,3 +1,7 @@
+import {
+  clearPromotedDefaults,
+  getDisplayTypeDefaultChanges,
+} from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import EditIcon from '@mui/icons-material/Edit'
@@ -7,7 +11,7 @@ import { observer } from 'mobx-react'
 import TrackSettingsChangesDialog from '../dialogs/TrackSettingsChangesDialog.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { AbstractDisplayModel } from '@jbrowse/core/util'
+import type { PromotableDisplay } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
   editButton: {
@@ -24,7 +28,7 @@ const useStyles = makeStyles()(theme => ({
 // so the resolution can't drift; a closed track has no display and so no badge.
 interface OpenTrack {
   configuration: { trackId: string }
-  displays: AbstractDisplayModel[]
+  displays: PromotableDisplay[]
 }
 function openDisplays(model: HierarchicalTrackSelectorModel, trackId: string) {
   const view: { tracks?: OpenTrack[] } | undefined = model.view
@@ -56,17 +60,19 @@ const OverrideBadge = observer(function OverrideBadge({
       }
     : undefined
 
+  // read straight off the cascade rather than through a per-display MST hook:
+  // both functions are total (a schema with no promotable slot yields no changes
+  // and clears nothing), so there is nothing to dispatch on and no display needs
+  // to opt in
   const displays = openDisplays(model, trackId)
   const displayTypeDefaults = displays.flatMap(d =>
-    d.displayTypeDefaultChanges ? d.displayTypeDefaultChanges() : [],
+    getDisplayTypeDefaultChanges(d),
   )
-  const onClearDefaults = displays.some(d => d.clearDisplayTypeDefaults)
-    ? () => {
-        for (const d of displays) {
-          d.clearDisplayTypeDefaults?.()
-        }
-      }
-    : undefined
+  const onClearDefaults = () => {
+    for (const d of displays) {
+      clearPromotedDefaults(d)
+    }
+  }
 
   const edited = changes.length > 0
   const affectedByDefault = displayTypeDefaults.length > 0

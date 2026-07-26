@@ -22,10 +22,11 @@ read one section, read [The cascade](#the-cascade).
   out of the snapshot, so "at default" *is* "follows the default".
 - The promoted value lives in the **session**, not the track, so setting a
   default rewrites nothing. Objects compare with `deepEqual`, not `!==`.
-- Every production slot is **sentinel**: `defaultValue` is a dedicated inherit
-  signal (an `'inherit'` enum member, or a `maybeNumber`/`maybeBoolean`
-  `undefined`), and `promotedBase` holds what it resolves to. This keeps every
-  real value customizable over an opposite default.
+- Every slot is **sentinel**, enforced by `ConfigSlot`: `defaultValue` is a
+  dedicated inherit signal (an `'inherit'` enum member, or a
+  `maybeNumber`/`maybeBoolean`/`maybeColor` `undefined`) and `promotedBase` holds
+  what it resolves to. This keeps every real value customizable over an opposite
+  default.
 - **Standing rule at every serialization boundary:** flatten the cascade like
   `getComputedStyle`. Worker RPC → `resolvePromotableConfigSnapshot`;
   share/export → `bakePromotedDefaultsIntoSnapshot`. Never emit a raw promotable
@@ -50,27 +51,27 @@ read one section, read [The cascade](#the-cascade).
 
 | Concern | File |
 | --- | --- |
-| Read-time resolver (`resolveSlot`, `promotableSlotNames`, `promotableSlots`) | `packages/core/src/configuration/promotableResolve.ts` |
+| Read-time resolver (`resolveSlot`, `promotableSlotNames`, `isUsableValue`) | `packages/core/src/configuration/promotableResolve.ts` |
 | Resolution-aware reader (`getConf` routes promotable slots through the cascade) | `packages/core/src/configuration/getConf.ts` |
-| Control builders + share/worker helpers (`make*Control`, `resolvePromotableConfigSnapshot`, `getDisplayTypeDefaultChanges`) | `packages/core/src/configuration/promotableDefaults.ts` |
+| Control builders + share/worker helpers (`make*Control`, `resolvePromotableConfigSnapshot`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
 | `promotable` / `promotedBase` slot metadata | `packages/core/src/configuration/configurationSlot.ts` |
 | Resolved read type (`SlotValueFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
 | Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
 | Received-session opt-out (`ignorePromotedDefaults`) | `packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx` |
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
-| Badge hooks mixin | `plugins/linear-genome-view/src/BaseLinearDisplay/models/PromotableDefaultsMixin.tsx` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
-| Adopters (all sentinel): `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` — **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, so those displays get the four pins for free |
-| Adopters (all sentinel): `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
-| Adopters (sentinel): `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
+| Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` — **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, so those displays get the four pins for free |
+| Adopters: `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
+| Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
 | Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
 
 Tests: `promotableDefaults.test.ts` (resolver + control builders),
-`showSoftClipping.test.ts` (sentinel adopters `showSoftClipping`/`featureHeight`
-+ per-preset pins end-to-end),
+`promotedValueCloneable.test.ts` (node env: a resolved value must survive
+`postMessage`), `showSoftClipping.test.ts` (adopters
+`showSoftClipping`/`featureHeight` + per-preset pins end-to-end),
 `colorBy.test.tsx` / `readConnections.test.tsx` / `sashimi.test.ts` (per-row
 pins), `DefaultForAllAdornment.test.tsx` (the pin), `OverrideBadge.test.tsx`
 (badge), `ShareablePromotedDefaults.test.ts` (the share/export bake +
@@ -105,46 +106,37 @@ slot as *permanently customized* (a fresh MST-reconstructed value is never
 `colorBy` (a `frozen` `{ type: ... }` slot) is promotable on the strength of
 this path; a new object/array slot needs nothing extra.
 
-### Plain vs. sentinel slots
+### The inherit sentinel
 
-The only real design choice per slot: **can a track hold the default value
-itself while an opposite default is promoted?**
+Every promotable slot spends its `defaultValue` on a dedicated **inherit
+sentinel** (the CSS `inherit` keyword) and declares `promotedBase` for what that
+resolves to (the CSS `initial`). `ConfigSlot` throws unless both hold, so there is
+one form, not a choice to make. Two spellings, by slot type:
 
-- **Plain** — `defaultValue` doubles as the base *and* the follows-the-default
-  signal. Consequence: a track can't customize that one value over an opposite
-  promoted default (writing the default reads as "follow the default"), so its
-  pin only ever promotes the one base value. **One-directional.** The resolver
-  still supports this form (a received-session opt-out test in
-  `promotableDefaults.test.ts` exercises it), but **no production slot uses it** —
-  every production promotable slot is sentinel. Reach for plain only when no
-  control will ever promote the *opposite* of `defaultValue`.
+- a spare `stringEnum` member — an `'inherit'` choice:
+  `displayMode`/`heightMode`/`linkedReads`/`readConnections`/`sashimiArcsMode`,
+  resolving to `'normal'`/`'fixed'`/`'off'`/`'off'`/`'up'`.
+- the `undefined` of a `maybeNumber`/`maybeBoolean`/`maybeColor` — a number or
+  boolean has no spare in-band value for "inherit", so the `maybe*` type spends
+  `undefined` on it: `featureHeight`/`scatterPointSize`/`lineWidth` (numbers, e.g.
+  `featureHeight` → `7`) and `showSoftClipping`/`mismatchAlpha`/
+  `showSashimiLabels`/`displayDirectionalChevrons` (booleans). `colorBy` is the
+  `frozen` analogue — a `{ type: 'inherit' }` sentinel resolving to
+  `{ type: 'normal' }`.
 
-- **Sentinel** (every production slot) — `defaultValue` is a dedicated inherit
-  sentinel, and a separate `promotedBase` field holds the value it resolves to
-  (the CSS `initial`). Two forms, by slot type:
-  - a spare `stringEnum` member — an `'inherit'` choice (the CSS `inherit`
-    keyword): `displayMode`/`heightMode`/`linkedReads`/`readConnections`/
-    `sashimiArcsMode`, resolving to `'normal'`/`'fixed'`/`'off'`/`'off'`/`'up'`.
-  - the `undefined` of a `maybeNumber`/`maybeBoolean` — a number or boolean has
-    no spare in-band value for "inherit", so the `maybe*` type spends `undefined`
-    on it: `featureHeight`/`scatterPointSize`/`lineWidth` (numbers, e.g.
-    `featureHeight` → `7`) and `showSoftClipping`/`mismatchAlpha`/
-    `showSashimiLabels`/`displayDirectionalChevrons` (booleans). `colorBy` is the
-    `frozen` analogue — a `{ type: 'inherit' }` sentinel resolving to
-    `{ type: 'normal' }`.
+**Why it's mandatory.** Spending `defaultValue` on the sentinel is what leaves
+every *real* value — `promotedBase` included — customizable per-track, so a track
+can hold `displayMode: 'normal'` under a promoted `compact`, or `linkedReads:
+'off'` under a promoted `normal` (view-as-pairs). Without it `defaultValue` would
+double as the follows-the-default signal, and writing that one value would read as
+"follow the default" — making the setting one-directional and, for a promoted
+non-default, un-turn-off-able on an individual track. That form was supported for a
+while and no slot ever used it, so it's gone rather than a documented trap.
 
-  Either way **every real value — `promotedBase` included — stays customizable**,
-  so a track *can* hold `displayMode: 'normal'` over a `compact` default, or
-  `linkedReads: 'off'` over a `normal` (view-as-pairs) default.
-
-Reach for a sentinel when the value users promote is the **non-default** and
-they'll plausibly want to opt an individual track back out — the whole point of
-`linkedReads`/`readConnections` is to promote pairs/arcs (non-default) as the
-default while still letting one track hold `off`. In practice **almost every slot
-is a sentinel**: the `maybeNumber`/`maybeBoolean` types make a number/boolean
-sentinel free — no tri-state UI, because `getConf` resolves `undefined` to
-`promotedBase` and the getter never surfaces it (and `SlotValueFromDef` drops the
-sentinel from the read type, so the getter's own annotation stays clean).
+It costs nothing: the `maybe*` types make a number/boolean sentinel free, with no
+tri-state UI, because `getConf` resolves `undefined` to `promotedBase` and the
+getter never surfaces it (and `SlotValueFromDef` drops the sentinel from the read
+type, so the getter's own annotation stays clean).
 
 ## The resolver
 
@@ -163,7 +155,7 @@ interface SlotResolution {
 
 function resolveSlot(self, slot, args = {}): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
-  const base = def.promotedBase ?? def.defaultValue
+  const base = def.promotedBase // required on every promotable slot
   // `promoted` stays the raw session-wide value even for an opted-out display:
   // it's a session-wide fact, and the pin's filled/outline state reports on the
   // session, not on one display's view of it. The opt-out belongs to `inherited`
@@ -187,10 +179,10 @@ function resolveSlot(self, slot, args = {}): SlotResolution {
 
 `isUsableValue` is the single gate **both** tiers pass a candidate through — a
 promoted default and a track's own saved value. It composes three independent
-checks: the value is concrete (not `undefined`, not a sentinel slot's own
-`'inherit'` member), its JS shape fits the slot (a `stringEnum` choice, an
-object/array of matching kind, a `maybeNumber`'s number, else the default's
-`typeof`), and it passes the slot's optional semantic `validate` hook. A value
+checks: the value is concrete (not `undefined`, not the slot's own inherit
+sentinel), its JS shape fits the slot (a `SHAPE_CHECKS` entry for the slot `type`
+— a `stringEnum` choice, a *finite* number — else `promotedBase`'s object/array
+kind or `typeof`), and it passes the slot's optional semantic `validate` hook. A value
 failing any check is dropped so the getter, the pin, and the badge all fall back
 in lockstep — no consumer guards on its own. `colorBy` uses `validate` so a
 `.type` naming a since-removed color scheme — customized or promoted — degrades
@@ -413,29 +405,32 @@ discoverable. `CascadingMenu` greys a disabled submenu and blocks it from
 opening.
 
 **Badge** (`OverrideBadge.tsx`, track selector): the same pencil that marks a
-per-track config edit also shows when the display's
-`displayTypeDefaultChanges()` is non-empty — one badge, two reasons, with the
-tooltip and the dialog naming the actual source; click opens
-`TrackSettingsChangesDialog` with a "clear default" action. Both hooks — the
-`displayTypeDefaultChanges()` view (→ `getDisplayTypeDefaultChanges`) and the
-`clearDisplayTypeDefaults()` action (→ `clearPromotedDefaults`) — come from
-**`PromotableDefaultsMixin`**; compose it and any display gets the badge contract
-for free (no per-display passthroughs).
+per-track config edit also shows when `getDisplayTypeDefaultChanges(display)` is
+non-empty — one badge, two reasons, with the tooltip and the dialog naming the
+actual source; click opens `TrackSettingsChangesDialog` with a "clear default"
+action wired to `clearPromotedDefaults(display)`.
+
+The badge calls those two core functions **directly on the display**, not through
+per-display MST hooks. Both are total — a schema with no promotable slot yields no
+changes and clears nothing — so there is nothing to dispatch on, and no display has
+to opt in. An earlier `PromotableDefaultsMixin` forwarded them as
+`displayTypeDefaultChanges()` / `clearDisplayTypeDefaults()`, which meant six
+displays each re-declaring `configuration` a second time and a silent
+never-badges failure for any display that forgot to compose it. Don't reintroduce
+it.
 
 ## Adding a promotable slot
 
-1. In the display's config schema, add `promotable: true` to the slot. **Default
-   to the sentinel form** — a `maybeNumber`/`maybeBoolean` (whose `undefined` is
-   the inherit signal), or a `stringEnum` with a spare `'inherit'` member, plus
-   `promotedBase: <realDefault>`. It costs nothing extra and lets a track hold any
-   real value — `promotedBase` included — over an opposite promoted default. Only
-   skip it (plain slot, where `defaultValue` doubles as the inherit signal) when
-   no control will ever promote the *opposite* of `defaultValue`. If the slot's
-   *shape* alone can't tell a valid value from a stale one (e.g. a `frozen`
-   `colorBy` whose `.type` must name a registered scheme, not just be some
-   string), add a `validate: (value) => boolean` hook — it gates both a promoted
-   default and a track's own saved value, so a value that's since gone invalid
-   degrades to the base instead of reaching a consumer that trusts it.
+1. In the display's config schema, add `promotable: true` plus `promotedBase:
+   <realDefault>`, and make `defaultValue` the inherit sentinel — a
+   `maybeNumber`/`maybeBoolean`/`maybeColor` (whose `undefined` is the signal), or a
+   `stringEnum` with a spare `'inherit'` member. `ConfigSlot` throws if you skip
+   `promotedBase` or make it equal `defaultValue`, so there's nothing to get subtly
+   wrong. If the slot's *shape* alone can't tell a valid value from a stale one
+   (e.g. a `frozen` `colorBy` whose `.type` must name a registered scheme, not just
+   be some string), add a `validate: (value) => boolean` hook — it gates both a
+   promoted default and a track's own saved value, so a value that's since gone
+   invalid degrades to the base instead of reaching a consumer that trusts it.
 2. Read it on the display via `getConf(self, slot)` — nothing special. `getConf`
    detects a promotable slot per-schema (`promotableSlotNames`) and routes it
    through the cascade automatically, so an ordinary `get x() { return
@@ -443,25 +438,21 @@ for free (no per-display passthroughs).
    moment you flip `promotable: true`, and can never surface the inherit sentinel
    (`SlotValueFromDef` also drops the sentinel from the read type, so the getter
    needs no cast). The per-schema detection is why the same slot name can be
-   promotable in one schema and plain in another (`colorBy` is promotable on
-   alignments, plain on gwas/variants; `featureHeight` promotable on alignments,
-   plain on canvas-base; `displayMode` promotable on canvas-base, plain on arc) —
+   promotable in one schema and an ordinary slot in another (`colorBy` is
+   promotable on alignments, not on gwas/variants; `featureHeight` promotable on
+   alignments, not on canvas-base; `displayMode` promotable on canvas-base, not on
+   arc) —
    `getConf` resolves it only where it's marked promotable. `readConfObject` is
    the deliberate **raw** escape hatch — the resolver itself uses it (calling
    `getConf` there would recurse), as does any consumer holding a bare config
    with no session to resolve against. So: `getConf` = resolution-aware entry
    point on a state model; `readConfObject` = raw read.
-3. `.compose(PromotableDefaultsMixin(configSchema))` if the display doesn't
-   already, so the badge hooks exist. **Every display with a promotable slot
-   needs it** — the badge probes the two hooks optionally, so a display that
-   skips it silently never badges and offers no "clear default". Current
-   composers: canvas base, alignments, wiggle, multi-wiggle, paired-arc,
-   Manhattan.
-4. Track menu: expose a `DisplayTypeDefaultControl` getter from the model built
+3. Track menu: expose a `DisplayTypeDefaultControl` getter from the model built
    with the fitting `make*Control` builder, and pass it as `displayTypeDefault`
    to `promotableToggleItem` / `promotableRadioItem`. Group slots that move
-   together into one control.
-5. **Serialization boundaries** (see
+   together into one control. The track-selector badge needs **nothing** — it
+   reads the cascade directly off any display.
+4. **Serialization boundaries** (see
    [that section](#serialization-boundaries-getcomputedstyle)): promotable slots
    resolve on the **main thread**, so anything that ships the config elsewhere
    must flatten. If the worker needs the value, send
@@ -482,7 +473,14 @@ An earlier design layered admin/user type-default configs via extra
 tracks-getter merge, no admin config slot, no cache-key surgery. Kept the "user
 choice wins / display-type granularity" decisions; dropped the machinery.
 
-A second naming pass then **reclaimed "pin"**: the track's own value is now
+Two later passes removed machinery rather than adding it. A **plain** promotable
+form once let `defaultValue` double as the inherit signal; no slot ever used it, so
+`ConfigSlot` now requires the sentinel + `promotedBase` and the resolver has one
+path. And a `PromotableDefaultsMixin` once forwarded the badge's two hooks per
+display; both underlying functions are total, so the badge calls them directly and
+the mixin is gone.
+
+A naming pass also **reclaimed "pin"**: the track's own value is now
 "customized", and "pin" names the make-default affordance. The prior API's
 `isSlotPinned` / `areSlotsAtSessionDefault` / `setSlotsSessionDefault` /
 `isSlotValueSessionDefault` / `setSlotValueSessionDefault` /

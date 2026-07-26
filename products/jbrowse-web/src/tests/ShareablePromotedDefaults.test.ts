@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { encodeSessionParam, fromUrlSafeB64 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { bakePromotedDefaultsIntoSnapshot } from '@jbrowse/product-core'
+import { isObservable } from 'mobx'
 
 import { doBeforeEach, getPluginManager } from './util.tsx'
 
@@ -29,6 +30,7 @@ interface TestSession {
   tracks: AnyConfigurationModel[]
   trackConfigDeltas: Record<string, { displays?: { displayId: string }[] }>
   setDisplayTypeDefault: (type: string, slot: string, value: unknown) => void
+  getDisplayTypeDefault: (type: string, slot: string) => unknown
 }
 
 beforeEach(() => {
@@ -75,6 +77,29 @@ test('a track following a promoted default bakes the resolved value into the sha
     d => (d.displayId as string).length > 0,
   )!
   expect(bakedDisplay[SLOT]).toBe(PROMOTED)
+})
+
+// A promoted default is handed straight back out by `getConf`, so it must never
+// be a MobX Proxy: V8's structured-clone serializer rejects one, and every
+// boundary a resolved value crosses runs that algorithm —
+// `worker.postMessage(rpcProps())`, electron IPC, the share bake's
+// `structuredClone`. An object-valued promotable slot (alignments `colorBy`) is
+// the case that reaches it, and `preferencesOverrides` is declared `deep: false`
+// for exactly this reason. This asserts the proxy-ness rather than the clone,
+// because jsdom has no `structuredClone` and the repo shims it with a JSON
+// round-trip that accepts a proxy; `promotedValueCloneable.test.ts` opts into the
+// node environment to pin the clone semantics themselves.
+test('a promoted object default is stored plain, not wrapped in a mobx proxy', () => {
+  const { session } = openVcfDisplay()
+  const colorBy = { type: 'insertSizeAndOrientation' }
+  session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy', colorBy)
+
+  const promoted = session.getDisplayTypeDefault(
+    'LinearAlignmentsDisplay',
+    'colorBy',
+  )
+  expect(isObservable(promoted)).toBe(false)
+  expect(promoted).toEqual(colorBy)
 })
 
 test('every open display is marked ignorePromotedDefaults in the shared snapshot', () => {

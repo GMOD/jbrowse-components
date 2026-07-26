@@ -44,6 +44,7 @@ export {
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   makeSlotsValueDisplayTypeDefaultControl,
+  openPromotableDisplays,
   resolvePromotableConfigSnapshot,
 } from './promotableDefaults.ts'
 export type { DisplayTypeDefaultControl } from './promotableDefaults.ts'

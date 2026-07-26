@@ -1,5 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { deepEqual } from '../util/deepEqual.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
@@ -110,26 +111,25 @@ export interface ConfigSlotDefinition {
   advanced?: boolean
   /**
    * a user can promote this slot's current value to a session-wide default for
-   * all tracks of the same display type (track menu "make default"). A slot left
-   * at its `defaultValue` follows (inherits) that promoted default; any other
-   * value customizes the track. See `getConf` / `promotableResolve.ts`.
+   * all tracks of the same display type (track menu pin). A slot left at its
+   * `defaultValue` follows (inherits) that promoted default; any other value
+   * customizes the track. See `getConf` / `promotableResolve.ts`.
    *
-   * By default the `defaultValue` doubles as the "inherit" signal, so a track
-   * can't customize that one value back over an opposite session default. A slot whose
-   * value space has no spare value to spend on that role sidesteps it with an
-   * explicit inherit sentinel + `promotedBase` (see below).
+   * Requires `promotedBase`: `defaultValue` is spent as the "inherit" signal, so
+   * it can't also be a usable value.
    */
   promotable?: boolean
   /**
-   * For a `promotable` slot whose `defaultValue` is a dedicated **inherit
-   * sentinel** — either a spare enum member (displayMode's `'inherit'`) or the
-   * `undefined` of a `maybeBoolean`/`maybeNumber` — rather than a real value: the
-   * concrete value that sentinel resolves to when a track inherits and nothing
-   * is promoted. This is the CSS model — `defaultValue` is the `inherit` keyword
-   * (the inherit/stripped state), `promotedBase` is `initial` (the value at
-   * the bottom of the cascade). Its point is that every *real* value, including
-   * `promotedBase`, then becomes customizable over a session default. Omit for an
-   * ordinary promotable slot whose `defaultValue` is itself a usable value.
+   * Required for a `promotable` slot: the concrete value its inherit sentinel
+   * resolves to when a track inherits and nothing is promoted.
+   *
+   * This is the CSS model — `defaultValue` is the `inherit` keyword (the
+   * inherit/stripped state, either a spare enum member like displayMode's
+   * `'inherit'` or the `undefined` of a `maybeBoolean`/`maybeNumber`), and
+   * `promotedBase` is `initial` (the value at the bottom of the cascade).
+   * Spending `defaultValue` on the sentinel is what leaves every *real* value —
+   * `promotedBase` included — customizable over an opposite session default, so a
+   * track can hold `displayMode: 'normal'` under a promoted `'compact'`.
    */
   promotedBase?: unknown
   /**
@@ -161,6 +161,8 @@ export default function ConfigSlot({
   model,
   type,
   defaultValue,
+  promotable,
+  promotedBase,
 }: ConfigSlotDefinition) {
   if (!type) {
     throw new Error('type name required')
@@ -176,6 +178,24 @@ export default function ConfigSlot({
   // one is caught as an authoring mistake.
   if (defaultValue === undefined && !MAYBE_TYPES.has(type)) {
     throw new Error("no 'defaultValue' provided")
+  }
+  // A promotable slot spends `defaultValue` on the inherit sentinel, so it needs
+  // a separate `promotedBase` to say what inheriting resolves to, and the two
+  // must differ — writing `promotedBase` equal to `defaultValue` would make that
+  // one value indistinguishable from "inherit", silently un-customizable under an
+  // opposite promoted default. Both are authoring mistakes with no runtime
+  // symptom other than a setting that won't stay put, so fail at construction.
+  if (promotable) {
+    if (promotedBase === undefined) {
+      throw new Error(
+        "a 'promotable' slot requires 'promotedBase' (the value its inherit sentinel resolves to)",
+      )
+    }
+    if (deepEqual(promotedBase, defaultValue)) {
+      throw new Error(
+        "a 'promotable' slot needs 'defaultValue' to be a dedicated inherit sentinel distinct from 'promotedBase'",
+      )
+    }
   }
 
   return types.stripDefault(

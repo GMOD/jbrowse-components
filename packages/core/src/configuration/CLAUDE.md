@@ -10,12 +10,21 @@ display-type default and can never surface the inherit sentinel. No separate
 `getConfResolved` and no dev-guard — the failure mode (a raw read handing back a
 sentinel) can't happen through `getConf`. `readConfObject` is the intentional
 **raw** escape hatch (the resolver itself uses it — `getConf` there would
-recurse). The promoted default lives in a personal, un-shared store, so **every
-boundary that serializes a display's config for elsewhere must flatten** — the
-worker via `resolvePromotableConfigSnapshot`, a shared/exported session via
-`bakePromotedDefaultsIntoSnapshot`. Layering: `promotableResolve.ts` (resolver)
+recurse). Every promotable slot must declare `promotedBase` and spend its
+`defaultValue` on an inherit sentinel — `ConfigSlot` throws otherwise, so the
+resolver has exactly one path.
+
+The promoted default lives in a personal, un-shared store, so **every boundary
+that serializes a display's config for elsewhere must flatten** — the worker via
+`resolvePromotableConfigSnapshot`, a shared/exported session via
+`bakePromotedDefaultsIntoSnapshot`. A resolved value is handed out **by
+reference** from that store, so it must stay structured-cloneable:
+`preferencesOverrides` is a `deep: false` `observable.map` because a MobX Proxy
+makes `worker.postMessage` throw `DataCloneError`
+(`promotedValueCloneable.test.ts`). Layering: `promotableResolve.ts` (resolver)
 ← `getConf.ts` (reader) ← `promotableDefaults.ts` (control builders +
-share/worker helpers). Full model + the `ignorePromotedDefaults` opt-out:
+share/worker helpers + `openPromotableDisplays`, the one open-display walk).
+Full model + the `ignorePromotedDefaults` opt-out:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
 ## A config snapshot is transport, not a value-read API

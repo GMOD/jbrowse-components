@@ -480,14 +480,6 @@ export interface AbstractDisplayModel {
   parentTrack: AbstractTrackModel
   renderDelay: number
   cannotBeRenderedReason?: string
-  // Effective config differences a session-wide displayTypeDefault imposes on
-  // this display (distinct from per-track config edits / trackConfigDeltas).
-  // Empty when the resolved value equals the configured one. Optional: only
-  // display types that participate in displayTypeDefaults implement it.
-  displayTypeDefaultChanges?: () => TrackConfigChange[]
-  // Clear the session-wide defaults reported by displayTypeDefaultChanges so this
-  // display (and its siblings of the same type) revert to their config values.
-  clearDisplayTypeDefaults?: () => void
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
   return (

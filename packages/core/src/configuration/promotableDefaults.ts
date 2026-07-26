@@ -1,10 +1,13 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
+
 import { deepEqual } from '../util/deepEqual.ts'
 import { getSession, isViewContainer } from '../util/index.ts'
-import { getConf } from './getConf.ts'
-import { promotableSlots, resolveSlot } from './promotableResolve.ts'
+import { getConf, setConf } from './getConf.ts'
+import { promotableSlotNames, resolveSlot } from './promotableResolve.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 import { getConfSnapshot, readConfObject } from './util.ts'
 
+import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
 import type { PromotableDisplay } from './promotableResolve.ts'
 
@@ -50,7 +53,7 @@ export function resolvePromotableConfigSnapshot(
   self: PromotableDisplay,
 ): Record<string, unknown> {
   const snap = getConfSnapshot(self.configuration)
-  for (const slot of promotableSlots(self)) {
+  for (const slot of promotableSlotNames(self.configuration)) {
     // a callback slot keeps its raw `jexl:` string: the worker evaluates it
     // per-feature, and there's no per-feature context to resolve it here
     const res = resolveSlot(self, slot)
@@ -83,29 +86,41 @@ export interface DisplayTypeDefaultControl {
 }
 
 // A view whose open tracks we can enumerate. The generic view interface doesn't
-// surface `tracks`, so narrow structurally (mirrors OverrideBadge) — the
-// declared display shape is the same PromotableDisplay the cascade already
-// operates on.
+// surface `tracks`, so narrow structurally — the declared display shape is the
+// same PromotableDisplay the cascade already operates on.
 function hasOpenTracks<T extends object>(
   view: T,
 ): view is T & { tracks: { displays: PromotableDisplay[] }[] } {
   return 'tracks' in view && Array.isArray(view.tracks)
 }
 
-// Every open track showing this display type, across all open views — the full
-// set "apply to open tracks" reaches (session-wide, matching the promoted
-// default's own reach). Views that don't show tracks (e.g. dotplot) drop out via
-// the structural guard. In practice a track has one display (`replaceDisplay`
-// swaps in place, `activeDisplay` is `displays[0]`), so the inner flatMap just
-// collects each track's display without relying on multiple-per-track.
-function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
-  const session = getSession(self)
+/**
+ * #api core/configuration
+ * Every display on an open track, across all open views — the reach of anything
+ * that acts on "the tracks the user is looking at": the cascade's own "apply to
+ * open tracks", and the share/export bake. One walk so those can't drift apart.
+ *
+ * Views that don't show tracks (e.g. dotplot) drop out via the structural guard,
+ * as does a display nested inside a composite view (breakpoint-split,
+ * SV-inspector, synteny read-vs-ref) — an accepted limitation of the subsystem,
+ * not a per-caller gap. In practice a track has one display (`replaceDisplay`
+ * swaps in place, `activeDisplay` is `displays[0]`), so the inner flatMap just
+ * collects each track's display without relying on multiple-per-track.
+ */
+export function openPromotableDisplays(
+  session: AbstractSessionModel,
+): PromotableDisplay[] {
   const views = isViewContainer(session) ? session.views : []
   return views
     .filter(hasOpenTracks)
     .flatMap(view => view.tracks)
     .flatMap(track => track.displays)
-    .filter(display => display.type === self.type)
+}
+
+function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
+  return openPromotableDisplays(getSession(self)).filter(
+    display => display.type === self.type,
+  )
 }
 
 /**
@@ -121,12 +136,16 @@ function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
  * Without this the reset would strand such a display on its base value —
  * cleared of its own value, yet still refusing the default it was just told to
  * follow.
+ *
+ * Dead displays are skipped rather than trusted: the "apply to open tracks"
+ * snackbar can outlive a track the user closes in the meantime, and both reads
+ * and writes throw on a destroyed MST node.
  */
 export function resetSlotsToInherit(
   displays: PromotableDisplay[],
   slots: string[],
 ): void {
-  for (const display of displays) {
+  for (const display of displays.filter(display => isAlive(display))) {
     display.setIgnorePromotedDefaults(false)
     for (const slot of slots) {
       const def = getSlotDefinition(display.configuration, slot)
@@ -138,7 +157,7 @@ export function resetSlotsToInherit(
           def.defaultValue,
         )
       ) {
-        display.configuration.setSlot(slot, def.defaultValue)
+        setConf(display, slot, def.defaultValue)
       }
     }
   }
@@ -225,13 +244,19 @@ function applyDefaultToggle(
     resetSlotsToInherit([self], slots)
     // open tracks not already showing this value — those the "apply to open
     // tracks" action would visibly change by making them follow the new default
-    const tracks = tracksDifferingFrom(self, entries)
-    const n = tracks.length
+    const n = tracksDifferingFrom(self, entries).length
     if (n) {
       session.notify('Set as the default', 'info', {
         name: `Apply to ${n} open track${n === 1 ? '' : 's'}`,
+        // re-derived on click, not captured: the snackbar outlives the click
+        // that raised it, so a track closed (or newly opened) in between would
+        // otherwise be reset as a dead node / silently skipped. `self` is the
+        // display the pin was clicked from, and it can be the one that closed —
+        // the whole walk hangs off its session, so guard it too
         onClick: () => {
-          resetSlotsToInherit(tracks, slots)
+          if (isAlive(self)) {
+            resetSlotsToInherit(tracksDifferingFrom(self, entries), slots)
+          }
         },
       })
     } else {
@@ -307,14 +332,20 @@ export function makeCurrentValueDisplayTypeDefaultControl(
 export function getDisplayTypeDefaultChanges(
   self: PromotableDisplay,
 ): TrackConfigChange[] {
-  return promotableSlots(self).flatMap(slot => {
+  const changes: TrackConfigChange[] = []
+  for (const slot of promotableSlotNames(self.configuration)) {
     // `customized` first: a customized slot inherits nothing, and reading
     // `.value` on a callback slot would need a context this caller doesn't have
     const res = resolveSlot(self, slot)
-    return !res.customized && !deepEqual(res.value, res.base)
-      ? [{ path: [slot], from: res.base, to: res.value } as TrackConfigChange]
-      : []
-  })
+    if (!res.customized && !deepEqual(res.value, res.base)) {
+      changes.push({
+        path: [slot],
+        from: res.base,
+        to: res.value,
+      } as TrackConfigChange)
+    }
+  }
+  return changes
 }
 
 /**
@@ -324,7 +355,7 @@ export function getDisplayTypeDefaultChanges(
  */
 export function clearPromotedDefaults(self: PromotableDisplay): void {
   const session = getSession(self)
-  for (const slot of promotableSlots(self)) {
+  for (const slot of promotableSlotNames(self.configuration)) {
     session.setDisplayTypeDefault?.(self.type, slot, undefined)
   }
 }

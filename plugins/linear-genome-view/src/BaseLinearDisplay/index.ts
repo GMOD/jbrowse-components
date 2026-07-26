@@ -21,7 +21,6 @@ export {
   default as HeightModeMixin,
   installGrowExitBake,
 } from './models/HeightModeMixin.ts'
-export { default as PromotableDefaultsMixin } from './models/PromotableDefaultsMixin.tsx'
 export { MIN_DISPLAY_HEIGHT } from './models/const.ts'
 export {
   GROW_MAX_HEIGHT,

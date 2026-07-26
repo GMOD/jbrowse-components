@@ -29,17 +29,12 @@ import type { IAnyStateTreeNode, IAnyType } from '@jbrowse/mobx-state-tree'
  * needs no stored flag. `resolveSlot` is the one place the cascade lives; the
  * control builders in `promotableDefaults.ts` read a field off it.
  *
- * Whether the default value itself can be customized per-track depends on the slot:
- *   - Plain: `defaultValue` is both the base and the inherit signal, so it can't
- *     be customized over an opposite session default. Only safe when no control
- *     ever promotes the *opposite* of `defaultValue`; otherwise the setting
- *     becomes unturn-off-able and the slot wants the sentinel form. Every
- *     production promotable slot uses the sentinel form — prefer it for new slots.
- *   - Sentinel (`displayMode`, `showSoftClipping`): `defaultValue` is a dedicated
- *     `'inherit'` member (CSS `inherit`) — or the `undefined` of a
- *     `maybeBoolean`/`maybeNumber` — and `promotedBase` is what it resolves to
- *     (CSS `initial`), freeing every real value — base included — to be
- *     customized. Prefer this for anything a user can toggle both ways.
+ * Every promotable slot spends its `defaultValue` on a dedicated **inherit
+ * sentinel** (CSS `inherit`) — a spare `'inherit'` enum member, or the
+ * `undefined` of a `maybeBoolean`/`maybeNumber`/`maybeColor` — and declares
+ * `promotedBase` for what that resolves to (CSS `initial`). `ConfigSlot` enforces
+ * both. That is what frees every *real* value, `promotedBase` included, to be
+ * customized per-track under an opposite promoted default.
  *
  * Every comparison below (customized / at-default / at-promoted-default) uses
  * `deepEqual`, not `===`: needed once a promotable slot is `frozen`
@@ -84,11 +79,6 @@ export function promotableSlotNames(
   return names
 }
 
-// The names of every promotable slot on a display's config schema.
-export function promotableSlots(self: PromotableDisplay): string[] {
-  return [...promotableSlotNames(self.configuration)]
-}
-
 /**
  * Whether a stored value could really be a value of this slot — the single
  * gate both cascade tiers pass a candidate through: a session-wide promoted
@@ -112,61 +102,57 @@ export function isUsableValue(
 }
 
 // A real value to use, versus the two ways a stored value means "no value —
-// inherit": `undefined` (an unset/stripped slot), or a sentinel slot's own
-// `defaultValue` (its `'inherit'` member — only `promotedBase` and the other
-// members are real values there).
+// inherit": `undefined` (an unset/stripped slot), or the slot's own
+// `defaultValue`, which for a promotable slot IS the inherit sentinel.
 function isConcreteValue(def: ConfigSlotDefinition, value: unknown): boolean {
-  const { defaultValue, promotedBase } = def
-  const isInheritSentinel =
-    promotedBase !== undefined && deepEqual(value, defaultValue)
-  return value !== undefined && !isInheritSentinel
+  return value !== undefined && !deepEqual(value, def.defaultValue)
+}
+
+// Per-slot-type JS shape checks, for the slot types whose value needs more than
+// a `typeof` against `promotedBase`: a *finite* number (a bare `typeof value ===
+// 'number'` would admit `NaN`/`±Infinity`, which no slot legitimately holds), or
+// membership in an enumeration. Any type absent here falls through to the
+// `promotedBase`-derived check in `matchesSlotShape`.
+const SHAPE_CHECKS: Record<
+  string,
+  (value: unknown, def: ConfigSlotDefinition) => boolean
+> = {
+  integer: value => Number.isFinite(value),
+  number: value => Number.isFinite(value),
+  maybeNumber: value => Number.isFinite(value),
+  // a `stringEnum` with no `model` can't be membership-checked; reject rather
+  // than admit any string
+  stringEnum: (value, def) =>
+    !!def.model &&
+    typeof value === 'string' &&
+    getEnumerationValues(def.model).includes(value),
 }
 
 // Whether `value` has a JS shape this slot could hold. Guards the untyped
 // session store / saved snapshot against garbage; not a full validation
-// (`validate` layers semantics on top). Derived from the slot's own metadata so
-// a new promotable slot type needs no change here.
+// (`validate` layers semantics on top).
+//
+// Keyed off `promotedBase` rather than `defaultValue` because on a promotable
+// slot `defaultValue` is the inherit sentinel, not a specimen of the slot's value
+// space — a `maybeBoolean`'s `undefined` default would make this demand `typeof
+// value === 'undefined'` and reject every real value.
 //
 // This can't just delegate to the slot's MST `model.is(value)`: that's too
 // permissive exactly where this guard matters — `types.number.is(NaN)` and
-// `types.frozen().is('any-string')` are both `true`, so it wouldn't reject the
-// non-finite number or the wrong-shape frozen value the branches below catch.
-// Only the `stringEnum` membership check has an MST equivalent, and that branch
-// is already clear.
+// `types.frozen().is('any-string')` are both `true`.
 function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
-  const { type, model, defaultValue } = def
-  return type === 'stringEnum'
-    ? // a `stringEnum` with no `model` can't be membership-checked; reject
-      // rather than fall through to the primitive branch, which would admit
-      // any string
-      !!model &&
-        typeof value === 'string' &&
-        getEnumerationValues(model).includes(value)
-    : // numeric slots must be a *finite* number: `typeof value === 'number'`
-      // (or the primitive fallback below) would admit `NaN`/`±Infinity`, which
-      // no slot legitimately holds. `maybeNumber` is grouped here — its
-      // `undefined` default can't key the shape (`typeof value === typeof
-      // undefined` rejects every real value), so it's matched on `type`.
-      type === 'maybeNumber' || type === 'number' || type === 'integer'
-      ? Number.isFinite(value)
-      : // `maybeBoolean` likewise keys on `type`: its `undefined` default can't
-        // key the shape
-        type === 'maybeBoolean'
-        ? typeof value === 'boolean'
-        : // `maybeColor` (a string-valued slot) is the third `undefined`-default
-          // `maybe*` type, so it too keys on `type` — the `defaultValue`-typeof
-          // fallback below would demand `typeof value === 'undefined'` and reject
-          // every real color string
-          type === 'maybeColor'
-          ? typeof value === 'string'
-          : typeof defaultValue === 'object' && defaultValue !== null
-            ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness
-              // — `typeof value === typeof defaultValue` would admit `null` (typeof
-              // null === 'object') and an array against an object default
-              typeof value === 'object' &&
-              value !== null &&
-              Array.isArray(value) === Array.isArray(defaultValue)
-            : typeof value === typeof defaultValue
+  const { promotedBase } = def
+  const check = SHAPE_CHECKS[def.type]
+  return check
+    ? check(value, def)
+    : typeof promotedBase === 'object' && promotedBase !== null
+      ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness —
+        // a bare `typeof` compare would admit `null` (typeof null === 'object')
+        // and an array against an object base
+        typeof value === 'object' &&
+        value !== null &&
+        Array.isArray(value) === Array.isArray(promotedBase)
+      : typeof value === typeof promotedBase
 }
 
 export interface SlotResolution {
@@ -203,7 +189,9 @@ export function resolveSlot(
   args: Record<string, unknown> = {},
 ): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
-  const base = def.promotedBase ?? def.defaultValue
+  // `ConfigSlot` requires `promotedBase` on every promotable slot, so this is the
+  // slot's CSS `initial` — never the inherit sentinel in `defaultValue`
+  const base = def.promotedBase
   // `promoted` stays the raw session-wide value regardless of this display's
   // opt-out: it's a session-wide fact, and `isPromotableDefault` (the pin's
   // filled/outline state) reports on the session, not on one display's view of
@@ -241,12 +229,10 @@ export function resolveSlot(
   const customized =
     !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
   // A display that arrived in a received session skips the session-wide tier
-  // entirely, collapsing the cascade to "own value, else base". This is the
-  // only mechanism that can neutralize a promoted default on a *plain*
-  // promotable slot (one with no `promotedBase`, where `defaultValue` is both
-  // the base and the inherit signal): there, no baked-in value can read as
-  // customized, so an explicit opt-out is the sole way the sender's `false`
-  // survives the recipient's promoted `true`.
+  // entirely, collapsing the cascade to "own value, else base". Needed because
+  // baking the resolved values into the shared snapshot can't cover the case
+  // where the sender saw the *base* value: nothing gets baked (it equals base),
+  // so without the opt-out the recipient's own promoted default would repaint it.
   const inherited =
     !self.ignorePromotedDefaults && isUsableValue(def, promoted)
       ? promoted

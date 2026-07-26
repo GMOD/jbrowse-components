@@ -139,6 +139,7 @@ describe('apply a promoted default to open tracks', () => {
     customHeight: {
       type: 'maybeNumber',
       defaultValue: undefined,
+      promotedBase: 1,
       promotable: true,
     },
   })
@@ -175,7 +176,15 @@ describe('apply a promoted default to open tracks', () => {
   function createViews(displayConfigsPerView: Record<string, unknown>[][]) {
     const Display = testDisplayModel(configSchema)
     const Track = types.model('TestTrack', { displays: types.array(Display) })
-    const View = types.model('TestView', { tracks: types.array(Track) })
+    const View = types
+      .model('TestView', { tracks: types.array(Track) })
+      .actions(self => ({
+        // stands in for hideTrack: splicing the array destroys the MST subtree,
+        // so any captured display node goes dead
+        closeTrack(idx: number) {
+          self.tracks.splice(idx, 1)
+        },
+      }))
     const Session = types
       .model('TestSession', {
         rpcManager: types.frozen({}),
@@ -325,7 +334,7 @@ describe('apply a promoted default to open tracks', () => {
     const { session, displayOf } = createViews([[{ customHeight: 10 }], [{}]])
     const self = displayOf(0, 0)
     const follower = displayOf(1, 0)
-    expect(getConf(follower, 'customHeight')).toBeUndefined()
+    expect(getConf(follower, 'customHeight')).toBe(1)
 
     makeSlotsValueDisplayTypeDefaultControl(self, [
       { slot: 'customHeight', value: 10 },
@@ -345,6 +354,51 @@ describe('apply a promoted default to open tracks', () => {
 
     expect(session.lastNotify?.message).toBe('Set as the default')
     expect(session.lastNotify?.action).toBeUndefined()
+  })
+
+  // The snackbar action outlives the click that raised it, so it must re-derive
+  // the track set rather than close over MST nodes: a display destroyed by the
+  // user closing its track throws on any read or write.
+  test('"apply to open tracks" survives a track closed while the snackbar is up', () => {
+    const { session, displayOf } = createViews([
+      [{ customHeight: 20 }],
+      [{ customHeight: 20 }, { customHeight: 30 }],
+    ])
+    const self = displayOf(0, 0)
+    const survivor = displayOf(1, 1)
+
+    makeSlotsValueDisplayTypeDefaultControl(self, [
+      { slot: 'customHeight', value: 10 },
+    ]).toggle()
+    expect(session.lastNotify?.action?.name).toBe('Apply to 2 open tracks')
+
+    // user closes one of the tracks the action was offered for
+    session.views[1]!.closeTrack(0)
+
+    session.lastNotify!.action!.onClick()
+    expect(getConf(survivor, 'customHeight')).toBe(10)
+  })
+
+  test('"apply to open tracks" is a no-op once the clicked track itself is gone', () => {
+    const { session, displayOf } = createViews([
+      [{ customHeight: 20 }],
+      [{ customHeight: 30 }],
+    ])
+    const self = displayOf(0, 0)
+    const other = displayOf(1, 0)
+
+    makeSlotsValueDisplayTypeDefaultControl(self, [
+      { slot: 'customHeight', value: 10 },
+    ]).toggle()
+
+    // the pin's own track is closed: the whole walk hangs off its session
+    session.views[0]!.closeTrack(0)
+
+    expect(() => {
+      session.lastNotify!.action!.onClick()
+    }).not.toThrow()
+    // the promoted default stands; the other track just keeps its own value
+    expect(getConf(other, 'customHeight')).toBe(30)
   })
 
   test('clearing the default just notifies, leaving open tracks alone', () => {
@@ -367,22 +421,23 @@ describe('apply a promoted default to open tracks', () => {
   })
 })
 
-// A promotable `maybeNumber` slot has no real `defaultValue` to type-check a
-// promoted value against (its default is the "unset" sentinel `undefined`) —
-// `matchesSlotShape` special-cases this to check against `number` instead.
+// A promotable `maybeNumber` slot's `defaultValue` is the "unset" inherit
+// sentinel, so it can't type-check a promoted value — `matchesSlotShape` keys the
+// shape check on the slot `type` and the concrete `promotedBase` instead.
 describe('promotable maybeNumber slot', () => {
   const configSchema = ConfigurationSchema('MaybeNumberDisplay', {
     customHeight: {
       type: 'maybeNumber',
       description: 'an optional promotable height override',
       defaultValue: undefined,
+      promotedBase: 1,
       promotable: true,
     },
   })
 
   test('a track with no own value follows a numeric session-wide default', () => {
     const { session, display } = createDisplay(configSchema)
-    expect(getConf(display, 'customHeight')).toBeUndefined()
+    expect(getConf(display, 'customHeight')).toBe(1)
 
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 42)
     expect(getConf(display, 'customHeight')).toBe(42)
@@ -400,21 +455,21 @@ describe('promotable maybeNumber slot', () => {
   test('ignores a non-numeric session default instead of rejecting every value', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 'tall')
-    expect(getConf(display, 'customHeight')).toBeUndefined()
+    expect(getConf(display, 'customHeight')).toBe(1)
   })
 
   test('ignores a non-finite (NaN) session default rather than passing it on', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', NaN)
-    expect(getConf(display, 'customHeight')).toBeUndefined()
+    expect(getConf(display, 'customHeight')).toBe(1)
   })
 })
 
 // A promotable `maybeBoolean` slot: its `undefined` default is the "unset —
-// inherit" sentinel, so BOTH `true` and `false` stay customizable per-track over an opposite
-// session default — the symmetry a plain boolean (whose default doubles as the
-// inherit signal) can't offer. `promotedBase` supplies the value the unset
-// sentinel resolves to; `matchesSlotShape` keys the shape check on the `type`.
+// inherit" sentinel, so BOTH `true` and `false` stay customizable per-track over
+// an opposite session default — the symmetry a plain boolean, whose default would
+// have to double as the inherit signal, can't offer. That is why `promotable`
+// requires a spare sentinel plus `promotedBase`.
 describe('promotable maybeBoolean slot', () => {
   const configSchema = ConfigurationSchema('MaybeBooleanDisplay', {
     chevrons: {
@@ -481,11 +536,11 @@ describe('promotable maybeBoolean slot', () => {
   })
 })
 
-// A promotable `maybeColor` slot is the third `undefined`-default `maybe*` type,
-// so — like maybeNumber/maybeBoolean — `matchesSlotShape` keys its shape check
-// on the `type` (a string), not on the `undefined` default. Regression guard for
-// the gap where a maybeColor promoted default / own value was rejected wholesale
-// because the shape check demanded `typeof value === 'undefined'`.
+// A promotable `maybeColor` slot is the third `undefined`-default `maybe*` type.
+// Regression guard for the gap where a maybeColor promoted default / own value was
+// rejected wholesale because the shape check keyed off the `undefined`
+// `defaultValue` and so demanded `typeof value === 'undefined'`; it now keys off
+// the concrete `promotedBase`.
 describe('promotable maybeColor slot', () => {
   const configSchema = ConfigurationSchema('MaybeColorDisplay', {
     labelColor: {
@@ -568,7 +623,8 @@ describe('promotable frozen slot structural equality', () => {
   const configSchema = ConfigurationSchema('ColorByDisplay', {
     colorBy: {
       type: 'frozen',
-      defaultValue: { type: 'normal' },
+      defaultValue: { type: 'inherit' },
+      promotedBase: { type: 'normal' },
       promotable: true,
     },
   })
@@ -627,7 +683,8 @@ describe('promotable slot validate hook', () => {
   const configSchema = ConfigurationSchema('ValidatedDisplay', {
     colorBy: {
       type: 'frozen',
-      defaultValue: { type: 'normal' },
+      defaultValue: { type: 'inherit' },
+      promotedBase: { type: 'normal' },
       promotable: true,
       validate: (value: unknown) =>
         typeof value === 'object' &&
@@ -674,11 +731,11 @@ describe('promotable slot validate hook', () => {
   })
 })
 
-// A sentinel slot's `defaultValue` is a dedicated `'inherit'` member (the "no
-// value — inherit" signal) and `promotedBase` is what it resolves to, so — unlike
-// a plain slot — every real value including `promotedBase` stays customizable per-track over an
-// opposite session default. Exercises `isConcreteValue`'s sentinel branch and
-// that `getConf` never surfaces the `'inherit'` member.
+// The `stringEnum` form of the inherit sentinel: `defaultValue` is a dedicated
+// `'inherit'` member and `promotedBase` is what it resolves to, so every real
+// value including `promotedBase` stays customizable per-track over an opposite
+// session default. Exercises `isConcreteValue` and that `getConf` never surfaces
+// the `'inherit'` member.
 describe('promotable sentinel slot', () => {
   const configSchema = ConfigurationSchema('SentinelDisplay', {
     mode: {
@@ -735,35 +792,17 @@ describe('a display from a received session', () => {
       promotable: true,
     },
   })
-  // no promotedBase: `defaultValue` is both the base value and the inherit
-  // signal, so no value written into the config can read as customized here.
-  // The opt-out is the only thing that can hold this slot at the sender's value.
-  const plainSchema = ConfigurationSchema('ReceivedPlain', {
-    showLabels: {
-      type: 'boolean',
-      defaultValue: false,
-      promotable: true,
-    },
-  })
 
-  test('ignores a promoted default on a sentinel slot', () => {
+  // The case baking alone cannot cover: the sender saw the *base* value, so
+  // nothing is written into the shared config (it equals base) and only the
+  // opt-out stops the recipient's promoted value from repainting it.
+  test('ignores a promoted default, holding the base the sender saw', () => {
     const { session, display } = createDisplay(sentinelSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
     expect(getConf(display, 'mode')).toBe('compact')
 
     display.setIgnorePromotedDefaults(true)
     expect(getConf(display, 'mode')).toBe('normal')
-  })
-
-  test('ignores a promoted default on a plain slot, which baking cannot do', () => {
-    const { session, display } = createDisplay(plainSchema)
-    session.setDisplayTypeDefault('TestDisplay', 'showLabels', true)
-    // the sender's own value *is* the slot default, so writing it into the
-    // config leaves it indistinguishable from "inherit" — the promoted true wins
-    expect(getConf(display, 'showLabels')).toBe(true)
-
-    display.setIgnorePromotedDefaults(true)
-    expect(getConf(display, 'showLabels')).toBe(false)
   })
 
   test('keeps its own baked-in value', () => {
@@ -905,5 +944,40 @@ describe('promotable slot holding a jexl callback', () => {
     // no feature to evaluate against here — these consumers must not need one
     expect(isSlotCustomized(display, 'height')).toBe(true)
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
+  })
+})
+
+// The two authoring mistakes a `promotable` slot can make have no runtime
+// symptom beyond "this setting won't stay put", so `ConfigSlot` rejects them at
+// schema construction rather than letting the resolver silently do the wrong
+// thing.
+describe('promotable slot authoring guards', () => {
+  test('rejects a promotable slot with no promotedBase', () => {
+    expect(() =>
+      ConfigurationSchema('MissingBase', {
+        mode: {
+          type: 'stringEnum',
+          model: types.enumeration('MissingBaseMode', ['normal', 'compact']),
+          defaultValue: 'normal',
+          promotable: true,
+        },
+      }),
+    ).toThrow(/requires 'promotedBase'/)
+  })
+
+  test('rejects a promotedBase equal to the inherit sentinel', () => {
+    // 'fixed' as both would make that one value indistinguishable from
+    // "inherit", so no track could hold it under an opposite promoted default
+    expect(() =>
+      ConfigurationSchema('SameBase', {
+        mode: {
+          type: 'stringEnum',
+          model: types.enumeration('SameBaseMode', ['fixed', 'fit']),
+          defaultValue: 'fixed',
+          promotedBase: 'fixed',
+          promotable: true,
+        },
+      }),
+    ).toThrow(/dedicated inherit sentinel/)
   })
 })

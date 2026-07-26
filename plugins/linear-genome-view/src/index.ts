@@ -94,7 +94,6 @@ export {
   HeightModeMixin,
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
-  PromotableDefaultsMixin,
   RegionTooLargeMixin,
   StaleViewportRescaleMixin,
   TOO_MANY_FEATURES_REASON,

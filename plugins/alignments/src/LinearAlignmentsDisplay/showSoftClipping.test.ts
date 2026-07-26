@@ -1,7 +1,11 @@
 import { isValidElement } from 'react'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  clearPromotedDefaults,
+  getDisplayTypeDefaultChanges,
+} from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
@@ -172,7 +176,7 @@ describe('alignments showSoftClipping session default', () => {
     )
     expect(display.showSoftClipping).toBe(true)
     expect(display.softClippingDisplayTypeDefault.active).toBe(true)
-    expect(display.displayTypeDefaultChanges()).toEqual([
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['showSoftClipping'], from: false, to: true },
     ])
   })
@@ -186,7 +190,7 @@ describe('alignments showSoftClipping session default', () => {
     )
     // customized on regardless of the session default; not "affected by a default"
     expect(display.showSoftClipping).toBe(true)
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('a track can pin off over an on session default (symmetric maybeBoolean)', () => {
@@ -279,7 +283,7 @@ describe('alignments showSoftClipping session default', () => {
     )
     expect(display.showSoftClipping).toBe(true)
 
-    display.clearDisplayTypeDefaults()
+    clearPromotedDefaults(display)
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',
@@ -287,7 +291,7 @@ describe('alignments showSoftClipping session default', () => {
       ),
     ).toBeUndefined()
     expect(display.showSoftClipping).toBe(false)
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 })
 
@@ -321,7 +325,7 @@ describe('alignments compactness session default', () => {
     expect(display.featureHeight).toBe(3)
     // spacing is derived from the resolved height (3 -> 0)
     expect(display.featureSpacing).toBe(0)
-    expect(display.displayTypeDefaultChanges()).toEqual([
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },
     ])
   })
@@ -333,7 +337,7 @@ describe('alignments compactness session default', () => {
     session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight', 1)
     // customized regardless of the (super-compact) session default
     expect(display.featureHeight).toBe(3)
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('reacts to the session default changing after creation', () => {
@@ -376,10 +380,10 @@ describe('alignments compactness session default', () => {
     expect(display.featureHeight).toBe(3)
     expect(display.showSoftClipping).toBe(true)
 
-    display.clearDisplayTypeDefaults()
+    clearPromotedDefaults(display)
     expect(display.featureHeight).toBe(7)
     expect(display.showSoftClipping).toBe(false)
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('reports both soft-clipping and compactness changes together', () => {
@@ -391,7 +395,7 @@ describe('alignments compactness session default', () => {
       true,
     )
     // promotable slots reported in schema-definition order
-    expect(display.displayTypeDefaultChanges()).toEqual([
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },
       { path: ['showSoftClipping'], from: false, to: true },
     ])
@@ -527,7 +531,7 @@ describe('feature-height menu per-preset pins', () => {
     expect(display.featureSpacing).toBe(1)
     expect(presetRow(display, 'Normal')?.checked).toBe(true)
     // it holds its own value, so it is not flagged as merely following the default
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('clicking Super-compact then Normal lands on Normal over a Compact default', () => {
@@ -727,7 +731,7 @@ describe('alignments showSashimiLabels (sashimi arc counts)', () => {
       true,
     )
     expect(display.showSashimiLabels).toBe(true)
-    expect(display.displayTypeDefaultChanges()).toEqual([
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['showSashimiLabels'], from: false, to: true },
     ])
   })
@@ -748,7 +752,7 @@ describe('alignments showSashimiLabels (sashimi arc counts)', () => {
     display.setShowSashimiLabels(false)
     expect(display.showSashimiLabels).toBe(false)
     // holding its own value, it is not merely following the default
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('the pin promotes the current value, including off', () => {
@@ -932,7 +936,7 @@ describe('alignments colorBy session default', () => {
       mappingQuality,
     )
     expect(display.colorBy).toEqual(mappingQuality)
-    expect(display.displayTypeDefaultChanges()).toEqual([
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['colorBy'], from: { type: 'normal' }, to: mappingQuality },
     ])
   })
@@ -949,7 +953,7 @@ describe('alignments colorBy session default', () => {
     // default (impossible with the old plain-default slot). Not an inherited
     // change, so displayTypeDefaultChanges is empty.
     expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('setColorScheme(normal) pins normal over an opposite session default', () => {
@@ -972,7 +976,7 @@ describe('alignments colorBy session default', () => {
       mappingQuality,
     )
     expect(display.colorBy).toEqual({ type: 'strand' })
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('reacts to the session default changing after creation', () => {
@@ -1015,7 +1019,7 @@ describe('alignments colorBy session default', () => {
       type: 'a-removed-color-scheme',
     })
     expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   // Leaving pairs mode discards the now-meaningless pairing scheme by resetting
@@ -1059,7 +1063,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     )
     expect(display.linkedReads).toBe('normal')
     expect(display.pairsDisplayTypeDefault.active).toBe(true)
-    expect(display.displayTypeDefaultChanges()).toEqual([
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['linkedReads'], from: 'off', to: 'normal' },
     ])
   })
@@ -1074,7 +1078,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     // the whole reason for the sentinel: a track explicitly set to 'off' holds
     // off even under a session-wide pairs default, and reads as its own choice
     expect(display.linkedReads).toBe('off')
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('ignores a malformed (non-enum) session default', () => {
@@ -1143,7 +1147,7 @@ describe('alignments readConnections (arcs) session default', () => {
     expect(display.arcsDisplayTypeDefault.active).toBe(true)
     // the read-cloud pin targets a different on-value, so it stays inactive
     expect(display.readCloudDisplayTypeDefault.active).toBe(false)
-    expect(display.displayTypeDefaultChanges()).toEqual([
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['readConnections'], from: 'off', to: 'arc' },
     ])
   })
@@ -1156,7 +1160,7 @@ describe('alignments readConnections (arcs) session default', () => {
       'arc',
     )
     expect(display.readConnections).toBe('off')
-    expect(display.displayTypeDefaultChanges()).toEqual([])
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
   it('the arcs pin promotes arc and clears it (per-value)', () => {
