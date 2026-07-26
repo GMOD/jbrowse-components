@@ -13,6 +13,8 @@ import {
 import { getConf, readConfObject } from './index.ts'
 import { isConfigurationModel } from './util.ts'
 
+import type { AnyConfigurationModel } from './types.ts'
+
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
@@ -1003,5 +1005,55 @@ describe('readConfObject path resolution', () => {
     test('an array path drills into a map entry slot', () => {
       expect(readConfObject(make(), ['a', 'val'])).toBe(5)
     })
+  })
+
+  // The two spellings of one nested read disagree: a sub-config slot read hands
+  // back a stripDefault'd snapshot, so reading a defaulted slot off *that*
+  // answers undefined ("no limit declared") instead of the default. A real bug —
+  // the byte gate read a BAM's 5Mb fetchSizeLimit that way and used the display's
+  // 1Mb (810c7fb8fd). The wrong spelling is now a compile error
+  // (configTypeNarrowing.test.ts); this pins the runtime asymmetry it guards, so
+  // the reason the type is load-bearing stays visible.
+  describe('a slot read off a sub-config snapshot', () => {
+    const schema = ConfigurationSchema('Track', {
+      sub: ConfigurationSchema('Sub', {
+        limit: { type: 'number', defaultValue: 5_000_000 },
+      }),
+    })
+    const make = () => schema.create(undefined, { pluginManager })
+
+    test('reads undefined for a defaulted slot: why the type forbids it', () => {
+      const snap = readConfObject(make(), 'sub')
+      expect(snap).toEqual({})
+      // @ts-expect-error -- a snapshot is not a readable config
+      expect(readConfObject(snap, 'limit')).toBeUndefined()
+    })
+
+    test('the array path off the live node resolves the default', () => {
+      expect(readConfObject(make(), ['sub', 'limit'])).toBe(5_000_000)
+    })
+  })
+
+  // A plain config object is read directly, with no snapshot-shaped guard in the
+  // way. Two live callers depend on it and neither can hydrate: `generateHierarchy`
+  // reads slots off the un-hydrated frozen entries of `jbrowse.tracks` (hydrating
+  // 10k tracks to fill the track selector is what types.frozen exists to avoid),
+  // and `getSharedTracks` (breakpoint-split-view) is tested with a fixture track
+  // that has no assemblyNames on purpose. That is why the stripped-snapshot rule
+  // is enforced in the types and NOT at runtime — a runtime check cannot tell
+  // these apart from the broken spelling.
+  test('a plain config object reads undefined for an absent slot', () => {
+    const plain = { trackId: 'a' } as unknown as AnyConfigurationModel
+    expect(readConfObject(plain, 'assemblyNames')).toBeUndefined()
+    expect(readConfObject(plain, 'trackId')).toBe('a')
+  })
+
+  test('drilling into a frozen slot tolerates a missing key', () => {
+    const schema = ConfigurationSchema('Frozen', {
+      blob: { type: 'frozen', defaultValue: { present: 1 } },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(readConfObject(node, ['blob', 'present'])).toBe(1)
+    expect(readConfObject(node, ['blob', 'absent'])).toBeUndefined()
   })
 })

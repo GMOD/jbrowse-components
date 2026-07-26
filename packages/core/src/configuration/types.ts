@@ -87,43 +87,48 @@ type SlotValueResolvedFromDef<DEF> = DEF extends { promotedBase: unknown }
   ? Exclude<SlotValueRawFromDef<DEF>, undefined>
   : SlotValueRawFromDef<DEF>
 
-type SlotValueRawFromDef<DEF> = DEF extends {
-  model: ISimpleType<infer T extends string>
-}
-  ? // `maybeStringEnum` declares the plain enumeration as its `model` and gets
-    // its nullability from ConfigSlot, so the `undefined` is added back here
-    DEF extends { type: 'maybeStringEnum' }
-    ? T | undefined
-    : T
-  : DEF extends { type: 'stringArray' }
-    ? string[]
-    : DEF extends { type: 'stringArrayMap' }
-      ? Record<string, string[]>
-      : DEF extends { type: 'numberMap' }
-        ? Record<string, number>
-        : DEF extends { type: 'fileLocation' }
-          ? FileLocation
-          : DEF extends { type: 'maybeNumber' }
-            ? number | undefined
-            : DEF extends { type: 'maybeBoolean' }
-              ? boolean | undefined
-              : DEF extends { type: 'maybeColor' }
-                ? string | undefined
-                : DEF extends { type: 'number' | 'integer' }
-                  ? number
-                  : DEF extends { type: 'boolean' }
-                    ? boolean
-                    : DEF extends { type: 'string' | 'text' | 'color' }
-                      ? string
-                      : DEF extends { defaultValue: infer V }
-                        ? [V] extends [boolean]
-                          ? boolean
-                          : [V] extends [string]
-                            ? string
-                            : [V] extends [number]
-                              ? number
-                              : any
-                        : any
+// A sub-schema entry, not a slot: the read yields that sub-config's snapshot.
+// Typed rather than left to fall through to `any`, so the snapshot can't be fed
+// back into `readConfObject` — see its doc comment.
+type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
+  ? AnyConfigurationSnapshot
+  : DEF extends {
+        model: ISimpleType<infer T extends string>
+      }
+    ? // `maybeStringEnum` declares the plain enumeration as its `model` and gets
+      // its nullability from ConfigSlot, so the `undefined` is added back here
+      DEF extends { type: 'maybeStringEnum' }
+      ? T | undefined
+      : T
+    : DEF extends { type: 'stringArray' }
+      ? string[]
+      : DEF extends { type: 'stringArrayMap' }
+        ? Record<string, string[]>
+        : DEF extends { type: 'numberMap' }
+          ? Record<string, number>
+          : DEF extends { type: 'fileLocation' }
+            ? FileLocation
+            : DEF extends { type: 'maybeNumber' }
+              ? number | undefined
+              : DEF extends { type: 'maybeBoolean' }
+                ? boolean | undefined
+                : DEF extends { type: 'maybeColor' }
+                  ? string | undefined
+                  : DEF extends { type: 'number' | 'integer' }
+                    ? number
+                    : DEF extends { type: 'boolean' }
+                      ? boolean
+                      : DEF extends { type: 'string' | 'text' | 'color' }
+                        ? string
+                        : DEF extends { defaultValue: infer V }
+                          ? [V] extends [boolean]
+                            ? boolean
+                            : [V] extends [string]
+                              ? string
+                              : [V] extends [number]
+                                ? number
+                                : any
+                          : any
 
 /** what a raw read (`getConf` / `readConfObject`) of this slot yields */
 export type ConfigurationSlotValue<SCHEMA, K extends string> =

@@ -5,10 +5,13 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
-import { getConf, resolveConf, setConf } from './index.ts'
+import { getConf, readConfObject, resolveConf, setConf } from './index.ts'
 
 import type { IConfigurationReference } from './configurationSchema.ts'
-import type { AnyConfigurationSchemaType } from './types.ts'
+import type {
+  AnyConfigurationSchemaType,
+  AnyConfigurationSnapshot,
+} from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Regression guard for the config-read narrowing described in
@@ -163,6 +166,39 @@ describe('getConf slot-value type narrowing', () => {
       getConf(model, 'notASlot')
       // @ts-expect-error -- 'notASlot' is not in the schema
       setConf(model, 'notASlot', 1)
+    }
+    void check
+    expect(true).toBe(true)
+  })
+
+  // A sub-config slot read yields the parent's stripDefault'd snapshot, so
+  // reading a *defaulted* slot back off it answers undefined instead of the
+  // default. The whole fix is that the snapshot no longer types as `any`, which
+  // is what let it be fed back in: keep both halves, or the hazard returns
+  // silently. See readConfObject's doc comment and CONFIG_PATTERN.md.
+  test('a sub-config slot read is a snapshot, and not readable as a config', () => {
+    const nested = ConfigurationSchema('ConfigNarrowingNested', {
+      sub: ConfigurationSchema('ConfigNarrowingSub', {
+        limit: { type: 'number', defaultValue: 5_000_000 },
+      }),
+      plain: { type: 'number', defaultValue: 1 },
+    })
+    const check = (config: Instance<typeof nested>) => {
+      // the read is typed as transport data, NOT `any`
+      const sub = readConfObject(config, 'sub')
+      assertType<Equal<typeof sub, AnyConfigurationSnapshot>>()
+
+      // ...so the wrong spelling of a nested read cannot compile
+      // @ts-expect-error -- a snapshot is not a readable config
+      readConfObject(sub, 'limit')
+
+      // a whole-config read is that same snapshot, not a union of slot values
+      const whole: AnyConfigurationSnapshot = readConfObject(config)
+      void whole
+
+      // an ordinary slot still narrows to its own value type
+      const plain = readConfObject(config, 'plain')
+      assertType<Equal<typeof plain, number>>()
     }
     void check
     expect(true).toBe(true)

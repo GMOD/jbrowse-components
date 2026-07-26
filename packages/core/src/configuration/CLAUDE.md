@@ -68,12 +68,33 @@ before constructing an adapter, which restores every default (that is why an
 adapter's own `this.getConf('...')` is always correct), and `.type` is required
 so it is never stripped.
 
-The one thing that breaks is picking a **defaulted** slot off the snapshot on
-the main thread — it reads `undefined` for every track that left the slot alone,
-which is most of them. `LGVSyntenyDisplay` read its coarse-tier threshold that
-way and got `undefined` instead of `10000`, so it sent no detail tier at all and
-the feature silently never fired. Use an array slot path to reach into the live
-sub-config instead:
+What used to break is picking a **defaulted** slot off the snapshot on the main
+thread — it read `undefined` for every track that left the slot alone, which is
+most of them. `LGVSyntenyDisplay` read its coarse-tier threshold that way and
+got `undefined` instead of `10000`, so it sent no detail tier at all and the
+feature silently never fired; the byte gate read a BAM's `fetchSizeLimit` that
+way and gated at the display's 1 Mb.
+
+**Both failure modes are now mechanical, not remembered.** A snapshot isn't an
+accepted first argument to `readConfObject` — `SlotValueRawFromDef` types a
+sub-schema read as `AnyConfigurationSnapshot` instead of letting it fall through
+to `any`, and the loose overload admits only a live node or a `types.map`. Keep
+both halves: narrowing the overload alone does nothing, since `any` satisfies
+any parameter. `configTypeNarrowing.test.ts` fails `pnpm typecheck` if either
+regresses.
+
+**Types only — there is deliberately no runtime check, and adding one was tried
+and reverted.** Reading a slot straight off an un-hydrated plain config is a
+load-bearing pattern, not a mistake: `generateHierarchy` does it over every
+entry of the frozen `jbrowse.tracks` because hydrating 10k tracks to fill the
+track selector is exactly what `types.frozen` exists to avoid. At runtime that
+read is indistinguishable from the broken spelling — both are a plain object
+missing a defaulted key — so a throw there failed 65 suites, including that path
+and `getSharedTracks`, whose fixture omits `assemblyNames` on purpose.
+`Object.isFrozen` doesn't separate them either: MST freezes the frozen track
+configs too.
+
+So use an array slot path off the live node:
 
 ```js
 getConf(track, ['adapter', 'coarseBpPerPxThreshold'])
@@ -82,7 +103,9 @@ getConf(track, ['adapter', 'coarseBpPerPxThreshold'])
 which resolves the default, and still returns `undefined` when the adapter's
 schema has no such slot. `getConfSnapshot` is the bulk form (every slot
 resolved) for handing a self-contained config across a boundary that will _not_
-re-hydrate it.
+re-hydrate it. For a config that is genuinely a plain object (a customized About
+dialog config), `readConfSlot` in `product-core/src/ui/util.ts` walks it
+directly and never routes into `readConfObject`.
 
 ## `getConf` vs `readConfObject`
 
@@ -104,13 +127,13 @@ Their type-strictness is **asymmetric**, which matters for the narrowing below.
 `getConf` has a _single_ constrained signature: its slot-name param must satisfy
 `SLOT extends ConfigurationSlotName<schema> | string[]`, with no loose
 fallthrough. `readConfObject` carries an _extra_ loose `(config, string): any`
-overload (for maps-of-subschema, plain snapshots, and possibly-un-hydrated
-`session.tracks` entries). So on a model whose schema is **concrete**, a slot
-name outside the schema is a **hard compile error** through `getConf` but
-silently falls through to `any` through `readConfObject`. `getConf` is therefore
-the stricter reader (and the only one that catches slot-name typos) — don't
-reach for `readConfObject` to make a slot-name error go away; that only launders
-away the check.
+overload, for a top-level `types.map` of sub-schemas (an assembly's per-key
+configs), whose entries carry no resolvable schema type. So on a model whose
+schema is **concrete**, a slot name outside the schema is a **hard compile
+error** through `getConf` but silently falls through to `any` through
+`readConfObject`. `getConf` is therefore the stricter reader (and the only one
+that catches slot-name typos) — don't reach for `readConfObject` to make a
+slot-name error go away; that only launders away the check.
 
 ## Config read type narrowing
 

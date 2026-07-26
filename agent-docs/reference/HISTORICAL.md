@@ -169,3 +169,72 @@ either into a bare forward:
 - **`LinearMafDisplay`** returns `true` after deliberately rendering zero blocks:
   zoomed out, the identity plot owns the visible rows on a sibling canvas, so the
   cleared GPU frame is still a real paint.
+
+## A config snapshot was a legal input to `readConfObject` (closed)
+
+`readConfObject` used to accept a plain config snapshot as its first argument, so
+one nested read had two spellings that silently disagreed:
+
+```ts
+readConfObject(readConfObject(track, 'adapter'), 'fetchSizeLimit') // undefined at the default
+readConfObject(track, ['adapter', 'fetchSizeLimit']) //             5_000_000
+```
+
+Every slot is `types.stripDefault`, so a sub-config slot read hands back an object
+with every defaulted slot omitted. Reading a defaulted slot back off it answered
+`undefined`, which reads as "the adapter declares no limit" rather than "ask the
+node" — that is how the byte gate came to ignore a BAM's declared 5 Mb and gate at
+the display's 1 Mb (`810c7fb8fd`). The left spelling is what a display's
+`adapterConfig` invites, since that getter *is* `getConf(parentTrack, 'adapter')`.
+
+Both halves of the fix are load-bearing; each was verified to fail the guards in
+`configTypeNarrowing.test.ts` on its own. Narrowing the overload alone does
+nothing, because the sub-config read returned `any` and `any` satisfies any
+parameter — so `SlotValueRawFromDef` had to type sub-schema entries as
+`AnyConfigurationSnapshot` first.
+
+The type half was expected to be expensive and was not:
+
+- **The compiler enumerated no snapshot callers.** Rejecting snapshots cost zero
+  errors repo-wide, because every value that holds an un-hydrated snapshot at
+  runtime is already *typed* as `AnyConfigurationModel` (`session.tracks` is
+  `AnyConfigurationModel[]`). The plan of record called for moving "the two
+  legitimate snapshot callers" to a `readSnapshotConf` entry point; there were
+  none, so that function was never written. `readConfSlot` (product-core) already
+  covers the genuine plain-object case by branching before it reaches
+  `readConfObject`.
+
+**A runtime check was attempted twice and abandoned. Don't re-add one.** The
+temptation is obvious — a type error only helps code that typechecks, so why not
+also throw when a plain object shows up with an undefined slot? Because that read
+is a load-bearing pattern, not a mistake: `generateHierarchy` reads slots straight
+off the un-hydrated frozen entries of `jbrowse.tracks`, since hydrating 10k tracks
+to populate the track selector is exactly what `types.frozen` exists to avoid
+(ADR-031). At runtime that is indistinguishable from the broken spelling — both
+are a plain object missing a defaulted key. A throw failed 65 suites. Narrowing it
+to `Object.isFrozen`, on the theory that MST freezes only the snapshots it hands
+out, doesn't separate them either: the frozen track configs are frozen too. The
+type layer is the only place this is expressible, which is what the original plan
+concluded.
+
+Two measurement traps on the way, both worth remembering:
+
+- **A zero from instrumentation has to be verified as reachable.** A
+  `console.error` probe in `readConfObject` plus a full-suite run appeared to give
+  0 hits across 9096 tests, which is what made a blunt throw look safe. The number
+  was an artifact: jest's reporter is non-TTY under a pipe and prints almost
+  nothing for passing suites, so the captured log held 373 lines for a 992-suite
+  run. Assert a known-positive hit before trusting a zero.
+- **Don't pipe a full-suite run through `tail`.** The failure output that would
+  have attributed the damage was truncated to the last 30 lines, which turned one
+  visible failure into a guess about 65. Redirect the whole log, then grep it.
+
+Don't "fix" the stripping itself, and don't make slot reads resolve defaults all
+the way down. `rawConfSnapshot` (the defaults-included converter) drops arrays and
+maps of sub-schemas, so `getConf(track, 'displays')` would start returning less;
+it throws on promotable slots, and a display config nested in a track config has
+them; and promotables resolve against the *session*, which a pure config read
+cannot reach — there is no single correct defaults-included plain object for a
+nested display config. `readSlot` also returns the cached `getSnapshot`
+deliberately: a per-read built object was a measured perf and
+spurious-recomputation regression.

@@ -184,32 +184,34 @@ invalidation tiers").
 
 ## Reading a slot: node, not snapshot
 
-Every slot is `types.stripDefault(...)`, so a plain MST snapshot **omits any slot
-sitting at its default**. That is what keeps saved sessions minimal, and it is
-harmless for the two things snapshots are for: re-creating the object (the
-schema re-applies defaults) and diffing what a user actually set.
+Every slot is `types.stripDefault(...)`, so a config snapshot **omits any slot
+sitting at its default**. That keeps saved sessions minimal and is exactly right
+for what snapshots are for — re-creating the object (the schema re-applies
+defaults) and diffing what a user actually set. It is not a value-read API.
 
-It is *not* safe to read a value from. `readConfObject(conf)` with no slot path
-returns `getSnapshot(conf)`, and `readSlot` returns a sub-config as a snapshot
-too — so a display's `adapterConfig` (`getConf(parentTrack, 'adapter')`) is a
-default-stripped snapshot, and `readConfObject(self.adapterConfig, 'someSlot')`
-yields `undefined` for every config that didn't restate the default. It reads
-like a config miss, not like a default.
-
-Read through a config **node** instead, with a slot path:
+**The compiler owns this now, so it needs no vigilance.** A snapshot is not an
+accepted argument to `readConfObject` — a compile error, guarded by
+`configTypeNarrowing.test.ts`. So the spelling left is the correct one: drill from
+the live node, which resolves defaults.
 
 ```ts
 // resolves the adapter's default
 readConfObject(getContainingTrack(self).configuration, ['adapter', 'fetchSizeLimit'])
 ```
 
-The byte gate's `adapterFetchSizeLimit` is the live case
-([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)): read off the snapshot, a BAM's
-declared 5 Mb vanished and the 1 Mb display default gated instead. Reading a
-*sub-config object* off a snapshot (`adapterConfig.summaryAdapter`) is fine —
-those have no default to strip. `readSlot` returns the snapshot deliberately
-(stable identity, so downstream computeds memoize); don't "fix" it to a
-defaults-included clone.
+Note the array path itself still returns `any` — only single-slot reads narrow.
+
+**Don't add a runtime check on top.** It was tried and reverted: reading a slot off
+an un-hydrated plain config is legitimate and load-bearing — `generateHierarchy`
+walks the frozen `jbrowse.tracks` that way rather than hydrate 10k tracks for the
+track selector — and at runtime that is indistinguishable from the broken
+spelling.
+
+Don't "fix" `readSlot` to return a defaults-included clone: it returns the cached
+`getSnapshot` deliberately (stable identity, so downstream computeds memoize), and
+a per-read built object was a measured perf and spurious-recomputation regression.
+The story is in [HISTORICAL.md](HISTORICAL.md) §"A config snapshot was a legal
+input to `readConfObject`".
 
 ## Key functions
 

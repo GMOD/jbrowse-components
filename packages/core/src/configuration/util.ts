@@ -28,7 +28,6 @@ import type { Feature } from '../util/index.ts'
 import type { JexlInstance } from '../util/jexlStrings.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
-  AnyConfiguration,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
@@ -124,11 +123,25 @@ function readSlot(
  * configuration value at the given path. Use this when you hold the
  * configuration model directly, e.g. an entry from `session.tracks`.
  *
+ * Wants a **live config node**, not a snapshot of one, and passing a snapshot is
+ * a type error. Slots are built with `types.stripDefault`, so a slot sitting at
+ * its default is absent from a snapshot — "unset" and "at its default" are
+ * indistinguishable there, and a read off one reports a default as missing.
+ *
+ * That is enforced in the types only, deliberately: it can't be a runtime check.
+ * `generateHierarchy` reads slots straight off the **un-hydrated frozen** entries
+ * of `jbrowse.tracks` on purpose, because hydrating every track to answer the
+ * track selector is what `types.frozen` exists to avoid — and those reads are
+ * indistinguishable at runtime from the broken spelling.
+ *
  * @param model - instance of ConfigurationSchema
  * @param slotPaths - array of paths to read
  * @param args - extra arguments e.g. for a feature callback,
  *  will be sent to each of the slotNames
  */
+export function readConfObject(
+  confObject: AnyConfigurationModel,
+): AnyConfigurationSnapshot
 export function readConfObject<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends
@@ -141,16 +154,12 @@ export function readConfObject<
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
   : any
-// Two shapes that don't carry a resolvable schema type, so slot names/values
-// aren't checked (returns any):
-//  - a top-level types.map of sub-schemas (e.g. an assembly's per-key configs);
-//    rawSlotValue falls back to map.get() for these
-//  - a plain config snapshot, or a model-or-snapshot value (e.g. a
-//    session.tracks entry that may be a live node or an un-hydrated plain
-//    object) — matching the runtime, which reads plain objects directly. Jexl
-//    slots still require a live node (evalConfigCallback throws otherwise).
+// A top-level types.map of sub-schemas (e.g. an assembly's per-key configs)
+// carries no resolvable schema type, so slot names/values aren't checked
+// (returns any); rawSlotValue falls back to map.get() for these. Deliberately
+// does NOT admit `AnyConfigurationSnapshot` — see the doc comment above.
 export function readConfObject(
-  confObject: IMSTMap<AnyConfigurationSchemaType> | AnyConfiguration,
+  confObject: IMSTMap<AnyConfigurationSchemaType> | AnyConfigurationModel,
   slotPath?: string | string[],
   args?: Record<string, unknown>,
 ): any

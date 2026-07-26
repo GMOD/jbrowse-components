@@ -43,8 +43,10 @@ nothing about the floor or force-load.
   display's `adapterConfig`, which is a default-stripped *snapshot* — so an
   adapter's declared limit was invisible unless a config restated it. It now reads
   a slot path off the live track config. Pinned by the alignments test, which
-  passes the adapter's default value deliberately. The general trap is written up
-  in [CONFIG_PATTERN.md §"Reading a slot: node, not snapshot"](../reference/CONFIG_PATTERN.md).
+  passes the adapter's default value deliberately. The general trap is closed —
+  that spelling no longer compiles, and a snapshot reaching `readConfObject`
+  through a cast throws instead of answering `undefined`
+  ([CONFIG_PATTERN.md §"Reading a slot: node, not snapshot"](../reference/CONFIG_PATTERN.md)).
 - `resolvedByteLimit()` moved from `CanvasFeatureGateMixin` to
   `RegionTooLargeMixin` (both its terms were the byte mixin's), so the canvas gate
   is purely the density axis. `measureRegionBytes`
