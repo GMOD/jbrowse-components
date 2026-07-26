@@ -112,22 +112,25 @@ docstring.
   perturbs it globally: out-of-order blocks in taffy's own output and lost
   region queries (1/300 vs 2/300 random K12 positions answered on one seed,
   0/300 vs 3/300 on another; never better anywhere).
-- **The build is reproducible** — re-running the current script plus
-  `taffy view -c` and `taffy index` gives a `.taf.gz` byte-identical to the
-  hosted one, md5 `d64c811a1562e493ca14462f8b02f6bb`. Use that as the tripwire:
-  a change that moves the md5 changes the demo and owes a measured improvement.
+- **The build is reproducible**, but the script has since moved ahead of the
+  hosted file. The hosted `.taf.gz` is md5 `d64c811a1562e493ca14462f8b02f6bb`;
+  `reroot_maf.py` plus `taffy view -c` and `taffy index` now gives
+  `461e60e4d3e50cd82e5b1204cb3d3bfb`, because the script splits blocks with
+  duplicate reference rows. Use the new md5 as the tripwire: a change that moves
+  it owes a measured improvement.
 - **Measure retrieval, not block order.** Whether an indexed query returns a K12
   row covering position *p* is the metric that matters. Overlap counts off a
   `taffy view -m` dump describe the converter, and they sent an earlier session
   down a long wrong path.
-- **One real defect is left, and it is taffy's index, not our converter.** A
-  block's second reference row is filed under row 0 only, so 1,773 bp (0.038%)
-  of this file's K12 coverage cannot be retrieved through its own `.tai`, in two
-  runs at `1211940-1212074` and `4170830-4172469`. Both MAF figure loci are
-  clear of them, checked position by position. Explained, minimally
-  reproducible, and not fixed by upgrading taffy. Written up in
-  [TAFFY_INDEX_GAPS_HANDOFF.md](TAFFY_INDEX_GAPS_HANDOFF.md) so it stops being
-  rediscovered as a `reroot_maf.py` bug.
+- **The last real defect was taffy's index, and the script now works around it.**
+  A block's second reference row is filed under row 0 only, so 1,773 bp (0.038%)
+  of the hosted file's K12 coverage cannot be retrieved through its own `.tai`,
+  in two runs at `1211940-1212074` and `4170830-4172469`. Both MAF figure loci
+  are clear of them, checked position by position. `reroot_maf.py` now splits
+  those blocks and takes it to 0, so **regenerating and re-uploading this file is
+  an open, optional cleanup**. Full measurements and the two ways to measure it
+  wrong are in
+  [TAFFY_INDEX_GAPS_HANDOFF.md](TAFFY_INDEX_GAPS_HANDOFF.md).
 
 **How systemic the under-reporting is: 0.32%, measured.** Per-strain MAF row
 absence cross-checked against the per-strain `odgi pav` bigWigs (both hosted). Of
