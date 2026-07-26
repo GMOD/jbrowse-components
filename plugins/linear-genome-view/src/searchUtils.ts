@@ -89,13 +89,20 @@ export async function navToOption({
     model.showTrack(trackId)
   }
 
-  const { pluginManager } = getEnv(session)
-  await pluginManager.evaluateAsyncExtensionPoint(
-    /** #extensionPoint LinearGenomeView-searchResultSelected | async | Invoked when a search result is selected */
-    'LinearGenomeView-searchResultSelected',
-    undefined,
-    { session, result: option, model, assemblyName },
-  )
+  // same detach hazard as showTrack above: navToLocations awaits, and handlers
+  // read off the view (the canvas one calls getSession(model) and model.tracks),
+  // which throws once it has left the tree. Deliberately not the Strict runner —
+  // this fires after the navigation has already succeeded, so a plugin's
+  // post-nav side effect failing must not turn a completed search into an error
+  if (isAlive(model)) {
+    const { pluginManager } = getEnv(session)
+    await pluginManager.evaluateAsyncExtensionPoint(
+      /** #extensionPoint LinearGenomeView-searchResultSelected | async | Invoked when a search result is selected */
+      'LinearGenomeView-searchResultSelected',
+      undefined,
+      { session, result: option, model, assemblyName },
+    )
+  }
 }
 
 // Thrown when a name search yields no hits and the input isn't coordinate-shaped.
