@@ -23,9 +23,10 @@ half the bytes. `regionTooLarge` is a derived getter that redoes this rescale on
 every read, so the banner clears itself once you've zoomed in enough.
 
 - **`estimatedBytesForVisibleSpan`** — rescaled to the span in view now. **Gate on this.**
-- **`estimatedBytesForMeasuredSpan`** — the frozen number from when we captured
-  it. Gating on this is the classic bug: it never shrinks, so the banner never
-  clears.
+- **`byteEstimate.bytes`** — the frozen number from when we captured it, stored
+  with the span it covers (`byteEstimate.measuredSpanBp`) as one volatile,
+  because the two are one measurement. Gating on the raw bytes is the classic
+  bug: they never shrink, so the banner never clears.
 
 **The footgun:** gating is **opt-in**, and a display that doesn't opt in never
 gates. A pre-flight display sets `byteGateEnabled` (defaults to false); canvas,
@@ -42,16 +43,23 @@ order can't turn a gate off.
   (`forceLoadTrack`) — never saved to a session, but deliberately kept across
   chromosome navigation, since it approves the track rather than a locus. The
   durable escape hatch is the `forceLoad` config slot.
-- `alwaysRender` exempts adapters that summarize at screen resolution (BigWig,
-  MultiWiggle, HiC, sequence) — they can never be "too large". Latent today:
-  none of those adapters backs a gated display, so the flag reaches
-  `evaluateRegionTooLarge` only through `configForceLoad`.
+- An adapter that summarizes at screen resolution (BigWig, MultiWiggle, HiC,
+  sequence) simply **reports no estimate**, and no estimate means no byte axis in
+  the verdict. There is no `alwaysRender` exemption flag any more: it could only
+  arrive on an estimate from an adapter that reports none, so it was dead by
+  construction.
+- **One adapter method**, `getRegionByteSize(regions)`, serves both halves: the
+  pre-flight RPC calls it in a worker, canvas's feature RPCs call it inline. The
+  byte *budget* it is compared against never crosses the worker boundary — it is a
+  main-thread config read (`gateByteLimit`).
 
 | Code | Path |
 | --- | --- |
-| `RegionTooLargeMixin` (derived gate) | `plugins/linear-genome-view/src/shared/RegionTooLargeMixin.tsx` |
+| `RegionTooLargeMixin` (derived gate, byte axis, worker byte budget) | `plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts` |
 | Shared verdict primitives | `plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts` |
 | Pre-flight estimate RPC | `packages/core/src/rpc/methods/CoreGetRegionByteEstimate.ts` |
+| Adapter estimate | `BaseFeatureDataAdapter.getRegionByteSize` |
+| In-fetch byte short-circuit (both canvas RPCs) | `plugins/canvas/src/RenderFeatureDataRPC/byteGate.ts` |
 | `CanvasFeatureGateMixin` (density axis) | `plugins/canvas/src/shared/CanvasFeatureGateMixin.ts` |
 
 Tests: `regionTooLargeUtils.test.ts` for the shared primitives, a
@@ -76,8 +84,10 @@ Four steps, all on `RegionTooLargeMixin`:
   `MultiRegionDisplayMixin` family, LD and arc make it from their own global
   fetches. It short-circuits to false when `byteGateEnabled` is off, so the call
   is unconditional at every site.
-- `setByteEstimate(estimate, measuredSpanBp)` stores the estimate together with
-  the span it covers. Storing the span is what makes the rest of this work, and
+- `setByteEstimate({ bytes, measuredSpanBp })` stores the estimate together with
+  the span it covers — one volatile, written and dropped as a unit, so "bytes
+  without a span" is unrepresentable. Storing the span is what makes the rest of
+  this work, and
   the span must be captured **before** the measurement round trip, not read from
   `view.visibleBp` at commit time — a zoom during the in-flight fetch would
   otherwise anchor the estimate to a span it never covered, and because
@@ -86,9 +96,12 @@ Four steps, all on `RegionTooLargeMixin`:
   `byteGateBlocksFetch`, above the await, is what makes that structural instead
   of a rule each call site has to honor.
 - `estimatedBytesForVisibleSpan` rescales that estimate to the span visible now
-  (`bytes × visibleBp / measuredSpanBp`). It returns `undefined` until
-  `view.initialized`, because `visibleBp` reads `view.width`, which throws
-  before the view is measured, and a bare getter must never throw.
+  (`bytes × visibleBp / measuredSpanBp`). It reads the span through
+  `gateVisibleBp`, the mixin's **only** read of its container, which is
+  `undefined` until `view.initialized` — `visibleBp` reads `view.width`, which
+  throws before the view is measured, and a bare getter must never throw. Both
+  this getter and `gateActive` take the span from there, so the pre-init guard
+  exists once.
 - `gateActive` answers "may anything gate right now?" — opted in, not exempt,
   view measured, span above the floor. `tooLargeStatus` is `gateActive ?
   evaluateRegionTooLarge({bytes, limit, densityTooLarge}) : NOT_TOO_LARGE`, and
@@ -114,12 +127,12 @@ One smaller wire: `onRegionTooLarge()` fires on the false→true transition
 (alignments overrides it to clear its hover).
 
 **The `AUTO_FORCE_LOAD_BP` floor lives in `gateActive`, and only there.** The
-verdict, the pre-flight (no estimate RPC below it) and canvas's two worker budgets
-(`maxFeatureDensity`, `resolvedByteLimit()`, which go undefined together) all read
-that one getter. It used to be spelled out separately in `evaluateRegionTooLarge`,
+verdict, the pre-flight (no estimate RPC below it) and the two worker budgets
+(`resolvedByteLimit()` on this mixin, `maxFeatureDensity` on the canvas gate,
+which go undefined together) all read that one getter. It used to be spelled out separately in `evaluateRegionTooLarge`,
 `checkByteEstimate` and a canvas-local `gateInactive` — three layers that had to
 agree by hand. `evaluateRegionTooLarge` now only compares (bytes vs limit, then
-density), and knows nothing about the floor, force-load or `alwaysRender`.
+density), and knows nothing about the floor or force-load.
 
 MAF's `showSummary` is the one other reader of the constant, flipping to the cheap
 summary adapter exactly where the detail fetch would be blocked. That is a
@@ -175,7 +188,10 @@ exactly the two-call coordination this codebase avoids. Instead
 `getRegionByteSize`, an index-only estimate that downloads no features
 (`undefined` by default on `BaseFeatureDataAdapter`, overridden by the tabix
 adapters). An over-budget region short-circuits there, before `getFeaturesArray`
-runs, and comes back as `{ regionTooLarge, bytes }`.
+runs, and comes back as `{ regionTooLarge, bytes }`. Both RPCs run that stage
+through the one shared `measureRegionBytes` (`RenderFeatureDataRPC/byteGate.ts`),
+the byte-axis counterpart to `densityGate.ts` — the two used to hold a
+copy-pasted block each.
 
 That makes the byte gate symmetric with the density gate, which already
 short-circuits inside the RPC and returns `{ regionTooLarge, featureCount }`.
@@ -203,10 +219,15 @@ just because the regions add up. An adapter with no index estimate contributes
 no count at all, and the published `bytes` stays `undefined` rather than
 collapsing to `0` — "unmeasurable" keeps the byte axis out of the verdict, where
 a zero would read as a measured value. An all-stale batch commits nothing, so a
-superseded fetch can't wipe a good estimate. It publishes `bytes` and nothing
-else: canvas has no pre-flight to learn an adapter's `fetchSizeLimit` from, so
-both the worker budget and the banner take the adapter tier from the main-thread
-`adapterFetchSizeLimit` config read, and agree by construction.
+superseded fetch can't wipe a good estimate. It publishes `bytes` and the span
+they cover, and nothing else — the budget they are compared against is the
+main-thread `gateByteLimit`, the same getter that produced the worker's
+`resolvedByteLimit()`, so the two agree by construction rather than by echoing a
+limit back across the boundary.
+
+A measurement is handed over as `{ displayedRegionIndex, region, result }` — the
+shape a fetch already holds — so neither canvas display does span arithmetic of
+its own; features-per-bp is the gate's business.
 
 Multi-row's fetch RPC (`MultiRowGetFeatures`) is **byte-only**: it takes a
 `byteLimit` and deliberately no `maxFeatureDensity`, because the display turns
@@ -220,12 +241,14 @@ argument the worker ignores.
 
 Composed on top of `RegionTooLargeMixin` by both canvas feature displays:
 `LinearBasicDisplay` and `LinearVariantDisplay` through `baseModel`, plus
-`LinearMultiRowFeatureDisplay`. It contributes the density axis
-(`densityStatsPerRegion`, `observedMaxDensity`, and the `densityTooLarge`
-override) and the budgets the worker needs (`resolvedByteLimit()` and
-`maxFeatureDensity`, both gated behind the shared `gateActive`). Overriding `densityGateEnabled` to false drops the
-density axis for a display that paints into fixed lanes, such as multi-row,
-leaving byte-only gating.
+`LinearMultiRowFeatureDisplay`. It is the **density axis and nothing else**:
+`densityStatsPerRegion`, `observedMaxDensity`, the `densityTooLarge` override,
+and the worker's `maxFeatureDensity` budget (gated behind the shared
+`gateActive`). The worker's *byte* budget, `resolvedByteLimit()`, lives on
+`RegionTooLargeMixin` with the rest of the byte axis — both its terms are that
+mixin's, so a copy here would only be a second place to drift. Overriding
+`densityGateEnabled` to false drops the density axis for a display that paints
+into fixed lanes, such as multi-row, leaving byte-only gating.
 
 A display opts in by composing the mixin, calling `commitGateMeasurements` from
 its fetch (with the `visibleBp` captured *before* the fetch), and overriding
@@ -233,9 +256,7 @@ its fetch (with the `visibleBp` captured *before* the fetch), and overriding
 part matters because a too-large region is marked loaded but stores nothing, so
 without the override it would never refetch once the gate released. The mixin's
 own `afterAttach` clears stale stats on chromosome navigation, so a composing
-display can't forget it and mis-gate a reused `displayedRegionIndex`. The
-force-load ceilings go with them: a raised byte ceiling carried onto the next
-chromosome would also silently disable the density axis there.
+display can't forget it and mis-gate a reused `displayedRegionIndex`.
 `baseModel` keeps only what is genuinely its own: the per-region
 `RenderFeatureData` fetch and `applyFetchResults`, its peptide-aware
 `isCacheValid`, and `pruneRpcDataMapToVisible`, which trims
@@ -248,9 +269,9 @@ pushes nothing and there's no stale-feature flash.
 
 Force-load is **one boolean for the whole track**: `forceLoadTrack`, a volatile on
 `RegionTooLargeMixin`. `forceLoad()` sets it (via `setForceLoadTrack`) and calls
-`reload()`; `byteGateExempt` ORs it with the declarative `forceLoad` config slot
-and an adapter's `alwaysRender`, and everything downstream — the verdict, the
-worker byte budget, the worker density budget — reads that one getter.
+`reload()`; `byteGateExempt` ORs it with the declarative `forceLoad` config slot,
+and everything downstream — the verdict, the worker byte budget, the worker
+density budget — reads that one getter, through `gateActive`.
 
 The banner quotes the estimated size before the click, so a user approving it is
 approving the track with the magnitude in front of them. They are then never asked
@@ -309,14 +330,23 @@ paths can't drift apart.
   sentinel.
 
   Its single caller is `gateByteLimit` on `RegionTooLargeMixin` — what the verdict
-  compares against, and what canvas's `resolvedByteLimit()` hands the worker, so
-  the two cannot gate against different numbers. It takes the adapter tier from
-  `resolvedAdapterByteLimit` (`byteEstimate?.fetchSizeLimit ??
-  adapterFetchSizeLimit`), so a dynamically computed limit wins over the static
-  slot in one place. Read the getter; don't re-assemble the call. Canvas doing so
-  is how its worker budget came to ignore the estimate's dynamic limit and
-  `alwaysRender` while the banner honored both — a worker rejection with no banner
-  is a blank display that never refetches.
+  compares against, and what `resolvedByteLimit()` hands the worker, so the two
+  cannot gate against different numbers. Read the getter; don't re-assemble the
+  call: a second spelling of "the adapter's budget" is how a worker rejection with
+  no banner happens, which is a blank display that never refetches.
+
+  The adapter tier is `adapterFetchSizeLimit`, a **main-thread read of the
+  adapter's own `fetchSizeLimit` slot**. It used to also ride back on the estimate
+  (`byteEstimate.fetchSizeLimit`), which BAM/CRAM/VCF filled with exactly that same
+  static slot — one value with two spellings and a precedence rule between them, so
+  the field went away and the boundary now carries bytes only.
+
+  Read it as a slot **path off the live track config**
+  (`readConfObject(track.configuration, ['adapter','fetchSizeLimit'])`), never off
+  the display's `adapterConfig`: that is a snapshot, and a snapshot omits any slot
+  at its default, so a BAM's declared 5 Mb read back as `undefined` and the 1 Mb
+  display default gated instead — the bug this pass had to fix on the way. See
+  [CONFIG_PATTERN.md §"Reading a slot: node, not snapshot"](CONFIG_PATTERN.md).
 
   Note an adapter-declared limit **outranks** the display config, so a
   display-level `fetchSizeLimit` cannot lower a BAM/CRAM/VCF adapter's own default.
@@ -324,19 +354,23 @@ paths can't drift apart.
 - `rescaleByteEstimateToVisibleSpan` holds the span-scaling math.
 - `bytesTooLargeReason(bytes)` and `TOO_MANY_FEATURES_REASON` are the only two
   banner strings.
-- `evaluateRegionTooLarge({ visibleBp, estimatedBytesForVisibleSpan, byteLimit, densityTooLarge, alwaysRender })`
-  produces the verdict and its reason, applying its checks in order:
-  - `alwaysRender` wins first and never gates.
-  - Below `AUTO_FORCE_LOAD_BP` (20,000 bp) nothing gates.
-  - Otherwise over-byte-limit gates before density.
+- `evaluateRegionTooLarge({ estimatedBytesForVisibleSpan, byteLimit, densityTooLarge })`
+  produces the verdict and its reason, and is *only* the comparison: over the
+  byte limit gates before density, and `densityTooLarge` is opt-in, so byte-only
+  displays never gate on it. Whether the gate applies at all —
+  `AUTO_FORCE_LOAD_BP`, force-load — is `gateActive`'s question, not this
+  function's.
 
-  `densityTooLarge` is opt-in, so byte-only displays never gate on it.
+## Self-summarizing adapters need no exemption
 
-`alwaysRender` is the escape hatch for self-summarizing adapters. Adapters that
-cap what they return at screen resolution (BigWig, MultiWiggle, HiC, the
-sequence adapters) report it from `getMultiRegionByteEstimate`, so no
-region is ever too large for them however wide the view gets. BigMaf
-deliberately does not, since it returns full alignment rows rather than a
-screen-reduced summary. `tooLargeStatus` passes `byteGateExempt` in
-through `alwaysRender`, so both the declarative slot and the force-load button
-short-circuit the verdict exactly as a self-summarizing adapter does.
+An adapter that caps what it returns at screen resolution (BigWig, MultiWiggle,
+HiC, the sequence adapters) simply doesn't implement `getRegionByteSize`. No
+estimate, no byte axis, no gate — however wide the view gets. They used to
+declare `alwaysRender: true` on the estimate instead, which was unreachable by
+construction (the only carrier of the flag was an estimate none of them
+produced), so it was deleted rather than left as a safety net that can't fire —
+the same call the unreachable multi-row density gate got.
+
+BigMaf deliberately *does* implement it, since it returns full alignment rows
+rather than a screen-reduced summary, and a whole-chromosome view can pull enough
+packed MAF stanzas to hang the tab.

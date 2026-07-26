@@ -71,19 +71,14 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
       }
     },
     // Assembled from `needed` — which already carries each region's span — so
-    // the width pairs with the result by construction instead of through a
+    // the region pairs with its result by construction instead of through a
     // second lookup that could miss.
     onComplete: () => {
       const measurements: RegionGateMeasurement[] = []
       for (const { region, displayedRegionIndex } of needed) {
-        const res = gateResults.get(displayedRegionIndex)
-        if (res) {
-          measurements.push({
-            displayedRegionIndex,
-            regionWidthBp: region.end - region.start,
-            bytes: res.bytes,
-            featureCount: res.featureCount,
-          })
+        const result = gateResults.get(displayedRegionIndex)
+        if (result) {
+          measurements.push({ displayedRegionIndex, region, result })
         }
       }
       self.commitGateMeasurements(measurements, measuredSpanBp)

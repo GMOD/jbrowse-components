@@ -21,7 +21,7 @@ original code blocks were renamed. Map:
 | `onFetchNeeded` | `fetchNeeded` |
 | `pruneRawRpcDataMapToVisible` | `pruneRpcDataMapToVisible` |
 | `withFetchLifecycle` | `fetchRegions` (via `MultiRegionDisplayMixin`) |
-| `fetchedBpPerPxMap` | removed — this display is `alwaysRender` (BigWig), so no per-region bpPerPx map |
+| `fetchedBpPerPxMap` | removed — this display is never byte-gated (BigWig reports no estimate), so no per-region bpPerPx map |
 
 Note also: `LinearBasicDisplay` preserves `rpcDataMap` (this ADR); its sibling
 `LinearMultiRowFeatureDisplay` clears it in `clearDisplaySpecificData` — the

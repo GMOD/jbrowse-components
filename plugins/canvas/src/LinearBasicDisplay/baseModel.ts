@@ -2188,17 +2188,10 @@ export default function baseStateModelFactory(
           }
           // Commit the per-region byte/density estimates to the shared gate (byte
           // **max**, not sum, so a multi-region view where each region fits isn't
-          // blanked by the cross-region total). Same helper the multi-row display
-          // uses, so the two canvas gates can't drift.
-          self.commitGateMeasurements(
-            fetches.map(({ displayedRegionIndex, region, result }) => ({
-              displayedRegionIndex,
-              regionWidthBp: region.end - region.start,
-              bytes: result.bytes,
-              featureCount: result.featureCount,
-            })),
-            measuredSpanBp,
-          )
+          // blanked by the cross-region total). `RegionFetch` already IS the
+          // measurement shape — same helper the multi-row display uses, so the two
+          // canvas gates can't drift.
+          self.commitGateMeasurements(fetches, measuredSpanBp)
         }
 
         return {

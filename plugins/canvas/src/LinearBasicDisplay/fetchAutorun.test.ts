@@ -638,40 +638,6 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
     expect(display.gateByteLimit).toBe(50_000_000)
   })
 
-  // An adapter that computes its budget per request reports it back on the
-  // estimate, and `resolvedAdapterByteLimit` prefers that over the static slot.
-  // The worker budget must follow: if the RPC gated on the config default while
-  // the banner used the estimate's higher limit, a rejected region would come
-  // back with no data and no banner — a silently blank display that never
-  // refetches.
-  it('worker budget tracks a dynamic limit the estimate reports', async () => {
-    const { display, view } = createLargeDisplay(
-      createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 }),
-    )
-
-    display.setByteEstimate(
-      { bytes: 1000, fetchSizeLimit: 80_000_000 },
-      view.visibleBp,
-    )
-    expect(display.resolvedAdapterByteLimit).toBe(80_000_000)
-    expect(display.gateByteLimit).toBe(80_000_000)
-    expect(display.resolvedByteLimit()).toBe(80_000_000)
-  })
-
-  // `alwaysRender` (self-summarizing adapters) must switch off the worker
-  // budgets too, not just the banner verdict — otherwise the RPC still gates a
-  // region the verdict exempts.
-  it('an alwaysRender estimate switches off both worker budgets', async () => {
-    const { display, view } = createLargeDisplay()
-
-    expect(display.resolvedByteLimit()).toBeDefined()
-    display.setByteEstimate({ bytes: 1000, alwaysRender: true }, view.visibleBp)
-    expect(display.byteGateExempt).toBe(true)
-    expect(display.resolvedByteLimit()).toBeUndefined()
-    expect(display.maxFeatureDensity).toBeUndefined()
-    expect(display.regionTooLarge).toBe(false)
-  })
-
   // Control: no adapter limit → the display config (5MB) gates, so the same
   // ~10MB region is too large.
   it('falls back to the display config when the adapter declares no limit', async () => {
@@ -1352,7 +1318,7 @@ describe('byte estimate anchoring across an in-flight zoom', () => {
     await waitFor(() => {
       expect(display.byteEstimate?.bytes).toBe(4_000_000)
     })
-    expect(display.measuredSpanBp).toBe(issuedSpanBp)
+    expect(display.byteEstimate?.measuredSpanBp).toBe(issuedSpanBp)
     // scaled down by the zoom, so it stays under the 5MB config cap; anchored
     // to the post-zoom span it would read as the full 4MB at every zoom level
     expect(display.estimatedBytesForVisibleSpan).toBeLessThan(4_000_000)

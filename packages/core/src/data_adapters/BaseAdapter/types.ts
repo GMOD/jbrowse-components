@@ -51,16 +51,3 @@ export interface BaseTextSearchArgs {
   searchType?: SearchType
   stopToken?: StopToken
 }
-
-export interface RegionByteEstimate {
-  // cheap index-only byte estimate for the requested regions; over the
-  // resolved fetchSizeLimit means "too large"
-  bytes?: number
-  // adapter-defined byte budget (BAM/CRAM/VCF set their own); resolveByteLimit
-  // layers it under a user force-load override and over the display config
-  fetchSizeLimit?: number
-  // Set by self-summarizing adapters (e.g. BigWig, which caps returned data at
-  // screen resolution via bbi zoom levels) to declare a region can never be
-  // "too large", independent of any byte budget.
-  alwaysRender?: boolean
-}

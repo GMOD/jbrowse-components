@@ -1,4 +1,3 @@
-import type { RegionByteEstimate } from '../data_adapters/BaseAdapter/types.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { Feature } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
@@ -58,7 +57,7 @@ export interface RpcRegistry {
       headers?: Record<string, string>
       statusCallback?: StatusCallback
     }
-    return: RegionByteEstimate
+    return: number | undefined
   }
   // A file header/metadata block is whatever the format carries — adapters
   // declare `getHeader`/`getMetadata` as `unknown` and callers narrow (a VCF

@@ -80,5 +80,6 @@ Byte-only, like `LinearAlignmentsDisplay`. `ArcFetchModel` sets
 `if (await self.byteGateBlocksFetch(regions, ctx)) return` — the shared
 `RegionTooLargeMixin` pre-flight, called directly because arc fetches through
 `GlobalFetchMixin` rather than `fetchRegions`. Force-load is one volatile
-boolean per track (`forceLoadTrack`), not a raised ceiling; `alwaysRender`
-adapters never gate. See `agent-docs/reference/REGION_TOO_LARGE.md`.
+boolean per track (`forceLoadTrack`), not a raised ceiling; an adapter that
+reports no byte estimate never gates. See
+`agent-docs/reference/REGION_TOO_LARGE.md`.

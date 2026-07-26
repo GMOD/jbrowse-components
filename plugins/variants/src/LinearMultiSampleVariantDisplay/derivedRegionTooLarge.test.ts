@@ -148,7 +148,10 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -156,7 +159,10 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(50)
@@ -167,7 +173,10 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
   it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     view.scrollTo(view.offsetPx + 200)
@@ -178,7 +187,10 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
@@ -188,7 +200,10 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -200,7 +215,10 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(400)
@@ -214,7 +232,10 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
 
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     view.setDisplayedRegions([

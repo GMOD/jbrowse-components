@@ -9,7 +9,7 @@ import { aggregateQuantitativeStats } from './stats.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
-import type { BaseOptions, RegionByteEstimate } from './types.ts'
+import type { BaseOptions } from './types.ts'
 import type { Observable } from 'rxjs'
 
 /**
@@ -167,28 +167,18 @@ export abstract class BaseFeatureDataAdapter<
   }
 
   /**
-   * Estimates how much data a fetch of `regions` would pull, so a display can
-   * warn the user (and offer force-load) before downloading too much. Returns
-   * the adapter's cheap index-only byte estimate via `getRegionByteSize` (the
-   * tabix family overrides it); adapters with no index estimate return no bytes
-   * and aren't byte-gated. BAM/CRAM/VCF override this to attach their own
-   * `fetchSizeLimit`; self-summarizing adapters (BigWig) return `alwaysRender`.
-   */
-  public async getMultiRegionByteEstimate(
-    regions: Region[],
-    opts?: BaseOptions,
-  ): Promise<RegionByteEstimate> {
-    return regions[0]
-      ? { bytes: await this.getRegionByteSize(regions, opts) }
-      : {}
-  }
-
-  /**
    * Cheap upper bound on the compressed bytes a fetch of `regions` would pull,
    * derived from an index without downloading or parsing any features. The
    * default returns `undefined` ("no cheap estimate"); indexed adapters (tabix)
-   * override it. Lets a fetch short-circuit an over-budget region before
-   * touching feature data — see `executeRenderFeatureData`.
+   * override it, and an adapter that caps what it returns at screen resolution
+   * (BigWig, HiC, sequence) simply doesn't — no estimate means no byte gate.
+   *
+   * The one byte-estimate entry point, used by both halves of the region-too-large
+   * gate: the pre-flight `CoreGetRegionByteEstimate` RPC and the in-fetch
+   * short-circuit in `executeRenderFeatureData`. The byte *budget* it is compared
+   * against is read on the main thread from the adapter's `fetchSizeLimit` config
+   * slot, so it never crosses the worker boundary — see
+   * agent-docs/reference/REGION_TOO_LARGE.md.
    */
   async getRegionByteSize(
     _regions: Region[],

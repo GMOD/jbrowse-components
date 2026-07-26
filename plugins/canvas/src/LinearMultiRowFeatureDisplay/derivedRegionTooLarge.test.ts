@@ -191,7 +191,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('trips when the captured byte estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp) // over the 5MB config
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      measuredSpanBp: view.visibleBp,
+    }) // over the 5MB config
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -199,7 +202,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(20)
@@ -224,9 +230,12 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(view.visibleBp).toBeLessThan(measuredSpanBp)
     expect(view.visibleBp).toBeGreaterThan(20_000)
 
-    display.setByteEstimate({ bytes: 1_500_000 }, measuredSpanBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: measuredSpanBp,
+    })
 
-    expect(display.measuredSpanBp).toBe(measuredSpanBp)
+    expect(display.byteEstimate?.measuredSpanBp).toBe(measuredSpanBp)
     expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(
       (1_500_000 * view.visibleBp) / measuredSpanBp,
     )
@@ -240,13 +249,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     }).createDisplay()
     view.zoomTo(100)
     // 8MB is over the 5MB display config but under the 50MB adapter limit
-    display.setByteEstimate(
-      {
-        bytes: 8_000_000,
-        fetchSizeLimit: 50_000_000,
-      },
-      view.visibleBp,
-    )
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.resolvedByteLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -254,7 +260,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('force-load exempts the track and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     display.forceLoad()
@@ -266,7 +275,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     display.configuration.setSlot('forceLoad', true)
@@ -279,7 +291,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('clears the cached estimate on region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // MultiRegionDisplayMixin's DisplayedRegionsChange autorun drops the
@@ -294,7 +309,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('keeps force-load across region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
     display.forceLoad()
 
     // track-wide approval, so the nav clears survive it

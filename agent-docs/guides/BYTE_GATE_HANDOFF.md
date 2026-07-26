@@ -21,8 +21,37 @@ hand-rolled four-step gate blocks in LD and arc, and the canvas-local
 `gateInactive`. Added: **`gateActive`**, the single getter answering "may anything
 gate right now" (opted in, not exempt, view measured, span above
 `AUTO_FORCE_LOAD_BP`) — read by the verdict, by the pre-flight RPC skip, and by
-canvas's two worker budgets. `evaluateRegionTooLarge` is now purely a comparison
-and knows nothing about the floor, force-load, or `alwaysRender`.
+both worker budgets. `evaluateRegionTooLarge` is now purely a comparison and knows
+nothing about the floor or force-load.
+
+## Second pass (same month): one estimate, one budget, one adapter method
+
+- `RegionByteEstimate` is **gone from core**, and with it
+  `getMultiRegionByteEstimate`. `getRegionByteSize(regions)` is the single adapter
+  byte-estimate method, called by both the pre-flight RPC and canvas's in-fetch
+  gate, and `CoreGetRegionByteEstimate` now returns bare `number | undefined`.
+- `fetchSizeLimit` no longer rides back on the estimate. BAM/CRAM/VCF filled it
+  with `this.getConf('fetchSizeLimit')` — the same static slot the main thread can
+  read — so it was one value with two spellings plus a precedence rule
+  (`resolvedAdapterByteLimit`, also gone). The budget is now resolved once, on the
+  main thread, in `gateByteLimit`.
+- `alwaysRender` deleted (four adapter overrides, one core field, one term in
+  `byteGateExempt`): the flag could only arrive on an estimate, and no adapter that
+  reported it produces one. Behavior is unchanged because "no estimate" already
+  keeps the byte axis out of the verdict.
+- **Bug found and fixed on the way:** `adapterFetchSizeLimit` read the slot off the
+  display's `adapterConfig`, which is a default-stripped *snapshot* — so an
+  adapter's declared limit was invisible unless a config restated it. It now reads
+  a slot path off the live track config. Pinned by the alignments test, which
+  passes the adapter's default value deliberately. The general trap is written up
+  in [CONFIG_PATTERN.md §"Reading a slot: node, not snapshot"](../reference/CONFIG_PATTERN.md).
+- `resolvedByteLimit()` moved from `CanvasFeatureGateMixin` to
+  `RegionTooLargeMixin` (both its terms were the byte mixin's), so the canvas gate
+  is purely the density axis. `measureRegionBytes`
+  (`RenderFeatureDataRPC/byteGate.ts`) replaces the block that was copy-pasted into
+  both canvas feature RPCs. The byte estimate and the span it covers are one
+  volatile, `gateVisibleBp` is the mixin's only view read, and
+  `RegionTooLargeMixin.tsx` became `.ts` (no JSX in it).
 
 Two bugs fixed on the way, both instances of
 [ADR-044](../architecture-decision-records/adr-044-reactive-display-hooks-are-getters-or-pinned-views.md):
@@ -98,18 +127,6 @@ the banner returns), which is why this has been left alone. Two ways forward:
 
 Either is better than the status quo, which is a comment in
 REGION_TOO_LARGE.md § "Known limitation".
-
-### Decide `alwaysRender`'s fate
-
-`alwaysRender` (reported by BigWig, MultiWiggle, HiC, `BaseSequenceAdapter`;
-deliberately not by BigMaf) can only reach the verdict through a pre-flight
-estimate, and no shipping adapter that reports it backs a pre-flight display — so
-the path is latent. It isn't provably unreachable (a hand-written config could put
-a BigWigAdapter under an arc display), so it was kept.
-
-Either delete it (core `RegionByteEstimate` + four adapters + one term in
-`byteGateExempt`) or give one adapter/display pair a test so the path is
-exercised. Latent-forever is the worst of the three.
 
 ### Not worth doing
 

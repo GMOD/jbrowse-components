@@ -1,5 +1,9 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -12,15 +16,8 @@ import {
 } from './regionTooLargeUtils.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
+import type { ByteEstimate } from './regionTooLargeUtils.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter/types'
-
-// `visibleBp` reads `view.width`, which throws before the view is measured, and
-// nothing gates before first paint anyway.
-function viewWiderThanForceLoadFloor(self: object) {
-  const view = getContainingView(self) as LinearGenomeViewModel
-  return view.initialized && view.visibleBp >= AUTO_FORCE_LOAD_BP
-}
 
 // The mixin declares no `configuration` / `adapterConfig`, but every display
 // that composes it has both (BaseDisplay via MultiRegionDisplayMixin, or the SVG
@@ -96,22 +93,18 @@ export default function RegionTooLargeMixin() {
       forceLoadTrack: false,
       /**
        * #volatile
-       * Last byte estimate reported for this display, with the adapter's own
-       * `fetchSizeLimit` and `alwaysRender` flag. Its `bytes` covers
-       * `measuredSpanBp`, not the span on screen now. Survives
+       * The last byte measurement for this display: the estimated bytes **and the
+       * span they cover**, which is what lets the derived gate rescale them to the
+       * span on screen now. One volatile rather than two, because the pair is a
+       * single measurement — written together by `setByteEstimate`, dropped
+       * together by `clearByteEstimate`, and meaningless apart. Survives
        * `clearAllRpcData` so an ordinary viewport change doesn't flicker the
-       * banner; only chromosome navigation drops it.
+       * banner; only chromosome navigation drops it. Ignored unless
+       * `derivedRegionTooLargeEnabled`.
        */
-      byteEstimate: undefined as RegionByteEstimate | undefined,
-      /**
-       * #volatile
-       * The span the current `byteEstimate` was measured over, so the derived
-       * gate can rescale it to the span on screen now. Written by
-       * `setByteEstimate`; ignored unless `derivedRegionTooLargeEnabled`.
-       */
-      measuredSpanBp: undefined as number | undefined,
+      byteEstimate: undefined as ByteEstimate | undefined,
     }))
-    .views(() => ({
+    .views(self => ({
       /**
        * #getter
        * Additive opt-in for displays that measure the estimate inside their own
@@ -125,8 +118,6 @@ export default function RegionTooLargeMixin() {
       get gateFoldedIntoFetch(): boolean {
         return false
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * The one opt-in a pre-flight display writes: true means "measure this
@@ -164,15 +155,22 @@ export default function RegionTooLargeMixin() {
        * #getter
        * The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
        * declares none); `resolveByteLimit` prefers it over the display config.
-       * Read on the main thread rather than trusted only from the estimate: the
-       * three adapters that attach one (BAM/CRAM/VCF) just echo this same static
-       * slot back across the worker boundary, and a display whose adapter never
-       * attaches it would otherwise silently ignore a configured limit.
-       * `byteEstimate.fetchSizeLimit` still wins where present, so an adapter
-       * that computes a limit dynamically keeps the last word.
+       * Read on the main thread, and only here — the estimate that crosses the
+       * worker boundary carries bytes and nothing else, so the banner and the
+       * worker budget have no second spelling of "the adapter's limit" to
+       * disagree about.
+       *
+       * A slot **path off the live config**, not a read off `self.adapterConfig`:
+       * that getter is a snapshot, which by design omits slots sitting at their
+       * default, so a BAM's declared 5 Mb read back as `undefined` in every config
+       * that doesn't restate it. Resolved values come from a config node — see
+       * CONFIG_PATTERN.md §"Reading a slot: node, not snapshot".
        */
       get adapterFetchSizeLimit(): number | undefined {
-        return readConfObject(host(self).adapterConfig, 'fetchSizeLimit')
+        return readConfObject(getContainingTrack(self).configuration, [
+          'adapter',
+          'fetchSizeLimit',
+        ])
       },
       /**
        * #getter
@@ -185,6 +183,17 @@ export default function RegionTooLargeMixin() {
        */
       get configForceLoad(): boolean {
         return getConf(host(self), 'forceLoad')
+      },
+      /**
+       * #getter
+       * The span on screen, or undefined before the view is measured. The gate's
+       * only read of its container: `visibleBp` reads `view.width`, which throws
+       * before measurement and a bare getter must never throw, so the pre-init
+       * guard lives here once rather than at each reader.
+       */
+      get gateVisibleBp(): number | undefined {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.initialized ? view.visibleBp : undefined
       },
     }))
     .views(self => ({
@@ -203,66 +212,46 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * The adapter's byte budget, preferring one the estimate computed
-       * dynamically over the static `fetchSizeLimit` slot. One getter, because
-       * the banner, the force-load baseline and the canvas worker budget each
-       * spelling "the adapter's limit" for itself is how the worker ends up
-       * rejecting a region the banner considers fine — a silently blank display
-       * with nothing to refetch it.
-       */
-      get resolvedAdapterByteLimit() {
-        return self.byteEstimate?.fetchSizeLimit ?? self.adapterFetchSizeLimit
-      },
-      /**
-       * #getter
        * True when nothing may gate, on either axis and in both the worker and the
-       * banner: a self-summarizing adapter (BigWig/HiC cap what they return at
-       * screen resolution), the declarative `forceLoad` slot, or the force-load
-       * button. One boolean is the whole force-load mechanism — there is no
-       * per-region ceiling to carry, expire, or reconcile between the two axes.
+       * banner: the declarative `forceLoad` slot, or the force-load button. One
+       * boolean is the whole force-load mechanism — there is no per-region ceiling
+       * to carry, expire, or reconcile between the two axes. A self-summarizing
+       * adapter (BigWig, HiC, sequence) needs no term here: it reports no byte
+       * estimate at all, which already keeps the byte axis out of the verdict.
        */
       get byteGateExempt() {
-        return (
-          !!self.byteEstimate?.alwaysRender ||
-          self.configForceLoad ||
-          self.forceLoadTrack
-        )
+        return self.configForceLoad || self.forceLoadTrack
       },
       /**
        * #getter
        * How many bytes we estimate a fetch of the span on screen right now would
-       * pull, obtained by rescaling the stored estimate from the span it was
-       * measured over (`measuredSpanBp`). Rescaling is what makes
-       * the derived verdict a pure function of the current view and lets it
-       * self-release on zoom-in — without it a large zoomed-out estimate stays
-       * above the limit forever and gates refetch. Only meaningful when
-       * `derivedRegionTooLargeEnabled`.
+       * pull, obtained by rescaling the stored measurement from the span it
+       * covers. Rescaling is what makes the derived verdict a pure function of
+       * the current view and lets it self-release on zoom-in — without it a large
+       * zoomed-out estimate stays above the limit forever and gates refetch. Only
+       * meaningful when `derivedRegionTooLargeEnabled`.
        */
       get estimatedBytesForVisibleSpan() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        // Guard: `visibleBp` reads `view.width`, which throws before the view is
-        // measured. A bare getter must never throw, and there's no estimate to
-        // scale without a viewport, so yield undefined until the view is ready.
-        return view.initialized
-          ? rescaleByteEstimateToVisibleSpan({
-              estimatedBytesForMeasuredSpan: self.byteEstimate?.bytes,
-              measuredSpanBp: self.measuredSpanBp,
-              visibleBp: view.visibleBp,
+        const { gateVisibleBp } = self
+        return gateVisibleBp === undefined
+          ? undefined
+          : rescaleByteEstimateToVisibleSpan({
+              byteEstimate: self.byteEstimate,
+              visibleBp: gateVisibleBp,
             })
-          : undefined
       },
     }))
     .views(self => ({
       /**
        * #getter
        * The byte budget the gate enforces: the adapter's limit, else the display
-       * config. Also what canvas hands the worker, so the two can't gate against
-       * different numbers. Force-load doesn't raise this — it exempts the track
-       * outright via `byteGateExempt`.
+       * config. Also what `resolvedByteLimit()` hands the worker, so the two can't
+       * gate against different numbers. Force-load doesn't raise this — it exempts
+       * the track outright via `byteGateExempt`.
        */
       get gateByteLimit() {
         return resolveByteLimit({
-          adapterFetchSizeLimit: self.resolvedAdapterByteLimit,
+          adapterFetchSizeLimit: self.adapterFetchSizeLimit,
           configFetchSizeLimit: self.configuredFetchSizeLimit,
         })
       },
@@ -274,18 +263,22 @@ export default function RegionTooLargeMixin() {
        *
        * The single home of that question. Everything downstream reads it instead
        * of restating it: the verdict, the pre-flight (no estimate RPC when
-       * nothing could act on it), and canvas's two worker budgets, which go
-       * undefined together here rather than each re-deriving the floor. The floor
-       * used to be spelled out in three places at three layers, which is a
-       * standing invitation for them to disagree.
+       * nothing could act on it), and the worker budgets, which go undefined
+       * together here rather than each re-deriving the floor. The floor used to
+       * be spelled out in three places at three layers, which is a standing
+       * invitation for them to disagree.
        */
       get gateActive(): boolean {
         // The view is consulted only past the two cheap terms, so a display that
         // never gates — including a non-LGV consumer of this mixin — never
         // touches `getContainingView`.
-        return self.derivedRegionTooLargeEnabled && !self.byteGateExempt
-          ? viewWiderThanForceLoadFloor(self)
-          : false
+        if (!self.derivedRegionTooLargeEnabled || self.byteGateExempt) {
+          return false
+        }
+        const { gateVisibleBp } = self
+        return (
+          gateVisibleBp !== undefined && gateVisibleBp >= AUTO_FORCE_LOAD_BP
+        )
       },
     }))
     .views(self => ({
@@ -309,6 +302,19 @@ export default function RegionTooLargeMixin() {
             })
           : NOT_TOO_LARGE
       },
+
+      /**
+       * #method
+       * The byte budget a fetch RPC enforces worker-side, short-circuiting an
+       * over-budget region before it downloads any features. Undefined
+       * (unlimited) when nothing gates; otherwise the very number the banner
+       * compares against, so the worker can't reject a region the banner then
+       * calls fine. Lives here, not on the canvas gate that consumes it, because
+       * both its terms are this mixin's — canvas owns only the density axis.
+       */
+      resolvedByteLimit(): number | undefined {
+        return self.gateActive ? self.gateByteLimit : undefined
+      },
     }))
     .views(self => ({
       /**
@@ -330,18 +336,17 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * Commits the byte estimate together with the span it covers, so the
-       * derived gate can rescale it to the span on screen. `measuredSpanBp`
-       * must be the `visibleBp` captured when the measurement was *requested*,
-       * not read at commit time: a view that zoomed during the in-flight fetch
-       * would otherwise anchor the estimate to the wrong span, and since
-       * `FetchVisibleRegions` skips while `regionTooLarge` holds, an
-       * over-anchored estimate wedges the banner with no refetch to correct it.
-       * Harmless for non-gated displays (they ignore it).
+       * Commits a byte measurement: the estimate together with the span it
+       * covers, so the derived gate can rescale it to the span on screen.
+       * `measuredSpanBp` must be the `visibleBp` captured when the measurement
+       * was *requested*, not read at commit time: a view that zoomed during the
+       * in-flight fetch would otherwise anchor the estimate to a span it never
+       * covered, and since `FetchVisibleRegions` skips while `regionTooLarge`
+       * holds, an over-anchored estimate wedges the banner with no refetch to
+       * correct it. Harmless for non-gated displays (they ignore it).
        */
-      setByteEstimate(estimate: RegionByteEstimate, measuredSpanBp: number) {
+      setByteEstimate(estimate: ByteEstimate) {
         self.byteEstimate = estimate
-        self.measuredSpanBp = measuredSpanBp
       },
 
       /**
@@ -356,7 +361,6 @@ export default function RegionTooLargeMixin() {
        */
       clearByteEstimate() {
         self.byteEstimate = undefined
-        self.measuredSpanBp = undefined
       },
 
       /**
@@ -399,8 +403,8 @@ export default function RegionTooLargeMixin() {
        * Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin
        * family, LD and arc from their own global fetches) calls this and returns
        * on true. Sequencing the steps at a call site is what used to go wrong:
-       * `visibleBp` is read here, *before* the await, so the estimate is anchored
-       * to the span it actually covers — a re-read afterwards would pin it to
+       * the span is read here, *before* the await, so the estimate is anchored to
+       * the span it actually covers — a re-read afterwards would pin it to
        * whatever a mid-fetch zoom left on screen, and since the fetch autoruns
        * skip while `regionTooLarge` holds, an over-anchored estimate wedges the
        * banner with no refetch to correct it.
@@ -416,13 +420,17 @@ export default function RegionTooLargeMixin() {
       ) {
         // Skip the RPC when this display doesn't measure by pre-flight at all
         // (canvas folds the check into its feature fetch), and when nothing could
-        // act on an estimate right now — exempt track, or under the force-load
-        // floor.
-        if (!self.byteGateEnabled || !self.gateActive) {
+        // act on an estimate right now — unmeasured view, exempt track, or under
+        // the force-load floor.
+        const measuredSpanBp = self.gateVisibleBp
+        if (
+          !self.byteGateEnabled ||
+          measuredSpanBp === undefined ||
+          !self.gateActive
+        ) {
           return false
         }
-        const { visibleBp } = getContainingView(self) as LinearGenomeViewModel
-        const estimate = await getSession(self).rpcManager.call(
+        const bytes = await getSession(self).rpcManager.call(
           getRpcSessionId(self),
           'CoreGetRegionByteEstimate',
           { regions, adapterConfig: host(self).adapterConfig },
@@ -430,7 +438,7 @@ export default function RegionTooLargeMixin() {
         if (ctx.isStale()) {
           return true
         }
-        self.setByteEstimate(estimate, visibleBp)
+        self.setByteEstimate({ bytes, measuredSpanBp })
         // Read after the commit: the verdict is a pure function of the estimate
         // × current viewport, and the estimate was just captured at that
         // viewport.

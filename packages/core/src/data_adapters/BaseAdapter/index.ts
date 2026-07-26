@@ -15,7 +15,6 @@ export type {
   BaseOptions,
   BaseOptionsWithRegions,
   BaseTextSearchArgs,
-  RegionByteEstimate,
   SearchType,
 } from './types.ts'
 export { BaseAdapter } from './BaseAdapter.ts'

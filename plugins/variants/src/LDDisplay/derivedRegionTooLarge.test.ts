@@ -25,7 +25,10 @@ describe('LD derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -33,7 +36,10 @@ describe('LD derived regionTooLarge', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // half the span → scaled estimate ~750kB < 1MB cap, still above the floor:
@@ -46,7 +52,10 @@ describe('LD derived regionTooLarge', () => {
   it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // pan (same zoom) keeps it too large; the estimate is not cleared
@@ -58,7 +67,10 @@ describe('LD derived regionTooLarge', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
@@ -68,7 +80,10 @@ describe('LD derived regionTooLarge', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -80,7 +95,10 @@ describe('LD derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // zoom out: the scaled estimate grows past the raw captured bytes, so a
@@ -92,31 +110,20 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-  // The pre-flight path carries the adapter's fetchSizeLimit in the stats
-  // (getMultiRegionByteEstimate -> setByteEstimate); the derived
-  // gate must prefer it over the display config via resolveByteLimit, else an
-  // adapter-declared limit is silently ignored (the bug the canvas path had).
-  // LD's config cap is the 1MB baseLinearDisplay floor.
-  it('honors an adapter fetchSizeLimit in the stats, over the display config', () => {
+  // The estimate carries bytes and nothing else: the byte *budget* is a
+  // main-thread config read (`gateByteLimit`), so this display, whose track
+  // declares no adapter limit, gates on the 1MB baseLinearDisplay floor. The
+  // adapter-tier precedence is pinned by `resolveByteLimit`'s unit test and by
+  // the canvas displays, whose harness gives the track a real adapter config.
+  it('gates on the display config when the adapter declares no limit', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    // 3MB estimate: over the 1MB display config, under the 50MB adapter limit
-    display.setByteEstimate(
-      {
-        bytes: 3_000_000,
-        fetchSizeLimit: 50_000_000,
-      },
-      view.visibleBp,
-    )
+    expect(display.adapterFetchSizeLimit).toBeUndefined()
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(view.visibleBp).toBeGreaterThan(20_000)
-    expect(display.regionTooLarge).toBe(false)
-  })
-
-  it('gates on the display config when the stats carry no fetchSizeLimit', () => {
-    const { display, view } = createTestEnvironment().createDisplay()
-    view.zoomTo(100)
-    // same 3MB estimate, no adapter limit → the 1MB config floor gates it
-    display.setByteEstimate({ bytes: 3_000_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
   })
 
@@ -130,7 +137,10 @@ describe('LD derived regionTooLarge', () => {
     await new Promise(res => setTimeout(res, 0))
 
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     view.setDisplayedRegions([

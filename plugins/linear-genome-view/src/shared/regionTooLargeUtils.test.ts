@@ -46,38 +46,35 @@ describe('resolveByteLimit', () => {
 })
 
 describe('rescaleByteEstimateToVisibleSpan', () => {
-  it('returns undefined when there is no estimate yet', () => {
+  it('returns undefined with no measurement, or an unmeasurable one', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
-        estimatedBytesForMeasuredSpan: undefined,
-        measuredSpanBp: 10,
+        byteEstimate: undefined,
+        visibleBp: 5,
+      }),
+    ).toBeUndefined()
+    // an adapter with no index estimate: "unmeasurable", not zero bytes
+    expect(
+      rescaleByteEstimateToVisibleSpan({
+        byteEstimate: { bytes: undefined, measuredSpanBp: 10 },
         visibleBp: 5,
       }),
     ).toBeUndefined()
     expect(
       rescaleByteEstimateToVisibleSpan({
-        estimatedBytesForMeasuredSpan: 0,
-        measuredSpanBp: 10,
+        byteEstimate: { bytes: 0, measuredSpanBp: 10 },
         visibleBp: 5,
       }),
     ).toBeUndefined()
   })
 
-  // `setByteEstimate` writes the estimate and its span together, so an estimate
-  // with no span is unrepresentable; a zero span is the only live case and must
-  // not divide.
-  it('yields undefined when the measured span is unknown or zero', () => {
+  // `setByteEstimate` writes the estimate and its span as one value, so an
+  // estimate with no span is unrepresentable; a zero span is the only live case
+  // and must not divide.
+  it('yields undefined when the measured span is zero', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
-        estimatedBytesForMeasuredSpan: 1000,
-        measuredSpanBp: undefined,
-        visibleBp: 5,
-      }),
-    ).toBeUndefined()
-    expect(
-      rescaleByteEstimateToVisibleSpan({
-        estimatedBytesForMeasuredSpan: 1000,
-        measuredSpanBp: 0,
+        byteEstimate: { bytes: 1000, measuredSpanBp: 0 },
         visibleBp: 5,
       }),
     ).toBeUndefined()
@@ -87,8 +84,7 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     // measured 1MB over a span of 100; zooming in to span 25 → quarter the data
     expect(
       rescaleByteEstimateToVisibleSpan({
-        estimatedBytesForMeasuredSpan: 1_000_000,
-        measuredSpanBp: 100,
+        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 100 },
         visibleBp: 25,
       }),
     ).toBe(250_000)
@@ -97,8 +93,7 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
   it('is a no-op at the span it was measured over', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
-        estimatedBytesForMeasuredSpan: 1_000_000,
-        measuredSpanBp: 100,
+        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 100 },
         visibleBp: 100,
       }),
     ).toBe(1_000_000)
@@ -108,14 +103,11 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
   // must self-release once the user zooms in, without any imperative re-clear.
   it('lets the too-large verdict self-release on zoom-in', () => {
     const byteLimit = 500_000
-    const measured = {
-      estimatedBytesForMeasuredSpan: 2_000_000,
-      measuredSpanBp: 200,
-    }
+    const byteEstimate = { bytes: 2_000_000, measuredSpanBp: 200 }
 
     const zoomedOut = evaluateRegionTooLarge({
       estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
-        ...measured,
+        byteEstimate,
         visibleBp: 200,
       }),
       byteLimit,
@@ -125,7 +117,7 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     // zoom in 5× (span 200 → 40): scaled estimate 400_000 < 500_000 limit
     const zoomedIn = evaluateRegionTooLarge({
       estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
-        ...measured,
+        byteEstimate,
         visibleBp: 40,
       }),
       byteLimit,

@@ -124,9 +124,8 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   // to the BigBed sub-adapter (the actual file). bigMaf is a full-feature
   // download — a whole-chromosome view can pull enough packed MAF stanzas to
   // hang the tab — so it must be byte-gated like any indexed track. NOT
-  // `alwaysRender`: that self-summarizing exemption is for screen-reduced
-  // adapters (BigWig), which bigMaf is not. The base
-  // getMultiRegionByteEstimate wraps this into `{ bytes }`.
+  // exempt like the screen-reduced adapters (BigWig, HiC), which report no
+  // estimate at all.
   async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
     const { adapter } = await this.setupPre(opts)
     return adapter.getRegionByteSize(regions, opts)

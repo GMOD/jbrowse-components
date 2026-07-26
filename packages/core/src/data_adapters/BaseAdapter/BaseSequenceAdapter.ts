@@ -11,10 +11,8 @@ export abstract class BaseSequenceAdapter<
   extends BaseFeatureDataAdapter<CONF>
   implements RegionsAdapter
 {
-  // a sequence track renders the reference at any zoom and is never too large
-  async getMultiRegionByteEstimate() {
-    return { alwaysRender: true }
-  }
+  // No getRegionByteSize: a sequence adapter caps what it returns at screen
+  // resolution, so it reports no byte estimate and is never byte-gated.
 
   /**
    * Fetches a list of 'regions' with refName, start, and extends

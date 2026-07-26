@@ -72,13 +72,6 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     return vcf.bytesForRegions(regions, opts)
   }
 
-  async getMultiRegionByteEstimate(regions: Region[], opts?: BaseOptions) {
-    return {
-      bytes: await this.getRegionByteSize(regions, opts),
-      fetchSizeLimit: this.getConf('fetchSizeLimit'),
-    }
-  }
-
   public async getRefNames(opts: BaseOptions = {}) {
     const { vcf } = await this.configure(opts)
     return downloadStatus(

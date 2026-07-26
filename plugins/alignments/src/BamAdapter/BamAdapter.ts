@@ -147,17 +147,10 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
     })
   }
 
-  async getMultiRegionByteEstimate(regions: Region[], opts?: BaseOptions) {
+  // Index-only estimate, no read download. htsget has no index to measure, so
+  // it reports none and its reads are never byte-gated.
+  async getRegionByteSize(regions: Region[]) {
     const { bam } = this.configure()
-    // this is a method to avoid calling on htsget adapters
-    if (bam.index) {
-      const fetchSizeLimit = this.getConf('fetchSizeLimit')
-      const bytes = await bam.estimatedBytesForRegions(regions)
-      return {
-        bytes,
-        fetchSizeLimit,
-      }
-    }
-    return super.getMultiRegionByteEstimate(regions, opts)
+    return bam.index ? bam.estimatedBytesForRegions(regions) : undefined
   }
 }

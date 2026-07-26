@@ -222,16 +222,9 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     })
   }
 
-  /**
-   * we return the configured fetchSizeLimit, and the bytes for the region
-   */
-  async getMultiRegionByteEstimate(regions: Region[], opts?: BaseOptions) {
-    const bytes = await this.bytesForRegions(regions, opts)
-    const fetchSizeLimit = this.getConf('fetchSizeLimit')
-    return {
-      bytes,
-      fetchSizeLimit,
-    }
+  // Index-only estimate of the bytes a fetch of these regions would pull.
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    return this.bytesForRegions(regions, opts)
   }
 
   /**

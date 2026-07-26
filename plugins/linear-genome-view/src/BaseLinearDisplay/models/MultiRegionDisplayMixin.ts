@@ -11,7 +11,7 @@ import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { autorun, observable, untracked } from 'mobx'
 
-import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
+import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 

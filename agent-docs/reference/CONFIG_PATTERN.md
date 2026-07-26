@@ -182,6 +182,35 @@ to the worker (canvas/wiggle); alignments instead curates a narrow `rpcProps()`
 so visual-only changes don't refetch (its CLAUDE.md §"Settings: storage +
 invalidation tiers").
 
+## Reading a slot: node, not snapshot
+
+Every slot is `types.stripDefault(...)`, so a plain MST snapshot **omits any slot
+sitting at its default**. That is what keeps saved sessions minimal, and it is
+harmless for the two things snapshots are for: re-creating the object (the
+schema re-applies defaults) and diffing what a user actually set.
+
+It is *not* safe to read a value from. `readConfObject(conf)` with no slot path
+returns `getSnapshot(conf)`, and `readSlot` returns a sub-config as a snapshot
+too — so a display's `adapterConfig` (`getConf(parentTrack, 'adapter')`) is a
+default-stripped snapshot, and `readConfObject(self.adapterConfig, 'someSlot')`
+yields `undefined` for every config that didn't restate the default. It reads
+like a config miss, not like a default.
+
+Read through a config **node** instead, with a slot path:
+
+```ts
+// resolves the adapter's default
+readConfObject(getContainingTrack(self).configuration, ['adapter', 'fetchSizeLimit'])
+```
+
+The byte gate's `adapterFetchSizeLimit` is the live case
+([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)): read off the snapshot, a BAM's
+declared 5 Mb vanished and the 1 Mb display default gated instead. Reading a
+*sub-config object* off a snapshot (`adapterConfig.summaryAdapter`) is fine —
+those have no default to strip. `readSlot` returns the snapshot deliberately
+(stable identity, so downstream computeds memoize); don't "fix" it to a
+defaults-included clone.
+
 ## Key functions
 
 | Function                                | Location                                                  | Purpose                                                   |

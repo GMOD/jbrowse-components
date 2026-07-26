@@ -31,6 +31,6 @@ export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRe
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    return dataAdapter.getMultiRegionByteEstimate(regions, deserializedArgs)
+    return dataAdapter.getRegionByteSize(regions, deserializedArgs)
   }
 }

@@ -82,22 +82,21 @@ describe('fetchMultiRowFeatures', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
     await fetchMultiRowFeatures(self as any, NEEDED)
 
-    // widths pair with the result by construction (both come from `needed`),
-    // which is what retired the `?? 0` fallback that silently reported a
-    // zero-width region — and so an infinite density — on a lookup miss
+    // each region pairs with its own result by construction (both come from
+    // `needed`), which is what retired the `?? 0` fallback that silently
+    // reported a zero-width region — and so an infinite density — on a lookup
+    // miss. The span arithmetic itself lives in the gate, not here.
     expect(committed).toEqual([
       [
         {
           displayedRegionIndex: 0,
-          regionWidthBp: 500,
-          bytes: 42,
-          featureCount: 7,
+          region: NEEDED[0]!.region,
+          result: { bytes: 42, featureCount: 7 },
         },
         {
           displayedRegionIndex: 3,
-          regionWidthBp: 300,
-          bytes: 42,
-          featureCount: 7,
+          region: NEEDED[1]!.region,
+          result: { bytes: 42, featureCount: 7 },
         },
       ],
     ])

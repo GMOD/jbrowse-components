@@ -6,6 +6,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
+import { measureRegionBytes } from '../RenderFeatureDataRPC/byteGate.ts'
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
 import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
@@ -38,20 +39,19 @@ export async function executeMultiRowGetFeatures({
     adapterConfig,
   })
 
-  // Stage 1 (cheap): index-only byte estimate before any feature download. An
-  // over-budget region short-circuits here — the same fold-into-fetch gate the
-  // feature-render RPC uses (executeRenderFeatureData). Adapters with no index
-  // estimate return undefined and fall through to the density gate.
-  let bytes: number | undefined
-  if (byteLimit !== undefined) {
-    bytes = await dataAdapter.getRegionByteSize([region], {
-      stopToken,
-      statusCallback,
-    })
-    checkStopToken2(stopTokenCheck)
-    if (bytes !== undefined && bytes > byteLimit) {
-      return { regionTooLarge: true as const, bytes }
-    }
+  // Stage 1 (cheap): index-only byte estimate before any feature download — the
+  // same shared fold-into-fetch gate the feature-render RPC uses. Byte-only here:
+  // the display turns the mixin's density axis off, so there is no stage 1.5.
+  const { bytes, tooLarge: tooManyBytes } = await measureRegionBytes({
+    dataAdapter,
+    region,
+    byteLimit,
+    stopToken,
+    statusCallback,
+    stopTokenCheck,
+  })
+  if (tooManyBytes) {
+    return tooManyBytes
   }
 
   const featuresArray = await updateStatus(

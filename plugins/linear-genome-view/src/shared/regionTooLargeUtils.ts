@@ -22,16 +22,26 @@ export function getDisplayStr(totalBytes: number) {
  * come over the wire if we fetched, and they differ only in WHICH SPAN of the
  * genome they cover:
  *
- * - `estimatedBytesForMeasuredSpan` — the adapter's estimate for the span that
- *   was on screen at the moment the estimate was taken. It never changes as you
- *   navigate. Stored as `byteEstimate.bytes`, alongside the span it
- *   covers (`measuredSpanBp`).
+ * - `byteEstimate.bytes` — the adapter's estimate for the span that was on
+ *   screen at the moment the estimate was taken. It never changes as you
+ *   navigate, which is why it is stored alongside that span
+ *   (`byteEstimate.measuredSpanBp`).
  * - `estimatedBytesForVisibleSpan` — the same estimate scaled to the span on
  *   screen right now, since bytes are roughly proportional to span. This one
  *   shrinks as you zoom in, which is what lets the banner release itself.
  *
  * The gate always compares `estimatedBytesForVisibleSpan` against the limit.
  */
+export interface ByteEstimate {
+  /**
+   * The adapter's cheap index-only estimate, or undefined when it has none.
+   * "Unmeasurable" rather than `0`, so the byte axis stays out of the verdict
+   * instead of reading a zero as a measured value.
+   */
+  bytes: number | undefined
+  /** The span `bytes` covers — captured before the measurement round trip. */
+  measuredSpanBp: number
+}
 
 // Reason text shown in the too-large banner. Single source so every gating path
 // (block density, canvas derived stats, pre-fetch byte estimate) renders an
@@ -47,12 +57,12 @@ export function bytesTooLargeReason(bytes: number) {
  * display's configured default. A non-positive adapter limit means "no opinion"
  * (e.g. htsget/no-index adapters report 0) and is skipped — without this guard a
  * 0 would gate every request as too-large, and a negative sentinel (-1) would
- * survive `|| undefined` (truthy) and do the same. Single source of truth for
- * every gating path.
+ * survive `|| undefined` (truthy) and do the same.
  *
- * There is deliberately no force-load tier here. Force-load is a boolean "render
- * this track regardless" (`byteGateExempt`), not a raised ceiling — see
- * agent-docs/reference/REGION_TOO_LARGE.md § Force-load.
+ * Both inputs are read on the main thread (`gateByteLimit`), so the banner and
+ * the worker budget resolve one number. There is deliberately no force-load tier:
+ * force-load is a boolean "render this track regardless" (`byteGateExempt`), not
+ * a raised ceiling — see agent-docs/reference/REGION_TOO_LARGE.md § Force-load.
  */
 export function resolveByteLimit({
   adapterFetchSizeLimit,
@@ -67,29 +77,26 @@ export function resolveByteLimit({
 }
 
 /**
- * Produce `estimatedBytesForVisibleSpan` from `estimatedBytesForMeasuredSpan`,
- * by scaling from the span the estimate covers (`measuredSpanBp`) to the
- * span on screen now (`visibleBp`). This is what makes the too-large verdict a
- * pure function of the current view, so it self-releases on zoom-in instead of
- * a large zoomed-out estimate staying above the limit forever and gating
- * refetch. `tooLargeStatus` feeds the result to `evaluateRegionTooLarge`.
+ * Produce `estimatedBytesForVisibleSpan` from a stored {@link ByteEstimate}, by
+ * scaling from the span it covers to the span on screen now (`visibleBp`). This
+ * is what makes the too-large verdict a pure function of the current view, so it
+ * self-releases on zoom-in instead of a large zoomed-out estimate staying above
+ * the limit forever and gating refetch. `tooLargeStatus` feeds the result to
+ * `evaluateRegionTooLarge`.
  *
- * Undefined unless there is both an estimate and a span to scale it from —
- * `setByteEstimate` always writes the pair, so the only way here is a zero span,
- * and yielding undefined keeps the byte axis out of the verdict rather than
- * comparing an unscaled (or infinite) number against the budget.
+ * Undefined with no estimate, an unmeasurable one, or a zero span — keeping the
+ * byte axis out of the verdict rather than comparing an unscaled (or infinite)
+ * number against the budget.
  */
 export function rescaleByteEstimateToVisibleSpan({
-  estimatedBytesForMeasuredSpan,
-  measuredSpanBp,
+  byteEstimate,
   visibleBp,
 }: {
-  estimatedBytesForMeasuredSpan?: number
-  measuredSpanBp?: number
+  byteEstimate: ByteEstimate | undefined
   visibleBp: number
 }) {
-  return estimatedBytesForMeasuredSpan && measuredSpanBp
-    ? (estimatedBytesForMeasuredSpan * visibleBp) / measuredSpanBp
+  return byteEstimate?.bytes && byteEstimate.measuredSpanBp
+    ? (byteEstimate.bytes * visibleBp) / byteEstimate.measuredSpanBp
     : undefined
 }
 

@@ -60,9 +60,7 @@ function createTestEnvironment() {
   pluginManager.configure()
 
   const mockRpcCall = jest.fn(async (_sessionId: string, method: string) =>
-    method === 'CoreGetRegionByteEstimate'
-      ? { bytes: 100, fetchSizeLimit: 0, featureDensity: 1 }
-      : [],
+    method === 'CoreGetRegionByteEstimate' ? 100 : [],
   )
   const LinearGenomeModel = linearGenomeViewStateModelFactory(pluginManager)
   const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
@@ -156,7 +154,10 @@ describe('arc derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -164,7 +165,10 @@ describe('arc derived regionTooLarge', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // scaled estimate shrinks with the span; still above AUTO_FORCE_LOAD_BP
@@ -176,7 +180,10 @@ describe('arc derived regionTooLarge', () => {
   it('does not flicker on pan: the estimate survives a viewport shift', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     view.scrollTo(view.offsetPx + 200)
@@ -187,7 +194,10 @@ describe('arc derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // zoom out: the scaled estimate grows past the raw captured bytes, so a
@@ -201,7 +211,10 @@ describe('arc derived regionTooLarge', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -234,7 +247,10 @@ describe('arc displayPhase', () => {
     expect(display.displayPhase).toBe('error')
 
     view.zoomTo(2000)
-    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
     expect(display.regionTooLarge).toBe(true)
     expect(display.displayPhase).toBe('tooLarge')
   })

@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
@@ -26,9 +27,28 @@ function makeEmptyGroupedData(): GroupedAlignmentsResult {
   return { groups: [{ key: '', label: '', data: makeEmptyPileupData() }] }
 }
 
-function createTestEnvironment() {
+function createTestEnvironment(opts?: {
+  // when set, the track gets a TestAdapter whose fetchSizeLimit slot carries
+  // this value, exercising the adapter-limit tier of the byte gate
+  adapterFetchSizeLimit?: number
+}) {
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
+
+  // Config-only adapter with a fetchSizeLimit slot; the RPC is mocked so the
+  // adapter class is never instantiated — the display only reads its config.
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'TestAdapter',
+        configSchema: ConfigurationSchema('TestAdapter', {
+          fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
+        }),
+        getAdapterClass: () => {
+          throw new Error('TestAdapter is config-only in tests')
+        },
+      }),
+  )
 
   const configSchema = configSchemaFactory(pluginManager)
 
@@ -76,6 +96,14 @@ function createTestEnvironment() {
       type: 'AlignmentsTrack',
       trackId: 'test_track',
       assemblyNames: ['volvox'],
+      ...(opts?.adapterFetchSizeLimit === undefined
+        ? {}
+        : {
+            adapter: {
+              type: 'TestAdapter',
+              fetchSizeLimit: opts.adapterFetchSizeLimit,
+            },
+          }),
     },
     { pluginManager },
   )
@@ -262,10 +290,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 1_000_000,
-        })
+        return Promise.resolve(50_000_000)
       }
       return Promise.resolve(makeEmptyGroupedData())
     })
@@ -302,10 +327,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 1_000_000,
-        })
+        return Promise.resolve(50_000_000)
       }
       return Promise.resolve(makeEmptyGroupedData())
     })
@@ -356,10 +378,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 1_000_000,
-        })
+        return Promise.resolve(50_000_000)
       }
       return Promise.resolve(makeEmptyGroupedData())
     })
@@ -427,10 +446,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 1_000_000,
-        })
+        return Promise.resolve(50_000_000)
       }
       return Promise.resolve(makeEmptyGroupedData())
     })
@@ -459,19 +475,11 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    let forceLoaded = false
+    // The estimate never changes: force-load exempts the track outright
+    // (`byteGateExempt`), it doesn't raise a ceiling the adapter reports.
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
-        if (!forceLoaded) {
-          return Promise.resolve({
-            bytes: 50_000_000,
-            fetchSizeLimit: 1_000_000,
-          })
-        }
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 100_000_000,
-        })
+        return Promise.resolve(50_000_000)
       }
       return Promise.resolve(makeEmptyGroupedData())
     })
@@ -484,7 +492,6 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.isLoading).toBe(false)
     })
 
-    forceLoaded = true
     display.setForceLoadTrack(true)
     display.reload()
 
@@ -516,10 +523,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
         densityCallCount++
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 1_000_000,
-        })
+        return Promise.resolve(50_000_000)
       }
       return Promise.resolve(makeEmptyGroupedData())
     })
@@ -858,7 +862,9 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   it('adapter fetchSizeLimit is respected over display default', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      adapterFetchSizeLimit: 5_000_000,
+    })
 
     const { display, view } = createDisplay()
 
@@ -872,15 +878,14 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    // Adapter returns fetchSizeLimit=5MB, bytes=3MB.
-    // Display config default is 1MB.
-    // With adapter limit respected, 3MB < 5MB → should NOT be regionTooLarge
+    // The adapter config declares fetchSizeLimit=5MB and the estimate is 3MB.
+    // Display config default is 1MB. With the adapter limit respected (read on
+    // the main thread from its config, not echoed through the estimate),
+    // 3MB < 5MB → should NOT be regionTooLarge.
+    expect(display.adapterFetchSizeLimit).toBe(5_000_000)
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve({
-          bytes: 3_000_000,
-          fetchSizeLimit: 5_000_000,
-        })
+        return Promise.resolve(3_000_000)
       }
       return Promise.resolve(makeEmptyGroupedData())
     })

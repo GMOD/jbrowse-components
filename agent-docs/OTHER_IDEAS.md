@@ -111,8 +111,8 @@ just exposes the next — so this is a program of work, not a single fix:
   MAPQ/discordancy summary, not individual reads.
 - **Fetch/bandwidth (unavoidable for BAM).** Coverage is *computed* from reads —
   there's no BigWig-style pre-binned summary source (contrast wiggle, which gets
-  screen-resolution data free from bbi zoom levels and skips the density gate with
-  `alwaysRender:true`). So whole-chromosome coverage means downloading every read
+  screen-resolution data free from bbi zoom levels and reports no byte estimate at
+  all, so nothing gates it). So whole-chromosome coverage means downloading every read
   in the region; the byte-estimate gate (`byteGateBlocksFetch`, default
   `fetchSizeLimit` 1 MB) blocks it first and forces "Force load to see features".
   A genuine large-region mode would need either a reworked/removed byte gate for

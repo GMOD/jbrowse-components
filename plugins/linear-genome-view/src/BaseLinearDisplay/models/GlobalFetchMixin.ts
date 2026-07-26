@@ -1,7 +1,7 @@
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
+import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
 
 /**

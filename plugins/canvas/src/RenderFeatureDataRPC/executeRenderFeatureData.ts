@@ -7,6 +7,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
+import { measureRegionBytes } from './byteGate.ts'
 import { collectRenderData } from './collectRenderData.ts'
 import {
   featuresPerPx,
@@ -64,20 +65,19 @@ export async function executeRenderFeatureData({
     sequenceAdapter,
   })
 
-  // Stage 1 (cheap): index-only byte estimate, before any feature download. An
-  // over-budget region short-circuits here, so a whole-genome fan-out never
-  // pulls every chromosome's features just to reject them after. Adapters with
-  // no index estimate return undefined and fall through to the density gate.
-  let bytes: number | undefined
-  if (byteLimit !== undefined) {
-    bytes = await dataAdapter.getRegionByteSize([region], {
-      stopToken,
-      statusCallback,
-    })
-    checkStopToken2(stopTokenCheck)
-    if (bytes !== undefined && bytes > byteLimit) {
-      return { regionTooLarge: true, bytes }
-    }
+  // Stage 1 (cheap): index-only byte estimate, before any feature download.
+  // Adapters with no index estimate report none and fall through to the density
+  // gate below.
+  const { bytes, tooLarge: tooManyBytes } = await measureRegionBytes({
+    dataAdapter,
+    region,
+    byteLimit,
+    stopToken,
+    statusCallback,
+    stopTokenCheck,
+  })
+  if (tooManyBytes) {
+    return tooManyBytes
   }
 
   // Stage 1.5 (cheap): estimate feature density from a small sample before

@@ -8,25 +8,23 @@ import { screenDensity } from '../LinearBasicDisplay/baseModelHelpers.ts'
 
 import type { RegionDensityStats } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * The members a composing display provides that this gate reads but doesn't own:
- * the config (via `getConf`) and the `RegionTooLargeMixin` surface (byte
- * estimate, the resolved budgets, commit). Declared once so the gate can
- * reference them type-safely without threading them through every getter — the
- * runtime instance has them because the final model also composes
- * `MultiRegionDisplayMixin`, which brings `RegionTooLargeMixin`.
+ * the config (via `getConf`) and the two `RegionTooLargeMixin` names the density
+ * axis needs — "may anything gate?" and where to commit a measurement. Declared
+ * once so the gate can reference them type-safely without threading them through
+ * every getter — the runtime instance has them because the final model also
+ * composes `MultiRegionDisplayMixin`, which brings `RegionTooLargeMixin`.
  */
 interface GateHost {
   configuration: AnyConfigurationModel
   gateActive: boolean
-  gateByteLimit: number
-  setByteEstimate: (
-    estimate: RegionByteEstimate,
-    measuredSpanBp: number,
-  ) => void
+  setByteEstimate: (estimate: {
+    bytes: number | undefined
+    measuredSpanBp: number
+  }) => void
 }
 
 function host(self: object) {
@@ -40,23 +38,26 @@ function gateView(self: object) {
 /**
  * What one region's fetch measured, feeding both gate axes: the byte index size
  * (`bytes`, absent when the adapter has no index estimate) and the feature count
- * (`featureCount`, absent on a byte short-circuit). `regionWidthBp` anchors the
- * density measurement to the region's span.
+ * (`featureCount`, absent on a byte short-circuit). Shaped as the fetch result
+ * plus the region it came from — so a call site hands over what its RPC returned
+ * and the span arithmetic (features per bp) stays in the gate, not repeated in
+ * every display's fetch.
  */
 export interface RegionGateMeasurement {
   displayedRegionIndex: number
-  regionWidthBp: number
-  bytes?: number
-  featureCount?: number
+  region: { start: number; end: number }
+  result: { bytes?: number; featureCount?: number }
 }
 
 /**
  * Shared byte + density region-too-large gate for canvas feature displays.
  *
  * Composes on top of `RegionTooLargeMixin` (via `MultiRegionDisplayMixin`) to add
- * the *density* axis and the worker-facing budgets, so a display that folds the
- * byte/density check into its own fetch RPC (canvas-style, no pre-flight) opts in
- * by composing this mixin and calling `commitGateMeasurements` from its fetch. The
+ * the *density* axis — the byte axis and its worker budget
+ * (`resolvedByteLimit()`) are entirely the base mixin's — so a display that folds
+ * the byte/density check into its own fetch RPC (canvas-style, no pre-flight)
+ * opts in by composing this mixin and calling `commitGateMeasurements` from its
+ * fetch. The
  * mixin clears its own stale per-region stats on chromosome nav (its `afterAttach`,
  * so a composing display can't forget the cleanup and silently mis-gate a reused
  * `displayedRegionIndex`). Every gating decision routes through the shared pure
@@ -159,16 +160,6 @@ export default function CanvasFeatureGateMixin() {
         const max = self.maxFeatureDensity
         return max === undefined ? false : self.visibleFeatureDensityPerPx > max
       },
-      /**
-       * #method
-       * The byte budget the fetch RPC enforces, short-circuiting an over-budget
-       * region before downloading features. Undefined (unlimited) when nothing
-       * gates; otherwise the very number the banner compares against, so the
-       * worker can't reject a region the banner then calls fine.
-       */
-      resolvedByteLimit(): number | undefined {
-        return host(self).gateActive ? host(self).gateByteLimit : undefined
-      },
     }))
     .actions(self => ({
       /**
@@ -200,8 +191,10 @@ export default function CanvasFeatureGateMixin() {
        * **max** (not sum — each region is gated against the same per-region
        * budget, so a multi-region view where every region individually fits is
        * never blanked by the cross-region total) and the per-region density, then
-       * publish the byte estimate + adapter limit to `RegionTooLargeMixin` so the
-       * banner's `resolveByteLimit` picks the same budget the worker gated on.
+       * publish the byte estimate to `RegionTooLargeMixin` — bytes and nothing
+       * else, since the budget it is compared against is a main-thread config
+       * read (`gateByteLimit`), the same one that produced the worker's
+       * `resolvedByteLimit()`.
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],
@@ -213,31 +206,25 @@ export default function CanvasFeatureGateMixin() {
           return
         }
         const byteCounts: number[] = []
-        for (const {
-          displayedRegionIndex,
-          regionWidthBp,
-          bytes,
-          featureCount,
-        } of measurements) {
+        for (const { displayedRegionIndex, region, result } of measurements) {
+          const { bytes, featureCount } = result
           if (bytes !== undefined) {
             byteCounts.push(bytes)
           }
           if (featureCount !== undefined) {
             self.setDensityStats(displayedRegionIndex, {
               featureCount,
-              regionWidthBp,
+              regionWidthBp: region.end - region.start,
             })
           }
         }
-        host(self).setByteEstimate(
-          {
-            // An adapter with no index estimate reports none for any region, so
-            // an empty list is "unmeasurable", not "zero bytes" — keep it
-            // undefined so the byte axis stays out of the verdict entirely.
-            bytes: byteCounts.length > 0 ? Math.max(...byteCounts) : undefined,
-          },
+        host(self).setByteEstimate({
+          // An adapter with no index estimate reports none for any region, so an
+          // empty list is "unmeasurable", not "zero bytes" — keep it undefined so
+          // the byte axis stays out of the verdict entirely.
+          bytes: byteCounts.length > 0 ? Math.max(...byteCounts) : undefined,
           measuredSpanBp,
-        )
+        })
       },
     }))
     .actions(self => ({

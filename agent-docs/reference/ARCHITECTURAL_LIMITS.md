@@ -467,3 +467,49 @@ prevention rather than repair.
 **Retire when** the foundation-to-display map is generated from `addDisplayType`
 registrations, and each surviving "Don't" either names the machine that enforces
 it or is deleted because `tsc` already owns it.
+
+### `readConfObject` returns two different kinds of thing under one name
+
+**Status:** Open. One instance found and fixed 2026-07-26; the shape that
+produces it is unchanged.
+
+Reading a **scalar** slot off a config node resolves it, defaults included —
+`node.fetchSizeLimit` is `5_000_000` even when nothing in the config says so.
+Reading a **sub-config** slot returns `getSnapshot(node)`, and every slot is
+`types.stripDefault`, so that object omits every slot sitting at its default. It
+is a transport form: the worker re-hydrates it through the schema
+(`getAdapterPre`, "so it gets its defaults"), which is why the stripping is
+correct there and invisible everywhere else.
+
+The hazard is that the transport form is also a legal input to `readConfObject`
+(deliberately — an un-hydrated `session.tracks` entry is read that way). So the
+two spellings of one nested read disagree, silently:
+
+```ts
+readConfObject(readConfObject(track, 'adapter'), 'fetchSizeLimit') // undefined at the default
+readConfObject(track, ['adapter', 'fetchSizeLimit']) //             5_000_000
+```
+
+`undefined` reads as "the adapter declares no limit", not as "ask the node". That
+is exactly how the byte gate came to ignore a BAM's declared 5 Mb and gate at the
+display default instead ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §Shared
+primitives). Today's exposure is one site, because every other read off an
+`adapterConfig` asks for a sub-config *object* (`summaryAdapter`,
+`annotationAdapter`, `ldAdapter`), which has no default to strip.
+
+**Not fixable by making slot reads resolve all the way down.** The
+defaults-included converter (`rawConfSnapshot`) drops arrays and maps of
+sub-schemas, so `getConf(track, 'displays')` would start returning less; it
+throws on promotable slots, and a display config nested in a track config has
+them; and promotables resolve against the *session*, which a pure config read
+can't reach. There is no single correct defaults-included plain object for a
+nested display config. `readSlot` also returns the cached `getSnapshot`
+deliberately — a per-read built object was a measured perf and
+spurious-recomputation regression.
+
+**Retire when** the transport form is typed so it can't be re-read as a config:
+`readConfObject`'s sub-config branch declared as `AnyConfigurationSnapshot`, the
+node overload narrowed to `AnyConfigurationModel | IMSTMap`, and the two
+legitimate snapshot callers moved to their own entry point. That makes the broken
+spelling a type error instead of an `undefined`. It touches a 318-call-site API,
+so it wants its own change, not a ride-along.
