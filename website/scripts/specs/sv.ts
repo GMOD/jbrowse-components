@@ -304,6 +304,8 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignment_clipping_indicators',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 497,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:2,560-2,760',

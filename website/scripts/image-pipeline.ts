@@ -65,6 +65,55 @@ export function pngDiffFraction(a: string, b: string): number | null {
   return Number.isFinite(frac) ? frac : null
 }
 
+// Rows of uninterrupted page background along the bottom of a capture, in image
+// pixels, or null if it could not be measured.
+//
+// A spec's `viewportHeight` is a hand-picked number that ages badly: it is sized
+// to whatever the app laid out on the day it was written, and any later change
+// to how tall something renders leaves the difference as dead grey under the
+// content. Nothing else notices — the figure still renders, the diff gate still
+// says unchanged — so it is only ever caught by somebody looking at the PNG. An
+// external plugin that stopped centering its canvas in a fixed box left 265-390px
+// under three graph figures exactly this way.
+//
+// Measured against the image's own bottom row rather than a hardcoded page
+// color, so it holds for either theme and for the odd figure captured on a
+// non-default background: scale to a 1px-wide grayscale column (each value the
+// row's mean) and walk up while rows still match the bottom one. A row with any
+// content in it moves the mean, and content that only shifts the mean by less
+// than the tolerance is not something a reader would see either.
+export function trailingBackgroundPx(file: string): number | null {
+  const out = spawnSync(
+    IM,
+    [file, '-colorspace', 'Gray', '-scale', '1x!', '-depth', '16', 'txt:-'],
+    { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+  )
+  const rows = (out.stdout || '')
+    .split('\n')
+    .slice(1)
+    .map(line => /^\d+,(\d+): \((\d+(?:\.\d+)?)/.exec(line))
+    .filter(m => m !== null)
+    .map(m => Number.parseFloat(m[2]!))
+  if (rows.length < 2) {
+    return null
+  }
+  const background = rows.at(-1)!
+  // 1/255 of full scale: below what a reader could distinguish, and above the
+  // rounding in a 1px scale-down.
+  const tolerance = 65535 / 255
+  let count = 0
+  for (let y = rows.length - 1; y >= 0; y--) {
+    if (Math.abs(rows[y]! - background) > tolerance) {
+      break
+    }
+    count++
+  }
+  // An all-background image is a blank capture, which is a different failure and
+  // is caught by assertViewsRendered; reporting its whole height as slack would
+  // just be noise.
+  return count === rows.length ? 0 : count
+}
+
 // copyFileSync (not rename) because tmp and static/img may be on different
 // filesystems.
 function moveIntoPlace(tmpPath: string, outputPath: string) {

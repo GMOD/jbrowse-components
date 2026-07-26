@@ -569,6 +569,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cytobands',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 347,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: '1:38,543,322-41,918,323',

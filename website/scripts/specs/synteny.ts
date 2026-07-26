@@ -1348,6 +1348,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // assemblies intentionally not pre-set: supplying them auto-launches the
     // DotplotView, but this tutorial image is specifically the import form
     name: 'sv_synteny/dotplot_import',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 471,
     url: hpyloriUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
     // the hpylori config has synteny tracks, so the form opens in Quick start;
     // this tutorial is specifically about choosing each axis, so switch to
@@ -1448,6 +1450,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'synteny_from_dotplot_view',
+    // Left at the default 800 despite ~380px of page background under the
+    // bottom frame. The drag below is a raw dotplot-canvas coordinate, so any
+    // height change moves the block it is aimed at and the launch never
+    // happens: tried 440, the synteny canvas never appeared. Re-deriving the
+    // drag is the prerequisite, not the height.
     url: sessionSpec(DOTPLOT_CONFIG, {
       views: [
         {

@@ -20,6 +20,8 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-basic',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 347,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:1,000,000-1,001,000',
@@ -92,6 +94,8 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-matrix-phased-clean',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 497,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:62,174,000-65,097,304',
@@ -115,6 +119,8 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-hapibd-painting',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 329,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:1-248,956,422',

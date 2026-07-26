@@ -641,6 +641,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'lgv_usage_guide',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 499,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',
@@ -923,6 +925,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'tracklabels',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 518,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',
@@ -1384,7 +1388,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     // smaller window keeps the focus on the compact import form
     viewportWidth: 900,
-    viewportHeight: 560,
+    viewportHeight: 231,
     settleMs: 2000,
     actions: [
       { type: 'click', text: 'Launch view' },
@@ -1622,7 +1626,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     url: '',
     readyText: 'It worked!',
     viewportWidth: 1200,
-    viewportHeight: 720,
+    viewportHeight: 154,
     settleMs: 1500,
     // subject IS the missing-config landing page: the absent config.json 404s
     expectedConsole: [

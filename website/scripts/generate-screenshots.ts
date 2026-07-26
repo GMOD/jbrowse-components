@@ -30,6 +30,7 @@ import {
   commitScreenshot,
   optimizePng,
   pngDiffFraction,
+  trailingBackgroundPx,
 } from './image-pipeline.ts'
 import {
   matchesFilterTokens,
@@ -99,6 +100,12 @@ const { headed, filter, exact, force, check, firefox } = values
 // further for timing/remote-data specs.
 const DEFAULT_DIFF_THRESHOLD = 0.005
 const DEFAULT_LOCAL_PORT = 3334
+// Captures are hidpi, so an image pixel is half a CSS pixel.
+const DEVICE_SCALE_FACTOR = 2
+// Blank page background under a figure's content, in image pixels, past which
+// the run reports the spec's viewportHeight as stale. ~50 CSS px is below what
+// reads as a framing choice and above the few px of margin every capture has.
+const SLACK_WARN_PX = 100
 const diffThreshold = optNum(values['diff-threshold']) ?? DEFAULT_DIFF_THRESHOLD
 const externalPort = optNum(values.port)
 const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
@@ -949,7 +956,11 @@ async function main() {
 
   // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
   // capture hidpi/retina-crisp (2x backing store) at the larger size
-  const defaultViewport = { width: 1500, height: 800, deviceScaleFactor: 2 }
+  const defaultViewport = {
+    width: 1500,
+    height: 800,
+    deviceScaleFactor: DEVICE_SCALE_FACTOR,
+  }
   const {
     width: vpWidth,
     height: vpHeight,
@@ -1006,6 +1017,7 @@ async function main() {
   // kept only because the spec raised its own diffThreshold above the run
   // default — the case where a real change hides behind a jitter allowance
   const suppressed: { name: string; frac: number }[] = []
+  const slacked: { name: string; px: number }[] = []
 
   // Zero-padded `[ 7/40]` so the counter column stays aligned as it grows,
   // keeping the interleaved per-worker lines readable.
@@ -1133,6 +1145,20 @@ async function main() {
         } else {
           changed.push({ name: spec.name, result })
         }
+        // Only for an image this run actually wrote. Slack is news when it
+        // appears — the app or a plugin started laying something out shorter —
+        // and 28% of the committed corpus has some, most of it a deliberate
+        // framing choice around a dialog or an empty state. Reporting all of it
+        // every run would be noise nobody reads; reporting the ones that just
+        // moved is the signal.
+        if (result.status !== 'kept') {
+          const slack = trailingBackgroundPx(
+            path.join(outDir, `${spec.name}.png`),
+          )
+          if (slack !== null && slack > SLACK_WARN_PX) {
+            slacked.push({ name: spec.name, px: slack })
+          }
+        }
       }
       passed++
     } catch (err) {
@@ -1185,6 +1211,17 @@ async function main() {
         ({ name, frac }) =>
           `• ${name}.png: ${(frac * 100).toFixed(3)}% differs, over the ${(diffThreshold * 100).toFixed(3)}% default`,
       ),
+    )
+  }
+  if (slacked.length > 0) {
+    printReport(
+      `BLANK BELOW THE CONTENT, IN A FIGURE THAT JUST CHANGED (${slacked.length}) — if the app got shorter here, lower the spec's viewportHeight by about this much`,
+      slacked
+        .sort((a, b) => b.px - a.px)
+        .map(
+          ({ name, px }) =>
+            `• ${name}.png: ${Math.round(px / DEVICE_SCALE_FACTOR)} css px of blank below the last content`,
+        ),
     )
   }
   if (flaky.length > 0) {

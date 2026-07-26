@@ -217,6 +217,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'linear_align_ctx_menu',
+    // sized to the content: the rest of the viewport was page background
+    viewportHeight: 499,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1500-2000',
