@@ -277,14 +277,20 @@ this needs no `assemblyNameToPanSN` mapping (the
 [HPRC tutorial](/docs/tutorials/pangenome_hprc#load-the-graph) does, because its
 graph calls the reference `GRCh38` while the assembly is `hg38`).
 
-The segments now draw as features in a linear view, and **Track menu, then
-Launch view, then Graph genome view (this region)** opens the graph for whatever
-is on screen, up to 100 kb, past which the layout stops being legible and the
-view declines.
+`RgfaTabixAdapter` ships in the same plugin as the view, so this track needs it
+too, not only the launch item.
 
-Give the feature track a `color` jexl on the segment's `rank` and it paints in
-the graph view's own Stable rank colors, so a segment is the same color in both
-panels:
+The segments now draw as features in a linear view, and the graph for whatever
+is on screen is one menu away, up to 100 kb:
+
+<Figure caption="Track menu, then Launch view, then Graph genome view (this region), on the rGFA segments track. Offered only for a track whose adapter can cut a subgraph." src="/img/pangenome/rgfa_launch_menu.png" />
+
+Right-clicking one segment cuts the graph around that segment instead:
+
+<Figure caption="Right-click on backbone segment s1277 (glnA to yihN), then Launch view, then Graph genome view (this segment). The launched window, chr:4,053,156-4,067,028, is the segment plus half its length on each side: blue rank-0 backbone, two short rank-1 alleles, and the long purple rank-2 allele CFT073 carries there." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
+
+A `color` jexl on the segment's `rank` paints the track in the graph's own
+Stable rank colors, so a segment is the same color in both panels:
 
 ```json
 "displayDefaults": {
@@ -292,7 +298,7 @@ panels:
 }
 ```
 
-<Figure caption="The indexed route on the E. coli graph: the rGFA segments as a feature track over 50 kb of K12 on top, and the graph view launched from that same window below. Both are drawn from the tabix indexes, so the blue blocks above are the blue rank-0 backbone below, same ids at the same offsets. The orange, red and purple alleles hanging off that backbone have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes, so the blue blocks above are the blue rank-0 backbone below, same ids at the same offsets. The orange, red and purple alleles have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 ## All-vs-all synteny projection
 

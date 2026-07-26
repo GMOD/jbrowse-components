@@ -169,3 +169,51 @@ per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
 
 grey out the genomic coord option instead of hide
 tooltip on verticalguide
+
+## Linearize the pangenome: draw graph variation as alignment-style glyphs
+
+Requested framing: the graph in a *linear* view drawn the way
+`plugins/alignments` draws reads, insertions and deletions included, rather than
+only as the 2-D Bandage picture. The Bandage view is the preferred picture of
+the graph itself; this is the other half, and correspondence between the two
+panels is meant to be **visual** (matching colors, matching features) rather
+than a shared pixel axis. Do not chase pixel-exact alignment: the anchored
+layout's `zoomToFit` pads by 40 px and centers, so its reference axis runs ~7%
+narrower than the linear view above it (measured on
+`pangenome/hprc_mhc_anchored`: backbone at CSS x 44-955 against the segments
+track's 7-991), and that is accepted.
+
+The glyph vocabulary already exists: `insertion.slang`, `gap.slang` and
+`clip.slang` under
+`plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/`. The closest
+existing per-sample linearized display is `plugins/maf/src/LinearMafDisplay`
+(including its `coverageInsertion.ts`).
+
+The data is mostly there today, in the two BEDs `scripts/build_rgfa_tabix.sh`
+emits:
+
+- **Insertions** fall out of `links.bed.gz`. Each L-line is written twice, once
+  under each endpoint, and carries *both* endpoints in full with their own
+  stable coordinates and ranks, so an off-reference neighbour of a rank-0
+  segment is an allele of known length attached at a known reference position.
+- **Deletions** are links that skip a backbone segment, `s_i -> s_i+2`.
+- The **summary** layer is `MinigraphBubbleAdapter` (`gfatools bubble`), which
+  already reports each bubble's reference span with its shortest and longest
+  allele, so "how much variation sits here" needs no new file.
+
+What is genuinely missing is **which haplotype carries what**: rGFA `SR` is
+build order, not sample, so segs + links cannot fill a per-haplotype row. That
+needs the graph's W-lines projected into a third BED (`haplotype`, ref span,
+allele segment ids), which the builder does not emit today. Two sizes follow:
+
+- **Without new data**: one row per rank or per bubble, reference-anchored,
+  insertion I-beams sized by allele length and gaps where backbone is skipped.
+  Derivable now, and it reads beside the graph in the same rank colors.
+- **With the walk projection**: one row per haplotype, a real pileup, which is
+  the version the request is really describing.
+
+Note the VCF route already covers part of this ground:
+`LinearMultiSampleVariantDisplay` on a decomposed callset (`wave.vcf.gz`,
+`ecoli_pggb_variants`) gives one row per sample. What the graph adds is exact
+allele *length* and structure, which is what the alignment glyphs express and a
+symbolic ALT does not.

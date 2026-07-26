@@ -40,6 +40,51 @@ const RANK_COLOR_DEFAULTS = {
   color: "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'",
 }
 
+// The tutorial's own four-strain minigraph graph as an ordinary FeatureTrack,
+// hoisted because several specs below launch a subgraph from it. It is a session
+// track rather than a config track because the shared graphgenomeview fixture
+// config carries only the K12 assembly; the two tabix indexes are hosted beside
+// the GFAs. Both `RgfaTabixAdapter` and the launch menu items come from the
+// plugin, so a figure that renders this track at all is also evidence the plugin
+// loaded.
+const ECOLI_SEGMENTS_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: ECOLI_SEGMENTS_TRACK,
+  name: 'minigraph graph segments (rGFA)',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'RgfaTabixAdapter',
+    uri: `${DATA}/ecoli_minigraph`,
+  },
+  displayDefaults: RANK_COLOR_DEFAULTS,
+}
+
+// K12's genes, so the linear half of a launch figure says which genes the
+// clicked segment covers rather than being a lane of anonymous blocks. Hosted
+// beside the graph indexes; the fixture config carries only the assembly.
+const K12_GENES_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'K12_genes',
+  name: 'K12 genes',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: { uri: `${DATA}/K12.gff.gz` },
+    index: { location: { uri: `${DATA}/K12.gff.gz.tbi` } },
+  },
+}
+
+// The 50 kb K12 window the launch figures work in, and a segment inside it,
+// both picked from the index rather than by eye (`tabix ecoli_minigraph.segs
+// .bed.gz 'K12#1#chr:4050000-4100000'`). s1277 spans 4,056,624-4,063,560 and is
+// the widest segment there; it is also the only one in the window carrying a
+// rank-2 (CFT073) allele, so the neighbourhood a right-click on it cuts has a
+// real bubble in it instead of a straight run of backbone.
+const ECOLI_WINDOW = 'chr:4,050,000-4,100,000'
+const SEGMENT_LABEL = 's1277'
+// ~2x the segment's own span, so its label is a comfortable right-click target
+const SEGMENT_WINDOW = 'chr:4,054,000-4,066,000'
+
 // The HPRC figures take the other route into the same view: instead of a whole
 // GFA file, a GraphGenomeView carrying `loadedTrackId`/`loadedRegion` — the exact
 // snapshot the "Launch view, then Graph genome view (this region)" menu item
@@ -53,6 +98,16 @@ const MHC_REGION = {
   start: 32500000,
   end: 32560000,
 }
+
+// C4, for the launch figure, from the tutorial's own table of loci worth a look.
+// 70 kb fits under the view's 100 kb cap, so the visible region is launchable
+// without zooming first, and the window is dense in the way the picture needs:
+// `tabix hprc-v2.0-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
+// gives 13 rank-0 backbone segments and 21 links out to non-reference segments
+// with ranks up to 165, which is C4A/C4B copy number and the HERV insertion as
+// the graph records them. AMY1, the other headline CNV locus, is 190 kb and past
+// the cap.
+const C4_WINDOW = 'chr6:31,980,000-32,050,000'
 
 export const graphSpecs: ScreenshotSpec[] = [
   // The pggb subgraph, over the linear view of the same locus (reviewer: "we need
@@ -129,24 +184,12 @@ export const graphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/rgfa_subgraph_launch',
     url: sessionSpec(CONFIG, {
-      sessionTracks: [
-        {
-          type: 'FeatureTrack',
-          trackId: ECOLI_SEGMENTS_TRACK,
-          name: 'minigraph graph segments (rGFA)',
-          assemblyNames: ['K12'],
-          adapter: {
-            type: 'RgfaTabixAdapter',
-            uri: `${DATA}/ecoli_minigraph`,
-          },
-          displayDefaults: RANK_COLOR_DEFAULTS,
-        },
-      ],
+      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:4,050,000-4,100,000',
+          loc: ECOLI_WINDOW,
           tracks: [ECOLI_SEGMENTS_TRACK],
         },
         {
@@ -206,6 +249,280 @@ export const graphSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.1,
     viewportWidth: 1000,
     viewportHeight: 1300,
+    hideTooltip: true,
+  },
+
+  // Where the launch actually lives. Both tutorials describe this click path in
+  // prose ("Track menu, then Launch view, then Graph genome view (this
+  // region)") and then show a figure of the result, so the one step a reader has
+  // to find for themselves was the only step with no picture. Driven through the
+  // real menu rather than baked, so the figure also exercises capability
+  // discovery: the item is contributed by the plugin only for a track whose
+  // adapter declares `getSubgraph`, and it lands inside core's shared "Launch
+  // view" submenu beside any other plugin's offers.
+  //
+  // Rows go by testid, not text: the track's name is also its label in the view
+  // behind the menu, and a text match resolves to the first visible match, which
+  // is that label rather than the menu row.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_launch_menu',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: ECOLI_WINDOW,
+          tracks: [ECOLI_SEGMENTS_TRACK],
+        },
+      ],
+    }),
+    // a drawn segment label, so the tabix query has come back and the blocks the
+    // menu is about are painted rather than a bare track
+    readyText: SEGMENT_LABEL,
+    readyTimeout: 90000,
+    settleMs: 3000,
+    viewportWidth: 1000,
+    // the track plus the whole open menu. Sized to the menu, not to the track:
+    // at 460 the last rows ran off the bottom edge, which reads as a clipped
+    // screenshot rather than as a menu that continues
+    viewportHeight: 580,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      {
+        type: 'click',
+        selector: '[data-testid="cascading-submenu-launch_view"]',
+      },
+      {
+        type: 'waitForSelector',
+        selector:
+          '[data-testid="cascading-menuitem-graph_genome_view_(this_region)"]',
+      },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // The per-feature entry point, which no figure covered and whose behavior the
+  // prose only hinted at ("or right-click a segment for its neighbourhood"). A
+  // right-click launches on the segment's own span padded by half its length on
+  // either side, so the graph opens with context around the segment instead of
+  // clipped to its ends — that padding is the thing worth seeing, and the only
+  // way to see it is to take the path.
+  //
+  // Two frames because the menu is reachable only through the UI: the context
+  // menu over the clicked segment, then the neighbourhood it cuts. The right
+  // click targets the segment's rendered label rather than a viewport
+  // coordinate — the label carries the feature id the display's delegated
+  // handler resolves, so nothing here is measured off a previous capture.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_segment_neighbourhood',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: SEGMENT_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 110 },
+            ECOLI_SEGMENTS_TRACK,
+          ],
+        },
+      ],
+    }),
+    readyText: SEGMENT_LABEL,
+    readyTimeout: 90000,
+    settleMs: 3000,
+    viewportWidth: 1000,
+    // enough for the linear view plus the open context menu, which is also
+    // enough for the graph canvas once the second frame closes that view. Sized
+    // to the shorter of the two states rather than the taller: at 900 the first
+    // frame was a third empty page background and the graph still clipped.
+    viewportHeight: 700,
+    hideTooltip: true,
+    actions: [
+      {
+        type: 'rightclick',
+        selector: `[data-testid="feature-name-${SEGMENT_LABEL}"]`,
+      },
+      { type: 'waitForText', text: 'Launch view' },
+      { type: 'delay', ms: 500 },
+    ],
+    stages: [
+      {
+        actions: [
+          {
+            type: 'click',
+            selector: '[data-testid="cascading-submenu-launch_view"]',
+          },
+          {
+            type: 'waitForSelector',
+            selector:
+              '[data-testid="cascading-menuitem-graph_genome_view_(this_segment)"]',
+          },
+          { type: 'delay', ms: 500 },
+        ],
+      },
+      // A launch through the menu opens on the view's own defaults, so the graph
+      // arrives in one uniform color; the rank colors the sibling figures were
+      // given declaratively are a Color-dropdown step here, and the tutorials
+      // tell the reader to take it. Driving it keeps the two halves of this
+      // figure comparable and makes the step itself part of what is documented.
+      // The dropdown has no testid, so it goes by its current value, which
+      // appears nowhere else on the page.
+      {
+        actions: [
+          {
+            type: 'click',
+            selector:
+              '[data-testid="cascading-menuitem-graph_genome_view_(this_segment)"]',
+          },
+          { type: 'waitForSelector', selector: TOOLBAR_READY },
+          { type: 'click', text: 'Uniform' },
+          { type: 'click', text: 'Stable rank (rGFA)' },
+          { type: 'delay', ms: 2000 },
+          // close the linear view it was launched from, so this frame is the
+          // subgraph rather than mostly its source. The window it cut stays
+          // stated in the graph view's own title.
+          { type: 'click', selector: '[data-testid="close_view"]' },
+          { type: 'delay', ms: 3000 },
+        ],
+      },
+    ],
+  },
+
+  // The anchored counterpart to hprc_mhc_bandage: the same MHC subgraph with x
+  // back on GRCh38, which is the trade the HPRC tutorial spends a paragraph on
+  // and had no picture of. Read as a pair, the two figures are the whole
+  // argument for having both layouts — this one lines up under the linear view
+  // above it, the force one does not and shows the graph's shape instead.
+  // layoutMode is left at its 'auto' default, which is this layout whenever the
+  // graph declares a rank-0 backbone.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_mhc_anchored',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,500,000-32,560,000',
+          // pinned heights: the three tracks left to themselves take two thirds
+          // of the frame, and the point of this figure is the axis the graph
+          // below shares with them
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+            {
+              trackId: 'hprc_minigraph_bubbles',
+              type: 'LinearBasicDisplay',
+              height: 110,
+            },
+            {
+              trackId: SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 130,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: MHC_REGION,
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    settleMs: 4000,
+    viewportWidth: 1000,
+    // the compacted linear stack plus the graph canvas in full: at 1000 the rank
+    // rows ran off the bottom edge, which reads as a broken layout
+    viewportHeight: 1180,
+    hideTooltip: true,
+  },
+
+  // The human pangenome at C4, the second locus this graph is worth opening at
+  // (see C4_WINDOW) and the one where the picture is a copy-number story rather
+  // than an allelic-diversity one.
+  //
+  // Declarative rather than menu-driven, and only because of what the deployed
+  // plugin bundle predates. Writing this figure as a launch is what found the
+  // bug: the menu passes the *assembly's* canonical refName, which for this hg38
+  // (`hg38.prefix.fa.gz`, and every GRCh38 FASTA on jbrowse.org) is the bare `6`,
+  // while the graph's stable names are `GRCh38#0#chr6`, and the plugin's
+  // `GetSubgraph` RPC did no refName renaming, so the launch resolved nothing and
+  // opened a view reading "0 nodes, 0 edges" with no error. Fixed in the plugin
+  // by extending `RpcMethodTypeWithRenameRegion` (verified locally: the same
+  // menu-driven launch draws 30 nodes / 36 edges, matching this figure), but the
+  // hosted bundle still has to be redeployed. Switch this spec to the driven form
+  // once it is. E. coli is unaffected either way, its assembly refName `chr`
+  // matching the graph's `K12#1#chr`, which is why the driven figures above are on
+  // E. coli.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_c4_subgraph',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: C4_WINDOW,
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+            {
+              trackId: 'hprc_minigraph_bubbles',
+              type: 'LinearBasicDisplay',
+              height: 90,
+            },
+            {
+              trackId: SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 120,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: {
+            refName: 'chr6',
+            assemblyName: 'hg38',
+            start: 31980000,
+            end: 32050000,
+          },
+          // The Bandage picture, not the rank ladder: correspondence with the
+          // linear view above is carried by the shared rank colors, which is what
+          // a reader actually reads, rather than by a shared x axis.
+          layoutMode: 'force',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    // FMMM drifts a few percent between runs, so only a real change rewrites the
+    // committed PNG. Note the trade this makes on a sparse figure: a graph canvas
+    // is mostly white with thin strokes, so switching this spec from the anchored
+    // layout to this one moved only 2.7% of pixels and was *kept* rather than
+    // written. A real change to a force-layout figure needs `--force`; the
+    // threshold cannot tell 3% of jitter from 3% of different-layout.
+    diffThreshold: 0.1,
+    viewportWidth: 1000,
+    viewportHeight: 1290,
     hideTooltip: true,
   },
 ]

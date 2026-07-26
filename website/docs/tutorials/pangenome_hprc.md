@@ -90,9 +90,16 @@ downloads nothing but the region in view; the adapter resolves
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
+  },
+  "displayDefaults": {
+    "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
   }
 }
 ```
+
+The `color` jexl is what makes the graph and the linear view read as one
+picture: it paints each segment in the graph view's own **Stable rank (rGFA)**
+colors, so a segment is the same color in both panels.
 
 Each segment draws where its tags say it sits, so the GRCh38 backbone tiles the
 reference and the graph becomes queryable by locus. Those hosted files are ours,
@@ -125,7 +132,8 @@ module and loads from any config today (see
 }
 ```
 
-The tracks above need it only for the launch menu item.
+The tracks above need it too: `RgfaTabixAdapter` and `MinigraphBubbleAdapter`
+ship in the same plugin.
 
 :::
 
@@ -133,19 +141,17 @@ Navigate somewhere interesting, then:
 
 **Track menu > Launch view > Graph genome view (this region)**
 
-(or right-click a segment for its neighbourhood). This opens the local subgraph,
-cut from the same two files, as a graph. Above 100 kb the view declines to draw,
-since the layout stops being legible.
+This opens the local subgraph, cut from the same two files, as a graph. Above
+100 kb the view declines to draw, since the layout stops being legible. That
+menu and the per-segment right-click are pictured in the
+[E. coli tutorial](/docs/tutorials/pangenome_ecoli#opening-any-locus-without-a-slice-per-locus).
 
 <Figure caption="The HLA class II region (chr6:32,500,000-32,560,000) of the HPRC release 2 graph in force-directed layout, with RefSeq genes (HLA-DRB5, HLA-DRB6) and the bubble track above it. The graph's shape: the backbone winds through the frame and every loop and stub hanging off it is an alternate allele from the 464 haplotypes. The segments track is colored by the same rank scheme, so its blue blocks are that blue backbone; the orange loops are the alternates, which have no GRCh38 coordinates to draw at. Node lengths use per-graph Bandage scaling, so a 300 bp allele and a 7 kb backbone segment stay in one picture." src="/img/pangenome/hprc_mhc_bandage.png" />
 
 That is the picture the graph is really about. The toolbar's **Layout** dropdown
-also offers an **anchored** layout that puts the x axis back on GRCh38, so the
-subgraph lines up under a linear view of the same window: the rank-0 backbone
-draws at its declared offsets with each alternate allele as a bar below it. Each
-rank becomes a parallel row, so a bubble reads as a pair of stalks rather than
-an eye, but the reference axis stays exact and the layout renders in about a
-millisecond.
+trades it for an **anchored** layout, which puts the x axis back on GRCh38:
+
+<Figure caption="The same MHC subgraph, anchored. Every x is a GRCh38 coordinate, so the blue rank-0 backbone runs under the segments track that drew the same ids above it, and each allele hangs at the position it attaches to: rank 1 on the first row, the one rank-2 allele at the bottom. A bubble reads as a pair of stalks rather than an eye, and the layout takes about a millisecond." src="/img/pangenome/hprc_mhc_anchored.png" />
 
 Loci where the graph is worth a look, all on GRCh38. Zoom to a few tens of kb,
 the scale the view is built for:
@@ -157,6 +163,10 @@ the scale the view is built for:
 | C4        | `chr6:31,980,000-32,050,000`   | C4A/C4B copy number plus an HERV insertion                   |
 | SMN       | `chr5:70,900,000-71,000,000`   | Near-identical SMN1/SMN2 duplication                         |
 | KIR       | `chr19:54,700,000-55,100,000`  | Gene content differs between haplotypes                      |
+
+C4, from that table:
+
+<Figure caption="C4A/C4B and CYP21A2 over 70 kb of GRCh38, with the same window's graph below: 30 nodes, 36 edges. Both panels use the rank colors, so the blue blocks above are the blue backbone winding through the graph, and the orange and crimson branches off it are the alleles that have no GRCh38 coordinates to draw at. One 1-104,702 bp bubble covers the locus in the bubbles track; the graph is what that bubble contains." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 ## The bubble track
 

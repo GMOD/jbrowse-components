@@ -109,6 +109,31 @@ graph track's own menu; synteny has no track-menu equivalent.
 
 ## Gotchas
 
+- **A launch RPC that does not rename its region silently opens an empty view.**
+  Fixed in the graph plugin (`GetSubgraph` now extends
+  `RpcMethodTypeWithRenameRegion`), but read this before writing the next
+  launcher, because nothing about the failure points at the cause. JBrowse maps a
+  region's refName onto the adapter's own names before calling `getFeatures`,
+  which is why an rGFA segments track draws on an hg38 assembly whose contigs are
+  `6` while the graph's stable names are `GRCh38#0#chr6`. A plain `RpcMethodType`
+  gets no such mapping, and `resolveRefName`
+  (`RgfaTabixAdapter/rgfaBed.ts`) matches only the graph's own spelling, so the
+  launch resolved nothing while the track it launched from kept drawing: the
+  graph looked broken, its own data looked fine, and nothing raised an error.
+  Every hosted GRCh38 FASTA on jbrowse.org uses bare `1`/`6` names,
+  `hg38.prefix.fa.gz` included, so this was the default human case, not an edge
+  case; E. coli escaped it because the assembly's `chr` matches `K12#1#chr`. Note
+  `renameRegionsIfNeeded` (`packages/core/src/util/renameRegions.ts:67`) already
+  throws on the near-miss of pairing a singular `region` with the *plural* base
+  class, and its comment names this same bug — but a method extending plain
+  `RpcMethodType` never calls it, so the guard cannot fire.
+- **Both graph adapters live in the plugin repo now**, not here:
+  `RgfaTabixAdapter` and `MinigraphBubbleAdapter` moved out with the view, so
+  `plugins/comparative-adapters` no longer has them and nothing in this repo
+  registers those types. What is left here is `scripts/build_rgfa_tabix.sh`, the
+  tutorials, and `website/scripts/specs/graph.ts`. The plugin's own
+  `RGFA_GRAPH_HANDOFF.md` still tables them under
+  `plugins/comparative-adapters/src/` and is stale on this point.
 - **Subgraphs are rGFA-only.** `RgfaTabixAdapter` declares `getSubgraph`;
   `MinigraphBubbleAdapter` reads a summary index and cannot cut one. The graph
   plugin's feature context menu handles this by falling back to *other* session
@@ -148,3 +173,35 @@ care: the first render landed inside the paa operon island, the one locus where
 three of four strains have no alignment at all, so discovery correctly returned
 a single mate and the multi-panel launch degenerated to the pairwise case it was
 meant to contrast against.
+
+The graph launcher now has the same coverage from this repo, in
+`website/scripts/specs/graph.ts`: `pangenome/rgfa_launch_menu` drives the track
+menu, and `pangenome/rgfa_segment_neighbourhood` drives the feature context menu
+and then the Color dropdown on the view it launched. Both assert nothing but a
+picture, so review them by eye after a regen. Three things they taught:
+
+- **Pick the clicked feature from the index, not by eye.** Right-clicking a
+  segment with no rank>0 neighbour cuts a neighbourhood that is a straight run of
+  backbone — the launcher working correctly, and a figure that teaches nothing.
+  `tabix ecoli_minigraph.links.bed.gz K12#1#chr:4050000-4100000` names the
+  segments with alleles hanging off them.
+- **Target the feature's rendered label, not a viewport coordinate.**
+  `[data-testid="feature-name-<id>"]` is emitted by
+  `plugins/canvas/src/LinearBasicDisplay/components/useOverlayElements.tsx` and
+  carries the feature id the display's delegated handler resolves, so a
+  right-click spec needs no hand-measured pixels.
+- **A graph canvas is too sparse for the content-stable diff gate.** It is mostly
+  white with thin strokes, so switching `pangenome/hprc_c4_subgraph` from the
+  anchored layout to the force layout moved 2.7% of pixels and was *kept* rather
+  than written. Force-layout figures carry `diffThreshold: 0.1` for FMMM jitter,
+  which cannot be told apart from a real change of that size — regenerate those
+  with `--force`.
+
+**The figures can only cover what is deployed.** Both tutorials load the plugin
+from `jbrowse.org/demos/graphgenomeviewer`, and that bundle is code-split, so
+audit it by grepping the entry *and every chunk it references* (the color-scheme
+labels live in a chunk, not the entry). As of this writing it carries
+`Graph genome view (this region)` and `(this segment)` only: the LGV view-menu
+and rubberband items, the hover sync, and the refName fix above are all
+uncommitted or unpublished in the plugin repo, so figuring them needs
+`scripts/betabuild.sh` to run first.

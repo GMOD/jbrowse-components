@@ -99,6 +99,17 @@ The cactus image also carries [odgi](https://github.com/pangenome/odgi),
 [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), so no other tool
 is needed for the projections.
 
+## Drawing this graph as a graph
+
+`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags on its segments, so nothing can
+query it by reference position and the graph genome view has no backbone to
+anchor to. The projections below are unaffected, being already flattened onto
+K12, but the graph itself needs one of the routes the
+[pggb tutorial](/docs/tutorials/pangenome_ecoli#the-graph-itself-a-local-subgraph)
+covers: `odgi extract` one window and open that GFA, or index a minigraph rGFA
+of the same assemblies, which opens any locus on demand. An rGFA-tagged
+`sv.gfa.gz`, as HPRC publishes, can be indexed directly.
+
 ## All-vs-all synteny projection
 
 Cactus does not emit an all-vs-all alignment PAF the way pggb's wfmash step
