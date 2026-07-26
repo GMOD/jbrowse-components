@@ -26,20 +26,18 @@ async function buildViews(
       return asm
     }),
   )
-  // Past the pairwise case, a genome row carrying no tracks opens collapsed to
-  // its ruler: the "No tracks active / Open track selector" block repeats once
-  // per row at ~90px each, which on a five-row launch is more of the viewport
-  // than the ribbons the view exists to show. A row that init gives tracks keeps
-  // them expanded, and MiniControls' "Expand tracks" (or the view menu's
-  // "Genome views" → "Expand all views") reopens the rest in one click.
-  const collapseEmptyRows = init.views.length > 2
   self.setViews(
     assemblies.map((asm, idx) => ({
       type: 'LinearGenomeView' as const,
       bpPerPx: 1,
       offsetPx: 0,
       hideHeader: true,
-      scalebarOnly: collapseEmptyRows && !init.views[idx]?.tracks?.length,
+      // A row init gives no tracks opens collapsed to its ruler when asked for
+      // (the launch dialog's checkbox), never by default: an authored session
+      // means what it wrote. Only the row's own emptiness is decided here — the
+      // policy is the caller's.
+      scalebarOnly:
+        !!init.collapseEmptyRows && !init.views[idx]?.tracks?.length,
       displayedRegions: asm.regions,
       // trackLabels is a plain persisted prop — set it on the snapshot directly
       // rather than imperatively after attach

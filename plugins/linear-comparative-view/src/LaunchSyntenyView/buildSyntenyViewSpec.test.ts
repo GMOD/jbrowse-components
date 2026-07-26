@@ -209,6 +209,42 @@ test('several mates at one locus become one panel each', () => {
   expect(spec.init.tracks).toEqual([['t1'], ['t1'], ['t1']])
 })
 
+// A band is drawn between adjacent panels only, so on a reference-anchored
+// dataset the anchor's position decides how many bands are direct pairs: on top
+// only the first is, in the middle the two either side of it are. Same panel
+// count and same level count either way.
+test('the anchor opens where the dialog put it', () => {
+  const spec = buildSyntenyViewSpec({
+    features: [
+      makeFeature({ mateAssembly: 'volvox2' }),
+      makeFeature({ mateAssembly: 'volvox3', mateRefName: 'ctgC' }),
+    ],
+    anchorIndex: 1,
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+  })
+  expect(spec.init.views.map(v => v.assembly)).toEqual([
+    'volvox2',
+    'volvox',
+    'volvox3',
+  ])
+  expect(spec.init.tracks).toEqual([['t1'], ['t1']])
+})
+
+test('an anchor index past the last mate puts it at the bottom', () => {
+  const spec = buildSyntenyViewSpec({
+    features: [makeFeature({ mateAssembly: 'volvox2' })],
+    anchorIndex: 1,
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+  })
+  expect(spec.init.views.map(v => v.assembly)).toEqual(['volvox2', 'volvox'])
+})
+
 test('only the mates on the minus strand open reversed', () => {
   expect(
     locs(
@@ -262,4 +298,34 @@ test('the anchor panel uses the passed assembly, not the feature field', () => {
     flipReversedMates: false,
   })
   expect(spec.init.views[0]!.assembly).toBe('volvox_alias')
+})
+
+// The launched panels carry no tracks, so the view opens them as rulers on a
+// multi-way launch and leaves a pairwise one expanded. It rides on the init
+// rather than being a policy buildViews guesses, so an authored session (which
+// never sets it) keeps its rows exactly as written, and the dialog's "Collapse
+// panels to rulers" checkbox overrides the default in either direction.
+test('multi-way launch collapses empty rows, pairwise does not', () => {
+  const args = {
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+  }
+  const twoMates = [makeFeature(), makeFeature({ mateAssembly: 'volvox3' })]
+  expect(
+    buildSyntenyViewSpec({ ...args, features: twoMates }).init
+      .collapseEmptyRows,
+  ).toBe(true)
+  expect(
+    buildSyntenyViewSpec({ ...args, features: [makeFeature()] }).init
+      .collapseEmptyRows,
+  ).toBe(false)
+  expect(
+    buildSyntenyViewSpec({
+      ...args,
+      features: twoMates,
+      collapseEmptyRows: false,
+    }).init.collapseEmptyRows,
+  ).toBe(false)
 })

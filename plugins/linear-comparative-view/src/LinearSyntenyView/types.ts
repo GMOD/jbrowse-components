@@ -33,6 +33,13 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // whole-genome views where the default ~100px is too cramped for the
   // ribbon detail to be readable.
   levelHeights?: number[]
+  // Open any genome row this init gives no tracks collapsed to its ruler. The
+  // "No tracks active / Open track selector" block costs ~90px per row, which on
+  // a five-row launch is more of the viewport than the ribbons; a row is one
+  // click from expanding again (MiniControls, or the view menu's "Genome views"
+  // → "Expand all views"). Off by default so an authored session keeps its rows
+  // as written — the launch dialog turns it on, and offers a checkbox to not.
+  collapseEmptyRows?: boolean
   // Render ribbons as bezier curves rather than straight chords. Reads much
   // better at whole-genome scale where straight crossings stack into noise.
   drawCurves?: boolean

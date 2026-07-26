@@ -23,10 +23,6 @@ function stringField(feature: Feature, key: string) {
   return typeof val === 'string' ? val : undefined
 }
 
-export function getFeatureAssembly(feature: Feature) {
-  return stringField(feature, 'assemblyName')
-}
-
 // A synteny view can be launched against any assembly the track spans, i.e. one
 // of the track's declared assemblyNames. This is static config, so it holds
 // whether or not the assembly is loaded yet — an unloaded one resolves on demand
@@ -140,11 +136,23 @@ export interface BuildSyntenyViewSpecArgs {
   // `assemblyName` field is missing would otherwise silently produce a panel
   // with no assembly at all.
   anchorAssembly: string
+  // Where the anchor sits in the launched stack, 0 (the top) by default. A band
+  // is drawn between adjacent panels only, so with three or more panels off a
+  // reference-anchored dataset the anchor's position decides how many bands are
+  // direct pairs: on top, only the first is; in the middle, the two either side
+  // of it are. The launch dialog exposes it as a draggable row.
+  anchorIndex?: number
   windowSize: number
   trackId: string
   // Open a mate panel reversed when its alignment is on the minus strand, so its
   // coordinates still run left to right alongside the anchor's.
   flipReversedMates: boolean
+  // Open the launched panels collapsed to their rulers. Unset means the launch's
+  // own default: a multi-way launch collapses (a launch gives no panel any
+  // tracks, so on a stack the per-row "No tracks active" block is the tallest
+  // thing in the view), a pairwise one does not, since two rows have the room.
+  // The dialog's checkbox passes it explicitly either way.
+  collapseEmptyRows?: boolean
   region?: RegionOfInterest
 }
 
@@ -155,9 +163,11 @@ export interface BuildSyntenyViewSpecArgs {
 export function buildSyntenyViewSpec({
   features,
   anchorAssembly,
+  anchorIndex = 0,
   windowSize,
   trackId,
   flipReversedMates,
+  collapseEmptyRows,
   region,
 }: BuildSyntenyViewSpecArgs): { init: LinearSyntenyViewInit } {
   const anchor = features[0]
@@ -178,28 +188,33 @@ export function buildSyntenyViewSpec({
   const anchorStart = Math.min(...resolved.map(r => r.spans.featStart))
   const anchorEnd = Math.max(...resolved.map(r => r.spans.featEnd))
 
+  const anchorView = {
+    assembly: anchorAssembly,
+    loc: paddedLocString({
+      refName: anchor.get('refName'),
+      start: anchorStart,
+      end: anchorEnd,
+      windowSize,
+    }),
+  }
+  const mateViews = resolved.map(({ feature, mate, spans }) => ({
+    assembly: mate.assemblyName,
+    loc: paddedLocString({
+      refName: mate.refName,
+      start: spans.mateStart,
+      end: spans.mateEnd,
+      windowSize,
+      reversed: flipReversedMates && feature.get('strand') === -1,
+    }),
+  }))
+
   return {
     init: {
+      collapseEmptyRows: collapseEmptyRows ?? features.length > 1,
       views: [
-        {
-          assembly: anchorAssembly,
-          loc: paddedLocString({
-            refName: anchor.get('refName'),
-            start: anchorStart,
-            end: anchorEnd,
-            windowSize,
-          }),
-        },
-        ...resolved.map(({ feature, mate, spans }) => ({
-          assembly: mate.assemblyName,
-          loc: paddedLocString({
-            refName: mate.refName,
-            start: spans.mateStart,
-            end: spans.mateEnd,
-            windowSize,
-            reversed: flipReversedMates && feature.get('strand') === -1,
-          }),
-        })),
+        ...mateViews.slice(0, anchorIndex),
+        anchorView,
+        ...mateViews.slice(anchorIndex),
       ],
       // One synteny strip per gap between panels. The same track serves every
       // level: the view passes each level's two assemblies down to the adapter,
