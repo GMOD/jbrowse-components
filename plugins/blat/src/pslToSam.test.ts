@@ -1,3 +1,5 @@
+import { revcom } from '@jbrowse/core/util'
+
 import { parsePslRows } from './blatQuery.ts'
 import {
   parseQuerySequences,
@@ -169,8 +171,12 @@ test('emits an @SQ line per target with the size PSL states', () => {
   expect(lines).toContain('@SQ\tSN:chr17\tLN:83257441')
 })
 
+// the query has to be qSize long to be carried at all, so it can't be a token
+// string here — see the length test below
+const query147 = 'ACGTAC'.repeat(25).slice(0, 147)
+
 test('a record carries POS as 1-based, the strand flag, and the query bases', () => {
-  const [record] = samRecords([forward], new Map([['YourSeq', 'ACGT']]))
+  const [record] = samRecords([forward], new Map([['YourSeq', query147]]))
   const [name, flag, refName, pos, mapq, cigar, , , , seq] = record!.split('\t')
   expect(name).toBe('YourSeq')
   expect(flag).toBe('0')
@@ -179,7 +185,7 @@ test('a record carries POS as 1-based, the strand flag, and the query bases', ()
   // BLAT reports identity, not a mapping probability: 255 is "unavailable"
   expect(mapq).toBe('255')
   expect(cigar).toBe('1S146M')
-  expect(seq).toBe('ACGT')
+  expect(seq).toBe(query147)
 })
 
 test('a minus-strand record sets the reverse flag', () => {
@@ -213,6 +219,26 @@ test('states the edit distance and the kent score as tags', () => {
 test('a hit with no query text states SEQ as unavailable', () => {
   const [record] = samRecords([forward], new Map())
   expect(record!.split('\t')[9]).toBe('*')
+})
+
+// a query of the wrong length can't be the one the rows describe, and carrying
+// it anyway puts every base out of register: the pileup then draws a wall of
+// mismatches under a hit the widget labels as near-perfect identity
+test('a query whose length disagrees with qSize is not carried', () => {
+  const [record] = samRecords([forward], new Map([['YourSeq', 'ACGT']]))
+  expect(record!.split('\t')[9]).toBe('*')
+})
+
+test('a query matching qSize is carried in full, and reverse-complemented on the minus strand', () => {
+  const query = query147
+  const [fwd] = samRecords([forward], new Map([['YourSeq', query]]))
+  const [rev] = samRecords([reverse], new Map([['YourSeq', query]]))
+  const seqOf = (record: string) => record.split('\t')[9]!
+  expect(seqOf(fwd!)).toBe(query)
+  expect(seqOf(rev!)).toHaveLength(query.length)
+  expect(seqOf(rev!)).toBe(revcom(query))
+  // the invariant that makes the mismatches land in register
+  expect(cigarSpan(rev!.split('\t')[5]!, 'MIS')).toBe(seqOf(rev!).length)
 })
 
 test('parses submitted FASTA into name-keyed sequences', () => {

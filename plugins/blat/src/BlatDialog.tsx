@@ -75,6 +75,16 @@ const BlatDialog = observer(function BlatDialog({
               type: 'SamAdapter',
               samText: pslToSam(rows, parseQuerySequences(seq)),
             },
+            // A handful of hits has no depth to read, so the coverage band is 45
+            // pixels saying "1" over the one place the query landed. The hits
+            // themselves are the answer here, unlike a sequencing pileup.
+            //
+            // heightMode 'grow' would also be the natural fit (the content is a
+            // few hits of known size, so the fixed lane is mostly empty), but a
+            // single-hit track grown to its content comes out with the read
+            // clipped by the bottom edge of the view. Left off until that is
+            // understood.
+            displayDefaults: { showCoverage: false },
           },
         }
       },

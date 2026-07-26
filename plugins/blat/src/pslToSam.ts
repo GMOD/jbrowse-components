@@ -91,7 +91,14 @@ function pslRowToSamLine(
 ) {
   const secondary = bestOf.has(row.qName)
   bestOf.add(row.qName)
-  const seq = pslQuerySeq(row, querySequences)
+  const resolved = pslQuerySeq(row, querySequences)
+  // The CIGAR spans qSize query bases by construction, so a SEQ of any other
+  // length is a malformed record: the pileup would compare the query against
+  // the reference out of register and draw mismatches everywhere. It means the
+  // text and the rows came from different queries (a renamed or truncated FASTA
+  // record, a stand-in server), so fall back to the documented "no query text"
+  // record, which draws the blocks and no per-base mismatches.
+  const seq = resolved?.length === row.qSize ? resolved : undefined
   return [
     row.qName,
     (row.strand < 0 ? 16 : 0) | (secondary ? 256 : 0),

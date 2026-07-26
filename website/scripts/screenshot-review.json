@@ -1995,9 +1995,9 @@
   "desktop-blat-results": {
     "name": "desktop-blat-results",
     "status": "good",
-    "note": "regenerated: BLAT results are now an AlignmentsTrack (pslToSam), so the hit is a pileup read rather than a feature glyph. The mock query was an arbitrary 52bp string against a PSL claiming qSize 147, which the pileup exposed as a wall of per-base mismatches under a hit labelled 98.7% identity; it is now the real hg19 chr17:7,579,839-7,579,985 with two substitutions, so the read shows exactly the two mismatch ticks the mock reports. RefSeq stays collapsed to the longest coding transcript (collapseGeneGlyph). Capture now waits for the view span to stop moving, since the drawer and the taller track each reflow it; byte-identical across two runs at 1400x763.",
-    "reviewedAt": "2026-07-26T12:36:38.000Z",
-    "hash": "b384c748700e39ddbbc64e5b09f4e527e56c762a"
+    "note": "regenerated: BLAT results are now an AlignmentsTrack (pslToSam), so the hit is a pileup read rather than a feature glyph. The mock query was an arbitrary 52bp string against a PSL claiming qSize 147, which the pileup exposed as a wall of per-base mismatches under a hit labelled 98.7% identity; it is now the real hg19 chr17:7,579,839-7,579,985 with two substitutions, so the read shows exactly the two mismatch ticks the mock reports. RefSeq stays collapsed to the longest coding transcript (collapseGeneGlyph). Capture now waits for the view span to stop moving, since the drawer and the taller track each reflow it; byte-identical across two runs at 1400x763. The coverage band is off by default for a result track (displayDefaults on the BLAT trackConf) since a handful of hits has no depth to read.",
+    "reviewedAt": "2026-07-26T12:53:00.000Z",
+    "hash": "fc6afa9372efd77b6c8adf934693948bfcaf2d9f"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",

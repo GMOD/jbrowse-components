@@ -88,9 +88,11 @@ export async function navToFeature(
 // How a result set is displayed. Defaults to an on-the-fly FromConfigAdapter
 // FeatureTrack, which is all an hgPcr product needs; a BLAT hit overrides it
 // with a SAM alignment so its blocks, indels and per-base mismatches are drawn.
+// `displayDefaults` is the shorthand for slots on that track's default display.
 export interface ResultTrackConf {
   type: string
   adapter: Record<string, unknown>
+  displayDefaults?: Record<string, unknown>
 }
 
 // Turns a UCSC query result into an on-the-fly track, shows it, navigates to the
@@ -119,16 +121,15 @@ export async function addResultTrack({
     throw new Error("Can't add tracks to this session")
   }
   const trackId = `${trackIdPrefix}-${Date.now()}`
-  const { type, adapter } = trackConf ?? {
+  const resultTrack = trackConf ?? {
     type: 'FeatureTrack',
     adapter: { type: 'FromConfigAdapter', features },
   }
   session.addTrackConf({
-    type,
+    ...resultTrack,
     trackId,
     name: trackName,
     assemblyNames: [assembly],
-    adapter,
   })
   const view = findNavigableView(session, assembly)
   if (view) {
