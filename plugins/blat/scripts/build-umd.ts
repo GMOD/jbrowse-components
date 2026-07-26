@@ -45,6 +45,16 @@ const outfile = join(
 // says the name is provided, which is true and not enough.
 const NOT_ACTUALLY_PROVIDED = new Set(['@mui/material/SvgIcon'])
 
+// Read the MST fork under its upstream name. `modules.ts` maps BOTH
+// '@jbrowse/mobx-state-tree' and 'mobx-state-tree' to the same namespace object,
+// so on any v4 host this is the identical module — but only the upstream name
+// exists on v3 and older, where the fork's name resolves to undefined and the
+// widget's `types.model(...)` throws during install, taking the session with it.
+// Same remap jb2plugins' esbuild configs do (jbrowse-plugin-gwas/esbuild.mjs).
+const READ_AS: Record<string, string> = {
+  '@jbrowse/mobx-state-tree': 'mobx-state-tree',
+}
+
 const provided = new Set(
   reExports.filter(name => !NOT_ACTUALLY_PROVIDED.has(name)),
 )
@@ -64,7 +74,7 @@ const jbrowseGlobals: Plugin = {
     build.onLoad({ filter: /.*/, namespace: 'jbrowse-global' }, args => ({
       // CJS on purpose: the named exports of each module are not knowable at
       // build time, and this lets esbuild's interop resolve them at runtime
-      contents: `module.exports = window.JBrowseExports[${JSON.stringify(args.path)}]`,
+      contents: `module.exports = window.JBrowseExports[${JSON.stringify(READ_AS[args.path] ?? args.path)}]`,
       loader: 'js',
     }))
   },
