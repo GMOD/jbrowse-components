@@ -904,9 +904,6 @@ importers:
 
   plugins/canvas:
     dependencies:
-      '@gmod/hclust':
-        specifier: 4.0.1
-        version: 4.0.1
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -1700,9 +1697,6 @@ importers:
 
   plugins/variants:
     dependencies:
-      '@gmod/hclust':
-        specifier: 4.0.1
-        version: 4.0.1
       '@gmod/tabix':
         specifier: ^3.5.0
         version: 3.5.0
@@ -1769,9 +1763,6 @@ importers:
       '@gmod/bbi':
         specifier: ^10.0.1
         version: 10.0.1
-      '@gmod/hclust':
-        specifier: 4.0.1
-        version: 4.0.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

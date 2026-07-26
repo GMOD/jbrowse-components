@@ -1,11 +1,10 @@
-import { clusterObject, toNewick } from '@gmod/hclust'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { clusterProgressStatus } from '@jbrowse/tree-sidebar'
+import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
 import { makeFeatureColorResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
@@ -75,14 +74,5 @@ export async function executeMultiRowClusterFeatures({
   for (let i = 0; i < sources.length; i++) {
     data[sources[i]!] = matrix[i]!
   }
-  const result = await clusterObject({
-    data,
-    onProgress: p => {
-      statusCallback(clusterProgressStatus(p))
-    },
-    checkCancellation: () => {
-      checkStopToken2(stopTokenCheck)
-    },
-  })
-  return { order: result.order, tree: toNewick(result.tree) }
+  return clusterMatrix({ data, statusCallback, stopTokenCheck })
 }

@@ -1,9 +1,5 @@
-import { clusterObject, toNewick } from '@gmod/hclust'
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
-import { clusterProgressStatus } from '@jbrowse/tree-sidebar'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
+import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
 import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
 import { imputeMissingToSiteMean } from './genotypeMatrixEncoding.ts'
@@ -40,20 +36,12 @@ export async function executeClusterGenotypeMatrix({
     pluginManager,
     args: { ...args, stopTokenCheck },
   })
-  const result = await clusterObject({
+  return clusterMatrix({
     // hclust rejects non-finite input outright, so the no-calls the builders
     // mark with NaN have to become numbers here. Site-mean imputation makes
     // them contribute nothing to the distance rather than dominating it.
     data: imputeMissingToSiteMean(matrix),
-    onProgress: p => {
-      args.statusCallback(clusterProgressStatus(p))
-    },
-    checkCancellation: () => {
-      checkStopToken2(stopTokenCheck)
-    },
+    statusCallback: args.statusCallback,
+    stopTokenCheck,
   })
-  return {
-    order: result.order,
-    tree: toNewick(result.tree),
-  }
 }
