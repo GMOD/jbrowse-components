@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ActionLink } from '@jbrowse/core/ui'
 import {
   SimpleFeature,
@@ -8,14 +9,37 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
+import { getMate } from '../syntenyMate.ts'
+
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { SyntenyFeatureDetailModel } from './types.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  SimpleFeatureSerialized,
+} from '@jbrowse/core/util'
 
 // lazies
 const LaunchSyntenyViewDialog = lazy(
-  () => import('../LGVSyntenyDisplay/components/LaunchSyntenyViewDialog.tsx'),
+  () => import('../LaunchSyntenyView/LaunchSyntenyViewDialog.tsx'),
 )
+
+// The launched view needs the track back, so its id has to resolve to a track
+// config we can read `assemblyNames` off — the same gate the LGV synteny
+// right-click menu applies. Without it, a one-vs-all mate that is only a PanSN
+// sample label (no declared assembly) opens a synteny view that can resolve
+// nothing and lands on the import form with an error.
+function findTrackAssemblyNames(
+  session: AbstractSessionModel,
+  trackId: string | undefined,
+) {
+  const track = session.tracks.find(
+    t => readConfObject(t, 'trackId') === trackId,
+  )
+  return track
+    ? (readConfObject(track, 'assemblyNames') as string[] | undefined)
+    : undefined
+}
 
 const LinkToSyntenyView = observer(function LinkToSyntenyView({
   model,
@@ -25,6 +49,16 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
   feat: SimpleFeatureSerialized
 }) {
   const { view, level, trackId } = model
+  const session = getSession(model)
+  const feature = new SimpleFeature(feat)
+  const mate = getMate(feature)
+  const anchorAssembly = feature.get('assemblyName')
+  const trackAssemblyNames = findTrackAssemblyNames(session, trackId)
+  const canLaunch =
+    trackId !== undefined &&
+    typeof anchorAssembly === 'string' &&
+    trackAssemblyNames !== undefined &&
+    canLaunchSyntenyForMate(trackAssemblyNames, mate?.assemblyName)
   return (
     <ul>
       {view.type === 'LinearSyntenyView' ? (
@@ -52,7 +86,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                 const v1 = views.find(v => v.assemblyNames[0] === r1)
                 const v2 = views.find(v => v.assemblyNames[0] === r2)
                 if (!v1 || !v2) {
-                  getSession(model).notify(
+                  session.notify(
                     [
                       !v1
                         ? `Unable to find ${assembleLocString(feat)} in synteny view`
@@ -74,25 +108,26 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
           </ActionLink>
         </li>
       ) : null}
-      <li>
-        <ActionLink
-          onClick={() => {
-            const feature = new SimpleFeature(feat)
-            const session = getSession(model)
-            session.queueDialog(handleClose => [
-              LaunchSyntenyViewDialog,
-              {
-                session,
-                feature,
-                trackId,
-                handleClose,
-              },
-            ])
-          }}
-        >
-          Launch new linear synteny view on this feature
-        </ActionLink>
-      </li>
+      {canLaunch ? (
+        <li>
+          <ActionLink
+            onClick={() => {
+              session.queueDialog(handleClose => [
+                LaunchSyntenyViewDialog,
+                {
+                  session,
+                  feature,
+                  anchorAssembly,
+                  trackId,
+                  handleClose,
+                },
+              ])
+            }}
+          >
+            Launch new linear synteny view on this feature
+          </ActionLink>
+        </li>
+      ) : null}
     </ul>
   )
 })

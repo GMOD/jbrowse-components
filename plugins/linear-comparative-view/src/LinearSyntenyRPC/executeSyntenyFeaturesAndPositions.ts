@@ -14,6 +14,7 @@ import {
   syntenyPanBufferPx,
 } from '@jbrowse/synteny-core'
 
+import { getMate } from '../syntenyMate.ts'
 import {
   MIN_CIGAR_PX_WIDTH,
   buildSyntenyGeometry,
@@ -21,6 +22,7 @@ import {
 import { clipLargeBlockToWindow } from './clipSyntenyFeature.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
+import type { SyntenyMate } from '../syntenyMate.ts'
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -34,13 +36,6 @@ const EMPTY_CIGAR = new Uint32Array(0)
 // alignment is <= 1x, so this leaves the well-trodden path untouched (only
 // pathologically large blocks, which otherwise fail to render, are re-anchored).
 const CLIP_SPAN_RATIO = 4
-
-interface SyntenyMate {
-  start: number
-  end: number
-  refName: string
-  assemblyName: string
-}
 
 // Feature keys read once up front (in the decorate step) so the O(n log n) sort
 // comparator and the projection loop never re-invoke the proxied Feature.get.
@@ -57,12 +52,6 @@ interface DecoratedFeature {
   id: string
 }
 
-// Synteny-specific feature fields. Feature.get returns `unknown` for these
-// non-standard keys, so the cast is centralized in one typed accessor rather
-// than repeated (and previously diverging) at each call site.
-function getMate(f: Feature) {
-  return f.get('mate') as SyntenyMate
-}
 function getOptionalNumber(f: Feature, key: string) {
   return (f.get(key) as number | undefined) ?? -1
 }
@@ -200,7 +189,7 @@ export async function executeSyntenyFeaturesAndPositions({
   for (const f of deduped) {
     const refName = f.get('refName')
     const mate = getMate(f)
-    if (v1RefNames.has(refName) && v2RefNames.has(mate.refName)) {
+    if (mate && v1RefNames.has(refName) && v2RefNames.has(mate.refName)) {
       const start = f.get('start')
       const end = f.get('end')
       decorated.push({

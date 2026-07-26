@@ -5,6 +5,7 @@ import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 import DiagonalizeSyntenyRpc from './DiagonalizeSyntenyRpc.ts'
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay/index.ts'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView.ts'
+import LinearViewMenuItemsF from './LaunchSyntenyView/linearViewMenuItems.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
@@ -30,6 +31,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     SyntenyFeatureWidgetF(pluginManager)
     LGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
+    LinearViewMenuItemsF(pluginManager)
     SyntenyTrackF(pluginManager)
     LinearReadVsRefMenuItemF(pluginManager)
     pluginManager.addRpcMethod(

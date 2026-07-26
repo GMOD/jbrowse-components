@@ -1,8 +1,12 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { assembleLocString } from '@jbrowse/core/util'
+import { launchSyntenyView } from '@jbrowse/synteny-core'
 
+import { getMate } from '../syntenyMate.ts'
 import { findPosInCigar } from './findPosInCigar.ts'
 
+import type { LinearSyntenyViewInit } from '../LinearSyntenyView/types.ts'
+import type { SyntenyMate } from '../syntenyMate.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 // The clicked block's genomic span, used to clip the launched synteny view to
@@ -13,27 +17,14 @@ export interface RegionOfInterest {
   end: number
 }
 
-// Synteny-feature `mate` shape. Feature.get returns `unknown` for this
-// non-standard key, so the cast is centralized in one typed accessor rather
-// than repeated (and drifting) at each call site. Mirrors the LinearSyntenyRPC
-// SyntenyMate; `name`/`id` are only present when the source provides them.
-export interface SyntenyMate {
-  start: number
-  end: number
-  refName: string
-  assemblyName: string
-  name?: string
-  id?: string
-}
-
-export function getMate(feature: Feature) {
-  return feature.get('mate') as SyntenyMate
-}
-
 // Feature.get types the non-standard keys as `unknown`; narrow rather than cast.
 function stringField(feature: Feature, key: string) {
   const val = feature.get(key)
   return typeof val === 'string' ? val : undefined
+}
+
+export function getFeatureAssembly(feature: Feature) {
+  return stringField(feature, 'assemblyName')
 }
 
 // A synteny view can be launched against any assembly the track spans, i.e. one
@@ -62,24 +53,26 @@ function mateOffsetToGenomic(
   return strand === -1 ? mate.end - mateOffset : mate.start + mateOffset
 }
 
-// The two spans the launched view opens on. With a region of interest and a
-// CIGAR, both sides are narrowed to the visible slice of the alignment — the
-// feature axis directly, the mate axis by walking the CIGAR — otherwise the
-// whole block is used. Offsets past either end of the CIGAR are capped by
-// findPosInCigar, and a region starting left of the feature yields a negative
-// offset that breaks the walk immediately, so the result is always clipped to
-// the block without needing an explicit intersection.
+// The two spans one alignment contributes: its slice of the anchor axis and the
+// matching slice of its mate. With a region of interest and a CIGAR, both sides
+// are narrowed to the visible slice of the alignment — the feature axis
+// directly, the mate axis by walking the CIGAR — otherwise the whole block is
+// used. Offsets past either end of the CIGAR are capped by findPosInCigar, and a
+// region starting left of the feature yields a negative offset that breaks the
+// walk immediately, so the result is always clipped to the block without needing
+// an explicit intersection.
 function resolveSpans({
   feature,
+  mate,
   region,
 }: {
   feature: Feature
+  mate: SyntenyMate
   region: RegionOfInterest | undefined
 }) {
   const cigar = stringField(feature, 'CIGAR')
   const strand = feature.get('strand')
   const featStart = feature.get('start')
-  const mate = getMate(feature)
   let spans: {
     featStart: number
     featEnd: number
@@ -136,65 +129,95 @@ function paddedLocString({
   })
 }
 
-// Pure snapshot builder for the launched synteny view, mirroring
-// buildReadVsRefSpec — session mutation is the caller's (navToSynteny below), so
-// the coordinate math is testable without a session.
-export function buildSyntenyViewSpec({
-  feature,
-  windowSize,
-  trackId,
-  region,
-  horizontallyFlip,
-}: {
+export interface BuildSyntenyViewSpecArgs {
+  // One alignment per launched mate panel, all anchored on the same assembly and
+  // refName. A single feature is the pairwise launch; N features (the mates at
+  // one locus of an all-vs-all track) is the multi-way launch, and the panels
+  // are drawn in the order given.
+  features: Feature[]
+  // The assembly the anchor panel opens on. Passed rather than read off the
+  // feature: the launching view already knows it, and a feature whose
+  // `assemblyName` field is missing would otherwise silently produce a panel
+  // with no assembly at all.
+  anchorAssembly: string
   windowSize: number
   trackId: string
-  horizontallyFlip: boolean
-  feature: Feature
+  // Open a mate panel reversed when its alignment is on the minus strand, so its
+  // coordinates still run left to right alongside the anchor's.
+  flipReversedMates: boolean
   region?: RegionOfInterest
-}) {
-  const { featStart, featEnd, mateStart, mateEnd } = resolveSpans({
-    feature,
-    region,
+}
+
+// Pure snapshot builder for the launched synteny view, mirroring
+// buildReadVsRefSpec — session mutation is the caller's
+// (launchSyntenyViewForFeatures below), so the coordinate math is testable
+// without a session.
+export function buildSyntenyViewSpec({
+  features,
+  anchorAssembly,
+  windowSize,
+  trackId,
+  flipReversedMates,
+  region,
+}: BuildSyntenyViewSpecArgs): { init: LinearSyntenyViewInit } {
+  const anchor = features[0]
+  if (!anchor) {
+    throw new Error('No alignments to launch a synteny view on')
+  }
+  const resolved = features.map(feature => {
+    const mate = getMate(feature)
+    if (!mate) {
+      throw new Error('Alignment has no mate to launch a synteny view against')
+    }
+    return { feature, mate, spans: resolveSpans({ feature, mate, region }) }
   })
-  const mate = getMate(feature)
+
+  // Every panel is clipped to the same region of interest, so the anchor row
+  // spans the union of what the individual alignments resolved to — one mate's
+  // CIGAR can stop short of the region where another's covers it.
+  const anchorStart = Math.min(...resolved.map(r => r.spans.featStart))
+  const anchorEnd = Math.max(...resolved.map(r => r.spans.featEnd))
+
   return {
     init: {
       views: [
         {
-          assembly: stringField(feature, 'assemblyName'),
+          assembly: anchorAssembly,
           loc: paddedLocString({
-            refName: feature.get('refName'),
-            start: featStart,
-            end: featEnd,
+            refName: anchor.get('refName'),
+            start: anchorStart,
+            end: anchorEnd,
             windowSize,
           }),
         },
-        {
+        ...resolved.map(({ feature, mate, spans }) => ({
           assembly: mate.assemblyName,
           loc: paddedLocString({
             refName: mate.refName,
-            start: mateStart,
-            end: mateEnd,
+            start: spans.mateStart,
+            end: spans.mateEnd,
             windowSize,
-            reversed: horizontallyFlip,
+            reversed: flipReversedMates && feature.get('strand') === -1,
           }),
-        },
+        })),
       ],
-      tracks: [[trackId]],
+      // One synteny strip per gap between panels. The same track serves every
+      // level: the view passes each level's two assemblies down to the adapter,
+      // and an all-vs-all adapter resolves the pair from them.
+      tracks: resolved.map(() => [trackId]),
     },
   }
 }
 
-export function navToSynteny({
+export function launchSyntenyViewForFeatures({
   session,
   ...rest
-}: {
-  windowSize: number
-  trackId: string
-  horizontallyFlip: boolean
-  feature: Feature
+}: BuildSyntenyViewSpecArgs & {
   session: AbstractSessionModel
-  region?: RegionOfInterest
 }) {
-  session.addView('LinearSyntenyView', buildSyntenyViewSpec(rest))
+  launchSyntenyView({
+    session,
+    viewType: 'LinearSyntenyView',
+    ...buildSyntenyViewSpec(rest),
+  })
 }

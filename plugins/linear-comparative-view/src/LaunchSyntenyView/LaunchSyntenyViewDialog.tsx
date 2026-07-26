@@ -4,9 +4,9 @@ import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel } from '@mui/material'
 
-import { navToSynteny } from './util.ts'
+import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 
-import type { RegionOfInterest } from './util.ts'
+import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 const DEFAULT_WINDOW_SIZE = 1000
@@ -18,23 +18,29 @@ const useStyles = makeStyles()({
   },
 })
 
+// The pairwise launch: one clicked alignment, one target panel. Launching every
+// assembly a locus aligns to is the region-anchored flow instead — see
+// LaunchSyntenyViewForRegionDialog, reached from the rubberband — because that
+// one is about a locus rather than about the alignment under the cursor.
 export default function LaunchSyntenyViewDialog({
   session,
   region,
   feature,
+  anchorAssembly,
   trackId,
   handleClose,
 }: {
   session: AbstractSessionModel
   region?: RegionOfInterest
   feature: Feature
+  anchorAssembly: string
   trackId: string
   handleClose: () => void
 }) {
   const { classes } = useStyles()
   const inverted = feature.get('strand') === -1
   const hasCIGAR = !!feature.get('CIGAR')
-  const [horizontallyFlip, setHorizontallyFlip] = useState(inverted)
+  const [flipReversedMates, setFlipReversedMates] = useState(inverted)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
@@ -49,10 +55,11 @@ export default function LaunchSyntenyViewDialog({
       }}
       onSubmit={() => {
         if (windowSize !== undefined) {
-          navToSynteny({
-            feature,
+          launchSyntenyViewForFeatures({
+            features: [feature],
+            anchorAssembly,
             windowSize,
-            horizontallyFlip,
+            flipReversedMates,
             trackId,
             session,
             region: useRegionOfInterest ? region : undefined,
@@ -80,19 +87,21 @@ export default function LaunchSyntenyViewDialog({
           className={classes.formControl}
           control={
             <Checkbox
-              checked={horizontallyFlip}
+              checked={flipReversedMates}
               onChange={event => {
-                setHorizontallyFlip(event.target.checked)
+                setFlipReversedMates(event.target.checked)
               }}
             />
           }
-          label="Horizontally flip target (feature is inverted on the target — without flipping, the lower panel's coordinates will decrease left to right)"
+          label="Horizontally flip targets that are inverted (without flipping, an inverted panel's coordinates decrease left to right)"
         />
       ) : null}
       <NumberTextField
         label="Add window size in bp"
         defaultValue={DEFAULT_WINDOW_SIZE}
-        onValueChange={setWindowSize}
+        onValueChange={val => {
+          setWindowSize(val)
+        }}
         min={0}
         errorText="Must be a non-negative number"
       />

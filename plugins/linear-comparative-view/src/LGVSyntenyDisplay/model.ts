@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  copyFeatureInfo,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
@@ -19,40 +20,24 @@ import {
   getSortByMenuItem,
   linearAlignmentsDisplayStateModelFactory,
   pickColorOptions,
+  withContextMenuFeature,
 } from '@jbrowse/plugin-alignments'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import { canLaunchSyntenyForMate, getMate } from './components/util.ts'
+import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
+import { getMate } from '../syntenyMate.ts'
 import { resolveDisplayLodMode } from './lodMode.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LaunchSyntenyViewDialog = lazy(
-  () => import('./components/LaunchSyntenyViewDialog.tsx'),
+  () => import('../LaunchSyntenyView/LaunchSyntenyViewDialog.tsx'),
 )
-
-// The whole PAF row as JSON, minus the synthetic uniqueId. The clipboard util is
-// imported on click so it stays off the startup path.
-async function copyFeatureInfo(
-  session: AbstractSessionModel,
-  feature: Feature,
-) {
-  try {
-    const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
-    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
-    copy(JSON.stringify(rest, null, 4))
-    session.notify('Copied to clipboard', 'success')
-  } catch (e) {
-    console.error(e)
-    session.notifyError(`${e}`, e)
-  }
-}
 
 /**
  * #stateModel LGVSyntenyDisplay
@@ -214,37 +199,60 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           // `contextMenuFeature`, which arrives an RPC later: a right-click on a
           // CIGAR op otherwise opened a menu holding only its hit item, and the
           // feature items appeared afterwards (or, on a whole-block re-read,
-          // long afterwards). What actually needs the feature fetches it in its
-          // own onClick.
+          // long afterwards). What actually needs the feature resolves it in its
+          // own onClick — normally already in hand by then.
           const featureId = self.contextMenuFeatureId
           if (featureId !== undefined) {
-            // The visible block the user right-clicked in, which the launch
-            // dialog offers to clip the synteny view to. Snapshotted here rather
-            // than read in the onClick because closeContextMenu nulls it first,
-            // and taken from the click rather than searched for by refName: a
-            // feature abutting a region boundary overlaps two visible blocks,
-            // and only the cursor says which one it was drawn in.
-            const block = self.contextMenuBlock
-            items.push({
-              label: 'Open feature details',
-              icon: MenuOpenIcon,
-              onClick: () => {
-                void self.selectFeatureById(featureId)
+            const feature = self.contextMenuFeature
+            items.push(
+              {
+                label: 'Open feature details',
+                icon: MenuOpenIcon,
+                onClick: () => {
+                  withContextMenuFeature(self, featureId, feature, feat => {
+                    self.selectFeature(feat)
+                  })
+                },
               },
-            })
+              {
+                label: 'Copy info to clipboard',
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  withContextMenuFeature(self, featureId, feature, feat => {
+                    copyFeatureInfo(self, feat)
+                  })
+                },
+              },
+            )
             // The one item that can't be offered from the id alone: whether a
             // synteny view can open depends on the mate's assembly, which is
             // per-feature (a one-vs-all mate can be a PanSN sample that is no
             // declared assembly of the track). So it waits for the fetch rather
-            // than offering a view that would fail to open.
-            const feature = self.contextMenuFeature
+            // than offering a view that would fail to open — and sits last, so
+            // arriving late appends to the menu instead of shifting the items
+            // already under the cursor.
+            // The anchor panel opens on the view's own assembly, which is what
+            // the features were fetched against — more dependable than the
+            // feature's own `assemblyName` field, which not every adapter sets.
+            const anchorAssembly = (
+              getContainingView(self) as LinearGenomeViewModel
+            ).assemblyNames[0]
             if (
               feature &&
+              anchorAssembly !== undefined &&
               canLaunchSyntenyForMate(
                 getConf(getContainingTrack(self), 'assemblyNames'),
-                getMate(feature).assemblyName,
+                getMate(feature)?.assemblyName,
               )
             ) {
+              // The visible block the user right-clicked in, which the launch
+              // dialog offers to clip the synteny view to. Snapshotted here
+              // rather than read in the onClick because closeContextMenu nulls
+              // it first, and taken from the click rather than searched for by
+              // refName: a feature abutting a region boundary overlaps two
+              // visible blocks, and only the cursor says which one it was drawn
+              // in.
+              const block = self.contextMenuBlock
               items.push({
                 label: 'Launch synteny view for this position',
                 icon: CompareArrowsIcon,
@@ -258,21 +266,13 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                       trackId: getConf(getContainingTrack(self), 'trackId'),
                       handleClose,
                       session: getSession(self),
+                      anchorAssembly,
                       feature,
                     },
                   ])
                 },
               })
             }
-            items.push({
-              label: 'Copy info to clipboard',
-              icon: ContentCopyIcon,
-              onClick: () => {
-                void self.withFeatureById(featureId, feat => {
-                  void copyFeatureInfo(getSession(self), feat)
-                })
-              },
-            })
           }
           return items
         },

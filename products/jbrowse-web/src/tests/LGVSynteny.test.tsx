@@ -23,6 +23,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 50000 }
+const ALL_VS_ALL_TRACK_NAME = 'volvox all-vs-all (ins/volvox/del pangenome)'
 const opts = [{}, delay]
 
 test('nav to synteny from right click', async () => {
@@ -202,6 +203,62 @@ test('Show mismatches is a live layer on a synteny track', async () => {
     }, delay)
     await waitFor(async () => {
       expect(await pixels()).not.toBe(before)
+    }, delay)
+  })
+}, 60000)
+
+// The region-anchored launch, which is the one that produces a multi-panel
+// view. The alignment under the cursor answers "what does this block align
+// to"; a selected region answers "what aligns here at all", and on an
+// all-vs-all track that is several assemblies at once — one panel each, with a
+// synteny strip in every gap.
+test('launch a multi-panel synteny view from a region selection', async () => {
+  await mockConsoleWarn(async () => {
+    const { session, view, findByText } = await createView()
+
+    await view.navToLocString('ctgA:1..50,000')
+    const bp = (coord: number) => ({
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      index: 0,
+      offset: coord,
+      start: 0,
+      end: 50001,
+      coord,
+      reversed: false,
+    })
+    view.setOffsets(bp(10000), bp(20000))
+
+    // volvox has many synteny datasets, so the offer is a submenu naming each.
+    // volvox_all_vs_all is the one spanning three assemblies, i.e. the only one
+    // here that can fill more than a single target panel.
+    const item = view
+      .rubberBandMenuItems()
+      .find(f => 'label' in f && f.label === 'Linear synteny view of selection')
+    if (!item || !('subMenu' in item)) {
+      throw new Error('expected a submenu of synteny datasets')
+    }
+    const entry = item.subMenu.find(
+      f => 'label' in f && f.label === ALL_VS_ALL_TRACK_NAME,
+    )
+    if (!entry || !('onClick' in entry)) {
+      throw new Error('expected the all-vs-all dataset in the submenu')
+    }
+    entry.onClick()
+
+    // every assembly the region aligns to arrives checked, so the payoff is one
+    // click away rather than opt-in per panel
+    await findByText('volvox_ins', ...opts)
+    await findByText('volvox_del', ...opts)
+    fireEvent.click(await findByText('Submit'))
+
+    await waitFor(() => {
+      const v = session.views[1] as LinearSyntenyViewModel | undefined
+      expect(v?.views.map(f => f.assemblyNames[0])).toEqual([
+        'volvox',
+        'volvox_ins',
+        'volvox_del',
+      ])
     }, delay)
   })
 }, 60000)
