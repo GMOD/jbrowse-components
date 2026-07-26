@@ -15,6 +15,11 @@
 // Module files (those whose Slang source begins with `module <name>;`) are
 // treated as imports only. If a module declares `//! export-consts: A, B`
 // it emits a `<base>.generated.ts` with just those constant values.
+//
+// Two directives write a second artifact at a repo-relative path, for a package
+// that can't import the plugin owning the shader:
+//   //! layout-out: <path>   instance stride + field offsets only
+//   //! consts-out: <path>   the `export-consts` values only
 import { execFileSync, spawnSync } from 'node:child_process'
 import {
   chmodSync,
@@ -30,11 +35,21 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import { assertVertexInputsMatch } from './shader-codegen/assertVertexInputs.ts'
 import {
+  emitConsts,
   emitInterface,
   emitLayoutOnly,
   emitShaderStrings,
+  instanceAttrsFor,
 } from './shader-codegen/codegen.ts'
+import {
+  parseConstsOut,
+  parseExportedConsts,
+  parseLayoutOut,
+  parseTargets,
+  parseVertsPerInstance,
+} from './shader-codegen/parseDirectives.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
 
 const flagValue = (name: string) =>
@@ -192,99 +207,38 @@ function walk(dir: string, out: string[] = []) {
   return out
 }
 
-function parseLayoutOut(source: string) {
-  const match = /^\/\/!\s*layout-out:\s*(\S+)/m.exec(source)
-  return match ? match[1]! : undefined
+// A module declares `module <name>;` and has no entry points — it is compiled
+// only as an import. The `[shader(` probe strips line comments first: several
+// modules discuss the passes that import them, and a mention in prose would
+// otherwise make the driver try to compile a module as a standalone shader.
+// Write a `//! layout-out` / `//! consts-out` artifact at a repo-relative path.
+// Both exist so a package that can't import the owning plugin still gets its
+// numbers from the shader rather than a hand-kept SYNC copy.
+function writeOut(relPath: string, contents: string) {
+  writeFileSync(path.join(PROJECT_ROOT, relPath), contents)
+  console.log(`  ok: ${relPath}`)
 }
 
-// Resolves the value of `(public)? static const uint VERTS_PER_INSTANCE`
-// from a .slang source. Slang's reflection JSON doesn't expose module-scope
-// constants, so we parse them out of the source. Other static-const ints in
-// the same file are resolved as identifiers in the expression (`16u * 6` etc),
-// matching how the shader itself sees them.
-function parseVertsPerInstance(source: string) {
-  const constRe =
-    /^\s*(?:public\s+)?static\s+const\s+uint\s+(\w+)\s*=\s*([^;]+);/gm
-  const decls = new Map<string, string>()
-  for (let m = constRe.exec(source); m; m = constRe.exec(source)) {
-    decls.set(m[1]!, m[2]!.trim())
+function writeConstsOut(
+  source: string,
+  base: string,
+  exportedConsts: Record<string, number> | undefined,
+) {
+  const constsOut = parseConstsOut(source)
+  if (!constsOut) {
+    return
   }
-  const expr = decls.get('VERTS_PER_INSTANCE')
-  if (!expr) {
-    return undefined
-  }
-  const evaluating = new Set<string>()
-  const evalExpr = (raw: string): number => {
-    // Strip Slang's `u` / `U` integer suffix first so `1u` doesn't leave a
-    // stray `u` that the identifier pass would fail to resolve.
-    const stripped = raw.replaceAll(/(\d+)[uU]\b/g, '$1')
-    // Replace identifier references with their resolved numeric values.
-    const cleaned = stripped.replaceAll(/[A-Za-z_]\w*/g, name => {
-      if (evaluating.has(name)) {
-        throw new Error(`circular static-const reference: ${name}`)
-      }
-      const ref = decls.get(name)
-      if (ref === undefined) {
-        throw new Error(
-          `static const VERTS_PER_INSTANCE references unknown identifier ${name}`,
-        )
-      }
-      evaluating.add(name)
-      const value = evalExpr(ref)
-      evaluating.delete(name)
-      return `(${value})`
-    })
-    if (!/^[\d\s+\-*/()]+$/.test(cleaned)) {
-      throw new Error(
-        `static const VERTS_PER_INSTANCE must be a positive integer ` +
-          `arithmetic expression; got: ${raw} (post-substitution: ${cleaned})`,
-      )
-    }
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    return new Function(`"use strict"; return (${cleaned})`)() as number
-  }
-  const n = evalExpr(expr)
-  if (!Number.isInteger(n) || n <= 0) {
+  if (!exportedConsts) {
     throw new Error(
-      `static const VERTS_PER_INSTANCE must be a positive integer; got ${n}`,
+      `//! consts-out needs a //! export-consts directive naming what to write`,
     )
   }
-  return n
-}
-
-function parseExportedConsts(
-  source: string,
-): Record<string, number> | undefined {
-  const directive = /^\/\/!\s*export-consts:\s*(.+)/m.exec(source)
-  if (!directive) {
-    return undefined
-  }
-  const names = new Set(directive[1]!.split(',').map(s => s.trim()))
-  const constRe =
-    /^\s*(?:public\s+)?static\s+const\s+(?:float|int|uint)\s+(\w+)\s*=\s*([^;]+);/gm
-  const result: Record<string, number> = {}
-  for (let m = constRe.exec(source); m; m = constRe.exec(source)) {
-    const name = m[1]!
-    if (names.has(name)) {
-      result[name] = Number.parseFloat(m[2]!.trim())
-    }
-  }
-  return Object.keys(result).length ? result : undefined
-}
-
-function parseTargets(source: string): ('wgsl' | 'glsl')[] {
-  const match = /^\/\/!\s*targets:\s*([a-zA-Z0-9,\t ]+)/m.exec(source)
-  if (!match) {
-    return ['wgsl', 'glsl']
-  }
-  return match[1]!
-    .split(',')
-    .map(s => s.trim())
-    .filter((s): s is 'wgsl' | 'glsl' => s === 'wgsl' || s === 'glsl')
+  writeOut(constsOut, emitConsts(base, exportedConsts))
 }
 
 function isModuleFile(source: string) {
-  return /^\s*module\s+\w+\s*;/m.test(source) && !source.includes('[shader(')
+  const code = source.replaceAll(/\/\/[^\n]*/g, '')
+  return /^\s*module\s+\w+\s*;/m.test(code) && !code.includes('[shader(')
 }
 
 function findVertexStructMeta(reflection: {
@@ -508,6 +462,16 @@ function compileOne(slangPath: string) {
       }
     }
 
+    // Fail here, before writing, if slangc's `@location` assignment disagrees
+    // with the tight-packed layout the generated packers assume.
+    const attrs = instanceAttrsFor(reflection)
+    if (attrs) {
+      assertVertexInputsMatch(path.relative(PROJECT_ROOT, slangPath), attrs, {
+        wgsl,
+        glslVertex,
+      })
+    }
+
     const codegenInputs = {
       baseName: base,
       reflection,
@@ -527,10 +491,9 @@ function compileOne(slangPath: string) {
 
     const layoutOut = parseLayoutOut(source)
     if (layoutOut) {
-      const layoutPath = path.join(PROJECT_ROOT, layoutOut)
-      writeFileSync(layoutPath, emitLayoutOnly({ baseName: base, reflection }))
-      console.log(`  ok: ${layoutOut}`)
+      writeOut(layoutOut, emitLayoutOnly({ baseName: base, reflection }))
     }
+    writeConstsOut(source, base, codegenInputs.exportedConsts)
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
@@ -544,21 +507,13 @@ function main() {
     const source = readFileSync(p, 'utf8')
     if (isModuleFile(source)) {
       const exportedConsts = parseExportedConsts(source)
+      const base = path.basename(p, '.slang')
       if (exportedConsts) {
-        const dir = path.dirname(p)
-        const base = path.basename(p, '.slang')
-        const generatedPath = path.join(dir, `${base}.generated.ts`)
-        const lines = [
-          `// AUTO-GENERATED by packages/shader-tools/src/shader-codegen from ${base}.slang.`,
-          `// Do not edit. Run \`pnpm gen:shaders\` to regenerate.`,
-          ``,
-        ]
-        for (const [name, value] of Object.entries(exportedConsts)) {
-          lines.push(`export const ${name} = ${value}`, ``)
-        }
-        writeFileSync(generatedPath, lines.join('\n'))
+        const generatedPath = path.join(path.dirname(p), `${base}.generated.ts`)
+        writeFileSync(generatedPath, emitConsts(base, exportedConsts))
         console.log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
       }
+      writeConstsOut(source, base, exportedConsts)
       continue
     }
     console.log(p.replace(`${PROJECT_ROOT}/`, ''))

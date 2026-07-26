@@ -44,6 +44,30 @@ describe('vulkanGlslToWebgl2', () => {
     )
   })
 
+  test('rewrites two initializers in one function', () => {
+    const src =
+      '#version 460\nvoid main() { Foo_0 x = { 1.0 }; Bar_0 y = { 2.0, 3.0 }; }\n'
+    const out = vulkanGlslToWebgl2(src, 'vertex')
+    expect(out).toContain('Foo_0 x = Foo_0(1.0);')
+    expect(out).toContain('Bar_0 y = Bar_0(2.0, 3.0);')
+  })
+
+  // The old `[^}]*?` form stopped at the first `}`, silently emitting truncated
+  // GLSL. Failing the build is the only safe answer — the inner struct's
+  // constructor name isn't recoverable from the initializer.
+  test('throws on a nested brace initializer rather than truncating', () => {
+    const src =
+      '#version 460\nvoid main() { Foo_0 x = { { 1.0, 2.0 }, 3.0 }; }\n'
+    expect(() => vulkanGlslToWebgl2(src, 'vertex')).toThrow(/nested brace/)
+  })
+
+  test('leaves a struct definition alone', () => {
+    const src = '#version 460\nstruct Foo_0 { float a; };\nvoid main() { }\n'
+    expect(vulkanGlslToWebgl2(src, 'vertex')).toContain(
+      'struct Foo_0 { float a; };',
+    )
+  })
+
   test('renames the mangled uniform block to Uniforms', () => {
     const src =
       '#version 460\nlayout(std140) uniform block_MyUniforms_0 { float a; } u;\n'

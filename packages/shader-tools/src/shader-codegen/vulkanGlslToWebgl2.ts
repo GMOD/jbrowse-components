@@ -65,6 +65,53 @@ function renameSamplers(source: string, names: readonly string[]) {
   return out
 }
 
+// GLSL 4.20+ / HLSL brace initializers aren't legal in GLSL ES 3.00 — rewrite
+// `Struct_0 v = { a, b, c };` to `Struct_0 v = Struct_0(a, b, c);`. Slang emits
+// these when a function takes a local struct by value.
+//
+// Scans for the matching close brace rather than `[^}]*?`, which stopped at the
+// FIRST `}` and would have silently emitted truncated, invalid GLSL for a
+// nested initializer. A nested one can't be rewritten anyway (the inner struct's
+// type name isn't recoverable from the initializer), so it throws — a build
+// failure naming the construct beats a shader that fails to link at runtime on
+// WebGL2 only.
+function rewriteBraceInitializers(source: string) {
+  const declRe = /\b(\w+_\d+)\s+(\w+)\s*=\s*\{/g
+  let out = ''
+  let cursor = 0
+  for (let m = declRe.exec(source); m; m = declRe.exec(source)) {
+    const open = m.index + m[0].length - 1
+    let depth = 1
+    let i = open + 1
+    for (; i < source.length && depth > 0; i++) {
+      if (source[i] === '{') {
+        depth++
+      } else if (source[i] === '}') {
+        depth--
+      }
+    }
+    const body = source.slice(open + 1, i - 1)
+    const rest = source.slice(i)
+    // Only a `... } ;` declaration is an initializer; anything else (a
+    // function body, a struct definition) is left alone.
+    if (depth !== 0 || !/^\s*;/.test(rest)) {
+      continue
+    }
+    if (body.includes('{')) {
+      throw new Error(
+        `nested brace initializer in slangc's GLSL output ` +
+          `(${m[1]} ${m[2]}) — the GLSL ES 3.00 rewrite can't name the inner ` +
+          `struct's constructor; teach vulkanGlslToWebgl2 to handle it`,
+      )
+    }
+    const semi = i + rest.indexOf(';') + 1
+    out += `${source.slice(cursor, m.index)}${m[1]} ${m[2]} = ${m[1]}(${body.trim()});`
+    cursor = semi
+    declRe.lastIndex = semi
+  }
+  return out + source.slice(cursor)
+}
+
 export function vulkanGlslToWebgl2(
   source: string,
   stage: 'vertex' | 'fragment',
@@ -95,13 +142,7 @@ export function vulkanGlslToWebgl2(
       ? out.replaceAll(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ')
       : out.replaceAll(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
 
-  // GLSL 4.20+ / HLSL brace initializers aren't legal in GLSL ES 3.00 — rewrite
-  // `Struct_0 v = { a, b, c };` to `Struct_0 v = Struct_0(a, b, c);`. Slang
-  // emits these when a function takes a local struct by value.
-  out = out.replaceAll(
-    /\b(\w+_\d+)\s+(\w+)\s*=\s*\{\s*([^}]*?)\s*\}\s*;/g,
-    (_, type, name, fields) => `${type} ${name} = ${type}(${fields.trim()});`,
-  )
+  out = rewriteBraceInitializers(out)
 
   if (renames.uniformBlockName) {
     out = renameUniformBlock(out, renames.uniformBlockName)

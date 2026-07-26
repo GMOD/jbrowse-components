@@ -170,6 +170,45 @@ function toStringLiteral(s: string) {
   return JSON.stringify(s)
 }
 
+// The per-instance vertex buffer layout: fields in declaration order, packed
+// tight (every Slang scalar/vector field is a multiple of 4 bytes, which is
+// also the alignment both backends require of a vertex attribute).
+//
+// This is the codegen's own model of the layout, NOT something slangc reflects
+// — reflection gives byte offsets for uniform blocks, not for vertex-input
+// structs. `assertVertexInputsMatch` checks the model against the shader code
+// slangc actually emitted, so the two can't silently disagree.
+export interface InstanceAttr {
+  name: string
+  offsetBytes: number
+  size: number
+  type: SlangType
+}
+export function instanceAttrs(vs: StructType): InstanceAttr[] {
+  let cursor = 0
+  return vs.fields.map(f => {
+    const entry = {
+      name: f.name,
+      offsetBytes: cursor,
+      size: sizeOf(f.type),
+      type: f.type,
+    }
+    cursor += sizeOf(f.type)
+    return entry
+  })
+}
+// The instance layout for a whole reflection, or undefined for a shader with no
+// instance struct (compute kernels). The driver's build-time cross-check reads
+// the same list `emitInterface` emits from.
+export function instanceAttrsFor(reflection: CodegenInputs['reflection']) {
+  const vs = findVertexStruct(reflection)
+  return vs ? instanceAttrs(vs) : undefined
+}
+export function instanceStride(attrs: InstanceAttr[]) {
+  const last = attrs.at(-1)
+  return last ? last.offsetBytes + last.size : 0
+}
+
 function componentType(t: SlangType): 'float' | 'uint' | 'int' {
   const s = t.kind === 'scalar' ? t.scalarType : t.elementType.scalarType
   if (s === 'uint32') {
@@ -393,18 +432,8 @@ export function emitInterface(inputs: CodegenInputs) {
   }
 
   if (vs) {
-    let cursor = 0
-    const attrs = vs.fields.map(f => {
-      const entry = {
-        name: f.name,
-        offsetBytes: cursor,
-        size: sizeOf(f.type),
-        type: f.type,
-      }
-      cursor += sizeOf(f.type)
-      return entry
-    })
-    const stride = cursor
+    const attrs = instanceAttrs(vs)
+    const stride = instanceStride(attrs)
 
     lines.push(
       `export const INSTANCE_STRIDE_BYTES = ${stride}`,
@@ -506,6 +535,19 @@ export function emitInterface(inputs: CodegenInputs) {
   return lines.join('\n')
 }
 
+// Emits only the `//! export-consts` values. Used for a module file (which has
+// no entry points, so there is nothing else to emit) and for the `//!
+// consts-out` copy written into a package that can't import the owning plugin.
+export function emitConsts(baseName: string, consts: Record<string, number>) {
+  return [
+    ...header(baseName),
+    ...Object.entries(consts).flatMap(([name, value]) => [
+      `export const ${name} = ${value}`,
+      '',
+    ]),
+  ].join('\n')
+}
+
 // Emits only the instance buffer layout constants (stride + field offsets) with
 // no shader source strings, GL attributes, or typed packers. Used to write a
 // layout-only file into a package that can't import from the plugin that owns
@@ -523,13 +565,8 @@ export function emitLayoutOnly(
 
   const vs = findVertexStruct(reflection)
   if (vs) {
-    let cursor = 0
-    const attrs = vs.fields.map(f => {
-      const entry = { name: f.name, offsetBytes: cursor, size: sizeOf(f.type) }
-      cursor += sizeOf(f.type)
-      return entry
-    })
-    const stride = cursor
+    const attrs = instanceAttrs(vs)
+    const stride = instanceStride(attrs)
 
     lines.push(
       `export const INSTANCE_STRIDE_BYTES = ${stride}`,

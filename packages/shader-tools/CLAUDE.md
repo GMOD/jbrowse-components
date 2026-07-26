@@ -15,6 +15,21 @@ shaders are up to date" step (`gen:shaders` then `git diff` on
 - `src/shader-codegen/codegen.ts` — pure transforms: reflection JSON + shader
   strings → the typed `.generated.ts` module (stride, field offsets, typed
   packer, `GL_ATTRIBUTES`). Unit-tested in `codegen.test.ts`.
+- `src/shader-codegen/assertVertexInputs.ts` — build-time cross-check that
+  slangc's `@location` assignment matches the tight-packed instance layout the
+  generated `GL_ATTRIBUTES` / `FIELD_OFFSET_F32` / packers assume. Reflection
+  gives no byte offsets for a vertex-input struct, so that packing is the
+  codegen's own assumption; this fails `gen:shaders` rather than letting a
+  per-backend mispack ship. By name, not positionally — slangc drops an input
+  the shader body never reads (line/chevron share one buffer). Unit-tested in
+  `assertVertexInputs.test.ts`.
+- `src/shader-codegen/parseDirectives.ts` — the `//!` directives (`targets` /
+  `export-consts` / `layout-out` / `consts-out`) and `VERTS_PER_INSTANCE`, read
+  out of the `.slang` text because slangc's reflection doesn't expose
+  module-scope constants. One constant-expression evaluator serves both const
+  paths, and an unresolvable expression / unknown const name / unknown target is
+  a build error — each used to be swallowed (`NaN`, a missing export, a silently
+  dropped backend). Unit-tested in `parseDirectives.test.ts`.
 - `src/shader-codegen/vulkanGlslToWebgl2.ts` — Vulkan-GLSL → WebGL2-GLSL fixups.
   Unit-tested in `vulkanGlslToWebgl2.test.ts`.
 
