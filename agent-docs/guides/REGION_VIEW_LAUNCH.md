@@ -227,9 +227,9 @@ curl -s https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomevi
 md5sum ~/src/jb2plugins/jbrowse-plugin-graphgenomeview/dist/*.esm.js   # vs the hosted one
 ```
 
-As of 2026-07-26 the hosted bundle carries all four launch labels and both
-halves of the hover sync, and matches the plugin's local `dist/`. What it does
-**not** carry is the widest-block fix from convention 6 — that is uncommitted in
-the plugin repo and needs `scripts/betabuild.sh` before it reaches anyone. No
-committed figure depends on it, since the affected menu item needs a
-multi-region view.
+As of 2026-07-26 the hosted bundle carries all four launch labels, both halves of
+the hover sync, and the convention-6 fix (plugin `3146de4`, published by
+`scripts/betabuild.sh`, entry md5 `0ce050e42b363d281fbc217f6afbab54`). The script
+ends by downloading what the CDN actually serves and diffing it against what it
+built, which is the check worth trusting — an S3 write alone left the edge
+serving the old entry point for 8+ hours once.
