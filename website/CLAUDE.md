@@ -382,6 +382,40 @@ indistinguishable as a thumbnail. Pick, per pipeline, the projection the others
 _can't_ produce (for Cactus, the HAL's base-level MAF); that makes the picture
 and the capability distinct in one move.
 
+## Tutorial card thumbnails (`static/img/tutorial-thumbs/`)
+
+`gen-tutorial-thumbs.ts` crops each tutorial landing-page card from a figure
+that page embeds, so a card can't drift from its tutorial. **Every card is
+managed there — no hand-made thumbs.** The ones that predated the generator were
+full-window captures scaled to card size, mostly illegible app chrome, and one
+was of a window (`chr:1,000,000..1,010,000`) no spec renders any more, so
+nothing could regenerate it. A page with no figure to derive from
+(`cli_desktop`, `embedding_examples`, which links out to the Storybook) takes
+the chromeless card via `NO_THUMB` in `docs/tutorials/index.astro` rather than a
+stand-in image.
+
+`--check` runs in `push.yml`. It is not optional bookkeeping: figures churn hard
+and nothing else notices when a regenerated figure leaves its card behind — four
+cards were stale against figures recommitted days later before that gate
+existed. A byte-different thumb after a regen is that, not encoder drift; check
+`git log -1 -- <src figure>` against the thumb before reaching for a version
+explanation.
+
+Framing, in `band`/`xband` fractions so a re-render of the same layout stays
+framed:
+
+- **Frame past baked-in callouts.** Several figures carry annotation boxes; a
+  crop through one leaves a clipped sentence fragment on the card. LD's triangle
+  starts at `xband: [0.28, 1]` for exactly this reason, and where a tutorial has
+  a clean alternative figure (methylation, all-vs-all) the card takes that
+  instead.
+- **The per-row "No tracks active / Open track selector" block is horizontally
+  centered**, so a left-third `xband` frames a synteny stack's ribbons and
+  genome labels without it. (Fixing the figures themselves is
+  `collapseEmptyRows` on the spec — see `LinearSyntenyView/types.ts`.)
+- `position: 'left'` whenever the figure has row labels; the strain/sample names
+  are what make a matrix card readable.
+
 ## Newsletter
 
 Subscription form (`src/components/NewsletterSignup.tsx`) calls the AWS Lambda

@@ -154,6 +154,11 @@ jobs:
           website/scripts/generate-cli-doc.ts --check
       - name: Check gallery links are up to date
         run: node website/scripts/gen-gallery-links.ts --check
+      # Tutorial cards are cropped from the figures the tutorials embed, and
+      # nothing regenerates them on a figure change. Four had drifted from
+      # figures recommitted days later before this gate existed.
+      - name: Check tutorial card thumbnails are up to date
+        run: node website/scripts/gen-tutorial-thumbs.ts --check
       # Round-trips every figure's jbrowse:// link through Desktop's
       # parseProtocolUrl and app-core's parseSessionSpecUrl — three modules only
       # unit-tested apart — and checks the committed list of spec fields with no

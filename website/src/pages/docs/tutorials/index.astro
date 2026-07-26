@@ -111,10 +111,14 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
   .filter(group => group.items.length > 0)
 
 // Pages with no generated thumbnail render a compact chromeless card instead of
-// a broken image. Only the text-only CLI walkthrough has none; every other
-// tutorial has a thumb under static/img/tutorial-thumbs/ (managed ones in
-// gen-tutorial-thumbs.ts).
-const NO_THUMB = new Set(['cli_desktop'])
+// a broken image. Every other card's thumb is generated from a figure that page
+// embeds (gen-tutorial-thumbs.ts); there are no hand-made ones, which is why a
+// page with no figure to derive from goes here rather than getting a stand-in.
+// - cli_desktop is the text-only CLI walkthrough.
+// - embedding_examples links out to the Storybook. Nothing in the repo is a
+//   capture of that site, and any doc figure would be a picture of something
+//   else.
+const NO_THUMB = new Set(['cli_desktop', 'embedding_examples'])
 const HAS_THUMB = new Set(
   tutorials.map(t => t.key).filter(k => !NO_THUMB.has(k)),
 )

@@ -11,9 +11,18 @@ import sharp from 'sharp'
 // top-crop isn't the flattering part. Prefer a clean render as the source — the
 // card is a gallery surface, so avoid figures carrying hand-added callout paint.
 //
-// Only keys listed here are managed: the script regenerates exactly these and
-// leaves any other on-disk thumb alone (reported as unmanaged). `--check` fails
-// if a managed thumb is stale, mirroring gen:gallery-links-check.
+// Every card is managed here — there are no hand-made thumbs left. The ones
+// this replaced were full-window captures scaled to card size, which read as
+// unlegible app chrome, and one (pangenome_ecoli) was of a window no spec
+// renders any more, so nothing could regenerate it. A tutorial with no figure to
+// derive from gets the chromeless card instead (NO_THUMB in
+// docs/tutorials/index.astro), not a stand-in image.
+//
+// The script regenerates exactly the keys listed here and leaves any other
+// on-disk thumb alone (reported as unmanaged). `--check` fails if a managed thumb
+// is stale and runs in push.yml beside gen-gallery-links --check: figures churn
+// hard, and nothing else notices when a regenerated figure leaves its card
+// behind — four cards had silently drifted before that gate existed.
 
 interface ThumbSpec {
   // Source figure under static/img (the PNG the tutorial embeds).
@@ -33,9 +42,126 @@ interface ThumbSpec {
 }
 
 const THUMB_SPECS: Record<string, ThumbSpec> = {
+  quickstart_web: {
+    // volvox alignments, the first real track the walkthrough loads
+    src: 'volvox_alignments.png',
+    band: [0.22, 0.78],
+  },
+  quickstart_desktop: {
+    // The Desktop landing screen. Every other figure on the page is an empty
+    // volvox view or a dialog over one — the page walks through opening data, so
+    // its captures are mid-flow; the front door is the one frame that reads as
+    // "this is Desktop" on a card.
+    src: 'desktop-landing.png',
+    band: [0, 0.5],
+    position: 'center',
+  },
+  display_settings: {
+    src: 'display_settings_url_snapshot.png',
+    band: [0.3, 1],
+  },
+  embed_linear_genome_view: {
+    src: 'embed_linear_genome_view/final.png',
+    band: [0.06, 0.56],
+  },
   analyze_trio: {
     src: 'trio-matrix-phased-clean.png',
-    band: [0.25, 0.5875],
+    band: [0.42, 0.93],
+    position: 'left',
+  },
+  rnaseq: {
+    // sashimi arcs over the junction reads
+    src: 'rnaseq/basic.png',
+    band: [0.3, 1],
+  },
+  methylation: {
+    // hg002 5mC at SNRPN. Not alignments/modifications2.png, which carries
+    // hand-added callout boxes — the card is a gallery surface.
+    src: 'methylation/hg002_snrpn_combined.png',
+    band: [0.25, 1],
+  },
+  bisulfite: {
+    // per-context Arabidopsis WGBS: CG/CHG/CHH stacked
+    src: 'methylation/arabidopsis_wgbs_contexts.png',
+    band: [0.22, 1],
+    position: 'left',
+  },
+  chromhmm: {
+    // the 127-epigenome state heatmap, not the gene lane above it
+    src: 'chromhmm.png',
+    band: [0.32, 1],
+    position: 'left',
+  },
+  scatac_pseudobulk: {
+    src: 'gallery/scatac_catlas.png',
+    band: [0.25, 1],
+    position: 'left',
+  },
+  linkage_disequilibrium: {
+    // The LD triangle, starting past the figure's callout box at its left edge.
+    src: 'ld/lct_lactase.png',
+    band: [0.52, 1],
+    xband: [0.28, 1],
+    position: 'left',
+  },
+  bxd_qtl: {
+    // the red/blue haplotype painting under the QTL scan
+    src: 'qtl/bxd_overview.png',
+    band: [0.38, 1],
+    position: 'left',
+  },
+  population_genomics: {
+    src: 'popgen/fst_in2lt_2L.png',
+    band: [0.25, 1],
+  },
+  sv_multisamples: {
+    src: 'multisv.png',
+    band: [0.3, 1],
+    position: 'left',
+  },
+  sv_visualization_cgiab: {
+    // depth over BAF genome-wide; the translocation split view is the gallery
+    // card, so the tutorial card takes the other half of the tutorial
+    src: 'sv_cgiab/cnv_depth_baf.png',
+    band: [0.25, 1],
+  },
+  protein_structure: {
+    // The structure itself, in the right-hand panel. Framing the whole panel
+    // lands on its sequence-alignment table and a hover tooltip; the folded
+    // ribbon is the one card in the set that isn't a genome browser.
+    src: 'protein/connected.png',
+    band: [0.48, 1],
+    xband: [0.56, 0.9],
+  },
+  synteny_visualization: {
+    // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
+    src: 'sv_synteny/linear_synteny_genes.png',
+    band: [0.2, 1],
+  },
+  multiway_synteny: {
+    // Left third only: the per-row "No tracks active / Open track selector"
+    // blocks are horizontally centered, so a left frame gets the ribbons and the
+    // genome labels without them.
+    src: 'multiway_synteny/grape_peach_cacao.png',
+    band: [0.14, 0.545],
+    xband: [0, 0.36],
+  },
+  allvsall_synteny: {
+    // The five-strain stack, left third (see multiway_synteny above). Both
+    // one-vs-all figures carry a baked-in callout box, and the whole-genome one
+    // is this tutorial's gallery card anyway.
+    src: 'multiway_synteny/ecoli_pangenome.png',
+    band: [0.12, 0.435],
+    xband: [0, 0.36],
+  },
+  pangenome_ecoli: {
+    // The pggb genotype matrix, framed like the Minigraph-Cactus card below so
+    // the two pipelines' cards differ by their projection, not their framing.
+    // The hand-made thumb it replaces was a full-window capture of a window
+    // (chr:1,000,000..1,010,000) no spec renders any more, so nothing could
+    // regenerate it.
+    src: 'pangenome/pangenome_variants.png',
+    band: [0.4, 0.7],
     position: 'left',
   },
   genomes_synteny: {
@@ -54,14 +180,17 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.24, 1],
     position: 'left',
   },
-  // The Minigraph-Cactus pangenome-variant matrix on K12 (teal/red/yellow
-  // genotype blocks). A clean render, unlike the odgi viz raster's baked-in
-  // region markers; it echoes the ecoli card on purpose, since the two
-  // tutorials build the same four-strain demo two ways. Frame the matrix,
-  // dropping the app header and gene lane.
+  // The HAL projected onto K12 as a MAF: the coverage band and one colored row
+  // per strain, under the K12 gene lane. It used to be this tutorial's variant
+  // matrix, deliberately echoing the pggb card — but the two cards then read as
+  // the same genotype grid, and the base-level MAF is the projection only the
+  // Cactus pipeline has. Frame the gene lane down through the strain rows, left
+  // half only so their labels stay in.
   pangenome_cactus: {
-    src: 'pangenome_cactus/variant_matrix.png',
-    band: [0.48, 0.66],
+    src: 'pangenome_cactus/maf.png',
+    band: [0.4, 0.98],
+    xband: [0, 0.47],
+    position: 'left',
   },
   // The genome-wide TCGA-BRCA CNV cohort matrix. The lower half carries
   // hand-added gene callouts, so frame the clean heatmap band above them.
