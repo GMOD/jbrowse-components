@@ -48,7 +48,11 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   const [paste, setPaste] = useState('')
   const { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel } =
     useClusterSamplingOptions()
-  const [clusterMethod, setClusterMethod] = useState('single')
+  // 'average' (UPGMA) is what the built-in "Run clustering" uses — @gmod/hclust
+  // is average-linkage only, equivalent to R's hclust(method="average") — so the
+  // default here reproduces it rather than quietly returning a different tree
+  // from the same dialog. Same reasoning as the variants dialog.
+  const [clusterMethod, setClusterMethod] = useState('average')
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const shouldFetch = view.initialized && !!model.sourcesWithoutLayout.length
@@ -157,6 +161,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
                 <Typography variant="h6">Advanced options</Typography>
                 <RadioGroup>
                   {Object.entries({
+                    average: 'Average (UPGMA, matches "Run clustering")',
                     single: 'Single',
                     complete: 'Complete',
                   }).map(([key, val]) => (
