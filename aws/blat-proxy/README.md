@@ -21,8 +21,20 @@ endpoint.
 
 `POST /blat` — body is the same `application/x-www-form-urlencoded` hgBlat body
 the plugin builds. Returns hgBlat's JSON, a `429` when the shared key's budget
-says wait (see below), or a JSON error on failure. `OPTIONS /blat` — CORS
-preflight.
+says wait (see below), or a JSON error on failure.
+
+`POST /ispcr` — the same for hgPcr (In-Silico PCR): the plugin's `wp_f`/`wp_r`
+body, relayed with only the apiKey overwritten. Two things differ from `/blat`,
+both because hgPcr has no JSON mode: nothing forces `output=json`, and the
+response comes back as `text/html`, because hgPcr's **result** is an HTML page
+of FASTA amplicons. A "No matches" page is a 200, not an error — an empty
+result is an answer. Only an actual Cloudflare challenge is a 502.
+
+`OPTIONS` on either path — CORS preflight.
+
+Both routes are one Lambda claiming one budget, deliberately. UCSC's cap is on
+the key across the Genome Browser CGIs, not per CGI, so a second deployment for
+hgPcr would spend twice the cap on one key.
 
 ## Deploy
 

@@ -7,13 +7,9 @@ import {
   reserveUpstreamCall,
 } from './budget.ts'
 import { dynamoStore } from './dynamoStore.ts'
-import {
-  DEFAULT_UPSTREAM_URL,
-  buildUpstreamBody,
-  looksLikeHtml,
-  validateClientBody,
-} from './proxy.ts'
+import { BLAT_ROUTE, routeForPath } from './routes.ts'
 
+import type { ProxyRoute } from './routes.ts'
 import type { BlatStore } from './store.ts'
 import type {
   APIGatewayProxyEventV2,
@@ -38,12 +34,18 @@ function json(
   }
 }
 
-function blatJson(body: string, cache: 'hit' | 'miss'): APIGatewayProxyResultV2 {
+// hgBlat answers JSON and hgPcr answers an HTML page of FASTA amplicons, so the
+// content type is the route's, not a constant
+function upstreamBody(
+  body: string,
+  route: ProxyRoute,
+  cache: 'hit' | 'miss',
+): APIGatewayProxyResultV2 {
   return {
     statusCode: 200,
     headers: {
       ...corsHeaders,
-      'Content-Type': 'application/json',
+      'Content-Type': route.contentType,
       'X-Blat-Cache': cache,
     },
     body,
@@ -67,29 +69,39 @@ function storeFromEnv() {
 }
 
 /**
- * Serves one validated BLAT query, spending the shared key's budget only when
- * it has to.
+ * Serves one validated query against a UCSC CGI, spending the shared key's
+ * budget only when it has to.
  *
  * `store` is what makes the proxy safe to expose: the apiKey is shared by every
- * browser user, and UCSC's cap belongs to the key, not to the caller. Without a
- * store the proxy is unmetered — fine for a local run, not for a deployment.
+ * browser user, and UCSC's cap belongs to the key, not to the caller — one hit
+ * per 15s and 5000 a day across the Genome Browser CGIs, not per CGI. So both
+ * routes claim from the SAME budget; giving hgPcr its own would spend twice the
+ * cap on one key. Without a store the proxy is unmetered — fine for a local
+ * run, not for a deployment.
  */
 export async function serveQuery({
   clientBody,
   apiKey,
   upstreamUrl,
+  route = BLAT_ROUTE,
   store,
   nowMs = Date.now(),
 }: {
   clientBody: string
   apiKey: string
   upstreamUrl: string
+  route?: ProxyRoute
   store?: BlatStore
   nowMs?: number
 }): Promise<APIGatewayProxyResultV2> {
-  const key = cacheKey(clientBody)
+  // the route is part of the key: the two CGIs take different parameters, but
+  // nothing structural stops a body from being valid for both
+  const key = cacheKey(clientBody, route.name)
   const nowSeconds = Math.floor(nowMs / 1000)
-  const cacheTtl = envNumber('BLAT_CACHE_TTL_SECONDS', DEFAULT_CACHE_TTL_SECONDS)
+  const cacheTtl = envNumber(
+    'BLAT_CACHE_TTL_SECONDS',
+    DEFAULT_CACHE_TTL_SECONDS,
+  )
   // a cache failure is a slow path, not a broken one
   const cached = store
     ? await store.readCached(key, nowSeconds).catch((error: unknown) => {
@@ -100,7 +112,7 @@ export async function serveQuery({
 
   let result: APIGatewayProxyResultV2
   if (cached) {
-    result = blatJson(cached, 'hit')
+    result = upstreamBody(cached, route, 'hit')
   } else {
     // Fails CLOSED: if the budget can't be checked, the request doesn't go
     // through. An unmetered burst risks the one key every user shares, which is
@@ -130,20 +142,17 @@ export async function serveQuery({
       const upstream = await fetch(upstreamUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: buildUpstreamBody(clientBody, apiKey),
+        body: route.buildBody(clientBody, apiKey),
       })
       const text = await upstream.text()
+      const rejectReason = upstream.ok ? route.rejectReason(text) : undefined
       if (!upstream.ok) {
         result = json(502, {
-          error: `hgBlat responded ${upstream.status}`,
+          error: `${route.name} upstream responded ${upstream.status}`,
           detail: text.slice(0, 500),
         })
-      } else if (looksLikeHtml(text)) {
-        result = json(502, {
-          error:
-            'hgBlat returned HTML (CAPTCHA challenge or error page) instead ' +
-            'of JSON — the apiKey may be invalid or rate-limited',
-        })
+      } else if (rejectReason) {
+        result = json(502, { error: rejectReason })
       } else {
         if (store && text.length <= MAX_CACHEABLE_BODY_BYTES) {
           await store
@@ -152,7 +161,7 @@ export async function serveQuery({
               console.error('BLAT cache write failed:', error)
             })
         }
-        result = blatJson(text, 'miss')
+        result = upstreamBody(text, route, 'miss')
       }
     }
   }
@@ -164,7 +173,11 @@ export const handler = async (
 ): Promise<APIGatewayProxyResultV2> => {
   const method = event.requestContext.http.method
   const apiKey = process.env.UCSC_API_KEY
-  const upstreamUrl = process.env.BLAT_UPSTREAM_URL ?? DEFAULT_UPSTREAM_URL
+  // an unrecognized path can only reach here if the template routes one, so
+  // treat blat as the default rather than 404-ing a working deployment
+  const route = routeForPath(event.requestContext.http.path) ?? BLAT_ROUTE
+  const upstreamUrl =
+    process.env[route.upstreamEnvVar] ?? route.defaultUpstreamUrl
 
   if (method === 'OPTIONS') {
     return { statusCode: 200, headers: corsHeaders, body: '' }
@@ -182,16 +195,19 @@ export const handler = async (
             Uint8Array.from(atob(event.body), char => char.charCodeAt(0)),
           )
         : (event.body ?? '')
-    const invalidReason = validateClientBody(clientBody)
+    const invalidReason = route.validate(clientBody)
 
     if (invalidReason) {
-      return json(400, { error: `Invalid BLAT request: ${invalidReason}` })
+      return json(400, {
+        error: `Invalid ${route.name} request: ${invalidReason}`,
+      })
     } else {
       try {
         return await serveQuery({
           clientBody,
           apiKey,
           upstreamUrl,
+          route,
           store: storeFromEnv(),
         })
       } catch (error) {

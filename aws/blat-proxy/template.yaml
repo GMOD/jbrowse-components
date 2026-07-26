@@ -86,6 +86,22 @@ Resources:
             Path: /blat
             Method: OPTIONS
             ApiId: !Ref BlatProxyApi
+        # hgPcr (In-Silico PCR) is the same function, deliberately: UCSC's
+        # 1-per-15s / 5000-per-day cap is on the KEY across the Genome Browser
+        # CGIs, not per CGI, so both routes claim from one budget. A separate
+        # deployment would spend twice the cap on one key.
+        IsPcrQuery:
+          Type: HttpApi
+          Properties:
+            Path: /ispcr
+            Method: POST
+            ApiId: !Ref BlatProxyApi
+        IsPcrOptionsRequest:
+          Type: HttpApi
+          Properties:
+            Path: /ispcr
+            Method: OPTIONS
+            ApiId: !Ref BlatProxyApi
 
   # HTTP API (payload format 2.0) — matches the handler's APIGatewayProxyEventV2
   # (event.requestContext.http.method). CORS is owned entirely by the Lambda
@@ -128,6 +144,11 @@ Outputs:
     Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
     Export:
       Name: JBrowseBlatProxyApiUrl
+  IsPcrProxyApiUrl:
+    Description: API Gateway endpoint to point the plugin's isPCR server URL at
+    Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/ispcr
+    Export:
+      Name: JBrowseIsPcrProxyApiUrl
   BlatProxyFunctionArn:
     Description: BLAT proxy Lambda Function ARN
     Value: !GetAtt BlatProxyFunction.Arn

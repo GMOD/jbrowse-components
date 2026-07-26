@@ -11,15 +11,17 @@ function makeEvent({
   method = 'POST',
   body,
   isBase64Encoded = false,
+  path = '/blat',
 }: {
   method?: string
   body?: string
   isBase64Encoded?: boolean
+  path?: string
 } = {}): APIGatewayProxyEventV2 {
   return {
     version: '2.0',
-    routeKey: `${method} /blat`,
-    rawPath: '/blat',
+    routeKey: `${method} ${path}`,
+    rawPath: path,
     rawQueryString: '',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     requestContext: {
@@ -29,13 +31,13 @@ function makeEvent({
       domainPrefix: 'api',
       http: {
         method,
-        path: '/blat',
+        path,
         protocol: 'HTTP/1.1',
         sourceIp: '127.0.0.1',
         userAgent: 'vitest',
       },
       requestId: 'req',
-      routeKey: `${method} /blat`,
+      routeKey: `${method} ${path}`,
       stage: 'prod',
       time: '01/Jan/2024:00:00:00 +0000',
       timeEpoch: 0,
@@ -159,5 +161,46 @@ describe('handler', () => {
     const result = structured(await handler(makeEvent({ body: VALID_BODY })))
     expect(result.statusCode).toBe(500)
     expect(JSON.parse(result.body ?? '').message).toBe('network down')
+  })
+})
+
+// The deployed path carries the stage (`/prod/ispcr`), which is what the
+// function actually receives — routing on the configured `/ispcr` alone would
+// send every isPCR request to hgBlat.
+describe('handler routing', () => {
+  const PRIMERS = 'db=hg38&wp_f=ACCTGCAGGTTCAGAGTTCT&wp_r=CTGGGCAACAGAGCGAGAC'
+
+  it('sends a stage-prefixed /ispcr request to hgPcr, unaltered', async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue(new Response('<HTML><PRE>&gt;chr1:1+9 9bp A C</PRE>'))
+    vi.stubGlobal('fetch', fetchSpy)
+
+    const result = structured(
+      await handler(makeEvent({ body: PRIMERS, path: '/prod/ispcr' })),
+    )
+
+    expect(result.statusCode).toBe(200)
+    expect(result.headers?.['Content-Type']).toBe('text/html')
+    const [url, init] = fetchSpy.mock.calls[0]
+    expect(url).toBe('https://genome.ucsc.edu/cgi-bin/hgPcr')
+    const sent = new URLSearchParams(init.body)
+    expect(sent.get('apiKey')).toBe('SECRET')
+    expect(sent.get('wp_f')).toBe('ACCTGCAGGTTCAGAGTTCT')
+    expect(sent.get('output')).toBeNull()
+  })
+
+  it('validates an isPCR request against isPCR rules', async () => {
+    const fetchSpy = vi.fn()
+    vi.stubGlobal('fetch', fetchSpy)
+
+    // a body the blat route would accept has no primers in it
+    const result = structured(
+      await handler(makeEvent({ body: VALID_BODY, path: '/prod/ispcr' })),
+    )
+
+    expect(result.statusCode).toBe(400)
+    expect(JSON.parse(result.body ?? '').error).toMatch(/wp_f\/wp_r/)
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })

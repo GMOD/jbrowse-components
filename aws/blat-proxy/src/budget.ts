@@ -33,19 +33,20 @@ function nextUtcMidnightMs(nowMs: number) {
 }
 
 /**
- * Identifies a query by what actually determines its result. `apiKey` and
- * `output` are proxy-injected rather than client-chosen, so they are dropped;
- * the rest is sorted so two clients that order their form fields differently
- * still share a cache entry. Hashed because `userSeq` alone can be 300 kb,
- * which is no kind of partition key.
+ * Identifies a query by what actually determines its result: the CGI it goes
+ * to, plus the parameters the client chose. `apiKey` and `output` are
+ * proxy-injected rather than client-chosen, so they are dropped; the rest is
+ * sorted so two clients that order their form fields differently still share a
+ * cache entry. Hashed because `userSeq` alone can be 300 kb, which is no kind
+ * of partition key.
  */
-export function cacheKey(clientBody: string) {
+export function cacheKey(clientBody: string, routeName: string) {
   const params = new URLSearchParams(clientBody)
   params.delete('apiKey')
   params.delete('output')
   const sorted = [...params].sort(([a], [b]) => (a < b ? -1 : 1))
   return createHash('sha256')
-    .update(new URLSearchParams(sorted).toString())
+    .update(`${routeName}\n${new URLSearchParams(sorted).toString()}`)
     .digest('hex')
 }
 

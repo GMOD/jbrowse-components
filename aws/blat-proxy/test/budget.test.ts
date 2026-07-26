@@ -8,21 +8,25 @@ const NOON = Date.parse('2026-07-26T12:00:00Z')
 
 describe('cacheKey', () => {
   it('is the same query however the client ordered its fields', () => {
-    expect(cacheKey('userSeq=ACGT&db=hg38&type=DNA')).toBe(
-      cacheKey('type=DNA&db=hg38&userSeq=ACGT'),
+    expect(cacheKey('userSeq=ACGT&db=hg38&type=DNA', 'blat')).toBe(
+      cacheKey('type=DNA&db=hg38&userSeq=ACGT', 'blat'),
     )
   })
 
   it('ignores the parameters the proxy itself forces on', () => {
-    expect(cacheKey('userSeq=ACGT&db=hg38&apiKey=one&output=json')).toBe(
-      cacheKey('userSeq=ACGT&db=hg38&apiKey=two'),
-    )
+    expect(
+      cacheKey('userSeq=ACGT&db=hg38&apiKey=one&output=json', 'blat'),
+    ).toBe(cacheKey('userSeq=ACGT&db=hg38&apiKey=two', 'blat'))
   })
 
   it('separates queries that differ in sequence or assembly', () => {
-    const base = cacheKey('userSeq=ACGT&db=hg38')
-    expect(cacheKey('userSeq=ACGTA&db=hg38')).not.toBe(base)
-    expect(cacheKey('userSeq=ACGT&db=hg19')).not.toBe(base)
+    const base = cacheKey('userSeq=ACGT&db=hg38', 'blat')
+    expect(cacheKey('userSeq=ACGTA&db=hg38', 'blat')).not.toBe(base)
+    expect(cacheKey('userSeq=ACGT&db=hg19', 'blat')).not.toBe(base)
+  })
+
+  it('separates the two CGIs, which answer differently shaped results', () => {
+    expect(cacheKey('db=hg38', 'blat')).not.toBe(cacheKey('db=hg38', 'ispcr'))
   })
 })
 
@@ -36,9 +40,7 @@ describe('utcDay', () => {
 describe('reserveUpstreamCall', () => {
   it('allows a call when the slot is free and the day has room', async () => {
     const { store, daily } = memoryStore()
-    expect(
-      await reserveUpstreamCall({ store, nowMs: NOON }),
-    ).toBeUndefined()
+    expect(await reserveUpstreamCall({ store, nowMs: NOON })).toBeUndefined()
     expect(daily.get('2026-07-26')).toBe(1)
   })
 

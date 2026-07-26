@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { MAX_CACHEABLE_BODY_BYTES } from '../src/budget.ts'
 import { serveQuery } from '../src/index.ts'
+import { ISPCR_ROUTE } from '../src/routes.ts'
 
 import { memoryStore } from './memoryStore.ts'
 
@@ -141,6 +142,78 @@ describe('serveQuery store failures', () => {
     const result = structured(await serve({ store }))
 
     expect(result.statusCode).toBe(200)
+  })
+})
+
+describe('serveQuery isPCR route', () => {
+  const AMPLICON =
+    '<HTML><PRE>&gt;chr17:7676521+7676667 147bp ACCTGCAGG CTGGGCAAC</PRE></HTML>'
+  const PRIMERS = 'db=hg38&wp_f=ACCTGCAGGTTCAGAGTTCT&wp_r=CTGGGCAACAGAGCGAGAC'
+
+  function servePcr({
+    nowMs = NOON,
+    store,
+  }: {
+    nowMs?: number
+    store?: BlatStore
+  }) {
+    return serveQuery({
+      clientBody: PRIMERS,
+      apiKey: 'SECRET',
+      upstreamUrl: 'https://genome.ucsc.edu/cgi-bin/hgPcr',
+      route: ISPCR_ROUTE,
+      store,
+      nowMs,
+    })
+  }
+
+  it('relays the amplicon page as HTML rather than rejecting it', async () => {
+    stubUpstream(AMPLICON)
+    const result = structured(await servePcr({ store: memoryStore().store }))
+    expect(result.statusCode).toBe(200)
+    expect(result.headers?.['Content-Type']).toBe('text/html')
+    expect(result.body).toBe(AMPLICON)
+  })
+
+  // the whole reason both routes live on one function: UCSC's cap is on the
+  // key across the Genome Browser CGIs, not per CGI
+  it('claims from the same budget a blat query does', async () => {
+    stubUpstream(AMPLICON)
+    const { store } = memoryStore()
+    await serve({ store })
+
+    const result = structured(await servePcr({ store, nowMs: NOON + 5000 }))
+
+    expect(result.statusCode).toBe(429)
+    expect(result.headers?.['Retry-After']).toBe('10')
+  })
+
+  it('does not collide with a blat cache entry', async () => {
+    // each CGI answers in its own shape, so the stub does too
+    const fetchSpy = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        Promise.resolve(
+          new Response(url.endsWith('hgPcr') ? AMPLICON : '{"blat":[]}'),
+        ),
+      )
+    vi.stubGlobal('fetch', fetchSpy)
+    process.env.BLAT_SPACING_MS = '0'
+    const { store, cache } = memoryStore()
+
+    // the same body text through both routes: each must reach its own upstream
+    // and store its own entry
+    await serveQuery({
+      clientBody: PRIMERS,
+      apiKey: 'SECRET',
+      upstreamUrl: 'https://genome.ucsc.edu/cgi-bin/hgBlat',
+      store,
+      nowMs: NOON,
+    })
+    await servePcr({ store, nowMs: NOON })
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(cache.size).toBe(2)
   })
 })
 
