@@ -1156,9 +1156,7 @@ export const graphSpecs: ScreenshotSpec[] = [
           ],
         },
         {
-          id: 'hprc_node_graph',
           type: 'GraphGenomeView',
-          displayName: 'Graph — hg38 chr6:32,500,000-32,560,000',
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: MHC_REGION,
           layoutMode: 'samplerows',
@@ -1206,9 +1204,10 @@ export const graphSpecs: ScreenshotSpec[] = [
           ],
         },
         {
+          // pinned so the actions can scope the view menu click to this view
+          // rather than the linear one above it
           id: 'launch_out_graph',
           type: 'GraphGenomeView',
-          displayName: 'Graph — K12 chr:4,050,000-4,100,000',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
           loadedRegion: {
             refName: 'chr',
