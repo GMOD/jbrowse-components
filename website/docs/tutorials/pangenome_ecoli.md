@@ -626,13 +626,15 @@ every block on K12 (drop blocks that lack it), and rename the PanSN names to
 `sample.chr` so the MAF display can split each row's species off on the `.`:
 
 ```bash
-# reroot_maf.py keeps K12-containing blocks, puts K12 first (+ strand), and
-# sorts by K12 position
+# reroot_maf.py keeps K12-containing blocks, puts K12 first (+ strand), sorts by
+# K12 position, and gives each K12 row in a repeat-collapsed block its own block
 python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf
 ```
 
 [`reroot_maf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/reroot_maf.py)
-is a short script that ships with the reproducible build below.
+is a short script that ships with the reproducible build below. One block per
+reference row matters because an index keys a block on its first row, so a
+repeat's second copy is only queryable once it anchors a block of its own.
 
 Then convert the MAF to the bgzipped-TAF the
 [`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter) reads, with
