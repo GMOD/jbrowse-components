@@ -83,27 +83,43 @@ Two paths deliberately **not** taken:
   that `discoveryRank` is build order, not carriage. Only the rank-1 end of the
   ramp is honestly reachable, which is what the bubbles lane uses.
 
-## Worth a look: `ecoli_pggb.taf.gz` is a weaker artifact than its siblings
+## Settled: `ecoli_pggb.taf.gz` is fine, and two "fixes" for it were reverted
 
-Fallout from the `local_subgraph` diagnosis, measured over the whole hosted file
-rather than the one locus. Four figures read this MAF
-(`pangenome/maf`, `pangenome/pangenome_variants`'s companion lane, and the
-"the MAF is the graph's alignment at base resolution" claim in `pangenome.md`),
-so it is worth knowing that:
+An earlier revision of this section called this file "a weaker artifact than its
+siblings" and blamed `reroot_maf.py`. That was wrong on both counts, and the two
+fixes it motivated were implemented, measured, and reverted (`62229d4ebc`).
+`scripts/check-build-scripts.py` now pins the reverted behavior. Do not
+re-litigate without re-running the measurements in the `reroot_maf.py`
+docstring.
 
 - **48 of 4,736 blocks carry more than one K12 row** (43 with two, four with
-  three, one with five), from repeat collapse. `reroot_maf.py`'s
-  `next((k for k, r in enumerate(rows) if r[1] == REF), None)` anchors on the
-  **first** such row in pggb's output, not the leftmost, so those blocks' row 0
-  (and therefore their `.tai` key) is arbitrary. Block 230 anchors at 221,765
-  while a 23 bp K12 fragment at 220,481 sits further down the block.
-- **The file is not monotonic in row-0 reference start**: 179 blocks start before
-  their predecessor and 431 overlap it, despite the script's
-  `blocks.sort(key=...)`. The sibling `ecoli_cactus.taf.gz` measures **0 and 0**
-  over 5,887 blocks, so this is specific to the pggb path, not to taffy.
-- **It is not an indexing bug.** A `taffy view -r` region query over
-  K12:1,004,450-1,005,010 returns exactly the blocks a whole-file dump says
-  overlap it, so the missing CFT073 row is absent from the file itself.
+  three, one with five), from repeat collapse. Real, and harmless. A duplicate
+  does **not** collide in that sample's lane: `BgzipTaffyAdapter`'s
+  `blockToFeature` keys `alignments` by assembly name, so the last row wins and
+  one lane is drawn. Verified by calling `blockToFeature` on a two-K12-row
+  block. Several rows per species is legal MAF — it is how paralogy is
+  represented. Dropping them cost 20,822 bases (0.45% of K12) and fixed nothing.
+- **The 179 out-of-order / 431 overlapping blocks are taffy's, not pggb's.**
+  They appear only in `taffy view -m` output, i.e. after taffy re-blocks the
+  alignment. Feed taffy a MAF verified to have **zero** overlaps and it still
+  emits ~431. The raw pggb MAF is already almost exactly a partition: 4,791 K12
+  rows covering 4,641,600 of 4,641,652 bases, one overlapping pair, 52
+  doubly-covered bases. (`ecoli_cactus.taf.gz` measuring 0 and 0 does not
+  implicate reroot — taffy's re-blocking is input-dependent.)
+- **Anchoring on the leftmost reference row is worse, despite sounding right.**
+  The `.tai` sorts on row 0, so leftmost looks correct. But TAF is a
+  *differential* encoding across consecutive blocks, so re-anchoring 20 blocks
+  perturbs it globally: out-of-order blocks in taffy's own output and lost
+  region queries (1/300 vs 2/300 random K12 positions answered on one seed,
+  0/300 vs 3/300 on another; never better anywhere).
+- **The build is reproducible** — re-running the current script plus
+  `taffy view -c` and `taffy index` gives a `.taf.gz` byte-identical to the
+  hosted one, md5 `d64c811a1562e493ca14462f8b02f6bb`. Use that as the tripwire:
+  a change that moves the md5 changes the demo and owes a measured improvement.
+- **Measure retrieval, not block order.** Whether an indexed query returns a K12
+  row covering position *p* is the metric that matters; overlap counts off a
+  `taffy view -m` dump describe the converter and sent an earlier session down a
+  long wrong path.
 
 **How systemic the under-reporting is: 0.32%, measured.** Per-strain MAF row
 absence cross-checked against the per-strain `odgi pav` bigWigs (both hosted). Of
