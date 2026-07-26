@@ -52,6 +52,10 @@ export const BLAT_ROUTE: ProxyRoute = {
 // UCSC page's CSP whitelists `www.google.com/recaptcha/api.js`, so a bare
 // `captcha` matches every real result page — including hgPcr's honest "No
 // matches" — and would report a working server as a CAPTCHA wall.
+//
+// Duplicated in `plugins/blat/src/blatQuery.ts`, which decides the same thing
+// about the same pages client-side. This package is standalone and cannot import
+// the plugin, so the copies are deliberate: narrow one and narrow both.
 const CHALLENGE_MARKERS = /turnstile|cf[-_]chl/i
 
 export const ISPCR_ROUTE: ProxyRoute = {

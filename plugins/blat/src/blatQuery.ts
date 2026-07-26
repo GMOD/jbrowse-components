@@ -251,6 +251,10 @@ export class BlatChallengeError extends Error {
 // FAQdownloads.html#CAPTCHA and whose scripts load from challenges.cloudflare.com.
 // Those two words made a failed parse of a perfectly good result page report
 // itself as a CAPTCHA, sending the user off to solve one that wasn't there.
+//
+// Duplicated in `aws/blat-proxy/src/routes.ts`, which decides the same thing
+// about the same pages server-side. The proxy is a standalone package and cannot
+// import this one, so the copies are deliberate: narrow one and narrow both.
 const CHALLENGE_MARKERS = /turnstile|cf[-_]chl/i
 
 export function isChallengePage(text: string) {

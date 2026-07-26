@@ -170,6 +170,16 @@ async function freezeAnimations(driver: WebDriver): Promise<void> {
   `)
 }
 
+// MUI autofocuses the first focusable control in a dialog, and which one that is
+// can vary run to run: this figure flipped by 374 pixels purely because the "Max
+// product size" field carried a focus ring in one capture and not the next.
+// Dropping focus before a dialog capture makes that deterministic. Only for
+// figures where nothing has been typed — a caret in a field the reader is meant
+// to see filled in is part of the picture.
+async function blurActiveElement(driver: WebDriver): Promise<void> {
+  await driver.executeScript(`document.activeElement?.blur()`)
+}
+
 // The query the BLAT dialog submits, which MOCK_BLAT_RESPONSE then claims to
 // have placed — so it has to be the sequence that claim describes, not an
 // arbitrary string. It is hg19 chr17:7,579,839-7,579,985 (the mock's own primary
@@ -430,6 +440,7 @@ async function captureIsPcrFigures(driver: WebDriver): Promise<void> {
   await openMenuItem(driver, 'Tools', 'In-silico PCR')
   await findByText(driver, 'In-silico PCR (UCSC)')
   await delay(500)
+  await blurActiveElement(driver)
   await capture(driver, 'desktop-ispcr.png')
 
   // Then the same dialog driven to a result. A product is a primer pair with an

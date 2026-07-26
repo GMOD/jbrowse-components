@@ -22,8 +22,10 @@ import { revcom } from '@jbrowse/core/util'
 import {
   DEFAULT_ISPCR_URL,
   buildIsPcrBody,
+  parseIsPcrProducts,
   parseIsPcrResponse,
 } from './ispcrQuery.ts'
+import { ispcrToSam } from './ispcrToSam.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -43,13 +45,51 @@ const PRIMER_LENGTH = 22
 // UCSC allows one hgPcr hit per 15s per key, and this file sends two
 const RATE_LIMIT_MS = 16000
 
-async function runIsPcr(forwardPrimer: string, reversePrimer: string) {
+async function runIsPcrRaw(forwardPrimer: string, reversePrimer: string) {
   const res = await fetch(DEFAULT_ISPCR_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: buildIsPcrBody({ db: DB, forwardPrimer, reversePrimer, apiKey }),
   })
-  return parseIsPcrResponse(await res.text())
+  return res.text()
+}
+
+// The pair a product converts to, as the records a SamAdapter would read.
+function samPair(text: string) {
+  return ispcrToSam(parseIsPcrProducts(text))
+    .split('\n')
+    .filter(line => line && !line.startsWith('@'))
+    .map(line => {
+      const f = line.split('\t')
+      return {
+        flag: Number(f[1]),
+        pos: Number(f[3]),
+        tlen: Number(f[8]),
+        seq: f[9]!,
+      }
+    })
+}
+
+/**
+ * Both footprints of a perfectly-matching pair have to read back as the
+ * reference's own bases, whichever strand the product is on: SEQ is
+ * reference-forward, so the low footprint is its primer as submitted and the high
+ * one is the reverse complement of it, and both land on the template. Getting
+ * that backwards is not a subtle bug in the figure, it draws a mismatch at every
+ * base under a product UCSC called a perfect match, so it is worth checking
+ * against a real response rather than only against our own fixture.
+ */
+function expectPairMatchesReference(text: string, ref: string) {
+  const [low, high] = samPair(text)
+  expect(low!.pos).toBe(START + 1)
+  expect(high!.pos).toBe(END - PRIMER_LENGTH + 1)
+  expect(low!.seq).toBe(ref.slice(0, PRIMER_LENGTH))
+  expect(high!.seq).toBe(ref.slice(-PRIMER_LENGTH))
+  // the mates face each other and the insert is the product
+  expect(low!.flag & 16).toBe(0)
+  expect(high!.flag & 16).toBe(16)
+  expect(low!.tlen).toBe(END - START)
+  expect(high!.tlen).toBe(-(END - START))
 }
 
 const describeProduct = (f: SimpleFeatureSerialized) =>
@@ -85,7 +125,8 @@ maybe('live UCSC in-silico PCR round-trip', () => {
   it('amplifies the window its primers were taken from', async () => {
     const forwardPrimer = ref.slice(0, PRIMER_LENGTH)
     const reversePrimer = revcom(ref.slice(-PRIMER_LENGTH))
-    const product = productAtLocus(await runIsPcr(forwardPrimer, reversePrimer))
+    const text = await runIsPcrRaw(forwardPrimer, reversePrimer)
+    const product = productAtLocus(parseIsPcrResponse(text))
 
     expect(product.strand).toBe(1)
     // hgPcr states the size in the header; it has to agree with the span the
@@ -108,6 +149,7 @@ maybe('live UCSC in-silico PCR round-trip', () => {
       start: END - PRIMER_LENGTH,
       end: END,
     })
+    expectPairMatchesReference(text, ref)
   }, 120000)
 
   // The minus-strand footprint labelling is the subtlest thing the parser does
@@ -124,7 +166,8 @@ maybe('live UCSC in-silico PCR round-trip', () => {
     // minus strand, which is what makes hgPcr report the product there.
     const forwardPrimer = revcom(ref.slice(-PRIMER_LENGTH))
     const reversePrimer = ref.slice(0, PRIMER_LENGTH)
-    const product = productAtLocus(await runIsPcr(forwardPrimer, reversePrimer))
+    const text = await runIsPcrRaw(forwardPrimer, reversePrimer)
+    const product = productAtLocus(parseIsPcrResponse(text))
 
     expect(product.strand).toBe(-1)
     const [low, high] = product.subfeatures!
@@ -138,5 +181,8 @@ maybe('live UCSC in-silico PCR round-trip', () => {
       start: END - PRIMER_LENGTH,
       end: END,
     })
+    // identical to the plus case on purpose: SEQ is reference-forward, so which
+    // primer was called forward changes the labels but not a single base
+    expectPairMatchesReference(text, ref)
   }, 120000)
 })
