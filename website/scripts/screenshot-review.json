@@ -1967,14 +1967,14 @@
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
     "status": "bad",
-    "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do? FIXED: same rank-matched coloring, declared on hprc_minigraph_segments in test_data/graphgenomeview/hprc.json, so the blue blocks in the linear panel are the blue backbone in the graph. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. The bubbles track above stays reference-anchored as the other half of the correspondence. A per-allele SV track colored by rank is not reachable from config: the bubbles BED carries no rank, and the rank>0 segments are on other assemblies' refNames.",
+    "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do? FIXED: same rank-matched coloring, declared on hprc_minigraph_segments in test_data/graphgenomeview/hprc.json, so the blue blocks in the linear panel are the blue backbone in the graph. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. The bubbles track above stays reference-anchored as the other half of the correspondence. A per-allele SV track colored by rank is not reachable from config: the bubbles BED carries no rank, and the rank>0 segments are on other assemblies' refNames. HANDOFF: analysis and a concrete recipe in agent-docs/guides/PANGENOME_FIGURE_HANDOFF.md (not attempted here, a parallel session was editing specs/graph.ts).",
     "reviewedAt": "2026-07-26T06:38:59.036Z",
     "hash": "89c1934b096501c1cb709dc745a41821fdba5ffb"
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
     "status": "bad",
-    "note": "it would be great if we could get coloring on the linaer genome view that matches up to the graphgenomeview viewer. previous agent notes: Paired with an LGV of the same locus (pggb MAF, five rows = the graph's five paths).",
+    "note": "it would be great if we could get coloring on the linaer genome view that matches up to the graphgenomeview viewer. previous agent notes: Paired with an LGV of the same locus (pggb MAF, five rows = the graph's five paths). HANDOFF: analysis and a concrete recipe in agent-docs/guides/PANGENOME_FIGURE_HANDOFF.md (not attempted here, a parallel session was editing specs/graph.ts).",
     "reviewedAt": "2026-07-26T05:29:13.519Z",
     "hash": "618e0465ff9055a8d10320232d6b6b5eb4645980"
   },
