@@ -43,7 +43,9 @@ export default function WithLaunchLinearGenomeView() {
         const { pluginManager } = getEnv(state)
 
         setViewState(state)
-        await pluginManager.evaluateAsyncExtensionPoint(
+        // Strict so a bad assembly/loc reaches the catch below and renders the
+        // error, instead of being swallowed into a silently blank view
+        await pluginManager.evaluateAsyncExtensionPointStrict(
           'LaunchView-LinearGenomeView',
           {
             tracks: ['hg38.100way.phyloP100way'],

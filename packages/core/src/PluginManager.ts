@@ -710,9 +710,11 @@ export default class PluginManager {
       props: ExtensionPointProps<N>,
     ) => ExtensionPointResult<N> | Promise<ExtensionPointResult<N>>,
   ): void
+  // untyped fallback; mirrors the typed overload in allowing a promise, since
+  // evaluateAsyncExtensionPoint awaits each callback
   addToExtensionPoint<T>(
     extensionPointName: string,
-    callback: (extendee: T, props: Record<string, unknown>) => T,
+    callback: (extendee: T, props: Record<string, unknown>) => T | Promise<T>,
   ): void
   addToExtensionPoint(
     extensionPointName: string,

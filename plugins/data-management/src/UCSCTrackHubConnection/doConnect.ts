@@ -96,10 +96,14 @@ export async function doConnect(self: ConnectionDoConnectArg) {
       }),
     )
     if (!self.silent) {
-      // LaunchView-* is an async extension point: the sync runner would return
-      // before an async handler (or an async plugin-added one) finished, so the
-      // hub would report success while the view was still being built
-      await pluginManager.evaluateAsyncExtensionPoint(
+      // Launch through the extension point rather than session.addView so a
+      // plugin that hooks LaunchView-LinearGenomeView sees hub-driven launches
+      // too. Awaited because a plugin's handler may be async, and Strict
+      // because lazyConnect owns the failure policy (snackbar + break the
+      // connection) and every other line here reports by throwing — the
+      // swallowing variant would let a hub with an unresolvable assembly
+      // report success and open nothing.
+      await pluginManager.evaluateAsyncExtensionPointStrict(
         'LaunchView-LinearGenomeView',
         {
           session,
