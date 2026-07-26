@@ -31,17 +31,26 @@ in `browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`. Cross-backend compare
 (`compare-backends.ts`): identical / `<5%` similar / `≥5%` different. Intentional
 change → `--update-snapshots`.
 
-**A 10-25% alignments diff is usually a blank capture, not a regression.** The
-suite flakes: a run captures the app before the view has painted, so the
-"actual" is an empty frame and the test reports a large percentage. The tell is
-in `__snapshots__/<backend>/<name>.diff.png` — **look at it before believing the
-number**, and before running `-u`, which would overwrite a good golden with a
-blank page. It moves between tests run to run (observed on
-`fullpage_alignments-bam`, `-volvox-sv`, `-pileup-coverage`), and a rerun of the
-same suite passes, including immediately after those goldens were captured from
-good renders. Running a single test out of its suite with `--test=` reproduces it
-almost every time, because the suite's earlier navigation is what loads the
-track.
+**The 10-25% blank-capture flake was `fullPage: true`** (fixed 2026-07-26).
+Puppeteer implements `fullPage` by resizing the viewport to the scroll size and
+restoring it afterwards; that resize invalidates the page raster, and under load
+the capture comes back before the content has re-rastered — live app chrome
+around a white content area, which reads as a large "regression". `pageSnapshot`
+now takes a plain viewport screenshot. No golden changed: the app fills the
+window, so every full-page golden is exactly 1280x800. A view that needs more
+room gets a bigger viewport (`page.setViewport`) — never `fullPage`.
+
+Measured on the alignments suite at concurrency 4: **5/5 runs failed 2-3 tests
+with `fullPage`, 4/4 runs clean without it**, same build, same goldens. The DOM
+was fully populated at capture time (`*-done` testids present, ruler text in
+`innerText`) and an immediate re-capture matched, which is what ruled out a
+paint gate as the fix. A single test run alone with `--test=` almost never
+reproduces it — the blanking needs the concurrent browser churn.
+
+Two goldens froze that flake in (`canvas2d/fullpage_methylation.png`,
+`fullpage_modifications.png` are blank pages), so **still look at
+`__snapshots__/<backend>/<name>.diff.png` before believing a number, and before
+running `-u`.**
 
 Goldens also carry ordinary drift from unrelated commits: after ~10 days of
 alignments work every test still passed while the BAM golden sat at ~2.7% RMSE
@@ -119,10 +128,16 @@ a leaked listener or the HAL-held canvas.
 
 ## Open follow-ups
 
-- **Paint-complete gate for `pageSnapshot`.** It waits on `loading-overlay`
-  (data fetched) but not `*_done` (pixels painted) — a residual software-WebGL
-  flake source. Optionally let callers pass a `*_done` selector.
-- **Profile the ~32s full-page synteny capture.** `fullPage` screenshots may
-  force a resize + re-composite of every SwiftShader canvas; canvas-only captures
-  of the same view are fast. Confirm with split timings; prefer element/canvas
-  captures for multi-canvas views.
+- **Refresh the drifted goldens on a quiet worktree.** Last full run: the two
+  blank methylation/modifications full-page goldens plus ~15 targeted ones
+  (bigwig, hic, long-reads/inversions, multi-region, demo-inventory) fail
+  deterministically against a clean build — real rendering drift since the
+  Jul 16 refresh (`452396ab97`). Regenerating needs a worktree nobody else is
+  rebuilding in, or the goldens capture another agent's uncommitted work.
+- **`HiC mirrors on a reversed region` fails an assertion, not a snapshot**
+  (`err vs mirrored-forward 577` should be well under `err vs forward 728`), and
+  both `Variant Force Load` tests time out waiting for the Force-load button —
+  the too-large gate never trips. Both reproduce run to run; neither is flake.
+- **Profile the ~32s full-page synteny capture.** Now that `pageSnapshot` skips
+  the viewport resize, re-measure before optimizing; canvas-only captures of the
+  same view were the fast path.

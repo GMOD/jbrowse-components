@@ -110,8 +110,18 @@ function compareImages(
   }
 }
 
+// Capture the viewport, NOT puppeteer's `fullPage: true`, which resizes the
+// viewport to the scroll size and restores it afterwards (see Page.screenshot).
+// That resize invalidates the page raster, and under load the capture comes back
+// before the content has re-rastered: live app chrome around a white content
+// area, which reads as a 10-25% "regression" in the alignments goldens.
+// Measured on the alignments suite (concurrency 4): 5/5 runs failed 2-3 tests
+// with `fullPage`, 4/4 runs clean without it, same goldens. The app fills the
+// window and never scrolls the page, so the two captures are equivalent — every
+// full-page golden is exactly the 1280x800 viewport. A test that needs more room
+// should size the viewport (`page.setViewport`), not reach back for `fullPage`.
 export async function capturePageSnapshot(page: Page, name: string) {
-  const screenshot = await page.screenshot({ fullPage: true })
+  const screenshot = await page.screenshot()
   return compareImages(name, screenshot)
 }
 
@@ -143,7 +153,7 @@ export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   await waitForLoadingOverlayGone(page, 30000)
   await waitForMorphIdle(page)
 
-  const screenshot = await page.screenshot({ fullPage: true })
+  const screenshot = await page.screenshot()
   const result = compareImages(`fullpage_${base}`, screenshot, threshold)
   if (!result.passed) {
     throw new Error(result.message)
