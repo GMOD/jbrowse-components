@@ -100,6 +100,15 @@ their own `onDisplayedRegionsChange`.
 One smaller wire: `onRegionTooLarge()` fires on the false→true transition
 (alignments overrides it to clear its hover).
 
+**The `AUTO_FORCE_LOAD_BP` floor is applied in four places**, at three different
+layers, and they must agree: `evaluateRegionTooLarge` (the verdict),
+`checkByteEstimate` (skip the pre-flight RPC), and `maxFeatureDensity` /
+`resolvedByteLimit()` (the two worker budgets, which go undefined below it).
+They can't collapse to one call site — each answers a different question at a
+different moment — so changing the floor means changing all four. MAF's
+`showSummary` reads it too, flipping to the cheap summary adapter exactly where
+the detail fetch would be blocked.
+
 **Live vs debounced.** The byte axis reads live `view.visibleBp`, so the banner
 releases the instant you zoom past the threshold — that responsiveness is the
 point of the derived gate. The density axis reads the 500 ms-debounced
@@ -147,6 +156,20 @@ short-circuits inside the RPC and returns `{ regionTooLarge, featureCount }`.
 The payoff shows on a whole-genome fan-out: one cheap index read per chromosome
 instead of downloading every chromosome's features.
 
+**Known limitation: the multi-region rescale mixes denominators.**
+`commitGateMeasurements` stores the per-region *max* bytes but anchors to the
+*total* `visibleBp` across all visible regions. At capture time that is right —
+it reproduces the worker's per-region verdict. On a later zoom it isn't: in a
+whole-genome view, zooming into one chromosome shrinks the total span far faster
+than that chromosome's own bytes shrink, so the banner releases earlier than it
+should. Deliberately left alone: the download is still protected (the worker
+re-gates per region on the next fetch, and the banner comes back), and fixing it
+properly means giving the canvas path a different estimate semantic — bytes-per-bp
+against the widest current region — from the pre-flight path, which genuinely
+measures a region *set* in one call. One shared `estimatedBytesForVisibleSpan`
+beats two subtly different ones for a banner that self-corrects within a fetch
+cycle.
+
 `commitGateMeasurements` records the maximum per-region byte count, not the sum,
 because every region is gated against the same per-region budget — a
 multi-region view where each region individually fits should never be blanked
@@ -157,6 +180,14 @@ a zero would read as a measured value. An all-stale batch commits nothing, so a
 superseded fetch can't wipe a good estimate. It publishes the adapter's
 `fetchSizeLimit` alongside the estimate, which is how the banner's
 `resolveByteLimit` ends up picking the same budget the worker gated on.
+
+Multi-row's fetch RPC (`MultiRowGetFeatures`) is **byte-only**: it takes a
+`byteLimit` and deliberately no `maxFeatureDensity`, because the display turns
+the mixin's density axis off. The density gate that used to sit in that worker
+was unreachable — `maxFeatureDensity` was always `undefined` — so it was removed
+rather than left as a safety net that never fires. Re-enabling `densityGateEnabled`
+there now fails to typecheck at the call site instead of silently passing an
+argument the worker ignores.
 
 ### `CanvasFeatureGateMixin`
 

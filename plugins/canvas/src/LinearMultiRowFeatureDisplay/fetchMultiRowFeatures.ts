@@ -19,7 +19,6 @@ interface FetchSelf extends IAnyStateTreeNode {
   partitionField: string
   colorConfig: string | undefined
   resolvedByteLimit: () => number | undefined
-  maxFeatureDensity: number | undefined
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
@@ -33,20 +32,18 @@ interface FetchSelf extends IAnyStateTreeNode {
 }
 
 // Delegates to the shared fetchEachRegion primitive (per-region stale guards +
-// fan-out). The MultiRowGetFeatures RPC folds the byte/density gate into the
-// fetch (CanvasFeatureGateMixin supplies the budgets), so a too-large region
-// returns no payload and is skipped; onComplete commits the batch's byte/density
-// estimates to the shared gate.
+// fan-out). The MultiRowGetFeatures RPC folds the byte gate into the fetch
+// (CanvasFeatureGateMixin supplies the budget), so a too-large region returns no
+// payload and is skipped; onComplete commits the batch's measurements to the
+// shared gate. Byte-only — the display turns the mixin's density axis off.
 export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   const view = getContainingView(self) as LinearGenomeViewModel
-  const bpPerPx = view.bpPerPx
   // captured before the fetch: the gate rescales the estimate from the span it
   // was measured over, so a mid-fetch zoom must not re-anchor it
   const measuredSpanBp = view.visibleBp
   const byteLimit = self.resolvedByteLimit()
-  const maxFeatureDensity = self.maxFeatureDensity
   // Per-region gate measurements, keyed by the displayedRegionIndex onResult
   // reports back. A region whose fetch was skipped as stale never lands here.
   const gateResults = new Map<
@@ -58,9 +55,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
       rpcManager.call(sessionId, 'MultiRowGetFeatures', {
         adapterConfig: self.adapterConfig,
         region,
-        bpPerPx,
         byteLimit,
-        maxFeatureDensity,
         partitionField: self.partitionField,
         colorConfig: self.colorConfig,
         stopToken: ctx.stopToken,

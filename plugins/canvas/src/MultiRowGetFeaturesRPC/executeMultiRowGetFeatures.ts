@@ -6,11 +6,6 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import {
-  featuresPerPx,
-  samplePreFetchDensity,
-  tooManyFeaturesResult,
-} from '../RenderFeatureDataRPC/densityGate.ts'
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
 import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
@@ -28,9 +23,7 @@ export async function executeMultiRowGetFeatures({
     sessionId,
     adapterConfig,
     region,
-    bpPerPx,
     byteLimit,
-    maxFeatureDensity,
     partitionField,
     colorConfig,
     stopToken,
@@ -60,25 +53,6 @@ export async function executeMultiRowGetFeatures({
     }
   }
 
-  // Stage 1.5 (cheap): estimate feature density from a small sample before
-  // downloading the whole region. Multi-row applies no admission filter, so the
-  // sampled count matches the rendered population — no false-reject risk.
-  if (maxFeatureDensity !== undefined) {
-    const tooLarge = await samplePreFetchDensity({
-      dataAdapter,
-      region,
-      bpPerPx,
-      maxFeatureDensity,
-      bytes,
-      stopToken,
-      statusCallback,
-      stopTokenCheck,
-    })
-    if (tooLarge) {
-      return tooLarge
-    }
-  }
-
   const featuresArray = await updateStatus(
     'Downloading features',
     statusCallback,
@@ -96,16 +70,6 @@ export async function executeMultiRowGetFeatures({
     }
   }
   const features = [...featureMap.values()]
-
-  // Post-fetch exact gate: the backstop when the sample under-counted (or was
-  // skipped). Reports the same count the main thread re-derives its density
-  // banner from, so worker and model decisions stay in sync.
-  if (
-    maxFeatureDensity !== undefined &&
-    featuresPerPx(features.length, region, bpPerPx) > maxFeatureDensity
-  ) {
-    return tooManyFeaturesResult(features.length, bytes)
-  }
 
   const result = packMultiRowFeatures({
     features,

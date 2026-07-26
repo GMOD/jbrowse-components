@@ -12,16 +12,17 @@ export interface MultiRowGetFeaturesArgs {
     end: number
     assemblyName: string
   }
-  // current zoom, so the byte/density gate can extrapolate a sampled density to
-  // screen resolution the same way the feature-render RPC does
-  bpPerPx: number
   // compressed-byte budget; a region whose index-only estimate exceeds it
   // short-circuits before any feature download. Undefined = no byte gate (below
   // the force-load zone, or force-loaded).
+  //
+  // Byte-only on purpose: multi-row paints into fixed lanes, so a high feature
+  // count is a download cost, not a per-glyph render cost, and the display
+  // turns the gate mixin's density axis off (`densityGateEnabled`). There is
+  // deliberately no `maxFeatureDensity` here — re-enabling that axis has to
+  // fail at this call site rather than silently pass an argument the worker
+  // ignores. See agent-docs/reference/REGION_TOO_LARGE.md.
   byteLimit?: number
-  // max features-per-pixel; over it the region is too dense to render. Undefined
-  // = no density gate (below the force-load zone, or force-loaded).
-  maxFeatureDensity?: number
   // feature attribute whose value assigns each feature to a row
   partitionField: string
   // raw `color` config slot (a CSS color or `jexl:...`), evaluated per feature
@@ -55,9 +56,9 @@ export interface MultiRowGetFeaturesResult {
 }
 
 // The region-too-large short-circuit (shared RegionTooLargeResult from the
-// feature-render RPC): returned instead of the packed features when the byte or
-// density gate trips, so no feature payload is downloaded/packed for a region the
-// banner will replace. The densityGate helpers already return this type.
+// feature-render RPC): returned instead of the packed features when the byte
+// gate trips, so no feature payload is downloaded/packed for a region the
+// banner will replace.
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiRowGetFeatures: {

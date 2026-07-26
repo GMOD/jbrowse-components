@@ -195,16 +195,47 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
+  // Regression: the estimate must be anchored to the span it was MEASURED over,
+  // not to whatever is on screen when the reply lands. The two coincide at a
+  // settled viewport, which is why every other test here can't tell them apart —
+  // this one zooms between the measurement and the commit so they diverge. Both
+  // spans stay above AUTO_FORCE_LOAD_BP so the floor isn't what clears the
+  // banner. Re-anchored at commit time the estimate would read the full 1.5MB,
+  // stay over the 1MB cap, and wedge: `FetchVisibleRegions` skips while
+  // `regionTooLarge` holds, so nothing would refetch to correct it.
+  it('anchors the estimate to the measured span, not the span at commit time', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(200)
+    const measuredSpanBp = view.visibleBp
+
+    // the user keeps zooming while the fetch is in flight
+    view.zoomTo(100)
+    expect(view.visibleBp).toBeLessThan(measuredSpanBp)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
+
+    display.setByteEstimate({ bytes: 1_500_000 }, measuredSpanBp)
+
+    expect(display.measuredSpanBp).toBe(measuredSpanBp)
+    expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(
+      (1_500_000 * view.visibleBp) / measuredSpanBp,
+    )
+    expect(display.resolvedByteLimit()).toBe(1_000_000)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
   it('honors an adapter-declared fetchSizeLimit over the display config', () => {
     const { display, view } = createTestEnvironment({
       adapterFetchSizeLimit: 50_000_000,
     }).createDisplay()
     view.zoomTo(100)
     // 8MB is over the 5MB display config but under the 50MB adapter limit
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      fetchSizeLimit: 50_000_000,
-    }, view.visibleBp)
+    display.setByteEstimate(
+      {
+        bytes: 8_000_000,
+        fetchSizeLimit: 50_000_000,
+      },
+      view.visibleBp,
+    )
     expect(display.resolvedByteLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
   })

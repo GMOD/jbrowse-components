@@ -1308,3 +1308,56 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
   })
 })
+
+// Regression: `commitGateMeasurements` must anchor the estimate to the span
+// captured when the fetch was ISSUED. Reading `view.visibleBp` back when the
+// reply lands re-anchors a wide-span measurement onto whatever a mid-flight
+// zoom left on screen, inflating the estimate by the zoom ratio — and since
+// `FetchVisibleRegions` skips while `regionTooLarge` holds, the resulting
+// banner wedges with no refetch to correct it.
+describe('byte estimate anchoring across an in-flight zoom', () => {
+  it('keeps the span the fetch was issued at, not the span at reply time', async () => {
+    const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
+    // a wide region, so the mid-flight zoom has room to shrink the span a lot
+    // while staying above AUTO_FORCE_LOAD_BP
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(2000)
+
+    // hold the RPC open so the viewport can move while it is in flight
+    let release: (v: unknown) => void = () => {}
+    mockRpcCall.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          release = resolve
+        }),
+    )
+
+    const issuedSpanBp = view.visibleBp
+    jest.advanceTimersByTime(800)
+    await waitFor(() => {
+      expect(display.isLoading).toBe(true)
+    })
+
+    // User zooms in while the fetch is outstanding, staying above
+    // AUTO_FORCE_LOAD_BP: crossing that floor flips `maxFeatureDensity` to
+    // undefined, and since it rides in `rpcProps`, SettingsInvalidate would
+    // supersede this fetch instead of letting it commit.
+    view.zoomTo(500)
+    expect(view.visibleBp).toBeLessThan(issuedSpanBp / 2)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
+
+    release({ ...makeFeatureData(), bytes: 4_000_000 })
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.byteEstimate?.bytes).toBe(4_000_000)
+    })
+    expect(display.measuredSpanBp).toBe(issuedSpanBp)
+    // scaled down by the zoom, so it stays under the 5MB config cap; anchored
+    // to the post-zoom span it would read as the full 4MB at every zoom level
+    expect(display.estimatedBytesForVisibleSpan).toBeLessThan(4_000_000)
+    expect(display.regionTooLarge).toBe(false)
+  })
+})
