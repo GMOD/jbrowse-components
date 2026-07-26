@@ -35,7 +35,24 @@ UCSC_API_KEY=your_key ./deploy.sh        # first time: sam deploy --guided
 ```
 
 The `BlatProxyApiUrl` stack output is the URL to configure in the plugin (or set
-as `DEFAULT_BLAT_URL` in `plugins/blat/src/blatQuery.ts` once it's stable).
+as `DEFAULT_BLAT_URL` in `plugins/blat/src/blatQuery.ts` once it's stable). To
+find it for an existing deployment, without publishing it here where it would
+invite traffic against the shared key's budget:
+
+```bash
+aws cloudformation describe-stacks --stack-name jbrowse-blat-proxy \
+  --query "Stacks[0].Outputs[?OutputKey=='BlatProxyApiUrl'].OutputValue" --output text
+```
+
+### Bundling
+
+`--main-fields=module,main` is load-bearing. esbuild's `--platform=node` defaults
+to `main` first, which resolves the AWS SDK's CJS build; bundling that into an
+ESM output produces a Lambda that dies at init with `Dynamic require of
+"node:https" is not supported`. Pointing at `module` first picks the SDK's
+`dist-es`, which is real ESM and also tree-shakes (1.2 MB → 821 kb). `postbuild`
+imports the bundle so a repeat of that class of failure is caught by
+`pnpm build` rather than by a deploy.
 
 ## Rate limiting
 

@@ -8,7 +8,8 @@
   "scripts": {
     "prebuild": "pnpm run clean",
     "clean": "rimraf dist",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.mjs",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --main-fields=module,main --outfile=dist/index.mjs",
+    "postbuild": "node --input-type=module -e \"await import('./dist/index.mjs')\"",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

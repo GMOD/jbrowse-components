@@ -14,6 +14,15 @@ echo "Building SAM application..."
 sam build
 
 echo "Deploying to AWS..."
-sam deploy --parameter-overrides "UcscApiKey=$UCSC_API_KEY"
+# Fully specified rather than relying on `sam deploy --guided` writing a
+# samconfig.toml: the stack name and the IAM capability are properties of this
+# template, not of whoever runs it, and --resolve-s3 saves managing a bucket.
+sam deploy \
+  --stack-name "${STACK_NAME:-jbrowse-blat-proxy}" \
+  --capabilities CAPABILITY_IAM \
+  --resolve-s3 \
+  --no-fail-on-empty-changeset \
+  --no-confirm-changeset \
+  --parameter-overrides "UcscApiKey=$UCSC_API_KEY"
 
 echo "Deployment complete. Point the plugin's BLAT server URL at the BlatProxyApiUrl output above."
