@@ -677,7 +677,10 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
-  it('refetches when colorBy changes (rpcProps field)', async () => {
+  // Only the schemes the worker extracts different data for are in rpcProps
+  // (see workerColorBy) — per-base overlays, modifications, bisulfite, and the
+  // CPU-baked tag/mateRefName strings.
+  it('refetches when colorBy changes to a scheme the worker extracts for', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -688,13 +691,44 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setColorScheme({ type: 'strand' })
+    display.setColorScheme({ type: 'perBaseQuality' })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
       expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
     })
+  })
+
+  // The shader decides these from arrays every fetch already produces, so
+  // switching between them is a repaint. Sending the raw colorBy made each of
+  // these hops drop rpcDataMap and re-read the region for identical data.
+  it('does NOT refetch when switching between shader-only color schemes', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    for (const type of [
+      'strand',
+      'mappingQuality',
+      'insertSize',
+      'pairOrientation',
+      'normal',
+    ] as const) {
+      display.setColorScheme({ type })
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+    }
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    // ...and the reads still repaint, because the scheme index is render state
+    expect(display.colorBy.type).toBe('normal')
   })
 
   it('refetches when linkedReads toggles (switches RPC type)', async () => {

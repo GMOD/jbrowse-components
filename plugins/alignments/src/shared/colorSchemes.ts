@@ -38,6 +38,15 @@ export interface ColorSchemeDef {
   // mateAware: first-of-pair strand is paired-only but reads only its own flags,
   // so it is pairedOnly but NOT mateAware.
   pairedOnly?: boolean
+  // The worker extracts different DATA for this scheme — per-base arrays,
+  // modification marks, per-read tag strings, a reference-sequence fetch. Every
+  // other scheme is decided entirely in the shader from arrays the worker always
+  // produces, so switching between those must not refetch: `workerColorBy`
+  // collapses them to one value, keeping `rpcProps` (and therefore the fetched
+  // data) identical across the switch. Under-declaring this renders stale data,
+  // so a new scheme's flag is asserted against what the worker actually reads —
+  // see workerColorBy.test.ts.
+  workerExtracts?: boolean
 }
 
 // Single registry of color-by schemes, keyed by ColorSchemeType. Adding a scheme
@@ -68,12 +77,14 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     // per-base overlay paints colored rects on top of a neutral 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
+    workerExtracts: true,
   },
   perBaseLetter: {
     type: 'perBaseLetter',
     // like perBaseQuality: nucleotide quads paint over the 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
+    workerExtracts: true,
   },
   insertSize: {
     type: 'insertSize',
@@ -121,6 +132,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'tag',
     shaderScheme: 'tag',
     menu: { kind: 'special', label: 'Tag' },
+    workerExtracts: true,
   },
   // Chromosome painting: hash the mate's refName to a stable color, matching
   // the synteny view's 'query' mode (both go through core's getQueryColor, so
@@ -130,6 +142,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'mateRefName',
     shaderScheme: 'tag',
     menu: { kind: 'radio', label: 'Query name', group: 'synteny' },
+    workerExtracts: true,
   },
   // methylation/bisulfite reuse the modifications shader path with different
   // config (see model getMethBins / bisulfite is reference-based)
@@ -137,11 +150,13 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'modifications',
     shaderScheme: 'modifications',
     menu: { kind: 'special', label: 'Modification type' },
+    workerExtracts: true,
   },
   bisulfite: {
     type: 'bisulfite',
     shaderScheme: 'modifications',
     menu: { kind: 'special', label: 'Bisulfite' },
+    workerExtracts: true,
   },
 }
 
@@ -163,6 +178,24 @@ export function colorSchemeLabel(type: ColorSchemeType): string {
 // three-way `||` at every consumer.
 export function isModificationScheme(type: ColorSchemeType) {
   return COLOR_SCHEMES[type].shaderScheme === 'modifications'
+}
+
+// The part of `colorBy` the RPC worker actually reads, for `rpcProps`. A scheme
+// the shader decides on its own (strand, mapping quality, insert size, pair
+// orientation …) needs no worker data at all — the arrays it colors from are
+// produced on every fetch — so every one of them projects to `undefined` and
+// switching between them leaves `rpcProps` unchanged. That makes those switches
+// a redraw (`colorSchemeIndex` is in `renderState`) instead of dropping
+// `rpcDataMap` and re-reading the region, which is what sending the raw
+// `colorBy` did: flipping strand → mapping quality → insert size cost three
+// full refetches to paint arrays that were already in memory.
+//
+// The worker treats a missing colorBy exactly as it treats a shader-only one:
+// modification TYPES are still detected on every fetch (the detection loop in
+// extractModifications is ungated, so the Modifications menu still populates),
+// only the paint/extract passes are gated.
+export function workerColorBy(colorBy: ColorBy): ColorBy | undefined {
+  return COLOR_SCHEMES[colorBy.type].workerExtracts ? colorBy : undefined
 }
 
 // Upgrade a persisted colorBy to canonical form: the retired standalone

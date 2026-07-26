@@ -50,6 +50,7 @@ import {
   COLOR_SCHEMES,
   isModificationScheme,
   normalizeColorBy,
+  workerColorBy,
 } from '../shared/colorSchemes.ts'
 import { groupByForMode, normalizeGroupBy } from '../shared/groupFeatures.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
@@ -2253,7 +2254,11 @@ export default function stateModelFactory(
         rpcProps() {
           return {
             filterBy: self.filterBy,
-            colorBy: self.colorBy,
+            // Only the part the worker reads, so switching between the schemes
+            // the shader decides on its own (strand, mapq, insert size, pair
+            // orientation …) leaves these props identical and repaints from the
+            // data already in memory instead of refetching the region.
+            colorBy: workerColorBy(self.colorBy),
             sortTag: self.sortTag,
             groupBy: self.groupBy,
             showSoftClipping: self.showSoftClipping,
