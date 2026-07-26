@@ -1,0 +1,239 @@
+import {
+  DEMO_CONFIG,
+  lgvSession,
+  sessionSpec,
+} from '../screenshot-spec-helpers.ts'
+
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// QuicK-mer2 1kb copy number for the 104 PUR individuals of the 1000 Genomes
+// panel (Kidd lab), already wired into config_demo as `pur_copynumber_1000g`.
+// The locus was picked by measurement, not reputation: over 104 samples the
+// CCL3L1/CCL4L1 window carries every integer copy-number level from 0 to 10,
+// the widest spread of the dozen textbook multiallelic loci probed (AMY1 0-4,
+// LPA 2-8, HP 2-7, UGT2B17 0-2). See agent-docs/HANDOFF-1000G-CNV-GALLERY.md.
+const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
+
+// The 1000 Genomes phase 3 integrated SV map, lifted to GRCh38, already in
+// config_demo. It is the comparison the tutorial is built on, not a second data
+// source: over this window it holds one multiallelic CNV record with three
+// symbolic alleles, and nothing at all where the depth ladder is.
+const SV_MAP_TRACK =
+  'ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf'
+const GENE_TRACK = 'ncbi_refseq_109_hg38_latest'
+
+const KIDD_LAB_BASE =
+  'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR'
+
+// Six PUR individuals spanning the CCL3L1 ladder, measured over
+// chr17:36,193,000-36,198,000 at roughly 9, 7, 5, 4, 2 and 0 copies. Listed high
+// to low so the stacked plots read as a descending staircase. Six and not the
+// ten the ladder has room for: on a shared 0-10 axis, ten rows leave each plot
+// too short for the diploid baseline to be visibly below the plateau, which is
+// the whole thing this figure has to show.
+const LADDER_SAMPLES = [
+  'HG01177',
+  'HG01083',
+  'HG01070',
+  'HG01395',
+  'HG00731',
+  'HG00553',
+]
+
+const LADDER_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'pur_cnv_ladder',
+  name: 'PUR copy number, six individuals',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: LADDER_SAMPLES.map(name => ({
+      type: 'BigWigAdapter',
+      name,
+      bigWigLocation: {
+        uri: `${KIDD_LAB_BASE}/${name}.qm2.CN.1k.bw`,
+        locationType: 'UriLocation',
+      },
+    })),
+  },
+}
+
+// Copy number is not a signal that autoscales well: nearly every bin of nearly
+// every sample sits at the diploid baseline, so localpercentile pins the top of
+// the scale just above 2 and clamps the amplifications the figure is about, and
+// `local` re-scales on every navigation so a block means a different number in
+// each window. Pinning 0..6 with the bicolor pivot at the diploid 2 makes the
+// color mean a copy number: white is two copies, red is a gain, blue is a loss,
+// and the same block means the same thing wherever you navigate.
+const CN_HEATMAP_SETTINGS = {
+  type: 'MultiLinearWiggleDisplay',
+  defaultRendering: 'multirowdensity',
+  bicolorPivot: 2,
+  minScore: 0,
+  maxScore: 6,
+  posColor: '#b2182b',
+  negColor: '#2166ac',
+}
+
+const CN_HEATMAP = {
+  ...CN_HEATMAP_SETTINGS,
+  trackId: 'pur_copynumber_1000g',
+}
+
+// A clustered multi-wiggle display publishes `data-clustered` on the same
+// element as its first-paint testid, so this waits on the post-clustering frame
+// even though `showTree: false` removes the dendrogram (which is the only other
+// DOM evidence clustering ran).
+const CLUSTERED_READY =
+  '[data-testid="multi-wiggle-display-done"][data-clustered="true"]'
+
+// The tutorial's own config: hg38, the 2504-sample Zarr store in test_data,
+// RefSeq genes and the SV map. It loads jbrowse-plugin-zarr from the plugin
+// store, so the figure below only renders once that plugin is published (the
+// same arrangement as the protein3d figures).
+const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
+
+export const cnv1000gSpecs: ScreenshotSpec[] = [
+  // The hero figure. 104 individuals as one row each, clustered on this window
+  // so the copy-number classes separate, over the SV map's own record of the
+  // same region. The teaching point is the disagreement: depth resolves a
+  // continuous ladder from zero to ten copies across two paralogous blocks,
+  // while the callset holds one CNV record with three symbolic alleles, ending
+  // 35 kb short of the highest-amplitude block.
+  {
+    mode: 'url',
+    name: 'cnv1000g/ccl3l1_depth',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: CCL3L1_WINDOW,
+      tracks: [
+        { trackId: GENE_TRACK, displayMode: 'compact', height: 80 },
+        { trackId: SV_MAP_TRACK, height: 70 },
+        {
+          ...CN_HEATMAP,
+          height: 470,
+          runClustering: true,
+          showTree: false,
+        },
+      ],
+    }),
+    readySelector: CLUSTERED_READY,
+    // 104 BigWigs, each needing its header, chrom B-tree and R-tree index
+    // before the first value, then a second pass for stats: minutes of
+    // latency-bound fetching before clustering can even start. This is the cost
+    // the tutorial's Zarr section removes.
+    readyTimeout: 300000,
+    viewportHeight: 900,
+    settleMs: 15000,
+    // One label, on the block the figure is about. The callset's side of the
+    // contrast is in the caption rather than a second pill: the VCF track is
+    // three rows tall here and a pill over it hides the records it describes.
+    annotations: [
+      {
+        type: 'text',
+        text: 'CCL3L1/CCL4L1: 0 to 10 copies',
+        anchor: {
+          track: 'pur_copynumber_1000g',
+          locus: '17:36,195,000',
+          fracY: 0,
+          dy: -14,
+        },
+      },
+    ],
+  },
+
+  // The same window as individual profiles instead of a heatmap. This is what
+  // the heatmap is a summary of: the plateaus are flat and quantized, so a
+  // reader can count copies off the y axis rather than trust a color.
+  {
+    mode: 'url',
+    name: 'cnv1000g/ccl3l1_ladder',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [LADDER_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: CCL3L1_WINDOW,
+          tracks: [
+            { trackId: GENE_TRACK, displayMode: 'compact', height: 80 },
+            {
+              trackId: 'pur_cnv_ladder',
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multirowxy',
+              height: 500,
+              minScore: 0,
+              maxScore: 10,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    readyTimeout: 120000,
+    viewportHeight: 830,
+    settleMs: 8000,
+  },
+
+  // The control. UGT2B17 is a biallelic deletion, and there the two
+  // representations agree: depth is flat at 0, 1 or 2 copies with the same
+  // breakpoints in every carrier, and the SV map calls it as a <CN0> deletion
+  // at 47% allele frequency. A tutorial that only showed the disagreement would
+  // read as an argument against callsets.
+  {
+    mode: 'url',
+    name: 'cnv1000g/ugt2b17_biallelic',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr4:68,480,000-68,660,000',
+      tracks: [
+        { trackId: GENE_TRACK, displayMode: 'compact', height: 80 },
+        { trackId: SV_MAP_TRACK, height: 90 },
+        {
+          ...CN_HEATMAP,
+          height: 420,
+          runClustering: true,
+          showTree: false,
+        },
+      ],
+    }),
+    readySelector: CLUSTERED_READY,
+    readyTimeout: 300000,
+    viewportHeight: 840,
+    settleMs: 15000,
+  },
+
+  // The whole panel, not one population: all 2504 individuals over the same
+  // window, from one Zarr store instead of 2504 BigWigs. The picture is the
+  // argument for the format — the 104-sample figure above already takes minutes
+  // of latency-bound fetching, and 2504 files would be 24 times that, while the
+  // store answers the same view in three requests.
+  {
+    mode: 'url',
+    name: 'cnv1000g/zarr_cohort',
+    url: lgvSession(CNV_CONFIG, {
+      assembly: 'hg38',
+      loc: CCL3L1_WINDOW,
+      tracks: [
+        { trackId: 'ncbi_refseq_hg38', displayMode: 'compact', height: 80 },
+        {
+          ...CN_HEATMAP_SETTINGS,
+          trackId: 'cnv_1000g_zarr',
+          // 2504 rows, so every individual is a sub-pixel line and the pattern
+          // lives in the stack rather than in any one row (as in the TCGA
+          // cohort figure). Below about this height the display warns that the
+          // rows have collapsed.
+          height: 880,
+          runClustering: true,
+          showTree: false,
+        },
+      ],
+    }),
+    readySelector: CLUSTERED_READY,
+    readyTimeout: 300000,
+    viewportHeight: 1200,
+    settleMs: 10000,
+    // 2504 rows floored to 1px: sub-pixel row-boundary jitter between runs
+    diffThreshold: 0.02,
+  },
+]
