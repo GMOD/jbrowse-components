@@ -223,6 +223,28 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
   })
 
+  // The floor short-circuits `gateActive`, which is also what stops the estimate
+  // RPC — nothing downstream could act on an estimate taken below it, so paying
+  // for one is pure waste.
+  it('skips the byte-estimate RPC below the AUTO_FORCE_LOAD_BP floor', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+
+    const { view, display } = createDisplay()
+    view.zoomTo(1)
+    expect(view.visibleBp).toBeLessThan(20_000)
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    expect(mockRpcCall.mock.calls.map(c => c[1])).not.toContain(
+      'CoreGetRegionByteEstimate',
+    )
+  })
+
   it('does not loop after regionTooLarge is set', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 

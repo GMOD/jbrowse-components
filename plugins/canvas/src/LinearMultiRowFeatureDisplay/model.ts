@@ -821,12 +821,17 @@ export default function stateModelFactory(
             ),
         )
       },
+    }))
+    .views(self => ({
       /**
        * #method
        * A region is cache-valid only once its features are committed. A too-large
        * region is marked loaded (so the fetch autorun doesn't spin) but stores no
        * rpcData, so this returns false and the region refetches the moment the
        * gate releases (zoom-in or force-load).
+       *
+       * A view, not an action: as an action MobX untracks the `rpcDataMap` read
+       * and `FetchVisibleRegions` keeps a stale answer.
        */
       isCacheValid(displayedRegionIndex: number) {
         return self.rpcDataMap.has(displayedRegionIndex)

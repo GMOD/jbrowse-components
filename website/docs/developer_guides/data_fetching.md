@@ -187,29 +187,42 @@ so you don't silently drop the parent's dependencies:
 
 ## Byte estimation and regionTooLarge
 
-Displays that fetch potentially large files can opt into byte estimation.
-Override `getByteEstimateConfig()` to enable it:
+Displays that fetch potentially large files can ask the adapter how many bytes a
+region would download, and hold off the fetch when that is over budget. Opt in
+with one getter:
 
 ```ts
-getByteEstimateConfig(): ByteEstimateConfig | null {
-  const view = getContainingView(self) as LinearGenomeViewModel
-  return {
-    adapterConfig: self.adapterConfig,
-    fetchSizeLimit: 1_000_000,             // default limit in bytes
-    userByteLimit: self.userByteLimit,  // set by force-load dialog
-    visibleBp: view.visibleBp,
-  }
+get byteGateEnabled() {
+  return true
 }
 ```
 
-When configured, `fetchRegions` calls `CoreGetRegionByteEstimate` before
-invoking your work callback. If the estimate exceeds the limit, it sets
-`regionTooLarge = true` and the UI shows a "zoom in" message. The user can
-override by clicking "Force load", which calls `raiseForceLoadLimits()` to set
-`userByteLimit` to the observed byte count.
+`fetchRegions` then calls `CoreGetRegionByteEstimate` before your work callback.
+When the estimate for the visible span exceeds the byte limit (the adapter's own
+`fetchSizeLimit`, else the display config's), the fetch is skipped and
+`DisplayChrome` shows the too-large banner with a "Force load" button.
 
-`regionTooLarge` is automatically cleared when the user pans or zooms to a
-different region, allowing a retry.
+Two things fall out of that for free:
+
+- `regionTooLarge` is **derived**, not a flag: it rescales the stored estimate
+  to the span on screen right now, so the banner releases itself as soon as you
+  zoom in far enough, and doesn't flicker while you pan.
+- "Force load" sets one volatile boolean for the whole track (`forceLoadTrack`),
+  so the user approves a track once, with its size quoted in front of them,
+  rather than re-approving each locus. The declarative equivalent is the
+  `forceLoad` config slot.
+
+Regions under 20 kb (`AUTO_FORCE_LOAD_BP`) never gate, and adapters that
+summarize at screen resolution (BigWig, HiC, sequence) report `alwaysRender` and
+are exempt.
+
+A display that fetches outside `fetchRegions` calls the same gate itself:
+
+```ts
+if (await self.byteGateBlocksFetch(regions, ctx)) {
+  return
+}
+```
 
 ## FetchMixin: cancellation and staleness
 

@@ -27,11 +27,11 @@ every read, so the banner clears itself once you've zoomed in enough.
   it. Gating on this is the classic bug: it never shrinks, so the banner never
   clears.
 
-**The footgun:** gating is **opt-in** via `derivedRegionTooLargeEnabled`
-(defaults to false). `MultiRegionDisplayMixin` derives it from
-`view.initialized && getByteEstimateConfig() !== null`, OR'd with the additive
-`gateFoldedIntoFetch` hook; LD and arc set the switch directly. Displays that
-don't opt in never gate.
+**The footgun:** gating is **opt-in**, and a display that doesn't opt in never
+gates. A pre-flight display sets `byteGateEnabled` (defaults to false); canvas,
+which measures inside its own feature RPC, sets `gateFoldedIntoFetch`.
+`derivedRegionTooLargeEnabled` is the OR of the two — additive, so composition
+order can't turn a gate off.
 
 **The rest:**
 
@@ -69,24 +69,33 @@ For the wider picture and the five fetch autoruns that consult the verdict, see
 
 Four steps, all on `RegionTooLargeMixin`:
 
+- `byteGateBlocksFetch(regions, ctx)` is the whole pre-flight, in one action:
+  read `visibleBp`, run `CoreGetRegionByteEstimate`, `setByteEstimate`, return
+  `regionTooLarge`. Callers do `if (await self.byteGateBlocksFetch(regions, ctx))
+  return` and nothing else — `fetchRegions` makes that call for the whole
+  `MultiRegionDisplayMixin` family, LD and arc make it from their own global
+  fetches. It short-circuits to false when `byteGateEnabled` is off, so the call
+  is unconditional at every site.
 - `setByteEstimate(estimate, measuredSpanBp)` stores the estimate together with
   the span it covers. Storing the span is what makes the rest of this work, and
-  the caller must capture it **before** the measurement round trip, not read
-  `view.visibleBp` back at commit time — a zoom during the in-flight fetch would
+  the span must be captured **before** the measurement round trip, not read from
+  `view.visibleBp` at commit time — a zoom during the in-flight fetch would
   otherwise anchor the estimate to a span it never covered, and because
   `FetchVisibleRegions` skips while `regionTooLarge` holds, an over-anchored
-  estimate wedges the banner with no refetch to correct it.
+  estimate wedges the banner with no refetch to correct it. Reading it inside
+  `byteGateBlocksFetch`, above the await, is what makes that structural instead
+  of a rule each call site has to honor.
 - `estimatedBytesForVisibleSpan` rescales that estimate to the span visible now
   (`bytes × visibleBp / measuredSpanBp`). It returns `undefined` until
   `view.initialized`, because `visibleBp` reads `view.width`, which throws
   before the view is measured, and a bare getter must never throw.
-- `tooLargeStatus` hands the rescaled estimate and
-  `densityTooLargeForDerivedGate` to `evaluateRegionTooLarge`. `regionTooLarge`
-  and `regionTooLargeReason` are thin readers over it.
-- `fetchRegions` checks `self.regionTooLarge` immediately after
-  `setByteEstimate`, which works because the estimate was just captured at the
-  current viewport. When a later zoom-in flips the verdict to false,
-  `FetchVisibleRegions` notices and re-fires on its own.
+- `gateActive` answers "may anything gate right now?" — opted in, not exempt,
+  view measured, span above the floor. `tooLargeStatus` is `gateActive ?
+  evaluateRegionTooLarge({bytes, limit, densityTooLarge}) : NOT_TOO_LARGE`, and
+  `regionTooLarge` / `regionTooLargeReason` are thin readers over it.
+- The verdict is read immediately after `setByteEstimate`, which works because
+  the estimate was just captured at the current viewport. When a later zoom-in
+  flips it to false, `FetchVisibleRegions` notices and re-fires on its own.
 
 The estimate deliberately survives `clearAllRpcData()`, so an ordinary viewport
 change doesn't flicker the banner. Only chromosome navigation drops it, since
@@ -104,14 +113,17 @@ per-locus re-prompting it exists to avoid. See § Force-load.
 One smaller wire: `onRegionTooLarge()` fires on the false→true transition
 (alignments overrides it to clear its hover).
 
-**The `AUTO_FORCE_LOAD_BP` floor is applied in three places**, at three different
-layers, and they must agree: `evaluateRegionTooLarge` (the verdict),
-`checkByteEstimate` (skip the pre-flight RPC), and `gateInactive` on the canvas
-gate, which both worker budgets (`maxFeatureDensity`, `resolvedByteLimit()`) read
-so they go undefined below the floor together. They can't collapse further —
-each answers a different question at a different moment — so changing the floor
-means changing all three. MAF's `showSummary` reads it too, flipping to the cheap
-summary adapter exactly where the detail fetch would be blocked.
+**The `AUTO_FORCE_LOAD_BP` floor lives in `gateActive`, and only there.** The
+verdict, the pre-flight (no estimate RPC below it) and canvas's two worker budgets
+(`maxFeatureDensity`, `resolvedByteLimit()`, which go undefined together) all read
+that one getter. It used to be spelled out separately in `evaluateRegionTooLarge`,
+`checkByteEstimate` and a canvas-local `gateInactive` — three layers that had to
+agree by hand. `evaluateRegionTooLarge` now only compares (bytes vs limit, then
+density), and knows nothing about the floor, force-load or `alwaysRender`.
+
+MAF's `showSummary` is the one other reader of the constant, flipping to the cheap
+summary adapter exactly where the detail fetch would be blocked. That is a
+different question (how zoomed out am I), not a second copy of the gate.
 
 **Live vs debounced.** The byte axis reads live `view.visibleBp`, so the banner
 releases the instant you zoom past the threshold — that responsiveness is the
@@ -124,30 +136,40 @@ property you're giving up.
 
 Most displays override none of these.
 
-**`derivedRegionTooLargeEnabled`** defaults to false, meaning the display never
-gates on size. `MultiRegionDisplayMixin` derives it from
-`getByteEstimateConfig() !== null` — the same config that switches on the
-pre-flight `CoreGetRegionByteEstimate` RPC. Requesting the estimate and gating
-on it are therefore one decision, not two, so alignments, maf and
-multi-sample-variant can't drift into fetching estimates nothing reads, or
-gating on estimates nobody fetched. LD, arc and canvas obtain the estimate
-their own way and set the flag directly. Where it stays false (wiggle,
-Manhattan, sequence, synteny) `regionTooLarge` is a literal false, the LGV-only
-getters below it are never evaluated, and a non-LGV consumer of the mixin never
-reads `view.visibleBp`.
+**`byteGateEnabled`** defaults to false, meaning no pre-flight and no gating.
+`byteGateBlocksFetch` and the verdict both read it, so requesting the estimate
+and gating on it are one decision, not two: alignments, maf and
+multi-sample-variant can't drift into fetching estimates nothing reads, or gating
+on estimates nobody fetched. It is a plain boolean **getter** — the previous
+shape, a `getByteEstimateConfig()` method that returned `{adapterConfig,
+visibleBp}` or null, read the viewport from a place that had to be a view and
+could be untracked by being declared in an `.actions` block. That is exactly how
+MultiSampleVariant's gate silently went dead. There is nothing viewport-derived
+left to untrack.
+
+**`derivedRegionTooLargeEnabled`** is `byteGateEnabled || gateFoldedIntoFetch`,
+the union of the two ways to measure. Where both are false (wiggle, Manhattan,
+sequence, synteny) `regionTooLarge` is a literal false, the LGV-only getters
+below it are never evaluated, and a non-LGV consumer of the mixin never reads
+`view.visibleBp`.
 
 **`configuredFetchSizeLimit`** and **`configForceLoad`** read the
 `fetchSizeLimit` and `forceLoad` slots from `baseLinearDisplayConfigSchema`,
 which every gated display extends. Overridable, but nothing overrides them
 today.
 
-**`densityTooLargeForDerivedGate`** supplies a second gating axis. Canvas folds
-its feature-density gate in here; byte-only displays leave it false.
+**`densityTooLarge`** supplies a second gating axis, false in the base mixin.
+Canvas overrides it with its feature-density gate; byte-only displays leave it.
+
+LD turns `byteGateEnabled` off for pre-computed adapters (PlinkLD\*), which
+aren't feature adapters — `CoreGetRegionByteEstimate` measures through
+`getFeatures` and would throw. MAF turns it off in summary mode, where the read
+is a cheap zoom-reduced BigBed.
 
 ## Canvas folds the byte check into its fetch RPC
 
-Canvas opts out of the pre-flight entirely — `getByteEstimateConfig` returns
-`null`, because a second estimate RPC racing the per-region feature fetch is
+Canvas opts out of the pre-flight entirely — `byteGateEnabled` stays false,
+because a second estimate RPC racing the per-region feature fetch is
 exactly the two-call coordination this codebase avoids. Instead
 `executeRenderFeatureData` and `executeMultiRowGetFeatures` call the adapter's
 `getRegionByteSize`, an index-only estimate that downloads no features
@@ -199,17 +221,11 @@ argument the worker ignores.
 Composed on top of `RegionTooLargeMixin` by both canvas feature displays:
 `LinearBasicDisplay` and `LinearVariantDisplay` through `baseModel`, plus
 `LinearMultiRowFeatureDisplay`. It contributes the density axis
-(`densityStatsPerRegion`, `observedMaxDensity`, `densityTooLarge` feeding
-`densityTooLargeForDerivedGate`) and the budgets the worker needs
-(`resolvedByteLimit()` and `maxFeatureDensity`, both gated behind the shared
-`gateInactive`). Overriding `densityGateEnabled` to false drops the
+(`densityStatsPerRegion`, `observedMaxDensity`, and the `densityTooLarge`
+override) and the budgets the worker needs (`resolvedByteLimit()` and
+`maxFeatureDensity`, both gated behind the shared `gateActive`). Overriding `densityGateEnabled` to false drops the
 density axis for a display that paints into fixed lanes, such as multi-row,
 leaving byte-only gating.
-
-**Composition order matters and nothing type-checks it.** The base computes
-`derivedRegionTooLargeEnabled` from `getByteEstimateConfig()`, which canvas never
-overrides and which therefore returns null, so the base version is false. The
-gate works only because the mixin's hardcoded `true` wins by composing later.
 
 A display opts in by composing the mixin, calling `commitGateMeasurements` from
 its fetch (with the `visibleBp` captured *before* the fetch), and overriding

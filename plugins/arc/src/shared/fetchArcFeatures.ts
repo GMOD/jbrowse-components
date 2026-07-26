@@ -1,6 +1,5 @@
 import { dedupe, getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { checkByteEstimate } from '@jbrowse/plugin-linear-genome-view'
 
 import { regionSignature } from './regionSignature.ts'
 
@@ -27,32 +26,14 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
     return
   }
   const { adapterConfig } = self
-  // captured before the RPC: the gate rescales the estimate from the span it
-  // was measured over, so a mid-fetch zoom must not re-anchor it
-  const { visibleBp } = view
   await self.runFetch(async ctx => {
     const { rpcManager } = getSession(self)
     const sessionId = getRpcSessionId(self)
-    // shared helper, so the AUTO_FORCE_LOAD_BP floor short-circuits the RPC
-    // rather than paying for an estimate the verdict would ignore
-    const stats = await checkByteEstimate(
-      rpcManager,
-      sessionId,
-      regions,
-      { adapterConfig, visibleBp },
-      ctx,
-    )
-    if (ctx.isStale()) {
+    // RegionTooLargeMixin's shared pre-flight gate, called directly because arc
+    // fetches through GlobalFetchMixin rather than MultiRegionDisplayMixin's
+    // fetchRegions
+    if (await self.byteGateBlocksFetch(regions, ctx)) {
       return
-    }
-    if (stats) {
-      // Commit the estimate; the derived regionTooLarge getter then composes
-      // the shared verdict as a pure function of the estimate × current
-      // viewport.
-      self.setByteEstimate(stats, visibleBp)
-      if (self.regionTooLarge) {
-        return
-      }
     }
 
     const ret = await rpcManager.call(sessionId, 'CoreGetFeatures', {

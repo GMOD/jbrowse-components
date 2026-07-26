@@ -36,12 +36,10 @@ export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
 
 export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.tsx'
 export {
-  type ByteEstimateConfig,
   type FetchContext,
   type MultiRegionDisplayMixinType,
   autorunOnReadyView,
   callEachRegion,
-  checkByteEstimate,
   default as MultiRegionDisplayMixin,
   fetchAllRegions,
   fetchEachRegion,
@@ -70,15 +68,6 @@ export {
   viewportMatchesLastDrawn,
 } from './models/renderTransform.ts'
 export { drawCanvasImageData } from './util.ts'
-export {
-  TOO_MANY_FEATURES_REASON,
-  bytesTooLargeReason,
-  evaluateRegionTooLarge,
-  getDisplayStr,
-  resolveByteLimit,
-  rescaleByteEstimateToVisibleSpan,
-} from '../shared/regionTooLargeUtils.ts'
-export type { RegionTooLargeStatus } from '../shared/regionTooLargeUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'

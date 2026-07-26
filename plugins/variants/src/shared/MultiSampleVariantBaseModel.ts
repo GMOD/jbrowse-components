@@ -55,7 +55,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region, RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
-  ByteEstimateConfig,
   FetchContext,
   LegendSection,
   LinearGenomeViewModel,
@@ -555,10 +554,9 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // MultiRegionDisplayMixin: it's enabled automatically because
-      // getByteEstimateConfig() below returns a config (the pre-flight captures
-      // the estimate and short-circuits the download server-side; afterAttach
-      // clears the estimate on chromosome nav). Byte-only — no density axis.
+      // `byteGateEnabled` below: `fetchRegions` then measures the region set
+      // before it downloads, and afterAttach clears the estimate on chromosome
+      // nav. Byte-only — no density axis.
       .actions(self => {
         // VCF-header field descriptions (INFO/FORMAT) are static per adapter, so
         // fetch once and reuse the promise — every feature-widget open otherwise
@@ -1206,6 +1204,38 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .views(self => ({
         /**
+         * #getter
+         * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
+         * region set with `CoreGetRegionByteEstimate` before it downloads cells.
+         */
+        get byteGateEnabled() {
+          return true
+        },
+
+        /**
+         * #method
+         * Matrix mode draws columns by feature index across the full width, so
+         * the set of features belongs to the visible region at the *current*
+         * zoom — zooming in/out changes which features show even when the
+         * viewport stays spatially inside loaded data, so cached cells at a
+         * different bpPerPx are stale (wiggle uses the same strict-zoom rule,
+         * adr-008). Regular mode draws each variant at its genomic position, so
+         * spatial coverage alone suffices and the default (always valid) holds.
+         *
+         * A view, not an action: as an action MobX untracks the `bpPerPx` read
+         * and `FetchVisibleRegions` keeps a stale answer
+         * (`isCacheValidTracking.test.ts`).
+         */
+        isCacheValid(_displayedRegionIndex: number) {
+          if (cellDataMode !== 'matrix' || self.loadedBpPerPx === undefined) {
+            return true
+          }
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return view.bpPerPx === self.loadedBpPerPx
+        },
+      }))
+      .views(self => ({
+        /**
          * #method
          * Legend split into independently-closable sections: the genotype/cell
          * coloring and (when colorBy is set) the sample-grouping coloring shown
@@ -1238,29 +1268,6 @@ export default function MultiSampleVariantBaseModelF(
           // via getters, so clearing cellData clears all of them.
           self.cellData = undefined
           self.loadedBpPerPx = undefined
-        },
-
-        // Matrix mode draws columns by feature index across the full width, so
-        // the set of features belongs to the visible region at the *current*
-        // zoom — zooming in/out changes which features show even when the
-        // viewport stays spatially inside loaded data, so cached cells at a
-        // different bpPerPx are stale (wiggle uses the same strict-zoom rule,
-        // adr-008). Regular mode draws each variant at its genomic position, so
-        // spatial coverage alone suffices and the default (always valid) holds.
-        isCacheValid(_displayedRegionIndex: number) {
-          if (cellDataMode !== 'matrix' || self.loadedBpPerPx === undefined) {
-            return true
-          }
-          const view = getContainingView(self) as LinearGenomeViewModel
-          return view.bpPerPx === self.loadedBpPerPx
-        },
-
-        getByteEstimateConfig(): ByteEstimateConfig {
-          return {
-            adapterConfig: self.adapterConfig,
-            visibleBp: (getContainingView(self) as LinearGenomeViewModel)
-              .visibleBp,
-          }
         },
 
         // Ignores `needed` and refetches all visible regions because the

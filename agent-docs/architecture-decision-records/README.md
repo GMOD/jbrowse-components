@@ -53,4 +53,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [041](adr-041-no-mixin-composed-into-basedisplay.md) | Rejected | Don't factor shared display state into a mixin composed at the BaseDisplay root — it exhausts MST's type-inference depth and silently drops later mixins' members |
 | [042](adr-042-no-shared-assembly-swap-autorun-installer.md) | Rejected | Keep dotplot's and synteny's assembly-swap-check autoruns separate; a shared installer would put a mobx dependency on synteny-core to dedup ~12 lines |
 | [043](adr-043-rpc-workers-carry-ui-code.md) | Accepted | RPC workers parse 2.2 MB of MUI/react-dom they never run; the fix is blocked on splitting every plugin index's model half from its React half, so we measure it and take smaller wins instead |
+| [044](adr-044-reactive-display-hooks-are-getters-or-pinned-views.md) | Accepted | Reactive display hooks are getters where possible, pinned views where not — an `.actions()` block untracks them silently |
 <!-- END GENERATED ADR INDEX -->

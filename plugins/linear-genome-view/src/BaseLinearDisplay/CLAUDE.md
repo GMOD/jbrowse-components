@@ -75,7 +75,7 @@ exists for the two gated displays outside this family (LD, arc), which run on
 | `fetchNeeded(needed)`        | no-op       | call `this.fetchRegions(needed, async ctx => { ... })`                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `rpcProps()`                 | not defined | declare a method returning the literal RPC payload; every field it **returns** becomes a cache key, and only those — both families watch the serialized payload (`rpcPropsCacheKey` here, a `computed` in `installGlobalFetchAutorun` there), never the reads that built it; `serializeRpcProps` owns the why. The mixin doesn't declare a base default so subclass return types stay narrow through MST `.views()` chains; subclasses extend via the standard super-capture pattern |
 | `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes). **A view, not an action**                                                                                                                                                                                                                                                                                                                                                                |
-| `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch. **A view, not an action**                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `byteGateEnabled`            | `false`     | `true` to measure the region set before fetching (`RegionTooLargeMixin`, byte axis). A **getter**, so an observable it reads (MAF's `showSummary`) keeps tracking                                                                                                                                                                                                                                                                                                                    |
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `onRegionTooLarge()`         | no-op       | clear transient hover/tooltip state when `regionTooLarge` becomes true (the banner replaces the content); fired by the `ClearHoverOnRegionTooLarge` autorun                                                                                                                                                                                                                                                                                                                          |
 | `layoutReady`                | `false`     | **required if the display defines a feature-lookup method** (`searchFeatureByID`/`getFeatureById`) — return whether a searchable layout currently exists                                                                                                                                                                                                                                                                                                                             |
@@ -108,34 +108,50 @@ one line for the width of a load (and permanently under the too-large banner).
 Default is `false` so a missing override drops overlays rather than pinning them
 — fail-safe over fail-wrong.
 
-The region-too-large gate itself lives in `RegionTooLargeMixin`: a derived byte
-estimate (the old imperative `setRegionTooLarge` flag path was removed). A
-pre-flight display gets the derived, self-releasing banner for free — this mixin
-derives `derivedRegionTooLargeEnabled` from `getByteEstimateConfig() !== null`,
-and the mixin reads `fetchSizeLimit` / `forceLoad` straight off the config — so
-declaring a byte estimate is the whole opt-in. Displays that capture the
-estimate outside the pre-flight (LD, arc, canvas fold-into-fetch) opt in through
-`gateFoldedIntoFetch`, which this mixin ORs into `derivedRegionTooLargeEnabled`
-— additive rather than an override, so a gate mixin's opt-in doesn't hinge on
-which side of `.compose()` it lands. Canvas adds `densityTooLargeForDerivedGate`
-for its second axis. See that mixin's header comment.
+The region-too-large gate itself lives in `RegionTooLargeMixin`, which owns both
+halves: the opt-in getter `byteGateEnabled` and the
+`byteGateBlocksFetch(regions, ctx)` action that measures, commits, and answers
+"abandon this fetch?". `fetchRegions` already makes that call, so a display in
+this family opts in with one getter and nothing else — the mixin also reads
+`fetchSizeLimit` / `forceLoad` straight off the config. Displays that measure
+some other way (canvas folds the byte check into its feature RPC) opt in through
+`gateFoldedIntoFetch`, which `RegionTooLargeMixin` ORs together with
+`byteGateEnabled` into `derivedRegionTooLargeEnabled` — additive rather than an
+override, so a gate mixin's opt-in doesn't hinge on which side of `.compose()`
+it lands. Canvas adds `densityTooLarge` for its second axis. See that mixin's
+header comment.
 
-### `isCacheValid` / `getByteEstimateConfig` are views, not actions
+LD and arc fetch through `GlobalFetchMixin` instead of `fetchRegions`, so they
+call `self.byteGateBlocksFetch(regions, ctx)` themselves — one line, no
+sequencing to get right, no cross-plugin utility import.
 
-Both are pure reads, and both are called from reactive contexts — `isCacheValid`
-from the `FetchVisibleRegions` autorun, `getByteEstimateConfig` from the
-`derivedRegionTooLargeEnabled` **computed**. MobX runs an action inside
-`untracked`, so while these were actions every observable they read
-(`view.bpPerPx`, `view.visibleBp`, MAF's `showSummary`) registered no dependency
-and the caller silently kept a stale answer.
+### `isCacheValid` and `rpcProps` are views, not actions
 
-Nothing failed, because each caller happened to read some other observable that
-changed in lockstep — `FetchVisibleRegions` reads `view.visibleRegions`, which
-moves on every zoom. That coincidence was an unwritten precondition on every
-override ("don't let this be your only dependency", as the wiggle override used
-to warn). **Overrides must stay views.** Pinned by
-`variants/LinearMultiSampleVariantMatrixDisplay/isCacheValidTracking.test.ts`,
-which fails if either is converted back.
+Both are pure reads called from reactive contexts — `isCacheValid` from the
+`FetchVisibleRegions` autorun, `rpcProps` from the `rpcPropsCacheKey` computed.
+MobX runs an action inside `untracked`, so declaring either in an `.actions()`
+block makes its reads register no dependency and the caller silently keeps a
+stale answer.
+
+This regresses quietly, because each caller independently reads something that
+moves in lockstep (the autorun reads `view.visibleRegions`, which changes on
+every zoom) — an unwritten precondition, "don't let this be your only
+dependency", as the wiggle override used to warn. It has bitten twice:
+MultiSampleVariant's byte gate went dead when `getByteEstimateConfig` landed in
+an `.actions()` block, and multi-row's `isCacheValid` sat in one for a long
+time, masked.
+
+**Only these two method-shaped hooks are exposed.** A _getter_ can't regress
+this way — MST throws at instantiation on a getter inside `.actions()` — which
+is one reason the byte gate's opt-in is the boolean getter `byteGateEnabled`
+rather than the old `getByteEstimateConfig()` method, and why
+`byteGateBlocksFetch` reads the viewport inside the action that consumes it.
+
+Pinned per display family by a `getMembers(display).actions` assertion
+(alignments, canvas basic + multi-row, MAF, LD, multi-sample-variant matrix,
+wiggle) — the declaration site moving into `.actions()` fails the test rather
+than going unnoticed. Add the same three lines when introducing a new fetching
+display.
 
 ### `loadedRegions`
 

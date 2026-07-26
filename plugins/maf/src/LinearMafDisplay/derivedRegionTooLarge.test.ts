@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
@@ -163,6 +164,16 @@ function createTestEnvironment() {
 // the current viewport. These lock in the self-releasing behavior — a banner
 // that clears on zoom-in (not stuck), doesn't flicker on pan, and a force-load
 // that stays cleared even after a zoom-out (the invariant that once bit LD).
+// The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
+// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
+// "`isCacheValid` is a view, not an action").
+test('the reactive method hooks are views, not actions', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const { actions } = getMembers(display)
+  expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('rpcProps')
+})
+
 describe('MAF derived regionTooLarge', () => {
   it('is false with no estimate yet', () => {
     const { display } = createTestEnvironment().createDisplay()

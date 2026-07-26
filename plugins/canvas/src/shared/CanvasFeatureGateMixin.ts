@@ -1,10 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  AUTO_FORCE_LOAD_BP,
-  onDisplayedRegionsChange,
-} from '@jbrowse/plugin-linear-genome-view'
+import { onDisplayedRegionsChange } from '@jbrowse/plugin-linear-genome-view'
 import { observable } from 'mobx'
 
 import { screenDensity } from '../LinearBasicDisplay/baseModelHelpers.ts'
@@ -24,7 +21,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  */
 interface GateHost {
   configuration: AnyConfigurationModel
-  byteGateExempt: boolean
+  gateActive: boolean
   gateByteLimit: number
   setByteEstimate: (
     estimate: RegionByteEstimate,
@@ -63,9 +60,8 @@ export interface RegionGateMeasurement {
  * mixin clears its own stale per-region stats on chromosome nav (its `afterAttach`,
  * so a composing display can't forget the cleanup and silently mis-gate a reused
  * `displayedRegionIndex`). Every gating decision routes through the shared pure
- * helpers in `regionTooLargeUtils` (`resolveByteLimit`, `resolveForceLoadLimits`,
- * `evaluateRegionTooLarge` via the base mixin) so both canvas feature displays
- * decide identically.
+ * helpers in `regionTooLargeUtils` (`resolveByteLimit`, `evaluateRegionTooLarge`, both via the
+ * base mixin) so both canvas feature displays decide identically.
  *
  * This is the **model-side** counterpart to `DisplayChrome`: the gate's whole job
  * is to feed one signal — `regionTooLarge` (on `RegionTooLargeMixin`) — which
@@ -137,31 +133,18 @@ export default function CanvasFeatureGateMixin() {
       get visibleFeatureDensityPerPx() {
         return self.observedMaxDensity(gateView(self).coarseBpPerPx)
       },
-      /**
-       * #getter
-       * No axis gates at all: an exempt adapter / declarative force-load, or a
-       * span under the AUTO_FORCE_LOAD_BP floor. Both worker budgets go
-       * undefined here, so the fetch skips the estimate rather than paying for
-       * one the verdict ignores.
-       */
-      get gateInactive() {
-        return (
-          host(self).byteGateExempt ||
-          gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
-        )
-      },
     }))
     .views(self => ({
       /**
        * #getter
        * The density budget passed to the worker and used by the derived verdict:
        * undefined (gate off) when nothing gates, otherwise the config. Force-load
-       * reaches this through `gateInactive`, so approving a track's *size* no
-       * longer half-disables its *density* axis by side effect — both axes are the
-       * one boolean now.
+       * reaches this through the shared `gateActive`, so approving a track's
+       * *size* no longer half-disables its *density* axis by side effect — both
+       * axes read the one boolean now.
        */
       get maxFeatureDensity(): number | undefined {
-        return !self.densityGateEnabled || self.gateInactive
+        return !self.densityGateEnabled || !host(self).gateActive
           ? undefined
           : getConf(host(self), 'maxFeatureScreenDensity')
       },
@@ -169,19 +152,12 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
+       * The density axis of `RegionTooLargeMixin`'s verdict (false in the base
+       * mixin, so byte-only displays never gate on it).
        */
       get densityTooLarge() {
         const max = self.maxFeatureDensity
         return max === undefined ? false : self.visibleFeatureDensityPerPx > max
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Folds the density axis into `RegionTooLargeMixin`'s byte-only verdict.
-       */
-      get densityTooLargeForDerivedGate() {
-        return self.densityTooLarge
       },
       /**
        * #method
@@ -191,7 +167,7 @@ export default function CanvasFeatureGateMixin() {
        * worker can't reject a region the banner then calls fine.
        */
       resolvedByteLimit(): number | undefined {
-        return self.gateInactive ? undefined : host(self).gateByteLimit
+        return host(self).gateActive ? host(self).gateByteLimit : undefined
       },
     }))
     .actions(self => ({

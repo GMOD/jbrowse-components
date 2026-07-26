@@ -1,4 +1,4 @@
-import { resolveByteLimit } from '@jbrowse/plugin-linear-genome-view'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
@@ -46,14 +46,25 @@ afterEach(() => {
 })
 
 // CanvasFeatureGateMixin contributes the opt-in additively, via
-// `gateFoldedIntoFetch`, which MultiRegionDisplayMixin ORs into
-// `derivedRegionTooLargeEnabled` — so the gate stays on regardless of the order
-// the two are composed in. This test is the pin on that (it used to pin the
-// composition order itself, which was the only thing keeping the gate alive).
+// `gateFoldedIntoFetch`, which RegionTooLargeMixin ORs into
+// `derivedRegionTooLargeEnabled` alongside the pre-flight `byteGateEnabled` — so
+// the gate stays on regardless of the order the two are composed in. This test
+// is the pin on that (it used to pin the composition order itself, which was the
+// only thing keeping the gate alive).
 test('the gate opt-in survives regardless of mixin composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  expect(display.getByteEstimateConfig()).toBeNull()
+  expect(display.byteGateEnabled).toBe(false)
   expect(display.derivedRegionTooLargeEnabled).toBe(true)
+})
+
+// The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
+// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
+// "`isCacheValid` is a view, not an action").
+test('the reactive method hooks are views, not actions', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const { actions } = getMembers(display)
+  expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('rpcProps')
 })
 
 describe('FetchVisibleRegions autorun', () => {
@@ -440,7 +451,11 @@ describe('SettingsInvalidate autorun', () => {
     // clears laidOutDataMap. FetchVisibleRegions re-fetches after 600ms.
     jest.advanceTimersByTime(800)
 
-    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    // waitFor, not a bare read: fetchRegions consults the byte gate (an async
+    // action) before the RPC, so the call lands a microtask after the timer
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
     const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
     expect(lastArgs).toMatchObject({ showOnlyGenes: true })
   })
@@ -468,7 +483,7 @@ describe('SettingsInvalidate autorun', () => {
   })
 })
 
-// AUTO_FORCE_LOAD_BP is 20,000 — use a 50,000 bp region to trigger getByteEstimateConfig
+// AUTO_FORCE_LOAD_BP is 20,000 — use a 50,000 bp region to clear the gate floor
 describe('byte estimate pre-check', () => {
   // bytesPerBp=200 over the 50kb region → ~10MB estimate, past the 5MB limit.
   it('sets regionTooLarge from the byte short-circuit (no features loaded)', async () => {
@@ -595,7 +610,7 @@ describe('byte estimate pre-check', () => {
 })
 
 // The byte gate must honor an adapter-declared fetchSizeLimit above the display
-// config, the same precedence resolveByteLimit gives the pre-flight path
+// config, the same precedence `gateByteLimit` gives the pre-flight path
 // (alignments/LD/wiggle). Regression: canvas used to gate on the display config
 // alone, so a VcfTabixAdapter.fetchSizeLimit was a silent no-op in feature mode.
 describe('adapter fetchSizeLimit in the byte gate', () => {
@@ -620,12 +635,7 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
     // the banner resolves the same budget the worker gated on — both read the
     // adapter slot on the main thread, so no echo through the estimate is
     // needed to keep them in step
-    expect(
-      resolveByteLimit({
-        adapterFetchSizeLimit: display.adapterFetchSizeLimit,
-        configFetchSizeLimit: display.configuredFetchSizeLimit,
-      }),
-    ).toBe(50_000_000)
+    expect(display.gateByteLimit).toBe(50_000_000)
   })
 
   // An adapter that computes its budget per request reports it back on the

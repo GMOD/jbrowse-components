@@ -49,15 +49,15 @@ export function ArcFetchModel() {
         },
       }))
       // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases on
-      // zoom-in, no flicker on pan). fetchArcFeatures captures the estimate;
-      // afterAttach clears it on chromosome nav. Byte-only — no density axis. The
-      // mixin reads `fetchSizeLimit` / `forceLoad` straight off the display config,
-      // so only the opt-in switch below is needed here.
+      // zoom-in, no flicker on pan): this switch, plus the
+      // `byteGateBlocksFetch` call in fetchArcFeatures. afterAttach clears the
+      // estimate on chromosome nav. Byte-only — no density axis. The mixin reads
+      // `fetchSizeLimit` / `forceLoad` straight off the display config.
       .views(() => ({
         /**
          * #getter
          */
-        get derivedRegionTooLargeEnabled() {
+        get byteGateEnabled() {
           return true
         },
       }))

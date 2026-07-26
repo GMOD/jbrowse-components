@@ -512,10 +512,9 @@ export default function stateModelFactory(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // MultiRegionDisplayMixin: it's enabled automatically because
-      // getByteEstimateConfig() below returns a config (the pre-flight captures
-      // the estimate and short-circuits the download server-side; afterAttach
-      // clears the estimate on chromosome nav). Byte-only — no density axis.
+      // `byteGateEnabled` below: `fetchRegions` then measures the region set
+      // before it downloads, and afterAttach clears the estimate on chromosome
+      // nav. Byte-only — no density axis.
       .views(self => ({
         /**
          * #getter
@@ -1584,28 +1583,17 @@ export default function stateModelFactory(
             : self.rpcDataMap.has(displayedRegionIndex)
         },
         /**
-         * #method
+         * #getter
          * Enable byte-estimate gating: above ~20kb visible, the adapter's
          * MAF-aware byte estimate (per-species sequence × span) is checked against
          * `fetchSizeLimit`, blocking the detail fetch with a force-load prompt
          * rather than downloading hundreds of species' bases at genome scale.
          *
-         * Returns null in summary mode — the summary read is cheap (zoom-reduced
-         * BigBed), so it must never be blocked by the gate.
-         *
-         * A view, not an action: `derivedRegionTooLargeEnabled` is a computed
-         * that calls this, and an action would untrack the `showSummary` read
-         * below, leaving the gate's opt-in frozen at whatever it was when first
-         * evaluated.
+         * Off in summary mode — the summary read is cheap (zoom-reduced BigBed),
+         * so it must never be blocked by the gate.
          */
-        getByteEstimateConfig() {
-          if (self.showSummary) {
-            return null
-          }
-          return {
-            adapterConfig: self.adapterConfig,
-            visibleBp: self.lgv.visibleBp,
-          }
+        get byteGateEnabled() {
+          return !self.showSummary
         },
       }))
       .actions(self => ({

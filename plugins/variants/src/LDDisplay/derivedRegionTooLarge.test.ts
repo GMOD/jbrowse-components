@@ -1,9 +1,21 @@
+import { getMembers } from '@jbrowse/mobx-state-tree'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 // Derived regionTooLarge: a pure function of the cached byte estimate scaled to
 // the current viewport. These lock in the behavior the imperative path got
 // wrong — a banner that stuck on zoom-in (the reported bug), and that would
 // flicker on pan.
+// The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
+// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
+// "`isCacheValid` is a view, not an action").
+test('the reactive method hooks are views, not actions', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const { actions } = getMembers(display)
+  expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('rpcProps')
+})
+
 describe('LD derived regionTooLarge', () => {
   it('is false with no estimate yet', () => {
     const { display } = createTestEnvironment().createDisplay()

@@ -3352,18 +3352,14 @@ export default function stateModelFactory(
           },
         }
       })
-      .views(self => ({
+      .views(() => ({
         /**
-         * #method
-         * A view, not an action, so the `visibleBp` read registers with the
-         * `derivedRegionTooLargeEnabled` computed that calls it (see
-         * MultiRegionDisplayMixin's hook block).
+         * #getter
+         * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
+         * region set with `CoreGetRegionByteEstimate` before downloading reads.
          */
-        getByteEstimateConfig() {
-          return {
-            adapterConfig: self.adapterConfig,
-            visibleBp: (getContainingView(self) as LGV).visibleBp,
-          }
+        get byteGateEnabled() {
+          return true
         },
       }))
       .views(self => ({
@@ -3424,11 +3420,9 @@ export default function stateModelFactory(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // MultiRegionDisplayMixin: it's enabled automatically because
-      // getByteEstimateConfig() returns a config (the pre-flight captures the
-      // estimate and short-circuits the download server-side; afterAttach clears
-      // the estimate on chromosome nav, and onRegionTooLarge clears the hover).
-      // Byte-only — no density axis.
+      // `byteGateEnabled` above: `fetchRegions` measures the region set before it
+      // downloads, afterAttach clears the estimate on chromosome nav, and
+      // onRegionTooLarge clears the hover. Byte-only — no density axis.
       .actions(self => ({
         /**
          * #action

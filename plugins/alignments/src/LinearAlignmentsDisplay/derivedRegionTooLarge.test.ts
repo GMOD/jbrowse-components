@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
@@ -142,6 +143,16 @@ function createTestEnvironment() {
 // Derived regionTooLarge: a pure function of the cached byte estimate scaled to
 // the current viewport, driving the shared RegionTooLargeMixin gate — the same
 // suite maf/LD/MSV use, plus alignments' onRegionTooLarge hover-clear.
+// The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
+// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
+// "`isCacheValid` is a view, not an action").
+test('the reactive method hooks are views, not actions', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const { actions } = getMembers(display)
+  expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('rpcProps')
+})
+
 describe('alignments derived regionTooLarge', () => {
   it('is false with no estimate yet', () => {
     const { display } = createTestEnvironment().createDisplay()
@@ -154,6 +165,21 @@ describe('alignments derived regionTooLarge', () => {
     display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
+  })
+
+  // The AUTO_FORCE_LOAD_BP floor lives in `gateActive` — the one place that
+  // answers "may anything gate right now", shared by the verdict, the pre-flight
+  // estimate RPC and canvas's worker budgets.
+  it('never gates below the AUTO_FORCE_LOAD_BP floor, however big the estimate', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setByteEstimate({ bytes: 1e9 }, view.visibleBp)
+    expect(display.regionTooLarge).toBe(true)
+
+    view.zoomTo(1)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.gateActive).toBe(false)
+    expect(display.regionTooLarge).toBe(false)
   })
 
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {

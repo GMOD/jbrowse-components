@@ -232,9 +232,10 @@ LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 | `ClearHoverOnRegionTooLarge` | `regionTooLarge` becomes true | fires the overridable `onRegionTooLarge()` hook (no-op base; alignments clears its hover) |
 
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`.
-`fetchRegions` runs an optional pre-flight byte estimate (via
-`getByteEstimateConfig` → `checkByteEstimate` → the `CoreGetRegionByteEstimate`
-RPC) before invoking the work callback. Oversize regions surface a banner:
+`fetchRegions` runs an optional pre-flight byte estimate before invoking the work
+callback: `RegionTooLargeMixin.byteGateBlocksFetch` → the
+`CoreGetRegionByteEstimate` RPC, active when the display sets `byteGateEnabled`
+and the shared `gateActive` says something could act on the answer. Oversize regions surface a banner:
 `DisplayChrome` renders `TooLargeMessage` from the model's
 `regionTooLargeReason`.
 
@@ -259,7 +260,7 @@ It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the
 cached byte estimate rescaled to the current viewport — so it self-releases on
 zoom-in with no imperative clear and doesn't flicker on pan. Displays opt in by
 overriding hooks (`derivedRegionTooLargeEnabled`, `configuredFetchSizeLimit`,
-`densityTooLargeForDerivedGate`) rather than shadowing the getter. Canvas folds
+`densityTooLarge`) rather than shadowing the getter. Canvas folds
 its byte check into the feature-fetch RPC instead of a separate pre-flight
 estimate, and adds the density axis, via `CanvasFeatureGateMixin`
 (`plugins/canvas/src/shared/`), which both canvas feature displays compose; the

@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import { types } from '@jbrowse/mobx-state-tree'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
@@ -214,6 +215,16 @@ afterEach(() => {
 //   gpuProps changes → per-region encode autoruns re-fire, re-uploading
 //                      the GPU buffer (no RPC roundtrip)
 //   renderState-only changes → render autorun re-runs (no upload, no fetch)
+// The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
+// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
+// "`isCacheValid` is a view, not an action").
+test('the reactive method hooks are views, not actions', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const { actions } = getMembers(display)
+  expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('rpcProps')
+})
+
 describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   it('refetches when bicolorPivot changes (rpcProps field)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()

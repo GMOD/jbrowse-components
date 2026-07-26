@@ -2,7 +2,6 @@ import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   getContainingTrack,
   getContainingView,
-  getRpcSessionId,
   getSession,
 } from '@jbrowse/core/util'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
@@ -14,12 +13,10 @@ import { autorun, observable, untracked } from 'mobx'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 import FetchMixin from './FetchMixin.ts'
-import { checkByteEstimate } from './fetchHelpers.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { FetchContext } from './FetchMixin.ts'
-import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -30,8 +27,6 @@ import type { IAutorunOptions } from 'mobx'
 // reference and give it a minimal module-scoped type for tsc.
 declare const process: { env: { NODE_ENV?: string } }
 
-export { checkByteEstimate } from './fetchHelpers.ts'
-export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
 
 /**
@@ -61,7 +56,7 @@ export function isBlockCovered(
  *
  * Per-region fetch lifecycle for LGV-based GPU displays. Installs five autoruns
  * in `afterAttach` and exposes overridable hooks (`fetchNeeded`, `rpcProps`,
- * `isCacheValid`, `getByteEstimateConfig`, `clearDisplaySpecificData`) plus the
+ * `isCacheValid`, `byteGateEnabled`, `clearDisplaySpecificData`) plus the
  * `fetchRegions` / `loadedRegions` machinery.
  */
 export default function MultiRegionDisplayMixin() {
@@ -308,16 +303,14 @@ export default function MultiRegionDisplayMixin() {
          */
         onRegionTooLarge() {},
       }))
-      // Both hooks are pure reads of view/display state, and both are read from
-      // computeds (`derivedRegionTooLargeEnabled`) and autoruns
-      // (`FetchVisibleRegions`). They are **views, not actions**, deliberately:
-      // MobX runs an action inside `untracked`, so as actions their `view.bpPerPx`
-      // / `view.visibleBp` / `self.showSummary` reads registered no dependency and
-      // the caller silently kept a stale answer. That worked only by accident —
-      // every caller happened to read some other observable that changed in
-      // lockstep — which made "don't let this be your only dependency" an unwritten
-      // precondition on every override. Overrides must stay views for the same
-      // reason.
+      // A pure read of view/display state, read from the `FetchVisibleRegions`
+      // autorun. It is a **view, not an action**, deliberately: MobX runs an
+      // action inside `untracked`, so as an action its `view.bpPerPx` read
+      // registered no dependency and the caller silently kept a stale answer.
+      // That worked only by accident — the autorun happened to read
+      // `view.visibleRegions`, which moves in lockstep — which made "don't let
+      // this be your only dependency" an unwritten precondition on every
+      // override. Overrides must stay views for the same reason.
       .views(() => ({
         /**
          * #method
@@ -326,40 +319,6 @@ export default function MultiRegionDisplayMixin() {
          */
         isCacheValid(_displayedRegionIndex: number): boolean {
           return true
-        },
-
-        /**
-         * #method
-         * Overridable hook: return config to enable byte-estimate gating
-         * before fetch.
-         */
-        getByteEstimateConfig(): ByteEstimateConfig | null {
-          return null
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Derived opt-in for the region-too-large gate: a display that declares a
-         * pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two
-         * are one decision, so they can't desync (this replaces the old dev-time
-         * "config set but gate off" console.error). Displays that capture the
-         * estimate through a custom fetch (LD, arc) or fold the byte check into
-         * their feature RPC (canvas) leave `getByteEstimateConfig` null and
-         * contribute through `gateFoldedIntoFetch`, which this ORs in — so a gate
-         * mixin's opt-in survives regardless of which side of `.compose()` it
-         * lands on.
-         *
-         * Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp`
-         * (which throws pre-init), and this getter is read from menu code before
-         * first paint. Pre-init the banner never shows anyway, so `false` is right.
-         */
-        get derivedRegionTooLargeEnabled() {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          return (
-            self.gateFoldedIntoFetch ||
-            (view.initialized && self.getByteEstimateConfig() !== null)
-          )
         },
       }))
       .actions(self => ({
@@ -375,32 +334,15 @@ export default function MultiRegionDisplayMixin() {
           work: (ctx: FetchContext) => Promise<void>,
         ) {
           await self.runFetch(async ctx => {
-            const byteEstimateConfig = self.getByteEstimateConfig()
-            if (byteEstimateConfig) {
-              const session = getSession(self)
-              const estimate = await checkByteEstimate(
-                session.rpcManager,
-                getRpcSessionId(self),
+            // No-op unless the display set `byteGateEnabled` — see
+            // RegionTooLargeMixin
+            if (
+              await self.byteGateBlocksFetch(
                 needed.map(r => r.region),
-                byteEstimateConfig,
                 ctx,
               )
-              if (ctx.isStale()) {
-                return
-              }
-              if (estimate) {
-                // anchor to the visibleBp captured with the config, before the
-                // await — reading it now would pin the estimate to whatever span
-                // a mid-fetch zoom left on screen
-                self.setByteEstimate(estimate, byteEstimateConfig.visibleBp)
-                // The derived regionTooLarge getter reflects the just-captured
-                // estimate (setByteEstimate recorded the current viewport as
-                // its capture span), so short-circuit the download when it's over
-                // budget.
-                if (self.regionTooLarge) {
-                  return
-                }
-              }
+            ) {
+              return
             }
             await work(ctx)
             if (!ctx.isStale()) {

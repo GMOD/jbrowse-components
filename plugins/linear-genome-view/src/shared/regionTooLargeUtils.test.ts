@@ -1,4 +1,3 @@
-import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 import {
   TOO_MANY_FEATURES_REASON,
   bytesTooLargeReason,
@@ -64,14 +63,24 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     ).toBeUndefined()
   })
 
-  it('passes the estimate through when the measured span is unknown', () => {
+  // `setByteEstimate` writes the estimate and its span together, so an estimate
+  // with no span is unrepresentable; a zero span is the only live case and must
+  // not divide.
+  it('yields undefined when the measured span is unknown or zero', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
         estimatedBytesForMeasuredSpan: 1000,
         measuredSpanBp: undefined,
         visibleBp: 5,
       }),
-    ).toBe(1000)
+    ).toBeUndefined()
+    expect(
+      rescaleByteEstimateToVisibleSpan({
+        estimatedBytesForMeasuredSpan: 1000,
+        measuredSpanBp: 0,
+        visibleBp: 5,
+      }),
+    ).toBeUndefined()
   })
 
   it('scales proportionally: zoom-in (smaller visibleBp) shrinks the estimate', () => {
@@ -105,7 +114,6 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     }
 
     const zoomedOut = evaluateRegionTooLarge({
-      visibleBp: AUTO_FORCE_LOAD_BP * 2,
       estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
         ...measured,
         visibleBp: 200,
@@ -116,7 +124,6 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
 
     // zoom in 5× (span 200 → 40): scaled estimate 400_000 < 500_000 limit
     const zoomedIn = evaluateRegionTooLarge({
-      visibleBp: AUTO_FORCE_LOAD_BP * 2,
       estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
         ...measured,
         visibleBp: 40,
@@ -136,23 +143,9 @@ describe('bytesTooLargeReason', () => {
 })
 
 describe('evaluateRegionTooLarge', () => {
-  const big = AUTO_FORCE_LOAD_BP + 1
-
-  it('never gates below AUTO_FORCE_LOAD_BP, even with huge bytes/density', () => {
-    expect(
-      evaluateRegionTooLarge({
-        visibleBp: AUTO_FORCE_LOAD_BP - 1,
-        estimatedBytesForVisibleSpan: 1e9,
-        byteLimit: 1,
-        densityTooLarge: true,
-      }),
-    ).toEqual({ tooLarge: false, reason: '' })
-  })
-
   it('gates on bytes over the limit', () => {
     expect(
       evaluateRegionTooLarge({
-        visibleBp: big,
         estimatedBytesForVisibleSpan: 2_000_000,
         byteLimit: 1_000_000,
       }),
@@ -165,7 +158,6 @@ describe('evaluateRegionTooLarge', () => {
   it('passes when bytes are within the limit', () => {
     expect(
       evaluateRegionTooLarge({
-        visibleBp: big,
         estimatedBytesForVisibleSpan: 500_000,
         byteLimit: 1_000_000,
       }),
@@ -177,7 +169,6 @@ describe('evaluateRegionTooLarge', () => {
   it('does not gate on density when densityTooLarge is omitted (byte-only)', () => {
     expect(
       evaluateRegionTooLarge({
-        visibleBp: big,
         estimatedBytesForVisibleSpan: 500_000,
         byteLimit: 1_000_000,
       }),
@@ -187,7 +178,6 @@ describe('evaluateRegionTooLarge', () => {
   it('gates on density with its own reason when no byte budget applies', () => {
     expect(
       evaluateRegionTooLarge({
-        visibleBp: big,
         densityTooLarge: true,
       }),
     ).toEqual({ tooLarge: true, reason: TOO_MANY_FEATURES_REASON })
@@ -196,7 +186,6 @@ describe('evaluateRegionTooLarge', () => {
   it('bytes take precedence over density for the reason text', () => {
     expect(
       evaluateRegionTooLarge({
-        visibleBp: big,
         estimatedBytesForVisibleSpan: 2_000_000,
         byteLimit: 1_000_000,
         densityTooLarge: true,
@@ -207,24 +196,13 @@ describe('evaluateRegionTooLarge', () => {
   it('ignores bytes when no limit is provided (density-only path)', () => {
     expect(
       evaluateRegionTooLarge({
-        visibleBp: big,
         estimatedBytesForVisibleSpan: 2_000_000,
         densityTooLarge: false,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
   })
 
-  // Self-summarizing adapters (BigWig/Hic) declare alwaysRender; it must win
-  // over both gates and stay immune to a threshold/byte budget of any size.
-  it('never gates when alwaysRender is set, even over byte and density limits', () => {
-    expect(
-      evaluateRegionTooLarge({
-        visibleBp: big,
-        estimatedBytesForVisibleSpan: 1e9,
-        byteLimit: 1,
-        densityTooLarge: true,
-        alwaysRender: true,
-      }),
-    ).toEqual({ tooLarge: false, reason: '' })
-  })
+  // The AUTO_FORCE_LOAD_BP floor, force-load and `alwaysRender` adapters are
+  // NOT this function's business — they live in `gateActive`, pinned per display
+  // in each `derivedRegionTooLarge.test.ts`.
 })

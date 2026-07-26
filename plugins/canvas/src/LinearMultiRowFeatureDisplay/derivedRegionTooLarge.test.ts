@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
@@ -159,16 +160,26 @@ function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
   return { createDisplay, mockRpcCall }
 }
 
-// CanvasFeatureGateMixin never overrides `getByteEstimateConfig` (it folds the
-// byte check into its feature RPC instead), so the opt-in comes entirely from
-// `gateFoldedIntoFetch`, which MultiRegionDisplayMixin ORs into
+// CanvasFeatureGateMixin never sets `byteGateEnabled` (it folds the byte check
+// into its feature RPC instead of running the pre-flight), so the opt-in comes
+// entirely from `gateFoldedIntoFetch`, which RegionTooLargeMixin ORs into
 // `derivedRegionTooLargeEnabled`. Additive, so the gate survives either
 // composition order — this used to hinge on the mixin composing last, and
 // swapping the two lines turned the whole byte/density gate off silently.
 test('the gate opt-in survives regardless of mixin composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  expect(display.getByteEstimateConfig()).toBeNull()
+  expect(display.byteGateEnabled).toBe(false)
   expect(display.derivedRegionTooLargeEnabled).toBe(true)
+})
+
+// The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
+// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
+// "`isCacheValid` is a view, not an action").
+test('the reactive method hooks are views, not actions', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const { actions } = getMembers(display)
+  expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('rpcProps')
 })
 
 describe('multi-row derived regionTooLarge (byte axis)', () => {

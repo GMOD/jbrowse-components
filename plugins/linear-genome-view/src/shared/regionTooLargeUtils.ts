@@ -1,5 +1,3 @@
-import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
-
 // Round to 3 significant digits, dropping trailing zeros ("1.00" -> "1").
 function round3(n: number) {
   return Number.parseFloat(n.toPrecision(3))
@@ -74,10 +72,12 @@ export function resolveByteLimit({
  * span on screen now (`visibleBp`). This is what makes the too-large verdict a
  * pure function of the current view, so it self-releases on zoom-in instead of
  * a large zoomed-out estimate staying above the limit forever and gating
- * refetch. The derived `regionTooLarge` getter on the canvas and LD displays
- * feeds the result to `evaluateRegionTooLarge`. Returns undefined when there's
- * no estimate yet, and passes the estimate through unchanged when the span it
- * was measured over is unknown.
+ * refetch. `tooLargeStatus` feeds the result to `evaluateRegionTooLarge`.
+ *
+ * Undefined unless there is both an estimate and a span to scale it from —
+ * `setByteEstimate` always writes the pair, so the only way here is a zero span,
+ * and yielding undefined keeps the byte axis out of the verdict rather than
+ * comparing an unscaled (or infinite) number against the budget.
  */
 export function rescaleByteEstimateToVisibleSpan({
   estimatedBytesForMeasuredSpan,
@@ -88,12 +88,9 @@ export function rescaleByteEstimateToVisibleSpan({
   measuredSpanBp?: number
   visibleBp: number
 }) {
-  if (!estimatedBytesForMeasuredSpan) {
-    return undefined
-  }
-  return measuredSpanBp
+  return estimatedBytesForMeasuredSpan && measuredSpanBp
     ? (estimatedBytesForMeasuredSpan * visibleBp) / measuredSpanBp
-    : estimatedBytesForMeasuredSpan
+    : undefined
 }
 
 export interface RegionTooLargeStatus {
@@ -101,37 +98,30 @@ export interface RegionTooLargeStatus {
   reason: string
 }
 
-const NOT_TOO_LARGE: RegionTooLargeStatus = { tooLarge: false, reason: '' }
+export const NOT_TOO_LARGE: RegionTooLargeStatus = {
+  tooLarge: false,
+  reason: '',
+}
 
 /**
- * Single source of truth for the region-too-large verdict + reason shared by
- * every gating path. Below AUTO_FORCE_LOAD_BP small regions always load.
- * Otherwise bytes take precedence over density for both the verdict and the
- * reason text.
+ * The comparison half of the verdict: which axis is over budget, and the banner
+ * text for it. Bytes take precedence over density for both.
  *
- * Callers pass already-resolved values (limits with any force-load override
- * folded in via resolveByteLimit, and the path-specific densityTooLarge
- * boolean), so the per-path measurement and force-load mechanics stay where
- * they belong while the threshold, precedence, and reason live here.
+ * Deliberately knows nothing about *whether* the gate applies — the
+ * AUTO_FORCE_LOAD_BP floor, force-load and `alwaysRender` adapters all live in
+ * `gateActive` on `RegionTooLargeMixin`, which is also what stops the pre-flight
+ * RPC and the worker budgets. One place asks "may anything gate?", this one asks
+ * "does it?".
  */
 export function evaluateRegionTooLarge({
-  visibleBp,
   estimatedBytesForVisibleSpan,
   byteLimit,
   densityTooLarge,
-  alwaysRender,
 }: {
-  visibleBp: number
   estimatedBytesForVisibleSpan?: number
   byteLimit?: number
   densityTooLarge?: boolean
-  alwaysRender?: boolean
 }): RegionTooLargeStatus {
-  // Self-summarizing adapters (e.g. BigWig) cap returned data at screen
-  // resolution, so no region is ever too large regardless of span or threshold.
-  if (alwaysRender || visibleBp < AUTO_FORCE_LOAD_BP) {
-    return NOT_TOO_LARGE
-  }
   if (
     estimatedBytesForVisibleSpan !== undefined &&
     byteLimit !== undefined &&

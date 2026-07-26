@@ -1,8 +1,11 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/model.ts'
 import {
+  NOT_TOO_LARGE,
   evaluateRegionTooLarge,
   rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
@@ -11,6 +14,13 @@ import {
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+
+// `visibleBp` reads `view.width`, which throws before the view is measured, and
+// nothing gates before first paint anyway.
+function viewWiderThanForceLoadFloor(self: object) {
+  const view = getContainingView(self) as LinearGenomeViewModel
+  return view.initialized && view.visibleBp >= AUTO_FORCE_LOAD_BP
+}
 
 // The mixin declares no `configuration` / `adapterConfig`, but every display
 // that composes it has both (BaseDisplay via MultiRegionDisplayMixin, or the SVG
@@ -38,22 +48,29 @@ function host(self: object) {
  *
  * `regionTooLarge` is a pure function of the cached byte estimate scaled to the
  * current viewport (`tooLargeStatus`), so the banner self-releases on zoom-in
- * without a flag-clear round trip and doesn't flicker on pan. A byte-gated
- * display opts in by flipping `derivedRegionTooLargeEnabled` true, plus
- * `densityTooLargeForDerivedGate` if it has a second gating axis (canvas's
- * feature-density gate). The budget hooks default off the display config, so
- * nothing else needs overriding. `MultiRegionDisplayMixin` drops the cached
- * estimate on chromosome nav for everything it composes; the two displays
- * outside that family (LD, arc) wire `onDisplayedRegionsChange(self, () =>
- * self.clearByteEstimate())` themselves. The estimate intentionally survives
- * viewport-change clears, so only region navigation drops it. Used by
- * canvas/LD/arc/maf/MultiSampleVariant/alignments.
+ * without a flag-clear round trip and doesn't flicker on pan.
  *
- * A display that leaves `derivedRegionTooLargeEnabled` false never gates on size
- * (`regionTooLarge` is a literal false, so the LGV-only `tooLargeStatus` getters
- * aren't evaluated — safe for non-byte / non-LGV consumers like synteny). The
- * old imperative `setRegionTooLarge` flag path was removed once every byte-gated
- * display went derived.
+ * A pre-flight display opts in with two lines and nothing else: override
+ * `byteGateEnabled` to true, and `await self.byteGateBlocksFetch(regions, ctx)`
+ * at the top of its fetch, returning if it says so. Both live here, so the
+ * measurement and the verdict can't drift apart and the "capture `visibleBp`
+ * before the await" rule is structural rather than a call-site convention.
+ * (`MultiRegionDisplayMixin.fetchRegions` already makes that call, so displays
+ * in that family write only the first line.) Add
+ * `densityTooLarge` for a second gating axis (canvas's feature-density
+ * gate); the budget hooks default off the display config.
+ *
+ * `MultiRegionDisplayMixin` drops the cached estimate on chromosome nav for
+ * everything it composes; the two displays outside that family (LD, arc) wire
+ * `onDisplayedRegionsChange(self, () => self.clearByteEstimate())` themselves.
+ * The estimate intentionally survives viewport-change clears, so only region
+ * navigation drops it. Used by canvas/LD/arc/maf/MultiSampleVariant/alignments.
+ *
+ * A display that opts into neither axis never gates on size (`regionTooLarge` is
+ * a literal false, so the LGV-only `tooLargeStatus` getters aren't evaluated —
+ * safe for non-byte / non-LGV consumers like synteny). The old imperative
+ * `setRegionTooLarge` flag path was removed once every byte-gated display went
+ * derived.
  *
  * #stateModel RegionTooLargeMixin
  * #category display
@@ -112,14 +129,15 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * Opt-in switch: a byte-gated display flips this true to enable the derived,
-       * self-releasing region-too-large gate. Default false means the display
-       * never gates on size (`regionTooLarge` is always false), so non-byte
-       * displays (wiggle, manhattan, sequence, synteny, …) don't evaluate the
-       * LGV-only `tooLargeStatus` getters at all.
+       * The one opt-in a pre-flight display writes: true means "measure this
+       * fetch and gate on it". `byteGateBlocksFetch` reads it (so a display that
+       * calls the gate unconditionally still pays no RPC when it's off) and so
+       * does the verdict, which is why requesting the estimate and gating on it
+       * can't drift apart. MAF flips it off in summary mode, LD for
+       * pre-computed adapters.
        */
-      get derivedRegionTooLargeEnabled(): boolean {
-        return self.gateFoldedIntoFetch
+      get byteGateEnabled(): boolean {
+        return false
       },
       /**
        * #getter
@@ -135,11 +153,11 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Extra (non-byte) too-large axis folded into the derived verdict — canvas
+       * Second (non-byte) too-large axis folded into the derived verdict — canvas
        * overrides it with its feature-density gate. Byte-only derived displays
        * leave it false.
        */
-      get densityTooLargeForDerivedGate(): boolean {
+      get densityTooLarge(): boolean {
         return false
       },
       /**
@@ -170,6 +188,19 @@ export default function RegionTooLargeMixin() {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Whether the derived, self-releasing gate is live at all — the union of
+       * the two ways a display can measure: a pre-flight estimate
+       * (`byteGateEnabled`) or a byte check folded into its own feature RPC
+       * (`gateFoldedIntoFetch`). Additive, never an override, so a gate mixin's
+       * opt-in doesn't hinge on which side of `.compose()` it lands on. False
+       * for the non-byte displays (wiggle, manhattan, sequence, synteny), which
+       * therefore never evaluate the LGV-only `tooLargeStatus` getters.
+       */
+      get derivedRegionTooLargeEnabled(): boolean {
+        return self.byteGateEnabled || self.gateFoldedIntoFetch
+      },
       /**
        * #getter
        * The adapter's byte budget, preferring one the estimate computed
@@ -235,44 +266,56 @@ export default function RegionTooLargeMixin() {
           configFetchSizeLimit: self.configuredFetchSizeLimit,
         })
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then
-       * bytes-over-limit, then the density axis), fed the scaled estimate so the
-       * byte gate self-releases on zoom-in. Same helper as every other gating
-       * path so the banner text can't drift.
+       * Whether anything may gate at this moment: the display opted in, nothing
+       * exempts it, and the view is measured and wider than the
+       * `AUTO_FORCE_LOAD_BP` force-load floor.
+       *
+       * The single home of that question. Everything downstream reads it instead
+       * of restating it: the verdict, the pre-flight (no estimate RPC when
+       * nothing could act on it), and canvas's two worker budgets, which go
+       * undefined together here rather than each re-deriving the floor. The floor
+       * used to be spelled out in three places at three layers, which is a
+       * standing invitation for them to disagree.
        */
-      get tooLargeStatus() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        // Not too large until the view is measured (visibleBp reads view.width,
-        // which throws pre-init); the banner never shows before first paint.
-        return view.initialized
-          ? evaluateRegionTooLarge({
-              visibleBp: view.visibleBp,
-              estimatedBytesForVisibleSpan: self.estimatedBytesForVisibleSpan,
-              byteLimit: self.gateByteLimit,
-              densityTooLarge: self.densityTooLargeForDerivedGate,
-              alwaysRender: self.byteGateExempt,
-            })
-          : { tooLarge: false, reason: '' }
+      get gateActive(): boolean {
+        // The view is consulted only past the two cheap terms, so a display that
+        // never gates — including a non-LGV consumer of this mixin — never
+        // touches `getContainingView`.
+        return self.derivedRegionTooLargeEnabled && !self.byteGateExempt
+          ? viewWiderThanForceLoadFloor(self)
+          : false
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The verdict the whole mixin exists to produce: true when the estimated
-       * download for the span on screen exceeds the resolved byte budget, or
-       * when the display's own density axis trips. Derived, so it releases
-       * itself on zoom-in. Always false for a display that hasn't opted in via
-       * `derivedRegionTooLargeEnabled`. The fetch autoruns hold off while it is
-       * true, and `DisplayChrome` renders the banner from it.
+       * The verdict the whole mixin exists to produce, with the banner text: true
+       * when the estimated download for the span on screen exceeds the resolved
+       * byte budget, or when the display's own density axis trips (bytes take
+       * precedence for the text). Derived from the rescaled estimate, so it
+       * releases itself on zoom-in; false whenever `gateActive` is false.
+       *
+       * The fetch autoruns hold off while `regionTooLarge` is true, and
+       * `DisplayChrome` renders the banner from `regionTooLargeReason`.
+       */
+      get tooLargeStatus() {
+        return self.gateActive
+          ? evaluateRegionTooLarge({
+              estimatedBytesForVisibleSpan: self.estimatedBytesForVisibleSpan,
+              byteLimit: self.gateByteLimit,
+              densityTooLarge: self.densityTooLarge,
+            })
+          : NOT_TOO_LARGE
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        */
       get regionTooLarge() {
-        return self.derivedRegionTooLargeEnabled
-          ? self.tooLargeStatus.tooLarge
-          : false
+        return self.tooLargeStatus.tooLarge
       },
 
       /**
@@ -281,9 +324,7 @@ export default function RegionTooLargeMixin() {
        * "Too many features". Empty string when the region isn't too large.
        */
       get regionTooLargeReason() {
-        return self.derivedRegionTooLargeEnabled
-          ? self.tooLargeStatus.reason
-          : ''
+        return self.tooLargeStatus.reason
       },
     }))
     .actions(self => ({
@@ -347,6 +388,53 @@ export default function RegionTooLargeMixin() {
       forceLoad() {
         self.setForceLoadTrack(true)
         self.reload()
+      },
+
+      /**
+       * #action
+       * The entire pre-flight gate for one fetch: measure the region set, commit
+       * the estimate with the span it covers, and answer whether the caller must
+       * abandon the fetch — either superseded mid-measure, or over budget.
+       *
+       * Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin
+       * family, LD and arc from their own global fetches) calls this and returns
+       * on true. Sequencing the steps at a call site is what used to go wrong:
+       * `visibleBp` is read here, *before* the await, so the estimate is anchored
+       * to the span it actually covers — a re-read afterwards would pin it to
+       * whatever a mid-fetch zoom left on screen, and since the fetch autoruns
+       * skip while `regionTooLarge` holds, an over-anchored estimate wedges the
+       * banner with no refetch to correct it.
+       */
+      async byteGateBlocksFetch(
+        regions: {
+          refName: string
+          start: number
+          end: number
+          assemblyName: string
+        }[],
+        ctx: { isStale: () => boolean },
+      ) {
+        // Skip the RPC when this display doesn't measure by pre-flight at all
+        // (canvas folds the check into its feature fetch), and when nothing could
+        // act on an estimate right now — exempt track, or under the force-load
+        // floor.
+        if (!self.byteGateEnabled || !self.gateActive) {
+          return false
+        }
+        const { visibleBp } = getContainingView(self) as LinearGenomeViewModel
+        const estimate = await getSession(self).rpcManager.call(
+          getRpcSessionId(self),
+          'CoreGetRegionByteEstimate',
+          { regions, adapterConfig: host(self).adapterConfig },
+        )
+        if (ctx.isStale()) {
+          return true
+        }
+        self.setByteEstimate(estimate, visibleBp)
+        // Read after the commit: the verdict is a pure function of the estimate
+        // × current viewport, and the estimate was just captured at that
+        // viewport.
+        return self.regionTooLarge
       },
     }))
 }
