@@ -68,20 +68,16 @@ Minigraph-Cactus build, so every one of its segments already carries these tags.
 (The base-level `gfa.gz` beside it does not, and neither do pggb graphs, which
 keep the `odgi extract` route.)
 
-Two things follow from those PanSN stable names (`GRCh38#0#chr1`):
+A PanSN name has two halves, and only the first needs configuring:
 
-- The track needs `assemblyNameToPanSN: { "hg38": "GRCh38" }` to tie an `hg38`
-  assembly to the graph's `GRCh38` sample prefix. The prefix disambiguates: the
-  same graph also carries `CHM13#0#chr1`.
-- **Your assembly's own refNames have to match what is left after the prefix.**
-  The adapter looks up `GRCh38` + the refName it is handed, so it finds
-  `GRCh38#0#chr6` from `chr6` and nothing at all from `6`. Aliases are not
-  consulted, so an hg38 whose primary refNames are bare numbers (jbrowse.org's
-  `hg38.prefix.fa.gz` among them) draws the segments track fine, since that
-  query starts from the graph's spelling, but opens an empty graph view. Use a
-  `chr`-prefixed hg38 for the graph view.
-- The variant callset later in this tutorial needs no such mapping, because its
-  contigs are plain GRCh38 (`chr6`, not `GRCh38#0#chr6`).
+- The **sample** half needs `assemblyNameToPanSN: { "hg38": "GRCh38" }`, tying
+  an `hg38` assembly to the graph's `GRCh38` prefix. The prefix disambiguates:
+  the same graph also carries `CHM13#0#chr1`.
+- The **contig** half is ordinary refName aliasing, which your assembly already
+  knows how to do, so an hg38 spelling chr6 as `6` works without any further
+  configuration.
+- The variant callset later in this tutorial needs no mapping at all, because
+  its contigs are plain GRCh38 (`chr6`, not `GRCh38#0#chr6`).
 
 ## Load the graph
 
@@ -145,16 +141,15 @@ ship in the same plugin.
 
 :::
 
-Navigate somewhere interesting, then:
+The graph draws a window at a time rather than a whole viewport, so the way in
+is to **drag across the ruler** to rubberband one and pick **Graph genome view
+of selection**. That picks a window directly, with no navigating first, and it
+needs no graph track in the view: the item appears whenever the session holds a
+track whose adapter can cut a subgraph. Select more than the view will draw and
+the item greys out and names its own limit, so the size to aim at is something
+you read rather than remember.
 
-**Track menu → Launch view → Graph genome view (this region)**
-
-This opens the local subgraph, cut from the same two files, as a graph. Above
-100 kb the view declines to draw, since the layout stops being legible. A view
-that opens reading "0 nodes, 0 edges" is the refName mismatch
-[above](#regular-gfa-vs-rgfa), not an empty region. That menu and the
-per-segment right-click are pictured in the
-[E. coli tutorial](/docs/tutorials/pangenome_ecoli#opening-any-locus-without-a-slice-per-locus).
+The subgraph is cut from the same two files the track reads.
 
 <Figure caption="The HLA class II region as a graph, in force-directed layout, under four lanes of the same window. The blue segment blocks are the GRCh38 backbone; the orange bar is the bubble every orange loop in the graph hangs off, labelled with its shortest and longest allele. The alleles are in the bottom lane, each drawn at the point it attaches and widened to its own bp, since a rank>0 segment has no GRCh38 coordinate to be drawn across." src="/img/pangenome/hprc_mhc_bandage.png" />
 
@@ -169,9 +164,8 @@ puts the x axis back on GRCh38:
 
 <Figure caption="The same subgraph in the anchored layout. Every x is now a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs directly below the position it attaches to, stacked by rank. The trade against the force layout above: position instead of shape, so a bubble reads as a pair of stalks rather than a loop." src="/img/pangenome/hprc_mhc_anchored.png" />
 
-Since the view stops at 100 kb, each locus below is named with a window that
-fits. The counts are what the [allele inventory](#the-allele-inventory) holds in
-each:
+Each locus below is named with a window small enough to draw. The counts are
+what the [allele inventory](#the-allele-inventory) holds in each:
 
 | Locus        | Window                         | In the graph              |
 | ------------ | ------------------------------ | ------------------------- |
@@ -195,6 +189,71 @@ and found nothing.
 C4, from the table:
 
 <Figure caption="The C4 locus, small enough that the whole subgraph fits in one picture. The bubbles track above reports a single bubble spanning the locus; the graph below is what that one bubble contains." src="/img/pangenome/hprc_c4_subgraph.png" />
+
+### Which haplotype an allele came from
+
+The **Layout** dropdown's third mode, **Sample rows**, keeps x on GRCh38 and
+gives each contributing assembly its own row. It is worth the switch here
+because rank is build order: at a locus this dense one rank holds alleles from a
+dozen different haplotypes, so an anchored rank row means nothing biological,
+while a sample row is one haplotype.
+
+<Figure caption="MHC class II in the Sample rows layout, under the RefSeq genes and rGFA segments for the same window. The top row is the GRCh38 backbone; each of the 12 rows below it is one haplotype that donated sequence here, labelled with its HPRC id, and its orange bars are the alleles it donated." src="/img/pangenome/hprc_mhc_sample_rows.png" />
+
+The four windows above draw 8 to 15 such rows each, out of 464 haplotypes, and
+that ratio is the thing to read carefully. A row is the haplotype minigraph took
+the sequence **from**, the same attribution `discoveryRank` and `firstSeenIn`
+carry, not the set of haplotypes carrying the allele. Collapsing is what let the
+allele be found at all, so carriage stays the callset's job,
+[below](#structure-not-sequence).
+
+### Hovering one panel highlights the other
+
+Hover a node in the graph and the reference interval it occupies is highlighted
+in every linear view beside it; hover the linear view and the segment under the
+cursor brightens in the graph. Nothing to configure, and it is the third thing a
+reference axis can hold for a rank>0 allele: not the allele's own sequence, but
+the interval between the two backbone segments it detaches from and rejoins.
+Both directions are pictured in the
+[E. coli tutorial](/docs/tutorials/pangenome_ecoli#hovering-one-panel-highlights-the-other).
+
+### From a node back to a coordinate
+
+Hovering says where a node is while the cursor is on it. **Right-click a node**
+to go there: the menu names the assembly the segment came from and opens it in
+the linear view beside the graph, which scrolls rather than opening another
+pane. The graph's own **Launch view** menu does the same for the whole window it
+was cut from.
+
+Both come from the tags rGFA puts on every segment — `SN` names the sequence the
+segment came from, `SO` its offset there — so what the menu offers depends on
+which segment you clicked:
+
+- a **backbone (rank 0) segment** is on GRCh38, so its own coordinates are the
+  ones you get, exactly.
+- an **allele (rank>0) segment** is on some haplotype's own sequence, e.g.
+  `HG02717#1#chr6` at its own offset. That coordinate is exact too, but no HPRC
+  session loads 464 haplotypes as assemblies, so there is nothing to open it in.
+  What the menu offers instead is the interval on GRCh38 between the two
+  backbone segments the allele detaches from and rejoins — the same span the
+  hover highlights.
+
+The node's contributing haplotype is named either way: in the tooltip, and in
+the details panel a left-click opens.
+
+That makes a round trip out of the four lanes above. Rubberband a locus into a
+graph, find the loop worth asking about, right-click it to put the linear view
+on its GRCh38 interval, and read what the reference-anchored tracks say about
+that interval: which bubble it belongs to ([bubble track](#the-bubble-track)),
+how long the allele is and which haplotype it was first seen in
+([allele inventory](#the-allele-inventory)), and whether the callset genotypes
+anything there ([variant callset](#the-variant-callset)). The graph says what
+sequence exists and where it attaches; those three say how common it is.
+
+Where the contributing assemblies _are_ loaded — a bacterial pangenome, a
+handful of genomes rather than hundreds — the same menu offers one linear view
+per contributing assembly and a synteny view of all of them at once. See the
+[E. coli tutorial](/docs/tutorials/pangenome_ecoli#from-a-node-to-the-strains-that-carry-it).
 
 ## The bubble track
 
