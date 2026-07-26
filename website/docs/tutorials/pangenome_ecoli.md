@@ -24,7 +24,7 @@ lands on JBrowse track types you already have:
 | ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
 | All-vs-all synteny     | The blocks each pair of genomes shares                      | the wfmash all-vs-all PAF, `odgi untangle`, `halSynteny` | [synteny track](/docs/config_guides/synteny_track)                 |
 | Pangenome variants     | Every difference the graph calls, across all samples        | `pggb -V`, `cactus-pangenome --vcf`, `vg deconstruct`    | [multi-sample variant track](/docs/user_guides/multivariant_track) |
-| Whole-genome alignment | The multiple alignment, column by column                    | `pggb -M`, `hal2maf` + `taffy`                           | [MAF track](/docs/user_guides/maf_track)                           |
+| Whole-genome alignment | The multiple alignment, column by column                    | `pggb -M`, `hal2maf`                                     | [MAF track](/docs/user_guides/maf_track)                           |
 | Pangenome depth        | How many genomes cover each reference base (core/accessory) | `odgi depth`                                             | [quantitative track](/docs/config_guides/quantitative_track)       |
 
 This tutorial builds a five-strain _E. coli_ pangenome with pggb and loads all
@@ -664,13 +664,6 @@ tabix -p bed ecoli_pggb.maf.bed.gz
   }
 }
 ```
-
-A MAF track also reads [bgzipped TAF](/docs/config/bgziptaffyadapter) (what
-[taffy](https://github.com/ComparativeGenomicsToolkit/taffy) writes, used by the
-[Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus)) and
-[BigMaf](/docs/config/bigmafadapter). Tabix suits this graph: pggb collapses
-repeats, so several blocks share reference coordinates, and a tabix interval
-index handles that directly.
 
 <Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb spanning the fim, mcr and hsd loci: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12, with the variant calls above. Where a row goes blank the strain has no alignment to K12 at all, so the accessory structure and the SNP divergence read in the same picture. Numbered boxes are insertions, labeled with the bases the allele adds beyond K12. An insertion consumes no reference, so its length can only be drawn as a marker." src="/img/pangenome/maf.png" />
 

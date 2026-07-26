@@ -21,7 +21,7 @@
 # the projections below are derived from those outputs afterward.
 #
 # Requires: docker (the cactus image, which also carries odgi, halSynteny,
-#           hal2maf, taffy, and vg), the NCBI `datasets` CLI, samtools,
+#           hal2maf, and vg), the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), bgzip/tabix (htslib), unzip, wget,
 #           ImageMagick (`convert`/`identify`, for the correspondence band),
 #           and node (JBrowse CLI, via npx unless `jbrowse` is on PATH).
@@ -29,6 +29,7 @@
 #
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so maf_to_bed.py resolves after cd
 OUTDIR="${1:-ecoli_cactus_build}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
@@ -45,7 +46,7 @@ REF=K12          # the strain the VCF, MAF, and depth are projected onto
 REFPATH="K12#0#chr"
 
 # Pin the cactus image by tag (not :latest) so re-running reproduces the same
-# graph. Bump deliberately, not silently. odgi, halSynteny, hal2maf, and taffy
+# graph. Bump deliberately, not silently. odgi, halSynteny, and hal2maf
 # all ship inside this image, so the projections below reuse it.
 CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
 in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data --env TMPDIR=/data/tmp "$CACTUS_IMAGE" "$@"; }
@@ -135,14 +136,16 @@ done
 # already the assembly refName (`chr`) and its samples are the three non-K12
 # strains, so it loads as-is — no rename step (pggb's -V needed one).
 
-# ── Projection 3: whole-genome MAF, re-rooted on K12, as a bgzipped TAF ────────
+# ── Projection 3: whole-genome MAF, re-rooted on K12, as a tabixed BED ─────────
 # cactus-pangenome writes mc/ecoli.full.hal by default. hal2maf --refGenome roots
 # every block on K12 directly (no reroot script), and the HAL's genome.sequence
 # rows come out `K12.chr`/`Sakai.chr`/... — exactly the `sample.contig` names the
-# MAF display splits species on. taffy converts it to the bgzipped-TAF JBrowse reads.
+# MAF display splits species on. maf_to_bed.py writes the BED a MafTabixAdapter
+# reads, one line per block carrying that block's rows.
 in_cactus hal2maf --refGenome "$REF" --noAncestors /data/mc/ecoli.full.hal /data/ecoli_cactus.maf
-in_cactus taffy view -i /data/ecoli_cactus.maf -o /data/ecoli_cactus.taf.gz -c
-in_cactus taffy index -i /data/ecoli_cactus.taf.gz
+python3 "$SCRIPT_DIR/maf_to_bed.py" ecoli_cactus.maf ecoli_cactus.maf.bed
+bgzip -f ecoli_cactus.maf.bed
+tabix -f -p bed ecoli_cactus.maf.bed.gz
 
 # ── Projection 4: pangenome depth (core vs accessory) as a bigWig ─────────────
 # odgi depth counts how many path-steps traverse the graph nodes under each K12
@@ -359,8 +362,8 @@ cat > variants_track.json <<'JSON'
 JSON
 jb add-track-json variants_track.json --update --out "$APP"
 
-# projection 3: whole-genome MAF (BgzipTaffyAdapter carries the sample list)
-cp ecoli_cactus.taf.gz ecoli_cactus.taf.gz.tai "$APP/"
+# projection 3: whole-genome MAF (MafTabixAdapter carries the sample list)
+cp ecoli_cactus.maf.bed.gz ecoli_cactus.maf.bed.gz.tbi "$APP/"
 cat > maf_track.json <<'JSON'
 {
   "type": "MafTrack",
@@ -368,10 +371,9 @@ cat > maf_track.json <<'JSON'
   "name": "MC graph: whole-genome alignment (MAF, vs K12)",
   "assemblyNames": ["K12"],
   "adapter": {
-    "type": "BgzipTaffyAdapter",
+    "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "tafGzLocation": { "uri": "ecoli_cactus.taf.gz" },
-    "taiLocation": { "uri": "ecoli_cactus.taf.gz.tai" }
+    "uri": "ecoli_cactus.maf.bed.gz"
   }
 }
 JSON

@@ -37,8 +37,8 @@ sections below build each from the Cactus outputs.
 
 ## What you need
 
-- `docker`, for the cactus image (which carries odgi, halSynteny, hal2maf,
-  taffy, and `samtools`)
+- `docker`, for the cactus image (which carries odgi, halSynteny, hal2maf, and
+  `samtools`)
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -95,9 +95,7 @@ A single run emits everything the sections below use:
 - `mc/ecoli.viz/chr.full.viz.png`: the odgi 1D graph raster
 
 The cactus image also carries [odgi](https://github.com/pangenome/odgi),
-`halSynteny`, `hal2maf`, and
-[taffy](https://github.com/ComparativeGenomicsToolkit/taffy), so no other tool
-is needed for the projections.
+`halSynteny`, and `hal2maf`, so no other tool is needed for the projections.
 
 ## Drawing this graph as a graph
 
@@ -246,12 +244,14 @@ the MAF display splits each species off on:
 
 ```bash
 in_cactus hal2maf --refGenome K12 --noAncestors /data/mc/ecoli.full.hal /data/ecoli_cactus.maf
-in_cactus taffy view -i /data/ecoli_cactus.maf -o /data/ecoli_cactus.taf.gz -c   # -c bgzips
-in_cactus taffy index -i /data/ecoli_cactus.taf.gz                               # -> .taf.gz.tai
+python3 maf_to_bed.py ecoli_cactus.maf ecoli_cactus.maf.bed
+bgzip ecoli_cactus.maf.bed
+tabix -p bed ecoli_cactus.maf.bed.gz
 ```
 
-Load the bgzipped-TAF with a
-[`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter):
+[`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py)
+writes one line per block, carrying that block's rows, which a
+[`MafTabixAdapter`](/docs/config/maftabixadapter) reads:
 
 ```json
 {
@@ -260,9 +260,9 @@ Load the bgzipped-TAF with a
   "name": "MC graph: whole-genome alignment (MAF, vs K12)",
   "assemblyNames": ["K12"],
   "adapter": {
-    "type": "BgzipTaffyAdapter",
+    "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "uri": "ecoli_cactus.taf.gz"
+    "uri": "ecoli_cactus.maf.bed.gz"
   }
 }
 ```
