@@ -1,12 +1,13 @@
 import { useRef } from 'react'
 
-import { Crosshairs, Menu, useMouseTracking } from '@jbrowse/core/ui'
+import { Menu, useMouseTracking } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import {
   DisplayChrome,
   FloatingSvgOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
+  DisplayCrosshairs,
   SvgRowLabels,
   TreeSidebar,
   treeSidebarRightEdge,
@@ -40,61 +41,19 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     colorLegend,
     hiddenCategorySet,
   } = model
-  function onMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
-    model.setHoveredFeature(
-      hit ? { ...hit, clientX: e.clientX, clientY: e.clientY } : undefined,
-    )
-  }
-  function onClick(e: React.MouseEvent<HTMLCanvasElement>) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
-    if (hit) {
-      model.selectFeatureById(hit.id, hit.regionIndex)
-    }
-  }
-  function onContextMenu(e: React.MouseEvent<HTMLCanvasElement>) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const px = e.clientX - rect.left
-    const p = view.pxToBp(px)
-    // preventDefault only when a menu actually opens, so a right-click in the
-    // inter-region gutter falls through to the browser menu instead of being a
-    // dead zone
-    if (!p.oob) {
-      e.preventDefault()
-      model.setHoveredFeature(undefined)
-      model.openContextMenu({
-        clientX: e.clientX,
-        clientY: e.clientY,
-        refName: p.refName,
-        pos: Math.floor(p.coord0),
-        hit: model.featureAt(px, e.clientY - rect.top),
-      })
-    }
-  }
   return (
     <>
       <canvas
         data-testid="multirow_canvas"
         ref={canvasRef}
-        onMouseMove={e => {
-          onMouseMove(e)
-        }}
-        onMouseLeave={() => {
-          model.setHoveredFeature(undefined)
-        }}
-        onClick={e => {
-          onClick(e)
-        }}
-        onContextMenu={e => {
-          onContextMenu(e)
-        }}
         style={{
           width: view.trackWidthPx,
           height,
           position: 'absolute',
           left: 0,
+          // pinned rather than left to the static flow: the pointer handlers
+          // measure the chrome container, so the canvas has to share its origin
+          top: 0,
         }}
       />
       <MultiRowIndelGlyphOverlay model={model} />
@@ -144,7 +103,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         </FloatingSvgOverlay>
       ) : null}
       <TreeSidebar model={model} />
-      <MultiRowTooltip model={model} />
       {model.contextMenuInfo ? (
         <Menu
           open
@@ -174,33 +132,72 @@ const LinearMultiRowFeatureDisplayComponent = observer(
   }) {
     const view = getContainingView(model) as LinearGenomeViewModel
     const ref = useRef<HTMLDivElement>(null)
-    const { mouseState, handleMouseMove, handleMouseLeave } =
-      useMouseTracking(ref)
+    // One pointer source for the whole display: the hit-test, the tooltip, and
+    // the guides all come off this measurement, in one frame.
+    const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(
+      ref,
+      state => {
+        model.setHoveredFeature(
+          state ? model.featureAt(state.x, state.y) : undefined,
+        )
+      },
+    )
+    function onClick(e: React.MouseEvent<HTMLDivElement>) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
+      if (hit) {
+        model.selectFeatureById(hit.id, hit.regionIndex)
+      }
+    }
+    function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const px = e.clientX - rect.left
+      const p = view.pxToBp(px)
+      // preventDefault only when a menu actually opens, so a right-click in the
+      // inter-region gutter, or on the tree sidebar that overlays this container
+      // and owns its own menu, falls through instead of being a dead zone
+      if (!p.oob && px >= treeSidebarRightEdge(model)) {
+        e.preventDefault()
+        model.setHoveredFeature(undefined)
+        model.openContextMenu({
+          clientX: e.clientX,
+          clientY: e.clientY,
+          refName: p.refName,
+          pos: Math.floor(p.coord0),
+          hit: model.featureAt(px, e.clientY - rect.top),
+        })
+      }
+    }
     return (
-      // an explicit height so the chrome div (whose content is all absolutely
-      // positioned, so it would otherwise collapse) is the box the mouse
-      // handlers and the crosshair geometry both work in
       <DisplayChrome
         model={model}
         factory={MultiRowRendererFactory}
         testid="multirow-display"
         ref={ref}
+        // its content is all absolutely positioned, so without a height the
+        // container collapses and receives no pointer events at all
         style={{ height: model.height }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClick={e => {
+          onClick(e)
+        }}
+        onContextMenu={e => {
+          onContextMenu(e)
+        }}
       >
         {({ canvasRef }) => (
           <>
             <MultiRowCanvas model={model} canvasRef={canvasRef} />
             {mouseState ? (
-              <Crosshairs
-                mouseX={mouseState.x}
-                mouseY={mouseState.y}
-                width={view.trackWidthPx}
-                height={model.height}
-                zIndex={800}
-                minLeft={treeSidebarRightEdge(model)}
-              />
+              <>
+                <DisplayCrosshairs
+                  model={model}
+                  mouseX={mouseState.x}
+                  mouseY={mouseState.y}
+                />
+                <MultiRowTooltip model={model} mouseState={mouseState} />
+              </>
             ) : null}
           </>
         )}

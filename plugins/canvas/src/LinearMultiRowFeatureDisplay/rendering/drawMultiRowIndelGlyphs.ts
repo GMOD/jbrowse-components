@@ -14,6 +14,7 @@ import {
   isFeatureColorHidden,
   resolveLocalRowIndices,
 } from './resolveLocalRowIndices.ts'
+import { rowBand } from './rowBand.ts'
 
 import type {
   MultiRowRegionData,
@@ -64,8 +65,7 @@ export function drawMultiRowIndelGlyphs(
     rowColorsByIndex,
     hiddenColors,
   } = state
-  const h = rowHeight * rowProportion
-  const offset = (rowHeight - h) / 2
+  const { height: h, offset } = rowBand(rowHeight, rowProportion)
   ctx.font = FONT
   ctx.textBaseline = 'middle'
 

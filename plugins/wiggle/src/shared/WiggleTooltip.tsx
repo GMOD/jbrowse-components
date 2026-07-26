@@ -11,8 +11,6 @@ import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../util.ts'
 // hundreds of sources doesn't render an unbounded tooltip.
 const MAX_ROWS = 8
 
-type Coord = [number, number]
-
 const useStyles = makeStyles()({
   // Static bits only — `background` stays inline since it changes per source and
   // would churn emitted CSS.
@@ -89,7 +87,7 @@ const WiggleTooltip = observer(function WiggleTooltip({
   clientMouseCoord,
 }: {
   model: { featureUnderMouse?: WiggleFeatureUnderMouse }
-  clientMouseCoord: Coord
+  clientMouseCoord: [number, number]
 }) {
   const { featureUnderMouse } = model
   return featureUnderMouse ? (

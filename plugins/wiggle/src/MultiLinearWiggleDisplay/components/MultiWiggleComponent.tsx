@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
-import { Crosshairs } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
+import { DisplayCrosshairs, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -152,12 +151,10 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           being read in multi-row mode and a score level in overlay mode, and
           both are hard to eyeball across a tall stack of plots */}
       {model.featureUnderMouse ? (
-        <Crosshairs
+        <DisplayCrosshairs
+          model={model}
           mouseX={offsetMouseCoord[0]}
           mouseY={offsetMouseCoord[1]}
-          width={totalWidth}
-          height={height}
-          zIndex={800}
         />
       ) : null}
       <WiggleTooltip model={model} clientMouseCoord={clientMouseCoord} />

@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { Crosshairs } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -10,7 +11,6 @@ import {
 import { observer } from 'mobx-react'
 
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
-import WiggleCursorLine from '../../shared/WiggleCursorLine.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
@@ -140,8 +140,15 @@ const WiggleBody = observer(function WiggleBody({
       {model.displayCrossHatches && model.ticks ? (
         <CrossHatches ticks={model.ticks} width={width} height={height} />
       ) : null}
+      {/* no mouseY, so no horizontal guide: y here is the score axis, which
+          CrossHatches above already rules, and a second line at the cursor would
+          read as another threshold */}
       {model.featureUnderMouse ? (
-        <WiggleCursorLine height={height} left={offsetMouseCoord[0]} />
+        <Crosshairs
+          mouseX={offsetMouseCoord[0]}
+          width={width}
+          height={height}
+        />
       ) : null}
       <WiggleTooltip model={model} clientMouseCoord={clientMouseCoord} />
     </>

@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 
+import { hoverBoxStyle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
@@ -169,8 +170,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
         top,
         width: Math.max(right - left, 2),
         height: model.effectiveRowHeight,
-        border: '1px solid rgba(0,0,0,0.5)',
-        background: 'rgba(255,255,255,0.3)',
+        ...hoverBoxStyle,
         pointerEvents: 'none',
         zIndex: 5,
       }}

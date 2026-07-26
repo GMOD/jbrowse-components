@@ -22,6 +22,7 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
+  treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -31,6 +32,7 @@ import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelper
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
+import { blockScreenRect } from './rendering/blockScreenRect.ts'
 import {
   buildColorLegend,
   resolveConfiguredLegend,
@@ -73,19 +75,14 @@ export interface MultiRowHit {
   // the full feature for the details widget
   id: string
   regionIndex: number
-  row: string
-  // display row the feature paints on, so the hover highlight can position its
-  // box in the same geometry the render paths use
+  // display row the feature paints on. The row's label is NOT carried alongside
+  // it: a hit outlives a row reorder, so a snapshot of both can disagree —
+  // consumers resolve the label through `sources[rowIndex]`.
   rowIndex: number
   name: string
   refName: string
   start: number
   end: number
-}
-
-export interface HoveredFeature extends MultiRowHit {
-  clientX: number
-  clientY: number
 }
 
 /**
@@ -152,10 +149,11 @@ export default function stateModelFactory(
       prefersOffset: true,
       /**
        * #volatile
-       * The feature under the mouse (+ client coords for tooltip placement), or
-       * undefined when not hovering a block.
+       * The feature under the mouse, or undefined when not hovering a block. Pure
+       * hover identity — the cursor position that places the tooltip is component
+       * state, so moving inside one block doesn't invalidate this.
        */
-      hoveredFeature: undefined as HoveredFeature | undefined,
+      hoveredFeature: undefined as MultiRowHit | undefined,
       /**
        * #volatile
        * Right-click context menu anchor + the genomic position clicked (and the
@@ -519,18 +517,23 @@ export default function stateModelFactory(
       },
       /**
        * #method
-       * Hit-test the feature under a canvas-relative pixel: row from
+       * Hit-test the feature under a display-relative pixel: row from
        * `mouseY / rowHeight`, genomic bp from the view, then the first feature on
        * that row whose `[start,end)` covers the bp. Returns undefined over the
        * sidebar, off-row, out-of-bounds, or over a gap.
+       *
+       * The sidebar bound is `treeSidebarRightEdge`, not `sidebarOffset`: the
+       * latter is where labels are *drawn* from, while the resize handle sitting
+       * in the 4px past it is the sidebar's interactive edge, and a hit under the
+       * handle would fight the drag. Same bound the wiggle family hit-tests
+       * against, and the same one the crosshair's guide stops at.
        */
       featureAt(mouseX: number, mouseY: number): MultiRowHit | undefined {
-        if (mouseX < self.sidebarOffset) {
+        if (mouseX < treeSidebarRightEdge(self)) {
           return undefined
         }
         const targetRow = Math.floor(mouseY / self.rowHeight)
-        const source = self.sources[targetRow]
-        if (!source) {
+        if (!self.sources[targetRow]) {
           return undefined
         }
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -578,7 +581,6 @@ export default function stateModelFactory(
             return {
               id: featureIds[i]!,
               regionIndex: p.index,
-              row: source.label ?? source.name,
               rowIndex: targetRow,
               name: featureNames[i]!,
               refName: p.refName,
@@ -588,6 +590,26 @@ export default function stateModelFactory(
           }
         }
         return undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Screen box of the block to mark, or undefined when there's nothing to
+       * mark. The hover drops when a right-click menu opens (else its tooltip
+       * sticks under the menu), so the menu's own feature stands in — the block a
+       * menu is acting on is exactly the one that should stay marked.
+       */
+      get highlightedBlockRect() {
+        const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
+        return hit
+          ? blockScreenRect({
+              hit,
+              blocks: self.renderBlocks,
+              rowHeight: self.rowHeight,
+              rowProportion: self.rowProportion,
+            })
+          : undefined
       },
     }))
     .actions(self => ({
@@ -687,9 +709,15 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       * Writes only when the hovered block actually changes, so a mouse moving
+       * within one block (blocks are many px wide) doesn't invalidate the
+       * observers watching this.
        */
-      setHoveredFeature(arg?: HoveredFeature) {
-        self.hoveredFeature = arg
+      setHoveredFeature(arg?: MultiRowHit) {
+        const cur = self.hoveredFeature
+        if (arg?.id !== cur?.id || arg?.regionIndex !== cur?.regionIndex) {
+          self.hoveredFeature = arg
+        }
       },
       /**
        * #action
