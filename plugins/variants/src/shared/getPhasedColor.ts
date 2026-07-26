@@ -1,6 +1,9 @@
-import { set1 } from '@jbrowse/core/ui/colors'
-
-import { NO_CALL_COLOR, REFERENCE_COLOR, UNPHASED_COLOR } from './constants.ts'
+import {
+  NO_CALL_COLOR,
+  PRIMARY_ALT_COLOR,
+  REFERENCE_COLOR,
+  SECONDARY_ALT_COLOR,
+} from './constants.ts'
 
 // Fast-path diploid genotype split. The 3-char form "a|b" hits on the vast
 // majority of human VCFs; the general split handles polyploid or multi-digit
@@ -26,6 +29,10 @@ export function isNoCall(genotype: string) {
   return true
 }
 
+// '' means "draw no cell here" — the same sentinel getAlleleColor returns, so
+// the two cell-color functions can share one `if (c)` at every call site. (It
+// can't be `undefined` there: getAlleleColor's memo uses `undefined` as its
+// cache-miss marker, so '' has to be a cacheable value.)
 export function getPhasedColor(
   alleles: string[],
   HP: number,
@@ -38,7 +45,7 @@ export function getPhasedColor(
     return NO_CALL_COLOR
   }
   if (allele === '0') {
-    return drawReference ? REFERENCE_COLOR : undefined
+    return drawReference ? REFERENCE_COLOR : ''
   }
   if (PS !== undefined) {
     // Hash the phase-set id to a hue. Hue is a cyclic 0-360 axis, so the wrap
@@ -49,6 +56,5 @@ export function getPhasedColor(
     const hue = Number.isFinite(ps) ? (ps * 137.508) % 360 : 0
     return `hsl(${hue}, 50%, 50%)`
   }
-  const colorIdx = allele === mostFrequentAlt ? 0 : 1
-  return set1[colorIdx] ?? UNPHASED_COLOR
+  return allele === mostFrequentAlt ? PRIMARY_ALT_COLOR : SECONDARY_ALT_COLOR
 }

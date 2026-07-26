@@ -239,7 +239,9 @@ async function callMultiSampleVariantCellData(args: {
     maxMissingnessFilter: number
     filters?: SerializableFilterChain
     renderingMode: string
-    referenceDrawingMode: string
+    // Regular mode only — see the `rpcProps` override on
+    // LinearMultiSampleVariantDisplay. Absent for the matrix.
+    referenceDrawingMode?: string
     featureColor: string
   }
   mode: 'regular' | 'matrix'
@@ -953,6 +955,12 @@ export default function MultiSampleVariantBaseModelF(
         // this — any change clears loaded data and triggers a refetch. Uses
         // sourcesBase (not sources) to avoid reading sampleInfo, which comes from
         // the fetch result and would cause an infinite invalidation loop.
+        //
+        // Only settings the *worker* reads belong here. `referenceDrawingMode`
+        // is deliberately absent: it changes the shipped cells in regular mode
+        // (computeVariantCells drops reference cells when 'skip'), so that
+        // display adds it back via super-capture, but the matrix computes ref
+        // cells unconditionally and greys its background in CSS instead.
         rpcProps() {
           return {
             sources: self.sourcesBase,
@@ -960,7 +968,6 @@ export default function MultiSampleVariantBaseModelF(
             maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
             renderingMode: self.renderingMode,
-            referenceDrawingMode: self.referenceDrawingMode,
             featureColor: self.featureColor,
           }
         },

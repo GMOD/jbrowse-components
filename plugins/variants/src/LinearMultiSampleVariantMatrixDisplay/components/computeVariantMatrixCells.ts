@@ -1,9 +1,9 @@
+import { getInsertedBp } from '../../shared/alleleLength.ts'
 import {
   BLACK_ABGR,
   NO_CALL_COLOR,
   REFERENCE_COLOR,
 } from '../../shared/constants.ts'
-import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
   getPhasedColor,
@@ -53,7 +53,7 @@ export function computeVariantMatrixCells({
   sources,
   renderingMode,
   featureColor,
-  genotypesCache,
+  featureGenotypes,
   report,
 }: {
   filteredVariants: FilteredVariant[]
@@ -61,7 +61,8 @@ export function computeVariantMatrixCells({
   renderingMode: string
   // Optional per-variant color override (see computeVariantCells).
   featureColor?: (feature: Feature) => string | undefined
-  genotypesCache: Map<string, Record<string, string>>
+  // Prepopulated for every filtered variant — see computeVariantCells.
+  featureGenotypes: ReadonlyMap<string, Record<string, string>>
   report?: ProgressReporter
 }): MatrixCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
@@ -122,11 +123,7 @@ export function computeVariantMatrixCells({
       }
       featureData.push(makeFeatureData(feature, featureId, genotypes))
     } else {
-      stringGenotypes = genotypesCache.get(featureId)
-      if (!stringGenotypes) {
-        stringGenotypes = feature.get('genotypes') as Record<string, string>
-        genotypesCache.set(featureId, stringGenotypes)
-      }
+      stringGenotypes = featureGenotypes.get(featureId)!
       featureData.push(makeFeatureData(feature, featureId, stringGenotypes))
     }
 

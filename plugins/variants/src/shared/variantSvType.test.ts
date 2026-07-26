@@ -2,7 +2,6 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
   assignSvTypeColors,
-  featureHasSvType,
   getVariantSvType,
   getVariantSvTypeColor,
   svTypeDisplayLabel,
@@ -77,15 +76,6 @@ describe('getVariantSvTypeColor (single-variant fixed-color jexl)', () => {
   it('returns neutral grey for a non-SV or unrecognized token', () => {
     expect(getVariantSvTypeColor(feat({ ALT: ['A'] }))).toBe('#808080') // SNV
     expect(getVariantSvTypeColor(feat({ ALT: ['<WEIRD>'] }))).toBe('#808080')
-  })
-})
-
-describe('featureHasSvType', () => {
-  it('true for an SV, false for a plain SNV', () => {
-    expect(
-      featureHasSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>'] })),
-    ).toBe(true)
-    expect(featureHasSvType(feat({ ALT: ['A'] }))).toBe(false)
   })
 })
 

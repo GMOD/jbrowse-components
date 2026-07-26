@@ -16,6 +16,8 @@ import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import VariantInsertionGlyphOverlay from './VariantInsertionGlyphOverlay.tsx'
+import { pickVariantCell } from './pickVariantCell.ts'
+import { variantCellSpanPx } from './variantCellSpan.ts'
 import { computeVariantHitQuery } from './variantHitTest.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
@@ -29,6 +31,10 @@ interface HoveredCell {
   rowIndex: number
   genomicStart: number
   genomicEnd: number
+  // bp this cell's record inserts; widens the drawn cell to an insertion marker,
+  // so the highlight has to widen with it (see variantCellSpan.ts). 0 for
+  // everything else.
+  insertedBp: number
   displayedRegionIndex: number
 }
 
@@ -63,46 +69,46 @@ function getFeatureUnderMouse(
     return undefined
   }
 
-  const flatbushIndex = model.flatbushIndices.get(region.displayedRegionIndex)
-  if (!flatbushIndex) {
+  const featureIndex = model.featureIndices.get(region.displayedRegionIndex)
+  if (!featureIndex) {
     return undefined
   }
 
-  const { genomicPos, rowLo, rowHi, bpPadding } = computeVariantHitQuery(
-    region,
-    mouseX,
-    mouseY,
-    model.scrollTop,
-    model.effectiveRowHeight,
-  )
-  const hits = flatbushIndex.search(
+  const { genomicPos, rowNearest, rowLowest, bpPadding } =
+    computeVariantHitQuery(
+      region,
+      mouseX,
+      mouseY,
+      model.scrollTop,
+      model.effectiveRowHeight,
+    )
+  // x only: the index holds one interval per feature ([start, 0, end, 1]), so
+  // the row half of the query is resolved arithmetically instead.
+  const candidateFeatures = featureIndex.search(
     genomicPos - bpPadding,
-    rowLo,
+    0,
     genomicPos + bpPadding,
-    rowHi,
+    1,
   )
 
-  // Pick the shortest feature so a small variant atop a large one stays
-  // selectable.
-  let bestIdx = -1
-  let bestLen = Infinity
-  for (const idx of hits) {
-    const len =
-      regionCellData.cellPositions[idx * 2 + 1]! -
-      regionCellData.cellPositions[idx * 2]!
-    if (len < bestLen) {
-      bestLen = len
-      bestIdx = idx
-    }
-  }
-
-  if (bestIdx < 0) {
+  const toX = makeBpMapper(region)
+  const picked = pickVariantCell({
+    data: regionCellData,
+    candidateFeatures,
+    mouseX,
+    rowNearest,
+    rowLowest,
+    toX,
+    pxPerBp:
+      (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
+    drawnRowHeight: Math.max(model.effectiveRowHeight, 2),
+  })
+  if (!picked) {
     return undefined
   }
 
-  const featureId =
-    regionCellData.featureIdList[regionCellData.cellFeatureIndices[bestIdx]!]!
-  const rowIndex = regionCellData.cellRowIndices[bestIdx]!
+  const { rowIndex, genomicStart, genomicEnd, insertedBp } = picked
+  const featureId = regionCellData.featureIdList[picked.featureIndex]!
   // The cell row index maps directly into model.sources (same effectiveSources
   // ordering used to compute the cells), so no per-region sourceNameList is
   // shipped over RPC.
@@ -110,8 +116,6 @@ function getFeatureUnderMouse(
   if (!source) {
     return undefined
   }
-  const genomicStart = regionCellData.cellPositions[bestIdx * 2]!
-  const genomicEnd = regionCellData.cellPositions[bestIdx * 2 + 1]!
   const info = regionCellData.featureGenotypeMap[featureId]!
   const genotype = decodeGenotype(
     cellData.genotypeDict,
@@ -132,6 +136,7 @@ function getFeatureUnderMouse(
       rowIndex,
       genomicStart,
       genomicEnd,
+      insertedBp,
       displayedRegionIndex: region.displayedRegionIndex,
     },
   }
@@ -151,10 +156,16 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     return null
   }
   const toX = makeBpMapper(region)
-  const px1 = toX(cell.genomicStart)
-  const px2 = toX(cell.genomicEnd)
-  const left = Math.min(px1, px2)
-  const right = Math.max(px1, px2)
+  // Same drawn extent the cell painted, so the box lands on an insertion marker
+  // rather than the ~1bp reference span underneath it.
+  const { left, width } = variantCellSpanPx({
+    x1: toX(cell.genomicStart),
+    x2: toX(cell.genomicEnd),
+    insertedBp: cell.insertedBp,
+    pxPerBp:
+      (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
+    drawnRowHeight: Math.max(model.effectiveRowHeight, 2),
+  })
   // Screen Y from model.scrollTop — the same value the GPU cells draw at, so
   // the highlight can't diverge from its cell (virtual scroll: one scroll
   // source). Cull when the row is fully outside the viewport.
@@ -168,7 +179,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
         position: 'absolute',
         left,
         top,
-        width: Math.max(right - left, 2),
+        width,
         height: model.effectiveRowHeight,
         ...hoverBoxStyle,
         pointerEvents: 'none',

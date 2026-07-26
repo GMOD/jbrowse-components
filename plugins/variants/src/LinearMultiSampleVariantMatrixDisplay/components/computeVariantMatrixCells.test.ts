@@ -11,6 +11,17 @@ function makeFeature(props: Record<string, unknown>): Feature {
   } as unknown as Feature
 }
 
+// See computeVariantCells.test.ts — the worker hands the compute pass a lookup
+// computeSampleInfo already filled, so the test builds the same shape.
+function genotypeLookup(features: Feature[]) {
+  return new Map(
+    features.map(f => [
+      f.id(),
+      (f.get('genotypes') as Record<string, string> | undefined) ?? {},
+    ]),
+  )
+}
+
 describe('computeVariantMatrixCells phased genotypes', () => {
   // Two diploid samples, each split into two haplotype sources.
   const feature = makeFeature({
@@ -36,7 +47,7 @@ describe('computeVariantMatrixCells phased genotypes', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'phased',
-      genotypesCache: new Map(),
+      featureGenotypes: genotypeLookup([feature]),
     })
 
     const genotypes = result.featureData[0]!.genotypes

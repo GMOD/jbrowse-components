@@ -145,15 +145,6 @@ export function getVariantSvType(feature: Feature) {
 }
 
 /**
- * Whether the variant is a structural variant, gating the "Color by...→SV type"
- * menu option (like featureHasConsequence gates the consequence option) so it
- * isn't offered on plain SNP/indel VCFs.
- */
-export function featureHasSvType(feature: Feature) {
-  return getVariantSvType(feature) !== ''
-}
-
-/**
  * A fixed CSS color for a variant's SV class, for the single-variant display's
  * `color` slot (via the `svTypeColor` jexl function): the predefined class
  * color, the absolute copy-number rainbow color for a CN state, else a neutral

@@ -1,4 +1,9 @@
-import { computeVariantHitQuery } from './variantHitTest.ts'
+import { MAX_INSERTION_MARKER_WIDTH_PX } from './variantCellSpan.ts'
+import {
+  HIT_SEARCH_PAD_PX,
+  HIT_TOLERANCE_PX,
+  computeVariantHitQuery,
+} from './variantHitTest.ts'
 
 import type { HitRegion } from './variantHitTest.ts'
 
@@ -31,32 +36,54 @@ describe('computeVariantHitQuery genomicPos', () => {
     expect(computeVariantHitQuery(shifted, 120, 0, 0, 10).genomicPos).toBe(2000)
   })
 
-  test('bpPadding is 5px worth of bp', () => {
-    expect(computeVariantHitQuery(fwd, 0, 0, 0, 10).bpPadding).toBe(50)
+  test('bpPadding reaches the far edge of the widest insertion marker', () => {
+    // The flatbush boxes are reference spans, but an insertion paints a marker
+    // centered on that span, so a cursor on the marker's edge sits
+    // MAX_INSERTION_MARKER_WIDTH_PX/2 away from the box it must find.
+    expect(HIT_SEARCH_PAD_PX).toBe(
+      MAX_INSERTION_MARKER_WIDTH_PX / 2 + HIT_TOLERANCE_PX,
+    )
+    expect(computeVariantHitQuery(fwd, 0, 0, 0, 10).bpPadding).toBe(
+      HIT_SEARCH_PAD_PX * 10,
+    )
+  })
+})
+
+describe('computeVariantHitQuery row band clamps at the top', () => {
+  test('a cursor in the first sub-pixel rows never asks for a negative row', () => {
+    const { rowNearest, rowLowest } = computeVariantHitQuery(fwd, 0, 1, 0, 0.5)
+    expect(rowNearest).toBe(2)
+    expect(rowLowest).toBe(0)
   })
 })
 
 describe('computeVariantHitQuery row band', () => {
   test('normal rows: band collapses to the single row under the cursor', () => {
-    // cursor at content-Y 25, rowHeight 10 → row 2.5. The flatbush box for row 2
-    // is [2,3], so a point query at 2.5 selects only row 2 (not row 1 above it).
-    const { rowLo, rowHi } = computeVariantHitQuery(fwd, 0, 25, 0, 10)
-    expect(rowLo).toBe(2.5)
-    expect(rowHi).toBe(2.5)
+    // cursor at content-Y 25, rowHeight 10 → row 2, and only row 2 (row 1 ends
+    // at Y 20, row 3 starts at Y 30).
+    const { rowNearest, rowLowest } = computeVariantHitQuery(fwd, 0, 25, 0, 10)
+    expect(rowNearest).toBe(2)
+    expect(rowLowest).toBe(2)
   })
 
   test('scrollTop shifts the band down into the scrolled content', () => {
-    const { rowLo, rowHi } = computeVariantHitQuery(fwd, 0, 25, 100, 10)
-    expect(rowLo).toBe(12.5)
-    expect(rowHi).toBe(12.5)
+    const { rowNearest, rowLowest } = computeVariantHitQuery(
+      fwd,
+      0,
+      25,
+      100,
+      10,
+    )
+    expect(rowNearest).toBe(12)
+    expect(rowLowest).toBe(12)
   })
 
   test('sub-pixel rows: one cursor pixel spans a band of many rows', () => {
-    // rowHeight 0.5 draws at the 2px minimum, so the drawn cells for rows
-    // 46..50 all contain content-Y 25. The query [47,50] overlaps the flatbush
-    // boxes down to [46,47] — a single Y-point query would miss most.
-    const { rowLo, rowHi } = computeVariantHitQuery(fwd, 0, 25, 0, 0.5)
-    expect(rowLo).toBe(47)
-    expect(rowHi).toBe(50)
+    // rowHeight 0.5 draws at the 2px minimum, so the drawn cells for rows 47..50
+    // all cover content-Y 25. Row 50 is the row the cursor is actually in and the
+    // last painted there, so it is tried first.
+    const { rowNearest, rowLowest } = computeVariantHitQuery(fwd, 0, 25, 0, 0.5)
+    expect(rowNearest).toBe(50)
+    expect(rowLowest).toBe(47)
   })
 })

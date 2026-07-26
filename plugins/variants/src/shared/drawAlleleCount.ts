@@ -93,10 +93,8 @@ export function getColorAlleleCount(
     return OTHER_ALT_COLOR
   }
 
-  let a1
-  if (alt) {
-    a1 = colord(getAltColorForDosage(alt / total))
-  }
+  // The alt2 return above plus the `alt || alt2 || uncalled` guard leave only
+  // two live cases here: some primary alt, and/or some no-call.
   if (uncalled) {
     const alpha = uncalled / total
     const noCall = NO_CALL_COLOR.replace(')', `,${alpha})`).replace(
@@ -104,7 +102,11 @@ export function getColorAlleleCount(
       'hsla',
     )
     // Weight the no-call blend by its dosage (mix ratio), not a fixed 0.5.
-    a1 = a1 ? a1.mix(noCall, alpha) : colord(noCall)
+    return (
+      alt
+        ? colord(getAltColorForDosage(alt / total)).mix(noCall, alpha)
+        : colord(noCall)
+    ).toHex()
   }
-  return a1?.toHex() ?? 'black'
+  return colord(getAltColorForDosage(alt / total)).toHex()
 }

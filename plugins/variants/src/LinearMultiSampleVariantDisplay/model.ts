@@ -7,7 +7,7 @@ import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
-import type { VariantInsertionGlyphData } from './components/drawVariantInsertionGlyphs.ts'
+import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
 import type {
   VariantRenderingBackend,
   VariantUploadData,
@@ -42,7 +42,10 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
           : snap,
       )
       .views(self => {
-        const { showSubmenuItems: superShowSubmenuItems } = self
+        const {
+          showSubmenuItems: superShowSubmenuItems,
+          rpcProps: superRpcProps,
+        } = self
 
         return {
           get visibleRegions() {
@@ -59,6 +62,19 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
               canvasHeight: self.availableHeight,
               rowHeight: self.effectiveRowHeight,
               scrollTop: self.scrollTop,
+            }
+          },
+          // referenceDrawingMode is a fetch input here and only here:
+          // computeVariantCells omits reference cells entirely when it is
+          // 'skip', so the shipped payload differs. The matrix keeps it out of
+          // rpcProps because it always computes ref cells and greys the
+          // background in CSS — listing it there refetched identical bytes
+          // whenever PORTABLE_CONFIG_KEYS carried the slot across a
+          // display-type switch.
+          rpcProps() {
+            return {
+              ...superRpcProps(),
+              referenceDrawingMode: self.referenceDrawingMode,
             }
           },
           showSubmenuItems() {
@@ -84,12 +100,24 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
         get prefersOffset() {
           return true
         },
-        // Map view of perRegionCellData for renderBlocks. Rebuilding the map is
-        // cheap (typical view shows 1-3 regions); MobX caches the computed so
-        // only cellData changes invalidate it.
+        /**
+         * #getter
+         * The one walk of `perRegionCellData`. Every regular-mode consumer reads
+         * this map, so "does the glyph overlay see the same regions as the
+         * canvas" has a single answer — `ShippedRegionData` structurally
+         * satisfies both `VariantUploadData` (GPU/Canvas upload) and
+         * `VariantInsertionGlyphData` (overlay), and carries `featureIndexData`
+         * for the hit-test index.
+         *
+         * A computed returning a plain Map, for the same reason the multi-row
+         * display's is: the overlay draws inside an effect, where nothing it
+         * reads is tracked, so the read has to happen here for a refetch to
+         * repaint. Rebuilding is cheap (typical view shows 1-3 regions); MobX
+         * caches the computed so only cellData changes invalidate it.
+         */
         get perRegionCellMap() {
           const { cellData } = self
-          const out = new Map<number, VariantUploadData>()
+          const out = new Map<number, ShippedRegionData>()
           if (cellData?.mode === 'regular') {
             for (const k in cellData.perRegionCellData) {
               out.set(Number(k), cellData.perRegionCellData[k]!)
@@ -97,47 +125,34 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
           }
           return out
         },
+      }))
+      // separate block so these see perRegionCellMap
+      .views(self => ({
         /**
          * #getter
-         * Per-region cell data for the insertion-glyph overlay, or undefined when
-         * the slot is off or there is no regular-mode payload.
-         *
-         * A computed returning a plain Map, for the same reason the multi-row
-         * display's does: the overlay draws inside an effect, where nothing it
-         * reads is tracked, so the read has to happen here for a refetch to
-         * repaint. `perRegionCellMap` is the same walk narrowed to the GPU upload
-         * fields, and the glyphs need `cellCarriesAlt` / `featureInsertedBp` /
-         * `cellFeatureIndices` too.
+         * Per-region cell data for the insertion-glyph overlay, or undefined
+         * when the slot is off.
          */
         get insertionGlyphRegions() {
-          const { cellData } = self
-          if (
-            !getConf(self, 'showInsertionGlyphs') ||
-            cellData?.mode !== 'regular'
-          ) {
-            return undefined
-          }
-          const out = new Map<number, VariantInsertionGlyphData>()
-          for (const k in cellData.perRegionCellData) {
-            out.set(Number(k), cellData.perRegionCellData[k]!)
-          }
-          return out
+          return getConf(self, 'showInsertionGlyphs')
+            ? self.perRegionCellMap
+            : undefined
         },
-        get flatbushIndices() {
-          const { cellData } = self
+        /**
+         * #getter
+         * Per-region spatial index over feature intervals, for the hit-test. One
+         * entry per variant, not per cell — see computeVariantCells.
+         */
+        get featureIndices() {
           const out = new Map<number, Flatbush>()
-          if (cellData?.mode === 'regular') {
-            for (const k in cellData.perRegionCellData) {
-              out.set(
-                Number(k),
-                Flatbush.from(cellData.perRegionCellData[k]!.flatbushData),
-              )
-            }
+          for (const [regionIdx, region] of self.perRegionCellMap) {
+            out.set(regionIdx, Flatbush.from(region.featureIndexData))
           }
           return out
         },
       }))
       // separate block so renderSvg's `self` sees perRegionCellMap/renderBlocks
+      // and insertionGlyphRegions
       .views(self => ({
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')

@@ -35,7 +35,7 @@ const SetRowHeightDialog = lazy(
 
 // Items for the "Show..." submenu — toggles for sidebar labels, the clustering
 // tree, subtree filter, and the legend. Extended by subclasses via super-capture
-// (e.g. the matrix display adds "Show reference alleles").
+// (e.g. the regular display adds "Show reference alleles").
 export function variantShowSubmenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {

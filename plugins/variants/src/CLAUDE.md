@@ -16,6 +16,41 @@ Applies to `computeVariantCells.ts`, `computeVariantMatrixCells.ts`, and
 or VCF-parse / RPC-arg-shaping (amortized). Don't apply it everywhere — the rest
 of the codebase prefers declarative iteration.
 
+## Regular-display hit-test: per-feature index, arithmetic rows
+
+The spatial index the regular display ships (`featureIndexData`) holds **one
+interval per variant**, not one box per cell. A cell adds nothing to it: every
+cell of a variant repeats the same x-extent, so a per-cell index stored
+`numSamples` identical copies — measured at 21.3 bytes/cell (box + tree nodes +
+index array), which was more than every other per-cell array combined, 61 MB for
+1000 variants × 3000 samples versus 33 KB now.
+
+That works because x, y, and existence are resolved separately:
+
+- **x** — `featureIndex.search(...)` over `featurePositions`, padded by
+  `HIT_SEARCH_PAD_PX` so a wide insertion marker is reachable from its locus.
+- **y** — `rowsUnderCursor` (`variantCellLookup.ts`). Row `r` occupies
+  `[r*rowHeight, r*rowHeight + max(rowHeight, 2))`, so for `rowHeight >= 2` the
+  band is one row; only sub-pixel rows stack. `pickVariantCell` walks the band
+  **nearest-first**, and the nearest row is also the last painted there, so the
+  cell that reports is the cell visibly on top.
+- **existence** — `findCellIndex` binary-searches the cell arrays. A cell is
+  absent when the sample has no genotype at the site _or_ its genotype is
+  all-reference under `referenceDrawingMode: 'skip'`. Answering from the arrays
+  the renderer draws from is deliberate: a client-side predicate restating the
+  skip rule would be a second copy of it, free to drift.
+
+**Invariant this rests on:** `computeVariantCells` appends cells feature-major /
+row-minor, then stably partitions them into a reference bucket
+`[0, refCellCount)` and a non-reference bucket `[refCellCount, numCells)` — so
+each bucket stays sorted by `(featureIndex, rowIndex)`. Anything that reorders
+cells (a new paint order, a per-cell sort) must preserve that or rework
+`findCellIndex`. `computeVariantCells.test.ts` (`cell bucket ordering`) pins it,
+in both `draw` and `skip` reference modes.
+
+The matrix display does not use any of this — it inverts `columnGeometry`
+instead, since its columns are laid out by feature index rather than position.
+
 ## Genotype maps cross the RPC boundary keyed by `sampleName`
 
 `ProcessedSource` has two names: `name` (render identity, HP-suffixed in phased
@@ -90,6 +125,15 @@ needless refetches or stale cells. `renderingMode` spans all three (hence its
 special-cased setter). Invariant: **`rpcProps()` must not read fetch-derived
 state** (`sampleInfo`, `cellData`, `sources`) or it loops via `setCellData`;
 that's why it reads `sourcesBase`, not `sources`.
+
+The tier is **per display**, not per setting, so the base `rpcProps()` carries
+only what both send and a subclass extends it by super-capture.
+`referenceDrawingMode` is the live example: regular mode omits reference cells
+from the payload entirely when it's `'skip'` (`computeVariantCells`), so it's a
+fetch input there and `LinearMultiSampleVariantDisplay` adds it back; the matrix
+always computes ref cells and greys its background in CSS, so for it the setting
+is a render input. Listing it in the base made every matrix display-type switch
+refetch identical bytes, because `PORTABLE_CONFIG_KEYS` copies the slot across.
 
 ### Matrix mode is zoom-cache-strict (`isCacheValid`)
 

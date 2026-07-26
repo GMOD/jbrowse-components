@@ -27,9 +27,7 @@ export type FeatureGenotypeInfo = VariantFeatureGenotypes
 export interface VariantCellData {
   // Absolute genomic positions in uint32 (start, end) interleaved.
   // The renderer + shader split via hpSplitUint against the per-block
-  // bpRangeX; no region origin is shipped separately. Hit-testing reads the
-  // same array (the flatbush boxes are built from it), so no parallel
-  // start/end arrays are shipped.
+  // bpRangeX; no region origin is shipped separately.
   cellPositions: Uint32Array
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
@@ -41,9 +39,20 @@ export interface VariantCellData {
   cellCarriesAlt: Uint8Array
   numCells: number
   featureGenotypeMap: Record<string, FeatureGenotypeInfo>
-  flatbushData: ArrayBuffer
   cellFeatureIndices: Uint32Array
   featureIdList: string[]
+  // Absolute genomic (start, end) interleaved per *feature*, aligned to
+  // `featureIdList`. Every cell of one variant shares this span, so the
+  // hit-test and the hover highlight read it here rather than through a cell.
+  featurePositions: Uint32Array
+  // Spatial index over `featurePositions` — numFeatures intervals, not
+  // numFeatures x numSamples cells. See variantCellLookup.ts for why the
+  // per-cell index it replaced was redundant.
+  featureIndexData: ArrayBuffer
+  // Where the non-reference bucket starts in the cell arrays (see the two-bucket
+  // reorder below). The hit-test binary-searches each bucket, so it needs the
+  // boundary; 0 when reference cells are skipped entirely.
+  refCellCount: number
   // bp this record inserts relative to the reference, per feature (aligned to
   // `featureIdList`, so a cell reads it through `cellFeatureIndices`). 0 for
   // SNPs and deletions, which the cell's own reference span already draws
@@ -75,7 +84,7 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   featureColor,
-  genotypesCache,
+  featureGenotypes,
   report,
 }: {
   filteredVariants: FilteredVariant[]
@@ -86,7 +95,12 @@ export function computeVariantCells({
   // per feature; alt-carrying cells take it, ref/no-call cells keep their normal
   // coloring. Undefined = default genotype coloring.
   featureColor?: (feature: Feature) => string | undefined
-  genotypesCache: Map<string, Record<string, string>>
+  // featureId -> genotypes, resolved once for every filtered variant by
+  // `computeSampleInfo` (which returns this map for exactly that reason) so the
+  // per-cell loops never re-parse a feature's genotype block. Prepopulated for
+  // every entry of `filteredVariants` — a sites-only VCF normalizes to {}, not
+  // undefined.
+  featureGenotypes: ReadonlyMap<string, Record<string, string>>
   report?: ProgressReporter
 }): VariantCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
@@ -105,6 +119,7 @@ export function computeVariantCells({
   const featureIndices = new Uint32Array(maxCells)
   const featureIdList: string[] = []
   const insertedBp = new Int32Array(filteredVariants.length)
+  const featurePositions = new Uint32Array(filteredVariants.length * 2)
 
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
   let cellCount = 0
@@ -122,8 +137,9 @@ export function computeVariantCells({
   ) {
     const ci = cellCount
     // Absolute uint32 genomic positions — the shader hp-splits these against the
-    // per-block bpRangeX (no region origin in the uniform). This same array
-    // doubles as the hit-test/highlight bound (the flatbush boxes read it).
+    // per-block bpRangeX (no region origin in the uniform). Rendering only: the
+    // hit-test and hover highlight read the per-feature `featurePositions`, since
+    // every cell of a variant repeats the same span.
     positions[ci * 2] = genomicStart
     positions[ci * 2 + 1] = genomicEnd
     rowIndices[ci] = rowIndex
@@ -164,20 +180,12 @@ export function computeVariantCells({
       const hasPhaseSet = (
         feature.get('FORMAT') as string | undefined
       )?.includes('PS')
-      let samp: Record<string, Record<string, string[]>> | undefined
-      let stringGenotypes: Record<string, string> | undefined
-      if (hasPhaseSet) {
-        samp = feature.get('samples') as Record<
-          string,
-          Record<string, string[]>
-        >
-      } else {
-        stringGenotypes = genotypesCache.get(featureId)
-        if (!stringGenotypes) {
-          stringGenotypes = feature.get('genotypes') as Record<string, string>
-          genotypesCache.set(featureId, stringGenotypes)
-        }
-      }
+      const samp = hasPhaseSet
+        ? (feature.get('samples') as Record<string, Record<string, string[]>>)
+        : undefined
+      const stringGenotypes = hasPhaseSet
+        ? undefined
+        : featureGenotypes.get(featureId)!
 
       for (let j = 0; j < numSources; j++) {
         const { HP, sampleName } = sources[j]!
@@ -233,12 +241,7 @@ export function computeVariantCells({
         }
       }
     } else {
-      let samp = genotypesCache.get(featureId)
-      if (!samp) {
-        samp = feature.get('genotypes') as Record<string, string>
-        genotypesCache.set(featureId, samp)
-      }
-
+      const samp = featureGenotypes.get(featureId)!
       for (let j = 0; j < numSources; j++) {
         const { sampleName } = sources[j]!
         const genotype = samp[sampleName]
@@ -279,13 +282,22 @@ export function computeVariantCells({
       genotypes: renderedGenotypes,
     }
     insertedBp[featureIdx] = inserted
+    featurePositions[featureIdx * 2] = start
+    featurePositions[featureIdx * 2 + 1] = end
     featureIdList.push(featureId)
     featureIdx++
   }
 
   // Stable two-bucket reorder: ref cells first (when drawn), then non-ref.
   // Skip ref cells entirely when drawRef is false.
+  //
+  // Cells were appended feature-major, row-minor, and this partition is stable,
+  // so *within each bucket* the cells stay sorted by (featureIndex, rowIndex).
+  // The hit-test binary-searches that ordering instead of carrying a per-cell
+  // spatial index — see variantCellLookup.ts. Anything that reorders cells
+  // (a different paint order, a sort) has to preserve it or update that lookup.
   const outCount = drawRef ? cellCount : cellCount - numRefCells
+  const refCellCount = drawRef ? numRefCells : 0
   const outPositions = new Uint32Array(outCount * 2)
   const outRowIndices = new Uint32Array(outCount)
   const outColors = new Uint32Array(outCount)
@@ -293,7 +305,7 @@ export function computeVariantCells({
   const outCarriesAlt = new Uint8Array(outCount)
   const outFeatureIndices = new Uint32Array(outCount)
   let refPos = 0
-  let nonRefPos = drawRef ? numRefCells : 0
+  let nonRefPos = refCellCount
   for (let i = 0; i < cellCount; i++) {
     const ref = isRef[i]
     if (ref && !drawRef) {
@@ -309,23 +321,38 @@ export function computeVariantCells({
     outFeatureIndices[w] = featureIndices[i]!
   }
 
-  // Flatbush requires at least one add() per the constructor-declared count,
-  // so the empty case gets a single degenerate entry that hit-testing will
-  // never match.
-  const flatbush = new Flatbush(Math.max(outCount, 1))
-  if (outCount > 0) {
-    for (let i = 0; i < outCount; i++) {
-      flatbush.add(
-        outPositions[i * 2]!,
-        outRowIndices[i]!,
-        outPositions[i * 2 + 1],
-        outRowIndices[i]! + 1,
+  // One interval per *feature*, not per cell. Every cell of a variant shares its
+  // x-extent, so a per-cell index stored numSamples identical copies of each
+  // interval to answer a question with only numFeatures distinct answers — and
+  // at 21.3 bytes/cell (box + tree nodes + index array) it was the largest thing
+  // in the payload by itself, more than every other per-cell array combined:
+  // 61 MB for 1000 variants x 3000 samples, against 33 KB here. The row half of
+  // the old 2-D query is now arithmetic on the cursor Y, and "is there a cell at
+  // (feature, row)" is a binary search over the bucket ordering above.
+  //
+  // Uint32Array rather than the Float64Array default: genomic positions come
+  // straight out of `featurePositions`, so it's the exact domain and no
+  // narrowing. `Flatbush.from` reads the element type back off the header on the
+  // client. Query bounds may still be fractional or negative; those are compared
+  // as plain numbers, never stored.
+  //
+  // Flatbush requires at least one add() per the constructor-declared count, so
+  // the empty case gets a single degenerate entry hit-testing will never match.
+  const numFeatures = featureIdList.length
+  const featureIndex = new Flatbush(Math.max(numFeatures, 1), 16, Uint32Array)
+  if (numFeatures > 0) {
+    for (let i = 0; i < numFeatures; i++) {
+      featureIndex.add(
+        featurePositions[i * 2]!,
+        0,
+        featurePositions[i * 2 + 1],
+        1,
       )
     }
   } else {
-    flatbush.add(0, 0, 0, 0)
+    featureIndex.add(0, 0, 0, 0)
   }
-  flatbush.finish()
+  featureIndex.finish()
 
   return {
     cellPositions: outPositions,
@@ -334,10 +361,12 @@ export function computeVariantCells({
     cellShapeTypes: outShapeTypes,
     cellCarriesAlt: outCarriesAlt,
     numCells: outCount,
+    refCellCount,
     featureGenotypeMap,
-    flatbushData: flatbush.data,
     cellFeatureIndices: outFeatureIndices,
     featureIdList,
+    featurePositions,
+    featureIndexData: featureIndex.data,
     featureInsertedBp: insertedBp,
   }
 }

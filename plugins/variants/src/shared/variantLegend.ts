@@ -1,10 +1,11 @@
-import { set1 } from '@jbrowse/core/ui/colors'
 import { measureText } from '@jbrowse/core/util'
 
 import {
   NO_CALL_COLOR,
   OTHER_ALT_COLOR,
+  PRIMARY_ALT_COLOR,
   REFERENCE_COLOR,
+  SECONDARY_ALT_COLOR,
   UNPHASED_COLOR,
   capitalizeFirst,
   getAltColorForDosage,
@@ -66,9 +67,9 @@ export function getGenotypeLegendItems({
   if (renderingMode === 'phased') {
     return [
       { color: REFERENCE_COLOR, label: 'Reference' },
-      { color: set1[0], label: 'Alt allele' },
+      { color: PRIMARY_ALT_COLOR, label: 'Alt allele' },
       ...(hasSecondaryAlt
-        ? [{ color: set1[1], label: 'Other alt allele' }]
+        ? [{ color: SECONDARY_ALT_COLOR, label: 'Other alt allele' }]
         : []),
       ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
       ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),

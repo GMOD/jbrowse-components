@@ -1,3 +1,4 @@
+import { set1 } from '@jbrowse/core/ui/colors'
 import { clamp } from '@jbrowse/core/util'
 
 export const GENOTYPE_SPLITTER = /[/|]/
@@ -27,6 +28,12 @@ export function clampLineZoneHeight(n: number) {
 export const REFERENCE_COLOR = '#ccc'
 export const NO_CALL_COLOR = 'hsl(50,50%,50%)'
 export const UNPHASED_COLOR = 'black'
+
+// Phased-mode alt fills: the primary (most frequent) alt and everything else.
+// The legend swatches read these same two constants (see
+// variantLegend.getGenotypeLegendItems) so cell and key can't drift.
+export const PRIMARY_ALT_COLOR = set1[0]!
+export const SECONDARY_ALT_COLOR = set1[1]!
 
 // Pre-packed ABGR for the unphased "black" fill — lets the hot per-cell loop
 // skip the colord cache lookup.

@@ -18,6 +18,7 @@ import {
   assignSvTypeColors,
   getVariantSvType,
 } from '../shared/variantSvType.ts'
+import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
@@ -100,7 +101,7 @@ interface CellDataBase {
 
 // Shipped variants of the compute outputs: the per-feature genotype maps are
 // interned to `genotypeCodes` before crossing the RPC boundary.
-type ShippedRegionData = Omit<VariantCellData, 'featureGenotypeMap'> & {
+export type ShippedRegionData = Omit<VariantCellData, 'featureGenotypeMap'> & {
   featureGenotypeMap: Record<string, VariantFeatureInfo>
 }
 type ShippedMatrixData = Omit<MatrixCellData, 'featureData'> & {
@@ -203,7 +204,11 @@ function computeSampleInfo(
     }
     let samp = genotypesCache.get(featureId)
     if (!samp) {
-      samp = feature.get('genotypes') as Record<string, string>
+      // Normalize the sites-only case to {} exactly as computeAlleleCounts
+      // does, so the cache never hands a later consumer an undefined — this
+      // pass is what the compute*Cells functions rely on having run.
+      samp =
+        (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
       genotypesCache.set(featureId, samp)
     }
     for (const key in samp) {
@@ -258,6 +263,11 @@ function computeSampleInfo(
     hasConsequence,
     svTypeColors: assignSvTypeColors([...svTypes]),
     simplifiedFeatures,
+    // Handed back rather than left as a side effect on the caller's map: the
+    // compute*Cells passes read every filtered feature's genotypes out of it and
+    // have no fallback, so returning it makes "this pass populated the lookup" a
+    // data dependency the caller can't reorder away.
+    featureGenotypes: genotypesCache,
   }
 }
 
@@ -312,42 +322,9 @@ export async function executeVariantCellData({
 
   const genotypesCache = new Map<string, Record<string, string>>()
 
-  // Group rawFeatures by region. Uses a linear scan over per-refName
-  // candidates rather than a pointer advance so features are correctly
-  // assigned regardless of emission order from merge(). R (regions per
-  // refName) is almost always 1, so the O(N*R) cost is effectively O(N).
-  let perRegionRawFeatures: Map<number, typeof rawFeatures> | undefined
-  if (regionLookup) {
-    const regionsByRefName = new Map<string, typeof regionLookup>()
-    for (const r of regionLookup) {
-      let list = regionsByRefName.get(r.refName)
-      if (!list) {
-        list = []
-        regionsByRefName.set(r.refName, list)
-      }
-      list.push(r)
-    }
-    perRegionRawFeatures = new Map()
-    for (const feature of rawFeatures) {
-      const refName = feature.get('refName')
-      const start = feature.get('start')
-      const candidates = regionsByRefName.get(refName)
-      if (!candidates) {
-        continue
-      }
-      for (const region of candidates) {
-        if (start >= region.start && start < region.end) {
-          let list = perRegionRawFeatures.get(region.displayedRegionIndex)
-          if (!list) {
-            list = []
-            perRegionRawFeatures.set(region.displayedRegionIndex, list)
-          }
-          list.push(feature)
-          break
-        }
-      }
-    }
-  }
+  const perRegionRawFeatures = regionLookup
+    ? groupFeaturesByRegion(rawFeatures, regionLookup)
+    : undefined
 
   const progressOpts = {
     statusCallback,
@@ -418,6 +395,7 @@ export async function executeVariantCellData({
     hasConsequence,
     svTypeColors,
     simplifiedFeatures,
+    featureGenotypes,
   } = await withProgress(
     {
       ...progressOpts,
@@ -475,7 +453,7 @@ export async function executeVariantCellData({
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               featureColor: featureColorFn,
-              genotypesCache,
+              featureGenotypes,
               report,
             })
           }
@@ -488,7 +466,7 @@ export async function executeVariantCellData({
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             featureColor: featureColorFn,
-            genotypesCache,
+            featureGenotypes,
             report,
           }),
         }
@@ -518,8 +496,11 @@ export async function executeVariantCellData({
         rest.cellRowIndices.buffer,
         rest.cellColors.buffer,
         rest.cellShapeTypes.buffer,
-        rest.flatbushData,
+        rest.cellCarriesAlt.buffer,
         rest.cellFeatureIndices.buffer,
+        rest.featureIndexData,
+        rest.featurePositions.buffer,
+        rest.featureInsertedBp.buffer,
       )
     }
 
@@ -554,7 +535,7 @@ export async function executeVariantCellData({
           sources: effectiveSources,
           renderingMode,
           featureColor: featureColorFn,
-          genotypesCache,
+          featureGenotypes,
           report,
         }),
     )

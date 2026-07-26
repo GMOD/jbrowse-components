@@ -2,13 +2,14 @@ import {
   MIN_HEIGHT_FOR_TEXT,
   drawInsertionMarker,
   getInsertionType,
-  insertionBarWidth,
 } from '@jbrowse/alignments-core'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   forEachClippedBlock,
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
+
+import { variantCellSpanPx } from './variantCellSpan.ts'
 
 import type {
   VariantRenderBlock,
@@ -86,28 +87,40 @@ export function drawVariantInsertionGlyphs(
       const toX = makeBpMapper(block)
       const pxPerBp =
         (block.screenEndPx - block.screenStartPx) / (block.end - block.start)
+      // Whether a marker is drawn, and where, depends only on the feature — every
+      // cell of one variant shares its span and its inserted bp. Resolve it once
+      // per feature (thousands) instead of once per cell (features × samples),
+      // so the draw loop is a lookup.
+      const numFeatures = region.featureInsertedBp.length
+      const resolved = new Uint8Array(numFeatures)
+      const drawsMarker = new Uint8Array(numFeatures)
+      const markerXCenter = new Float64Array(numFeatures)
       for (let i = 0; i < region.numCells; i++) {
-        if (region.cellCarriesAlt[i]) {
-          const inserted =
-            region.featureInsertedBp[region.cellFeatureIndices[i]!]!
-          // Y-cull before the bp math, as the block painter does
+        const featureIdx = region.cellFeatureIndices[i]!
+        if (!resolved[featureIdx]) {
+          resolved[featureIdx] = 1
+          const x1 = toX(region.cellPositions[i * 2]!)
+          const x2 = toX(region.cellPositions[i * 2 + 1]!)
+          markerXCenter[featureIdx] = (x1 + x2) / 2
+          drawsMarker[featureIdx] = variantCellSpanPx({
+            x1,
+            x2,
+            insertedBp: region.featureInsertedBp[featureIdx]!,
+            pxPerBp,
+            drawnRowHeight,
+          }).drawsMarker
+            ? 1
+            : 0
+        }
+      }
+      for (let i = 0; i < region.numCells; i++) {
+        const featureIdx = region.cellFeatureIndices[i]!
+        if (region.cellCarriesAlt[i] && drawsMarker[featureIdx]) {
+          // Y-cull as the block painter does
           const y = region.cellRowIndices[i]! * rowHeight - scrollTop
-          if (
-            inserted > 0 &&
-            y + drawnRowHeight >= 0 &&
-            y <= canvasHeight &&
-            insertionBarWidth(inserted, pxPerBp, drawnRowHeight) >
-              Math.max(
-                2,
-                Math.abs(
-                  toX(region.cellPositions[i * 2 + 1]!) -
-                    toX(region.cellPositions[i * 2]!),
-                ),
-              )
-          ) {
-            const x1 = toX(region.cellPositions[i * 2]!)
-            const x2 = toX(region.cellPositions[i * 2 + 1]!)
-            const xCenter = (x1 + x2) / 2
+          if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
+            const xCenter = markerXCenter[featureIdx]!
+            const inserted = region.featureInsertedBp[featureIdx]!
             ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
             drawInsertionMarker(
               ctx,
