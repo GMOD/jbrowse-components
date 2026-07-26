@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -6,6 +7,7 @@ import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
+import type { VariantInsertionGlyphData } from './components/drawVariantInsertionGlyphs.ts'
 import type {
   VariantRenderingBackend,
   VariantUploadData,
@@ -92,6 +94,32 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
             for (const k in cellData.perRegionCellData) {
               out.set(Number(k), cellData.perRegionCellData[k]!)
             }
+          }
+          return out
+        },
+        /**
+         * #getter
+         * Per-region cell data for the insertion-glyph overlay, or undefined when
+         * the slot is off or there is no regular-mode payload.
+         *
+         * A computed returning a plain Map, for the same reason the multi-row
+         * display's does: the overlay draws inside an effect, where nothing it
+         * reads is tracked, so the read has to happen here for a refetch to
+         * repaint. `perRegionCellMap` is the same walk narrowed to the GPU upload
+         * fields, and the glyphs need `cellCarriesAlt` / `featureInsertedBp` /
+         * `cellFeatureIndices` too.
+         */
+        get insertionGlyphRegions() {
+          const { cellData } = self
+          if (
+            !getConf(self, 'showInsertionGlyphs') ||
+            cellData?.mode !== 'regular'
+          ) {
+            return undefined
+          }
+          const out = new Map<number, VariantInsertionGlyphData>()
+          for (const k in cellData.perRegionCellData) {
+            out.set(Number(k), cellData.perRegionCellData[k]!)
           }
           return out
         },

@@ -245,6 +245,14 @@ insertion or deletion. (`alleleLength` is the longest allele the record
 describes; a filter on `end - start` would keep only deletions, since an
 insertion consumes no reference.)
 
+That same asymmetry is why a deletion draws at its true width here but an
+insertion would not: it covers no reference to be drawn across. So the display
+widens each insertion cell to a marker sized by the inserted bp, labelled with
+the count when the rows are tall enough, in that haplotype's own genotype color
+([`showInsertionGlyphs`](/docs/config/SharedVariantDisplay/#slot-showinsertionglyphs)).
+Only haplotypes carrying the allele widen, so the marker never implies a sample
+has sequence it does not.
+
 That leaves few enough alleles to draw each at its own genomic position, so they
 line up with the genes above. From the track menu, **Clustering > Cluster rows
 by genotype... > Run clustering** reorders the 464 haplotype rows by genotype

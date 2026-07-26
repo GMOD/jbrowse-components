@@ -1,5 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { getAlleleLength } from '../../shared/alleleLength.ts'
 import {
   BLACK_ABGR,
   NO_CALL_COLOR,
@@ -33,11 +34,25 @@ export interface VariantCellData {
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
   cellShapeTypes: Uint8Array
+  // 1 where the cell's genotype carries a non-reference allele. Reference and
+  // no-call cells are 0: the insertion-glyph pass widens only the haplotypes
+  // that actually have the extra sequence, and widening a reference cell would
+  // claim every sample carries it.
+  cellCarriesAlt: Uint8Array
   numCells: number
   featureGenotypeMap: Record<string, FeatureGenotypeInfo>
   flatbushData: ArrayBuffer
   cellFeatureIndices: Uint32Array
   featureIdList: string[]
+  // bp this record inserts relative to the reference, per feature (aligned to
+  // `featureIdList`, so a cell reads it through `cellFeatureIndices`). 0 for
+  // SNPs and deletions, which the cell's own reference span already draws
+  // correctly. This is the one thing a cell's width cannot express: an insertion
+  // consumes ~no reference, so a 65 kb and a 1 bp one are both drawn at the 2px
+  // floor without it. Multiallelic records report their longest ALT, matching
+  // `getAlleleLength` and the `alleleLength()` jexl the docs already teach; a
+  // decomposed pangenome callset is biallelic, so there it is exact.
+  featureInsertedBp: Int32Array
 }
 
 function getShapeType(featureType: string) {
@@ -85,9 +100,11 @@ export function computeVariantCells({
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint32Array(maxCells)
   const shapeTypes = new Uint8Array(maxCells)
+  const carriesAlt = new Uint8Array(maxCells)
   const isRef = new Uint8Array(maxCells)
   const featureIndices = new Uint32Array(maxCells)
   const featureIdList: string[] = []
+  const insertedBp = new Int32Array(filteredVariants.length)
 
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
   let cellCount = 0
@@ -100,6 +117,7 @@ export function computeVariantCells({
     colorAbgr: number,
     shape: number,
     isReference: boolean,
+    isAlt: boolean,
     featureIdx: number,
   ) {
     const ci = cellCount
@@ -111,6 +129,7 @@ export function computeVariantCells({
     rowIndices[ci] = rowIndex
     colors[ci] = colorAbgr
     shapeTypes[ci] = shape
+    carriesAlt[ci] = isAlt ? 1 : 0
     isRef[ci] = isReference ? 1 : 0
     if (isReference) {
       numRefCells++
@@ -198,6 +217,7 @@ export function computeVariantCells({
               getCachedABGR(cellColor),
               shape,
               isRefCell,
+              !isRefCell && c !== NO_CALL_COLOR,
               featureIdx,
             )
             renderedGenotypes[sampleName] = genotype
@@ -205,10 +225,10 @@ export function computeVariantCells({
         } else if (isNoCall(genotype)) {
           // A missing unphased call (`./.`, `.`) is a no-call, not unphased
           // data — draw it as no-call rather than the black "Unphased" fill.
-          addCell(start, end, j, noCallAbgr, shape, false, featureIdx)
+          addCell(start, end, j, noCallAbgr, shape, false, false, featureIdx)
           renderedGenotypes[sampleName] = genotype
         } else {
-          addCell(start, end, j, BLACK_ABGR, shape, false, featureIdx)
+          addCell(start, end, j, BLACK_ABGR, shape, false, false, featureIdx)
           renderedGenotypes[sampleName] = genotype
         }
       }
@@ -238,6 +258,7 @@ export function computeVariantCells({
               getCachedABGR(c),
               shape,
               c === REFERENCE_COLOR,
+              c !== REFERENCE_COLOR && c !== NO_CALL_COLOR,
               featureIdx,
             )
             renderedGenotypes[sampleName] = genotype
@@ -255,6 +276,9 @@ export function computeVariantCells({
       type: featureType,
       genotypes: renderedGenotypes,
     }
+    // max(0, ...) because getAlleleLength returns the reference span for a SNP or
+    // a deletion, which the cell's own width already draws
+    insertedBp[featureIdx] = Math.max(0, getAlleleLength(feature) - bpLen)
     featureIdList.push(featureId)
     featureIdx++
   }
@@ -266,6 +290,7 @@ export function computeVariantCells({
   const outRowIndices = new Uint32Array(outCount)
   const outColors = new Uint32Array(outCount)
   const outShapeTypes = new Uint8Array(outCount)
+  const outCarriesAlt = new Uint8Array(outCount)
   const outFeatureIndices = new Uint32Array(outCount)
   let refPos = 0
   let nonRefPos = drawRef ? numRefCells : 0
@@ -280,6 +305,7 @@ export function computeVariantCells({
     outRowIndices[w] = rowIndices[i]!
     outColors[w] = colors[i]!
     outShapeTypes[w] = shapeTypes[i]!
+    outCarriesAlt[w] = carriesAlt[i]!
     outFeatureIndices[w] = featureIndices[i]!
   }
 
@@ -306,10 +332,12 @@ export function computeVariantCells({
     cellRowIndices: outRowIndices,
     cellColors: outColors,
     cellShapeTypes: outShapeTypes,
+    cellCarriesAlt: outCarriesAlt,
     numCells: outCount,
     featureGenotypeMap,
     flatbushData: flatbush.data,
     cellFeatureIndices: outFeatureIndices,
     featureIdList,
+    featureInsertedBp: insertedBp,
   }
 }

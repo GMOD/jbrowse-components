@@ -186,3 +186,63 @@ describe('computeVariantCells featureColor override', () => {
     expect(result.numCells).toBe(4)
   })
 })
+
+describe('insertion glyph inputs', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+  ]
+  // A pangenome-style insertion: 1bp of reference, a long explicit ALT. One
+  // haplotype carries it, the other is reference.
+  const insertion = makeFeature({
+    genotypes: { S1: '1|0' },
+    FORMAT: [],
+    ALT: ['C'.repeat(65481)],
+    REF: 'C',
+    name: 'ins',
+    description: '',
+    type: 'insertion',
+    start: 100,
+    end: 101,
+  })
+
+  function run(feature: ReturnType<typeof makeFeature>) {
+    return computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'draw',
+      genotypesCache: new Map(),
+    })
+  }
+
+  test('featureInsertedBp is the ALT length over the reference span', () => {
+    // 65481 of ALT against 1bp of REF. This is the number the cell's own width
+    // cannot express, since an insertion consumes no reference.
+    expect([...run(insertion).featureInsertedBp]).toEqual([65480])
+  })
+
+  test('a deletion or SNP inserts nothing', () => {
+    const del = makeFeature({
+      genotypes: { S1: '1|0' },
+      FORMAT: [],
+      ALT: ['C'],
+      REF: 'C'.repeat(500),
+      name: 'del',
+      description: '',
+      type: 'deletion',
+      start: 100,
+      end: 600,
+    })
+    expect([...run(del).featureInsertedBp]).toEqual([0])
+  })
+
+  test('only the alt-carrying haplotype is flagged', () => {
+    // '1|0' over two haplotype rows: HP0 carries the allele, HP1 does not. A
+    // reference cell must stay 0 or the glyph pass would widen it and claim that
+    // haplotype has the inserted sequence.
+    const r = run(insertion)
+    expect(r.numCells).toBe(2)
+    expect([...r.cellCarriesAlt].reduce((a, b) => a + b, 0)).toBe(1)
+  })
+})

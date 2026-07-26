@@ -903,6 +903,9 @@ importers:
       '@gmod/hclust':
         specifier: 4.0.1
         version: 4.0.1
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1702,6 +1705,9 @@ importers:
       '@gmod/vcf':
         specifier: ^7.0.10
         version: 7.0.10
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

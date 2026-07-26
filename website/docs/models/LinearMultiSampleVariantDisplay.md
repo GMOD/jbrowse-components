@@ -23,6 +23,7 @@ per-cell feature widget on click.
 | [renderState](#getter-renderstate)                                       | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [prefersOffset](#getter-prefersoffset)                                   | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [perRegionCellMap](#getter-perregioncellmap)                             | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
+| [insertionGlyphRegions](#getter-insertionglyphregions)                   | Getters    | LinearMultiSampleVariantDisplay                               | Per-region cell data for the insertion-glyph overlay, or undefined when the slot is off or there is no regular-mode payload.                                                                                                                                      |
 | [flatbushIndices](#getter-flatbushindices)                               | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [showSubmenuItems](#method-showsubmenuitems)                             | Methods    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [renderSvg](#method-rendersvg)                                           | Methods    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
@@ -241,6 +242,26 @@ The configuration slots for this model are documented on its
 
 <details>
 <summary>LinearMultiSampleVariantDisplay - Getters</summary>
+
+#### getter: insertionGlyphRegions
+
+Per-region cell data for the insertion-glyph overlay, or undefined when the slot
+is off or there is no regular-mode payload.
+
+A computed returning a plain Map, for the same reason the multi-row display's
+does: the overlay draws inside an effect, where nothing it reads is tracked, so
+the read has to happen here for a refetch to repaint. `perRegionCellMap` is the
+same walk narrowed to the GPU upload fields, and the glyphs need
+`cellCarriesAlt` / `featureInsertedBp` / `cellFeatureIndices` too.
+
+```ts
+type insertionGlyphRegions = Map<number, VariantInsertionGlyphData> | undefined
+```
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantDisplay - Getters (other undocumented members)</summary>
 
 | Member                                                     | Type                                                                                                                                                                                 |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

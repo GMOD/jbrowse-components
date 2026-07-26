@@ -14,6 +14,7 @@ import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import VariantInsertionGlyphOverlay from './VariantInsertionGlyphOverlay.tsx'
 import { computeVariantHitQuery } from './variantHitTest.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
@@ -238,6 +239,7 @@ const VariantBody = observer(function VariantBody({
         }}
         {...canvasHandlers}
       />
+      <VariantInsertionGlyphOverlay model={model} />
       {hoveredCell ? (
         <HoveredCellHighlight cell={hoveredCell} model={model} />
       ) : null}

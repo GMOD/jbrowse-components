@@ -6,8 +6,10 @@ import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
+import { drawVariantInsertionGlyphs } from './components/drawVariantInsertionGlyphs.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
+import type { VariantInsertionGlyphData } from './components/drawVariantInsertionGlyphs.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
@@ -25,6 +27,10 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   renderBlocks: VariantRenderBlock[]
   perRegionCellMap: ReadonlyMap<number, VariantUploadData>
   renderState: VariantRenderState
+  // undefined when the `showInsertionGlyphs` slot is off
+  insertionGlyphRegions:
+    | ReadonlyMap<number, VariantInsertionGlyphData>
+    | undefined
 }
 
 export async function renderSvg(
@@ -64,8 +70,13 @@ function VariantSvgBody({
   // region map, and canvas geometry the live canvas does — no divergent rebuild
   // here. renderState.canvasWidth is the viewport-relative width the blocks are
   // already clipped to, not the full-genome totalWidthPx.
-  const { referenceDrawingMode, renderBlocks, perRegionCellMap, renderState } =
-    model
+  const {
+    referenceDrawingMode,
+    renderBlocks,
+    perRegionCellMap,
+    renderState,
+    insertionGlyphRegions,
+  } = model
   const { canvasWidth, canvasHeight } = renderState
   return (
     <SvgVariantOverlay
@@ -84,6 +95,16 @@ function VariantSvgBody({
             ctx.fillRect(0, 0, canvasWidth, canvasHeight)
           }
           drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, renderState)
+          // Same layer, after the cells, so the export stacks them the way the
+          // on-screen overlay composites over the canvas.
+          if (insertionGlyphRegions) {
+            drawVariantInsertionGlyphs(
+              ctx,
+              insertionGlyphRegions,
+              renderBlocks,
+              renderState,
+            )
+          }
         }}
       />
     </SvgVariantOverlay>
