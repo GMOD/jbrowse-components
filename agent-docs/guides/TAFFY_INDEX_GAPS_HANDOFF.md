@@ -1,14 +1,18 @@
-# taffy `.tai` gaps: a block's second reference row is unreachable by region query
+# A MAF block's second reference row is unreachable by region query
 
-Explained and fixed on our side (2026-07-26). Upstream question filed as
-[taffy#89](https://github.com/ComparativeGenomicsToolkit/taffy/issues/89); it is
-arguably a known limitation of taffy's model rather than a bug, which is why the
-issue asks for a warning rather than asserting one.
+Explained and designed out (2026-07-26).
 
-**Fixed by `scripts/reroot_maf.py` emitting one block per reference row**
-(unreachable K12 positions 1,773 to 0). The hosted demo file has not been
-regenerated yet, so the defect is still live in production data. See "Our fix"
-below.
+A block is found through row 0's interval alone, so a repeat-collapsed block's
+surplus reference copies are in the file and unreachable. Two fixes, both in
+place: `scripts/reroot_maf.py` gives each copy its own block, and the pggb demo
+now reads a tabix BED (`MafTabixAdapter`) rather than taffy TAF, which also drops
+taffy's re-blocking and its file-offset ordering assumption. See "Our fix" below.
+
+Upstream, taffy is aware of duplicate rows in general (`taffy sort -d` filters
+them, `taffy norm` has had dupe fixes) and row 0 is deliberately its coordinate
+key, so this is closer to a known limitation than a bug;
+[taffy#89](https://github.com/ComparativeGenomicsToolkit/taffy/issues/89) reports
+that the loss is silent and offers a warning patch.
 
 When a MAF block carries **more than one row for the reference genome**, taffy's
 `.tai` files the block under row 0's coordinates only. The other copies are in
@@ -21,9 +25,10 @@ a row-0 reference row is reachable; the failures are entirely non-anchor copies
 that sit far from their anchor.
 
 Two earlier sessions mistook symptoms of this for bugs in
-`scripts/reroot_maf.py` and spent a lot of effort "fixing" the wrong layer. See
-[PANGENOME_FIGURE_HANDOFF.md](PANGENOME_FIGURE_HANDOFF.md) and the
-`reroot_maf.py` docstring.
+`scripts/reroot_maf.py` and spent a lot of effort "fixing" the wrong layer. Both
+"fixes" were measured and reverted in `62229d4ebc`, and
+`scripts/check-build-scripts.py` pins the reverted behavior. Read the
+`reroot_maf.py` docstring before touching it.
 
 ## Minimal reproducer
 
@@ -154,33 +159,37 @@ by a sort.
 So a query can only ever be answered by a block whose row 0 covers it. The fix is
 to make that true of every copy.
 
-## Our fix: one block per reference row
+## Our fix: tabix, plus one block per reference row
 
-`scripts/reroot_maf.py` emits one block per reference row, each rooted on its own
-copy, and its existing sort puts them in order. Not the re-anchoring that was
-tried and reverted twice: it changes block membership, not which row goes first.
+The demo no longer goes through taffy at all. `scripts/maf_to_bed.py` writes the
+BED that `MafTabixAdapter` reads, and `reroot_maf.py` still emits one block per
+reference row, because a BED line's interval is row 0's too. Tabix drops the two
+properties that made the TAF path awkward: it has no file-offset ordering
+assumption, so several lines may share reference coordinates, and nothing
+re-blocks the alignment.
 
-Measured on the five-strain graph:
+Measured on the five-strain graph, same source MAF:
 
-| metric                    |        unsplit |         split |
-| ------------------------- | -------------: | ------------: |
-| unreachable K12 positions |          1,773 |         **0** |
-| K12 stream coverage       |      4,640,495 | 4,641,652 (all) |
-| blocks                    |          4,736 |         4,791 |
-| `.taf.gz` size            |        3.82 MB |       3.89 MB |
+| metric                        | TAF, unsplit | TAF, split | tabix BED |
+| ----------------------------- | -----------: | ---------: | --------: |
+| unreachable K12 positions     |        1,773 |          0 |     **0** |
+| K12 coverage                  |    4,640,495 |  4,641,652 | 4,641,652 |
+| per-strain coverage vs the MAF |   ±0.05% churn | ±0.05% churn | **identical** |
+| file                          |      3.82 MB |    3.89 MB |   3.07 MB |
+| index                         |  7.8 kB .tai |  7.8 kB .tai | 2 kB .tbi |
 
-The non-reference strains churn under 0.05% in both directions (Sakai +4,892,
-NCTC86 +962, CFT073 -1,592, IAI39 -2,086). That is taffy's re-blocking, not this
-script: at the MAF level, before taffy runs, per-strain coverage is identical
-between split and unsplit output. Both figure loci retrieve 100% on the split
-file.
+The TAF churn is taffy's re-blocking, not `reroot_maf.py`: at the MAF level, split
+and unsplit output have identical per-strain coverage. Verified end to end by
+driving `MafTabixAdapter` over generated output, including that the split repeat
+copy is retrievable at its own locus.
 
-**Not yet regenerated.** The hosted demo still has the defect. Rebuilding gives
-md5 `461e60e4d3e50cd82e5b1204cb3d3bfb` where the hosted file is
-`d64c811a1562e493ca14462f8b02f6bb`, so shipping it means re-uploading
-`ecoli_pggb.taf.gz{,.tai}` and invalidating CloudFront. Whether 1,773 bp is worth
-a demo-data re-upload is a judgement call, and the mixed non-reference churn is
-the argument against.
+**Hosted data not yet regenerated.** The demo config still points at
+`ecoli_pggb.taf.gz`, so production keeps the 1,773 bp defect until
+`ecoli_pggb.maf.bed.gz{,.tbi}` plus the updated `config.json` are uploaded and
+CloudFront is invalidated. That also needs `pangenome/pangenome_variants`
+regenerated: its window is one where taffy's re-blocking differed from the MAF, so
+the figure changes slightly (IAI39 loses 210 bp of drawn coverage, three strains
+gain ~708). `pangenome/maf`'s window is byte-identical either way.
 
 ## Should anyone care
 
@@ -195,4 +204,5 @@ duplicate reference rows are denser and 0.038% could be much larger. For a user'
 own data the answer is now concrete: split the blocks.
 
 `BgzipTaffyAdapter` reads through the same `.tai`, so whatever the index cannot
-return, JBrowse cannot draw. There is no adapter-side workaround.
+return, JBrowse cannot draw. For a user's own pggb data the answer is either
+adapter: split the blocks, and prefer `MafTabixAdapter`.

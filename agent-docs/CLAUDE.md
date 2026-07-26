@@ -75,7 +75,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md) — desktop IPC, preload, plugin loading
 - [REGION_VIEW_LAUNCH.md](guides/REGION_VIEW_LAUNCH.md) — "open view X for this region" entry points (synteny stack, graph subgraph)
 - [PANGENOME_PATHS_HANDOFF.md](guides/PANGENOME_PATHS_HANDOFF.md) — per-haplotype graph paths as a linear track, the indel-glyph passes, `--call` traps
-- [TAFFY_INDEX_GAPS_HANDOFF.md](guides/TAFFY_INDEX_GAPS_HANDOFF.md), taffy `.tai` indexes a block by row 0 only, so a second reference row is unreachable; `reroot_maf.py` splits blocks to fix it, hosted file not yet regenerated. Read before "fixing" `reroot_maf.py`
+- [TAFFY_INDEX_GAPS_HANDOFF.md](guides/TAFFY_INDEX_GAPS_HANDOFF.md), a MAF block is indexed on row 0 alone, so a repeat-collapsed block hides its other reference copies. Why the pggb demo moved off taffy to `MafTabixAdapter`
 
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is
