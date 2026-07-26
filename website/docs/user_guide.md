@@ -67,6 +67,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [Structural variants (Cancer GIAB)](/docs/tutorials/sv_visualization_cgiab)
 - [Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples)
 - [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv)
+- [Copy number across a population (1000 Genomes)](/docs/tutorials/population_cnv)
 
 ### Population genomics
 

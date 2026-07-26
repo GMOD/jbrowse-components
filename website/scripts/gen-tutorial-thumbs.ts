@@ -199,6 +199,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.14, 0.56],
     position: 'center',
   },
+  // The 2504-row cohort heatmap rather than the page's hero: the hero carries a
+  // callout pill, and this one is the cleanest render of the same pattern.
+  population_cnv: {
+    src: 'cnv1000g/zarr_cohort.png',
+    band: [0.26, 0.72],
+    position: 'center',
+  },
   // Overlaid multi-wiggle coverage, the most figure-like of the cookbook
   // recipes. Skip the app header and its navigation row.
   cookbook: {
