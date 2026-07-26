@@ -21,6 +21,7 @@
   },
   "resolutions": {
     "@jbrowse/alignments-core": "file:./packed/jbrowse-alignments-core.tgz",
+    "@jbrowse/cigar-utils": "file:./packed/jbrowse-cigar-utils.tgz",
     "@jbrowse/core": "file:./packed/jbrowse-core.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
     "@jbrowse/ld-core": "file:./packed/jbrowse-ld-core.tgz",
