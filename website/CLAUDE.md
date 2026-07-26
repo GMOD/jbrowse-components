@@ -324,17 +324,17 @@ Two settled decisions, so they don't get relitigated:
 
 - **The tier is 1200x600, and smaller is not free.** That box is 2x the card's
   own maximum, and the `max-height: 260px` cap is what usually binds — so a
-  height-capped card gets 600/260 = 2.3 device px per CSS px and a
-  width-capped one 1200/594 = 2.0 (both verified in-browser). A 1000x500 box
-  drops the height-capped case to 1.9x, below retina, and visibly softens the
-  gene-track labels.
+  height-capped card gets 600/260 = 2.3 device px per CSS px and a width-capped
+  one 1200/594 = 2.0 (both verified in-browser). A 1000x500 box drops the
+  height-capped case to 1.9x, below retina, and visibly softens the gene-track
+  labels.
 - **PNG, not WebP.** The capture pipeline already quantizes every figure to an
-  8-bit palette with pngquant (`image-pipeline.ts`), which is the worst case
-  for lossy VP8 — 256 hard palette colors plus 4:2:0 subsampling costs more
-  bits than the palette PNG and smears text. Lossless WebP does win ~28%, but
-  it buys that with a second format, a support caveat, and VP8L header parsing
-  in gallery.astro's `pngSize()`, for a fraction of what the resize already
-  saves. Thumbs are quantized by sharp's bundled libimagequant rather than the
+  8-bit palette with pngquant (`image-pipeline.ts`), which is the worst case for
+  lossy VP8 — 256 hard palette colors plus 4:2:0 subsampling costs more bits
+  than the palette PNG and smears text. Lossless WebP does win ~28%, but it buys
+  that with a second format, a support caveat, and VP8L header parsing in
+  gallery.astro's `pngSize()`, for a fraction of what the resize already saves.
+  Thumbs are quantized by sharp's bundled libimagequant rather than the
   `pngquant` binary, which isn't installed in CI. Keep `colours: 256`: at 128
   the gene track's orange is dropped and the glyphs remap to **red**, which
   misreads as a different strand.
@@ -365,6 +365,22 @@ Skip specs flagged `heavyNetwork` in their spec (e.g. `gallery/hg002_dipcall`,
 1GB whole-chromosome BAM fetches) — the figure is fine but the live-open is a
 bad demo experience. After adding items, `node`-import gallery.ts and call
 `itemLiveHref` on every item to confirm none throw; a build also surfaces it.
+
+**Name a card by its dataset, then by the pipeline that produced the picture.**
+Where several cards are the same data through different tools — the three E.
+coli cards are one strain set through pggb, Minigraph-Cactus, and minimap2 — the
+pipeline is the only thing that distinguishes them, so it belongs in the label
+and not only in the description. Match the tutorial's own title
+(`E. coli pangenome (pggb)` ↔ `Pangenome (pggb)`) so a reader meets the same
+name on both surfaces. One card per tutorial: a second card for the same
+tutorial and the same data reads as a second dataset.
+
+**Two cards showing the same view type on the same data are one card.** The
+Minigraph-Cactus card used to be a five-row halSynteny stack sitting directly
+above an all-vs-all five-row stack of the same strains — same ribbons, and
+indistinguishable as a thumbnail. Pick, per pipeline, the projection the others
+_can't_ produce (for Cactus, the HAL's base-level MAF); that makes the picture
+and the capability distinct in one move.
 
 ## Newsletter
 

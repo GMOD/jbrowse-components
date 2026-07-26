@@ -153,18 +153,6 @@ export const gallerySections: readonly GallerySection[] = [
           'Grape, peach, and cacao stacked in one synteny view with MCScan anchors, one track per adjacent pair, auto-diagonalized and colored by the genome shared between both pairs.',
       },
       {
-        // The plain five-row ecoli_pangenome stack used to have a card here
-        // too. It is the same dataset and the same stack as the card below,
-        // which additionally shows the one-vs-all lanes, and the multi-way
-        // capability itself is already the MCScan card above: three cards for
-        // two capabilities.
-        label: 'E. coli all-vs-all in a plain linear view',
-        spec: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
-        guide: 'tutorials/allvsall_synteny',
-        description:
-          'One all-vs-all track read twice on the same axis: as one-vs-all lanes in an ordinary linear view (K-12 against every other strain, grouped per strain) and as the ribbon bands of the stack below. Inversions read as blue in both.',
-      },
-      {
         label: 'hg19 vs hg38 dotplot',
         spec: 'gallery/hg19_vs_hg38',
         guide: 'user_guides/dotplot_view',
@@ -420,42 +408,61 @@ export const gallerySections: readonly GallerySection[] = [
   },
   {
     id: 'pangenome',
-    title: 'Pangenome graphs',
+    title: 'Pangenomes',
     items: [
+      // Dataset first, then the pipeline that built what the card shows. The
+      // three E. coli cards are the same five strains through three pipelines,
+      // so the pipeline is the only thing that distinguishes them and it belongs
+      // in the label rather than only in the prose.
       {
-        label: 'Pangenome locus as a graph',
+        label: 'HPRC pangenome locus as a graph',
         spec: 'pangenome/hprc_mhc_bandage',
         guide: 'tutorials/pangenome_hprc',
         description:
           'The HLA class II region of the HPRC release 2 pangenome as a force-directed graph, above lanes of the same window on GRCh38. The blue blocks are the reference backbone, and the orange bar is the bubble the orange loops in the graph belong to.',
       },
       {
-        label: 'Structural alleles across pangenome haplotypes',
+        label: 'HPRC structural alleles by haplotype',
         spec: 'hprc2/mhc_clustered',
         guide: 'tutorials/pangenome_hprc',
         description:
           'Structural alleles across the HPRC release 2 haplotypes, one row each, clustered by genotype under the HLA class II genes they fall in. Haplotypes sharing whole sets of insertions and deletions form solid blocks, with no HLA typing involved.',
       },
       {
-        label: 'Variants called from a pangenome graph',
+        // One card for the pggb tutorial, not two. Its odgi presence/absence
+        // figure was a card of its own, but a second card for the same tutorial
+        // and the same five strains reads as a second dataset; the genotype
+        // matrix is the stronger picture of what the graph yields, and the
+        // presence/absence projection is a click away in the tutorial.
+        label: 'E. coli pangenome (pggb)',
         spec: 'pangenome/pangenome_variants',
         guide: 'tutorials/pangenome_ecoli',
         description:
-          "An E. coli pangenome graph projected onto the K12 reference: the graph's variants with one row per strain, each column colored by that strain's genotype, with the MAF alignment below and the K12 genes above.",
+          "A pggb pangenome graph projected onto the K12 reference: the graph's variants with one row per strain, each column colored by that strain's genotype, with the MAF alignment below and the K12 genes above.",
       },
       {
-        label: 'Presence/absence by strain (PAV)',
-        spec: 'pangenome/pav',
-        guide: 'tutorials/pangenome_ecoli',
-        description:
-          'odgi presence/absence across K12 windows, one row per other strain. Each row drops to zero over its own accessory sequence, so a dip in aggregate graph depth shows which strain accounts for it.',
-      },
-      {
-        label: 'Pangenome graph as synteny',
-        spec: 'pangenome_cactus/synteny',
+        // Was pangenome_cactus/synteny, a five-row halSynteny stack of the same
+        // strains as the all-vs-all card below it — same view type, same pink
+        // ribbons, indistinguishable as a thumbnail. The HAL's base-level MAF is
+        // the projection this pipeline has and the PAF ones don't, so it is both
+        // the distinct capability and the distinct picture. The synteny stack is
+        // still in the tutorial.
+        label: 'E. coli pangenome (Minigraph-Cactus)',
+        spec: 'pangenome_cactus/maf',
         guide: 'tutorials/pangenome_cactus',
         description:
-          'E. coli strains from a Minigraph-Cactus graph, its base-level alignment read out of the HAL with halSynteny and stacked on genome coordinates. Shared backbone appears as continuous diagonals and inversions as the crossings in the bottom band.',
+          "The Minigraph-Cactus graph's HAL projected onto K12 as a MAF: a coverage band, then one row per strain colored where it differs from K12, under the K12 gene lane. All five align continuously here, so the mismatch columns are SNP divergence.",
+      },
+      {
+        // A plain five-row ecoli_pangenome stack used to have a card of its own.
+        // It is the same dataset and the same stack as this card, which
+        // additionally shows the one-vs-all lanes, and stacking N genomes is
+        // already the multi-way MCScan card in the synteny section.
+        label: 'E. coli all-vs-all alignment (minimap2)',
+        spec: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
+        guide: 'tutorials/allvsall_synteny',
+        description:
+          'One all-vs-all PAF read twice on the same axis: as one-vs-all lanes in an ordinary linear view (K-12 against every other strain, grouped per strain) and as the ribbon bands of the stack below. Inversions are blue in both.',
       },
     ],
   },
