@@ -171,6 +171,9 @@ export default function stateModelFactory(pm: PluginManager) {
           height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
+           * vestigial: the hierarchical selector is the only one that exists, so
+           * this value is ignored. Retained because saved sessions and configs
+           * persist it.
            */
           trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
           /**
@@ -729,21 +732,17 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         activateTrackSelector() {
-          if (self.trackSelectorType === 'hierarchical') {
-            const session = getSession(self)
-            if (isSessionModelWithWidgets(session)) {
-              const selector = session.addWidget(
-                'HierarchicalTrackSelectorWidget',
-                'hierarchicalTrackSelector',
-                { view: self },
-              )
-              session.showWidget(selector)
-              return selector
-            }
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(session)) {
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showWidget(selector)
+            return selector
           }
-          throw new Error(
-            `invalid track selector type ${self.trackSelectorType}`,
-          )
+          throw new Error('session does not support widgets')
         },
 
         /**

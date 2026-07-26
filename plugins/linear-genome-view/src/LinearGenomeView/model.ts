@@ -338,6 +338,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * vestigial: the hierarchical selector is the only one that exists, so
+         * this value is ignored. Retained because saved sessions and configs
+         * persist it.
          */
         trackSelectorType: types.stripDefault(
           types.enumeration(['hierarchical']),

@@ -382,7 +382,7 @@ The containing LGV, typed once here so views/actions don't each repeat the
 `getContainingView(self) as LinearGenomeViewModel` cast.
 
 ```ts
-type lgv = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>
+type lgv = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>
 ```
 
 #### getter: annotationAdapterConfig

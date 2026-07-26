@@ -17,7 +17,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | ------------------------------------------------------ | ---------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [id](#property-id)                                     | Properties | LinearComparativeView             |                                                                                                                                                                           |
 | [type](#property-type)                                 | Properties | LinearComparativeView             | Abstract base: never registered or instantiated standalone, always composed into a concrete subclass (e.g. LinearSyntenyView) that overrides `type` with its own literal. |
-| [trackSelectorType](#property-trackselectortype)       | Properties | LinearComparativeView             |                                                                                                                                                                           |
+| [trackSelectorType](#property-trackselectortype)       | Properties | LinearComparativeView             | vestigial: the hierarchical selector is the only one that exists, so this value is ignored.                                                                               |
 | [showIntraviewLinks](#property-showintraviewlinks)     | Properties | LinearComparativeView             |                                                                                                                                                                           |
 | [linkViews](#property-linkviews)                       | Properties | LinearComparativeView             |                                                                                                                                                                           |
 | [levels](#property-levels)                             | Properties | LinearComparativeView             |                                                                                                                                                                           |
@@ -77,6 +77,18 @@ type type = ISimpleType<string>
 type: types.string
 ```
 
+#### property: trackSelectorType
+
+vestigial: the hierarchical selector is the only one that exists, so this value
+is ignored. Retained because saved sessions and configs persist it.
+
+```ts
+// type signature
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
+```
+
 #### property: views
 
 N genome rows, with N-1 synteny `levels` between adjacent pairs. The
@@ -84,7 +96,7 @@ views/levels invariant is maintained by reconcileLevels().
 
 ```ts
 // type signature
-type views = IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 19 more ... & { ...; }, _NotCustomized, { ...; }>>
+type views = IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -115,7 +127,6 @@ viewTrackConfigs: types.stripDefault(
 | Member                                                           | Type                                                |
 | ---------------------------------------------------------------- | --------------------------------------------------- |
 | <span id="property-id">id</span>                                 | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| <span id="property-trackselectortype">trackSelectorType</span>   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
 | <span id="property-showintraviewlinks">showIntraviewLinks</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | <span id="property-linkviews">linkViews</span>                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | <span id="property-levels">levels</span>                         | `IArrayType<IAnyModelType>`                         |

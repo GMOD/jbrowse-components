@@ -61,7 +61,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [hideHeader](#property-hideheader)                                       | Properties | LinearGenomeView                      |                                                                                                                                                                                                                             |
 | [hideHeaderOverview](#property-hideheaderoverview)                       | Properties | LinearGenomeView                      |                                                                                                                                                                                                                             |
 | [hideNoTracksActive](#property-hidenotracksactive)                       | Properties | LinearGenomeView                      |                                                                                                                                                                                                                             |
-| [trackSelectorType](#property-trackselectortype)                         | Properties | LinearGenomeView                      |                                                                                                                                                                                                                             |
+| [trackSelectorType](#property-trackselectortype)                         | Properties | LinearGenomeView                      | vestigial: the hierarchical selector is the only one that exists, so this value is ignored.                                                                                                                                 |
 | [showCenterLine](#property-showcenterline)                               | Properties | LinearGenomeView                      | show the "center line"                                                                                                                                                                                                      |
 | [showCytobands](#property-showcytobands)                                 | Properties | LinearGenomeView                      | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter)                                                                                     |
 | [trackLabels](#property-tracklabels)                                     | Properties | LinearGenomeView                      | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in the LinearGenomeViewPlugin config default being used).                                                   |
@@ -296,6 +296,21 @@ type tracks = IArrayType<IAnyType>
 tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 ```
 
+#### property: trackSelectorType
+
+vestigial: the hierarchical selector is the only one that exists, so this value
+is ignored. Retained because saved sessions and configs persist it.
+
+```ts
+// type signature
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackSelectorType: types.stripDefault(
+  types.enumeration(['hierarchical']),
+  'hierarchical',
+)
+```
+
 #### property: showCenterLine
 
 show the "center line"
@@ -439,7 +454,6 @@ init: types.frozen<InitState | undefined>()
 | <span id="property-hideheader">hideHeader</span>                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | <span id="property-hideheaderoverview">hideHeaderOverview</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | <span id="property-hidenotracksactive">hideNoTracksActive</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| <span id="property-trackselectortype">trackSelectorType</span>   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
 
 </details>
 

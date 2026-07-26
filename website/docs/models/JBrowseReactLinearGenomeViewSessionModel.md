@@ -126,7 +126,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 | Member                               | Type                                                                                                                       |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| <span id="property-view">view</span> | `IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 19 more ... & { ...; }, _NotCustomized, { ...; }>` |
+| <span id="property-view">view</span> | `IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, { ...; }>` |
 
 </details>
 
@@ -139,7 +139,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 | <span id="getter-disableaddtracks">disableAddTracks</span> | `boolean`                                                                                                         |
 | <span id="getter-assemblynames">assemblyNames</span>       | `string[]`                                                                                                        |
 | <span id="getter-assemblymanager">assemblyManager</span>   | `ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & IStateTreeNode<…>`                                           |
-| <span id="getter-views">views</span>                       | `(ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>)[]` |
+| <span id="getter-views">views</span>                       | `(ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>)[]` |
 
 </details>
 
@@ -148,7 +148,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 | Member                                         | Type                                                                                                                                                    |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-addview">addView</span>       | `(typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>` |
+| <span id="action-addview">addView</span>       | `(typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>` |
 | <span id="action-removeview">removeView</span> | `() => void`                                                                                                                                            |
 
 </details>

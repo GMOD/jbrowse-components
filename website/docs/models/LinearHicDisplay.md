@@ -199,7 +199,7 @@ the containing LGV, typed once here so downstream getters don't repeat the
 `getContainingView` cast
 
 ```ts
-type view = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 21 more ... & IStateTreeNode<...>
+type view = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>
 ```
 
 #### getter: selectedNormalization

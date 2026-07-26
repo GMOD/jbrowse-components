@@ -38,7 +38,7 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [id](#property-id)                                                             | Properties | DotplotView                                             |                                                                                                                                                                                                     |
 | [type](#property-type)                                                         | Properties | DotplotView                                             |                                                                                                                                                                                                     |
 | [height](#property-height)                                                     | Properties | DotplotView                                             |                                                                                                                                                                                                     |
-| [trackSelectorType](#property-trackselectortype)                               | Properties | DotplotView                                             |                                                                                                                                                                                                     |
+| [trackSelectorType](#property-trackselectortype)                               | Properties | DotplotView                                             | vestigial: the hierarchical selector is the only one that exists, so this value is ignored.                                                                                                         |
 | [assemblyNames](#property-assemblynames)                                       | Properties | DotplotView                                             |                                                                                                                                                                                                     |
 | [drawCigar](#property-drawcigar)                                               | Properties | DotplotView                                             |                                                                                                                                                                                                     |
 | [lodMode](#property-lodmode)                                                   | Properties | DotplotView                                             | Level-of-detail tier override for PIF adapters.                                                                                                                                                     |
@@ -158,6 +158,18 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 <details>
 <summary>DotplotView - Properties</summary>
 
+#### property: trackSelectorType
+
+vestigial: the hierarchical selector is the only one that exists, so this value
+is ignored. Retained because saved sessions and configs persist it.
+
+```ts
+// type signature
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
+```
+
 #### property: lodMode
 
 Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's
@@ -250,17 +262,16 @@ showColorLegend: types.stripDefault(types.boolean, false)
 <details>
 <summary>DotplotView - Properties (other undocumented members)</summary>
 
-| Member                                                         | Type                                                           |
-| -------------------------------------------------------------- | -------------------------------------------------------------- |
-| <span id="property-id">id</span>                               | `IOptionalIType<ISimpleType<string>, [undefined]>`             |
-| <span id="property-type">type</span>                           | `ISimpleType<"DotplotView">`                                   |
-| <span id="property-height">height</span>                       | `IOptionalIType<ISimpleType<number>, [undefined]>`             |
-| <span id="property-trackselectortype">trackSelectorType</span> | `IOptionalIType<ISimpleType<string>, [undefined]>`             |
-| <span id="property-assemblynames">assemblyNames</span>         | `IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>` |
-| <span id="property-drawcigar">drawCigar</span>                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>`            |
-| <span id="property-hview">hview</span>                         | `IOptionalIType<IModelType<…>, [undefined]>`                   |
-| <span id="property-vview">vview</span>                         | `IOptionalIType<IModelType<…>, [undefined]>`                   |
-| <span id="property-tracks">tracks</span>                       | `IArrayType<IAnyType>`                                         |
+| Member                                                 | Type                                                           |
+| ------------------------------------------------------ | -------------------------------------------------------------- |
+| <span id="property-id">id</span>                       | `IOptionalIType<ISimpleType<string>, [undefined]>`             |
+| <span id="property-type">type</span>                   | `ISimpleType<"DotplotView">`                                   |
+| <span id="property-height">height</span>               | `IOptionalIType<ISimpleType<number>, [undefined]>`             |
+| <span id="property-assemblynames">assemblyNames</span> | `IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>` |
+| <span id="property-drawcigar">drawCigar</span>         | `IOptionalIType<ISimpleType<boolean>, [undefined]>`            |
+| <span id="property-hview">hview</span>                 | `IOptionalIType<IModelType<…>, [undefined]>`                   |
+| <span id="property-vview">vview</span>                 | `IOptionalIType<IModelType<…>, [undefined]>`                   |
+| <span id="property-tracks">tracks</span>               | `IArrayType<IAnyType>`                                         |
 
 </details>
 

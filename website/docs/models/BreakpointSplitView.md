@@ -109,7 +109,7 @@ init: types.frozen<BreakpointSplitViewInitView[] | undefined>()
 | <span id="property-linkviews">linkViews</span>                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                    |
 | <span id="property-interactiveoverlay">interactiveOverlay</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                    |
 | <span id="property-showheader">showHeader</span>                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                    |
-| <span id="property-views">views</span>                           | `IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 19 more ... & { ...; }, _NotCustomized, { ...; }>>` |
+| <span id="property-views">views</span>                           | `IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, { ...; }>>` |
 
 </details>
 

@@ -8,6 +8,8 @@ import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
+import { levelHeightForCount } from './levelHeightBudget.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -52,6 +54,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         type: types.string,
         /**
          * #property
+         * vestigial: the hierarchical selector is the only one that exists, so
+         * this value is ignored. Retained because saved sessions and configs
+         * persist it.
          */
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
@@ -288,21 +293,19 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       activateTrackSelector(level: number) {
-        if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
-          if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
-              'HierarchicalTrackSelectorWidget',
-              'hierarchicalTrackSelector',
-              {
-                view: self.levels[level],
-              },
-            )
-            session.showWidget(selector)
-            return selector
-          }
+        const session = getSession(self)
+        if (isSessionModelWithWidgets(session)) {
+          const selector = session.addWidget(
+            'HierarchicalTrackSelectorWidget',
+            'hierarchicalTrackSelector',
+            {
+              view: self.levels[level],
+            },
+          )
+          session.showWidget(selector)
+          return selector
         }
-        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+        throw new Error('session does not support widgets')
       },
 
       /**
@@ -382,12 +385,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       autoScaleLevelHeights() {
         const numLevels = self.levels.length
-        if (numLevels <= 0) {
-          return
-        }
-        const targetHeight = Math.max(40, Math.min(100, 400 / numLevels))
-        for (const level of self.levels) {
-          level.setHeight(targetHeight)
+        if (numLevels > 0) {
+          const targetHeight = levelHeightForCount(numLevels)
+          for (const level of self.levels) {
+            level.setHeight(targetHeight)
+          }
         }
       },
     }))

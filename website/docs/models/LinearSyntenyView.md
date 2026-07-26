@@ -83,7 +83,7 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [clearView](#action-clearview)                                                 | Actions    | LinearSyntenyView                                       | Also drops `init`, which `hasSomethingToShow` keys off while views is empty — leaving it set would bounce "return to import form" straight back to the loading spinner.                                 |
 | [exportSvg](#action-exportsvg)                                                 | Actions    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [id](#property-id)                                                             | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
-| [trackSelectorType](#property-trackselectortype)                               | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
+| [trackSelectorType](#property-trackselectortype)                               | Properties | [LinearComparativeView](../linearcomparativeview)       | vestigial: the hierarchical selector is the only one that exists, so this value is ignored.                                                                                                             |
 | [showIntraviewLinks](#property-showintraviewlinks)                             | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [linkViews](#property-linkviews)                                               | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
 | [levels](#property-levels)                                                     | Properties | [LinearComparativeView](../linearcomparativeview)       |                                                                                                                                                                                                         |
@@ -488,6 +488,18 @@ its most-specific definition.
 
 **Properties**
 
+#### property: trackSelectorType
+
+vestigial: the hierarchical selector is the only one that exists, so this value
+is ignored. Retained because saved sessions and configs persist it.
+
+```ts
+// type signature
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
+```
+
 #### property: views
 
 N genome rows, with N-1 synteny `levels` between adjacent pairs. The
@@ -495,7 +507,7 @@ views/levels invariant is maintained by reconcileLevels().
 
 ```ts
 // type signature
-type views = IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 19 more ... & { ...; }, _NotCustomized, { ...; }>>
+type views = IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -521,7 +533,6 @@ viewTrackConfigs: types.stripDefault(
 | Member                                                           | Type                                                |
 | ---------------------------------------------------------------- | --------------------------------------------------- |
 | <span id="property-id">id</span>                                 | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| <span id="property-trackselectortype">trackSelectorType</span>   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
 | <span id="property-showintraviewlinks">showIntraviewLinks</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | <span id="property-linkviews">linkViews</span>                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | <span id="property-levels">levels</span>                         | `IArrayType<IAnyModelType>`                         |

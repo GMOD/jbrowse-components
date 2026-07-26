@@ -45,7 +45,7 @@ Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
 | [paddingPx](#property-paddingpx)                                     | Properties | CircularView                      |                                                                                                                                                                             |
 | [minVisibleWidth](#property-minvisiblewidth)                         | Properties | CircularView                      |                                                                                                                                                                             |
 | [minimumBlockWidth](#property-minimumblockwidth)                     | Properties | CircularView                      |                                                                                                                                                                             |
-| [trackSelectorType](#property-trackselectortype)                     | Properties | CircularView                      |                                                                                                                                                                             |
+| [trackSelectorType](#property-trackselectortype)                     | Properties | CircularView                      | vestigial: the hierarchical selector is the only one that exists, so this value is ignored.                                                                                 |
 | [init](#property-init)                                               | Properties | CircularView                      | used for initializing the view from a session snapshot                                                                                                                      |
 | [volatileWidth](#volatile-volatilewidth)                             | Volatiles  | CircularView                      |                                                                                                                                                                             |
 | [volatileError](#volatile-volatileerror)                             | Volatiles  | CircularView                      |                                                                                                                                                                             |
@@ -144,6 +144,18 @@ type autoFit = IOptionalIType<ISimpleType<boolean>, [undefined]>
 autoFit: types.stripDefault(types.boolean, true)
 ```
 
+#### property: trackSelectorType
+
+vestigial: the hierarchical selector is the only one that exists, so this value
+is ignored. Retained because saved sessions and configs persist it.
+
+```ts
+// type signature
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
+```
+
 #### property: init
 
 used for initializing the view from a session snapshot
@@ -178,7 +190,6 @@ init: types.frozen<CircularViewInit | undefined>()
 | <span id="property-paddingpx">paddingPx</span>                               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
 | <span id="property-minvisiblewidth">minVisibleWidth</span>                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
 | <span id="property-minimumblockwidth">minimumBlockWidth</span>               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| <span id="property-trackselectortype">trackSelectorType</span>               | `IOptionalIType<ISimpleType<string>, [undefined]>`                 |
 
 </details>
 
