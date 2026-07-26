@@ -7,7 +7,9 @@ guide_category: Other features
 
 **TL;DR:** The consensus sequence panel calls a per-position consensus from the
 reads in an alignments track, letting the reads rather than the reference define
-the sequence over a region of interest.
+the sequence over a region of interest. Download the result as FASTA, or as a
+VCF of the positions that differ from the reference (also openable directly as a
+variant track).
 
 ## Opening the panel
 

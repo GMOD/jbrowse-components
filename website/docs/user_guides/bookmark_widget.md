@@ -5,8 +5,9 @@ guide_category: Other features
 ---
 
 **TL;DR:** The bookmark widget stores genomic regions for quick navigation. Each
-bookmark is a single region (chromosome, start, end); clicking one navigates a
-linear genome view (LGV) to it.
+bookmark is a single region (chromosome, start, end), shown as a colored
+highlight on the LGV; clicking one navigates a linear genome view (LGV) to it.
+Export bookmarks as a BED or TSV file, or import them back in.
 
 The dropdown above the table filters bookmarks by assembly, and columns resize
 by dragging the grey divider lines.

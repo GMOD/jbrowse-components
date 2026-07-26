@@ -6,7 +6,8 @@ guide_category: Track types
 
 **TL;DR:** BigWig and BedGraph files store genome-wide quantitative signals
 (read depth, ChIP-seq enrichment, conservation scores). JBrowse renders them as
-continuous tracks in several visual styles.
+an XY plot, a density heatmap, a line, or a scatter plot, switchable from the
+track menu's **Plot type** submenu.
 
 ## Rendering types
 

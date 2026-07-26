@@ -5,7 +5,9 @@ guide_category: Track types
 ---
 
 **TL;DR:** The feature detail sidebar can extract and display the sequence
-underlying a selected feature, with options that vary by feature type.
+underlying a selected feature. For a gene or transcript, choose CDS, protein
+translation, cDNA, or genomic with introns (plus optional flanking bases); for
+any other feature type it shows the literal underlying sequence.
 
 ## Gene features
 
