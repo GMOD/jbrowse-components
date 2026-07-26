@@ -148,6 +148,7 @@ export default function stateModelFactory(
           self.editableSources,
           self.subtreeFilter,
           self.isOverlay,
+          self.isDensityMode,
         )
       },
     }))

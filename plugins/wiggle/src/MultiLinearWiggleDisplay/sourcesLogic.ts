@@ -14,19 +14,38 @@ export function withSourceAlias(s: SourceInfo): EditableSource {
   return { ...s, source: s.name }
 }
 
-// Synthesized color for a source with no explicit color. Priority mirrors the
+// Synthesized colors for a source that has not set them. Priority mirrors the
 // buildSources doc-comment: group-derived color, then the overlay index palette
 // (overlay mode only), then undefined so the renderer falls back to its default.
-function synthesizeColor(
+//
+// Which channel a group's color lands in depends on the rendering, because the
+// two modes spend `color` on different things. Everywhere but density, `color`
+// is the source's identity. In density, `color` is the score ramp (white at the
+// bicolor pivot, saturating toward `color`), so an identity hue there silently
+// replaces the pos/neg scale the track is read by: a diverging copy-number
+// heatmap grouped by population came out one hue per population with a shared
+// blue for losses, which encodes nothing. There the group tints `labelColor`
+// instead, which the row-label sidebar paints and the ramp ignores. This is the
+// same split the Set Color dialog already makes by editing `labelColor` rather
+// than `color` in density mode.
+function synthesizeColors(
   s: Source,
   index: number,
   isOverlay: boolean,
+  isDensityMode: boolean,
   groupColors: Map<string, string>,
 ) {
-  if (s.group !== undefined) {
-    return groupColors.get(s.group)
-  }
-  return isOverlay ? paletteColor(index) : undefined
+  const groupColor =
+    s.group === undefined ? undefined : groupColors.get(s.group)
+  return isDensityMode
+    ? { color: s.color, labelColor: s.labelColor ?? groupColor }
+    : {
+        color:
+          s.color ??
+          groupColor ??
+          (isOverlay ? paletteColor(index) : undefined),
+        labelColor: s.labelColor,
+      }
 }
 
 // Build a group→color map in first-appearance order so every source in the
@@ -65,8 +84,9 @@ export function buildEditableSources(
 // What the canvas/SVG renderers consume: editable sources after subtree
 // filter, with color synthesis filling unset colors. Priority:
 //   explicit user color > group-derived color > overlay index palette > undefined
-// Group colors apply in both row and overlay mode so samples from the same
-// group always share a color. The overlay index palette fills remaining gaps
+// Group colors apply in every mode so samples from the same group always share
+// a color, but in density they share it on the row label rather than the score
+// ramp (see synthesizeColors). The overlay index palette fills remaining gaps
 // only in overlay mode (existing behavior for tracks without groups).
 //
 // Synthesis runs over the full list and filterRowsBySubtree applies after, so a
@@ -78,12 +98,13 @@ export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,
   isOverlay: boolean,
+  isDensityMode: boolean,
 ): Source[] {
   const groupColors = buildGroupColors(editableSources)
   return filterRowsBySubtree(
     editableSources.map((s, i) => ({
       ...s,
-      color: s.color ?? synthesizeColor(s, i, isOverlay, groupColors),
+      ...synthesizeColors(s, i, isOverlay, isDensityMode, groupColors),
     })),
     subtreeFilter,
   )

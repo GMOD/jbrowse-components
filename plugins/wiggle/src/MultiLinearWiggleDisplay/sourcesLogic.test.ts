@@ -66,13 +66,13 @@ describe('buildEditableSources', () => {
 describe('buildSources', () => {
   it('synthesizes overlay palette only in overlay mode', () => {
     const editable = buildEditableSources(adapter(3), [])
-    const overlay = buildSources(editable, undefined, true)
+    const overlay = buildSources(editable, undefined, true, false)
     expect(overlay.map(s => s.color)).toEqual([
       overlayColors[0],
       overlayColors[1],
       overlayColors[2],
     ])
-    const rows = buildSources(editable, undefined, false)
+    const rows = buildSources(editable, undefined, false, false)
     expect(rows.every(s => s.color === undefined)).toBe(true)
   })
 
@@ -85,7 +85,7 @@ describe('buildSources', () => {
       ],
       [],
     )
-    const out = buildSources(editable, undefined, true)
+    const out = buildSources(editable, undefined, true, false)
     expect(out[0]!.color).toBe('#ff0000')
     expect(out[1]!.color).toBe(overlayColors[1])
     expect(out[2]!.color).toBe('#00ff00')
@@ -97,6 +97,7 @@ describe('buildSources', () => {
       buildEditableSources(adapter(n + 2), []),
       undefined,
       true,
+      false,
     )
     expect(out[n]!.color).toBe(overlayColors[0])
     expect(out[n + 1]!.color).toBe(overlayColors[1])
@@ -104,8 +105,8 @@ describe('buildSources', () => {
 
   it('keeps each overlay palette color across a subtree filter', () => {
     const editable = buildEditableSources(adapter(12), [])
-    const unfiltered = buildSources(editable, undefined, true)
-    const out = buildSources(editable, ['source_0', 'source_5'], true)
+    const unfiltered = buildSources(editable, undefined, true, false)
+    const out = buildSources(editable, ['source_0', 'source_5'], true, false)
     expect(out.map(s => s.name)).toEqual(['source_0', 'source_5'])
     expect(out[0]!.color).toBe(unfiltered[0]!.color)
     expect(out[1]!.color).toBe(unfiltered[5]!.color)
@@ -120,8 +121,8 @@ describe('buildSources', () => {
       ],
       [],
     )
-    const unfiltered = buildSources(editable, undefined, false)
-    const out = buildSources(editable, ['c'], false)
+    const unfiltered = buildSources(editable, undefined, false, false)
+    const out = buildSources(editable, ['c'], false, false)
     expect(out[0]!.color).toBe(unfiltered[2]!.color)
   })
 
@@ -133,7 +134,7 @@ describe('buildSources', () => {
         { source: 'b', name: 'b' },
       ],
     )
-    const out = buildSources(editable, undefined, false)
+    const out = buildSources(editable, undefined, false, false)
     expect(out[0]!.color).toBe('#0000ff')
     expect(out[1]!.color).toBeUndefined()
   })
@@ -146,7 +147,7 @@ describe('buildSources', () => {
         { source: 'b', name: 'b' },
       ],
     )
-    const out = buildSources(editable, undefined, true)
+    const out = buildSources(editable, undefined, true, false)
     expect(out[0]!.color).toBe('#0000ff')
     // 'b' had no explicit color, so palette synthesizes by its index
     expect(out[1]!.color).toBe(overlayColors[1])
@@ -162,7 +163,7 @@ describe('buildSources', () => {
       [],
     )
     for (const isOverlay of [false, true]) {
-      const out = buildSources(editable, undefined, isOverlay)
+      const out = buildSources(editable, undefined, isOverlay, false)
       // 'a' and 'c' share 'tumor' → same color
       expect(out[0]!.color).toBe(out[2]!.color)
       // 'b' is 'normal' → different color from 'tumor'
@@ -175,7 +176,46 @@ describe('buildSources', () => {
       [{ name: 'a', color: '#ff0000', group: 'tumor' }],
       [],
     )
-    const out = buildSources(editable, undefined, false)
+    const out = buildSources(editable, undefined, false, false)
     expect(out[0]!.color).toBe('#ff0000')
+  })
+
+  // In density `color` IS the score ramp, so a group's identity hue there would
+  // replace the pos/neg scale rather than sit beside it. It goes to the row
+  // label instead, matching where the Set Color dialog writes in this mode.
+  it('routes a group color to labelColor in density mode, leaving the ramp alone', () => {
+    const editable = buildEditableSources(
+      [
+        { name: 'a', group: 'PUR' },
+        { name: 'b', group: 'YRI' },
+        { name: 'c', group: 'PUR' },
+      ],
+      [],
+    )
+    const out = buildSources(editable, undefined, false, true)
+    for (const s of out) {
+      expect(s.color).toBeUndefined()
+    }
+    expect(out[0]!.labelColor).toBe(out[2]!.labelColor)
+    expect(out[1]!.labelColor).not.toBe(out[0]!.labelColor)
+  })
+
+  it('keeps an explicitly set color in density mode', () => {
+    const editable = buildEditableSources(
+      [{ name: 'a', color: '#ff0000', group: 'PUR' }],
+      [],
+    )
+    const out = buildSources(editable, undefined, false, true)
+    expect(out[0]!.color).toBe('#ff0000')
+    expect(out[0]!.labelColor).toBeDefined()
+  })
+
+  it('keeps an explicitly set labelColor over the group color', () => {
+    const editable = buildEditableSources(
+      [{ name: 'a', labelColor: '#00ff00', group: 'PUR' }],
+      [],
+    )
+    const out = buildSources(editable, undefined, false, true)
+    expect(out[0]!.labelColor).toBe('#00ff00')
   })
 })
