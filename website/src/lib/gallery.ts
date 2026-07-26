@@ -424,6 +424,20 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Pangenome graphs',
     items: [
       {
+        label: 'A pangenome locus as a graph',
+        spec: 'pangenome/hprc_mhc_bandage',
+        guide: 'tutorials/pangenome_hprc',
+        description:
+          'The HLA class II region of the HPRC release 2 pangenome drawn as a graph, in force-directed layout, above four lanes of the same window on GRCh38: the blue blocks are the reference backbone, and the orange bar is the 64 kb bubble every orange loop in the graph hangs off.',
+      },
+      {
+        label: 'Structural alleles across 464 haplotypes',
+        spec: 'hprc2/mhc_clustered',
+        guide: 'tutorials/pangenome_hprc',
+        description:
+          'Structural alleles (50 bp and up) across the HPRC release 2 haplotypes, one row each, clustered by genotype under the HLA class II genes they fall in: haplotypes sharing whole sets of insertions and deletions form solid blocks spanning several genes, with no HLA typing involved.',
+      },
+      {
         label: 'Graph pangenome variants',
         spec: 'pangenome/pangenome_variants',
         guide: 'tutorials/pangenome_ecoli',

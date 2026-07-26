@@ -140,7 +140,7 @@ the breakpoints rather than trusting the call outright. Navigate to
 `chr19:41,700,000–42,000,000` to start at its left breakpoint region.
 
 At this scale the variant track shows the inversion call as a wide bar spanning
-the region. Use **Clustering > Cluster rows by genotype...** in the track menu
+the region. Use **Clustering → Cluster rows by genotype...** in the track menu
 to group samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows, showing
 the inversion's frequency across the cohort at a glance.
 

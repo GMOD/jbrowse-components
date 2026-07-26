@@ -158,7 +158,7 @@ are keyed by color, one uncheck hides every state sharing that color.
 
 Two more track-menu actions turn the painting into a comparison:
 
-- **Clustering > Cluster rows by similarity** reorders the rows by their state
+- **Clustering → Cluster rows by similarity** reorders the rows by their state
   colors across the region in view and draws the dendrogram in the sidebar. On
   the 127-epigenome track below this is the whole point: related tissues group
   themselves at whatever locus you're looking at, rather than sitting in a
