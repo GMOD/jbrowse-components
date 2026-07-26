@@ -117,6 +117,33 @@ describe('Canvas2DVariantRenderer', () => {
       expect(h).toBe(10)
     })
 
+    test('pixel-snaps x, matching the shader', () => {
+      // 0.8 px/bp, so bp 101..102 maps to x 80.8..81.6 — a sub-pixel cell, which
+      // is what every cell is at genome-wide zoom. The GPU path snaps these to
+      // whole pixels; drawing at raw float x here put the SVG export (which runs
+      // through this renderer) half a pixel off the on-screen render.
+      const { canvas, fillRectCalls } = createMockCanvas()
+      const renderer = new Canvas2DVariantRenderer(canvas)
+      const regions = new Map([
+        [
+          0,
+          makeRegionData({
+            numCells: 1,
+            cellPositions: [101, 102],
+            cellRowIndices: [0],
+            cellColors: [0xff0000ff],
+            cellShapeTypes: [0],
+          }),
+        ],
+      ])
+
+      renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
+
+      const [x, , w] = fillRectCalls[0]!
+      expect(x).toBe(81)
+      expect(w).toBe(2)
+    })
+
     test('skips empty regions (numCells === 0)', () => {
       const { canvas, ctx } = createMockCanvas()
       const renderer = new Canvas2DVariantRenderer(canvas)

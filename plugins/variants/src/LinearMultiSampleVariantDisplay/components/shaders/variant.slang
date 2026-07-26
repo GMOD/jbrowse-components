@@ -53,6 +53,9 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float loClip = min(clipX1, clipX2);
   float hiClip = max(clipX1, clipX2);
 
+  // Pixel-snap + 2px floor. Mirrored on the CPU by snapVariantCellX.ts, which
+  // the Canvas2D backend and the SVG export both call — snapping here only
+  // would put exports half a pixel off the on-screen render at sub-pixel scale.
   float pxSize = 2.0 / u.canvasWidth;
   float cx1 = floor(loClip / pxSize + 0.5) * pxSize;
   float cx2 = max(floor(hiClip / pxSize + 0.5) * pxSize, cx1 + 2.0 * pxSize);

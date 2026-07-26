@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
+import { snapVariantCellX } from './snapVariantCellX.ts'
 import { drawVariantShape } from './variantShape.ts'
 
 import type {
@@ -54,11 +55,14 @@ export function drawVariantBlocks(
           const startBp = region.cellPositions[i * 2]!
           const endBp = region.cellPositions[i * 2 + 1]!
 
-          const x1_raw = toX(startBp)
-          const x2_raw = toX(endBp)
-          const x1 = Math.min(x1_raw, x2_raw)
-          const spanPx = Math.abs(x2_raw - x1_raw)
-          const w = Math.max(2, spanPx)
+          // Snapped, not drawn at raw float x: the shader pixel-snaps, so an
+          // unsnapped Canvas2D path (and the SVG export riding on it) rendered
+          // every cell up to half a pixel off what the GPU had drawn.
+          const { x: x1, width: w } = snapVariantCellX(
+            toX(startBp),
+            toX(endBp),
+            canvasWidth,
+          )
 
           const color = region.cellColors[i]!
           if (color !== prevColor) {
