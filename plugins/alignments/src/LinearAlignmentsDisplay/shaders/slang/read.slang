@@ -2,7 +2,7 @@
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
-//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
+//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, CS_ORIENTATION_MASK, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
 
 import alignmentsUniforms;
 import colorPack;
@@ -23,6 +23,18 @@ static const int CS_IS_AND_ORIENT = 6;
 static const int CS_MODIFICATIONS = 7;
 static const int CS_TAG           = 8;
 static const int CS_IS_GRADIENT   = 9;
+
+// The mate-aware schemes as a bitmask over the CS_* indices above: the schemes
+// whose color depends on the read's MATE (insert size / pair orientation), so
+// an unmapped or inter-chromosomal mate needs its own bucket rather than a
+// misleading hue. 616 == (1<<CS_INSERT_SIZE) | (1<<CS_PAIR_ORIENT)
+// | (1<<CS_IS_AND_ORIENT) | (1<<CS_IS_GRADIENT); spelled as the literal because
+// `export-consts` reads the right-hand side with parseFloat. Exported alongside
+// the indices so this membership is no longer a SYNC comment:
+// colorScheme.test.ts asserts that the `mateAware` flags in the COLOR_SCHEMES
+// registry — which build the Canvas2D twin's `orientationSchemes` — describe
+// exactly these schemes, from both directions.
+static const int CS_ORIENTATION_MASK = 616;
 
 static const int CM_LINKED_READ = 1;
 
@@ -147,13 +159,8 @@ float3 modificationsColor(uint flags, Uniforms u) {
   return unpackRGBA(u.colorModFwd).xyz;
 }
 
-// SYNC: this membership mirrors the `mateAware` flag in the COLOR_SCHEMES
-// registry (colorSchemes.ts), which drives the `orientationSchemes` set in the
-// Canvas2D twin. Slang can't read that registry, so a new mate-aware scheme must
-// be added here by hand.
 bool isOrientationScheme(int cs) {
-  return cs == CS_INSERT_SIZE || cs == CS_PAIR_ORIENT
-      || cs == CS_IS_AND_ORIENT || cs == CS_IS_GRADIENT;
+  return (CS_ORIENTATION_MASK & (1 << cs)) != 0;
 }
 
 // SYNC: GPU twin of readColorCategory + categoryColor in colorUtils.ts (which

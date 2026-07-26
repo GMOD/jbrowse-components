@@ -107,9 +107,11 @@ function insertSizeCategory(
 // misleading "short insert"/orientation hue. Derived from the `mateAware` flag
 // in the shared COLOR_SCHEMES registry (single source), mapped to shader
 // indices. Module-level so the per-read classification in readColorCategory (a
-// render + legend hot loop) does not reallocate this each call. SYNC: the shader
-// twin `isOrientationScheme` (read.slang) hard-codes the same membership.
-const orientationSchemes = new Set(
+// render + legend hot loop) does not reallocate this each call. The shader twin
+// `isOrientationScheme` (read.slang) tests the same membership as a bitmask;
+// exported so colorScheme.test.ts can assert this set against the shader's
+// generated CS_ORIENTATION_MASK rather than trusting a SYNC comment.
+export const orientationSchemes = new Set(
   Object.values(COLOR_SCHEMES)
     .filter(s => s.mateAware)
     .map(s => ColorScheme[s.shaderScheme]),

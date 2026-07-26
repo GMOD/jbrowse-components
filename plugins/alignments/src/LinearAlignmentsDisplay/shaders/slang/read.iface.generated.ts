@@ -25,6 +25,8 @@ export const CS_TAG = 8
 
 export const CS_IS_GRADIENT = 9
 
+export const CS_ORIENTATION_MASK = 616
+
 export const CHEVRON_PX = 8
 
 export const CHEVRON_DIRLESS_MIN_WIDTH_PX = 30
