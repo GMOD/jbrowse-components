@@ -300,6 +300,121 @@ Stable rank colors, so a segment is the same color in both panels:
 
 <Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes, so the blue blocks above are the blue rank-0 backbone below, same ids at the same offsets. The orange, red and purple alleles have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
+### Which strain takes which path
+
+The two indexes above say what the graph contains, not who carries what: rGFA's
+`SR` tag is build order, not sample. minigraph will recompute the walks anyway,
+by aligning each assembly back to the graph (`minigraph -cxasm --call`), which
+emits one line per bubble per sample, over the same bubbles `gfatools bubble`
+lists and in the same order, each carrying the path that sample takes and its
+length in the graph.
+[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
+runs that for every strain and projects the results into one tabix-indexed BED,
+a row per bubble per strain:
+
+```bash
+bash build_minigraph_paths.sh ecoli_minigraph.rgfa ecoli_minigraph_paths \
+  K12.pansn.fa Sakai.pansn.fa CFT073.pansn.fa NCTC86.pansn.fa IAI39.pansn.fa
+```
+
+The reference goes first, because its path through a bubble _is_ the reference
+allele the others are scored against. Load the result with one row per strain:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_minigraph_paths",
+  "name": "minigraph graph: per-strain path through each bubble",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_minigraph_paths.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "partitionField": "strain",
+      "lengthField": "delta",
+      "rowOrder": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+    }
+  ]
+}
+```
+
+`partitionField` gives each strain its own row. `lengthField` is the one that
+matters here: a block can only be as wide as the reference it covers, and an
+allele that _inserts_ sequence covers almost none of it, so without this a 113
+kb insertion and a 1 bp one draw the same box. Pointed at the BED's signed
+`delta` column, it draws the insertion and deletion marks the
+[alignments track](/docs/user_guides/alignments_track) uses, so the length is on
+the glyph rather than hidden in a tooltip.
+
+<Figure caption="One 3.4 kb bubble at K12 chr:1,094,197-1,097,573, read three ways: the genes above, the graph's segments in the middle, and each strain's path through the bubble below. Sakai and CFT073 replace those 3.4 kb with 113 kb and 110 kb of their own sequence, NCTC86 with 41 kb, and IAI39 deletes 3.2 kb of it. K12's row is the reference path, and is grey at all 601 bubbles." src="/img/pangenome/rgfa_strain_paths.png" />
+
+The BED keeps the segment ids each strain traverses in a `path` column, so the
+rows tie back to the graph panel: at that bubble Sakai and CFT073 differ only in
+their first segment, which is why their alleles are within 3 kb of each other,
+and IAI39's path opens with `<s2607`, a reverse traversal.
+
+### Finding the sites worth looking at
+
+601 bubbles is more than you want to scroll past, so each row also carries what
+that bubble looks like across all the strains. Both are jexl filters from **Edit
+filters** in the track menu:
+
+| Column    | What it is                                     | Use it for                                                                            |
+| --------- | ---------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `alleles` | distinct paths anyone actually takes here      | `jexl:get(feature,'alleles')>2` cuts to the multi-allelic sites                       |
+| `nonRef`  | how many strains leave the reference path      | `jexl:get(feature,'nonRef')==1` finds the singletons, `==4` the sites K12 alone lacks |
+| `strand`  | the orientation the strain's contig aligned in | `jexl:get(feature,'strand')==-1` selects inverted alleles                             |
+
+The five-strain graph splits 436 biallelic bubbles, 105 with three alleles, 37
+with four, and **23 where all five strains carry something different**. That is
+an allele-frequency spectrum, and the 23 are the hypervariable loci.
+
+`alleles` counts alleles someone carries, which is not the path count
+`gfatools bubble` reports: that one counts routes combinatorially and saturates
+at `2147483647` on a real pangenome. `nonRef` is also a different question from
+the
+[depth and presence projections](#pangenome-depth-projection-core-vs-accessory)
+below, which answer whether a haplotype is _present_ over a window, not whether
+it _differs_ there.
+
+Inversions come out of `strand`: 169 of IAI39's calls aligned reverse and none
+of any other strain's, in long contiguous runs (1,671,139-1,870,074 is one),
+which is what a large inversion looks like bubble by bubble. It is a separate
+column rather than a `class` value because the two are independent, and the data
+says so loudly: those 169 reverse calls split 60 reference-length, 57 deletions
+and 52 insertions.
+
+Rows can also be reordered by what they share: **Clustering, then Cluster rows
+by similarity** groups strains by which alleles they carry at which bubbles, so
+haplotypes with the same structural content sit together and the dendrogram
+shows how they relate. On five strains that is a sanity check; on a few hundred
+haplotypes it is the analysis.
+
+### What this projection cannot show
+
+`gfatools bubble` reports **top-level** bubbles only, and on this graph they
+never overlap (0 of 601), which is what makes one flat lane per strain a
+complete picture rather than a lossy one. The cost is that variation nested
+_inside_ a bubble is invisible here: a 113 kb allele is one block, not the SNPs
+and small indels within it. Graph browsers built for that view, like
+[PangyPlot](https://github.com/ScottMastro/pangyplot), decompose the graph into
+nested bubbles and chains (via
+[BubbleGun](https://github.com/fawaz-dabbaghieh/bubble_gun)) so a bubble can be
+expanded in place. In JBrowse the nested tier comes from the other direction:
+the [pangenome variants projection](#pangenome-variants-projection) below is
+`vg deconstruct` output, whose `LV` and `PS` fields carry exactly that snarl
+nesting. Read the two together, the graph route for structure and the VCF route
+for what is inside it.
+
+This route needs the assemblies, but it does not need the graph to carry its
+haplotypes: minigraph rGFA records no P or W lines. A graph that _does_ carry
+them (pggb, odgi, the base-level Minigraph-Cactus graph) needs no re-mapping at
+all, because `pggb -V` and `vg deconstruct` turn those same walks into the
+variant projection below.
+
 ## All-vs-all synteny projection
 
 pggb's first step is a wfmash all-vs-all PAF, exactly the input the

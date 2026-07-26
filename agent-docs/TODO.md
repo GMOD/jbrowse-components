@@ -264,20 +264,13 @@ The derived record is a CIGAR in all but name: `refConsumed = refEnd - refStart`
 against `altLen`, so `altLen > refConsumed` is an insertion, `<` a deletion, and
 either end falling outside the window is a clip (6 of 78 in MHC).
 
-- **Cheapest first, no display work**: have `build_rgfa_tabix.sh` emit a third
-  BED of derived alleles (chrom, ref span, altLen, donor sample, hap, rank,
-  segment ids). It already holds the whole segment table in memory while joining
-  L-lines, so the derivation is offline awk and the browser needs no pairing
-  heuristic, no chain logic, no new RPC. Render it with
-  `LinearMultiRowFeatureDisplay` partitioned on the donor, which the HPRC
-  tutorial already uses for the PCLAI painting. Boxes rather than I-beams, but it
-  is the picture for a few dozen lines of awk.
-- **The glyph vocabulary is a separate, later step with a packaging problem**:
-  `RgfaTabixAdapter` lives in the external `jbrowse-plugin-graphgenomeviewer`,
-  while `plugins/alignments` exports only `src/index.ts`, so `insertion.slang`,
-  `gap.slang` and `clip.slang` are not importable from there. Reusing them means
-  exporting them, moving the adapter in-repo, or redrawing in canvas 2D inside
-  the plugin.
+- **The rGFA-only allele inventory is still unbuilt.** It would be a third BED
+  out of `build_rgfa_tabix.sh` (which already holds the segment table in memory
+  while joining L-lines, so the derivation is offline awk). It is the fallback
+  for a graph with neither paths nor the assemblies to re-map. **One lane, not
+  rows** — see the rank-1-hoovering measurement above.
+- **`minigraph --call` superseded the rest of this list, and shipped.** See
+  below.
 
 ### It is a display gap, not a data gap
 
@@ -292,15 +285,24 @@ its own comment states the problem. The picture the request wants does not exist
 for *either* source, and the display that has the 464 rows is in-repo, beside
 the shaders it wants to borrow. Three moves, best value first.
 
-**A. Length-aware glyph on `LinearMultiSampleVariantDisplay`.** Data already
-hosted, already in the HPRC tutorial, rows already 464 phased haplotypes,
-`AF`/`AC`/`AN` on 125 of 126 records in the C4 window so frequency needs no
-computing. The earlier attempt failed because the glyph was drawn *at* the locus
-with no extent; give it the extent `getAlleleLength` already computes and fall
-back to the barcode line only when that is sub-pixel. Deletions already consume
-reference, so they need only a distinct treatment, not a new geometry. Fixes a
-real defect on the way (65 kb insertion indistinguishable from a SNP) and lands
-in `plugins/variants`, which makes the shader-reuse packaging problem moot.
+**A. Length-aware glyph on `LinearMultiSampleVariantDisplay`. DONE — see
+"Shipped" below.** Data already hosted, already in the HPRC
+tutorial, rows already 464 phased haplotypes, `AF`/`AC`/`AN` on 125 of 126
+records in the C4 window so frequency needs no computing. The earlier attempt
+failed because the glyph was drawn *at* the locus with no extent; give it the
+extent `getAlleleLength` already computes and fall back to the barcode line only
+when that is sub-pixel. Deletions already consume reference, so they need only a
+distinct treatment, not a new geometry.
+
+The route is now proven rather than speculative: `LinearMultiRowFeatureDisplay`
+got exactly this treatment (`lengthField` + `drawMultiRowIndelGlyphs`, see
+"Shipped" below), so the pattern to copy is an `OverlayCanvas` pass over
+whichever backend drew the cells, calling `drawInsertionMarker` from
+`@jbrowse/alignments-core`. That sidesteps `variant.slang` entirely, which is
+what made the original estimate look expensive. Note the multi-row lesson too:
+draw the bar only where it is *wider* than the cell, because a same-colored bar
+inside a wide cell is invisible overdraw and the label is what actually carries
+the magnitude.
 
 **B. `minigraph --call` is the third BED, and it is a documented one-liner.**
 Not W-lines out of the 63 GB GFA or the 5.4 GB GBZ:
@@ -329,3 +331,53 @@ Bandage view.
 Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
 nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
 graph rather than HPRC.
+
+### Shipped (B, plus the glyph vocabulary on the multi-row display)
+
+- `scripts/build_minigraph_paths.sh` runs `minigraph -cxasm --call` per assembly
+  and projects the calls into one tabix-indexed BED, a row per bubble per sample,
+  with the class, the signed delta, both lengths, and the traversed segment ids.
+  Its header is the **contract**, so a graph carrying W/P lines or an rGFA with no
+  assemblies can fill the same schema from a different producer; the script header
+  lists those. Wired into `build_ecoli_pangenome_graph.sh`, and hosted at
+  `jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph_paths.bed.gz`. Five-strain
+  E. coli: 601 bubbles, 3,006 rows, 37 KB. **K12 comes out `ref` at all 601
+  bubbles, which is the pipeline's own end-to-end check** — if the reference row
+  ever shows an indel, suspect the join before the biology.
+- Two traps that pipeline hides. A bare `.` in the call's last field is *missing
+  data*, but read as colon-separated it yields pathLen 0 and scores as a deletion
+  of the whole reference span. And `*` is an *empty path*, which is a deletion
+  only where the bubble has reference span: 72 of the 601 bubbles have none (pure
+  insertion sites) and there `*` is the reference allele. Classifying on `delta`
+  handles the second without a special case; the first needs the explicit check.
+- `LinearMultiRowFeatureDisplay` gained a `lengthField` slot plus
+  `rendering/drawMultiRowIndelGlyphs.ts`, drawn by an `OverlayCanvas` over
+  whichever backend painted the blocks and by a second `PaintLayer` call on the
+  SVG export. No new display type, no new adapter, no shader — the reasons are in
+  the "display gap" section above, and the git history is the argument:
+  `884a126861` deleted `MultiLGVSyntenyDisplay`, ~4,000 lines over 25 files with
+  three bespoke `.slang` shaders.
+- Tutorial section + figure: `pangenome_ecoli.md` "Which strain takes which
+  path", `pangenome/rgfa_strain_paths`.
+- Then A, the same treatment on the **regular (non-matrix)**
+  `LinearMultiSampleVariantDisplay`, which is the one that draws every cell at its
+  true genomic position and width and so is the display to reach for on SV
+  figures. `showInsertionGlyphs` (shared schema, default on) +
+  `components/drawVariantInsertionGlyphs.ts`, again an `OverlayCanvas` plus a
+  second call on the SVG export, no touch to `variant.slang`. Two rules the
+  multi-row pass taught: widen only where the bar exceeds the cell (a
+  same-colored bar inside a wide cell is invisible overdraw), and keep the
+  **cell's genotype color** rather than the alignments purple, since the color is
+  what says which allele the haplotype carries. Plus one this pass needed on its
+  own: only cells whose genotype actually carries the allele widen
+  (`cellCarriesAlt`), or the marker claims every reference haplotype has the
+  sequence.
+- The slot lives in the **shared** schema because the model factory is typed to
+  `SharedVariantConfigModel`, so a slot declared on the subclass is not visible to
+  `getConf`. The matrix display therefore inherits it and ignores it (it lays
+  columns out by feature index, so there is no genomic width to correct); the slot
+  doc says so.
+- Only one committed figure moved: `hprc2/mhc_clustered` (1.09%), where the 220
+  structural alleles now read at up to 5px instead of the 2px SNP floor. Every
+  other spec touching this display came back 0.000% — `multisv` uses symbolic
+  ALTs, which carry no measurable length, and the matrix specs ignore the slot.

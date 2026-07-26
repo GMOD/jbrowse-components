@@ -59,6 +59,55 @@ const ECOLI_SEGMENTS_SESSION_TRACK = {
   displayDefaults: RANK_COLOR_DEFAULTS,
 }
 
+// The same graph read per strain instead of per segment: one row per strain,
+// each block that strain's allele at one bubble, from the BED
+// scripts/build_minigraph_paths.sh projects out of `minigraph --call`.
+//
+// `lengthField` is the point of the figure. A block can only be as wide as the
+// reference it covers, so at this bubble every strain would draw the same 3,376
+// bp box; the deltas turn Sakai's 113 kb allele into a labelled insertion marker
+// and IAI39's into a deletion line. `rowOrder` pins the reference on top, which
+// is also the pipeline's own check — K12 takes the reference path at all 601
+// bubbles, so its row is uniformly grey. Class colors ride in the file's
+// itemRgb, so `legend` only has to name them.
+const ECOLI_PATHS_TRACK = 'ecoli_minigraph_paths'
+const ECOLI_PATHS_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: ECOLI_PATHS_TRACK,
+  name: 'minigraph graph: per-strain path through each bubble',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    uri: `${DATA}/ecoli_minigraph_paths.bed.gz`,
+  },
+  displays: [
+    {
+      type: 'LinearMultiRowFeatureDisplay',
+      partitionField: 'strain',
+      lengthField: 'delta',
+      rowOrder: ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39'],
+      // three strains carry an insertion at this bubble, so at the default 1 the
+      // three magenta blocks abut into one mass; the gap is what makes them read
+      // as three haplotypes
+      rowProportion: 0.85,
+      legend: [
+        { label: 'reference path', color: 'rgb(204,204,204)' },
+        { label: 'insertion', color: 'rgb(192,0,192)' },
+        { label: 'deletion', color: 'rgb(128,128,128)' },
+        { label: 'same length, different path', color: 'rgb(0,154,138)' },
+        { label: 'no call', color: 'rgb(191,170,64)' },
+      ],
+    },
+  ],
+}
+
+// The bubble the paths figure is about: K12 chr:1,094,197-1,097,573, where
+// Sakai and CFT073 carry ~110-113 kb alleles, NCTC86 a 41 kb one, and IAI39
+// deletes 3.2 kb. Picked off the BED, not by eye:
+// `tabix ecoli_minigraph_paths.bed.gz chr:1094000-1098000`. The window is ~5x
+// the bubble so the flanking reference-path blocks show it is a local event.
+const PATHS_WINDOW = 'chr:1,088,000-1,104,000'
+
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
 // beside the graph indexes; the fixture config carries only the assembly.
@@ -213,6 +262,55 @@ export const graphSpecs: ScreenshotSpec[] = [
     // auto-fit places a wide-and-flat anchored layout low in the panel, so the
     // frame has to be tall enough to reach it
     viewportHeight: 900,
+    hideTooltip: true,
+  },
+  // The graph read as an alignment: five haplotype rows over the bubble where
+  // three strains carry a large insertion and one a deletion. The segments track
+  // above is the same graph per-segment, so the two lanes are the two ways of
+  // reading one file.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_strain_paths',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        K12_GENES_SESSION_TRACK,
+        ECOLI_SEGMENTS_SESSION_TRACK,
+        ECOLI_PATHS_SESSION_TRACK,
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PATHS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 90 },
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+            {
+              trackId: ECOLI_PATHS_TRACK,
+              type: 'LinearMultiRowFeatureDisplay',
+              // five rows auto-fit into this, leaving each ~26px: taller than
+              // MIN_HEIGHT_FOR_TEXT, so the insertion markers carry their bp
+              // labels rather than shrinking to bare bars
+              height: 130,
+            },
+          ],
+        },
+      ],
+    }),
+    // the multi-row display's own doneness signal: derived from fetched
+    // features, so it cannot paint before the rows exist
+    readySelector: '[data-testid="multirow-row-labels"]',
+    readyTimeout: 90000,
+    settleMs: 3000,
+    viewportWidth: 1000,
+    // the three pinned tracks plus both headers; at 400 the paths track, which
+    // is the whole point of the figure, fell below the fold, and at 620 its last
+    // row sat on the frame edge
+    viewportHeight: 660,
     hideTooltip: true,
   },
   // The same window in the force layout, the Bandage picture the graph is really

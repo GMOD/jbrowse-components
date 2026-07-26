@@ -218,6 +218,20 @@ in_cactus gfatools view -R "${REF}#1#chr:1000000-1300000" -r 1 \
 cp "$SCRIPT_DIR/build_rgfa_tabix.sh" .
 in_cactus bash /data/build_rgfa_tabix.sh /data/ecoli_minigraph.rgfa /data/ecoli_minigraph
 
+# Each strain's actual path through every bubble of that graph, one row per
+# (bubble x strain). The segments/links indexes above say what the graph
+# contains; this says which strain takes what, which the rGFA tags alone cannot
+# (SR is build order, not sample). minigraph recomputes the walks by aligning the
+# assemblies back to the graph, so it works on a graph carrying no P/W lines.
+# Reference first: its path through a bubble IS the reference allele.
+PATHS_FA="/data/$REF.pansn.fa"
+for strain in $STRAINS; do
+  [ "$strain" = "$REF" ] || PATHS_FA="$PATHS_FA /data/$strain.pansn.fa"
+done
+cp "$SCRIPT_DIR/build_minigraph_paths.sh" .
+in_cactus bash /data/build_minigraph_paths.sh /data/ecoli_minigraph.rgfa \
+  /data/ecoli_minigraph_paths $PATHS_FA
+
 # ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ────────────────
 if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
 APP=jbrowse2
@@ -328,6 +342,41 @@ cat > rgfa_track.json <<'JSON'
 }
 JSON
 jb add-track-json rgfa_track.json --update --out "$APP"
+
+# The same graph read per strain rather than per segment: one row per strain,
+# each block that strain's allele at one bubble. `lengthField` is what makes the
+# insertions legible — a block can only be as wide as the reference it covers, so
+# without it Sakai's 113 kb allele draws the same 3.4 kb box K12's reference path
+# does. The class colors are in the file (itemRgb), so the legend just names them.
+cp ecoli_minigraph_paths.bed.gz ecoli_minigraph_paths.bed.gz.tbi "$APP/"
+cat > paths_track.json <<JSON
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_minigraph_paths",
+  "name": "minigraph graph: per-strain path through each bubble",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_minigraph_paths.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "partitionField": "strain",
+      "lengthField": "delta",
+      "rowOrder": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/\$/"/')],
+      "legend": [
+        { "label": "reference path", "color": "rgb(204,204,204)" },
+        { "label": "insertion", "color": "rgb(192,0,192)" },
+        { "label": "deletion", "color": "rgb(128,128,128)" },
+        { "label": "same length, different path", "color": "rgb(0,154,138)" },
+        { "label": "no call", "color": "rgb(191,170,64)" }
+      ]
+    }
+  ]
+}
+JSON
+jb add-track-json paths_track.json --update --out "$APP"
 
 # The adapter and the view both come from the graph genome view plugin, which is
 # not bundled in JBrowse Web and has no CLI command, so declare it directly. It
