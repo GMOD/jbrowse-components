@@ -150,7 +150,7 @@ state (an open menu, a hover popover, a loaded track after user interaction), or
 scraped DOM. Since the URL parameters above set the initial state, the pattern
 is to navigate to a URL carrying that state, wait for it to settle, then act.
 
-Two things commonly trip people up when driving JBrowse headlessly.
+Three things commonly trip people up when driving JBrowse headlessly.
 
 The first is GPU rendering. JBrowse renders tracks on the GPU, and headless
 Chrome has no GPU, so canvases come up blank without a software renderer. Launch
@@ -163,6 +163,14 @@ own state onto the DOM for exactly this: a view carries
 carries `data-display-phase="loading"` for the whole of its fetch. Waiting until
 neither is present reads the app's own state, rather than inferring it from
 paint flags or from status text that a hidden element may still contain.
+
+The third is `screenshot({ fullPage: true })`. Puppeteer implements it by
+resizing the viewport to the scroll size and restoring it afterwards, and that
+resize invalidates the page raster, so on a loaded machine the capture can come
+back before the content has redrawn: app chrome around a white, empty content
+area. JBrowse fills the window and does not scroll the page, so a plain
+`page.screenshot()` already captures the whole app. Set a taller viewport if you
+want a taller image.
 
 ```js
 import puppeteer from 'puppeteer'
