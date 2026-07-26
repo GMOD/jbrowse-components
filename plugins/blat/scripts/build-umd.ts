@@ -35,7 +35,19 @@ const outfile = join(
   'dist/jbrowse-plugin-blat.umd.production.min.js',
 )
 
-const provided = new Set(reExports)
+// Names the host lists but cannot actually satisfy for our use. `SvgIcon` is
+// re-exported as a lazy React COMPONENT (MuiReExports.ts: `lazy(() =>
+// import(...))`), not as the module — so the `createSvgIcon` that every
+// @mui/icons-material file imports from that specifier is undefined there. Left
+// external, the bundle throws `createSvgIcon is not a function` while loading,
+// the global is never defined, and PluginLoader fails the whole session. Caught
+// by loading this bundle in the released hosted build; the module list alone
+// says the name is provided, which is true and not enough.
+const NOT_ACTUALLY_PROVIDED = new Set(['@mui/material/SvgIcon'])
+
+const provided = new Set(
+  reExports.filter(name => !NOT_ACTUALLY_PROVIDED.has(name)),
+)
 
 // `@mui/icons-material/*` is deliberately absent from the re-export list, so the
 // four icons this plugin uses do get bundled. They are small, and they import
@@ -84,17 +96,20 @@ const bytes = Object.values(result.metafile.outputs)[0]?.bytes ?? 0
 console.log(`${outfile} (${(bytes / 1024).toFixed(1)} kb)`)
 
 // The failure this build can actually make, and cannot see by eye: pulling a
-// second copy of React, MobX, MST or @jbrowse/core into the page. That is not a
-// size problem, it is a broken plugin — two MobX instances do not share
-// reactivity, two MSTs do not recognize each other's types. It happens when a
-// module resolves by a path the re-export list does not name (a deep import, a
-// transitive dep), so the check is on what actually landed in the bundle rather
-// than on what we meant to externalize.
+// second copy of something whose IDENTITY the host relies on. React (one
+// renderer, one hook dispatcher), MobX/MST (a second copy shares no reactivity
+// and recognizes none of the host's types), @jbrowse/core, and
+// @mui/material/styles (the theme travels by React context, so a duplicate
+// provider renders unthemed).
 //
-// @mui/icons-material is expected here: it is deliberately not re-exported, and
-// its icons render through the host's SvgIcon.
+// MUI is deliberately NOT on that list, including its styles internals. Pulling
+// in one icon drags them along, because MUI's own files import each other by
+// relative path — which no list of bare specifiers can externalize. The shipped
+// jbrowse-plugin-msaview bundle carries the same duplication, so this is the
+// ecosystem's normal shape rather than a fault of this build; the cost is bundle
+// size and icons falling back to MUI's default theme, not a broken page.
 const HOST_OWNED =
-  /node_modules\/(react|react-dom|mobx|mobx-react|mobx-state-tree)\/|node_modules\/@mui\/material\/|@jbrowse\/mobx-state-tree\/|packages\/core\/src\//
+  /node_modules\/(react|react-dom|mobx|mobx-react|mobx-state-tree)\/|@jbrowse\/mobx-state-tree\/|packages\/core\/src\//
 const duplicated = Object.keys(result.metafile.inputs).filter(input =>
   HOST_OWNED.test(input),
 )
