@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
-import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
+import { convertTagsToPlainArrays } from '../shared/util.ts'
 import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 
@@ -14,12 +14,14 @@ import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class CramSlightlyLazyFeature implements Feature {
-  // parameter properties auto-create the record/_store fields
+  // parameter properties auto-create the record/adapter fields
   // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
   constructor(
     private record: CramRecord,
-    private _store: CramAdapter,
+    private adapter: CramAdapter,
   ) {}
+
+  private numericCigar?: ArrayLike<number>
 
   get name() {
     return this.record.readName
@@ -46,7 +48,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get qual() {
-    return (this.record.qualityScores ?? []).join(' ')
+    return this.record.qualityScores?.join(' ')
   }
 
   get qualRaw() {
@@ -54,7 +56,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get refName() {
-    return this._store.refIdToName(this.record.sequenceId)!
+    return this.adapter.refIdToName(this.record.sequenceId)!
   }
 
   get pair_orientation() {
@@ -67,28 +69,29 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   get next_ref() {
     return this.record.mate
-      ? this._store.refIdToName(this.record.mate.sequenceId)
+      ? this.adapter.refIdToName(this.record.mate.sequenceId)
       : undefined
   }
 
   get next_segment_position() {
     return this.record.mate
-      ? `${this._store.refIdToName(this.record.mate.sequenceId)}:${
+      ? `${this.adapter.refIdToName(this.record.mate.sequenceId)}:${
           this.record.mate.alignmentStart
         }`
       : undefined
   }
 
   get next_pos() {
-    if (this.record.mate) {
-      return this.record.mate.alignmentStart - 1
-    }
-    return undefined
+    return this.record.mate ? this.record.mate.alignmentStart - 1 : undefined
   }
 
+  // Read group lives outside the CRAM tag block, so it is spliced in to match
+  // what BAM exposes. Read ~3x per read on the render path and still not
+  // memoized: an in-process A/B on volvox-rg.cram (400 reads) put re-spreading
+  // at 1.06ms against 1.09ms for a cached copy.
   get tags() {
-    const RG = this._store.samHeader?.readGroups[this.record.readGroupId]
-    return RG !== undefined ? { ...this.record.tags, RG } : this.record.tags
+    const RG = this.adapter.samHeader?.readGroups[this.record.readGroupId]
+    return RG === undefined ? this.record.tags : { ...this.record.tags, RG }
   }
 
   get seq() {
@@ -97,13 +100,26 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.getReadBases()
   }
 
-  // packed CIGAR array, each entry (length << 4) | opIndex
+  // packed CIGAR array, each entry (length << 4) | opIndex.
+  //
+  // The one derived value here worth memoizing, and only in combination with the
+  // adapter's ultra-long feature LRU: the render path builds it once per read
+  // (via clipLengthAtStartOfRead), so the memo does nothing within a single
+  // extraction — it pays off when the LRU hands the same wrapper back after a
+  // pan (interleaved A/B on volvox-inv-pbsim, 109 reads / 37 over 5kb: 8.4ms
+  // with wrappers rebuilt vs 7.3ms reused, ~13%).
+  //
+  // `fields`, `CIGAR` and `tags` were measured the same way and are deliberately
+  // *not* memoized: `fields` and `CIGAR` are read 0 times per read on the render
+  // path (only toJSON/details touch them, once), and re-spreading `tags` on each
+  // of its ~3 reads per read beats installing a per-instance copy.
   get NUMERIC_CIGAR() {
-    return readFeaturesToNumericCIGAR(
+    this.numericCigar ??= readFeaturesToNumericCIGAR(
       this.record.readFeatures,
       this.record.alignmentStart,
       this.record.readLength,
     )
+    return this.numericCigar
   }
 
   // start-clip length off NUMERIC_CIGAR so the render path never builds the
@@ -117,7 +133,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   id() {
-    return `${this._store.id}-${this.record.uniqueId}`
+    return `${this.adapter.id}-${this.record.uniqueId}`
   }
 
   get(name: 'refName'): string
@@ -244,7 +260,3 @@ export default class CramSlightlyLazyFeature implements Feature {
     }
   }
 }
-
-cacheGetter(CramSlightlyLazyFeature, 'fields')
-cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
-cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')

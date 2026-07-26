@@ -42,18 +42,6 @@ export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V): V {
   return value
 }
 
-export function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
-  const desc = Object.getOwnPropertyDescriptor(ctor.prototype, prop)!
-  const getter = desc.get!
-  Object.defineProperty(ctor.prototype, prop, {
-    get() {
-      const ret = getter.call(this)
-      Object.defineProperty(this, prop, { value: ret })
-      return ret
-    },
-  })
-}
-
 export function filterReadFlag(
   flags: number,
   flagInclude: number,
@@ -68,7 +56,7 @@ export function filterTagValue(readVal: unknown, filterVal?: string) {
     : `${readVal}` !== `${filterVal}`
 }
 
-interface SamHeaderLine {
+export interface SamHeaderLine {
   tag: string
   data: { tag: string; value: string }[]
 }

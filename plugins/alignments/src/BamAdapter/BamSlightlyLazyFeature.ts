@@ -20,7 +20,6 @@ export default class BamSlightlyLazyFeature
   // this read's start within it, so no per-read substring is allocated
   public ref?: string
   public refOffset = 0
-  private _cachedFields?: SimpleFeatureSerialized
 
   id() {
     return `${this.adapter.id}-${this.fileOffset}`
@@ -36,22 +35,32 @@ export default class BamSlightlyLazyFeature
   // windowStart/windowEnd are genomic reference coords of the viewport; the
   // walk skips CIGAR ops outside them so a chromosome-spanning contig only
   // processes its visible slice. Converted to read-relative roffset here.
+  //
+  // With no window, the walk still can't run past what `ref` covers: the shared
+  // region string spans only [-refOffset, ref.length - refOffset) in this read's
+  // reference-relative space, and a read overhanging the fetched region has no
+  // reference bases for its overhang — comparing against an out-of-range
+  // charCodeAt (NaN) would report every one of those bases as a mismatch. Reads
+  // carrying MD need no reference and walk in full.
   forEachMismatch(
     callback: MismatchCallback,
     windowStart?: number,
     windowEnd?: number,
   ) {
+    const { ref, refOffset, start } = this
+    const refLo = ref === undefined ? undefined : -refOffset
+    const refHi = ref === undefined ? undefined : ref.length - refOffset
     forEachMismatchNumeric(
       this.NUMERIC_CIGAR,
       this.NUMERIC_SEQ,
       this.seq_length,
       this.NUMERIC_MD,
       this.qual,
-      this.ref,
+      ref,
       callback,
-      this.refOffset,
-      windowStart === undefined ? undefined : windowStart - this.start,
-      windowEnd === undefined ? undefined : windowEnd - this.start,
+      refOffset,
+      windowStart === undefined ? refLo : windowStart - start,
+      windowEnd === undefined ? refHi : windowEnd - start,
     )
   }
 
@@ -134,8 +143,11 @@ export default class BamSlightlyLazyFeature
     return undefined
   }
 
+  // Only reached by toJSON() and the `default` branch of get() for fields with
+  // no case above — never on the render path (measured: 0 accesses per read over
+  // a pacbio pileup), so it is deliberately not memoized.
   get fields(): SimpleFeatureSerialized {
-    this._cachedFields ??= {
+    return {
       start: this.start,
       name: this.name,
       end: this.end,
@@ -152,8 +164,8 @@ export default class BamSlightlyLazyFeature
       next_segment_position: this.next_segment_position,
       uniqueId: this.id(),
     }
-    return this._cachedFields
   }
+
   get next_ref() {
     return this.isPaired()
       ? this.adapter.refIdToName(this.next_refid)

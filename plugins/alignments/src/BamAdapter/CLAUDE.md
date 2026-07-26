@@ -8,7 +8,7 @@ The per-feature loop in `shared/extractFeatureArrays.ts` calls
 class would skip the `get()` switch entirely. Worth doing, but it touches the
 `Feature` abstraction; treat as a deliberate refactor, not a drive-by.
 
-## `fields` vs `get()` — keep conversion out of `fields`
+## `fields` vs `get()` — keep conversion out of `fields`, and don't memoize it
 
 `get('tags')` hits the switch and returns raw `this.tags` directly — it never
 touches `fields`. The `fields` getter is only reached via the `default` branch
@@ -16,6 +16,13 @@ for uncommon fields not in the switch. Do **not** move
 `convertTagsToPlainArrays` into `fields`; it belongs only in `toJSON()` (the
 MST/serialization path). Putting it in `fields` would be dead code for the hot
 render path and inconsistent with what `get('tags')` returns.
+
+Instrumenting a real `extractFeatureArrays` pass over a pacbio pileup counts **0
+`fields` accesses per read** — every field the render path asks for has its own
+switch case. The old `_cachedFields` memo therefore never served the hot path;
+it only added state on a class that already exists once per read. `fields` is
+now rebuilt on demand. Same measurement, same conclusion, for CRAM's
+`cacheGetter(fields)`.
 
 ## `mismatches` getter allocates — hot path no longer uses it
 

@@ -19,6 +19,7 @@ export type {
   SearchType,
 } from './types.ts'
 export { BaseAdapter } from './BaseAdapter.ts'
+export { cachedSetup } from './cachedSetup.ts'
 export { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 export { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'
 export type { BaseTextSearchAdapter } from './BaseTextSearchAdapter.ts'

@@ -1,26 +1,19 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, sum, withProgress } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import {
-  filterReadFlag,
-  filterTagValue,
-  parseSamHeader,
-} from '../shared/util.ts'
+import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
+import { filterReadFlag, filterTagValue } from '../shared/util.ts'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
 import type { CramAdapterConfig } from './configSchema.ts'
 import type { CramRecord } from '@gmod/cram'
-import type {
-  BaseOptions,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 function shouldFilterRecord(
@@ -51,28 +44,15 @@ function shouldFilterRecord(
   return readName !== undefined && record.readName !== readName
 }
 
-export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfig> {
-  public samHeader?: ParsedSamHeader
-
-  private setupP?: Promise<{
-    samHeader: ParsedSamHeader
-    cram: IndexedCramFile
-  }>
-
-  // true once the header + .crai index have downloaded; gates the status label
-  // so pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
-  private setupDone = false
-
+export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
   // the CraiIndex is kept alongside `cram` because IndexedCramFile.index is
   // typed as the minimal CramIndexLike (no getIndex); we need the concrete
   // CraiIndex to pre-download the .crai with progress in setup()
   private configureResult?: { cram: IndexedCramFile; index: CraiIndex }
 
-  private sequenceAdapterP?: Promise<BaseSequenceAdapter>
-
-  private ultraLongFeatureCache = new QuickLRU<number, Feature>({
-    maxSize: 500,
-  })
+  private ultraLongFeatureCache = new QuickLRU<number, CramSlightlyLazyFeature>(
+    { maxSize: 500 },
+  )
 
   private seqIdToOriginalRefName: string[] = []
 
@@ -148,87 +128,35 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
     return this.configureResult
   }
 
-  private clearCaches() {
-    this.setupP = undefined
-    this.setupDone = false
-    this.configureResult = undefined
-  }
-
-  async getSequenceAdapter() {
-    const config = this.sequenceAdapterConfig
-    if (!config || !this.getSubAdapter) {
-      return undefined
-    }
-    this.sequenceAdapterP ??= this.getSubAdapter(config)
-      .then(r => r.dataAdapter as BaseSequenceAdapter)
-      .catch((e: unknown) => {
-        this.sequenceAdapterP = undefined
-        throw e
-      })
-    return this.sequenceAdapterP
-  }
-
   async getHeader(_opts?: BaseOptions) {
     const { cram } = this.configure()
     return cram.cram.getHeaderText()
   }
 
-  // The header read + .crai parse are memoized in setupP so they run exactly
-  // once. CraiIndex.getIndex memoizes its own parse too, so the later
-  // per-region getEntriesForRange calls reuse this download instead of pulling
-  // the index again.
-  private setupOnce(onProgress?: (bytes: number, total?: number) => void) {
-    this.setupP ??= (async () => {
-      const { cram, index } = this.configure()
-      const rawHeader = await cram.cram.getSamHeader()
-      this.samHeader = parseSamHeader(rawHeader)
-      await index.getIndex({ onProgress })
-      this.setupDone = true
-      return { samHeader: this.samHeader, cram }
-    })().catch((e: unknown) => {
-      this.clearCaches()
-      throw e
-    })
-
-    return this.setupP
-  }
-
-  // Show "Downloading index" only while the header/index are genuinely
-  // downloading (the first fetch, typically during refname mapping). Once
-  // loaded, callers (every getFeatures on pan/zoom) await the cached promise
-  // silently rather than re-flashing the label. Mirrors BamAdapter.setup.
-  private async setup(opts?: BaseOptions) {
-    return this.setupDone
-      ? this.setupOnce()
-      : downloadStatus('Downloading index', opts?.statusCallback, onProgress =>
-          this.setupOnce(onProgress),
-        )
-  }
-
-  async getRefNames(opts?: BaseOptions) {
-    const { samHeader } = await this.setup(opts)
-    return samHeader.idToName
-  }
-
-  refNameToId(refName: string) {
-    return this.samHeader?.nameToId[refName]
-  }
-
-  refIdToName(refId: number) {
-    return this.samHeader?.idToName[refId]
+  // CraiIndex.getIndex memoizes its own parse, so the later per-region
+  // getEntriesForRange calls reuse this download instead of pulling the index
+  // again. Progress goes to the .crai read, which dominates the phase.
+  protected async readSamHeader(onProgress?: (n: number, t?: number) => void) {
+    const { cram, index } = this.configure()
+    const rawHeader = await cram.cram.getSamHeader()
+    await index.getIndex({ onProgress })
+    return rawHeader
   }
 
   refIdToOriginalName(refId: number) {
     return this.seqIdToOriginalRefName[refId]
   }
 
+  // Long reads get their wrapper reused across fetches so the NUMERIC_CIGAR
+  // memoized on it survives a pan instead of being rebuilt per read. Measured
+  // worth ~13% of the extract pass on long-read CRAM — see the note on
+  // CramSlightlyLazyFeature.NUMERIC_CIGAR, which is the only thing this retains.
   private getOrCacheFeature(record: CramRecord) {
-    const cached = this.ultraLongFeatureCache.get(record.uniqueId)
-    if (cached) {
-      return cached
+    let feat = this.ultraLongFeatureCache.get(record.uniqueId)
+    if (!feat) {
+      feat = new CramSlightlyLazyFeature(record, this)
+      this.ultraLongFeatureCache.set(record.uniqueId, feat)
     }
-    const feat = new CramSlightlyLazyFeature(record, this)
-    this.ultraLongFeatureCache.set(record.uniqueId, feat)
     return feat
   }
 
@@ -242,7 +170,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
-      const { cram, samHeader } = await this.setup(opts)
+      const samHeader = await this.setup(opts)
+      checkStopToken(stopToken)
+      const { cram } = this.configure()
 
       const refId = this.refNameToId(refName)
       if (refId === undefined) {
@@ -295,8 +225,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
   /**
    * we return the configured fetchSizeLimit, and the bytes for the region
    */
-  async getMultiRegionByteEstimate(regions: Region[]) {
-    const bytes = await this.bytesForRegions(regions)
+  async getMultiRegionByteEstimate(regions: Region[], opts?: BaseOptions) {
+    const bytes = await this.bytesForRegions(regions, opts)
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
     return {
       bytes,
@@ -308,12 +238,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
    * get the approximate number of bytes queried from the file for the given
    * query regions
    */
-  private async bytesForRegions(regions: Region[]) {
+  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
     // setup() (not just configure()) so samHeader is populated — refNameToId
     // reads it, and without it every region resolves to 0 bytes, silently
     // bypassing the fetchSizeLimit warning in a worker that hasn't yet loaded
     // the header.
-    const { cram } = await this.setup()
+    await this.setup(opts)
+    const { cram } = this.configure()
     const blockResults = await Promise.all(
       regions.map(region => {
         const { refName, start, end } = region

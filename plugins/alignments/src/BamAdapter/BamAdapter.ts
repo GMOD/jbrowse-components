@@ -1,24 +1,16 @@
 import { BamFile } from '@gmod/bam'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import {
-  filterReadFlag,
-  filterTagValue,
-  parseSamHeader,
-} from '../shared/util.ts'
+import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
+import { filterReadFlag, filterTagValue } from '../shared/util.ts'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
-import type { ParsedSamHeader } from '../shared/util.ts'
 import type { BamAdapterConfig } from './configSchema.ts'
-import type {
-  BaseOptions,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -45,107 +37,42 @@ function seqFetchSpan(
     : null
 }
 
-export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig> {
-  public samHeader?: ParsedSamHeader
-
-  private setupP?: Promise<{
-    samHeader: ParsedSamHeader
-    bam: BamFile<BamSlightlyLazyFeature>
-  }>
-
-  // true once the index has finished downloading; gates the status label so
-  // pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
-  private setupDone = false
-
+export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
   protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
 
-  private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
-
   protected configure() {
-    const csi = this.getConf(['index', 'indexType']) === 'CSI'
-    const location = this.getConf(['index', 'location'])
-    this.configureResult ??= {
-      bam: new BamFile({
-        bamFilehandle: openLocation(
-          this.getConf('bamLocation'),
-          this.pluginManager,
-        ),
-        csiFilehandle: csi
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        baiFilehandle: !csi
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        recordClass: BamSlightlyLazyFeature,
-      }),
+    if (!this.configureResult) {
+      const csi = this.getConf(['index', 'indexType']) === 'CSI'
+      const location = this.getConf(['index', 'location'])
+      this.configureResult = {
+        bam: new BamFile({
+          bamFilehandle: openLocation(
+            this.getConf('bamLocation'),
+            this.pluginManager,
+          ),
+          csiFilehandle: csi
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+          baiFilehandle: csi
+            ? undefined
+            : openLocation(location, this.pluginManager),
+          recordClass: BamSlightlyLazyFeature,
+        }),
+      }
     }
     return this.configureResult
   }
 
-  private clearCaches() {
-    this.setupP = undefined
-    this.setupDone = false
-    this.configureResult = undefined
-  }
-
-  async getSequenceAdapter() {
-    const config = this.sequenceAdapterConfig
-    if (!config || !this.getSubAdapter) {
-      return undefined
-    }
-    this.sequenceAdapterP ??= this.getSubAdapter(config)
-      .then(r => {
-        const adapter = r.dataAdapter as BaseSequenceAdapter
-        // workaround for ChromSizesAdapter which doesn't have getSequence.
-        // sequence adapter is optional for BAM
-        return 'getSequence' in adapter ? adapter : undefined
-      })
-      .catch((e: unknown) => {
-        this.sequenceAdapterP = undefined
-        throw e
-      })
-    return this.sequenceAdapterP
+  protected async readSamHeader(onProgress?: (n: number, t?: number) => void) {
+    // BamFile.getHeaderPre parses the .bai/.csi before reading the header
+    // block, so this one await covers the whole "Downloading index" phase
+    const { bam } = this.configure()
+    return (await bam.getHeader({ onProgress })) ?? []
   }
 
   async getHeader(_opts?: BaseOptions) {
     const { bam } = this.configure()
     return bam.getHeaderText()
-  }
-
-  // The index download itself is memoized in setupP so it runs exactly once.
-  private setupOnce(onProgress?: (bytes: number, total?: number) => void) {
-    this.setupP ??= (async () => {
-      try {
-        const { bam } = this.configure()
-        const rawHeader = await bam.getHeader({ onProgress })
-        this.samHeader = parseSamHeader(rawHeader ?? [])
-        this.setupDone = true
-        return { samHeader: this.samHeader, bam }
-      } catch (e) {
-        this.clearCaches()
-        throw e
-      }
-    })()
-    return this.setupP
-  }
-
-  // While the index is genuinely downloading, downloadStatus wraps the memoized
-  // work *per caller*, so every concurrent caller gets the "Downloading index"
-  // status and waits on the shared promise; the first caller's onProgress drives
-  // the determinate bar. Once downloaded, later callers (every getFeatures on
-  // pan/zoom) await the cached promise silently rather than re-flashing the
-  // label.
-  private async setup(opts?: BaseOptions) {
-    return this.setupDone
-      ? this.setupOnce()
-      : downloadStatus('Downloading index', opts?.statusCallback, onProgress =>
-          this.setupOnce(onProgress),
-        )
-  }
-
-  async getRefNames(opts?: BaseOptions) {
-    const { samHeader } = await this.setup(opts)
-    return samHeader.idToName
   }
 
   getFeatures(
@@ -157,7 +84,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     const { refName, start, end, originalRefName } = region
     const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { bam } = await this.setup(opts)
+      await this.setup(opts)
+      const { bam } = this.configure()
       checkStopToken(stopToken)
 
       // A failed region fetch (e.g. a transient network error mid-pan) must not
@@ -253,9 +181,5 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
       }
     }
     return super.getMultiRegionByteEstimate(regions, opts)
-  }
-
-  refIdToName(refId: number) {
-    return this.samHeader?.idToName[refId]
   }
 }
