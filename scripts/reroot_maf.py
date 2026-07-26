@@ -42,6 +42,16 @@ has 4,791 K12 rows covering 4,641,600 of 4,641,652 bases with ONE overlapping
 pair and 52 doubly-covered bases — already almost exactly a partition. (That
 revision also claimed 13.6% of K12 was covered twice. It is not.)
 
+A third option, untried: SPLIT a multi-reference-row block into one block per
+reference row, so every copy anchors itself. taffy's .tai files a block under row
+0 only, which makes the surplus rows unreachable by region query (1,773 bp,
+0.038% of K12) even though they are in the file. That is the one real defect
+left, it is upstream's index rather than this script, and splitting is the local
+workaround. Unlike the two rejected changes it alters block membership, not which
+row goes first. Acceptance metric and a minimal reproducer are in
+agent-docs/guides/TAFFY_INDEX_GAPS_HANDOFF.md. It moves the md5 below, so it owes
+a re-upload and a before/after.
+
 This script's output is reproducible: rebuilding from the same pggb MAF gives a
 .taf.gz that is byte-identical to the hosted one (md5 d64c811a…).
 

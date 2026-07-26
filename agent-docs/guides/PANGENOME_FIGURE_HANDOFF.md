@@ -120,10 +120,12 @@ docstring.
   row covering position *p* is the metric that matters. Overlap counts off a
   `taffy view -m` dump describe the converter, and they sent an earlier session
   down a long wrong path.
-- **One real defect is left, and it is taffy's, not ours.** About 0.3% of
-  positions this file contains cannot be retrieved through its own `.tai`.
-  Unexplained, not known to touch any figure, and not fixed by upgrading taffy.
-  Written up in
+- **One real defect is left, and it is taffy's index, not our converter.** A
+  block's second reference row is filed under row 0 only, so 1,773 bp (0.038%)
+  of this file's K12 coverage cannot be retrieved through its own `.tai`, in two
+  runs at `1211940-1212074` and `4170830-4172469`. Both MAF figure loci are
+  clear of them, checked position by position. Explained, minimally
+  reproducible, and not fixed by upgrading taffy. Written up in
   [TAFFY_INDEX_GAPS_HANDOFF.md](TAFFY_INDEX_GAPS_HANDOFF.md) so it stops being
   rediscovered as a `reroot_maf.py` bug.
 

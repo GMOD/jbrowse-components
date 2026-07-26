@@ -1,35 +1,86 @@
-# taffy `.tai` gaps: alignment present in the file, unreachable by region query
+# taffy `.tai` gaps: a block's second reference row is unreachable by region query
 
-Open, low impact, unexplained (2026-07-26).
+Explained, minimally reproducible, upstream's to fix (2026-07-26).
 
-A small fraction of reference positions that a `.taf.gz` demonstrably contains
-cannot be retrieved from it by an indexed region query. Measured on the hosted
-E. coli pggb demo alignment: **1 in 250 to 400** reference positions that a full
-stream of the file reports as covered return nothing when queried through the
-`.tai`.
+When a MAF block carries **more than one row for the reference genome**, taffy's
+`.tai` files the block under row 0's coordinates only. The other copies are in
+the file but no region query can reach them, unless some other block's row 0
+happens to cover the same coordinates.
 
-This is not known to affect any published figure. It is written down because two
-earlier sessions mistook symptoms of it for bugs in
+On the hosted E. coli pggb demo alignment that costs **1,773 bp, 0.038%** of the
+reference positions the file covers, in two clusters. Every position covered by
+a row-0 reference row is reachable; the failures are entirely non-anchor copies
+that sit far from their anchor.
+
+Two earlier sessions mistook symptoms of this for bugs in
 `scripts/reroot_maf.py` and spent a lot of effort "fixing" the wrong layer. See
 [PANGENOME_FIGURE_HANDOFF.md](PANGENOME_FIGURE_HANDOFF.md) and the
 `reroot_maf.py` docstring.
 
-## Reproducing it
+## Minimal reproducer
 
-Self-contained, no source MAF and no docker needed. Compare what a full stream
-of a file says it covers against what the file's own index will return.
+Twelve lines of MAF, no source data and no docker. The middle block carries two
+`REF.chr` rows, the second one far from the first.
 
-```bash
-# every reference row the file contains
-taffy view -i x.taf.gz -m | awk '$1=="s" && $2=="K12.chr" && $4>0 {print $3, $3+$4}'
+```
+##maf version=1
 
-# whether the index returns a covering row for one position
-taffy view -i x.taf.gz -r K12.chr:$p-$((p+1)) -m | awk '$1=="s" && $2=="K12.chr" && $4>0'
+a
+s	REF.chr	0	10	+	1000	ACGTACGTAC
+s	OTH.chr	0	10	+	1000	ACGTACGTAC
+
+a
+s	REF.chr	10	10	+	1000	ACGTACGTAC
+s	REF.chr	500	10	+	1000	ACGTACGTAC
+s	OTH.chr	10	10	+	1000	ACGTACGTAC
+
+a
+s	REF.chr	20	10	+	1000	ACGTACGTAC
+s	OTH.chr	20	10	+	1000	ACGTACGTAC
 ```
 
-Sample a few hundred positions drawn from the first list and count how many the
-second finds nothing for. Known failing positions in the hosted
-`ecoli_pggb.taf.gz`: **17,139**, **4,171,240**, **4,171,990**.
+```bash
+taffy view -i dup.maf > dup.taf && bgzip -c dup.taf > dup.taf.gz
+taffy index -i dup.taf.gz
+
+taffy view -i dup.taf.gz -r REF.chr:500-510 -m
+# Region REF.chr:500-510 not found in taffy index; emitting header-only output
+
+taffy view -i dup.taf.gz -r REF.chr:0-30 -m
+# returns the block, second REF row and all
+```
+
+The row is only ever reachable by riding along inside a block fetched through
+row 0.
+
+## Measuring it on a real file
+
+Exhaustively, not by sampling. Compare full-stream coverage against the union of
+windowed index queries.
+
+```bash
+# every reference row the file contains, block index and row index kept
+taffy view -i x.taf.gz -m |
+  awk 'BEGIN{blk=0} /^a/{blk++; ri=0; next}
+       $1=="s"{ if($2=="K12.chr" && $4>0) print blk, ri, $3, $3+$4; ri++ }'
+
+# what the index returns, walked in 100 kb windows
+for ((a=0; a<4641652; a+=100000)); do
+  taffy view -i x.taf.gz -r K12.chr:$a-$((a+100000)) -m
+done | awk '$1=="s" && $2=="K12.chr" && $4>0 {print $3, $3+$4}'
+```
+
+Diff the covered position sets. On `ecoli_pggb.taf.gz`
+(md5 `d64c811a1562e493ca14462f8b02f6bb`): stream 4,640,542 positions, index
+4,638,769, missing 1,773 in exactly two runs, **1211940-1212074** and
+**4170830-4172469**. Nothing the index returns is absent from the stream.
+
+Both runs are covered only by row-index-1 K12 rows in blocks anchored hundreds
+of kb away, e.g. block 4023 is `K12.chr 3945848 +851` at row 0 and
+`K12.chr 4170785 +851` at row 1.
+
+Query width and start do not matter. A 1 bp query and a 100 kb one both miss;
+neither is a workaround.
 
 Do not measure this with block-order or overlap counts off a `taffy view -m`
 dump. Those describe taffy's re-blocking rather than the input, and they are
@@ -41,69 +92,55 @@ what misled the earlier passes. Retrieval is the metric that matters.
   in a block. Re-anchoring on the leftmost was tried and is measurably worse
   (out-of-order blocks in taffy's own output, more lost queries, never fewer).
   Both variants show the defect.
-- **Not the duplicate reference rows themselves being unindexed.** The obvious
-  theory is that a block with two reference rows gets filed under row 0 only, so
-  the second copy is unreachable. Tested directly: of 60 positions covered
-  *only* by a non-anchor reference row, 53 were retrievable. taffy's re-blocking
-  splits those blocks, which is what makes them reachable at all.
+- **Not out-of-order blocks.** taffy's own output has 179 places where a block's
+  row-0 start goes backwards relative to its predecessor, and retrieval does not
+  care: all 4,636,851 row-0-covered positions come back.
 - **Not a stale taffy binary.** Built taffy from upstream HEAD
   (`af7a752a`, 2026-05-28) against the local Jan 2025 binary. The newer build
-  produces a **byte-identical** `.taf.gz` from the same MAF
-  (md5 `d64c811a1562e493ca14462f8b02f6bb`) and the same 1/400 failure rate, and
-  it also fails to read the affected positions out of the existing file.
-  Upgrading taffy is not the fix.
+  produces a **byte-identical** `.taf.gz` from the same MAF and the same
+  failures, and the minimal reproducer above fails on it. Upgrading is not the
+  fix.
 - **Not missing data in the input.** The positions are present in the MAF that
-  taffy consumed. Position 4,171,240 sits in a block whose K12 row is
-  `4171164 +483`.
+  taffy consumed.
 
-## Leading hypothesis: blocks with more than one reference row
+An earlier pass recorded this cause as ruled out, on the grounds that 53 of 60
+positions covered only by a non-anchor row retrieved fine. That test was
+misleading: most non-anchor copies sit close enough to their anchor that another
+block's row 0 covers them anyway. The 7 that failed were the real signal.
+Position 17,139, listed then as a failure, is not one at all: no K12 row in the
+stream covers it, so it is a hole in the alignment rather than in the index.
 
-The one structural difference between the affected file and a clean sibling
-correlates perfectly, on a sample of two files:
+## Options
 
-| file                  | blocks | blocks with >1 K12 row | stream-covered positions unreachable |
-| --------------------- | -----: | ---------------------: | -----------------------------------: |
-| `ecoli_pggb.taf.gz`   |  4,736 |                     48 |                              1 in 250 |
-| `ecoli_cactus.taf.gz` |  5,887 |                      0 |                              0 in 250 |
-
-pggb collapses repeats, so one block can carry several rows for the same genome
-(up to five for K12 here, and 374 surplus rows for Sakai). Cactus does not
-produce that here. Failures cluster near those blocks without being confined to
-them, which fits "taffy's re-blocking of a multi-reference-row block sometimes
-emits a fragment the `.tai` does not cover" better than it fits a clean rule.
-
-Two files is weak evidence. Confirming it needs a third.
-
-## Next steps, cheapest first
-
-- **Build a minimal reproducer.** Hand-write a small MAF with one
-  two-reference-row block, convert and index it, and walk every position. If the
-  gap reproduces in tens of lines, it is reportable upstream as-is.
-- **Test the correlation on a third file.** Any MAF with duplicated reference
-  rows per block that is not from pggb, or a pggb MAF with the duplicates
-  removed, separates "duplicate rows" from "pggb" as the cause.
-- **Look at `taffy/impl/tai.c`** (the index writer) against
-  `taffy/impl/taf.c`'s re-blocking. The question is whether every emitted block
-  gets an index entry, or only blocks that start a new coordinate run.
-- **Report upstream** at
-  https://github.com/ComparativeGenomicsToolkit/taffy once there is a
-  reproducer. The project is active (HEAD is 2026-05-28).
+- **Report upstream.** The reproducer above is self-contained and needs no
+  context from this repo.
+  https://github.com/ComparativeGenomicsToolkit/taffy, active (HEAD 2026-05-28).
+  The question for them is whether `impl/tai.c` should emit an index entry per
+  reference row rather than per block.
+- **Fix it on our side by splitting.** `reroot_maf.py` could emit one block per
+  reference row, so every copy anchors itself. Only 48 pggb blocks carry
+  duplicate K12 rows, so the file grows negligibly, and there is now an exact
+  acceptance metric: unreachable positions go 1,773 to 0. This is *not* the
+  re-anchoring change that was tried and reverted twice; it changes block
+  membership, not which row goes first. It does move the demo file's md5, which
+  [PANGENOME_FIGURE_HANDOFF.md](PANGENOME_FIGURE_HANDOFF.md) treats as a
+  tripwire, so it needs a re-upload and a measured before/after.
+- **Do nothing.** Defensible; see below.
 
 ## Should anyone care
 
-Probably not yet, and that judgement should be revisited rather than inherited.
+Probably not, and for a stronger reason than the last revision of this doc gave.
 
-At 0.25 to 0.4 percent of positions, on a five-strain bacterial demo, with no
-figure known to land on a gap, this is below the noise floor of what the demo
-communicates. It matters more if:
+Both published pggb MAF figure loci were checked position by position against
+full-stream coverage and are **100% reachable**: `chr:2,120,000-2,140,000`
+(20,000 of 20,000) and `chr:4,540,000-4,600,000` (60,000 of 60,000). The
+unreachable runs are two isolated repeat collapses, 0.038% of the axis, nowhere
+near a figure.
 
-- a MAF figure's locus turns out to sit on a gap (check a new MAF locus against
-  the failing positions above, the same way
-  [PANGENOME_FIGURE_HANDOFF.md](PANGENOME_FIGURE_HANDOFF.md) says to check it
-  against the 30-cluster presence list), or
-- a user brings a large pggb or repeat-rich MAF, where 0.25 percent is a lot of
-  absolute sequence and the duplicate-row density is likely higher.
+It matters more if a new MAF figure lands inside `1211940-1212074` or
+`4170830-4172469`, or if a user brings a repeat-rich pggb MAF, where blocks with
+duplicate reference rows are denser and 0.038% could be much larger.
 
 `BgzipTaffyAdapter` reads through the same `.tai`, so whatever the index cannot
-return, JBrowse cannot draw. There is no adapter-side workaround short of
-streaming, which is not viable at this file size.
+return, JBrowse cannot draw. There is no adapter-side workaround; the fixes are
+upstream's index or our block splitting.
