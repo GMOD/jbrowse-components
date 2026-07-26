@@ -70,9 +70,9 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 <details>
 <summary>Advanced slots (1)</summary>
 
-| Slot                     | Type     | Description                                                                                                                                |
-| ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| [colorBy](#slot-colorby) | `frozen` | Synteny reads are strand-colored by default (vs the base alignments display's `normal`); overrides the inherited `colorBy` slot's default. |
+| Slot                     | Type          | Description                                                                                                                                |
+| ------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [colorBy](#slot-colorby) | `maybeFrozen` | Synteny reads are strand-colored by default (vs the base alignments display's `normal`); overrides the inherited `colorBy` slot's default. |
 
 </details>
 
@@ -92,8 +92,19 @@ both mates' names and locations.
 Synteny reads are strand-colored by default (vs the base alignments display's
 `normal`); overrides the inherited `colorBy` slot's default.
 
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`{ type: 'strand' }` · _advanced_
+**Type:** `maybeFrozen` · **Default:** `undefined` · **Resolves to:**
+`{ type: 'strand' }` · _advanced, promotable_
+
+```js
+{
+  type: 'maybeFrozen',
+  defaultValue: undefined,
+  promotedBase: { type: 'strand' },
+  promotable: true,
+  validate: isRegisteredColorScheme,
+  advanced: true,
+}
+```
 
 #### slot: showCoverage
 
