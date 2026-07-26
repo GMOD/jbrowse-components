@@ -12,6 +12,7 @@ import rehypeAdmonitions from './rehype-admonitions.ts'
 import rehypeBaseUrls from './rehype-base-urls.ts'
 import rehypeCollectToc, { type TocItem } from './rehype-collect-toc.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
+import rehypeLightbox from './rehype-lightbox.ts'
 import rehypePagefindIgnore from './rehype-pagefind-ignore.ts'
 import rehypeShiki from './rehype-shiki.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
@@ -38,6 +39,7 @@ const processor = unified()
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
   .use(rehypeShiki)
+  .use(rehypeLightbox)
   .use(rehypeAdmonitions)
   .use(rehypeTrailingSlash)
   .use(rehypeBaseUrls, { base: baseUrl })
@@ -47,11 +49,17 @@ const processor = unified()
   .use(rehypePagefindIgnore)
   .use(rehypeStringify, { allowDangerousHtml: true })
 
+// `feed` renders for the RSS feed, where page-only interactivity (the lightbox
+// wrapper around images) is markup a feed reader can only strip or mangle.
 export async function renderMarkdown(
   body: string,
   id = '',
+  { feed = false }: { feed?: boolean } = {},
 ): Promise<{ html: string; toc: TocItem[] }> {
   await ensureAutogenIndex()
-  const file = await processor.process({ value: body, data: { id } })
-  return { html: String(file), toc: (file.data.toc as TocItem[] | undefined) ?? [] }
+  const file = await processor.process({ value: body, data: { id, feed } })
+  return {
+    html: String(file),
+    toc: (file.data.toc as TocItem[] | undefined) ?? [],
+  }
 }

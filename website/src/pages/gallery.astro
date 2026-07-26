@@ -75,8 +75,7 @@ const sections = gallerySections
                     <figure class="card">
                       <button
                         type="button"
-                        class="card-img-btn"
-                        data-full={src}
+                        class="card-img-btn lightbox-trigger"
                         data-label={item.label}
                         data-href={primary.href}
                         data-open-label={primary.label}
@@ -94,17 +93,7 @@ const sections = gallerySections
                         <h3 class="card-title">{item.label}</h3>
                         {item.description && <p>{item.description}</p>}
                         <p class="card-links">
-                          {liveHref && (
-                            <a
-                              href={liveHref}
-                              class="card-open"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {LIVE_LABEL}
-                            </a>
-                          )}
-                          {guideHref && (
+                          {guideHref ? (
                             <a
                               href={guideHref}
                               class="card-open"
@@ -113,6 +102,17 @@ const sections = gallerySections
                             >
                               {itemGuideLabel(item)}
                             </a>
+                          ) : (
+                            liveHref && (
+                              <a
+                                href={liveHref}
+                                class="card-open"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {LIVE_LABEL}
+                              </a>
+                            )
                           )}
                         </p>
                       </figcaption>
@@ -139,57 +139,7 @@ const sections = gallerySections
       }
     </div>
   </div>
-
-  <dialog id="lightbox" class="lightbox" aria-label="Enlarged figure">
-    <button type="button" class="lightbox-close" aria-label="Close">×</button>
-    <figure class="lightbox-fig">
-      <img id="lightbox-img" src="" alt="" />
-      <figcaption>
-        <span id="lightbox-caption"></span>
-        <a
-          id="lightbox-link"
-          class="lightbox-open"
-          href=""
-          target="_blank"
-          rel="noopener noreferrer"></a>
-      </figcaption>
-    </figure>
-  </dialog>
 </SidebarLayout>
-
-<script>
-  // Native <dialog>.showModal() gives us the focus trap, Esc-to-close, and
-  // focus-return-to-trigger for free — so the script only wires up open/close.
-  const lb = document.getElementById('lightbox') as HTMLDialogElement
-  const lbImg = document.getElementById('lightbox-img') as HTMLImageElement
-  const lbCaption = document.getElementById('lightbox-caption')!
-  const lbLink = document.getElementById('lightbox-link') as HTMLAnchorElement
-
-  for (const btn of document.querySelectorAll<HTMLElement>('.card-img-btn')) {
-    btn.addEventListener('click', () => {
-      lbImg.src = btn.dataset.full ?? ''
-      lbImg.alt = btn.dataset.label ?? ''
-      lbCaption.textContent = btn.dataset.label ?? ''
-      lbLink.href = btn.dataset.href ?? ''
-      lbLink.textContent = btn.dataset.openLabel ?? ''
-      lb.showModal()
-      document.body.style.overflow = 'hidden'
-    })
-  }
-
-  // Backdrop, image, or close-button click closes; only the "open" link passes
-  // through (it navigates in a new tab).
-  lb.addEventListener('click', e => {
-    if (e.target !== lbLink) {
-      lb.close()
-    }
-  })
-
-  lb.addEventListener('close', () => {
-    lbImg.src = ''
-    document.body.style.overflow = ''
-  })
-</script>
 
 <style>
   .showcase-main {
@@ -197,7 +147,7 @@ const sections = gallerySections
     min-width: 0;
   }
   .wide {
-    max-width: 1100px;
+    max-width: 1280px;
   }
 
   h1 {
@@ -212,102 +162,42 @@ const sections = gallerySections
     scroll-margin-top: 5rem;
   }
 
+  /* Two cards per row from 760px up, so the page reads as a contact sheet
+     rather than one tall column; the lightbox is where a figure gets read at
+     full size, so a half-width card only has to be legible enough to pick. */
   .grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 2rem 1.75rem;
+    align-items: start;
+  }
+  @media (min-width: 760px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
   .card {
     margin: 0;
     display: flex;
     flex-direction: column;
   }
-  .card + .card {
-    border-top: 1px solid var(--color-border);
-    padding-top: 2rem;
-  }
   .card-img-btn {
-    display: block;
-    width: 100%;
-    padding: 0;
     margin: 0;
     border: 1px solid var(--color-border);
-    background: none;
-    cursor: pointer;
+    background: var(--color-surface);
   }
   .card img {
+    display: block;
     width: 100%;
     height: auto;
-    display: block;
-    transition: filter 0.15s;
-  }
-  .card-img-btn:hover img {
-    filter: brightness(0.92);
+    /* Figures range from wide panoramas to 1100-row stacks. A wide one fills the
+       card at its own ratio; a tall one is capped and fits inside instead of
+       setting the height of everything beside it. Nothing is cropped — the
+       lightbox is where a figure gets read at full size. */
+    max-height: 260px;
+    object-fit: contain;
   }
 
-  .lightbox {
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    margin: 0;
-    padding: 2rem;
-    border: none;
-    background: rgba(0, 0, 0, 0.85);
-  }
-  .lightbox[open] {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .lightbox::backdrop {
-    background: rgba(0, 0, 0, 0.85);
-  }
-  .lightbox-fig {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 96vw;
-    max-height: 92vh;
-  }
-  .lightbox-fig img {
-    max-width: 96vw;
-    max-height: 82vh;
-    object-fit: contain;
-    border-radius: 6px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
-    cursor: zoom-out;
-  }
-  .lightbox-fig figcaption {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
-    align-items: center;
-    justify-content: center;
-    margin-top: 0.85rem;
-    color: #fff;
-    font-size: 0.95rem;
-    text-align: center;
-  }
-  .lightbox-open {
-    color: #6ab0ff;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .lightbox-close {
-    position: absolute;
-    top: 0.75rem;
-    right: 1.25rem;
-    padding: 0;
-    border: none;
-    background: none;
-    color: #fff;
-    font-size: 2.25rem;
-    line-height: 1;
-    cursor: pointer;
-  }
   figcaption {
     padding: 0.5rem 0 0;
   }

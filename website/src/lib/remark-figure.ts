@@ -1,11 +1,11 @@
 import { SKIP, visit } from 'unist-util-visit'
 
-import { recipeButtonHtml, recipeDialogHtml } from './spec-recipe/html.ts'
-import { buildRecipe } from './spec-recipe/recipe.ts'
 import {
   screenshotLiveUrls,
   screenshotSlowSpecNames,
 } from '../../scripts/screenshot-specs.ts'
+import { recipeButtonHtml, recipeDialogHtml } from './spec-recipe/html.ts'
+import { buildRecipe } from './spec-recipe/recipe.ts'
 
 import type { Image, Paragraph, Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -57,7 +57,7 @@ function escapeHtml(s: string): string {
 
 const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''
-  return tree => {
+  return (tree, file) => {
     visit(tree, 'paragraph', (node: Paragraph, index, parent) => {
       const firstChild = node.children[0]
       if (
@@ -94,6 +94,22 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const img = `<img src="${src}" alt="${altText}"/>`
       const a = (url: string, inner: string) =>
         `<a href="${url}" target="_blank" rel="noopener noreferrer">${inner}</a>`
+
+      // Clicking the figure enlarges it in the site lightbox (Lightbox.astro)
+      // instead of opening the live session — a reader zooming in on a
+      // screenshot doesn't expect to leave the page. The live link rides along
+      // as `data-href` so the lightbox offers it, and stays in the caption. In
+      // the RSS feed there is no lightbox, so the image links out as it used to.
+      const zoom = (inner: string, live?: { url: string; label: string }) =>
+        file.data.feed === true
+          ? live
+            ? a(live.url, inner)
+            : inner
+          : `<button type="button" class="lightbox-trigger" aria-label="Enlarge: ${altText}"${
+              live
+                ? ` data-href="${live.url}" data-open-label="${live.label}"`
+                : ''
+            }>${inner}</button>`
 
       // `links="Label=spec,Label=spec"` opens several live views from one figure
       // (e.g. a stacked before/after image) — each spec name resolves to its
@@ -143,12 +159,13 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
             return `${a(l.url, `${l.label} ↗`)}${help.button}${slowNote(l.name)}`
           })
           .join(' · ')
-        node.value = `<figure>${a(multi[0]!.url, img)}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption>${dialogs.join('')}</figure>`
+        const first = multi[0]!
+        node.value = `<figure>${zoom(img, { url: first.url, label: `${first.label} ↗` })}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption>${dialogs.join('')}</figure>`
       } else if (liveUrl) {
         const help = helpFor(liveUrl, live?.name)
-        node.value = `<figure>${a(liveUrl, img)}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
+        node.value = `<figure>${zoom(img, { url: liveUrl, label: 'Open this view in JBrowse ↗' })}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
       } else {
-        node.value = `<figure>${img}<figcaption>${caption}</figcaption></figure>`
+        node.value = `<figure>${zoom(img)}<figcaption>${caption}</figcaption></figure>`
       }
     })
   }

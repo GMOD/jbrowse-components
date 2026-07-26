@@ -76,13 +76,20 @@ const galleryPreview: GalleryCard[] = [
       }
     </div>
     <div class="hero-image">
-      <img
-        src={`${baseUrl}/img/screenshot.webp`}
-        width="1400"
-        height="747"
-        fetchpriority="high"
-        alt="JBrowse linear genome view of human chr10 at CUZD1: NCBI RefSeq genes, a somatic structural-variant VCF calling a 1.8kb deletion over two exons, and a PacBio HiFi pileup with coverage where the reads carrying that deletion sort to the top as a dark block"
-      />
+      <button
+        type="button"
+        class="lightbox-trigger"
+        data-label="A linear genome view of a somatic deletion at CUZD1"
+        aria-label="Enlarge: JBrowse linear genome view screenshot"
+      >
+        <img
+          src={`${baseUrl}/img/screenshot.webp`}
+          width="1400"
+          height="747"
+          fetchpriority="high"
+          alt="JBrowse linear genome view of human chr10 at CUZD1: NCBI RefSeq genes, a somatic structural-variant VCF calling a 1.8kb deletion over two exons, and a PacBio HiFi pileup with coverage where the reads carrying that deletion sort to the top as a dark block"
+        />
+      </button>
     </div>
   </div>
 </div>
@@ -159,14 +166,21 @@ const galleryPreview: GalleryCard[] = [
         </p>
       </div>
       <div class="hubs-image">
-        <img
-          src={`${baseUrl}/img/desktop-available-genomes.webp`}
-          width="1400"
-          height="764"
-          loading="lazy"
-          decoding="async"
-          alt="JBrowse Desktop 'Available genomes' picker, a searchable list of human, mouse, and other assemblies each with a one-click launch link"
-        />
+        <button
+          type="button"
+          class="lightbox-trigger"
+          data-label="JBrowse Desktop's Available genomes picker"
+          aria-label="Enlarge: JBrowse Desktop available genomes picker"
+        >
+          <img
+            src={`${baseUrl}/img/desktop-available-genomes.webp`}
+            width="1400"
+            height="764"
+            loading="lazy"
+            decoding="async"
+            alt="JBrowse Desktop 'Available genomes' picker, a searchable list of human, mouse, and other assemblies each with a one-click launch link"
+          />
+        </button>
       </div>
     </div>
   </div>

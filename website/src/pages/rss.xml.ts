@@ -30,7 +30,7 @@ export const GET: APIRoute = async ({ site }) => {
     posts.slice(0, MAX_ITEMS).map(async post => {
       const link = abs(`blog/${blogPath(post)}/`)
       const { text } = blogExcerpt(post.body ?? '')
-      const { html } = await renderMarkdown(text)
+      const { html } = await renderMarkdown(text, '', { feed: true })
       return `    <item>
       <title>${escapeXml(post.data.title)}</title>
       <link>${link}</link>

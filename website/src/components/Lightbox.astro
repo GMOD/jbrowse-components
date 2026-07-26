@@ -1,0 +1,277 @@
+---
+// One site-wide image lightbox, mounted by BaseLayout so every page has it.
+// Any image the reader can enlarge is wrapped in a `.lightbox-trigger` button
+// (gallery cards author theirs; doc figures get one from remark-figure, other
+// markdown images from rehype-lightbox), and this dialog shows whichever was
+// clicked. Optional `data-href`/`data-open-label` on the trigger carry the
+// figure's live-view link, which becomes a link in the lightbox caption — so
+// clicking an image never navigates away from the page it illustrates.
+//
+// A figure taller than the viewport (a 1000-row sample stack) is shown at full
+// width and scrolled rather than shrunk to fit, so the rows stay legible; the
+// fade and the hint line under it say so.
+---
+
+<dialog id="lightbox" class="lightbox" aria-label="Enlarged figure">
+  <button type="button" class="lightbox-close" aria-label="Close">×</button>
+  <figure class="lightbox-fig" id="lightbox-fig">
+    <div class="lightbox-viewport">
+      <div
+        class="lightbox-scroll"
+        id="lightbox-scroll"
+        tabindex="0"
+        aria-label="Figure, scrollable"
+      >
+        <img id="lightbox-img" src="" alt="" />
+      </div>
+      <div class="lightbox-fade" aria-hidden="true"></div>
+    </div>
+    <p class="lightbox-hint">Scroll to see the rest of this figure ↓</p>
+    <figcaption>
+      <span id="lightbox-caption"></span>
+      <a
+        id="lightbox-link"
+        class="lightbox-open"
+        href=""
+        target="_blank"
+        rel="noopener noreferrer"></a>
+    </figcaption>
+  </figure>
+</dialog>
+
+<script>
+  // Native <dialog>.showModal() gives us the focus trap, Esc-to-close, and
+  // focus-return-to-trigger for free — so the script only wires up open/close.
+  const lb = document.getElementById('lightbox') as HTMLDialogElement
+  const lbFig = document.getElementById('lightbox-fig')!
+  const lbScroll = document.getElementById('lightbox-scroll')!
+  const lbImg = document.getElementById('lightbox-img') as HTMLImageElement
+  const lbCaption = document.getElementById('lightbox-caption')!
+  const lbLink = document.getElementById('lightbox-link') as HTMLAnchorElement
+
+  // Decide between showing the whole figure at once and showing it at full
+  // width and scrolling, then drive the fade and the hint off that — so the
+  // "there is more below" affordance can't appear on a figure that already fits,
+  // or linger once the reader has reached the bottom.
+  function measure() {
+    // measured, not computed from the CSS max-height, so the two can't drift:
+    // drop to full width, read how tall that is, and compare with the box.
+    lbFig.removeAttribute('data-fit')
+    const full = lbScroll.scrollHeight
+    const box = lbScroll.clientHeight
+    // A figure that nearly fits loses little by being scaled down, and reading
+    // it in one piece beats scrolling. A tall stack of sample rows scaled to fit
+    // is unreadable, so that one stays full width and scrolls.
+    const fits = box / full >= 0.8
+    const atEnd = lbScroll.scrollTop + box >= full - 2
+    const scrollable = !fits && full - box > 2
+    lbFig.toggleAttribute('data-fit', fits)
+    lbFig.toggleAttribute('data-scrollable', scrollable)
+    lbFig.toggleAttribute('data-at-end', !fits && atEnd)
+    lbScroll.setAttribute(
+      'aria-label',
+      scrollable ? 'Figure, scrollable' : 'Figure',
+    )
+  }
+
+  lbScroll.addEventListener('scroll', () => measure())
+  window.addEventListener('resize', () => measure())
+  lbImg.addEventListener('load', () => measure())
+
+  // Delegated: triggers come from generated markdown as well as authored pages,
+  // so there is no one list of them to bind at load.
+  document.addEventListener('click', event => {
+    const target = event.target
+    if (target instanceof Element) {
+      const trigger = target.closest('.lightbox-trigger')
+      const img = trigger?.querySelector('img')
+      if (trigger instanceof HTMLElement && img instanceof HTMLImageElement) {
+        lbImg.src = img.currentSrc || img.src
+        lbImg.alt = img.alt
+        lbCaption.textContent = trigger.dataset.label ?? img.alt
+        lbLink.href = trigger.dataset.href ?? ''
+        lbLink.textContent = trigger.dataset.openLabel ?? ''
+        lbLink.hidden = !trigger.dataset.href
+        lb.showModal()
+        lbScroll.scrollTop = 0
+        // a cached image fires no load event, so measure both ways
+        measure()
+        // so the arrow keys and space scroll the figure straight away
+        lbScroll.focus()
+      }
+    }
+  })
+
+  // Backdrop, close-button and image clicks all close: a reader who clicked an
+  // image to enlarge it expects a click to put it back. Two things pass
+  // through — the "open" link (it navigates in a new tab) and the scroll
+  // container, whose only clickable part is its scrollbar. Requiring the press
+  // and the release to land on the same element keeps a drag that ends
+  // elsewhere (dragging that scrollbar, selecting the caption) from closing.
+  let pressed: EventTarget | null = null
+  lb.addEventListener('mousedown', event => {
+    pressed = event.target
+  })
+  lb.addEventListener('click', event => {
+    const target = event.target
+    if (target === pressed && target !== lbLink && target !== lbScroll) {
+      lb.close()
+    }
+  })
+
+  lb.addEventListener('close', () => {
+    lbImg.src = ''
+  })
+</script>
+
+<style is:global>
+  /* The trigger is a bare button around the image: it must not add a box of its
+     own, so figure/prose image styling still applies to the <img> inside. */
+  .lightbox-trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: zoom-in;
+  }
+  .lightbox-trigger img {
+    transition: filter 0.15s;
+  }
+  .lightbox-trigger:hover img {
+    filter: brightness(0.92);
+  }
+
+  /* The page behind a modal <dialog> still scrolls, and locking `body` cannot
+     stop it here: BaseLayout's `html { overflow-x: hidden }` means body's
+     overflow no longer propagates to the viewport. So lock the element that
+     actually scrolls — and reserve the scrollbar's width in both states, or the
+     page jumps sideways by that width as the scrollbar comes and goes. */
+  html {
+    scrollbar-gutter: stable;
+  }
+  html:has(.lightbox[open]) {
+    overflow: hidden;
+  }
+
+  .lightbox {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    margin: 0;
+    padding: 2rem;
+    border: none;
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .lightbox[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lightbox::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .lightbox-fig {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 96vw;
+    max-height: 92vh;
+  }
+  .lightbox-viewport {
+    position: relative;
+    min-height: 0;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  }
+  /* Sized by the image up to the viewport box, then scrolls: a figure taller
+     than the screen stays at full width and legible instead of being shrunk. */
+  .lightbox-scroll {
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 6px;
+    scrollbar-color: rgba(255, 255, 255, 0.5) rgba(0, 0, 0, 0.3);
+  }
+  .lightbox-scroll:focus-visible {
+    outline: 2px solid #6ab0ff;
+    outline-offset: 2px;
+  }
+  .lightbox-fig:not([data-scrollable]) .lightbox-scroll img {
+    cursor: zoom-out;
+  }
+  .lightbox-scroll img {
+    display: block;
+    max-width: 96vw;
+    height: auto;
+  }
+  /* Fits in one screen (see measure()): scale it down instead of scrolling. */
+  .lightbox-fig[data-fit] .lightbox-scroll img {
+    max-height: 80vh;
+    object-fit: contain;
+  }
+  /* Fades the bottom edge of the figure while there is more below it. */
+  .lightbox-fade {
+    position: absolute;
+    inset: auto 0 0;
+    height: 4rem;
+    border-radius: 0 0 6px 6px;
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.55));
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .lightbox-fig[data-scrollable]:not([data-at-end]) .lightbox-fade {
+    opacity: 1;
+  }
+  .lightbox-hint {
+    display: none;
+    margin: 0.6rem 0 0;
+    color: #fff;
+    font-size: 0.85rem;
+  }
+  /* On a scrollable figure the hint holds its space and only its ink goes away
+     at the bottom, so the caption doesn't jump as the reader scrolls. */
+  .lightbox-fig[data-scrollable] .lightbox-hint {
+    display: block;
+    visibility: hidden;
+  }
+  .lightbox-fig[data-scrollable]:not([data-at-end]) .lightbox-hint {
+    visibility: visible;
+  }
+  .lightbox-fig figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.85rem;
+    max-width: 900px;
+    color: #fff;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+  .lightbox-open {
+    color: #6ab0ff;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 1.25rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 2.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+</style>

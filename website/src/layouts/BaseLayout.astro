@@ -1,6 +1,7 @@
 ---
 import { Font } from 'astro:assets'
 
+import Lightbox from '../components/Lightbox.astro'
 import SearchBox from '../components/SearchBox.astro'
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
@@ -291,6 +292,8 @@ const year = new Date().getFullYear()
         Copyright &copy; {year} Evolutionary Software Foundation, Inc.
       </div>
     </footer>
+
+    <Lightbox />
 
     <script>
       const toggle = document.getElementById('nav-toggle')
