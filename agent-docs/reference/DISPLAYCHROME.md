@@ -15,6 +15,11 @@ description: The shared display status chrome that owns loading, error, and retr
   `computeDisplayPhase`. Never re-encode it as `&& !error && !regionTooLarge`.
 - `renderError`/`tooLarge` replace the subtree (canvas unmounts,
   `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
+- A status set while the phase is `ready` — work with no fetch behind it, e.g.
+  declarative clustering — renders as a corner `ProgressChip`
+  (`DisplayBackgroundProgress`), not the scrim: the drawn content is still
+  usable. Report such work through the display's own `setStatusMessage` and it
+  shows up; don't add a phase for it.
 - Always: a thin outer owns the chrome, a named observer body owns the canvas
   and overlays, joined by a render-prop child.
 - Load-bearing: a terminal state **replaces the subtree** (that is what disposes
