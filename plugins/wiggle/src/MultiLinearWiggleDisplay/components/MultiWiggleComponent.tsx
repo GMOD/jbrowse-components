@@ -58,6 +58,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       factory={WiggleRenderer}
       ref={containerRef}
       testid="multi-wiggle-display"
+      // The clustered frame's only other DOM evidence is the dendrogram canvas,
+      // which `showTree: false` removes — so a figure that clusters with the
+      // tree hidden had nothing to wait on but a guessed delay. Published here
+      // instead, off the same model state the tree reads.
+      data-clustered={model.hierarchy ? 'true' : 'false'}
       style={{
         width: totalWidth,
         height,

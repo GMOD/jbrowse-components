@@ -9,17 +9,22 @@ import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 // case carries its own escape hatch: clearing the filter is the fix for the
 // first and would make the second (too many rows) strictly worse.
 function hint(model: MultiWiggleDisplayModel) {
-  const { numSources, isOverlay, rowHeight } = model
+  const { numSources, isOverlay, isDensityMode, rowHeight } = model
   // A subtree filter that matches nothing: loaded adapter sources exist but the
   // filter removed them all (numSources is the post-filter count). Otherwise,
   // multi-row mode packed so tight rows are sub-pixel — the canvas draws, but
   // as an unreadable smear.
+  //
+  // Not in density mode: there the escape the message names IS the mode the
+  // user is already in, and sub-pixel rows are the intended cohort view (a
+  // thousand-sample heatmap is read as a stack, not row by row), so the hint
+  // was advice that could not be taken sitting over the figure it described.
   return model.sourcesWithoutLayout.length > 0 && numSources === 0
     ? {
         message: 'No subtracks match the current subtree filter',
         clearFilter: true,
       }
-    : !isOverlay && numSources > 0 && rowHeight < 1
+    : !isOverlay && !isDensityMode && numSources > 0 && rowHeight < 1
       ? {
           message: `${numSources} subtracks in ${Math.round(model.height)}px leaves rows below 1px. Switch to an overlay or density rendering, or increase the track height.`,
           clearFilter: false,
