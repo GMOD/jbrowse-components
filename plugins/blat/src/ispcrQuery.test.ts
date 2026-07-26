@@ -59,6 +59,37 @@ test('labels primer footprints by the primer that sits there on a minus product'
   })
 })
 
+// What hgPcr actually sends: the position is a link to the browser, so the
+// coordinates never follow the '>' directly. Parsing only the bare form returned
+// zero products for every real query.
+test('parses the anchored header the live server sends', () => {
+  const live = `<HTML><BODY><PRE>
+&gt;<A HREF="../cgi-bin/hgTracks?hgsid=4123661403&db=hg38&position=chr17:7676521-7676667&hgPcrResult=pack">chr17:7676521+7676667</A> 147bp AGTTTCCATAGGTCTGAAAATG GGGTTGGAAGTGTCTCATGCTG
+AGTTTCCATAGGTCTGAAAATGtt
+</PRE></BODY></HTML>`
+  const [f] = parseIsPcrResponse(live)
+  expect(f).toMatchObject({
+    refName: 'chr17',
+    start: 7676520,
+    end: 7676667,
+    strand: 1,
+    name: '147 bp',
+  })
+  // the linked position also carries coordinates; only the header's own must win
+  expect(parseIsPcrResponse(live)).toHaveLength(1)
+})
+
+// an ordinary UCSC page carries a nav link to FAQdownloads.html#CAPTCHA, which
+// must not read as a challenge when the real problem is that nothing parsed
+test('a result page mentioning the CAPTCHA FAQ is not a challenge', () => {
+  expect(
+    parseIsPcrResponse(
+      '<HTML><BODY>No matches found' +
+        '<A HREF="/FAQ/FAQdownloads.html#CAPTCHA">captcha</A></BODY></HTML>',
+    ),
+  ).toEqual([])
+})
+
 test('throws BlatChallengeError on a Cloudflare turnstile page', () => {
   expect(() =>
     parseIsPcrResponse('<html><div class="cf-turnstile"></div></html>'),

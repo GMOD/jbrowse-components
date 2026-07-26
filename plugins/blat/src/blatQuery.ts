@@ -245,10 +245,13 @@ export class BlatChallengeError extends Error {
   name = 'BlatChallengeError'
 }
 
-// markers on a Cloudflare Turnstile challenge page; cf[-_]chl is kept specific
-// (not a bare cf-) so incidental "cf-" markup on a real result page isn't
-// mistaken for a challenge
-const CHALLENGE_MARKERS = /turnstile|cf[-_]chl|captcha|challenge/i
+// Markers on a Cloudflare Turnstile challenge page. Every marker has to be
+// specific to the challenge itself: a bare `cf-`, `captcha` or `challenge` also
+// matches an ordinary UCSC page, whose standard nav links to
+// FAQdownloads.html#CAPTCHA and whose scripts load from challenges.cloudflare.com.
+// Those two words made a failed parse of a perfectly good result page report
+// itself as a CAPTCHA, sending the user off to solve one that wasn't there.
+const CHALLENGE_MARKERS = /turnstile|cf[-_]chl/i
 
 export function isChallengePage(text: string) {
   return CHALLENGE_MARKERS.test(text)

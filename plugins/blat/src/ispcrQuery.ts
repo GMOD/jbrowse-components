@@ -26,7 +26,16 @@ export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
   // none are found do we distinguish a challenge from a genuine empty result,
   // which avoids mistaking incidental "cf-"/"challenge" markup on a real result
   // page for a CAPTCHA
-  const decoded = text.replaceAll('&gt;', '>').replaceAll('&lt;', '<')
+  //
+  // hgPcr links each amplicon's position to the browser, so a real header is
+  //   &gt;<A HREF="../cgi-bin/hgTracks?...">chr17:7676521+7676667</A> 147bp ...
+  // and the position never followed the '>' directly. Strip markup before
+  // decoding entities, in that order: tags first, so escaped text can't be read
+  // as a tag, then '&gt;' becomes the '>' the header starts with.
+  const decoded = text
+    .replaceAll(/<[^>]*>/g, '')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&lt;', '<')
   const features: SimpleFeatureSerialized[] = []
   for (const match of decoded.matchAll(AMPLICON_HEADER)) {
     const [, refName, startStr, sign, endStr, sizeStr, fwd, rev] = match
@@ -76,7 +85,9 @@ export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
       ],
     })
   }
-  if (!features.length && isChallengePage(decoded)) {
+  // the raw text, not `decoded`: a challenge page IS markup, so stripping tags
+  // would throw away the very thing that identifies it
+  if (!features.length && isChallengePage(text)) {
     throw challengeError()
   }
   return features
