@@ -18,7 +18,7 @@ early-`return` + loading-thunk constraints.
 
 | Name                                 | Trigger                                                                                                                                                      | Action                                                                                                                                                                                            |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DisplayedRegionsChange`             | `view.displayedRegions` entries change (chromosome navigation)                                                                                               | `clearAllRpcData()`                                                                                                                                                                               |
+| `DisplayedRegionsChange`             | `view.displayedRegions` entries change (chromosome navigation)                                                                                               | `clearAllRpcData()` + `clearByteEstimate()`                                                                                                                                                       |
 | `FetchVisibleRegions`                | `fetchGeneration` (bumps at fetch end), `view.visibleRegions`, `error`, `regionTooLarge` (600 ms delay)                                                      | calls `fetchNeeded` with uncovered buffered regions                                                                                                                                               |
 | `SettingsInvalidate`                 | `self.rpcPropsCacheKey` (the serialized `rpcProps()` payload, so building it can read more than it returns); installed only when subclass defines the method | `clearAllRpcData()`                                                                                                                                                                               |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                                                                        | `clearAllRpcData()` if `error` or `fetchCanceled` is set (the derived `regionTooLarge` self-releases, so it isn't part of this)                                                                   |
@@ -63,7 +63,10 @@ installed autorun) is opt-in for per-region state keyed by
 `displayedRegionIndex` that must survive `clearAllRpcData` — chromosome nav
 reuses indices, so a stale entry would apply to the wrong chromosome (canvas's
 `densityStatsPerRegion` is the case). Displays cleared via
-`clearDisplaySpecificData` don't need it.
+`clearDisplaySpecificData` don't need it, and neither does the cached byte
+estimate — `DisplayedRegionsChange` drops that for the whole family. The helper
+exists for the two gated displays outside this family (LD, arc), which run on
+`GlobalFetchMixin` and so wire their own.
 
 ### Overridable hooks — subclasses must/can override
 
@@ -111,8 +114,10 @@ pre-flight display gets the derived, self-releasing banner for free — this mix
 derives `derivedRegionTooLargeEnabled` from `getByteEstimateConfig() !== null`,
 and the mixin reads `fetchSizeLimit` / `forceLoad` straight off the config — so
 declaring a byte estimate is the whole opt-in. Displays that capture the
-estimate outside the pre-flight (LD, arc, canvas fold-into-fetch) set
-`derivedRegionTooLargeEnabled` → true themselves, and canvas adds
+estimate outside the pre-flight (LD, arc, canvas fold-into-fetch) opt in
+through `gateFoldedIntoFetch`, which this mixin ORs into
+`derivedRegionTooLargeEnabled` — additive rather than an override, so a gate
+mixin's opt-in doesn't hinge on which side of `.compose()` it lands. Canvas adds
 `densityTooLargeForDerivedGate` for its second axis. See that mixin's header
 comment.
 

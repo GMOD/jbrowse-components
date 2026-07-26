@@ -1,24 +1,27 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   evaluateRegionTooLarge,
-  forceLoadByteLimit,
   rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
+  resolveForceLoadLimits,
 } from './regionTooLargeUtils.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 
-// The mixin declares no `configuration`, but every display that composes it has
-// one (BaseDisplay via MultiRegionDisplayMixin, or the SVG arc displays
-// directly). Cast once so the config-slot defaults below read it type-safely —
-// the same pattern CanvasFeatureGateMixin uses.
+// The mixin declares no `configuration` / `adapterConfig`, but every display
+// that composes it has both (BaseDisplay via MultiRegionDisplayMixin, or the SVG
+// arc displays directly). Cast once so the config-slot defaults below read them
+// type-safely — the same pattern CanvasFeatureGateMixin uses.
 function host(self: object) {
-  return self as { configuration: AnyConfigurationModel }
+  return self as {
+    configuration: AnyConfigurationModel
+    adapterConfig: AnyConfigurationModel
+  }
 }
 
 /**
@@ -40,11 +43,11 @@ function host(self: object) {
  * display opts in by flipping `derivedRegionTooLargeEnabled` true, plus
  * `densityTooLargeForDerivedGate` if it has a second gating axis (canvas's
  * feature-density gate). The budget hooks default off the display config, so
- * nothing else needs overriding. It also clears the cached estimate on
- * chromosome nav with
- * `onDisplayedRegionsChange(self, () => self.setByteEstimate(undefined))`
- * in its `afterAttach` (the estimate intentionally survives viewport-change
- * clears, so only region navigation drops it). Used by
+ * nothing else needs overriding. `MultiRegionDisplayMixin` drops the cached
+ * estimate on chromosome nav for everything it composes; the two displays
+ * outside that family (LD, arc) wire `onDisplayedRegionsChange(self, () =>
+ * self.clearByteEstimate())` themselves. The estimate intentionally survives
+ * viewport-change clears, so only region navigation drops it. Used by
  * canvas/LD/arc/maf/MultiSampleVariant/alignments.
  *
  * A display that leaves `derivedRegionTooLargeEnabled` false never gates on size
@@ -87,6 +90,21 @@ export default function RegionTooLargeMixin() {
        */
       measuredSpanBp: undefined as number | undefined,
     }))
+    .views(() => ({
+      /**
+       * #getter
+       * Additive opt-in for displays that measure the estimate inside their own
+       * feature RPC instead of a pre-flight (canvas). Kept separate from
+       * `derivedRegionTooLargeEnabled` so a gate mixin contributes by setting
+       * *this* rather than overriding the verdict switch — the two would
+       * otherwise race on composition order, and the later `.compose()`
+       * argument silently winning is invisible to both the type system and the
+       * tests.
+       */
+      get gateFoldedIntoFetch(): boolean {
+        return false
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -97,7 +115,7 @@ export default function RegionTooLargeMixin() {
        * LGV-only `tooLargeStatus` getters at all.
        */
       get derivedRegionTooLargeEnabled(): boolean {
-        return false
+        return self.gateFoldedIntoFetch
       },
       /**
        * #getter
@@ -119,6 +137,20 @@ export default function RegionTooLargeMixin() {
        */
       get densityTooLargeForDerivedGate(): boolean {
         return false
+      },
+      /**
+       * #getter
+       * The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
+       * declares none); `resolveByteLimit` prefers it over the display config.
+       * Read on the main thread rather than trusted only from the estimate: the
+       * three adapters that attach one (BAM/CRAM/VCF) just echo this same static
+       * slot back across the worker boundary, and a display whose adapter never
+       * attaches it would otherwise silently ignore a configured limit.
+       * `byteEstimate.fetchSizeLimit` still wins where present, so an adapter
+       * that computes a limit dynamically keeps the last word.
+       */
+      get adapterFetchSizeLimit(): number | undefined {
+        return readConfObject(host(self).adapterConfig, 'fetchSizeLimit')
       },
       /**
        * #getter
@@ -176,7 +208,9 @@ export default function RegionTooLargeMixin() {
               estimatedBytesForVisibleSpan: self.estimatedBytesForVisibleSpan,
               byteLimit: resolveByteLimit({
                 userByteLimit: self.userByteLimit,
-                adapterFetchSizeLimit: self.byteEstimate?.fetchSizeLimit,
+                adapterFetchSizeLimit:
+                  self.byteEstimate?.fetchSizeLimit ??
+                  self.adapterFetchSizeLimit,
                 configFetchSizeLimit: self.configuredFetchSizeLimit,
               }),
               densityTooLarge: self.densityTooLargeForDerivedGate,
@@ -220,28 +254,32 @@ export default function RegionTooLargeMixin() {
           : ''
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       * Plaintext reason (for SVG export); the on-screen too-large UI is
-       * rendered by the display chrome via `TooLargeMessage`, not the model.
-       */
-      regionCannotBeRenderedText() {
-        return self.regionTooLarge ? 'Force load to see features' : ''
-      },
-    }))
     .actions(self => ({
       /**
        * #action
-       * Commits the byte estimate and records the span it covers
-       * (`measuredSpanBp`) so the derived gate can rescale it to the span on
-       * screen. Harmless for non-gated displays (they ignore it).
+       * Commits the byte estimate together with the span it covers, so the
+       * derived gate can rescale it to the span on screen. `measuredSpanBp`
+       * must be the `visibleBp` captured when the measurement was *requested*,
+       * not read at commit time: a view that zoomed during the in-flight fetch
+       * would otherwise anchor the estimate to the wrong span, and since
+       * `FetchVisibleRegions` skips while `regionTooLarge` holds, an
+       * over-anchored estimate wedges the banner with no refetch to correct it.
+       * Harmless for non-gated displays (they ignore it).
        */
-      setByteEstimate(estimate?: RegionByteEstimate) {
-        self.measuredSpanBp = estimate
-          ? (getContainingView(self) as LinearGenomeViewModel).visibleBp
-          : undefined
+      setByteEstimate(estimate: RegionByteEstimate, measuredSpanBp: number) {
         self.byteEstimate = estimate
+        self.measuredSpanBp = measuredSpanBp
+      },
+
+      /**
+       * #action
+       * Drops the cached estimate. Chromosome navigation only: the estimate
+       * intentionally survives `clearAllRpcData` so an ordinary viewport change
+       * doesn't flicker the banner.
+       */
+      clearByteEstimate() {
+        self.byteEstimate = undefined
+        self.measuredSpanBp = undefined
       },
 
       /**
@@ -250,18 +288,27 @@ export default function RegionTooLargeMixin() {
        * releases. Prefers the estimate for the span on screen now, so it clears
        * even if the view zoomed out since the measurement; a display with the
        * derived gate off has no such estimate and falls back to the
-       * measured-span number. Canvas (which also has a density force-load)
-       * overrides this entirely.
+       * measured-span number. Byte-only, so it asks `resolveForceLoadLimits`
+       * with the density axis off — canvas overrides with the dual-axis form.
        */
-      raiseForceLoadLimits(estimate?: RegionByteEstimate) {
-        const limit = forceLoadByteLimit({
+      raiseForceLoadLimits() {
+        const { userByteLimit } = resolveForceLoadLimits({
           estimatedBytesForVisibleSpan: self.derivedRegionTooLargeEnabled
             ? self.estimatedBytesForVisibleSpan
             : undefined,
-          estimatedBytesForMeasuredSpan: estimate?.bytes,
+          estimatedBytesForMeasuredSpan: self.byteEstimate?.bytes,
+          baselineByteLimit: resolveByteLimit({
+            userByteLimit: undefined,
+            adapterFetchSizeLimit:
+              self.byteEstimate?.fetchSizeLimit ?? self.adapterFetchSizeLimit,
+            configFetchSizeLimit: self.configuredFetchSizeLimit,
+          }),
+          densityGateActive: false,
+          observedMaxDensity: 0,
+          configuredMaxDensity: 0,
         })
-        if (limit !== undefined) {
-          self.userByteLimit = limit
+        if (userByteLimit !== undefined) {
+          self.userByteLimit = userByteLimit
         }
       },
 
@@ -281,7 +328,7 @@ export default function RegionTooLargeMixin() {
        * refetch.
        */
       forceLoad() {
-        self.raiseForceLoadLimits(self.byteEstimate)
+        self.raiseForceLoadLimits()
         self.reload()
       },
     }))

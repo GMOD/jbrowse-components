@@ -331,8 +331,10 @@ export default function MultiRegionDisplayMixin() {
        * are one decision, so they can't desync (this replaces the old dev-time
        * "config set but gate off" console.error). Displays that capture the
        * estimate through a custom fetch (LD, arc) or fold the byte check into
-       * their feature RPC (canvas) leave `getByteEstimateConfig` null and flip
-       * this true themselves.
+       * their feature RPC (canvas) leave `getByteEstimateConfig` null and
+       * contribute through `gateFoldedIntoFetch`, which this ORs in — so a gate
+       * mixin's opt-in survives regardless of which side of `.compose()` it
+       * lands on.
        *
        * Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp`
        * (which throws pre-init), and this getter is read from menu code before
@@ -340,7 +342,10 @@ export default function MultiRegionDisplayMixin() {
        */
       get derivedRegionTooLargeEnabled() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        return view.initialized && self.getByteEstimateConfig() !== null
+        return (
+          self.gateFoldedIntoFetch ||
+          (view.initialized && self.getByteEstimateConfig() !== null)
+        )
       },
     }))
     .actions(self => ({
@@ -370,7 +375,10 @@ export default function MultiRegionDisplayMixin() {
               return
             }
             if (estimate) {
-              self.setByteEstimate(estimate)
+              // anchor to the visibleBp captured with the config, before the
+              // await — reading it now would pin the estimate to whatever span
+              // a mid-fetch zoom left on screen
+              self.setByteEstimate(estimate, byteEstimateConfig.visibleBp)
               // The derived regionTooLarge getter reflects the just-captured
               // estimate (setByteEstimate recorded the current viewport as
               // its capture span), so short-circuit the download when it's over
@@ -402,11 +410,21 @@ export default function MultiRegionDisplayMixin() {
         // model, so any mutation replaces the reference and the
         // autorun re-fires on the bare read below. Fires once at
         // mount as a harmless no-op (nothing loaded yet).
+        //
+        // The cached byte estimate goes with it — and only here.
+        // displayedRegionIndex is reused across chromosomes, so a stale
+        // estimate would gate the new region against the previous
+        // chromosome's numbers and, since FetchVisibleRegions skips while
+        // regionTooLarge holds, wedge the banner with no refetch to correct
+        // it. clearAllRpcData deliberately leaves it alone (no banner flicker
+        // on an ordinary viewport-change clear), which is why the drop lives
+        // in this autorun rather than in that action.
         autorunOnReadyView(
           self,
           view => {
             void view.displayedRegions
             self.clearAllRpcData()
+            self.clearByteEstimate()
           },
           { name: 'DisplayedRegionsChange' },
         )

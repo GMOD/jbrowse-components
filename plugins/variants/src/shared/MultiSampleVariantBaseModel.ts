@@ -24,7 +24,6 @@ import {
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   TreeSidebarMixin,
@@ -1302,15 +1301,6 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .actions(self => ({
         afterAttach() {
-          // Drop the cached byte estimate on chromosome navigation:
-          // displayedRegionIndex is reused across chromosomes, so a stale
-          // estimate would gate the new region against the wrong stats and, since
-          // FetchVisibleRegions gates on !regionTooLarge, wedge the banner. The
-          // estimate intentionally survives viewport-change clears (no flicker on
-          // pan); this hook is the one path that clears it. Mirrors canvas/maf.
-          onDisplayedRegionsChange(self, () => {
-            self.setByteEstimate(undefined)
-          })
           // Keep scrollTop within the content by construction. A row-height
           // shrink or a display drag-resize lowers scrollableHeight, and the
           // matrix display scrolls a canvas with no native overflow container

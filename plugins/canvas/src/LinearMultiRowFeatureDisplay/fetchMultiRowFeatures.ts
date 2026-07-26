@@ -26,7 +26,10 @@ interface FetchSelf extends IAnyStateTreeNode {
   ) => Promise<void>
   makeRegionStatusCallback: (key: number) => (status: RpcStatus) => void
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
-  commitGateMeasurements: (measurements: RegionGateMeasurement[]) => void
+  commitGateMeasurements: (
+    measurements: RegionGateMeasurement[],
+    measuredSpanBp: number,
+  ) => void
 }
 
 // Delegates to the shared fetchEachRegion primitive (per-region stale guards +
@@ -37,7 +40,11 @@ interface FetchSelf extends IAnyStateTreeNode {
 export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
-  const bpPerPx = (getContainingView(self) as LinearGenomeViewModel).bpPerPx
+  const view = getContainingView(self) as LinearGenomeViewModel
+  const bpPerPx = view.bpPerPx
+  // captured before the fetch: the gate rescales the estimate from the span it
+  // was measured over, so a mid-fetch zoom must not re-anchor it
+  const measuredSpanBp = view.visibleBp
   const byteLimit = self.resolvedByteLimit()
   const maxFeatureDensity = self.maxFeatureDensity
   // Per-region gate measurements, keyed by the displayedRegionIndex onResult
@@ -83,7 +90,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
           })
         }
       }
-      self.commitGateMeasurements(measurements)
+      self.commitGateMeasurements(measurements, measuredSpanBp)
     },
   })
 }

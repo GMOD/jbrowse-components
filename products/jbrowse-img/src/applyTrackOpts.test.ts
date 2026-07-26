@@ -56,9 +56,13 @@ describe('alignments modifiers', () => {
     expect(sort).toEqual({ type: 'strand', tag: undefined })
   })
 
-  test('force is returned as a flag (volatile, not a snapshot value)', () => {
-    expect(buildDisplaySnapshot('alignments', ['force:true']).force).toBe(true)
-    expect(buildDisplaySnapshot('alignments', []).force).toBe(false)
+  test('force sets the declarative forceLoad config slot', () => {
+    expect(buildDisplaySnapshot('alignments', ['force:true']).snap).toEqual({
+      forceLoad: true,
+    })
+    expect(
+      buildDisplaySnapshot('alignments', []).snap.forceLoad,
+    ).toBeUndefined()
   })
 
   test('featureHeight preset maps to per-read height (spacing is derived)', () => {

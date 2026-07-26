@@ -159,14 +159,13 @@ function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
   return { createDisplay, mockRpcCall }
 }
 
-// CanvasFeatureGateMixin must be composed AFTER MultiRegionDisplayMixin. Both
-// define derivedRegionTooLargeEnabled: MultiRegionDisplayMixin computes it from
-// `getByteEstimateConfig() !== null`, which canvas never overrides (it folds the
-// byte check into its feature RPC instead), so that base returns false. The gate
-// works only because the mixin's hardcoded `true` wins by composition order.
-// Swap the two lines in model.ts and the whole byte/density gate silently turns
-// off — no banner, no error, nothing else fails. This test is the pin.
-test('composition order keeps the derived gate enabled', () => {
+// CanvasFeatureGateMixin never overrides `getByteEstimateConfig` (it folds the
+// byte check into its feature RPC instead), so the opt-in comes entirely from
+// `gateFoldedIntoFetch`, which MultiRegionDisplayMixin ORs into
+// `derivedRegionTooLargeEnabled`. Additive, so the gate survives either
+// composition order — this used to hinge on the mixin composing last, and
+// swapping the two lines turned the whole byte/density gate off silently.
+test('the gate opt-in survives regardless of mixin composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
   expect(display.getByteEstimateConfig()).toBeNull()
   expect(display.derivedRegionTooLargeEnabled).toBe(true)
@@ -181,7 +180,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('trips when the captured byte estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({ bytes: 8_000_000 }) // over the 5MB config
+    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp) // over the 5MB config
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -189,7 +188,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(20)
@@ -205,7 +204,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     display.setByteEstimate({
       bytes: 8_000_000,
       fetchSizeLimit: 50_000_000,
-    })
+    }, view.visibleBp)
     expect(display.resolvedByteLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -213,7 +212,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     display.forceLoad()
@@ -224,7 +223,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     display.configuration.setSlot('forceLoad', true)
@@ -237,12 +236,29 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('clears the cached estimate on region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 8_000_000 })
+    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
+    // MultiRegionDisplayMixin's DisplayedRegionsChange autorun drops the
+    // estimate; the gate mixin drops the per-region density stats and the
+    // force-load ceilings on the same trigger.
+    display.clearByteEstimate()
     display.clearGateMeasurements()
     expect(display.byteEstimate).toBeUndefined()
     expect(display.regionTooLarge).toBe(false)
+  })
+
+  it('drops the force-load ceilings on region navigation', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
+    display.forceLoad()
+    expect(display.userByteLimit).toBeDefined()
+
+    // a raised byte ceiling carried onto the next chromosome would also
+    // silently disable the density axis there (maxFeatureDensity)
+    display.clearGateMeasurements()
+    expect(display.userByteLimit).toBeUndefined()
   })
 })
 

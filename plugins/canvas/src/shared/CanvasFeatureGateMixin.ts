@@ -1,4 +1,4 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -18,21 +18,24 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * The members a composing display provides that this gate reads but doesn't own:
- * the config (via `getConf`), the adapter config, and the `RegionTooLargeMixin`
- * surface (byte estimate, the config-slot budgets, commit). Declared once so the
- * gate can reference them type-safely without threading them through every getter
- * — the runtime instance has them because the final model also composes
- * `MultiRegionDisplayMixin` (which brings `RegionTooLargeMixin`) and `BaseDisplay`
- * (which brings `adapterConfig`).
+ * the config (via `getConf`) and the `RegionTooLargeMixin` surface (byte
+ * estimate, the resolved budgets, commit). Declared once so the gate can
+ * reference them type-safely without threading them through every getter — the
+ * runtime instance has them because the final model also composes
+ * `MultiRegionDisplayMixin`, which brings `RegionTooLargeMixin`.
  */
 interface GateHost {
   configuration: AnyConfigurationModel
-  adapterConfig: AnyConfigurationModel
   userByteLimit?: number
+  byteEstimate?: RegionByteEstimate
+  adapterFetchSizeLimit?: number
   estimatedBytesForVisibleSpan?: number
   configuredFetchSizeLimit: number
   configForceLoad: boolean
-  setByteEstimate: (stats?: RegionByteEstimate) => void
+  setByteEstimate: (
+    estimate: RegionByteEstimate,
+    measuredSpanBp: number,
+  ) => void
 }
 
 function host(self: object) {
@@ -106,8 +109,11 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
+       * Contributes the opt-in additively rather than overriding
+       * `derivedRegionTooLargeEnabled`: `MultiRegionDisplayMixin` ORs this in,
+       * so the gate stays on whichever side of `.compose()` this mixin lands.
        */
-      get derivedRegionTooLargeEnabled() {
+      get gateFoldedIntoFetch() {
         return true
       },
       /**
@@ -119,14 +125,6 @@ export default function CanvasFeatureGateMixin() {
        */
       get densityGateEnabled() {
         return true
-      },
-      /**
-       * #getter
-       * The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
-       * has none); `resolveByteLimit` prefers it over the display config.
-       */
-      get adapterFetchSizeLimit(): number | undefined {
-        return readConfObject(host(self).adapterConfig, 'fetchSizeLimit')
       },
       /**
        * #method
@@ -199,7 +197,7 @@ export default function CanvasFeatureGateMixin() {
           ? undefined
           : resolveByteLimit({
               userByteLimit: host(self).userByteLimit,
-              adapterFetchSizeLimit: self.adapterFetchSizeLimit,
+              adapterFetchSizeLimit: host(self).adapterFetchSizeLimit,
               configFetchSizeLimit: host(self).configuredFetchSizeLimit,
             })
       },
@@ -213,14 +211,22 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #action
-       * Drop the whole cached estimate on chromosome navigation (displayedRegion
-       * indices get reused, so a stale entry would gate the new region against the
-       * wrong stats). Driven by the mixin's own `afterAttach` below — no composing
-       * display has to wire it up.
+       * Drop the cached per-region density stats on chromosome navigation
+       * (displayedRegion indices get reused, so a stale entry would gate the new
+       * region against the wrong stats). Driven by the mixin's own `afterAttach`
+       * below — no composing display has to wire it up. The byte estimate is
+       * dropped by `MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun
+       * on the same trigger.
+       *
+       * The force-load ceilings go too: they are a "show me *this* region
+       * anyway" answer, and carrying a raised byte ceiling onto the next
+       * chromosome also silently disables the density axis there (see
+       * `maxFeatureDensity`).
        */
       clearGateMeasurements() {
         self.densityStatsPerRegion.clear()
-        host(self).setByteEstimate(undefined)
+        host(self).userByteLimit = undefined
+        self.userFeatureDensityLimit = undefined
       },
     }))
     .actions(self => ({
@@ -233,15 +239,25 @@ export default function CanvasFeatureGateMixin() {
        * publish the byte estimate + adapter limit to `RegionTooLargeMixin` so the
        * banner's `resolveByteLimit` picks the same budget the worker gated on.
        */
-      commitGateMeasurements(measurements: RegionGateMeasurement[]) {
-        let maxBytes = 0
+      commitGateMeasurements(
+        measurements: RegionGateMeasurement[],
+        measuredSpanBp: number,
+      ) {
+        // Nothing measured (every region's fetch went stale) — leave the
+        // previous estimate alone rather than replacing it with an empty one.
+        if (measurements.length === 0) {
+          return
+        }
+        const byteCounts: number[] = []
         for (const {
           displayedRegionIndex,
           regionWidthBp,
           bytes,
           featureCount,
         } of measurements) {
-          maxBytes = Math.max(maxBytes, bytes ?? 0)
+          if (bytes !== undefined) {
+            byteCounts.push(bytes)
+          }
           if (featureCount !== undefined) {
             self.setDensityStats(displayedRegionIndex, {
               featureCount,
@@ -249,10 +265,15 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-        host(self).setByteEstimate({
-          bytes: maxBytes,
-          fetchSizeLimit: self.adapterFetchSizeLimit,
-        })
+        host(self).setByteEstimate(
+          {
+            // An adapter with no index estimate reports none for any region, so
+            // an empty list is "unmeasurable", not "zero bytes" — keep it
+            // undefined so the byte axis stays out of the verdict entirely.
+            bytes: byteCounts.length > 0 ? Math.max(...byteCounts) : undefined,
+          },
+          measuredSpanBp,
+        )
       },
       /**
        * #action
@@ -260,21 +281,25 @@ export default function CanvasFeatureGateMixin() {
        * axis that's actually blocking (`resolveForceLoadLimits` — byte only when it
        * lifts the baseline, else density).
        */
-      raiseForceLoadLimits(estimate?: { bytes?: number }) {
+      raiseForceLoadLimits() {
         // Clear first so maxFeatureDensity (undefined while userByteLimit is
         // set) re-evaluates for the density branch.
         host(self).userByteLimit = undefined
         self.userFeatureDensityLimit = undefined
         const limits = resolveForceLoadLimits({
           estimatedBytesForVisibleSpan: host(self).estimatedBytesForVisibleSpan,
-          estimatedBytesForMeasuredSpan: estimate?.bytes,
+          estimatedBytesForMeasuredSpan: host(self).byteEstimate?.bytes,
           baselineByteLimit: resolveByteLimit({
             userByteLimit: undefined,
-            adapterFetchSizeLimit: self.adapterFetchSizeLimit,
+            adapterFetchSizeLimit: host(self).adapterFetchSizeLimit,
             configFetchSizeLimit: host(self).configuredFetchSizeLimit,
           }),
           densityGateActive: self.maxFeatureDensity !== undefined,
-          observedMaxDensity: self.observedMaxDensity(gateView(self).bpPerPx),
+          // the density the gate actually tripped on — `densityTooLarge`
+          // measures at the debounced coarseBpPerPx, so raising past a
+          // live-bpPerPx reading mid-zoom can land below it and leave the
+          // banner up after the click
+          observedMaxDensity: self.visibleFeatureDensityPerPx,
           configuredMaxDensity: getConf(host(self), 'maxFeatureScreenDensity'),
         })
         host(self).userByteLimit = limits.userByteLimit

@@ -15,6 +15,7 @@ import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
+  checkByteEstimate,
   computeRenderTransform,
   computeTriangleYScalar,
   viewportMatchesLastDrawn,
@@ -800,7 +801,7 @@ export default function sharedModelFactory(
           // old one — `renderTransform` would then read scale 1 and leave the
           // stale pixels un-rescaled, and the freshness getter above (and so
           // `svgReady`) would call them current.
-          const { bpPerPx, offsetPx } = view
+          const { bpPerPx, offsetPx, visibleBp } = view
           const { adapterConfig } = self
           await self.runFetch(async ctx => {
             const { rpcManager } = getSession(self)
@@ -812,10 +813,14 @@ export default function sharedModelFactory(
             // files, so skip the density probe (it would throw "Adapter does not
             // support retrieving features") and render them directly.
             if (!self.isPrecomputedLD) {
-              const stats = await rpcManager.call(
+              // shared helper, so the AUTO_FORCE_LOAD_BP floor short-circuits
+              // the RPC rather than paying for an estimate the verdict ignores
+              const stats = await checkByteEstimate(
+                rpcManager,
                 sessionId,
-                'CoreGetRegionByteEstimate',
-                { regions: [...regions], adapterConfig },
+                [...regions],
+                { adapterConfig, visibleBp },
+                ctx,
               )
               if (ctx.isStale()) {
                 return
@@ -824,9 +829,11 @@ export default function sharedModelFactory(
               // composes the shared verdict (AUTO_FORCE_LOAD_BP floor + bytes>limit
               // precedence) as a pure function of the estimate × current viewport,
               // so it self-releases on zoom-in without an imperative re-clear.
-              self.setByteEstimate(stats)
-              if (self.regionTooLarge) {
-                return
+              if (stats) {
+                self.setByteEstimate(stats, visibleBp)
+                if (self.regionTooLarge) {
+                  return
+                }
               }
             }
 

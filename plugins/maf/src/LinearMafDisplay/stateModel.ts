@@ -18,7 +18,6 @@ import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
@@ -1619,16 +1618,6 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
         // the mixin's fetch autoruns.
         async afterAttach() {
-          // Drop the cached byte estimate on chromosome navigation:
-          // displayedRegionIndex is reused across chromosomes, so a stale
-          // estimate would gate the new region against the wrong stats and, since
-          // FetchVisibleRegions gates on !regionTooLarge, wedge the banner. The
-          // estimate intentionally survives viewport-change clears (no flicker on
-          // pan); this hook is the one path that clears it. Canvas does the same
-          // for its densityStatsPerRegion.
-          onDisplayedRegionsChange(self, () => {
-            self.setByteEstimate(undefined)
-          })
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')

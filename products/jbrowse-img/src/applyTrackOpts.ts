@@ -147,6 +147,10 @@ const HEIGHT_MODE_CATEGORIES = new Set<Category>(['feature', 'alignments'])
 interface DisplaySnapshot {
   // common
   height?: number
+  // config slot on baseLinearDisplayConfigSchema: render regardless of the
+  // region-size / feature-density gate, the declarative equivalent of the
+  // banner's "Force load" button
+  forceLoad?: boolean
   // alignments + feature
   colorBy?: { type: string; tag?: string }
   featureHeight?: number
@@ -206,6 +210,10 @@ type WiggleConfigSlotKey =
   | 'defaultRendering'
   | 'color'
   | 'useBicolor'
+// `forceLoad` is a base-linear-display config slot read through the
+// divergently-named `configForceLoad` getter, so `keyof` the instance misses it
+// the same way it misses the wiggle slots above.
+type BaseConfigSlotKey = 'forceLoad'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -213,6 +221,7 @@ type DisplayKeys =
   | keyof LinearHicDisplayModel
   | keyof WiggleDisplayModel
   | WiggleConfigSlotKey
+  | BaseConfigSlotKey
 
 type AssertNever<T extends never> = T
 export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>
@@ -224,9 +233,6 @@ export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
 interface BuildResult {
   snap: DisplaySnapshot
   sort?: { type: string; tag?: string }
-  // `force` flips a volatile load-gate (no snapshot representation), so it stays
-  // an action on the created display.
-  force: boolean
   // An explicit display type picks a non-default display for the track (e.g. the
   // multi-sample variant matrix), passed to showTrack as the snapshot `type`.
   displayType?: string
@@ -401,7 +407,7 @@ function applyModifier(
     }
     case 'force': {
       if (getBooleanValue(val1 || 'true', 'force')) {
-        result.force = true
+        snap.forceLoad = true
       }
       break
     }
@@ -518,7 +524,7 @@ function applyModifier(
 // it's unit-testable; the center-line sort is returned as an intent for the
 // caller to resolve against the view.
 export function buildDisplaySnapshot(category: Category, opts: string[]) {
-  const result: BuildResult = { snap: {}, force: false }
+  const result: BuildResult = { snap: {} }
   const apply = (opt: string) => {
     const [prefix = '', val1 = '', val2] = opt.split(':')
     applyModifier(result, category, prefix, val1, val2)
@@ -550,10 +556,7 @@ export function applyDisplayOpts(
   category: Category,
   opts: string[],
 ) {
-  const { snap, sort, force, displayType } = buildDisplaySnapshot(
-    category,
-    opts,
-  )
+  const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
 
   // Resolve the center-line sort against the view (the pivot is the genomic
   // position under the view center) and bake it into the snapshot.
@@ -583,14 +586,6 @@ export function applyDisplayOpts(
     throw new Error(
       `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}`,
     )
-  }
-  const display = opened.displays[0] as TrackDisplay
-
-  // `force` is the lone non-snapshot setting: it flips a volatile load-gate.
-  // (every display in the union implements raiseForceLoadLimits, so no
-  // optional chain is needed here — unlike the display-specific actions above.)
-  if (force) {
-    display.raiseForceLoadLimits({ bytes: Number.MAX_VALUE })
   }
 }
 

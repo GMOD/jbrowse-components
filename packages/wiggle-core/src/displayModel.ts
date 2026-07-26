@@ -1,7 +1,6 @@
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { YScaleTicks } from './index.ts'
 import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
-import type { RegionByteEstimate } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 
@@ -27,8 +26,6 @@ export interface WiggleGpuDisplayModel<
   reload: () => void
   regionTooLarge: boolean
   regionTooLargeReason: string
-  byteEstimate?: RegionByteEstimate
-  raiseForceLoadLimits: (s?: RegionByteEstimate) => void
   forceLoad: () => void
   displayCrossHatches: boolean
 }

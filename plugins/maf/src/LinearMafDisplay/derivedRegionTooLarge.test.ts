@@ -172,7 +172,7 @@ describe('MAF derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -180,7 +180,7 @@ describe('MAF derived regionTooLarge', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     // half the span → scaled estimate ~750kB < 1MB cap, still above the floor:
@@ -193,7 +193,7 @@ describe('MAF derived regionTooLarge', () => {
   it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     // pan (same zoom) keeps it too large; the estimate is not cleared
@@ -205,17 +205,17 @@ describe('MAF derived regionTooLarge', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits(display.byteEstimate)
+    display.raiseForceLoadLimits()
     expect(display.regionTooLarge).toBe(false)
   })
 
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -227,7 +227,7 @@ describe('MAF derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     // zoom out: the scaled estimate grows past the raw captured bytes, so a
@@ -235,7 +235,7 @@ describe('MAF derived regionTooLarge', () => {
     view.zoomTo(400)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits(display.byteEstimate)
+    display.raiseForceLoadLimits()
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -247,7 +247,7 @@ describe('MAF derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
 
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     view.setDisplayedRegions([

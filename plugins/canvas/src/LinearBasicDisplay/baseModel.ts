@@ -23,7 +23,6 @@ import {
   GROW_MAX_HEIGHT,
   HeightModeMixin,
   MultiRegionDisplayMixin,
-  PromotableDefaultsMixin,
   TrackHeightMixin,
   autorunOnReadyView,
   installGrowExitBake,
@@ -282,7 +281,6 @@ export default function baseStateModelFactory(
         // raiseForceLoadLimits, and commit/clear helpers — folded into the
         // feature fetch below. Same instance the multi-row display composes.
         CanvasFeatureGateMixin(),
-        PromotableDefaultsMixin(configSchema),
         types.model({
           /**
            * #property
@@ -2170,7 +2168,10 @@ export default function baseStateModelFactory(
           return { displayedRegionIndex, region, bpPerPx, result }
         }
 
-        function applyFetchResults(fetches: RegionFetch[]) {
+        function applyFetchResults(
+          fetches: RegionFetch[],
+          measuredSpanBp: number,
+        ) {
           for (const {
             displayedRegionIndex,
             region,
@@ -2192,6 +2193,7 @@ export default function baseStateModelFactory(
               bytes: result.bytes,
               featureCount: result.featureCount,
             })),
+            measuredSpanBp,
           )
         }
 
@@ -2217,6 +2219,10 @@ export default function baseStateModelFactory(
             const view = getView(self)
             const bpPerPx = view.bpPerPx
             const byteLimit = self.resolvedByteLimit()
+            // captured here, not at commit time: the gate rescales the estimate
+            // from the span it was measured over, and a mid-fetch zoom would
+            // otherwise anchor it to the wrong one
+            const measuredSpanBp = view.visibleBp
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly
@@ -2240,7 +2246,7 @@ export default function baseStateModelFactory(
               if (ctx.isStale()) {
                 return
               }
-              applyFetchResults(results)
+              applyFetchResults(results, measuredSpanBp)
             })
           },
         }

@@ -349,7 +349,7 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    display.raiseForceLoadLimits(display.byteEstimate)
+    display.raiseForceLoadLimits()
     display.reload()
 
     jest.advanceTimersByTime(400)
@@ -463,7 +463,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     forceLoaded = true
-    display.raiseForceLoadLimits(display.byteEstimate)
+    display.raiseForceLoadLimits()
     display.reload()
 
     jest.advanceTimersByTime(400)

@@ -30,10 +30,8 @@ import {
   GROW_MAX_HEIGHT,
   HeightModeMixin,
   MultiRegionDisplayMixin,
-  PromotableDefaultsMixin,
   TrackHeightMixin,
   installGrowExitBake,
-  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { autorun, observable, reaction } from 'mobx'
@@ -354,7 +352,6 @@ export default function stateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
-        PromotableDefaultsMixin(configSchema),
         // Track-menu settings are config slots (read via getConf, written via
         // configuration.setSlot) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the

@@ -27,25 +27,25 @@ every read, so the banner clears itself once you've zoomed in enough.
   it. Gating on this is the classic bug: it never shrinks, so the banner never
   clears.
 
-**Two footguns:**
-
-- Gating is **opt-in** via `derivedRegionTooLargeEnabled` (defaults to false).
-  `MultiRegionDisplayMixin` derives it from `getByteEstimateConfig() !== null`;
-  LD/arc/canvas set it explicitly. Displays that don't opt in never gate.
-- **`CanvasFeatureGateMixin()` must compose *after* `MultiRegionDisplayMixin()`.**
-  Both define `derivedRegionTooLargeEnabled` and the later one wins. Swap the
-  order and the whole gate silently switches off — no error, no type failure.
+**The footgun:** gating is **opt-in** via `derivedRegionTooLargeEnabled`
+(defaults to false). `MultiRegionDisplayMixin` derives it from
+`view.initialized && getByteEstimateConfig() !== null`, OR'd with the additive
+`gateFoldedIntoFetch` hook; LD and arc set the switch directly. Displays that
+don't opt in never gate.
 
 **The rest:**
 
 - Canvas doesn't do a separate estimate RPC. It folds the byte check **inside**
   its feature RPC (via the adapter's `getRegionByteSize`), so an over-budget
   region short-circuits before downloading any features.
-- Force-load ("show me this anyway") is **volatile** — never saved to a session.
-  `resolveForceLoadLimits` raises whichever axis actually tripped. The durable
-  escape hatch is the `forceLoad` config slot.
+- Force-load ("show me this anyway") is **volatile** — never saved to a session,
+  and dropped on chromosome navigation. `resolveForceLoadLimits` raises
+  whichever axis actually tripped. The durable escape hatch is the `forceLoad`
+  config slot.
 - `alwaysRender` exempts adapters that summarize at screen resolution (BigWig,
-  MultiWiggle, HiC, sequence) — they can never be "too large".
+  MultiWiggle, HiC, sequence) — they can never be "too large". Latent today:
+  none of those adapters backs a gated display, so the flag reaches
+  `evaluateRegionTooLarge` only through `configForceLoad`.
 
 | Code | Path |
 | --- | --- |
@@ -54,8 +54,9 @@ every read, so the banner clears itself once you've zoomed in enough.
 | Pre-flight estimate RPC | `packages/core/src/rpc/methods/CoreGetRegionByteEstimate.ts` |
 | `CanvasFeatureGateMixin` (density axis) | `plugins/canvas/src/shared/CanvasFeatureGateMixin.ts` |
 
-Both footguns above have tests: `regionTooLargeUtils.test.ts`, plus a
-"composition order keeps the derived gate enabled" test in
+Tests: `regionTooLargeUtils.test.ts` for the shared primitives, a
+`derivedRegionTooLarge.test.ts` per gated display, and a "the gate opt-in
+survives regardless of mixin composition order" pin in
 `plugins/canvas/src/LinearBasicDisplay/fetchAutorun.test.ts` and
 `plugins/canvas/src/LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
@@ -68,9 +69,13 @@ For the wider picture and the five fetch autoruns that consult the verdict, see
 
 Four steps, all on `RegionTooLargeMixin`:
 
-- `setByteEstimate(estimate)` stores the estimate together with the span it
-  covers (`measuredSpanBp = view.visibleBp`). Storing the span is what makes
-  the rest of this work.
+- `setByteEstimate(estimate, measuredSpanBp)` stores the estimate together with
+  the span it covers. Storing the span is what makes the rest of this work, and
+  the caller must capture it **before** the measurement round trip, not read
+  `view.visibleBp` back at commit time — a zoom during the in-flight fetch would
+  otherwise anchor the estimate to a span it never covered, and because
+  `FetchVisibleRegions` skips while `regionTooLarge` holds, an over-anchored
+  estimate wedges the banner with no refetch to correct it.
 - `estimatedBytesForVisibleSpan` rescales that estimate to the span visible now
   (`bytes × visibleBp / measuredSpanBp`). It returns `undefined` until
   `view.initialized`, because `visibleBp` reads `view.width`, which throws
@@ -86,11 +91,21 @@ Four steps, all on `RegionTooLargeMixin`:
 The estimate deliberately survives `clearAllRpcData()`, so an ordinary viewport
 change doesn't flicker the banner. Only chromosome navigation drops it, since
 `displayedRegionIndex` values are reused across chromosomes and a stale estimate
-would gate the new region against the previous chromosome's numbers.
+would gate the new region against the previous chromosome's numbers. That drop
+is `clearByteEstimate()`, fired from `MultiRegionDisplayMixin`'s
+`DisplayedRegionsChange` autorun — every display in that family gets it without
+wiring anything. LD and arc run on `GlobalFetchMixin` instead and call it from
+their own `onDisplayedRegionsChange`.
 
-Two smaller wires: `onRegionTooLarge()` fires on the false→true transition
-(alignments overrides it to clear its hover), and `regionCannotBeRenderedText()`
-reads through `regionTooLarge` so the banner and the SVG-export text agree.
+One smaller wire: `onRegionTooLarge()` fires on the false→true transition
+(alignments overrides it to clear its hover).
+
+**Live vs debounced.** The byte axis reads live `view.visibleBp`, so the banner
+releases the instant you zoom past the threshold — that responsiveness is the
+point of the derived gate. The density axis reads the 500 ms-debounced
+`coarseBpPerPx` instead, to share the layout packing cadence and not churn
+mid-zoom. The split is deliberate; don't unify it without deciding which
+property you're giving up.
 
 ## Opt-in hooks
 
@@ -135,9 +150,13 @@ instead of downloading every chromosome's features.
 `commitGateMeasurements` records the maximum per-region byte count, not the sum,
 because every region is gated against the same per-region budget — a
 multi-region view where each region individually fits should never be blanked
-just because the regions add up. It publishes the adapter's `fetchSizeLimit`
-alongside the estimate, which is how the banner's `resolveByteLimit` ends up
-picking the same budget the worker gated on.
+just because the regions add up. An adapter with no index estimate contributes
+no count at all, and the published `bytes` stays `undefined` rather than
+collapsing to `0` — "unmeasurable" keeps the byte axis out of the verdict, where
+a zero would read as a measured value. An all-stale batch commits nothing, so a
+superseded fetch can't wipe a good estimate. It publishes the adapter's
+`fetchSizeLimit` alongside the estimate, which is how the banner's
+`resolveByteLimit` ends up picking the same budget the worker gated on.
 
 ### `CanvasFeatureGateMixin`
 
@@ -157,11 +176,14 @@ overrides and which therefore returns null, so the base version is false. The
 gate works only because the mixin's hardcoded `true` wins by composing later.
 
 A display opts in by composing the mixin, calling `commitGateMeasurements` from
-its fetch, and overriding `isCacheValid` to require committed data. That last
+its fetch (with the `visibleBp` captured *before* the fetch), and overriding
+`isCacheValid` to require committed data. That last
 part matters because a too-large region is marked loaded but stores nothing, so
 without the override it would never refetch once the gate released. The mixin's
 own `afterAttach` clears stale stats on chromosome navigation, so a composing
-display can't forget it and mis-gate a reused `displayedRegionIndex`.
+display can't forget it and mis-gate a reused `displayedRegionIndex`. The
+force-load ceilings go with them: a raised byte ceiling carried onto the next
+chromosome would also silently disable the density axis there.
 `baseModel` keeps only what is genuinely its own: the per-region
 `RenderFeatureData` fetch and `applyFetchResults`, its peptide-aware
 `isCacheValid`, and `pruneRpcDataMapToVisible`, which trims
@@ -173,9 +195,12 @@ pushes nothing and there's no stale-feature flash.
 ## Force-load
 
 `userByteLimit` and `userFeatureDensityLimit` are both volatile, never
-persisted: clicking force-load is a transient "show me this now" action that must
-not leak a raised gate into a saved or shared session. The durable escape hatch
-is the declarative `forceLoad` config slot.
+persisted, and dropped on chromosome navigation: clicking force-load is a
+transient "show me *this* now" action that must not leak a raised gate into a
+saved or shared session, nor onto the next locus. The durable escape hatch is
+the declarative `forceLoad` config slot — which is also what `jbrowse-img`'s
+`--force` sets, via the display snapshot, so the gate is off before the first
+fetch rather than raised after it.
 
 A dual-axis display has to pick which axis to raise, and it picks by which gate
 actually tripped — not by whether a byte estimate happens to exist. That matters
@@ -185,15 +210,22 @@ adopting it as `userByteLimit` would install a ceiling below the config or
 adapter default, then wrongly gate later regions that really are large.
 
 `raiseForceLoadLimits` (the button's action, overridden by
-`CanvasFeatureGateMixin`) defers to `resolveForceLoadLimits`, the single place
-that decides:
+`CanvasFeatureGateMixin`) takes no arguments — it reads the stored estimate — and
+defers to `resolveForceLoadLimits`, the single place that decides:
 
 - Raise the **byte** limit only when the raised value exceeds the baseline
   `resolveByteLimit` — that means the byte gate was the real blocker.
 - Otherwise raise the **density** axis, past the highest *observed* density.
 
 It reads observed density rather than the current `maxFeatureDensity`, which
-already folds in any earlier force-load and would compound across attempts.
+already folds in any earlier force-load and would compound across attempts —
+and it reads it at the same debounced `coarseBpPerPx` the density verdict trips
+on, so a click mid-zoom can't raise past a number the gate isn't comparing
+against and leave the banner up.
+
+The byte-only path (`RegionTooLargeMixin`'s own `raiseForceLoadLimits`) calls
+the same helper with `densityGateActive: false`, so there is one force-load
+decision in the system rather than a byte-only copy that could drift.
 
 ## Shared primitives (`shared/regionTooLargeUtils.ts`)
 

@@ -1,3 +1,4 @@
+import { resolveByteLimit } from '@jbrowse/plugin-linear-genome-view'
 import { waitFor } from '@testing-library/react'
 
 import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
@@ -44,14 +45,12 @@ afterEach(() => {
   jest.useRealTimers()
 })
 
-// CanvasFeatureGateMixin must be composed AFTER MultiRegionDisplayMixin in
-// baseModel.ts. Both define derivedRegionTooLargeEnabled: the base computes it
-// from `getByteEstimateConfig() !== null`, which canvas never overrides (it
-// folds the byte check into its feature RPC instead), so the base returns false.
-// The gate works only because the mixin's hardcoded `true` wins by composition
-// order — swap those two lines and the byte/density gate silently turns off with
-// nothing else failing. This test is the pin.
-test('composition order keeps the derived gate enabled', () => {
+// CanvasFeatureGateMixin contributes the opt-in additively, via
+// `gateFoldedIntoFetch`, which MultiRegionDisplayMixin ORs into
+// `derivedRegionTooLargeEnabled` — so the gate stays on regardless of the order
+// the two are composed in. This test is the pin on that (it used to pin the
+// composition order itself, which was the only thing keeping the gate alive).
+test('the gate opt-in survives regardless of mixin composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
   expect(display.getByteEstimateConfig()).toBeNull()
   expect(display.derivedRegionTooLargeEnabled).toBe(true)
@@ -619,9 +618,16 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
       expect(display.regionTooLarge).toBe(false)
       expect(display.loadedRegions.size).toBe(1)
     })
-    // the stored estimate carries the adapter limit, so the banner and worker
-    // gate agree
-    expect(display.byteEstimate?.fetchSizeLimit).toBe(50_000_000)
+    // the banner resolves the same budget the worker gated on — both read the
+    // adapter slot on the main thread, so no echo through the estimate is
+    // needed to keep them in step
+    expect(
+      resolveByteLimit({
+        userByteLimit: display.userByteLimit,
+        adapterFetchSizeLimit: display.adapterFetchSizeLimit,
+        configFetchSizeLimit: display.configuredFetchSizeLimit,
+      }),
+    ).toBe(50_000_000)
   })
 
   // Control: no adapter limit → the display config (5MB) gates, so the same
@@ -834,8 +840,7 @@ describe('derived regionTooLarge', () => {
   // regionTooLarge getter. (Historically a parallel imperative flag could return
   // false/'' even when the derived banner was true, silently dropping the banner
   // — that flag has since been removed, but this still guards the derived path
-  // feeding DisplayChrome's TooLargeMessage + SVG export's
-  // regionCannotBeRenderedText.)
+  // feeding DisplayChrome's TooLargeMessage.)
   it('banner UI surfaces reflect derived regionTooLarge', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
@@ -851,9 +856,7 @@ describe('derived regionTooLarge', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    expect(display.regionCannotBeRenderedText()).toBe(
-      'Force load to see features',
-    )
+    expect(display.regionTooLargeReason).toBe('Too many features')
   })
 
   it('laidOutDataMap is empty while regionTooLarge is true', async () => {
@@ -953,7 +956,7 @@ describe('derived regionTooLarge', () => {
 //     the user has switched to a byte-driven force-load.
 describe('raiseForceLoadLimits gate toggling', () => {
   it('byte → density toggle clears stale userByteLimit', async () => {
-    const { display, mockRpcCall } = createLargeDisplay()
+    const { display, view, mockRpcCall } = createLargeDisplay()
 
     // Seed density stats so the density branch has an observedMax to base on.
     mockRpcCall.mockResolvedValue({
@@ -970,21 +973,24 @@ describe('raiseForceLoadLimits gate toggling', () => {
     // fetchSizeLimit (5MB) to represent a real byte-gate trip — only then does
     // raising the ceiling past it actually lift the limit; a value under the
     // baseline is a density trip in disguise and stays on the density branch.
-    display.raiseForceLoadLimits({ bytes: 10_000_000 })
+    display.setByteEstimate({ bytes: 10_000_000 }, view.visibleBp)
+    display.raiseForceLoadLimits()
     expect(display.userByteLimit).toBeDefined()
 
-    // Then: density force-load. The pre-fix bug was that userByteLimit
-    // still being set made maxFeatureDensity return undefined, so the density
-    // branch silently no-op'd. After the fix both gates are cleared first,
-    // letting the density branch see the real maxFeatureDensity and set a
-    // fresh userFeatureDensityLimit.
+    // Then: a dense-but-byte-small region — the tabix shape, where an index
+    // estimate under the 5MB baseline accompanies a density rejection. The
+    // pre-fix bug was that userByteLimit still being set made maxFeatureDensity
+    // return undefined, so the density branch silently no-op'd. After the fix
+    // both gates are cleared first, letting the density branch see the real
+    // maxFeatureDensity and set a fresh userFeatureDensityLimit.
+    display.setByteEstimate({ bytes: 1_000_000 }, view.visibleBp)
     display.raiseForceLoadLimits()
     expect(display.userByteLimit).toBeUndefined()
     expect(display.userFeatureDensityLimit).toBeDefined()
   })
 
   it('density → byte toggle clears stale userFeatureDensityLimit', async () => {
-    const { display, mockRpcCall } = createLargeDisplay()
+    const { display, view, mockRpcCall } = createLargeDisplay()
 
     mockRpcCall.mockResolvedValue({
       regionTooLarge: true,
@@ -1001,7 +1007,8 @@ describe('raiseForceLoadLimits gate toggling', () => {
 
     // Byte estimate over the 5MB config baseline → a real byte-gate trip that
     // raises the byte ceiling and clears the stale density limit.
-    display.raiseForceLoadLimits({ bytes: 10_000_000 })
+    display.setByteEstimate({ bytes: 10_000_000 }, view.visibleBp)
+    display.raiseForceLoadLimits()
     expect(display.userFeatureDensityLimit).toBeUndefined()
     expect(display.userByteLimit).toBeDefined()
   })

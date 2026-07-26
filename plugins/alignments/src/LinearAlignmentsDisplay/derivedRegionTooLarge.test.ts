@@ -151,7 +151,7 @@ describe('alignments derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -159,7 +159,7 @@ describe('alignments derived regionTooLarge', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(50)
@@ -170,7 +170,7 @@ describe('alignments derived regionTooLarge', () => {
   it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     view.scrollTo(view.offsetPx + 200)
@@ -181,17 +181,17 @@ describe('alignments derived regionTooLarge', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits(display.byteEstimate)
+    display.raiseForceLoadLimits()
     expect(display.regionTooLarge).toBe(false)
   })
 
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -203,13 +203,13 @@ describe('alignments derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(400)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits(display.byteEstimate)
+    display.raiseForceLoadLimits()
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -217,7 +217,7 @@ describe('alignments derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
 
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     view.setDisplayedRegions([
@@ -237,7 +237,7 @@ describe('alignments derived regionTooLarge', () => {
     display.setFeatureIdUnderMouse('read-123')
     expect(display.featureIdUnderMouse).toBe('read-123')
 
-    display.setByteEstimate({ bytes: 1_500_000 })
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
     expect(display.featureIdUnderMouse).toBeUndefined()
   })

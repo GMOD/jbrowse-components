@@ -1344,7 +1344,7 @@ snapshot.
 The split that makes it safe is by *when the member is read*, not by size:
 
 - **Render-critical, must be present at hydrate:** layout getters, `rpcProps()`,
-  `regionCannotBeRendered`, height, `renderProps`. Stay on the base.
+  height, `renderProps`. Stay on the base.
 - **Interaction-triggered:** `trackMenuItems`, `contextMenuItems`, dialog
   launchers, export sub-flows. Read only at interaction boundaries
   (`TrackLabelMenu.tsx`, `BaseTrackModel`'s `displays.flatMap(d =>
