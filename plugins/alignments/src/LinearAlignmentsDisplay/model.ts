@@ -11,7 +11,6 @@ import {
   getConf,
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
-  makeSlotsValueDisplayTypeDefaultControl,
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -833,7 +832,7 @@ export default function stateModelFactory(
         // (e.g. "color every alignments track by methylation"), resolving to the
         // `promotedBase` `{type:'normal'}` when nothing is promoted; picking any
         // scheme — `normal` included — pins this track over that default.
-        // getConf walks the cascade and never surfaces `inherit`.
+        // resolveConf walks the cascade and never surfaces `inherit`.
         get colorBy(): ColorBy {
           return normalizeColorBy(resolveConf(self, 'colorBy'))
         },
@@ -860,7 +859,7 @@ export default function stateModelFactory(
          * #getter
          */
         // featureHeight is the one promotable "compactness" slot: it resolves
-        // through getConf (track value, else session-wide default, else
+        // through resolveConf (track value, else session-wide default, else
         // schema base 7). featureSpacing is derived from it, never stored. In
         // fit-to-height mode featureHeight instead splits the autorun-cached fit
         // pitch (`fittedHeightPx` = pileupSpace/rows) into a read body plus the
@@ -921,7 +920,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether to draw the supporting-read count on each sashimi arc.
-         * Resolved through the promotable-slot tiers (getConf): an
+         * Resolved through the promotable-slot tiers (resolveConf): an
          * explicit track value pins labels on or off; otherwise it follows the
          * session-wide default, falling back to off. A `maybeBoolean` slot, so
          * (like mismatchAlpha) a session default of "on" can be customized back
@@ -3398,9 +3397,7 @@ export default function stateModelFactory(
                 },
               },
               displayTypeDefault: (colorBy: ColorBy) =>
-                makeSlotsValueDisplayTypeDefaultControl(self, [
-                  { slot: 'colorBy', value: colorBy },
-                ]),
+                makeDisplayTypeDefaultControl(self, 'colorBy', colorBy),
             }),
             getSortByMenuItem(self, {
               disabled: !self.showPileup,

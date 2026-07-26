@@ -1,18 +1,12 @@
-import { getType } from '@jbrowse/mobx-state-tree'
-
 import { getSession } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
-import {
-  getConfigurationSchemaDefinition,
-  isSlotDefinitionEntry,
-  readConfObject,
-} from './util.ts'
+import { readConfObject } from './util.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
-import type { IAnyStateTreeNode, IAnyType } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * The read-time resolver behind `promotable` config slots — a small CSS cascade
@@ -53,42 +47,10 @@ export type PromotableDisplay = IAnyStateTreeNode & {
   setIgnorePromotedDefaults: (flag: boolean) => void
 }
 
-// The `promotable` slot names of one config schema (includes slots inherited via
-// baseConfiguration — merged into the table at construction), cached by MST type
-// since a schema's slot table is fixed.
-//
-// Only the three functions that genuinely *enumerate* promotable slots call this
-// — the worker-payload resolver, the badge diff, and "clear every default". It
-// is deliberately NOT on any read path: `getConf` used to consult it on all
-// ~1300 config reads in the repo to decide whether to cascade, which cost a
-// `getType` per read (measured at ~60% overhead over `readConfObject`) to serve
-// the ~15 promotable ones. `resolveConf` names the cascade at the call site
-// instead, so there is nothing to look up.
-const promotableSlotsByType = new WeakMap<IAnyType, Set<string>>()
-
-export function promotableSlotNames(
-  config: AnyConfigurationModel,
-): ReadonlySet<string> {
-  const type = getType(config)
-  const cached = promotableSlotsByType.get(type)
-  if (cached) {
-    return cached
-  }
-  const names = new Set<string>()
-  const table = getConfigurationSchemaDefinition(config)
-  for (const [name, def] of Object.entries(table ?? {})) {
-    if (isSlotDefinitionEntry(def) && def.promotable) {
-      names.add(name)
-    }
-  }
-  promotableSlotsByType.set(type, names)
-  return names
-}
-
 /**
  * Whether a stored value could really be a value of this slot — the single
  * gate both cascade tiers pass a candidate through: a session-wide promoted
- * default, and a track's own value read from an untyped saved snapshot. Three
+ * default, and a track's own value read from an untyped saved snapshot. Four
  * independent checks, each obviously correct on its own:
  *   1. it's set at all — `undefined` IS the inherit sentinel on every promotable
  *      slot, which is why they're all `maybe*` types,

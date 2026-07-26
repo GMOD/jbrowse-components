@@ -43,7 +43,9 @@ off the barrel and exists only for the resolver itself), and
 be split. A resolved value is handed out **by reference** from that store, so it
 must stay structured-cloneable: `preferencesOverrides` is a `deep: false`
 `observable.map` because a MobX Proxy makes `worker.postMessage` throw
-`DataCloneError` (`promotedValueCloneable.test.ts`). Layering:
+`DataCloneError` (`promotedValueCloneable.test.ts`). Layering: `util.ts`
+(`promotableSlotNames`, the type-cached per-schema slot list, shared by the
+enumerating callers and by `getConfSnapshot`'s own guard) ←
 `promotableResolve.ts` (resolver) ← `getConf.ts` (reader) ←
 `promotableDefaults.ts` (control builders + share/worker helpers +
 `openPromotableDisplays`, the one open-display walk). Full model + the

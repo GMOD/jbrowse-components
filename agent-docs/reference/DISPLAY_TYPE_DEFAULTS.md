@@ -51,7 +51,8 @@ read one section, read [The cascade](#the-cascade).
 
 | Concern | File |
 | --- | --- |
-| Read-time resolver (`resolveSlot`, `promotableSlotNames`, `isUsableValue`) | `packages/core/src/configuration/promotableResolve.ts` |
+| Read-time resolver (`resolveSlot`, `isUsableValue`) | `packages/core/src/configuration/promotableResolve.ts` |
+| Cached per-schema promotable-slot list (`promotableSlotNames`), shared with the `getConfSnapshot` guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
 | Control builders + share/worker helpers (`make*Control`, `resolvePromotableConfigSnapshot`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
 | `promotable` / `promotedBase` slot metadata | `packages/core/src/configuration/configurationSlot.ts` |
@@ -186,12 +187,13 @@ function resolveSlot(self, slot, args = {}): SlotResolution {
 ```
 
 `isUsableValue` is the single gate **both** tiers pass a candidate through — a
-promoted default and a track's own saved value. It composes three independent
-checks: the value is set at all (`undefined` IS the inherit sentinel), its JS
-shape fits the slot (a `SHAPE_CHECKS` entry for the slot `type` — a
-`maybeStringEnum` choice, a *finite* `maybeNumber` — else `promotedBase`'s
-object/array kind or `typeof`), and it passes the slot's optional semantic
-`validate` hook. A value
+promoted default and a track's own saved value. It composes four independent
+checks: the value is set at all (`undefined` IS the inherit sentinel), it isn't a
+raw `jexl:` string (nothing in the app can promote one, but the store is untyped
+and localStorage-backed), its JS shape fits the slot (a `SHAPE_CHECKS` entry for
+the slot `type` — a `maybeStringEnum` choice, a *finite* `maybeNumber` — else
+`promotedBase`'s object/array kind or `typeof`), and it passes the slot's
+optional semantic `validate` hook. A value
 failing any check is dropped so the getter, the pin, and the badge all fall back
 in lockstep — no consumer guards on its own. `colorBy` uses `validate` so a
 `.type` naming a since-removed color scheme — customized or promoted — degrades
@@ -235,8 +237,7 @@ group of them so several slots move as one unit.
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot | the display's own value getter |
 | `resolvePromotableConfigSnapshot(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
-| `makeSlotsValueDisplayTypeDefaultControl(self, entries)` | `DisplayTypeDefaultControl` `{ active, toggle }` — the base builder | a per-value pin over an exact combination of slot values |
-| `makeDisplayTypeDefaultControl(self, slot, onValue)` | same, single fixed value | an always-visible pin on one on-value ("make arcs the default") |
+| `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, disabled, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
 | `makeCurrentValueDisplayTypeDefaultControl(self, slots)` | same, over the track's *current* resolved values; `disabled` when any of them is a `jexl:` callback | "promote whatever I'm showing" for symmetric / continuous settings |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self)` | clears every promoted default for this display's type | badge "clear default" |
@@ -263,11 +264,18 @@ two-click non-undoable loss from a control that reads as a toggle. Symmetry is
 worth the one extra click on a customized track; that track is now just counted
 in "Apply to N open tracks" like any other.
 
-The low-level primitives behind the builders — `isPromotableDefault(self,
-entries)`, `setPromotableDefault(self, entries, on)`, `tracksDifferingFrom(self,
-entries)`, `resetSlotsToInherit(displays, slots)`, and `isSlotCustomized` — are
+The low-level primitives behind the builders —
+`makeSlotsValueDisplayTypeDefaultControl(self, entries)` (the grouped base
+builder both public ones delegate to), `isPromotableDefault(self, entries)`,
+`setPromotableDefault(self, entries, on)`, `tracksDifferingFrom(self, entries)`,
+`resetSlotsToInherit(displays, slots)`, and `isSlotCustomized` — are
 **module-internal** (exercised by `promotableDefaults.test.ts`), *not* on the
-public barrel. Consume the three `make*Control` builders, not these.
+public barrel. Consume the two `make*Control` builders, not these. The grouped
+base is internal because no adopter promotes more than one slot behind a single
+pin: feature-height presets once grouped `featureHeight` + `featureSpacing`, but
+`featureSpacing` is now *derived* from `featureHeight` and never stored, and the
+`colorBy` scheme row promotes the one `colorBy` slot. Export it again if a
+genuine multi-slot pin appears.
 
 **Which builder?**
 
@@ -276,12 +284,6 @@ public barrel. Consume the three `make*Control` builders, not these.
   Use for an always-visible pin so it never promotes a meaningless value, and so
   two toggles sharing one slot (arcs `'arc'` vs read cloud `'cloud'`; sashimi
   `'down'` vs `'auto'`) stay independent.
-- **`makeSlotsValueDisplayTypeDefaultControl` (per-value, grouped)** — same, but
-  a group of slots moves behind one pin. The base builder the other two delegate
-  to; its one current caller is the `colorBy` scheme row. (Feature-height presets
-  once grouped `featureHeight` + `featureSpacing` here, but `featureSpacing` is
-  now *derived* from `featureHeight` — never a stored slot — so that pin is a
-  single-value `makeDisplayTypeDefaultControl` on `featureHeight`.)
 - **`makeCurrentValueDisplayTypeDefaultControl` (promote-current)** — the pin
   means "whatever I'm showing", not a fixed on-value. Use for symmetric or
   continuous settings where a fixed value makes no sense (wiggle point size, arc
@@ -366,12 +368,20 @@ Tracks the sender never opened carry no display state to resolve, so they're
 left to pick up the recipient's own defaults when opened — matching "export the
 actual state of the *open* tracks".
 
-`openPromotableDisplays` recurses into composite views (breakpoint-split,
-SV-inspector, the linear-comparative / synteny family), which hold child views
-rather than tracks of their own — `LGVSyntenyDisplay` is only reachable that
+`openPromotableDisplays` recurses into a composite view's **`views` array**
+(breakpoint-split, the linear-comparative / synteny family), which holds child
+views rather than tracks of its own — `LGVSyntenyDisplay` is only reachable that
 way. `markIgnorePromotedDefaults` recurses over the outgoing snapshot to match;
 the two walks must cover the same set, or a nested display gets its values baked
 but not the flag.
+
+A view holding its children under *named props* instead
+(`SvInspectorView.circularView`) is **not** reached. Enumerating a view's own
+properties to find them is not an option — reading every key of an MST node
+invokes every computed view on it, and several throw before the view is
+initialized. Nothing is missed today (no display under those views declares a
+promotable slot); if one ever does, give that view a `views` getter returning its
+children rather than duck-typing harder in `hasChildViews`.
 
 ### Received sessions (`ignorePromotedDefaults`)
 

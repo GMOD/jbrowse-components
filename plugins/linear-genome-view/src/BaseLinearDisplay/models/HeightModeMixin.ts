@@ -34,7 +34,7 @@ export default function HeightModeMixin<
       /**
        * #getter
        * The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable
-       * sentinel slot: getConf walks the customized-track -> session-default
+       * sentinel slot: resolveConf walks the customized-track -> session-default
        * -> `fixed` cascade and never returns the `inherit` sentinel.
        */
       get heightMode(): HeightMode {

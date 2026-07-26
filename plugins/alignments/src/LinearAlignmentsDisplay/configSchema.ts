@@ -131,7 +131,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // resolves to, so a track can pin labels OFF over a promoted ON — a
         // plain boolean would spend its `false` default on the inherit signal
         // and silently re-inherit ON. Read through the resolved
-        // `showSashimiLabels` getter (getConf), never raw.
+        // `showSashimiLabels` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: false,
         promotable: true,
@@ -166,7 +166,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // "Fixed" customizes the heightMode base). Nothing has to invent a
         // non-scheme `.type` for the inherit state, so `validate` only ever sees
         // a real candidate and every read goes through the resolved `colorBy`
-        // getter (getConf). Legacy stored schemes stay valid values (customized),
+        // getter (resolveConf). Legacy stored schemes stay valid values (customized),
         // so no snapshot migration is needed.
         defaultValue: undefined,
         promotedBase: { type: 'normal' },
@@ -275,7 +275,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // inherit state, `promotedBase` (false) is what it resolves to when
         // nothing is promoted. A legacy stored boolean is already a valid
         // customized value, so no snapshot migration is needed. Read through the resolved
-        // `mismatchAlpha` getter (getConf), never raw.
+        // `mismatchAlpha` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: false,
         promotable: true,
@@ -496,7 +496,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // it resolves to when nothing is promoted. The plain-boolean form could
         // never promote `false` (draw above coverage) because `defaultValue`
         // doubled as the inherit signal. Read through the resolved
-        // `readConnectionsDown` getter (getConf), never raw.
+        // `readConnectionsDown` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: true,
         promotable: true,
@@ -564,7 +564,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // inherit state, `promotedBase` (false) is what it resolves to when
         // nothing is promoted. A legacy stored boolean is already a valid
         // customized value, so no snapshot migration is needed. Read through the resolved
-        // `showSoftClipping` getter (getConf), never raw.
+        // `showSoftClipping` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: false,
         promotable: true,

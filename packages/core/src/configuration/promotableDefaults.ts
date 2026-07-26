@@ -3,8 +3,8 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { deepEqual } from '../util/deepEqual.ts'
 import { getSession, isViewContainer } from '../util/index.ts'
 import { setConf } from './getConf.ts'
-import { promotableSlotNames, resolveSlot } from './promotableResolve.ts'
-import { rawConfSnapshot, readConfObject } from './util.ts'
+import { resolveSlot } from './promotableResolve.ts'
+import { promotableSlotNames, rawConfSnapshot } from './util.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
@@ -103,9 +103,18 @@ function hasOpenTracks<T extends object>(
   return 'tracks' in view && Array.isArray(view.tracks)
 }
 
-// A composite view holding child views (breakpoint-split, SV-inspector, and the
-// linear-comparative family incl. synteny). Not exclusive with `hasOpenTracks`:
-// LinearComparativeView has both its own synteny tracks and two child LGVs.
+// A composite view holding child views in a `views` array: breakpoint-split and
+// the linear-comparative family incl. synteny. Not exclusive with
+// `hasOpenTracks`: LinearComparativeView has both its own synteny tracks and two
+// child LGVs.
+//
+// A view that holds its children under *named* props instead (SvInspectorView's
+// `spreadsheetView`/`circularView`) is NOT reached. Enumerating a view's own
+// properties to find them isn't an option — reading every key of an MST node
+// invokes every computed view on it, several of which throw before the view is
+// initialized. No display reachable that way declares a promotable slot today,
+// so nothing is currently missed; if one ever does, give that view a `views`
+// getter returning its children rather than duck-typing harder here.
 function hasChildViews<T extends object>(
   view: T,
 ): view is T & { views: object[] } {
@@ -135,7 +144,8 @@ function displaysInView(view: object): PromotableDisplay[] {
  * neither baked its inherited values nor flagged it `ignorePromotedDefaults`, so
  * a shared session containing a breakpoint-split or synteny view rendered
  * differently for the recipient. `LGVSyntenyDisplay` (a promotable adopter) is
- * only ever reached through this branch.
+ * only ever reached through this branch. See `hasChildViews` for the one
+ * composite shape the recursion does not cover.
  *
  * Views that show no tracks at all (e.g. dotplot) drop out via the structural
  * guards. In practice a track has one display (`replaceDisplay` swaps in place,
@@ -179,11 +189,14 @@ export function resetSlotsToInherit(
   for (const display of displays.filter(display => isAlive(display))) {
     display.setIgnorePromotedDefaults(false)
     for (const slot of slots) {
-      // raw read (see resolveSlot): is the track's own value set at all? Not
-      // `isSlotCustomized`, deliberately — a stored value that fails the
+      // the stored value, not `readConfObject` — this asks only "is the slot set
+      // at all?", and a `jexl:` value has to answer it without being evaluated
+      // (this caller has no feature context, so evaluating throws). The same raw
+      // access `resolveSlot` uses for its own callback check. Not
+      // `isSlotCustomized` either, deliberately — a stored value that fails the
       // usability gate reads as not-customized, and clearing it out is exactly
       // what should happen to it.
-      if (readConfObject(display.configuration, slot) !== undefined) {
+      if (display.configuration[slot] !== undefined) {
         setConf(display, slot, undefined)
       }
     }
@@ -304,13 +317,15 @@ function applyDefaultToggle(
 }
 
 /**
- * #api core/configuration
  * Per-value control over a *group* of slots: "make this exact combination of
  * slot values the session default". `active` reflects whether this exact
  * combination is the current default; `toggle` flips it (set/clear,
- * non-destructive). Each row of a preset radio group (e.g. a feature-height
- * preset = height + spacing + mode) gets its own independent control. The base
- * builder the single-value / promote-current wrappers below delegate to.
+ * non-destructive). The base builder the two public wrappers below delegate to;
+ * module-internal (exercised by promotableDefaults.test.ts) because no adopter
+ * promotes more than one slot behind a single pin — feature-height presets once
+ * grouped `featureHeight` + `featureSpacing` here, but `featureSpacing` is now
+ * derived from `featureHeight` rather than stored. Export it again if a genuine
+ * multi-slot pin appears.
  */
 export function makeSlotsValueDisplayTypeDefaultControl(
   self: PromotableDisplay,

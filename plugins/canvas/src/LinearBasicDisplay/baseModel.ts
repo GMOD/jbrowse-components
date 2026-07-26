@@ -514,7 +514,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Feature height preset (normal/compact/superCompact). Promotable
-        // sentinel enum (see baseConfigSchema.ts): getConf walks the
+        // sentinel enum (see baseConfigSchema.ts): resolveConf walks the
         // customized-track -> session-default -> `normal` cascade and always returns
         // a concrete preset, never the `inherit` sentinel.
         get displayMode(): DisplayMode {

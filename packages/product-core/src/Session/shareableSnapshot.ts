@@ -60,9 +60,9 @@ interface Bake {
  * actual state of the (open) tracks".
  *
  * Reach is `openPromotableDisplays` — literally the same walk the cascade's own
- * "apply to open tracks" uses, so the two can't drift. It recurses into
- * composite views (breakpoint-split, SV-inspector, the linear-comparative /
- * synteny family), which hold child views rather than tracks of their own —
+ * "apply to open tracks" uses, so the two can't drift. It recurses into a
+ * composite view's `views` array (breakpoint-split, the linear-comparative /
+ * synteny family), which holds child views rather than tracks of its own —
  * `LGVSyntenyDisplay` is only reachable that way, and before the recursion a
  * shared session containing one rendered differently for the recipient.
  */
@@ -99,8 +99,8 @@ export function bakePromotedDefaultsIntoSnapshot(
 
 // A display state serializes its `configuration` reference as the displayId
 // string; stamp `ignorePromotedDefaults` on every open one so the recipient
-// resolves it from its own config only. Recurses into a composite view's child
-// views, matching `openPromotableDisplays` — the two walks have to cover the
+// resolves it from its own config only. Recurses into a composite view's `views`
+// array, matching `openPromotableDisplays` — the two walks have to cover the
 // same set or a nested display gets its values baked but not the flag.
 function markIgnorePromotedDefaults(
   views: unknown,

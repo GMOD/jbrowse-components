@@ -36,7 +36,7 @@ import type {
   ConfigurationSlotName,
   ConfigurationSlotValue,
 } from './types.ts'
-import type { IMSTMap } from '@jbrowse/mobx-state-tree'
+import type { IAnyType, IMSTMap } from '@jbrowse/mobx-state-tree'
 
 // Evaluate a slot's `jexl:...` callback string against the realm's single jexl
 // instance (carrying plugin-registered functions), read from the config node's
@@ -246,16 +246,12 @@ export function rawConfSnapshot(confObject: AnyConfigurationModel) {
   return result
 }
 
-// The promotable-slot guard behind `getConfSnapshot`. Inlined rather than
-// importing `promotableSlotNames` because that module imports this one.
+// The promotable-slot guard behind `getConfSnapshot`.
 function assertNoPromotableSlots(confObject: AnyConfigurationModel) {
-  const table = getConfigurationSchemaDefinition(confObject)
-  const promotable = Object.entries(table ?? {})
-    .filter(([, def]) => isSlotDefinitionEntry(def) && def.promotable)
-    .map(([name]) => name)
-  if (promotable.length > 0) {
+  const promotable = promotableSlotNames(confObject)
+  if (promotable.size > 0) {
     throw new Error(
-      `getConfSnapshot on a config with promotable slots (${promotable.join(', ')}): those resolve against the session at read time, so this would ship the bare inherit sentinel. Use resolvePromotableConfigSnapshot(display) instead.`,
+      `getConfSnapshot on a config with promotable slots (${[...promotable].join(', ')}): those resolve against the session at read time, so this would ship the bare inherit sentinel. Use resolvePromotableConfigSnapshot(display) instead.`,
     )
   }
 }
@@ -373,6 +369,38 @@ export function isConfigurationModel(
  */
 export function getConfigurationSchemaDefinition(node: AnyConfigurationModel) {
   return getConfigurationSchemaMetadata(getType(node))?.definition
+}
+
+// The `promotable` slot names of one config schema (includes slots inherited via
+// baseConfiguration — merged into the table at construction), cached by MST type
+// since a schema's slot table is fixed.
+//
+// Only the functions that genuinely *enumerate* promotable slots call this — the
+// worker-payload resolver, the badge diff, "clear every default", and
+// `assertNoPromotableSlots`. It is deliberately NOT on any read path:
+// `getConf` used to consult it on all ~1300 config reads in the repo to decide
+// whether to cascade, which cost a `getType` per read (measured at ~60% overhead
+// over `readConfObject`) to serve the ~15 promotable ones. `resolveConf` names
+// the cascade at the call site instead, so there is nothing to look up.
+const promotableSlotsByType = new WeakMap<IAnyType, Set<string>>()
+
+export function promotableSlotNames(
+  config: AnyConfigurationModel,
+): ReadonlySet<string> {
+  const type = getType(config)
+  const cached = promotableSlotsByType.get(type)
+  if (cached) {
+    return cached
+  }
+  const names = new Set<string>()
+  const table = getConfigurationSchemaDefinition(config)
+  for (const [name, def] of Object.entries(table ?? {})) {
+    if (isSlotDefinitionEntry(def) && def.promotable) {
+      names.add(name)
+    }
+  }
+  promotableSlotsByType.set(type, names)
+  return names
 }
 
 function resolveConfigValue(

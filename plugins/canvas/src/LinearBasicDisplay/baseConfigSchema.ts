@@ -55,7 +55,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // unset is the inherit state, `promotedBase` ('fixed') is what it
         // resolves to when nothing is promoted — so every real mode, `fixed`
         // included, is customizable back over a session default. Read through the
-        // resolved `heightMode` getter (getConf), never raw.
+        // resolved `heightMode` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: 'fixed',
         promotable: true,
@@ -162,7 +162,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // resolves to when nothing is promoted — so every real preset, `normal`
         // included, is customizable. Legacy stored normal/compact/superCompact are
         // still valid members (customized values), so no snapshot migration is needed. Read
-        // through the resolved `displayMode` getter (getConf), never raw.
+        // through the resolved `displayMode` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: 'normal',
         promotable: true,
@@ -189,7 +189,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // unset is the inherit state, `promotedBase` ('none') is what it
         // resolves to when nothing is promoted. Legacy stored none/below/overlay
         // are still valid members (customized values), so no snapshot migration is needed.
-        // Read through the resolved `subfeatureLabels` getter (getConf),
+        // Read through the resolved `subfeatureLabels` getter (resolveConf),
         // never raw.
         defaultValue: undefined,
         promotedBase: 'none',
@@ -206,7 +206,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // inherit state, `promotedBase` (true) is what it resolves to when
         // nothing is promoted. A legacy stored boolean is already a valid
         // customized value, so no snapshot migration is needed. Read through the
-        // resolved `displayDirectionalChevrons` getter (getConf), never
+        // resolved `displayDirectionalChevrons` getter (resolveConf), never
         // raw. See promotableDefaults.ts.
         defaultValue: undefined,
         promotedBase: true,

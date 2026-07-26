@@ -997,6 +997,19 @@ describe('promotable slot holding a jexl callback', () => {
       toggle: expect.any(Function),
     })
   })
+
+  test('"apply to open tracks" resets a callback track without evaluating it', () => {
+    const { session, display } = createDisplay(schema, {
+      height: 'jexl:get(feature,"h")',
+    })
+    session.setDisplayTypeDefault('TestDisplay', 'height', 3)
+    // `tracksDifferingFrom` counts a callback track as differing, so the
+    // snackbar action does reach it — and it must clear the callback rather
+    // than evaluate it against the empty context it has (which throws)
+    resetSlotsToInherit([display], ['height'])
+    expect(getConf(display, 'height')).toBeUndefined()
+    expect(resolveConf(display, 'height')).toBe(3)
+  })
 })
 
 // Naming a real-but-plain slot in a control builder wrote a promoted default

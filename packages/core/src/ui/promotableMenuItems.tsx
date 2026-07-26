@@ -38,8 +38,13 @@ export function promotableToggleItem({
 }
 
 // A radio row in a promotable-value group (e.g. one option of a multi-value enum
-// slot). `displayTypeDefault` is omitted for the base (inherit) value (e.g. the
-// `up`/`normal` base of a mode enum) — only the non-base values are promotable.
+// slot). EVERY option in a group gets a pin, the `promotedBase` value included:
+// once a non-base value is promoted, pinning the base back is the only per-value
+// way to undo it from its own row, and a radio group with one row silently
+// missing its trailing control reads as a bug. `displayTypeDefault` stays
+// optional only for a row that has no single value to promote yet (the colorBy
+// "Tag..." row before a tag is picked) or a display whose slot isn't promotable
+// at all (the shared colorBy menu on gwas/variants).
 export function promotableRadioItem({
   label,
   subLabel,

@@ -43,7 +43,6 @@ export {
   isSlotCustomized,
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
-  makeSlotsValueDisplayTypeDefaultControl,
   openPromotableDisplays,
   resolvePromotableConfigSnapshot,
 } from './promotableDefaults.ts'
