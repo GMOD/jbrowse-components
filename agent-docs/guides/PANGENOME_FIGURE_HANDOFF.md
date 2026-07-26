@@ -117,9 +117,15 @@ docstring.
   hosted one, md5 `d64c811a1562e493ca14462f8b02f6bb`. Use that as the tripwire:
   a change that moves the md5 changes the demo and owes a measured improvement.
 - **Measure retrieval, not block order.** Whether an indexed query returns a K12
-  row covering position *p* is the metric that matters; overlap counts off a
-  `taffy view -m` dump describe the converter and sent an earlier session down a
-  long wrong path.
+  row covering position *p* is the metric that matters. Overlap counts off a
+  `taffy view -m` dump describe the converter, and they sent an earlier session
+  down a long wrong path.
+- **One real defect is left, and it is taffy's, not ours.** About 0.3% of
+  positions this file contains cannot be retrieved through its own `.tai`.
+  Unexplained, not known to touch any figure, and not fixed by upgrading taffy.
+  Written up in
+  [TAFFY_INDEX_GAPS_HANDOFF.md](TAFFY_INDEX_GAPS_HANDOFF.md) so it stops being
+  rediscovered as a `reroot_maf.py` bug.
 
 **How systemic the under-reporting is: 0.32%, measured.** Per-strain MAF row
 absence cross-checked against the per-strain `odgi pav` bigWigs (both hosted). Of

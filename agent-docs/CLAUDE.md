@@ -75,6 +75,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md) — desktop IPC, preload, plugin loading
 - [REGION_VIEW_LAUNCH.md](guides/REGION_VIEW_LAUNCH.md) — "open view X for this region" entry points (synteny stack, graph subgraph)
 - [PANGENOME_PATHS_HANDOFF.md](guides/PANGENOME_PATHS_HANDOFF.md) — per-haplotype graph paths as a linear track, the indel-glyph passes, `--call` traps
+- [TAFFY_INDEX_GAPS_HANDOFF.md](guides/TAFFY_INDEX_GAPS_HANDOFF.md), open: ~0.3% of a pggb MAF's positions are in the file but unreachable through its `.tai`. Read before "fixing" `reroot_maf.py`
 
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is
