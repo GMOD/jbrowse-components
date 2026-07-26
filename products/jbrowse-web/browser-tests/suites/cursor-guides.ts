@@ -1,0 +1,236 @@
+import {
+  delay,
+  navigateWithSessionSpec,
+  waitForDataLoaded,
+} from '../helpers.ts'
+
+import type { TestSuite } from '../types.ts'
+import type { Page } from 'puppeteer'
+
+// The pointer affordances (crosshair guides, hover shading, the tooltip that
+// follows the cursor) are the one part of a display no snapshot covers: they
+// exist only while a real pointer is over the track. They are also wired through
+// shared plumbing — `useMouseTracking` measures the chrome container,
+// `DisplayCrosshairs` derives its geometry from the model — so a change there
+// lands on several displays at once, and the failure mode is silent (an overlay
+// that stops appearing, or appears in the wrong place).
+
+// Both crosshair guides, counted off the DOM: `Crosshairs` is one <svg> holding
+// a <line> per guide (a vertical genomic guide, plus a horizontal row guide for
+// the displays whose y means something).
+function countGuideLines(page: Page) {
+  return page.evaluate(
+    () =>
+      [...document.querySelectorAll('svg')].flatMap(s => [
+        ...s.querySelectorAll(':scope > line'),
+      ]).length,
+  )
+}
+
+// BaseTooltip portals to a bare div parented to <body> with no role or testid,
+// so it is identified structurally: the body-level div that isn't the app root.
+function findTooltip() {
+  const app = document.body.children[1]
+  return [...document.body.children].find(
+    e => e.tagName === 'DIV' && e !== app && e.textContent,
+  )
+}
+
+function tooltipText(page: Page) {
+  return page.evaluate(
+    `(${findTooltip})()?.textContent ?? ''`,
+  ) as Promise<string>
+}
+
+function tooltipX(page: Page) {
+  return page.evaluate(
+    `(${findTooltip})()?.getBoundingClientRect().x`,
+  ) as Promise<number | undefined>
+}
+
+async function boxOf(page: Page, selector: string) {
+  return page.$eval(selector, el => {
+    const r = el.getBoundingClientRect()
+    return { x: r.x, y: r.y, width: r.width, height: r.height }
+  })
+}
+
+// A trusted pointer move (two steps, so the display sees motion rather than a
+// teleport) landing at a fraction of the target's box.
+async function hoverFraction(
+  page: Page,
+  selector: string,
+  fx: number,
+  fy: number,
+) {
+  const box = await boxOf(page, selector)
+  const x = box.x + box.width * fx
+  const y = box.y + box.height * fy
+  await page.mouse.move(x - 30, y - 10)
+  await page.mouse.move(x, y, { steps: 4 })
+  await delay(400)
+  return { x, y }
+}
+
+async function bootTrack(page: Page, trackId: string, doneTestId: string) {
+  await navigateWithSessionSpec(page, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        loc: 'ctgA:1..50000',
+        assembly: 'volvox',
+        tracks: [trackId],
+      },
+    ],
+  })
+  await page.waitForSelector(`[data-testid="${doneTestId}"]`, {
+    timeout: 60000,
+  })
+  await waitForDataLoaded(page, 60000)
+  await delay(2000)
+}
+
+function assert(cond: boolean, message: string) {
+  if (!cond) {
+    throw new Error(message)
+  }
+}
+
+const MULTIROW_HIGHLIGHT = '[data-testid="multirow_hover_highlight"]'
+
+export const suite: TestSuite = {
+  name: 'cursor-guides',
+  tests: [
+    {
+      name: 'multi-row painting: guides, hover box, tooltip, click',
+      fn: async page => {
+        await bootTrack(
+          page,
+          'volvox_mouse_inheritance_painting',
+          'multirow-display-done',
+        )
+        assert(
+          (await countGuideLines(page)) === 0,
+          'guides drawn before the pointer arrived',
+        )
+
+        const { x, y } = await hoverFraction(
+          page,
+          '[data-testid="multirow_canvas"]',
+          0.6,
+          0.5,
+        )
+        assert(
+          (await countGuideLines(page)) === 2,
+          'expected a vertical and a horizontal guide while hovering',
+        )
+
+        // the box has to land on the block under the cursor, not merely exist
+        const box = await boxOf(page, MULTIROW_HIGHLIGHT)
+        assert(
+          x >= box.x - 1 &&
+            x <= box.x + box.width + 1 &&
+            y >= box.y - 1 &&
+            y <= box.y + box.height + 1,
+          `hover box ${JSON.stringify(box)} does not contain the cursor ${x},${y}`,
+        )
+
+        // the row label comes from the live row order, and the locus from the hit
+        const tip = await tooltipText(page)
+        assert(
+          /offspring\d+/.test(tip) && /ctgA:\d+\.\.\d+/.test(tip),
+          `tooltip missing row label or locus: ${tip}`,
+        )
+
+        // The tooltip follows the cursor within one block, where the hover
+        // identity itself never changes — it is anchored to the pointer state,
+        // not to the (deduplicated) hover written on the model.
+        const before = await tooltipX(page)
+        await page.mouse.move(x + 25, y, { steps: 3 })
+        await delay(400)
+        const after = await tooltipX(page)
+        assert(
+          before !== undefined && after !== undefined && after > before,
+          `tooltip did not follow the cursor: ${before} -> ${after}`,
+        )
+
+        // right-click clears the hover so its tooltip can't stick under the
+        // menu, and the mark stays on the block the menu is acting on
+        await page.mouse.click(x, y, { button: 'right' })
+        await delay(800)
+        assert(
+          await page.evaluate(() =>
+            document.body.textContent!.includes('Sort rows by color here'),
+          ),
+          'right-click did not open the display context menu',
+        )
+        assert(
+          !!(await page.$(MULTIROW_HIGHLIGHT)),
+          'hover mark dropped while the context menu was acting on that block',
+        )
+        await page.keyboard.press('Escape')
+        await delay(500)
+
+        // click opens the feature details widget for the block under the cursor
+        await page.mouse.move(x, y, { steps: 2 })
+        await delay(300)
+        await page.mouse.click(x, y)
+        await delay(2500)
+        assert(
+          await page.evaluate(
+            () =>
+              document.body.textContent!.includes('Feature details') &&
+              document.body.textContent!.includes('Core details'),
+          ),
+          'click did not open the feature details widget',
+        )
+
+        // leaving the display drops every pointer affordance together
+        await page.mouse.move(5, 5)
+        await delay(500)
+        assert(
+          (await countGuideLines(page)) === 0 &&
+            !(await page.$(MULTIROW_HIGHLIGHT)),
+          'guides or hover box survived the pointer leaving the display',
+        )
+      },
+    },
+    {
+      name: 'multi-wiggle: guides and tooltip',
+      fn: async page => {
+        await bootTrack(
+          page,
+          'volvox_microarray_multi_multirowxy',
+          'multi-wiggle-display-done',
+        )
+        assert(
+          (await countGuideLines(page)) === 0,
+          'guides drawn before the pointer arrived',
+        )
+        await hoverFraction(
+          page,
+          '[data-testid="multi-wiggle-display-done"]',
+          0.5,
+          0.5,
+        )
+        assert(
+          (await countGuideLines(page)) === 2,
+          'expected the full crosshair over a multi-row wiggle',
+        )
+        const tip = await tooltipText(page)
+        assert(
+          /ctgA:/.test(tip) && /\d/.test(tip),
+          `tooltip missing locus or score: ${tip}`,
+        )
+        await page.mouse.move(5, 5)
+        await delay(500)
+        assert(
+          (await countGuideLines(page)) === 0,
+          'guides survived the pointer leaving the plot',
+        )
+      },
+    },
+  ],
+}
+
+export default suite
