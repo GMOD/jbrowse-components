@@ -45,6 +45,17 @@ node browser-tests/runner.ts --filter="Alignments Color Schemes" --test="color b
 Real GPU errors (`context LOST`, `GL error`, `UNCAPTURED ERROR`) always show
 regardless of debug mode.
 
+### Never screenshot with `fullPage: true`
+
+Puppeteer implements it by resizing the viewport to the scroll size and
+restoring it after; that resize invalidates the page raster, and under the
+runner's concurrent browser churn the capture comes back before the content
+re-rasters — live app chrome around a white content area, reported as a 10-25%
+snapshot "regression" that moves between tests run to run. It was the whole of
+the long-unexplained pileup golden drift (5/5 runs failed with it, 7/7 clean
+without). Take a plain `page.screenshot()`; if a view needs more room, size the
+viewport with `page.setViewport`.
+
 ### Waiting on loading / completion signals
 
 `LoadingOverlay` always keeps the literal text `"Loading"` in the DOM (hidden
