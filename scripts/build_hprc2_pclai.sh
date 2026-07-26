@@ -41,14 +41,17 @@ echo "== fetching release index"
 # carriage return and the URLs it yields are rejected.
 curl -fsSL "$INDEX" | tr -d '\r' > pclai_index.csv
 
-# Featured samples first, then fill up to NSAMPLES from the rest in file order.
-# Deterministic: no shuffling, no sampling.
-awk -F, -v feat="$FEATURED" -v n="$NSAMPLES" '
-  BEGIN { split(feat, f, " "); for (i in f) want[f[i]] = 1 }
-  NR == 1 { next }
-  { if ($1 in want) sel[$1] = 1 }
+# The featured samples that the index actually carries, in FEATURED order. Driven
+# off a list rather than `for (s in sel)`, whose iteration order awk does not
+# define -- that made the row order of the painting vary between builds of the
+# same inputs, which is exactly what this script claims not to do.
+awk -F, -v feat="$FEATURED" '
+  NR > 1 { present[$1] = 1 }
   END {
-    for (s in sel) print s
+    n = split(feat, f, " ")
+    for (i = 1; i <= n; i++) {
+      if (f[i] in present) { print f[i] } else { print "warning: " f[i] " not in index" > "/dev/stderr" }
+    }
   }
 ' pclai_index.csv > chosen.txt
 

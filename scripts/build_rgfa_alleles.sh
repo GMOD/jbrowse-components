@@ -66,10 +66,17 @@
 #     including IAI39's at 1,072,931.
 #   - a link from a backbone segment to a rank>0 one enters an allele. Walk the
 #     graph bidirected from there — state is (segment, orientation), and each
-#     L-line also yields its reverse complement — until a link back to the
-#     backbone. That walk resolves every entry in the E. coli graph (745 of 745,
-#     no dead ends, chains up to 35 segments). Pairing entry to exit by donor
-#     contig instead gets the branchy ones wrong.
+#     L-line also yields its reverse complement — until the walk arrives back on
+#     a rank-0 segment, which is the exit. Test the ARRIVAL, not a lookup table
+#     of departures keyed on (segment, orientation): succ is bidirected, so the
+#     walk reaches the backbone from either side, but the file states only one of
+#     the two equivalent L-line directions. Keying on departures made an exit
+#     invisible whenever the other direction was the one written, and the walk
+#     then stepped onto the backbone and ran off down it — 237 of the HPRC
+#     graph's walks reached the end of a chromosome that way and were dropped,
+#     AMY1's 41 kb insertion at chr1:103,676,921 among them. Arrival-tested, all
+#     745 E. coli entries and every HPRC entry resolve. Pairing entry to exit by
+#     donor contig instead gets the branchy ones wrong.
 #   - the two anchors give refLen, the walked segments give altLen, and the sign
 #     of the difference classifies it. No bubble caller needed.
 #
@@ -133,7 +140,10 @@ function cigar(altLen, refLen,  s) {
   return refLen "M"
 }
 # segs.bed: chrom start end id rank
-NR == FNR { sn[$4] = $1; slen[$4] = $3 - $2; rank[$4] = $5; next }
+NR == FNR {
+  sn[$4] = $1; sstart[$4] = $2; send[$4] = $3; slen[$4] = $3 - $2; rank[$4] = $5
+  next
+}
 # links.bed: chrom start end srcId± tgtId± srcChrom srcStart srcEnd srcRank \
 #            tgtChrom tgtStart tgtEnd tgtRank
 {
@@ -156,8 +166,6 @@ NR == FNR { sn[$4] = $1; slen[$4] = $3 - $2; rank[$4] = $5; next }
     }
   } else if (rank[sid] == 0 && rank[tid] > 0) {
     entryState[++ns] = tid to; entryChrom[ns] = $6; entryAt[ns] = scoord
-  } else if (rank[sid] > 0 && rank[tid] == 0) {
-    backAt[sid so] = tcoord
   }
 }
 END {
@@ -182,15 +190,27 @@ END {
       for (j = 1; j <= n; j++) {
         if (nx[j] == "") { continue }
         nout++
+        nseg = substr(nx[j], 1, length(nx[j]) - 1)
+        no = substr(nx[j], length(nx[j]))
+        # arriving back on the backbone is the exit, whichever of the two
+        # equivalent L-line directions the file happened to state it in. Testing
+        # the arrival rather than looking up the departure is what keeps a
+        # reverse-orientation rejoin from being missed: succ is bidirected, so
+        # the walk reaches rank 0 either way, but only one direction is written.
+        if (rank[nseg] == 0) {
+          if (exitAt == "" || sn[nseg] == entryChrom[i]) {
+            exitAt = (no == "+") ? sstart[nseg] : send[nseg]
+          }
+          continue
+        }
         # at a branch, stay on the contig the allele came in on so a nested
         # bubble does not switch the walk onto another haplotype's route
-        nseg = substr(nx[j], 1, length(nx[j]) - 1)
         if (pick == "" || (sn[nseg] == sn[seg] && sn[substr(pick, 1, length(pick) - 1)] != sn[seg])) {
           pick = nx[j]
         }
       }
       if (nout > 1) { nested = 1 }
-      if (cur in backAt) { exitAt = backAt[cur]; break }
+      if (exitAt != "") { break }
       if (pick == "") { break }
       cur = pick
     }
