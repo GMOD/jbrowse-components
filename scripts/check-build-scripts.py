@@ -107,29 +107,31 @@ def load(path, name):
     return mod
 
 
-# reroot_maf.py: a repeat-collapsed block carries several reference rows. Row 0
-# must be the LEFTMOST one (the .tai assumes the file is ordered on it) and the
-# surplus copies must go (JBrowse keys a MAF row to a sample by name, so a second
-# reference-named row collides with the reference in that sample's lane).
+# reroot_maf.py: a repeat-collapsed block carries several reference rows. Both
+# "improvements" to that were measured worse and reverted (module docstring), so
+# these pin the reverted behavior rather than the intuitive one:
+#   - anchor on the FIRST reference row, not the leftmost. Leftmost perturbs
+#     taffy's differential TAF encoding and loses region queries.
+#   - keep every row. BgzipTaffyAdapter keys `alignments` by sample name, so a
+#     duplicate is one lane at display time; dropping deletes data to fix nothing.
 sys.argv = ["reroot_maf.py", "-", "-", "REF#1#chr"]
 reroot_maf = load("scripts/reroot_maf.py", "reroot_maf")
 def row(name, start, strand="+"):
     return ["s", name, str(start), "10", strand, "1000", "A" * 10]
 
 
-kept, dropped = reroot_maf.reroot(
+kept = reroot_maf.reroot(
     [row("REF#1#chr", 500), row("other#1#chr", 20), row("REF#1#chr", 100)]
 )
-check("reroot anchors on the leftmost reference row", kept[0][2], "100")
-check("reroot drops the surplus reference rows", [r[2] for r in dropped], ["500"])
-check("reroot keeps every non-reference row", [r[1] for r in kept],
-      ["REF#1#chr", "other#1#chr"])
-# the dropped rows are returned, not just counted, so the run can report the
-# reference bases that lose their alignment (0.45% of K12 on the real MAF)
-check("reroot returns the dropped rows for base accounting",
-      sum(int(r[3]) for r in dropped), 10)
+check("reroot anchors on the FIRST reference row, not the leftmost",
+      kept[0][2], "500")
+check("reroot keeps the surplus reference rows", [r[2] for r in kept],
+      ["500", "20", "100"])
+check("reroot keeps every row", [r[1] for r in kept],
+      ["REF#1#chr", "other#1#chr", "REF#1#chr"])
+check("reroot loses no aligned bases", sum(int(r[3]) for r in kept), 30)
 # a '-' reference row flips the block, and leftmost is decided after the flip
-kept, _ = reroot_maf.reroot([row("REF#1#chr", 100, "-"), row("other#1#chr", 20)])
+kept = reroot_maf.reroot([row("REF#1#chr", 100, "-"), row("other#1#chr", 20)])
 check("reroot normalizes the reference to '+'", kept[0][4], "+")
 check("reroot remaps the flipped start", kept[0][2], str(1000 - 100 - 10))
 check("reroot drops a block with no reference row",
