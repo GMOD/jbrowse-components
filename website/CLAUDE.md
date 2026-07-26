@@ -301,6 +301,44 @@ gallery.ts can't import `screenshot-specs.ts` directly — that module's
 override only when the spec's base capture isn't the state to open live (e.g.
 `horizontally_flip`, whose figure flips at capture time).
 
+**Gallery cards paint thumbnails, not the figures.** A card is at most 594x260
+CSS px, but the figures are ~3000px wide, so `gen-gallery-thumbs.ts` derives
+`static/img/gallery-thumbs/<path>` (the same path under the figure's own name)
+and the card shows that — 6.72MB of cards over the full scroll becomes 3.25MB.
+The card's `data-full` still names the original, which is what the lightbox
+enlarges. The source list comes from gallery.ts itself, so a new card can't be
+missed.
+
+**The thumbnails are generated, not committed** — `static/img/gallery-thumbs/`
+is gitignored, and `dev`/`build`/`index` each run the generator first, so it is
+built wherever the gallery page renders (like `static/pagefind/`). Committing
+3.4MB derived from files already in the repo would add ~160MB/yr of
+undeltifiable binary history to a 1.4GB `.git`, because the figures it derives
+from churn hard — 517 revisions in three months. A cold build costs 15s; the
+generator rebuilds only figures newer than their thumbnail, so warm runs are
+~0.2s. This is also why there's no `--check` and nothing to re-run after
+`generate-screenshots.ts`: with no committed copy, a card can't disagree with
+its figure.
+
+Two settled decisions, so they don't get relitigated:
+
+- **The tier is 1200x600, and smaller is not free.** That box is 2x the card's
+  own maximum, and the `max-height: 260px` cap is what usually binds — so a
+  height-capped card gets 600/260 = 2.3 device px per CSS px and a
+  width-capped one 1200/594 = 2.0 (both verified in-browser). A 1000x500 box
+  drops the height-capped case to 1.9x, below retina, and visibly softens the
+  gene-track labels.
+- **PNG, not WebP.** The capture pipeline already quantizes every figure to an
+  8-bit palette with pngquant (`image-pipeline.ts`), which is the worst case
+  for lossy VP8 — 256 hard palette colors plus 4:2:0 subsampling costs more
+  bits than the palette PNG and smears text. Lossless WebP does win ~28%, but
+  it buys that with a second format, a support caveat, and VP8L header parsing
+  in gallery.astro's `pngSize()`, for a fraction of what the resize already
+  saves. Thumbs are quantized by sharp's bundled libimagequant rather than the
+  `pngquant` binary, which isn't installed in CI. Keep `colours: 256`: at 128
+  the gene track's orange is dropped and the glyphs remap to **red**, which
+  misreads as a different strand.
+
 **The list is a curated highlight reel, not an auto-dump of every spec.** It's
 hand-maintained on purpose: most `screenshot-specs.ts` entries are doc-mechanics
 screenshots (`config_not_found`, `rubberband`, `share_button`,

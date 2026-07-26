@@ -56,7 +56,7 @@
   function measure() {
     // measured, not computed from the CSS max-height, so the two can't drift:
     // drop to full width, read how tall that is, and compare with the box.
-    lbFig.removeAttribute('data-fit')
+    delete lbFig.dataset.fit
     const full = lbScroll.scrollHeight
     const box = lbScroll.clientHeight
     // A figure that nearly fits loses little by being scaled down, and reading
@@ -86,7 +86,12 @@
       const trigger = target.closest('.lightbox-trigger')
       const img = trigger?.querySelector('img')
       if (trigger instanceof HTMLElement && img instanceof HTMLImageElement) {
-        lbImg.src = img.currentSrc || img.src
+        // A gallery card paints a downscaled thumbnail, so enlarging it has to
+        // load the full-resolution figure the trigger names rather than the
+        // thumbnail the card is showing — that one would just be upscaled.
+        // Triggers with no thumbnail (doc figures, rehype-lightbox images)
+        // already display the full image, so they fall through to it.
+        lbImg.src = trigger.dataset.full ?? (img.currentSrc || img.src)
         lbImg.alt = img.alt
         lbCaption.textContent = trigger.dataset.label ?? img.alt
         lbLink.href = trigger.dataset.href ?? ''
