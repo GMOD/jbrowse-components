@@ -18,3 +18,15 @@ export function getAlleleLength(feature: Feature) {
   }
   return longest
 }
+
+// Bases the record inserts, i.e. the sequence its longest ALT carries beyond the
+// reference it replaces. Zero for a SNP or a deletion, whose length the cell's
+// own reference width already draws. This is the number the insertion marker
+// sizes and labels itself with, and the "Insertion" tooltip row reports, so both
+// displays read it from here.
+export function getInsertedBp(feature: Feature) {
+  return Math.max(
+    0,
+    getAlleleLength(feature) - (feature.get('end') - feature.get('start')),
+  )
+}

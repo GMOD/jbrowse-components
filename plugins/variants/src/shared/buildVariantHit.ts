@@ -19,6 +19,7 @@ export interface VariantTooltipFields {
   featureName: string
   description: string
   length: string
+  insertion: string
   sampleName: string
   name: string
   featureId: string
@@ -51,6 +52,11 @@ export function buildVariantHit({
     description:
       info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
     length: getBpDisplayStr(info.length),
+    // The count the insertion marker paints on the cell, verbatim, so hovering
+    // decodes the number rather than leaving it to be guessed against `length`
+    // (the reference span, ~1 bp for any insertion). Empty for everything else,
+    // which getTooltipRows drops.
+    insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
     sampleName,
     name,
     featureId,

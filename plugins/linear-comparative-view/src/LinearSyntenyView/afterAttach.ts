@@ -9,10 +9,6 @@ import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 import type { LinearSyntenyViewModel } from './model.ts'
 import type { LinearSyntenyViewInit } from './types.ts'
 
-// A level's heights stop being legible once this many are stacked, so the init
-// path auto-scales them rather than leaving 100px rows overflowing the viewport.
-const AUTO_SCALE_LEVEL_THRESHOLD = 4
-
 // One genome row per init.views entry, each opened on its assembly's whole
 // region set. Awaits every assembly first so a failure surfaces before any view
 // is built (the catch in setupInitAutorun keeps `init` for a retry).
@@ -30,12 +26,20 @@ async function buildViews(
       return asm
     }),
   )
+  // Past the pairwise case, a genome row carrying no tracks opens collapsed to
+  // its ruler: the "No tracks active / Open track selector" block repeats once
+  // per row at ~90px each, which on a five-row launch is more of the viewport
+  // than the ribbons the view exists to show. A row that init gives tracks keeps
+  // them expanded, and MiniControls' "Expand tracks" (or the view menu's
+  // "Genome views" → "Expand all views") reopens the rest in one click.
+  const collapseEmptyRows = init.views.length > 2
   self.setViews(
     assemblies.map((asm, idx) => ({
       type: 'LinearGenomeView' as const,
       bpPerPx: 1,
       offsetPx: 0,
       hideHeader: true,
+      scalebarOnly: collapseEmptyRows && !init.views[idx]?.tracks?.length,
       displayedRegions: asm.regions,
       // trackLabels is a plain persisted prop — set it on the snapshot directly
       // rather than imperatively after attach
@@ -136,9 +140,11 @@ export function doAfterAttach(self: LinearSyntenyViewModel) {
           await buildViews(self, init)
           await applyInitViewLocsAndTracks(self, init)
           applyInitSyntenyTracks(self, init)
-          if (self.levels.length >= AUTO_SCALE_LEVEL_THRESHOLD) {
-            self.autoScaleLevelHeights()
-          }
+          // split the band budget across however many levels this view has, so
+          // a multi-way stack doesn't spend the whole viewport on ribbons. A no-op
+          // at two levels (a pairwise view keeps the 100px default), and
+          // applyInitSettings runs after, so an explicit init.levelHeights wins.
+          self.autoScaleLevelHeights()
           applyInitSettings(self, init)
           if (init.autoDiagonalize) {
             await runAutoDiagonalize(self)

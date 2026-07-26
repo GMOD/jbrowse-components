@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { getAlleleLength } from '../../shared/alleleLength.ts'
+import { getInsertedBp } from '../../shared/alleleLength.ts'
 import {
   BLACK_ABGR,
   NO_CALL_COLOR,
@@ -267,18 +267,18 @@ export function computeVariantCells({
       }
     }
 
+    const inserted = getInsertedBp(feature)
     featureGenotypeMap[featureId] = {
       alt,
       ref,
       name: featureName,
       description,
       length: bpLen,
+      insertedBp: inserted,
       type: featureType,
       genotypes: renderedGenotypes,
     }
-    // max(0, ...) because getAlleleLength returns the reference span for a SNP or
-    // a deletion, which the cell's own width already draws
-    insertedBp[featureIdx] = Math.max(0, getAlleleLength(feature) - bpLen)
+    insertedBp[featureIdx] = inserted
     featureIdList.push(featureId)
     featureIdx++
   }

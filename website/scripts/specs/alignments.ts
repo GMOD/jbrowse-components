@@ -669,7 +669,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'None' },
           { type: 'delay', ms: 800 },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Group by...' } }],
+        // box the menu path end to end: the "Group by..." parent and the
+        // "Tag..." radio inside it that stage 2's dialog comes from
+        annotations: [
+          { type: 'box', anchor: { text: 'Group by...' } },
+          { type: 'box', anchor: { text: 'Tag...' } },
+        ],
       },
       {
         actions: [

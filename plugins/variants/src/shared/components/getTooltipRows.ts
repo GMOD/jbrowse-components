@@ -9,6 +9,7 @@ const VARIANT_FIELD_LABELS: Record<string, string> = {
   genotype: 'Genotype',
   alleles: 'Alleles',
   length: 'Length',
+  insertion: 'Insertion',
   description: 'Description',
 }
 

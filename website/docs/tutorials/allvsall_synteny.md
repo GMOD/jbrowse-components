@@ -409,7 +409,7 @@ Clicking a single alignment instead of selecting a region still offers **Launch
 synteny view for this position**, which opens the one pair that alignment
 describes rather than every assembly at the locus.
 
-<Figure caption="Selecting an 8 kb window of the shared backbone and launching from it. The dialog lists the four strains that align there, all checked, in the order their rows will stack; the launched view is those five rows with a band between each neighbouring pair. Ribbons exist only between adjacent rows, which is what the up/down arrows are for." src="/img/multiway_synteny/ecoli_launch_from_selection.png" />
+<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Linear synteny view of selection. The dialog lists the four strains that align there, all checked, in the order their rows will stack; the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. Ribbons exist only between adjacent rows, which is what the up/down arrows are for." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
 ## Reproduce it end to end
 

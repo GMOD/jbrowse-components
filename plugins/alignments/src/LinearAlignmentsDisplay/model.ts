@@ -276,6 +276,16 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
     .map(s => s.type),
 )
 
+// The read-fill scheme each arc coloring mode is the overlay twin of —
+// getArcColorType (features/arcs/compute.ts) mirrors that scheme's classifier,
+// so both paint a bucket the same color. Only 'orientation' is spelled
+// differently on the two sides.
+const ARC_SCHEME_AS_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {
+  insertSize: 'insertSize',
+  orientation: 'pairOrientation',
+  insertSizeAndOrientation: 'insertSizeAndOrientation',
+}
+
 // Material UI 200-tone palette for color-by-tag values. The first value
 // hit gets index 0, the eleventh wraps to index 0 again.
 
@@ -1189,10 +1199,12 @@ export default function stateModelFactory(
          * #getter
          * The arc color slots actually plotted, mapped to legend buckets —
          * curved paired-end arcs and the read cloud's flat lines and endpoint
-         * squares alike, since both paint from `arcColorByType`. This is a
-         * separate vocabulary from the read fills (a track colored by strand
-         * still draws insert-size-colored arcs), so it keys its own legend
-         * section. Empty unless an overlay is on with the legend shown.
+         * squares alike, since both paint from `arcColorByType`. Its own
+         * vocabulary when the fills use a different scheme (a track colored by
+         * strand still draws insert-size-colored arcs), so it keys its own
+         * legend section then and folds into the read key otherwise — see
+         * `arcColorsMatchReads`. Empty unless an overlay is on with the legend
+         * shown.
          */
         get arcLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
@@ -1212,12 +1224,31 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Whether the overlay speaks the reads' own color vocabulary — arc mode
+         * against its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME).
+         * The swatches are then identical categories in identical palette
+         * colors, so keying both sections lists the same colors twice under two
+         * headings; the arc buckets fold into the read key instead.
+         */
+        get arcColorsMatchReads() {
+          return (
+            ARC_SCHEME_AS_READ_SCHEME[self.arcColorByType] === this.colorBy.type
+          )
+        },
+
+        /**
          * #method
          */
         legendItems() {
           return getReadDisplayLegendItems({
             colorBy: this.colorBy,
-            presentCategories: this.colorLegendCategories,
+            presentCategories: this.arcColorsMatchReads
+              ? new Set([
+                  ...this.colorLegendCategories,
+                  ...this.arcLegendCategories,
+                ])
+              : this.colorLegendCategories,
             palette: this.colorPalette,
             detectedModifications: self.detectedModifications,
             colorTagMap: self.colorTagMap,
@@ -1227,10 +1258,24 @@ export default function stateModelFactory(
         /**
          * #method
          * Key for the paired-end arc / read-cloud colors. Empty when no overlay
-         * is drawn, which is what keeps its legend section out of the box.
+         * is drawn, or when it shares the reads' scheme and merged into their
+         * key — either way its legend section drops out of the box.
          */
         arcLegendItems() {
-          return getArcLegendItems(this.arcLegendCategories, this.colorPalette)
+          return this.arcColorsMatchReads
+            ? []
+            : getArcLegendItems(this.arcLegendCategories, this.colorPalette)
+        },
+
+        /**
+         * #getter
+         * Heading for the overlay's own color key, named after the overlay the
+         * reader is looking at: flat read-cloud lines are not arcs.
+         */
+        get arcLegendTitle() {
+          return self.readConnections === 'cloud'
+            ? 'Read cloud colors'
+            : 'Arc colors'
         },
 
         /**

@@ -2,8 +2,84 @@ import {
   findFileHandleIds,
   getFileName,
   getTrackName,
+  pickDisplayForView,
   stripFileExtension,
 } from './tracks.ts'
+
+describe('pickDisplayForView', () => {
+  // a multi-sample VCF track: two displays declared, matrix first, plus the
+  // display types its track type offers beyond what this view supports
+  const declaredDisplays = [
+    { type: 'MatrixDisplay', displayId: 'vcf_matrix' },
+    { type: 'RegularDisplay', displayId: 'vcf_regular' },
+  ]
+  const trackDisplayTypes = ['ChordDisplay', 'MatrixDisplay', 'RegularDisplay']
+  const viewDisplayTypes = ['MatrixDisplay', 'RegularDisplay']
+
+  test('a requested type gets its own config, not the first declared one', () => {
+    expect(
+      pickDisplayForView({
+        declaredDisplays,
+        requestedType: 'RegularDisplay',
+        trackDisplayTypes,
+        viewDisplayTypes,
+      }),
+    ).toEqual({
+      type: 'RegularDisplay',
+      conf: { type: 'RegularDisplay', displayId: 'vcf_regular' },
+    })
+  })
+
+  test('no requested type takes the first declared display the view supports', () => {
+    expect(
+      pickDisplayForView({
+        declaredDisplays: [
+          { type: 'ChordDisplay', displayId: 'vcf_chord' },
+          ...declaredDisplays,
+        ],
+        requestedType: undefined,
+        trackDisplayTypes,
+        viewDisplayTypes,
+      }),
+    ).toEqual({
+      type: 'MatrixDisplay',
+      conf: { type: 'MatrixDisplay', displayId: 'vcf_matrix' },
+    })
+  })
+
+  test('falls back to the track type when the config declares no displays', () => {
+    expect(
+      pickDisplayForView({
+        declaredDisplays: [],
+        requestedType: undefined,
+        trackDisplayTypes,
+        viewDisplayTypes,
+      }),
+    ).toEqual({ type: 'MatrixDisplay', conf: undefined })
+  })
+
+  test('a requested type the config never declares has no conf to attach', () => {
+    expect(
+      pickDisplayForView({
+        declaredDisplays,
+        requestedType: 'ChordDisplay',
+        trackDisplayTypes,
+        viewDisplayTypes,
+      }),
+    ).toEqual({ type: 'ChordDisplay', conf: undefined })
+  })
+
+  test('undefined when the view supports none of the track’s displays', () => {
+    expect(
+      pickDisplayForView({
+        declaredDisplays: [{ type: 'ChordDisplay', displayId: 'vcf_chord' }],
+        requestedType: undefined,
+        trackDisplayTypes: ['ChordDisplay'],
+        viewDisplayTypes,
+      }),
+    ).toBeUndefined()
+  })
+})
 
 describe('findFileHandleIds', () => {
   test('finds FileHandleLocation in flat object', () => {

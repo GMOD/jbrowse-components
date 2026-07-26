@@ -614,10 +614,11 @@ const LegendHost = observer(function LegendHost({
     return null
   }
   // Three distinct color vocabularies, each keyed on its own: the read fills,
-  // the paired-end arc / read-cloud colors (insert size and orientation,
-  // whatever the fills use), and the linked-read connection curves. Empty
-  // sections are dropped and titles only appear once more than one survives, so
-  // a plain track still shows a single untitled list.
+  // the paired-end arc / read-cloud colors (insert size and orientation, when
+  // that differs from what the fills use — else the arc buckets merge into the
+  // read key rather than repeating the same swatches), and the linked-read
+  // connection curves. Empty sections are dropped and titles only appear once
+  // more than one survives, so a plain track still shows a single untitled list.
   const onDismiss = () => {
     model.setShowLegend(false)
   }
@@ -625,7 +626,11 @@ const LegendHost = observer(function LegendHost({
     <FloatingLegend
       sections={[
         { id: 'reads', title: 'Read colors', items: model.legendItems() },
-        { id: 'arcs', title: 'Arc colors', items: model.arcLegendItems() },
+        {
+          id: 'arcs',
+          title: model.arcLegendTitle,
+          items: model.arcLegendItems(),
+        },
         {
           id: 'connections',
           title: 'Read connections',

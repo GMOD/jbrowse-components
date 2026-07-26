@@ -3,6 +3,7 @@ import {
   NO_CALL_COLOR,
   REFERENCE_COLOR,
 } from '../../shared/constants.ts'
+import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
   getPhasedColor,
@@ -31,6 +32,7 @@ function makeFeatureData(
     name: feature.get('name')!,
     description: feature.get('description') as string,
     length: feature.get('end') - feature.get('start'),
+    insertedBp: getInsertedBp(feature),
     type: feature.get('type') ?? '',
     featureId,
     genotypes,

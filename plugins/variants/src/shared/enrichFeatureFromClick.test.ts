@@ -19,6 +19,7 @@ const featureInfo: VariantFeatureInfo = {
   name: 'bnd1',
   description: 'breakend',
   length: 1,
+  insertedBp: 0,
   type: 'breakend',
   genotypeCodes: new Uint16Array(),
 }

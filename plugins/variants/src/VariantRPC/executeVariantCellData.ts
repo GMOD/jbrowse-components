@@ -141,6 +141,7 @@ function internFeatureGenotypes(
     name: info.name,
     description: info.description,
     length: info.length,
+    insertedBp: info.insertedBp,
     type: info.type,
     genotypeCodes,
   }

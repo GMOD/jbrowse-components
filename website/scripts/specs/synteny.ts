@@ -69,6 +69,111 @@ const TNNT3_FRAME = {
   settleMs: 12000,
 }
 
+// The three frames of the "launch a synteny view from a selection" flow, all
+// starting from the same one-vs-all lane session and the same rubberband drag
+// over ~chr:800,000-808,000 of its 20 kb window. Each frame carries the actions
+// of the ones before it (a capture is one page load, so a later frame has to
+// redo the chain) and stops at its own state, with only the height that state
+// needs.
+function launchFromSelectionParts(): ScreenshotSpec[] {
+  const url = sessionSpec(
+    encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:795,000-815,000',
+          tracks: [
+            {
+              trackId: 'ecoli_ava',
+              type: 'LGVSyntenyDisplay',
+              groupBy: { type: 'mateAssembly' },
+              hideSelfAlignments: true,
+              featureHeight: 14,
+              height: 135,
+            },
+          ],
+        },
+      ],
+    },
+  )
+  // the drag is on the scalebar strip above the tracks; the menu it raises
+  // offers the launch, and this config carries three all-vs-all datasets so the
+  // offer is a submenu naming each. Both menu rows go by testid rather than by
+  // text: the track's name is also its label in the view above, and a text match
+  // resolves to the first visible match, which is that label rather than the row.
+  const select = [
+    { type: 'drag' as const, from: { x: 375, y: 150 }, to: { x: 975, y: 150 } },
+    { type: 'waitForText' as const, text: 'Linear synteny view of selection' },
+    { type: 'delay' as const, ms: 500 },
+  ]
+  const openDialog = [
+    {
+      type: 'click' as const,
+      selector:
+        '[data-testid="cascading-submenu-linear_synteny_view_of_selection"]',
+    },
+    {
+      type: 'waitForSelector' as const,
+      selector:
+        '[data-testid="cascading-menuitem-e._coli_pangenome_(all-vs-all_paf)"]',
+    },
+    {
+      type: 'click' as const,
+      selector:
+        '[data-testid="cascading-menuitem-e._coli_pangenome_(all-vs-all_paf)"]',
+    },
+    { type: 'waitForText' as const, text: 'Panels, top to bottom' },
+    { type: 'delay' as const, ms: 4000 },
+  ]
+  const base = {
+    mode: 'url' as const,
+    url,
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 12000,
+  }
+  return [
+    {
+      ...base,
+      name: 'multiway_synteny/ecoli_launch_selection',
+      // the lanes plus the selection's own menu, nothing below it
+      viewportHeight: 420,
+      actions: select,
+    },
+    {
+      ...base,
+      name: 'multiway_synteny/ecoli_launch_dialog',
+      // the dialog centers in the viewport, so this is its height plus the lanes
+      // it is launched from
+      viewportHeight: 620,
+      actions: [...select, ...openDialog],
+    },
+    {
+      ...base,
+      name: 'multiway_synteny/ecoli_launch_result',
+      // five genome rows (each collapsed to its ruler, since the launch gives
+      // them no tracks) and the four bands between them
+      viewportHeight: 620,
+      actions: [
+        ...select,
+        ...openDialog,
+        { type: 'click', text: 'Submit' },
+        {
+          type: 'waitForSelector',
+          selector: '[data-testid="synteny_canvas_done"]',
+        },
+        { type: 'delay', ms: 4000 },
+        // close the linear view it was launched from, so the frame is the result
+        // rather than mostly the source
+        { type: 'click', selector: '[data-testid="close_view"]' },
+        { type: 'delay', ms: 3000 },
+      ],
+    },
+  ]
+}
+
 export const syntenySpecs: ScreenshotSpec[] = [
   // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with
   // a human-specific L1HS insertion). 'full' cigarMode paints the indel as a
@@ -564,10 +669,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // The allvsall_synteny.md "From a lane to a stack, for one locus" section:
   // going from the one-vs-all lanes above to the stacked view of one locus,
-  // which is the launch this figure documents. Two stages because the dialog is
-  // only reachable through the UI — there is no session flag that opens it, and
-  // baking the launched view into a session would show the destination without
-  // the thing being documented.
+  // which is the launch this figure documents. Three parts, each its own spec
+  // and its own capture height, stacked by the `compose` below: the selection
+  // and the offer it raises, the dialog that offer opens, and the view it
+  // launches. Each is a UI chain rather than a session — the rubberband menu and
+  // the dialog are only reachable by driving the UI, and baking the launched view
+  // into a session would show the destination without the thing being documented
+  // — but they are separate specs rather than `stages` of one so that each frame
+  // is only as tall as its own state. As stages they shared the height the
+  // five-row stack needs, which left the dialog frame mostly empty.
   //
   // Deliberately NOT the paa window ecoli_one_vs_all uses. That locus is the one
   // place in the genome where three of the four strains have no alignment at
@@ -575,94 +685,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // degenerates to the pairwise case this section is contrasting against. This
   // is a shared-backbone window instead, where every strain aligns and the
   // launch produces the five-row stack.
+  ...launchFromSelectionParts(),
   {
-    mode: 'url',
+    mode: 'compose',
     name: 'multiway_synteny/ecoli_launch_from_selection',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'K12',
-            loc: 'chr:795,000-815,000',
-            tracks: [
-              {
-                trackId: 'ecoli_ava',
-                type: 'LGVSyntenyDisplay',
-                groupBy: { type: 'mateAssembly' },
-                hideSelfAlignments: true,
-                featureHeight: 14,
-                height: 135,
-              },
-            ],
-          },
-        ],
-      },
-    ),
-    // tall enough for the five-row stack the second frame launches (four bands
-    // plus five panels); the first frame spends the extra height on the lanes
-    // behind the dialog, which is the state being launched from
-    viewportHeight: 1180,
-    readySelector: '[data-testid="pileup-display-done"]',
-    readyTimeout: 120000,
-    settleMs: 12000,
-    actions: [
-      // ~chr:800,000-808,000 of the 20 kb window, dragged on the scalebar strip
-      // above the tracks
-      { type: 'drag', from: { x: 375, y: 150 }, to: { x: 975, y: 150 } },
-      { type: 'waitForText', text: 'Linear synteny view of selection' },
-      { type: 'delay', ms: 500 },
-    ],
-    stages: [
-      // top frame: the panel list, which is what the section is about — every
-      // strain aligning to the selection, in the order the rows will stack.
-      //
-      // This config carries three all-vs-all datasets, so the offer is a submenu
-      // naming each and the dataset has to be picked. Both rows go by testid
-      // rather than by text: the track's name is also its label in the view
-      // above, and a text match resolves to the first visible match, which is
-      // that label rather than the menu row.
-      {
-        actions: [
-          {
-            type: 'click',
-            selector:
-              '[data-testid="cascading-submenu-linear_synteny_view_of_selection"]',
-          },
-          {
-            type: 'waitForSelector',
-            selector:
-              '[data-testid="cascading-menuitem-e._coli_pangenome_(all-vs-all_paf)"]',
-          },
-          {
-            type: 'click',
-            selector:
-              '[data-testid="cascading-menuitem-e._coli_pangenome_(all-vs-all_paf)"]',
-          },
-          { type: 'waitForText', text: 'Panels, top to bottom' },
-          { type: 'delay', ms: 4000 },
-        ],
-      },
-      // bottom frame: the stack it launches, then close the linear view it was
-      // launched from so the frame is the result rather than mostly the source
-      {
-        actions: [
-          { type: 'click', text: 'Submit' },
-          {
-            type: 'waitForSelector',
-            selector: '[data-testid="synteny_canvas_done"]',
-          },
-          { type: 'delay', ms: 4000 },
-          { type: 'click', selector: '[data-testid="close_view"]' },
-          { type: 'delay', ms: 3000 },
-        ],
-      },
+    parts: [
+      'multiway_synteny/ecoli_launch_selection',
+      'multiway_synteny/ecoli_launch_dialog',
+      'multiway_synteny/ecoli_launch_result',
     ],
   },
-
   // The whole-genome end of the same "One strain against all the others"
   // section: the figure above, zoomed all the way out over K-12's 4.6 Mb. Same
   // track (ecoli_ava) on purpose — it is this tutorial's own all_vs_all.paf, and
@@ -1424,7 +1456,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // (a focused subsection, not the whole region — reviewer; ~75% of the
       // previous drag span, centered on the same block)
       { type: 'drag', from: { x: 126, y: 259 }, to: { x: 224, y: 311 } },
-      { type: 'waitForText', text: 'Open linear synteny view' },
+      { type: 'waitForText', text: 'Linear synteny view of selection' },
       { type: 'delay', ms: 1000 },
     ],
     stages: [
@@ -1434,7 +1466,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // dotplot view (views[0], so the first close_view button) and let it draw
       {
         actions: [
-          { type: 'click', text: 'Open linear synteny view' },
+          { type: 'click', text: 'Linear synteny view of selection' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="synteny_canvas_done"]',

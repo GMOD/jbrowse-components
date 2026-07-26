@@ -452,24 +452,24 @@ draws whatever carries a CIGAR, so the alleles pack into rows and each one draws
 the same insertion marker and deletion bar a read does, at its real size. That
 matters more here than on the per-strain track, because these alleles overlap —
 at a nested site several routes share an anchor — and because an insertion
-consumes no reference at all. Without the CIGAR a 63 kb allele is a 1 bp
-feature with the number hidden in its label.
+consumes no reference at all. Without the CIGAR a 63 kb allele is a 1 bp feature
+with the number hidden in its label.
 
 <Figure caption="The same bubble as the per-strain figure above, derived from the graph alone with no assemblies re-mapped. The segments track carries the alt segments (s399, s401, s403, s405); below, each allele is one packed row, its insertion drawn at real size and labelled — 63,348 bp, 49,838, 46,983 — and the 3,217 bp deletion as a grey bar. Nobody's name is on them, which is the trade for not needing the assemblies." src="/img/pangenome/rgfa_allele_inventory.png" />
 
-The five-strain graph yields 845 alleles: 393 insertions, 441 deletions, 11
+The five-strain graph yields 847 alleles: 395 insertions, 441 deletions, 11
 same-length substitutions. `altLen`, `discoveryRank` and the traversed
 `segments` are in the popup, and `class`/`delta` drive the same **Edit filters**
 jexl the per-strain track uses — `jexl:get(feature,'delta')>10000` is the one
 worth starting from on a graph this size, and the only one that scales to the
-208,308 alleles the 464-haplotype HPRC graph yields.
+208,545 alleles the 464-haplotype HPRC graph yields.
 
 **What it costs against the per-strain route above.** Run on this graph, 747 of
 that caller's 842 alleles come back with the identical length change inside the
 same bubble. The 95 that do not are compound routes at 69 nested bubbles, where
 `--call` reports one strain's whole traversal and this reports the individual
 alleles it is built from — every one of them at a bubble this file does
-describe. So nesting costs exact compound lengths, never a whole site; the 53
+describe. So nesting costs exact compound lengths, never a whole site; the 55
 alleles whose length is one route among several say so in a `nested` column.
 
 The real limit is whose allele it is. `discoveryRank` and `firstSeenIn` name the
@@ -598,7 +598,7 @@ taffy index -i ecoli_pggb.taf.gz                        # -> .taf.gz.tai
 }
 ```
 
-<Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb spanning the fim, mcr and hsd loci: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12, with the variant calls above. Where a row goes blank the strain has no alignment to K12 at all, so the accessory structure and the SNP divergence read in the same picture." src="/img/pangenome/maf.png" />
+<Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb spanning the fim, mcr and hsd loci: the coverage band on top, then one row per strain (K12 reference first), each colored where it differs from K12, with the variant calls above. Where a row goes blank the strain has no alignment to K12 at all, so the accessory structure and the SNP divergence read in the same picture. Numbered boxes are insertions, labeled with the bases the allele adds beyond K12 — an insertion consumes no reference, so its length can only be drawn as a marker." src="/img/pangenome/maf.png" />
 
 The `samples` list fixes the row order and labels. Supply an `nhLocation` Newick
 tree instead to draw the rows as a dendrogram. The

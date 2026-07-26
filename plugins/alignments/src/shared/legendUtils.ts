@@ -194,12 +194,13 @@ function crossCuttingBuckets(
 }
 
 /**
- * Key for the paired-end arc / read-cloud colors, which are their own
- * vocabulary — insert size and pair orientation, whatever the reads underneath
- * are colored by — so they get their own legend section rather than merging
- * into the read swatches, where the arcs' neutral slot would sit next to an
- * identically-colored read swatch. No per-scheme rewording for the same reason:
- * an arc never produces a strand bucket.
+ * Key for the paired-end arc / read-cloud colors when they are their own
+ * vocabulary — insert size or pair orientation while the reads underneath are
+ * colored by something else — so those get a legend section of their own. When
+ * the overlay mirrors the read scheme the caller merges the buckets into the
+ * read key instead (`arcColorsMatchReads`), since the two lists would be the
+ * same swatches under two headings. No per-scheme rewording either way: an arc
+ * never produces a strand bucket.
  */
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,

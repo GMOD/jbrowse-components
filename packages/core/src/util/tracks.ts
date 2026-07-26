@@ -50,8 +50,7 @@ export function getTrackAssemblyNames(
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
-    | string[]
-    | undefined
+    string[] | undefined
   if (!trackAssemblyNames) {
     const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
       conf,
@@ -559,8 +558,7 @@ export function generateUnknownTrackConf(
 
 export function getTrackName(
   conf:
-    | AnyConfigurationModel
-    | { name?: string; type?: string; trackId?: string },
+    AnyConfigurationModel | { name?: string; type?: string; trackId?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
   const isMst = isStateTreeNode(conf)
@@ -596,6 +594,53 @@ interface GenericView {
 interface DisplayInitialSnapshot {
   type?: string
   [key: string]: unknown
+}
+
+interface DisplayConfSnapshot {
+  type: string
+  displayId?: string
+}
+
+/**
+ * Which display a track opens with in a given view, and the display config that
+ * display must use: `{ type, conf }`, or undefined when the view supports none
+ * of the track's displays.
+ *
+ * Two decisions, in this order, and the order is the point. The **type** is what
+ * the caller asked for, else the track's first declared display the view
+ * supports, else the track type's first supported display. The **config** is
+ * then whichever declared entry has that type — never "the first supported one",
+ * which is what let a display be created wearing another display's config node
+ * (a multi-sample VCF declares both the matrix and the regular display, so the
+ * regular one inherited the matrix's 20px connector-line zone and drew its
+ * clustering tree offset from the rows it labels). `display.type ===
+ * display.configuration.type` is the invariant `DisplayConfigurationReference`
+ * already assumes when it falls back to resolving a display config by type; this
+ * is where it has to hold.
+ *
+ * `conf` is undefined when the track config declares no entry of that type;
+ * `baseTrackConfig.preProcessSnapshot` injects one for every registered display
+ * type, so the caller's `${trackId}-${type}` id resolves to it.
+ */
+export function pickDisplayForView({
+  declaredDisplays,
+  requestedType,
+  trackDisplayTypes,
+  viewDisplayTypes,
+}: {
+  declaredDisplays: DisplayConfSnapshot[]
+  requestedType: string | undefined
+  trackDisplayTypes: string[]
+  viewDisplayTypes: string[]
+}) {
+  const supported = new Set(viewDisplayTypes)
+  const type =
+    requestedType ??
+    declaredDisplays.find(d => supported.has(d.type))?.type ??
+    trackDisplayTypes.find(name => supported.has(name))
+  return type === undefined
+    ? undefined
+    : { type, conf: declaredDisplays.find(d => d.type === type) }
 }
 
 export function showTrackGeneric(
@@ -640,23 +685,20 @@ export function showTrackGeneric(
     }
 
     const viewType = pluginManager.getViewType(self.type)
-    const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
-    const displays = conf.displays ?? []
-    const displayConf = displays.find((d: { type: string }) =>
-      supportedDisplays.has(d.type),
-    )
+    const picked = pickDisplayForView({
+      declaredDisplays: conf.displays ?? [],
+      requestedType: displayInitialSnapshot.type,
+      trackDisplayTypes: trackType.displayTypes.map(d => d.name),
+      viewDisplayTypes: viewType.displayTypes.map(d => d.name),
+    })
 
-    const displayType =
-      displayInitialSnapshot.type ??
-      displayConf?.type ??
-      trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
-
-    if (!displayType) {
+    if (!picked) {
       throw new Error(
         `Could not find a compatible display for view type ${self.type}`,
       )
     }
 
+    const { type: displayType, conf: displayConf } = picked
     const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
 
     const track = trackType.stateModel.create({

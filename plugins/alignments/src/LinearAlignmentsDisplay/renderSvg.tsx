@@ -209,7 +209,7 @@ function ColorKey({
   maxHeight: number
 }) {
   const sections = [
-    { id: 'arcs', title: 'Arc colors', items: model.arcLegendItems() },
+    { id: 'arcs', title: model.arcLegendTitle, items: model.arcLegendItems() },
     {
       id: 'connections',
       title: 'Read connections',

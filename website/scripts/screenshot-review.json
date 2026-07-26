@@ -54,8 +54,8 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T23:05:46.473Z",
+    "note": "FIXED in code: the arc/cloud legend section now MERGES into the read-colors key whenever the overlay paints from the reads own scheme (arcColorsMatchReads in LinearAlignmentsDisplay/model.ts maps arc mode -> its equivalent read scheme), so the same swatches are no longer listed twice under two headings; the single merged list is untitled. When the two schemes genuinely differ the overlay keeps its own section, and its heading is now named after the overlay drawn (Read cloud colors vs Arc colors), so cloud mode is no longer called arcs. Regenerated.",
+    "reviewedAt": "2026-07-26T06:12:17.113Z",
     "hash": "0a45a27dc4022239cf460c92d7b717321c54a400"
   },
   "dotplot": {
@@ -921,10 +921,10 @@
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
-    "status": "bad",
-    "note": "put red box around the Tag radio item also",
-    "reviewedAt": "2026-07-26T00:52:46.369Z",
-    "hash": "9e83ab235bc381cd426d5d18225a38a46b716d73"
+    "status": "good",
+    "note": "FIXED: stage 1 now boxes the Tag... radio inside the Group by submenu alongside the Group by... parent, so the menu path is boxed end to end. Force-regenerated (the added box is 0.1% of the frame, under the content-stable threshold).",
+    "reviewedAt": "2026-07-26T06:12:17.113Z",
+    "hash": "6e7c04e77d31d77f224b0dc5d9d792ab6aa3064d"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1204,9 +1204,9 @@
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T16:10:52.933Z",
+    "status": "bad",
+    "note": "this figure is potentially redundant with multiway_synteny/ecoli_one_vs_all_whole_genome  now, not sure what you think",
+    "reviewedAt": "2026-07-26T05:25:59.852Z",
     "hash": "7a708cab0a632a04789e5196658cf2b707573ab0"
   },
   "multiway_synteny/grape_peach_cacao": {
@@ -1435,9 +1435,10 @@
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
-    "status": "good",
-    "note": "resolved: deleted per reviewer. Removed spec (methylation.ts) + PNG; bisulfite.md paragraph folded into the preceding prose.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z"
+    "status": "bad",
+    "note": "can you add back the methyldackyl track? this brought the story home i think",
+    "reviewedAt": "2026-07-26T05:25:14.854Z",
+    "hash": "9976382bbc8b894f9c9eafb47bcb9426f273f8ce"
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
@@ -1629,9 +1630,9 @@
   "pangenome/maf": {
     "name": "pangenome/maf",
     "status": "good",
-    "note": "FIXED: 6kb -> 60kb (chr:4,540,000-4,600,000, over fim/mcr/hsd). Window scored from the odgi pav bigWigs, not by eye: ranking 60kb windows on 'each strain partly present, partly absent' (8-40% of its 500bp bins absent) puts this one top with all four strains 29-40% absent. At 6kb every row was continuous backbone, so the figure could only repeat the SNP-divergence point the variant figure above already makes; at 60kb the rows show where each strain stops aligning to K12 at all.",
-    "reviewedAt": "2026-07-25T22:10:04.327Z",
-    "hash": "5f0617beff355b64c28e4b6273cfa15586f9ec68"
+    "note": "FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
+    "reviewedAt": "2026-07-26T06:12:17.113Z",
+    "hash": "7591524c7ace2b13dd919bcd0ce1631cdc223742"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1716,16 +1717,16 @@
   },
   "pangenome_cactus/synteny": {
     "name": "pangenome_cactus/synteny",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T21:50:00.718Z",
+    "status": "bad",
+    "note": "this is very similar to the all_vs_all, but tell users how it is similar or different. add setup steps if needed in multipart fig",
+    "reviewedAt": "2026-07-26T05:28:13.988Z",
     "hash": "f8df0a347e671466b72d25c0dbac7e838d20e155"
   },
   "pangenome_cactus/variant_matrix": {
     "name": "pangenome_cactus/variant_matrix",
-    "status": "good",
-    "note": "Rescored window -> chr:2,200,000-2,220,000. All four strains carry alt, IAI39 goes no-call over the last 6 kb and its MAF row drops out across the same stretch. Raw-calls lane dropped.",
-    "reviewedAt": "2026-07-25T22:27:29.536Z",
+    "status": "bad",
+    "note": "is this a particularlyinteresting region? if not, can consider deleting fig. Rescored window -> chr:2,200,000-2,220,000. All four strains carry alt, IAI39 goes no-call over the last 6 kb and its MAF row drops out across the same stretch. Raw-calls lane dropped.",
+    "reviewedAt": "2026-07-26T05:28:39.557Z",
     "hash": "ce1ebba2ebbca71ee9d20136edfa5ada31cc8b6d"
   },
   "sv_cgiab/cdkn2a_tumor_normal_coverage": {
@@ -1779,9 +1780,9 @@
   },
   "pangenome_cactus/graph_correspondence": {
     "name": "pangenome_cactus/graph_correspondence",
-    "status": "good",
-    "note": "One locus (chr:1,000,000-1,100,000), gold band visible over the dark depth track.",
-    "reviewedAt": "2026-07-25T22:27:29.536Z",
+    "status": "bad",
+    "note": "honestly, it is hard to 'understand' the correspondance between this and odgi viz. i want to convey maximum clarity for reader, anything we can do to improve this, e.g. maybe the depth isnt the best, maybe we need something even closr to odgi viz itself. that is hard because we are reference based but just saying...previous agent notes: One locus (chr:1,000,000-1,100,000), gold band visible over the dark depth track.",
+    "reviewedAt": "2026-07-26T05:27:37.655Z",
     "hash": "95b189ac29b19d1f57ca2ba8cd410c332ef50aeb"
   },
   "alignments/height_mode_fit": {
@@ -1862,9 +1863,9 @@
   "hprc2/mhc_clustered": {
     "name": "hprc2/mhc_clustered",
     "status": "good",
-    "reviewedAt": "2026-07-26T01:40:00.000Z",
-    "hash": "81c3c40e13ace83591b6688711edf120c31dcb21",
-    "note": "FIXED all three asks: (1) hg38 NCBI RefSeq gene lane added as a session track (the hprc2 config declares none), so the blocks read against HLA-DRB5/DRB6/DRB1/DQA1; (2) variant lane cut 700 -> 460; (3) switched off matrix mode onto LinearMultiSampleVariantDisplay — with the >=50 bp SV filter there are only 220 alleles, few enough to draw at real genomic positions, which is what makes them line up with the genes. Matrix mode earns its keep on thousands of columns, which the filter removes."
+    "note": "FIXED (real bug, not lineZoneHeight on this display): showTrackGeneric picked the FIRST view-supported display config regardless of the display type actually being opened, so this session-spec-requested LinearMultiSampleVariantDisplay was created wearing the matrix displays config node (hprc2_wave_grch38_matrix, which declares displays first). Every slot it read came from the matrix schema, including that schemas 20px connector-line zone, and TreeSidebar offsets the tree by lineZoneHeight -> the 20px gap above the tree. Now pickDisplayForView (packages/core/src/util/tracks.ts) resolves the display type first and then the config entry of that type; unit-tested there plus a session-level regression test (products/jbrowse-web/src/tests/RequestedDisplayType.test.tsx). Verified in the browser: tree top now equals the genotype canvas top. Regenerated.",
+    "reviewedAt": "2026-07-26T06:12:17.113Z",
+    "hash": "ca554bbd32b9845e4aec3963247b2612204b793d"
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
@@ -1972,9 +1973,9 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "good",
-    "note": "Paired with an LGV of the same locus (pggb MAF, five rows = the graph's five paths).",
-    "reviewedAt": "2026-07-25T22:27:29.537Z",
+    "status": "bad",
+    "note": "it would be great if we could get coloring on the linaer genome view that matches up to the graphgenomeview viewer. previous agent notes: Paired with an LGV of the same locus (pggb MAF, five rows = the graph's five paths).",
+    "reviewedAt": "2026-07-26T05:29:13.519Z",
     "hash": "618e0465ff9055a8d10320232d6b6b5eb4645980"
   },
   "pangenome/rgfa_subgraph_launch": {
@@ -1993,9 +1994,9 @@
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
-    "status": "good",
-    "note": "FIXED in the app, not the figure: submitting a BLAT / in-silico PCR query now opens a UcscResultsWidget in the drawer listing every hit (location link + query, identity, query coverage; size + primer pair for hgPcr), so the results stay visible after the dialog closes instead of living in a snackbar that named only the best hit. Each location navigates the open view, so the second-best placement is one click away. A table overflowed the drawer at its default width, so each hit is a location line with its numbers underneath. Desktop rebuilt + recaptured (pnpm package:linux:no-installer, then screenshots --only blat-results).",
-    "reviewedAt": "2026-07-25T21:53:41.961Z",
+    "status": "bad",
+    "note": "might benefit from plottingjust longestCoding geneglyph",
+    "reviewedAt": "2026-07-26T05:32:40.480Z",
     "hash": "83e71ec295a5092834032477d5d640637b65612c"
   },
   "pangenome/pangenome_variants": {
@@ -2007,9 +2008,9 @@
   },
   "multiway_synteny/ecoli_launch_from_selection": {
     "name": "multiway_synteny/ecoli_launch_from_selection",
-    "status": "bad",
-    "note": "may benefit from  (1) making three part figure, including rubberband (2) reducing height of items in dialog (3) reducing height of the per-row synteny displays adaptive to number of rows, optionally with slider for this in the dialog",
-    "reviewedAt": "2026-07-26T00:54:24.455Z",
-    "hash": "dbc0588d95545a7d73690fddf3277507b109e391"
+    "status": "good",
+    "note": "FIXED all three asks. (1) Three-part figure: split into three specs (ecoli_launch_selection = the rubberband selection and the menu it raises, _dialog, _result) stacked by a compose, so each frame gets only the height its own state needs instead of every stage inheriting the five-row stacks height. (2) Dialog items compacted: single-line panel rows (small checkboxes, no vertical margin) and the flip option is now Horizontally flip inverted targets with the explanation on a help tooltip instead of two wrapped lines. (3) Launched-view height is adaptive: level heights split a 320px band budget across levels (levelHeightBudget.ts, shared by the Auto-scale level heights menu item), and a genome row a multi-way launch gives no tracks opens collapsed to its ruler rather than repeating the ~90px No tracks active block per row. No slider: the bands stay drag-resizable and the menu item re-runs the auto-scale.",
+    "reviewedAt": "2026-07-26T06:12:17.113Z",
+    "hash": "9c9271dada6213111d81cec98c317dc68a339d93"
   }
 }
