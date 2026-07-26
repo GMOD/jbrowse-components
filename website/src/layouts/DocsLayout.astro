@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content'
 
 import SidebarLayout from './SidebarLayout.astro'
+import Breadcrumbs from '../components/Breadcrumbs.astro'
 import CopyMarkdown from '../components/CopyMarkdown.astro'
 import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import TableOfContents from '../components/TableOfContents.astro'
@@ -45,6 +46,7 @@ const mdHref = isRealDoc
 >
   <DocsSidebarNav slot="nav" currentSlug={currentSlug} />
   <article class="docs-content" data-pagefind-body>
+    <Breadcrumbs currentSlug={currentSlug} />
     <h1>{title}</h1>
     <slot />
   </article>

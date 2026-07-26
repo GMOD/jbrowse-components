@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content'
+
+import { baseUrl } from '../lib/base-url.ts'
+import { breadcrumbTrail, buildSidebar } from '../lib/docs-sidebar.ts'
+
+interface Props {
+  currentSlug: string
+}
+const { currentSlug } = Astro.props
+
+const trail = breadcrumbTrail(
+  buildSidebar(await getCollection('docs'), baseUrl),
+  currentSlug,
+)
+---
+
+{
+  /* Where the page sits in the docs tree, for a reader who arrived from search
+    or an external link. Matters most on mobile, where the sidebar is collapsed
+    behind a toggle and is the only other place this is shown.
+
+    The category crumbs are plain text, not links: a sidebar category is a
+    grouping, not a page, so most have nothing to point at.
+
+    pagefind-ignored so "Docs User guide Track types" doesn't land in every
+    page's search excerpt (same reasoning as rehype-pagefind-ignore.ts). */
+}
+{
+  trail.length > 0 && (
+    <nav class="breadcrumbs" aria-label="Breadcrumb" data-pagefind-ignore>
+      <a href={`${baseUrl}/docs/`}>Docs</a>
+      {trail.map(label => (
+        <>
+          <span class="sep" aria-hidden="true">
+            /
+          </span>
+          <span>{label}</span>
+        </>
+      ))}
+    </nav>
+  )
+}
+
+<style>
+  .breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+  .breadcrumbs a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .breadcrumbs a:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+  .sep {
+    opacity: 0.5;
+  }
+</style>

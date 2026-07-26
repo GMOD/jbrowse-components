@@ -6,14 +6,22 @@ interface Props {
 }
 
 const { toc } = Astro.props
+
+// Long pages start with the rail open: faq has 57 headings and quickstart_web
+// 17, where the TOC is the only practical way to see the page's shape, while the
+// median doc page has 3 and gains nothing. 12 is the knee of the distribution
+// (25 of 355 pages), so this stays the exception rather than the default.
+const defaultShow = toc.length >= 12
 ---
 
 {
-  /* Apply the persisted preference before first paint so an enabled TOC doesn't
-    flash in. Default is off, so the common case renders nothing extra. */
+  /* Apply the preference before first paint so the rail doesn't flash in or out.
+    An explicit toggle wins in both directions; only an untouched preference
+    falls back to the page's own length. */
 }
-<script is:inline>
-  if (localStorage.getItem('jbrowse-toc') === 'show') {
+<script is:inline define:vars={{ defaultShow }}>
+  const stored = localStorage.getItem('jbrowse-toc')
+  if (stored === 'show' || (stored === null && defaultShow)) {
     document.documentElement.dataset.toc = 'show'
   }
 </script>
