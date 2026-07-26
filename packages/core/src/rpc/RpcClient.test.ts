@@ -191,6 +191,46 @@ describe('RpcClient worker crash (catch)', () => {
   })
 })
 
+describe('RpcClient.destroy()', () => {
+  test('rejects pending calls so they do not outlive the worker', async () => {
+    const { client } = makeClient()
+    const p1 = client.call('m1', {})
+    const p2 = client.call('m2', {})
+
+    client.destroy()
+
+    await expect(p1).rejects.toThrow('RPC worker was terminated')
+    await expect(p2).rejects.toThrow('RPC worker was terminated')
+    expect(client.pending.size).toBe(0)
+  })
+
+  test('drops event listeners', () => {
+    const { client } = makeClient()
+    const received: unknown[] = []
+    client.on('ch', d => received.push(d))
+
+    client.destroy()
+    client.emit('ch', 'after destroy')
+
+    expect(received).toEqual([])
+  })
+})
+
+describe('RpcClient non-cloneable payload', () => {
+  test('rejects and drops the pending entry when postMessage throws', async () => {
+    const worker = new FakeWorker()
+    worker.postMessage = () => {
+      throw new DOMException('could not be cloned', 'DataCloneError')
+    }
+    const client = new RpcClient(worker as unknown as Worker)
+
+    await expect(client.call('m', { fn: () => {} })).rejects.toThrow(
+      'could not be cloned',
+    )
+    expect(client.pending.size).toBe(0)
+  })
+})
+
 describe('RpcClient event subscriptions', () => {
   test('on/emit/off work correctly', () => {
     const { client } = makeClient()

@@ -17,6 +17,10 @@ interface AdapterCacheEntry {
   sessionIds: Set<string>
 }
 
+// Unbounded in practice: the only pruning paths are storeWithEvict (rejections
+// only) and freeAdapterResources, whose sole caller is the CoreFreeResources RPC
+// — which nothing in the app invokes. An adapter therefore lives for as long as
+// its worker does.
 let adapterCache: Record<string, Promise<AdapterCacheEntry>> = {}
 
 /** stores a promise in the cache and auto-evicts if it rejects */
@@ -102,6 +106,7 @@ export type getSubAdapterType = (
   adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
+// UNUSED via its only caller, the CoreFreeResources RPC, which nothing invokes
 export async function freeAdapterResources(args: { sessionId?: string }) {
   const { sessionId } = args
   if (!sessionId) {

@@ -1,14 +1,14 @@
 import RpcClient from './RpcClient.ts'
-import RpcServer, { rpcResult } from './RpcServer.ts'
+import RpcServer, { rpcResult, rpcResultWithArrayBuffers } from './RpcServer.ts'
 
 // Flush all pending microtasks (promise .then chains need multiple ticks)
 function flushPromises() {
   return new Promise(resolve => setTimeout(resolve, 0))
 }
 
-// RpcServer uses `workerSelf = self as WorkerSelf` (module-level).
-// In jsdom self === window === globalThis, so mocking globalThis.postMessage
-// intercepts all workerSelf.postMessage calls.
+// RpcServer captures the module-level `self` as its message target. In jsdom
+// self === window === globalThis, so mocking globalThis.postMessage intercepts
+// every reply the server posts.
 function mockPostMessage() {
   const sent: { data: unknown; transferables?: unknown }[] = []
   const original = (globalThis as any).postMessage
@@ -152,6 +152,35 @@ describe('RpcServer reply with rpcResult (transferables)', () => {
     expect((sent[0]?.data as any)?.data).toBe(42)
     expect(sent[0]?.transferables).toEqual([])
     restore()
+  })
+})
+
+describe('rpcResultWithArrayBuffers', () => {
+  test('derives one transferable per typed-array field', () => {
+    const starts = new Uint32Array(2)
+    const ends = new Uint32Array(2)
+    const { transferables } = rpcResultWithArrayBuffers({
+      starts,
+      ends,
+      count: 2,
+    })
+    expect(transferables).toEqual([starts.buffer, ends.buffer])
+  })
+
+  test('dedupes views that share one buffer', () => {
+    const backing = new ArrayBuffer(16)
+    const first = new Uint32Array(backing, 0, 2)
+    const second = new Uint32Array(backing, 8, 2)
+    const { transferables } = rpcResultWithArrayBuffers({ first, second })
+    // a duplicate entry would make postMessage throw DataCloneError
+    expect(transferables).toEqual([backing])
+  })
+
+  test('skips SharedArrayBuffer-backed views, which cannot be transferred', () => {
+    const shared = new Int32Array(new SharedArrayBuffer(8))
+    const owned = new Uint32Array(2)
+    const { transferables } = rpcResultWithArrayBuffers({ shared, owned })
+    expect(transferables).toEqual([owned.buffer])
   })
 })
 

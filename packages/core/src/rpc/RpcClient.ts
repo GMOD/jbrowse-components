@@ -83,8 +83,15 @@ export default class RpcClient {
     }
   }
 
-  protected catch(e: ErrorEvent) {
-    const error = new Error(e.message)
+  // terminating a worker settles nothing on its own: a pending call's reply can
+  // never arrive, so reject it here instead of leaving the caller's promise (and
+  // everything its continuation holds) unsettled forever
+  destroy() {
+    this.rejectAllPending(new Error('RPC worker was terminated'))
+    this.events.clear()
+  }
+
+  private rejectAllPending(error: Error) {
     // snapshot before clearing so a synchronous reject handler that schedules
     // a new call() can't have its entry dropped by the clear()
     const snapshot = [...this.pending.values()]
@@ -92,6 +99,10 @@ export default class RpcClient {
     for (const { reject } of snapshot) {
       reject(error)
     }
+  }
+
+  protected catch(e: ErrorEvent) {
+    this.rejectAllPending(new Error(e.message))
     this.emit('error', {
       message: e.message,
       lineno: e.lineno,
@@ -123,10 +134,17 @@ export default class RpcClient {
     const uid = String(++this.counter)
     return new Promise((resolve, reject) => {
       this.pending.set(uid, { resolve, reject })
-      this.worker.postMessage(
-        { method, uid, data, libRpc: true },
-        transferables,
-      )
+      try {
+        this.worker.postMessage(
+          { method, uid, data, libRpc: true },
+          transferables,
+        )
+      } catch (e) {
+        // a non-cloneable payload throws here, which rejects this promise; drop
+        // the entry that is now waiting on a reply the worker never received
+        this.pending.delete(uid)
+        throw e
+      }
     })
   }
 }

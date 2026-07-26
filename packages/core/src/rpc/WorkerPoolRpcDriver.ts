@@ -93,6 +93,8 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
 
   abstract makeWorker(): Promise<WorkerHandle>
 
+  // dead in production: only CoreFreeResources reaches this, and nothing calls
+  // that (see CoreFreeResources), so an assignment lives as long as the driver
   override freeSession(sessionId: string) {
     this.workerAssignments.delete(sessionId)
   }
@@ -109,17 +111,12 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
   }
 
   private createWorkerPool(): LazyWorker[] {
-    const hardwareConcurrency = detectHardwareConcurrency()
-
+    // workerCount 0 (the config default) means "decide from hardware"
     const workerCount =
       readConfObject(this.config, 'workerCount') ||
-      clamp(hardwareConcurrency - 1, 1, 5)
+      clamp(detectHardwareConcurrency() - 1, 1, 5)
 
-    const workers = []
-    for (let i = 0; i < workerCount; i++) {
-      workers.push(new LazyWorker(this))
-    }
-    return workers
+    return Array.from({ length: workerCount }, () => new LazyWorker(this))
   }
 
   private getWorkerPool() {

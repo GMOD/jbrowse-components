@@ -23,6 +23,10 @@ export function isFeatureAdapter(
   return 'getFeatures' in t
 }
 
+export function isSequenceAdapter(t: AnyDataAdapter): t is BaseSequenceAdapter {
+  return 'getSequence' in t
+}
+
 export function isRefNameAliasAdapter(t: object): t is BaseRefNameAliasAdapter {
   return 'getRefNameAliases' in t
 }

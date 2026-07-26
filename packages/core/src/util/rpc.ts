@@ -1,4 +1,6 @@
-import type { RpcResult } from './librpc.ts'
+// straight from the defining module, not the librpc barrel that re-exports it:
+// RpcServer.ts imports this file, so going through the barrel would loop
+import type { RpcResult } from '../rpc/RpcServer.ts'
 
 /**
  * Type guard to check if a value is an RpcResult.
@@ -13,6 +15,6 @@ export function isRpcResult(value: unknown): value is RpcResult {
     typeof value === 'object' &&
     value !== null &&
     '__rpcResult' in value &&
-    (value as RpcResult).__rpcResult
+    value.__rpcResult === true
   )
 }

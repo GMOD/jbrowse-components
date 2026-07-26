@@ -8,8 +8,11 @@ interface WorkerSelf {
   addEventListener(type: string, listener: (e: MessageEvent) => void): void
 }
 
+// `self` is a DedicatedWorkerGlobalScope in the worker, but the DOM lib types the
+// ambient `self` as Window (whose postMessage overloads differ), so narrow it to
+// the surface RpcServer uses. Absent entirely under plain node.
 const workerSelf =
-  typeof self !== 'undefined' ? (self as unknown as WorkerSelf) : null
+  typeof self === 'undefined' ? undefined : (self as unknown as WorkerSelf)
 
 // The wrapper an RPC method returns to hand transferables to postMessage. `T`
 // is the value the caller ultimately receives, so it flows out of an executor's
@@ -34,10 +37,18 @@ export function rpcResult<T>(
 // hand-maintained buffer list wasn't extended. Use for any worker RPC whose
 // result is a flat object of typed arrays (canvas/synteny/dotplot/wiggle packers).
 export function rpcResultWithArrayBuffers<T extends object>(value: T) {
-  const transferables = Object.values(value)
-    .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
-    .map(v => v.buffer as ArrayBuffer)
-  return rpcResult(value, transferables)
+  const fields: unknown[] = Object.values(value)
+  // A Set because several fields can be views onto one allocation (subarrays of
+  // a shared buffer), and postMessage rejects a transfer list with a duplicate
+  // entry outright. SharedArrayBuffer-backed views are skipped for the same
+  // reason: a SAB can't be transferred, only cloned.
+  const transferables = new Set<ArrayBuffer>()
+  for (const field of fields) {
+    if (ArrayBuffer.isView(field) && field.buffer instanceof ArrayBuffer) {
+      transferables.add(field.buffer)
+    }
+  }
+  return rpcResult(value, [...transferables])
 }
 
 type Procedure = (data: unknown) => Promise<unknown>
@@ -52,9 +63,15 @@ interface RpcMessageData {
 export default class RpcServer {
   protected methods: Record<string, Procedure>
 
+  private self: WorkerSelf
+
   constructor(methods: Record<string, Procedure>) {
+    if (!workerSelf) {
+      throw new Error('RpcServer must be constructed in a worker global scope')
+    }
     this.methods = methods
-    workerSelf!.addEventListener('message', (e: MessageEvent) => {
+    this.self = workerSelf
+    this.self.addEventListener('message', (e: MessageEvent) => {
       this.handler(e)
     })
   }
@@ -87,7 +104,7 @@ export default class RpcServer {
     payload: Record<string, unknown>,
     transferables: Transferable[],
   ) {
-    workerSelf!.postMessage({ ...payload, libRpc: true }, transferables)
+    this.self.postMessage({ ...payload, libRpc: true }, transferables)
   }
 
   protected reply(uid: string, response: unknown) {

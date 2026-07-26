@@ -8,6 +8,7 @@ export {
   isFeatureAdapter,
   isRefNameAliasAdapter,
   isRegionsAdapter,
+  isSequenceAdapter,
   isTextSearchAdapter,
 } from './util.ts'
 export type {

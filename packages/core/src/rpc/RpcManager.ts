@@ -112,6 +112,8 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
+  // `opts` has no caller in this repo — a per-call rpcDriverName travels inside
+  // `args` instead — but it stays part of the public API for external plugins.
   async call<M extends string>(
     sessionId: string,
     functionName: M,
@@ -198,6 +200,8 @@ export default class RpcManager {
   /**
    * Drop a session's sticky worker assignment on every driver so the
    * workerAssignments map doesn't grow unboundedly as sessions are freed.
+   * Reached only via CoreFreeResources, which currently has no caller — see
+   * the note on that method.
    */
   private freeSessionOnAllDrivers(sessionId: string) {
     for (const driver of this.driverObjects.values()) {

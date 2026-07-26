@@ -28,6 +28,9 @@ class WebWorkerHandle {
   }
 
   destroy() {
+    // reject in-flight calls before terminating, else they wait on a reply the
+    // dead worker can never send
+    this.client.destroy()
     this.worker.terminate()
   }
 
@@ -92,10 +95,17 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
     }
 
     // send the worker its boot configuration using info from the pluginManager
-    return new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
+    return new Promise<WebWorkerHandle>((resolve, reject) => {
       const cleanup = () => {
         instance.removeEventListener('message', onMessage)
         instance.removeEventListener('error', onError)
+      }
+      // the pool discards this slot and re-boots on the next call, so terminate
+      // the half-booted worker rather than orphaning its thread
+      const fail = (error: Error) => {
+        cleanup()
+        handle.destroy()
+        reject(error)
       }
       const onMessage = (e: MessageEvent) => {
         switch (e.data.message) {
@@ -112,8 +122,7 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
             break
           }
           case 'error': {
-            cleanup()
-            reject(deserializeError(e.data.error))
+            fail(deserializeError(e.data.error))
             break
           }
           // No default
@@ -122,8 +131,7 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
       // a worker that throws while loading its script posts no message, so
       // reject on the raw ErrorEvent too, else the boot promise hangs forever
       const onError = (e: ErrorEvent) => {
-        cleanup()
-        reject(new Error(e.message || 'worker failed to load'))
+        fail(new Error(e.message || 'worker failed to load'))
       }
       instance.addEventListener('message', onMessage)
       instance.addEventListener('error', onError)

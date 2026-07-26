@@ -1,7 +1,7 @@
+import { isSequenceAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
-import type { BaseSequenceAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
@@ -22,10 +22,14 @@ export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
     const { stopToken, sessionId, adapterConfig, region } =
       await this.deserializeArguments(args, rpcDriver)
 
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseSequenceAdapter
-
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    if (!isSequenceAdapter(dataAdapter)) {
+      throw new Error('Adapter does not support retrieving sequences')
+    }
     return dataAdapter.getSequence(region, { stopToken })
   }
 }
