@@ -9,7 +9,12 @@ import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
 import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
 import SVGTracks from './SVGTracks.tsx'
-import { getHeaderLayout, totalHeight, trackLabelLeftOffset } from './util.ts'
+import {
+  defaultTextHeight,
+  getHeaderLayout,
+  totalHeight,
+  trackLabelLeftOffset,
+} from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ExportSvgOptions } from '../types.ts'
@@ -19,9 +24,11 @@ type LGV = LinearGenomeViewModel
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await awaitViewInitialized(model)
   const {
-    textHeight = 18,
-    rulerHeight = 34,
     fontSize = 13,
+    // the label band scales with the font it holds; destructured after
+    // fontSize so the default can read it
+    textHeight = defaultTextHeight(fontSize),
+    rulerHeight = 34,
     trackLabels = 'offset',
     themeName = 'default',
     fontFamily,

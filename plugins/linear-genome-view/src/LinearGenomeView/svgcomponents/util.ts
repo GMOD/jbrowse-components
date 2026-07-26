@@ -67,6 +67,49 @@ export function vlinePath(xs: number[], y1: number, y2: number) {
 // Vertical gap between stacked header rows.
 const ROW_GAP = 4
 
+// Vertical ink extents of a text label, as a fraction of its font size: Chrome
+// reports a 13px Latin string as 15px tall with ~3px of that below the
+// baseline. `fontSize` alone undercounts the box (it ignores the descenders),
+// which is what used to let an 'offset' label's descenders land on the first
+// pixel row of the track body.
+const LABEL_INK_EM = 1.16
+const LABEL_DESCENT_EM = 0.22
+
+export function labelInkHeight(fontSize: number) {
+  return Math.ceil(fontSize * LABEL_INK_EM)
+}
+
+function labelDescent(fontSize: number) {
+  return Math.ceil(fontSize * LABEL_DESCENT_EM)
+}
+
+// clearance an 'offset' label keeps above its ascenders and below its
+// descenders. The bottom gap is the wider of the two: it separates text from
+// the features, where the top gap only separates it from the track above.
+const LABEL_PAD_TOP = 1
+const LABEL_PAD_BOTTOM = 3
+
+// Default `textHeight`: the band an 'offset' label occupies above its track,
+// i.e. its full ink box plus that clearance. 20px at the default 13px font,
+// where the old fixed 18 left the descenders 0.4px shy of the features.
+export function defaultTextHeight(fontSize: number) {
+  return labelInkHeight(fontSize) + LABEL_PAD_TOP + LABEL_PAD_BOTTOM
+}
+
+// Baseline for an 'offset' label sitting in a `textHeight`-tall band. Measured
+// up from the bottom of the band rather than down from the top, so a
+// caller-supplied textHeight still clears the features (it eats into the gap
+// above the label instead).
+export function offsetLabelBaselineY(textHeight: number, fontSize: number) {
+  return textHeight - LABEL_PAD_BOTTOM - labelDescent(fontSize)
+}
+
+// Baseline for a label inset into the top of the box it draws over ('overlay'
+// mode), measured down from that top edge so the ascenders stay inside it.
+export function insetLabelBaselineY(fontSize: number) {
+  return LABEL_PAD_TOP + labelInkHeight(fontSize) - labelDescent(fontSize)
+}
+
 // Compact vertical layout for the exported header: rows (assembly name,
 // cytoband overview, "you are here" polygon, total-bp scalebar, ruler) are
 // stacked with a small fixed gap rather than reserving loose fixed-height
@@ -82,18 +125,24 @@ export function getHeaderLayout({
   showCytobands: boolean
   rulerHeight: number
 }) {
-  const cytobandTop = fontSize + ROW_GAP
+  // the assembly name is drawn on its ink box, not on `fontSize`: at y=0 with a
+  // hanging baseline its ascenders rose above the export's top edge and got
+  // clipped, so the label now hangs from its own baseline inside this band
+  const assemblyLabelHeight = labelInkHeight(fontSize)
+  const cytobandTop = assemblyLabelHeight + ROW_GAP
   const polygonTop = cytobandTop + HEADER_OVERVIEW_HEIGHT
   // scalebar line sits at the bottom tip of the "you are here" polygon (with
   // cytobands) or just below the assembly name (without); the cap clears the
   // assembly label in the latter case
   const scalebarLineY = showCytobands
     ? polygonTop + HEADER_BAR_HEIGHT
-    : fontSize + ROW_GAP + SVG_SCALEBAR_CAP
-  // the bp label hangs below the scalebar line (a cap's clearance, then a
-  // fontSize-tall label), and the ruler starts a gap below that
-  const rulerTop = scalebarLineY + SVG_SCALEBAR_CAP + fontSize + ROW_GAP
+    : cytobandTop + SVG_SCALEBAR_CAP
+  // the bp label hangs below the scalebar line (a cap's clearance, then the
+  // label's ink box), and the ruler starts a gap below that
+  const rulerTop =
+    scalebarLineY + SVG_SCALEBAR_CAP + labelInkHeight(fontSize) + ROW_GAP
   return {
+    assemblyLabelBaselineY: assemblyLabelHeight - labelDescent(fontSize),
     cytobandTop,
     scalebarLineY,
     rulerTop,

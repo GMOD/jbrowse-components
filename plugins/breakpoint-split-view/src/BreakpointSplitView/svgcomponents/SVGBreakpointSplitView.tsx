@@ -3,6 +3,7 @@ import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, sum } from '@jbrowse/core/util'
 import {
   SVGView,
+  defaultTextHeight,
   labelOffset,
   totalHeight,
   trackLabelLeftOffset,
@@ -21,10 +22,11 @@ type BSV = BreakpointViewModel
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
-    textHeight = 18,
+    fontSize = 13,
+    // destructured after fontSize so the label band can scale with it
+    textHeight = defaultTextHeight(fontSize),
     headerHeight = 30,
     rulerHeight = 30,
-    fontSize = 13,
     trackLabels = 'offset',
     showGridlines = false,
     Wrapper = ({ children }) => children,

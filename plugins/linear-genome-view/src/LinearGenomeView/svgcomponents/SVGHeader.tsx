@@ -87,20 +87,15 @@ export default function SVGHeader({
     return null
   }
 
-  const { cytobandTop, scalebarLineY, rulerTop } = getHeaderLayout({
-    fontSize,
-    showCytobands: effectiveShowCytobands,
-    rulerHeight,
-  })
+  const { assemblyLabelBaselineY, cytobandTop, scalebarLineY, rulerTop } =
+    getHeaderLayout({
+      fontSize,
+      showCytobands: effectiveShowCytobands,
+      rulerHeight,
+    })
   return (
     <g id="header">
-      <text
-        x={0}
-        y={0}
-        dominantBaseline="hanging"
-        fontSize={fontSize}
-        fill={fill}
-      >
+      <text x={0} y={assemblyLabelBaselineY} fontSize={fontSize} fill={fill}>
         {assemblyNames.join(', ')}
       </text>
 

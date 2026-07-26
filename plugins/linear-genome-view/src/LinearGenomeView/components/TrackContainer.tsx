@@ -30,9 +30,15 @@ const useStyles = makeStyles()({
     position: 'relative',
     height: 4,
   },
+  // in-flow, so the label pushes the track body down by its own height. The
+  // margin is that push plus a gap: without it the body starts on the label's
+  // border-box edge, and the Paper's drop shadow (which reaches ~4px past it)
+  // lands on the first rows of features. Vertical margins count on an atomic
+  // inline-level box, so this grows the line box rather than collapsing away.
   trackLabelOffset: {
     position: 'relative',
     display: 'inline-block',
+    marginBottom: 4,
   },
   trackLabelOverlap: {
     position: 'absolute',

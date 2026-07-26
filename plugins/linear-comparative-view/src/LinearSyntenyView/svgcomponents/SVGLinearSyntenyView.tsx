@@ -3,6 +3,7 @@ import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import {
+  defaultTextHeight,
   totalHeight,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -24,9 +25,10 @@ export async function renderToSvg(
 ) {
   await awaitViewInitialized(model)
   const {
-    textHeight = 18,
-    rulerHeight = 30,
     fontSize = 13,
+    // destructured after fontSize so the label band can scale with it
+    textHeight = defaultTextHeight(fontSize),
+    rulerHeight = 30,
     trackLabels = 'offset',
     showGridlines = false,
     Wrapper = ({ children }) => children,
