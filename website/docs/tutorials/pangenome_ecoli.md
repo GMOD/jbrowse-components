@@ -613,6 +613,8 @@ Only loaded strains are offered, so the menu never lists a view that cannot
 open, and a location goes into the linear view already beside the graph rather
 than stacking a pane.
 
+<Figure caption="The graph's Launch view menu over a 50 kb K12 window in the sample-rows layout. Each strain's entry names the locus it contributes on its own coordinates, from CFT073's 46 kb to IAI39's 8 bp, and the synteny entry opens all four as panels against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
+
 The [all-vs-all view](#all-vs-all-synteny-projection) shows five genomes and
 where they align, the graph shows what the sequence does at one locus, and this
 menu moves between the two without retyping a coordinate.

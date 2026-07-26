@@ -25,6 +25,10 @@ const TOOLBAR_READY =
   'body:has([data-testid="graph-perf-stats"]) [data-testid="graph-layout-select"]'
 
 const CONFIG = 'test_data/graphgenomeview/config.json'
+// The only fixture loading the graph's contributing strains as assemblies,
+// which is what the outbound launch needs: a node can open the strain it came
+// from, and the window can open as a synteny view of the strains in it.
+const ECOLI_PANGENOME_CONFIG = 'test_data/graphgenomeview/ecoli_pangenome.json'
 const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
 const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
@@ -154,6 +158,14 @@ const ECOLI_ALLELES_TRACK = 'ecoli_minigraph_alleles'
 // drawing in a fixed box and now sizes itself to it, which lifted every row
 // ~172px and left this pointing below the pane.
 const HOVERED_ALLELE = { x: 295, y: 555 }
+
+// HG00738.2's allele on the HPRC sample-rows graph, whose context menu
+// pangenome/hprc_node_menu is about. Read off the live model rather than
+// measured on a capture: the graph auto-fits as its layout and canvas
+// dimensions settle, so a coordinate taken from a finished PNG can point
+// somewhere the click-time layout had nothing (which is exactly what happened
+// while writing this spec — hence the settle delay before the right-click).
+const HPRC_ALLELE = { x: 429, y: 612 }
 
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
@@ -1108,6 +1120,127 @@ export const graphSpecs: ScreenshotSpec[] = [
         selector: '[data-testid="graph-node-highlight"]',
       },
       { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // The other half of the way out, on the graph where the contributing
+  // assemblies are NOT loadable: right-clicking one haplotype's allele. Its own
+  // coordinate is exact and unopenable (no session loads 464 haplotypes as
+  // assemblies), so what the menu offers is the GRCh38 interval the allele
+  // attaches to, which is the answer the HPRC tutorial's round trip needs.
+  //
+  // The right-click is a bare viewport coordinate for the same reason
+  // HOVERED_ALLELE is: the graph is canvas, and this layout is deterministic. A
+  // coordinate that goes stale opens no menu, and the waitForText below then
+  // fails the capture rather than committing a figure of an unopened menu.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_node_menu',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,500,000-32,560,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              height: 80,
+            },
+            {
+              trackId: SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 80,
+            },
+          ],
+        },
+        {
+          id: 'hprc_node_graph',
+          type: 'GraphGenomeView',
+          displayName: 'Graph — hg38 chr6:32,500,000-32,560,000',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: MHC_REGION,
+          layoutMode: 'samplerows',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: '[data-testid="graph-row-label"]',
+    readyTimeout: 90000,
+    settleMs: 3000,
+    viewportWidth: 1000,
+    viewportHeight: 900,
+    actions: [
+      // the auto-fit has to have finished before a coordinate means anything
+      { type: 'delay', ms: 2000 },
+      { type: 'rightclick', from: HPRC_ALLELE },
+      { type: 'waitForText', text: 'Node details' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // The way back out of the graph, on the one fixture where it can do more than
+  // return to the reference: all five strains loaded as assemblies, so the graph
+  // offers a linear view of each contributing strain at its own coordinates, and
+  // a synteny view of all of them at once.
+  //
+  // Driven through the view menu by text rather than by canvas coordinates, so
+  // nothing here is measured off a previous capture.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_launch_out_menu',
+    url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: ECOLI_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 70,
+            },
+          ],
+        },
+        {
+          id: 'launch_out_graph',
+          type: 'GraphGenomeView',
+          displayName: 'Graph — K12 chr:4,050,000-4,100,000',
+          loadedTrackId: ECOLI_SEGMENTS_TRACK,
+          loadedRegion: {
+            refName: 'chr',
+            assemblyName: 'K12',
+            start: 4050000,
+            end: 4100000,
+          },
+          layoutMode: 'samplerows',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: '[data-testid="graph-row-label"]',
+    readyTimeout: 90000,
+    settleMs: 3000,
+    viewportWidth: 1000,
+    viewportHeight: 700,
+    hideTooltip: true,
+    actions: [
+      // the graph view's own menu, scoped through its pinned view id, since
+      // both views on the page carry a view_menu_icon
+      {
+        type: 'click',
+        selector:
+          '[data-testid="view-container-launch_out_graph"] [data-testid="view_menu_icon"]',
+      },
+      { type: 'click', text: 'Launch view' },
+      // expand the per-strain list rather than leaving it a closed submenu row,
+      // which is the half of the menu the figure is about
+      { type: 'hover', text: 'Linear genome view' },
+      { type: 'waitForText', text: 'CFT073 chr:' },
+      { type: 'delay', ms: 500 },
     ],
   },
 ]

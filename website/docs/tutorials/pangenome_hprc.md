@@ -238,6 +238,8 @@ each segment's source sequence (`SN`) and offset (`SO`):
 Either way the node's haplotype is named, in the tooltip and in the details
 panel a left-click opens.
 
+<Figure caption="Right-clicking HG00738.2's allele in the sample-rows layout, under the RefSeq genes and rGFA segments for the same window. The menu offers the GRCh38 interval the allele attaches to, not HG00738.2's own coordinates: that assembly is not loaded, and no session loads all 464." src="/img/pangenome/hprc_node_menu.png" />
+
 That closes a loop over the lanes above: rubberband a locus into a graph, find
 the loop worth asking about, right-click it to put the linear view on its GRCh38
 interval, then read that interval off the tracks that are anchored there. Which
