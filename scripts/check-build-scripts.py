@@ -11,6 +11,7 @@ Usage: python3 scripts/check-build-scripts.py
 """
 import ast
 import glob
+import importlib.util
 import json
 import os
 import re
@@ -85,6 +86,66 @@ for f in helpers:
         print(f"FAIL invalid python: {f}: {e}")
         failed = True
 
+# Behavior, not just syntax, for the two helpers whose output is a hosted demo
+# artifact nobody re-derives by hand. Both had a bug that a syntax check cannot
+# see and that only shows up as a wrong figure weeks later.
+behavior = 0
+
+
+def check(name, got, want):
+    global failed, behavior
+    behavior += 1
+    if got != want:
+        print(f"FAIL {name}: got {got!r}, want {want!r}")
+        failed = True
+
+
+def load(path, name):
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+# reroot_maf.py: a repeat-collapsed block carries several reference rows. Row 0
+# must be the LEFTMOST one (the .tai assumes the file is ordered on it) and the
+# surplus copies must go (JBrowse keys a MAF row to a sample by name, so a second
+# reference-named row collides with the reference in that sample's lane).
+sys.argv = ["reroot_maf.py", "-", "-", "REF#1#chr"]
+reroot_maf = load("scripts/reroot_maf.py", "reroot_maf")
+def row(name, start, strand="+"):
+    return ["s", name, str(start), "10", strand, "1000", "A" * 10]
+
+
+kept, dropped = reroot_maf.reroot(
+    [row("REF#1#chr", 500), row("other#1#chr", 20), row("REF#1#chr", 100)]
+)
+check("reroot anchors on the leftmost reference row", kept[0][2], "100")
+check("reroot drops the surplus reference rows", dropped, 1)
+check("reroot keeps every non-reference row", [r[1] for r in kept],
+      ["REF#1#chr", "other#1#chr"])
+# a '-' reference row flips the block, and leftmost is decided after the flip
+kept, _ = reroot_maf.reroot([row("REF#1#chr", 100, "-"), row("other#1#chr", 20)])
+check("reroot normalizes the reference to '+'", kept[0][4], "+")
+check("reroot remaps the flipped start", kept[0][2], str(1000 - 100 - 10))
+check("reroot drops a block with no reference row",
+      reroot_maf.reroot([row("other#1#chr", 20)]), None)
+
+# gfa_nodes_to_bed.py: itemRgb has to be the graph view's own viridis Depth ramp
+# sampled over the subgraph's min/max, or the linear strip stops matching the
+# graph panel it is paired with in pangenome/local_subgraph.
+gfa_nodes = load("scripts/gfa_nodes_to_bed.py", "gfa_nodes_to_bed")
+ramp = gfa_nodes.DEPTH_GRADIENT
+check("depth ramp is viridis 5-stop", [ramp[0], ramp[-1]], [(68, 1, 84), (253, 231, 37)])
+check("depth ramp endpoints sample exactly",
+      [gfa_nodes.sample_gradient(ramp, 0.0), gfa_nodes.sample_gradient(ramp, 1.0)],
+      [(68, 1, 84), (253, 231, 37)])
+check("depth ramp midpoint is the middle stop",
+      gfa_nodes.sample_gradient(ramp, 0.5), (33, 145, 140))
+check("depth ramp clamps out-of-range t",
+      gfa_nodes.sample_gradient(ramp, 2.0), (253, 231, 37))
+
 if failed:
     sys.exit(1)
-print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid")
+print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
+      f"{behavior} helper behavior checks pass")

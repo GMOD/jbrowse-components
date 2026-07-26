@@ -59,6 +59,40 @@ const ECOLI_SEGMENTS_SESSION_TRACK = {
   displayDefaults: RANK_COLOR_DEFAULTS,
 }
 
+// The pggb subgraph's own nodes, projected onto K12 by walking its reference P
+// line, and colored by the file's itemRgb — which
+// scripts/gfa_nodes_to_bed.py wrote out of the graph view's own viridis Depth
+// ramp over the same subgraph. So the strip needs no `color` slot: what paints it
+// is the graph's coloring, recorded rather than reproduced. Only nodes the
+// reference path visits are in the file; the alternate alleles have no K12
+// coordinate, the same asymmetry rank>0 has in the rGFA figures.
+//
+// `columnNames` names column 5 `depth` rather than leaving it `score`, so a
+// tooltip says what the number is, and names `itemRgb` explicitly (BED9 is
+// otherwise generic `field8`).
+const PGGB_NODES_TRACK = 'ecoli_pggb_subgraph_nodes'
+const PGGB_NODES_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: PGGB_NODES_TRACK,
+  name: 'pggb subgraph: nodes on K12, colored by depth',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    uri: `${DATA}/ecoli_pggb_subgraph_nodes.bed.gz`,
+    columnNames: [
+      'chrom',
+      'start',
+      'end',
+      'name',
+      'depth',
+      'strand',
+      'thickStart',
+      'thickEnd',
+      'itemRgb',
+    ],
+  },
+}
+
 // The same graph read per strain instead of per segment: one row per strain,
 // each block that strain's allele at one bubble, from the BED
 // scripts/build_minigraph_paths.sh projects out of `minigraph --call`.
@@ -176,13 +210,30 @@ const C4_WINDOW = 'chr6:31,980,000-32,050,000'
 const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
 
 export const graphSpecs: ScreenshotSpec[] = [
-  // The pggb subgraph, over the linear view of the same locus (reviewer: "we need
-  // a linear genome view to correspond with what is shown"). A pggb GFA tags no
-  // segment with a position, so there is no per-node correspondence to draw —
-  // but the locus is not unknown: the file's five P lines ARE named for it, and
-  // K12#1#chr:1004500-1004961 is the window the LGV above opens. The graph's five
-  // paths and the MAF's five rows are the same five strains through the same
-  // 461 bp, one as a bubble chain and one as an alignment.
+  // The pggb subgraph, over the linear view of the same locus, in the SAME colors
+  // (reviewer: "it would be great if we could get coloring on the linear genome
+  // view that matches up to the graphgenomeview viewer").
+  //
+  // A pggb GFA tags no segment with a position, but the reference path's own P
+  // line does: `K12#1#chr:1004500-1004961`, so walking it assigns every node it
+  // visits a K12 span. That is the node strip above — one box per node, in the
+  // view's own viridis Depth ramp, sampled over the subgraph's own min/max the
+  // way the view samples it (scripts/gfa_nodes_to_bed.py, which reads
+  // DEPTH_GRADIENT off the plugin). The colors are baked into the file's itemRgb
+  // rather than jexl'd here, so the strip cannot drift from the graph: green is
+  // depth 4, yellow is depth 5, and the 1 bp teal/blue ticks are pggb's
+  // per-allele SNP nodes, whose depth is the count of paths carrying that allele.
+  //
+  // Green turns yellow at chr:1,004,667, which is CFT073 rejoining: its path
+  // covers only the last 293 bp of the window (verified against the FASTAs —
+  // CFT073:1,048,591-1,048,883 is 96.9% identical to K12:1,004,669-1,004,961),
+  // and that is exactly where ycbF ends and pyrD starts in the gene lane.
+  //
+  // No MAF lane, deliberately: pggb's own `-M` MAF has no CFT073 row anywhere in
+  // this window (it places that copy of the sequence ~1.7 kb downstream, against
+  // K12:1,006,313), so its coverage band reads a flat 4 where the graph reads 5.
+  // Two disagreeing readouts of the same graph is the opposite of the
+  // correspondence this figure is for; pangenome/maf is the MAF's own figure.
   //
   // Layout left on 'auto'. With no rank tags to anchor to it settles into the
   // engine's own backbone inference, and that is the one setting whose result
@@ -194,27 +245,31 @@ export const graphSpecs: ScreenshotSpec[] = [
     name: 'pangenome/local_subgraph',
     url: sessionSpec(CONFIG, {
       // the shared graphgenomeview fixture config carries only the K12
-      // assembly, so the pggb MAF comes in as a session track
-      sessionTracks: [
-        {
-          type: 'MafTrack',
-          trackId: 'ecoli_pggb_maf',
-          name: 'pggb graph: whole-genome alignment (MAF, vs K12)',
-          assemblyNames: ['K12'],
-          adapter: {
-            type: 'BgzipTaffyAdapter',
-            samples: ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39'],
-            tafGzLocation: { uri: `${DATA}/ecoli_pggb.taf.gz` },
-            taiLocation: { uri: `${DATA}/ecoli_pggb.taf.gz.tai` },
-          },
-        },
-      ],
+      // assembly, so both lanes come in as session tracks
+      sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_NODES_SESSION_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: 'chr:1,004,450-1,005,010',
-          tracks: [{ trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' }],
+          tracks: [
+            {
+              trackId: PGGB_NODES_TRACK,
+              type: 'LinearBasicDisplay',
+              // one row of color: the strip is 36 nodes over 561 bp, and their
+              // ids are bare integers that carry nothing at this width
+              displayMode: 'collapsed',
+              height: 40,
+            },
+            {
+              trackId: 'K12_genes',
+              type: 'LinearBasicDisplay',
+              height: 60,
+              // grey, so the only colors in the frame are the graph's: at the
+              // default goldenrod the gene boxes read as more depth-5 nodes
+              color: 'rgb(130,130,130)',
+            },
+          ],
         },
         {
           type: 'GraphGenomeView',
@@ -235,9 +290,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     diffThreshold: 0.1,
     viewportWidth: 1000,
-    // the graph view draws into a fixed 600px canvas, so the frame has to be
-    // the linear view plus that plus both headers or the layout is clipped
-    viewportHeight: 950,
+    // the graph view draws into the pinned canvasHeight above, so the frame has
+    // to be the linear view plus that plus both headers or the layout is clipped
+    viewportHeight: 1010,
     hideTooltip: true,
   },
   // The indexed route on the tutorial's own four-strain graph: the rGFA
@@ -392,6 +447,26 @@ export const graphSpecs: ScreenshotSpec[] = [
   // The same window in the force layout, the Bandage picture the graph is really
   // about: the backbone winds through the frame and every loop off it is an
   // alternate allele from the 464 haplotypes. FMMM again, hence diffThreshold.
+  //
+  // The four linear lanes are the answer to "can only see blue in the hprc
+  // track — if the orange are nonreference and cant be shown as segments in the
+  // linear genome, what should we do?". Blue and orange both appear, in the
+  // graph's own Stable rank colors, but on different objects, because only rank 0
+  // has an hg38 coordinate at all:
+  //
+  //   blue segments = the rank-0 backbone, the same blue the graph draws
+  //   orange bubble = where the orange loops attach (rank-1 orange, set on the
+  //                   track in hprc.json so every figure using it matches)
+  //   alleles       = the non-reference sequence itself, drawn the only way a
+  //                   reference axis can hold it: an insertion marker at its
+  //                   anchor, widened to the allele's own bp by the CIGAR in the
+  //                   BED. Its span cannot be drawn — a rank>0 segment lives on
+  //                   another assembly's refName — so its length is.
+  //
+  // Heights pinned: left to themselves the lanes take half the frame, and the
+  // segments track spends it on rows of `s101124` labels that carry nothing here.
+  // What it is here for is the blue backbone, which one row of blocks shows as
+  // well as four.
   {
     mode: 'url',
     name: 'pangenome/hprc_mhc_bandage',
@@ -401,11 +476,6 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr6:32,500,000-32,560,000',
-          // pinned, same as the anchored figure below: left to themselves the
-          // three tracks take half the frame, and the segments track spends it
-          // on rows of `s101124` labels that carry nothing for this figure. What
-          // it is here for is the blue backbone, which one row of blocks shows
-          // as well as four.
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
@@ -422,6 +492,14 @@ export const graphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 70,
             },
+            {
+              trackId: 'hprc_minigraph_alleles',
+              type: 'LinearAlignmentsDisplay',
+              // tall enough to keep the bp label on each insertion marker, which
+              // is the whole point of the lane, and no taller: the alleles pack
+              // into three rows over this window
+              height: 110,
+            },
           ],
         },
         {
@@ -433,13 +511,18 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 90000,
+    // TOOLBAR_READY ANDed with the allele lane's own fetch, so the capture can't
+    // land with the graph laid out and the fourth lane still blank. Spelled out
+    // rather than composed with TOOLBAR_READY: that already opens on `body:has`,
+    // and prefixing a second one asks for a body inside a body.
+    readySelector:
+      'body:has([data-testid="pileup-display-done"]):has([data-testid="graph-perf-stats"]) [data-testid="graph-layout-select"]',
+    readyTimeout: 120000,
     allowUnsettled: true,
     settleMs: 8000,
     diffThreshold: 0.1,
     viewportWidth: 1000,
-    viewportHeight: 1260,
+    viewportHeight: 1370,
     hideTooltip: true,
   },
 

@@ -191,6 +191,17 @@ in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
 
+# That subgraph's nodes on the reference axis, so the graph view and a linear
+# view of the same locus are one picture rather than two colorings. Walking the
+# REF P line assigns every node it visits a REF span; `score` is the node's
+# depth and `itemRgb` is the view's own viridis Depth ramp sampled over the
+# subgraph's own min/max, so the strip paints itself and cannot drift from the
+# graph. Nodes REF never visits are the alternate alleles and have no reference
+# coordinate, which is why the strip is the backbone only.
+python3 "$SCRIPT_DIR/gfa_nodes_to_bed.py" ecoli_pggb_subgraph.gfa "${REF}#1#chr" chr \
+  | sort -k1,1 -k2,2n | bgzip > ecoli_pggb_subgraph_nodes.bed.gz
+tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
+
 # The rGFA counterpart. minigraph tags every segment with the stable sequence it
 # sits on, its offset there and its rank, so gfatools cuts a window by reference
 # coordinate with no graph-specific extraction step, and the view draws the
@@ -404,6 +415,27 @@ cat > alleles_track.json <<'JSON'
 }
 JSON
 jb add-track-json alleles_track.json --update --out "$APP"
+
+# The pggb subgraph's nodes on the K12 axis, the linear half of the graph-view
+# figure. No display config: the file's itemRgb is the view's own Depth ramp, so
+# the strip already paints in the graph's colors, and `collapsed` keeps it one
+# row of color rather than 36 numbered boxes.
+cp ecoli_pggb_subgraph_nodes.bed.gz ecoli_pggb_subgraph_nodes.bed.gz.tbi "$APP/"
+cat > subgraph_nodes_track.json <<'JSON'
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_subgraph_nodes",
+  "name": "pggb subgraph: nodes on K12, colored by depth",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_pggb_subgraph_nodes.bed.gz",
+    "columnNames": ["chrom", "start", "end", "name", "depth", "strand", "thickStart", "thickEnd", "itemRgb"]
+  },
+  "displays": [{ "type": "LinearBasicDisplay", "displayMode": "collapsed" }]
+}
+JSON
+jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 
 # The adapter and the view both come from the graph genome view plugin, which is
 # not bundled in JBrowse Web and has no CLI command, so declare it directly. It

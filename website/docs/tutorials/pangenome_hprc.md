@@ -157,7 +157,14 @@ that opens reading "0 nodes, 0 edges" is the refName mismatch
 per-segment right-click are pictured in the
 [E. coli tutorial](/docs/tutorials/pangenome_ecoli#opening-any-locus-without-a-slice-per-locus).
 
-<Figure caption="The HLA class II region as a graph, in force-directed layout, under RefSeq genes, the bubble track, and the rGFA segments track. Blue is the GRCh38 backbone and orange the alternate alleles, in both panels: every loop and stub off the winding blue thread is sequence some haplotype carries and GRCh38 does not, which is why it has no coordinate to draw at above." src="/img/pangenome/hprc_mhc_bandage.png" />
+<Figure caption="The HLA class II region as a graph, in force-directed layout, under four lanes of the same window. Blue and orange mean the same thing in both panels, but not on the same object: the blue segment blocks are the GRCh38 backbone, and the orange bar is the 64 kb bubble every orange loop in the graph hangs off. The alleles themselves are in the bottom lane, each drawn at the point it attaches and widened to its own bp, because a rank>0 segment has no GRCh38 coordinate to be drawn across." src="/img/pangenome/hprc_mhc_bandage.png" />
+
+The asymmetry left between the two panels is structural, not cosmetic. A rank-0
+segment sits on GRCh38 and has a coordinate. A rank>0 segment sits on some other
+assembly's refName and has none, so no coloring will put the orange loops on a
+GRCh38 axis as segments. What a reference axis can hold is where each one
+attaches and how long it is, which is the bubble lane and the allele lane. The
+[allele inventory](#the-allele-inventory) below is that bottom lane on its own.
 
 That is the picture the graph is really about. The toolbar's **Layout** dropdown
 trades it for an **anchored** layout, which puts the x axis back on GRCh38:

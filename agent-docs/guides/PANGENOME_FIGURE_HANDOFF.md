@@ -1,139 +1,148 @@
 # Pangenome figures — open work (2026-07-26)
 
-Two `bad` verdicts in `website/scripts/screenshot-review.json` are still open,
-both asking for the same thing: make a GraphGenomeView panel and the linear
-panel beside it read as one picture. Neither was touched in this session because
-a second agent was working `website/scripts/specs/graph.ts` at the same time
-(see "In-flight work in the tree" below). This is the analysis so whoever picks
-them up does not have to redo it.
+The two `bad` verdicts this file was written for are **closed**; what is left is
+one unrelated stale figure at the bottom. The analysis is kept because both
+resolutions turned out to hinge on facts about the data that are expensive to
+re-derive.
 
-The pattern that worked for the third such figure is
-`pangenome_cactus/graph_correspondence`: find a quantity or a category BOTH
-panels can paint, then paint it identically on both sides, sampling the colors
-out of the other picture rather than guessing them. There, the graph half is a
-committed `odgi viz` raster and the linear half became `odgi pav` rows in the
-raster's own row order and colors. Same idea applies below.
-
-## `pangenome/local_subgraph`
+## Closed: `pangenome/local_subgraph`
 
 > "it would be great if we could get coloring on the linear genome view that
 > matches up to the graphgenomeview viewer"
 
-The figure is `chr:1,004,450-1,005,010`: an LGV of the pggb MAF (five rows) over
-a GraphGenomeView of `ecoli_pggb_subgraph.gfa` with **Color: Depth**, which
-draws one green branch and one yellow branch.
+Resolved by projecting the subgraph's **own nodes** onto K12 and letting the file
+carry the colors, not by finding a track that happened to be colorable.
 
-What the graph can be colored by is fixed by the plugin
-(`~/src/jb2plugins/jbrowse-plugin-graphgenomeview`,
-`src/GraphGenomeView/colorSchemes.ts`): uniform, random, rainbow, depth,
-node-length, stable-rank, grey. A pggb GFA carries no `SR` tags, so stable-rank
-is out, and there is no per-path/per-sample scheme. **Depth is the only shared
-quantity**, and JBrowse already has it as `ecoli_pggb_depth` (paths over K12),
-so that is the track to put under the MAF.
+Two things blocked the obvious recipe (a bicolor `ecoli_pggb_depth` wiggle) and
+both are worth knowing before touching this figure again:
 
-Depth colors come from `DEPTH_GRADIENT` in
-`src/GraphGenomeView/renderer/GeometryBuilder.ts`, viridis:
+- **The hosted depth bigWig is 500 bp binned means.**
+  `scripts/build_ecoli_pangenome_graph.sh` tiles K12 into 500 bp windows and asks
+  `odgi depth` for each window's mean, so over this 461 bp locus it is one flat
+  bar at 4.618. Base-resolution depth is not reachable from any hosted file: it
+  needs the `.og`, and the `.og`/full GFA are not in the demo bucket (only the
+  461 bp `ecoli_pggb_subgraph.gfa` and an 810 kB rGFA slice), so it would need a
+  pggb re-run.
+- **pggb's own `-M` MAF disagrees with the graph here.** The MAF has **no CFT073
+  row anywhere** in this window — its coverage band reads a flat 4 while the graph
+  reads 5 — because it places that copy of the sequence against K12:1,006,313
+  instead. Checked against the FASTAs rather than assumed:
+  `CFT073:1,048,591-1,048,883` is **96.9%** identical to
+  `K12:1,004,669-1,004,961` (the graph's placement) and **25%** identical to the
+  MAF's. The graph is right. That is why the figure no longer carries a MAF lane;
+  `pangenome/maf` is the MAF's own figure.
 
-```
-[68,1,84] [59,82,139] [33,145,140] [94,201,98] [253,231,37]
-```
+What it does carry: `scripts/gfa_nodes_to_bed.py` walks the reference P line
+(whose name states its span, since `-E` rounds the requested window out to whole
+nodes) and writes BED9 whose `itemRgb` is the plugin's `DEPTH_GRADIENT` viridis
+ramp sampled at `(depth - min) / (max - min)` over the subgraph's own min/max —
+the same normalization `GeometryBuilder.ts` uses. Depth is P/W traversal count,
+floor 1 (`gfaConverter.ts`), which is what the Depth scheme reads when a GFA has
+no `dp`/`RC`/`FC`/`KC` tag. So the strip needs no `color` slot and cannot drift.
+Over this window: depth 4 (green) to chr:1,004,667, depth 5 (yellow) after, with
+1 bp teal/blue ticks where pggb split a SNP into per-allele nodes. The turn is
+CFT073 rejoining, and it lands on the ycbF/pyrD boundary.
 
-sampled at `(node.depth - minDepth) / (maxDepth - minDepth)` **over the loaded
-subgraph**, not over an absolute scale. At this locus that is 5 paths, so the
-yellow branch is "every path goes through here" and the green one is a node a
-path leaves.
+Wired into the build script and the runnable app config, and hosted as
+`ecoli_pggb_subgraph_nodes.bed.gz{,.tbi}` (CloudFront invalidated).
 
-An exact viridis ramp is not reachable from wiggle config: `color` on a wiggle
-is a single CSS color, explicitly not a jexl callback (it colors per signal, not
-per feature — see the slot description in
-`plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts`), and `density`
-rendering is a white→one-hue ramp (`getDensityColor.ts`). What IS reachable is
-the two colors the graph actually shows at this locus, via bicolor:
-
-```js
-{
-  trackId: 'ecoli_pggb_depth',
-  type: 'LinearWiggleDisplay',
-  useBicolor: true,
-  posColor: 'rgb(253,231,37)',   // viridis max = the graph's yellow backbone
-  negColor: 'rgb(94,201,98)',    // the next stop down = the graph's green branch
-  bicolorPivot: 4.5,             // 5 paths here; verify against the real values
-  minScore: 0,
-  maxScore: 5,
-  height: 90,
-}
-```
-
-Two things to check when you do it:
-
-- `bicolorPivot` is also the bars' **origin** (`wiggleComponentUtils.ts` passes
-  it as `origin`), so bars draw up from 4.5 for depth 5 and down from it for
-  anything less. That reads well here (a green downward bar is "a path left the
-  backbone") but it is a real change in what the plot looks like, so look at the
-  PNG before believing the numbers.
-- Read the actual depth values in the window first rather than trusting 4.5. If
-  the subgraph's own min/max differ from the bigwig's values over the same
-  window, say so in the caption instead of implying an exact mapping.
-
-The track has to come in as a `sessionTracks` entry: the spec loads
-`test_data/graphgenomeview/config.json`, which carries the K12 assembly and **no
-tracks at all** (that is why the MAF is declared inline), so add a
-`QuantitativeTrack` with
-`https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_depth.bw` the same way.
-
-## `pangenome/hprc_mhc_bandage`
+## Closed: `pangenome/hprc_mhc_bandage`
 
 > "can only see 'blue' in the hprc track. if the orange are 'nonreference' and
 > cant be shown as segments in the linear genome, what should we do?"
 
-The premise is right and it is structural, not a bug: `RgfaTabixAdapter` serves
-segments by hg38 position, and a rank>0 segment has no hg38 position — it lives
-on another assembly's refName. An hg38 lane of that track can therefore only
-ever be the blue rank-0 backbone, no matter how it is colored. (The rank colors
-themselves are already matched: `hprc.json`'s `hprc_minigraph_segments` carries
-`color: jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'`, and
-the graph's Stable rank scheme is rank 0 `rgb(52,152,219)` then a ramp from
-`rgb(237,137,44)` at rank 1 to `rgb(158,42,122)` at the subgraph's max rank.)
+The premise is right and structural: `RgfaTabixAdapter` serves segments by hg38
+position and a rank>0 segment has none, so an hg38 lane of that track can only
+ever be the blue rank-0 backbone. The answer is that a reference axis can hold
+**where** the orange attaches and **how long** it is, so the linear panel now has
+both lanes:
 
-So the question is what reference-anchored object stands in for the orange. Two
-candidates, both already in `test_data/graphgenomeview/hprc.json`:
+- `hprc_minigraph_bubbles` painted `rgb(237,137,44)`, the graph's Stable rank
+  ramp at rank 1, set in `test_data/graphgenomeview/hprc.json` so every figure on
+  that track matches. At this window that is one 64 kb bubble — which is the
+  point: every orange loop in the graph hangs off it.
 
-- **`hprc_minigraph_bubbles`** — the bubble is where the non-reference sequence
-  attaches to the backbone. Painting it in the rank-1 orange makes "orange in
-  the graph" and "orange interval in the linear panel" the same color, with the
-  caption saying the linear view can show where the allele hangs off but not the
-  allele itself.
-- **`hprc_minigraph_alleles`** — the allele inventory (an AlignmentsTrack over
-  the allele BED) draws each non-reference allele as an insertion marker at its
-  insertion point, labelled with its bp. This is the closer answer to "what
-  should we do": it is the non-reference sequence itself, anchored. The parallel
-  session built a figure on it (`pangenome/hprc_allele_inventory`, still
-  uncommitted), so check that first and consider whether the bandage figure
-  should simply gain that lane rather than invent a third representation.
+  **Three figures render that track**, so the recolor also required regenerating
+  `hprc_mhc_anchored` and `hprc_c4_subgraph`, and both needed `--force`: their
+  `diffThreshold` is 0.1 for FMMM jitter, and a recolored bubble bar moves ~2.4%
+  of pixels, so a plain regen logs `≈ kept` and silently publishes the old color.
+  Note `--filter` takes only the **last** flag if you pass it twice; run them as
+  separate invocations.
+- `hprc_minigraph_alleles`, each allele at its anchor and widened to its own bp
+  by the CIGAR in the BED (60,569 / 10,246 / 6,025 bp labelled in frame).
 
-A per-allele track colored by rank is **not** reachable from config as things
-stand: the bubbles BED carries no rank, and the rank>0 segments are on other
-assemblies' refNames. Either add rank to the allele/bubble BED in
-`scripts/build_rgfa_alleles.sh`, or state the limitation in the caption. Do not
-fake it with a jexl over something that is not rank.
+Two paths deliberately **not** taken:
 
-## In-flight work in the tree (do not duplicate, do not sweep)
+- **Recoloring the allele markers to the rank ramp.** Insertion color comes from
+  `theme.palette.insertion` (`#800080`), not a track slot, so it would mean
+  repurposing a theme color and repainting every alignments figure.
+- **A per-allele rank ramp.** The alleles BED *does* carry `discoveryRank`
+  (contrary to an earlier note here, which was about the bubbles BED), so a jexl
+  could color by it — but the graph normalizes its ramp over the **subgraph's**
+  max rank, which a jexl cannot know, and `build_rgfa_alleles.sh` is explicit
+  that `discoveryRank` is build order, not carriage. Only the rank-1 end of the
+  ramp is honestly reachable, which is what the bubbles lane uses.
 
-As of this writing these are **uncommitted** in the shared worktree, from a
-parallel session:
+## Worth a look: `ecoli_pggb.taf.gz` is a weaker artifact than its siblings
 
-- `website/scripts/specs/graph.ts` (+~190 lines: `pangenome/hprc_allele_inventory`,
-  `pangenome/hprc_graph_vs_callset`, pinned track heights on the bandage figure)
-- `test_data/graphgenomeview/hprc.json`, `website/docs/tutorials/pangenome_hprc.md`,
-  `scripts/build_rgfa_alleles.sh`, `scripts/build_hprc2_pclai.sh`
-- new PNGs: `hprc_allele_inventory`, `hprc_graph_vs_callset`,
-  `rgfa_hover_correspondence`, `rgfa_sample_rows`; modified `hprc_mhc_bandage`,
-  `hprc_mhc_anchored`, `rgfa_segment_neighbourhood`
+Fallout from the `local_subgraph` diagnosis, measured over the whole hosted file
+rather than the one locus. Four figures read this MAF
+(`pangenome/maf`, `pangenome/pangenome_variants`'s companion lane, and the
+"the MAF is the graph's alignment at base resolution" claim in `pangenome.md`),
+so it is worth knowing that:
 
-Commit with an explicit pathspec and leave those alone unless you are the one
-who wrote them.
+- **48 of 4,736 blocks carry more than one K12 row** (43 with two, four with
+  three, one with five), from repeat collapse. `reroot_maf.py`'s
+  `next((k for k, r in enumerate(rows) if r[1] == REF), None)` anchors on the
+  **first** such row in pggb's output, not the leftmost, so those blocks' row 0
+  (and therefore their `.tai` key) is arbitrary. Block 230 anchors at 221,765
+  while a 23 bp K12 fragment at 220,481 sits further down the block.
+- **The file is not monotonic in row-0 reference start**: 179 blocks start before
+  their predecessor and 431 overlap it, despite the script's
+  `blocks.sort(key=...)`. The sibling `ecoli_cactus.taf.gz` measures **0 and 0**
+  over 5,887 blocks, so this is specific to the pggb path, not to taffy.
+- **It is not an indexing bug.** A `taffy view -r` region query over
+  K12:1,004,450-1,005,010 returns exactly the blocks a whole-file dump says
+  overlap it, so the missing CFT073 row is absent from the file itself.
 
-## Unrelated but pending: the launch-dialog figure
+**How systemic the under-reporting is: 0.32%, measured.** Per-strain MAF row
+absence cross-checked against the per-strain `odgi pav` bigWigs (both hosted). Of
+26,194 windows where pav says a strain covers >=90% of the window, **84 have no
+MAF row for that strain at all** (42.5 kb, in 30 clusters). Per strain: Sakai
+19/7,884, CFT073 33/7,379, NCTC86 8/3,309, IAI39 24/7,622. So the MAF is ~99.7%
+faithful to the graph's presence and **no caption or prose needs softening** —
+`local_subgraph` simply landed on one of the 30 clusters
+(`chr:1,005,000-1,006,000`, CFT073).
+
+Checked against every figure locus that reads this file: the nearest cluster to
+`pangenome/maf` (chr:4,540,000-4,600,000) is chr:4,623,500-4,624,000, outside it,
+and `pangenome/pangenome_variants` (chr:2,120,000-2,140,000) is clear too. The
+cluster at chr:1,097,500-1,098,500 does sit inside `PATHS_WINDOW`, but those
+figures read the minigraph paths/alleles BEDs, not the MAF. **Pick a new
+MAF-bearing locus against the 30-cluster list**, which regenerates from the
+recipe in [[key_pattern_pggb_maf_reroot_multi_ref_row]].
+
+## Not a bug: every graph figure's live link 404s until the next release
+
+These figures run on `test_data/graphgenomeview/{config,hprc}.json`, and their
+auto-appended live link is built against `JBROWSE_CODE_BASE`, which defaults to
+the **released** app. `latest` ships the `test_data` tree as of its own release,
+so a fixture directory added since then is missing:
+
+```
+404  https://jbrowse.org/code/jb2/latest/test_data/graphgenomeview/config.json
+200  https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/config.json
+200  https://jbrowse.org/code/jb2/latest/test_data/volvox/config.json
+```
+
+It fixes itself at the next release, and `deploy_staging.sh` already points at
+`code/jb2/main/`. **Do not "fix" it with `link=""`** — that string is falsy in
+`remark-figure.ts`, so it drops the figure's **recipe dialog** along with the
+link, and the dialog (click path, session JSON, Desktop link, notebook snippet)
+works regardless of whether the config URL resolves. Reserve `link=""` for
+figures with no session at all, like the two odgi-viz rasters.
+
+## Still open: the launch-dialog figure
 
 `multiway_synteny/ecoli_launch_dialog` (and the `_from_selection` stack it feeds)
 was captured against the `products/jbrowse-web/build` that predates commit

@@ -1966,17 +1966,17 @@
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
-    "status": "bad",
-    "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do? FIXED: same rank-matched coloring, declared on hprc_minigraph_segments in test_data/graphgenomeview/hprc.json, so the blue blocks in the linear panel are the blue backbone in the graph. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. The bubbles track above stays reference-anchored as the other half of the correspondence. A per-allele SV track colored by rank is not reachable from config: the bubbles BED carries no rank, and the rank>0 segments are on other assemblies' refNames. HANDOFF: analysis and a concrete recipe in agent-docs/guides/PANGENOME_FIGURE_HANDOFF.md (not attempted here, a parallel session was editing specs/graph.ts).",
-    "reviewedAt": "2026-07-26T06:38:59.036Z",
-    "hash": "89c1934b096501c1cb709dc745a41821fdba5ffb"
+    "status": "good",
+    "note": "FIXED (\"what should we do?\" answered with two lanes, not a recolor). The premise is right and it is structural: RgfaTabixAdapter serves segments by hg38 position and a rank>0 segment has none (it lives on another assembly's refName), so an hg38 lane of that track can only ever be the blue rank-0 backbone. What a reference axis CAN hold is where the orange attaches and how long it is, so the linear panel now has both: hprc_minigraph_bubbles painted in the graph's own rank-1 orange rgb(237,137,44) (set on the track in test_data/graphgenomeview/hprc.json, so every figure using it matches), which is the 64 kb bubble every orange loop in the graph hangs off; and the hprc_minigraph_alleles lane, where each allele is drawn at its anchor and widened to its own bp by the CIGAR in the BED (60,569 / 10,246 / 6,025 bp labelled in frame). Blue and orange now mean the same thing in both panels. readySelector ANDs the pileup's done signal with the graph toolbar's (spelled out, not composed with TOOLBAR_READY, which already opens on body:has). Tutorial gained a paragraph naming the asymmetry instead of leaving the reader to infer it. Deliberately NOT done: recoloring the allele markers to the rank ramp - insertion color comes from theme.palette.insertion, not a track slot, and repurposing it would repaint every alignments figure.",
+    "reviewedAt": "2026-07-26T11:30:00.000Z",
+    "hash": "3bc42a5f867dcc2945a9f30e29a156961bbb97de"
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "it would be great if we could get coloring on the linaer genome view that matches up to the graphgenomeview viewer. previous agent notes: Paired with an LGV of the same locus (pggb MAF, five rows = the graph's five paths). HANDOFF: analysis and a concrete recipe in agent-docs/guides/PANGENOME_FIGURE_HANDOFF.md (not attempted here, a parallel session was editing specs/graph.ts).",
-    "reviewedAt": "2026-07-26T05:29:13.519Z",
-    "hash": "618e0465ff9055a8d10320232d6b6b5eb4645980"
+    "status": "good",
+    "note": "FIXED (the colors now come out of the graph itself). Depth is the only quantity both panels can paint (the plugin's schemes are uniform/random/rainbow/depth/node-length/stable-rank/grey, and a pggb GFA has no SR tags), and the hosted ecoli_pggb_depth.bw is 500 bp binned means, so at a 561 bp window it is one flat bar. Instead the subgraph's own nodes are projected onto K12 by walking its reference P line (whose name carries the span, K12#1#chr:1004500-1004961) and written as BED9 whose itemRgb IS the view's viridis Depth ramp, sampled over the subgraph's own min/max the way the view samples it (new scripts/gfa_nodes_to_bed.py, wired into scripts/build_ecoli_pangenome_graph.sh, hosted as ecoli_pggb_subgraph_nodes.bed.gz). The strip therefore carries no color config and cannot drift from the graph: green run = depth 4, yellow run = depth 5, 1 bp teal/blue ticks = pggb's per-allele SNP nodes. The MAF lane is gone, and that is the other half of the fix: pggb's own -M MAF has no CFT073 row anywhere in this window, so its coverage band read a flat 4 while the graph read 5. Checked against the FASTAs rather than assumed - CFT073:1,048,591-1,048,883 is 96.9% identical to K12:1,004,669-1,004,961 (the graph's placement) and 25% identical to where the MAF puts it, K12:1,006,388+. So the graph is right and the MAF block is not, and pairing them was showing the reader two disagreeing readouts of one graph. Gene lane kept and greyed (at goldenrod it read as more depth-5 nodes): green turns yellow at chr:1,004,667, which is the ycbF/pyrD boundary.",
+    "reviewedAt": "2026-07-26T11:30:00.000Z",
+    "hash": "5e41e20a248968676792efd6f9c09967c4215aa0"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",

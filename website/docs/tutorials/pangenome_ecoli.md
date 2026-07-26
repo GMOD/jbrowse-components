@@ -173,7 +173,24 @@ a 164 bp backbone segment on one picture, with the SNP alleles as the specks, in
 proportion. A few hundred bp is what makes that structure legible, not what the
 view can load.
 
-<Figure caption="A 461 bp slice of the five-strain graph, 54 nodes over 5 paths, under the MAF alignment of the same locus. The graph's five paths and the MAF's five rows are the same five strains: IAI39 is the row that diverges, and the darker specks strung along the graph backbone are what it diverges by. A pggb GFA tags no segment with a position, so the two panels line up as a locus, not node by node; the only coordinates in the file are the ones inside the path names, which is where K12:1,004,500-1,004,961 comes from. Node color is depth, how many strains traverse that node." src="/img/pangenome/local_subgraph.png" />
+To read the graph beside a linear view of the same locus, project its nodes onto
+the reference. The reference path's name states its span
+(`K12#1#chr:1004500-1004961`, the requested window rounded out to whole nodes by
+`-E`), so walking that path in order gives every node a K12 start and end:
+
+```bash
+python3 scripts/gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
+  | sort -k1,1 -k2,2n | bgzip > ecoli_pggb_subgraph_nodes.bed.gz
+tabix -p bed ecoli_pggb_subgraph_nodes.bed.gz
+```
+
+The BED's `itemRgb` is the view's own viridis Depth ramp, sampled over the
+subgraph's own min and max depth the way the view samples it, so an ordinary BED
+feature track needs no color configuration and cannot drift from the graph.
+Nodes the reference path never visits are the alternate alleles: they have no
+K12 position and are absent, the same asymmetry an rGFA rank>0 segment has.
+
+<Figure caption="A 461 bp slice of the five-strain graph, 54 nodes over 5 paths, under the same nodes laid on the K12 axis in the same Depth colors. Green is depth 4, yellow is depth 5, and the 1 bp teal specks are pggb's per-allele SNP nodes, whose depth counts only the paths carrying that allele. Green turns yellow at chr:1,004,667, where the fifth path (CFT073) rejoins the shared sequence, on the ycbF/pyrD boundary in the gene lane below." src="/img/pangenome/local_subgraph.png" />
 
 ### rGFA graphs carry their own coordinates
 

@@ -36,6 +36,9 @@
         "type": "MinigraphBubbleAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
         "assemblyNameToPanSN": { "hg38": "GRCh38" }
+      },
+      "displayDefaults": {
+        "color": "rgb(237,137,44)"
       }
     },
     {
