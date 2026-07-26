@@ -4,7 +4,7 @@ import { setupRunClusteringAutorun } from '@jbrowse/tree-sidebar'
 
 import { runGenotypeClustering } from './runGenotypeClustering.ts'
 
-import type { ReducedModel } from './components/MultiSampleVariantClusterDialog/types.ts'
+import type { ReducedModel } from './clusterModelTypes.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 

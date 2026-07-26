@@ -69,7 +69,7 @@ const MultiWiggleComponent = lazy(
 )
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
-  () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
+  () => import('./components/WiggleClusterDialog.tsx'),
 )
 
 /**

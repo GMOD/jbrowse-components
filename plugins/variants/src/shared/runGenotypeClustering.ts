@@ -1,6 +1,6 @@
 import { applyClusterOrder } from './applyClusterOrder.ts'
 
-import type { ReducedModel } from './components/MultiSampleVariantClusterDialog/types.ts'
+import type { ReducedModel } from './clusterModelTypes.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { RpcMethodCaller } from '@jbrowse/tree-sidebar'

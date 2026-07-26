@@ -60,3 +60,5 @@ export type {
   TreeSidebarModel,
   TreeSource,
 } from './types.ts'
+export { default as ClusterDialog } from './clusterDialog/ClusterDialog.tsx'
+export type { ClusterDialogProps } from './clusterDialog/types.ts'

@@ -1,8 +1,8 @@
 import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
 
-import { clusterScoreMatrixArgs } from './components/WiggleClusterDialog/clusterOptions.ts'
+import { clusterScoreMatrixArgs } from './components/clusterOptions.ts'
 
-import type { ReducedModel } from './components/WiggleClusterDialog/types.ts'
+import type { ReducedModel } from './clusterModelTypes.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { RpcMethodCaller } from '@jbrowse/tree-sidebar'

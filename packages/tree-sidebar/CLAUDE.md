@@ -6,13 +6,24 @@ A clusterable display triggers clustering one of two ways, and neither should
 grow a per-plugin copy of the lifecycle (each had two before they were folded in
 here):
 
-- **A dialog** ("Cluster rows by ..." → Run clustering) uses `useClusterRun` +
-  `ClusterProgress`. The hook owns start/status/stop and aborts the RPC when the
-  dialog goes away; the display supplies only a
-  `run({stopToken, statusCallback})` callback doing its own RPC. Preconditions
-  (uninitialized view, too few rows) belong inside that callback as `throw`s, so
-  they land in the same error state as an RPC failure instead of a second
-  branch.
+- **A dialog** ("Cluster rows by ..."): render `ClusterDialog` and pass one
+  `ClusterDialogProps`. The whole dialog is here — the auto/manual mode switch,
+  the run/progress/stop lifecycle (`useClusterRun` + `ClusterProgress`), the R
+  script and TSV downloads, the linkage picker, the paste box, the advanced
+  section. A display contributes only what its matrix is (`fetchMatrix`,
+  `matrixKey`, `matrixLabel`, `tsvFilename`), how to run it in-app (`run`,
+  `canRun`), and how an order applies (`applyOrder`) — plus optional
+  `advancedOptions` nodes. Both plugins used to carry a three-file copy of the
+  whole thing, and the copies had drifted: only one tracked the view in its
+  matrix fetch key, and only one offered the average linkage that `run` actually
+  produces.
+
+  Two contracts hold the seams: `run` should **throw** for preconditions
+  (uninitialized view, too few rows) so they land in the same error state as an
+  RPC failure, and `applyOrder` should **throw** to reject a paste — the dialog
+  stays open and reports the message rather than closing over a silently dropped
+  row.
+
 - **A `runClustering: true` flag** (track menu or a saved session/config) uses
   `setupRunClusteringAutorun`, which owns the re-entrancy guard, the
   `view.initialized` gate, the stop token, the one-shot flag clear, **and** the
@@ -24,10 +35,14 @@ Row filtering shares one helper too: `filterRowsBySubtree(rows, subtreeFilter)`,
 keyed on `name` (haplotype rows are `"HG001 HP0"`, and that is what
 `subtreeFilter` holds), used by variants, MAF, multi-row features, and wiggle.
 
-`validateClusterOrder` guards the R-paste path in both plugins — wiggle's dialog
-calls it directly, variants inside `applyClusterOrder` (only that function knows
-the _expanded_ haplotype row count an order must cover). An unvalidated paste
-silently drops or doubles rows.
+`validateClusterOrder` guards the R-paste path in both plugins — wiggle's
+`applyOrder` calls it directly, variants' inside `applyClusterOrder` (only that
+function knows the _expanded_ haplotype row count an order must cover). An
+unvalidated paste silently drops or doubles rows.
+
+`clusterMatrix` is the shared tail of all three clustering RPCs: matrix in,
+`{order, tree}` out, hclust progress mapped onto the status channel. It is the
+only place `@gmod/hclust` is imported, so the plugins don't depend on it.
 
 ## Hand-written hierarchy layout (`src/hierarchy.ts`)
 

@@ -1,5 +1,5 @@
 type NumericRow = Iterable<number>
-type ClusterMatrix = Record<string, NumericRow>
+export type ClusterMatrix = Record<string, NumericRow>
 
 // A genotype matrix marks a no-call with NaN, which neither R nor a TSV reader
 // understands. `NA` is the value both do: R's `dist()` drops that column from

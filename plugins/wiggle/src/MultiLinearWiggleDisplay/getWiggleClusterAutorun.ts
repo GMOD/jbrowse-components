@@ -2,10 +2,10 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { setupRunClusteringAutorun } from '@jbrowse/tree-sidebar'
 
-import { DEFAULT_SAMPLES_PER_PIXEL } from './components/WiggleClusterDialog/clusterOptions.ts'
+import { DEFAULT_SAMPLES_PER_PIXEL } from './components/clusterOptions.ts'
 import { runWiggleClustering } from './runWiggleClustering.ts'
 
-import type { ReducedModel } from './components/WiggleClusterDialog/types.ts'
+import type { ReducedModel } from './clusterModelTypes.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 

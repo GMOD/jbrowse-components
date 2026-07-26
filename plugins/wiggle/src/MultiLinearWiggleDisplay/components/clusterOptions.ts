@@ -3,7 +3,7 @@ import { useLocalStorage } from '@jbrowse/core/util/hooks'
 
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
-import type { ReducedModel } from './types.ts'
+import type { ReducedModel } from '../clusterModelTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One sample per pixel. The declarative `runClustering` autorun deliberately
