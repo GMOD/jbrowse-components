@@ -28,6 +28,7 @@
     "prebuild": "pnpm clean",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "build:umd": "node scripts/build-umd.ts",
+    "publish:umd": "scripts/publish-umd.sh",
     "clean": "rimraf esm dist *.tsbuildinfo"
   },
   "devDependencies": {
