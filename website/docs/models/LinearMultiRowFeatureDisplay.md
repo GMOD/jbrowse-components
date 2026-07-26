@@ -29,7 +29,7 @@ dendrogram + reorder) is the shared `TreeSidebarMixin`.
 | [hiddenCategories](#property-hiddencategories)                         | Properties | LinearMultiRowFeatureDisplay                          | Legend categories toggled off (by label).                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [rpcDataMap](#volatile-rpcdatamap)                                     | Volatiles  | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [prefersOffset](#volatile-prefersoffset)                               | Volatiles  | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [hoveredFeature](#volatile-hoveredfeature)                             | Volatiles  | LinearMultiRowFeatureDisplay                          | The feature under the mouse (+ client coords for tooltip placement), or undefined when not hovering a block.                                                                                                                                                                                                                                                                                                                                  |
+| [hoveredFeature](#volatile-hoveredfeature)                             | Volatiles  | LinearMultiRowFeatureDisplay                          | The feature under the mouse, or undefined when not hovering a block.                                                                                                                                                                                                                                                                                                                                                                          |
 | [contextMenuInfo](#volatile-contextmenuinfo)                           | Volatiles  | LinearMultiRowFeatureDisplay                          | Right-click context menu anchor + the genomic position clicked (and the feature there, if any).                                                                                                                                                                                                                                                                                                                                               |
 | [conf](#getter-conf)                                                   | Getters    | LinearMultiRowFeatureDisplay                          | config typed off the concrete schema (ConfigurationReference erases it to any); direct reads route through here to stay typed                                                                                                                                                                                                                                                                                                                 |
 | [densityGateEnabled](#getter-densitygateenabled)                       | Getters    | LinearMultiRowFeatureDisplay                          | Multi-row paints features into fixed lanes, so a high total feature count (e.g. a whole-chromosome haplotype painting with many segments per row) is not a per-glyph render cost — only the byte/download budget should gate it.                                                                                                                                                                                                              |
@@ -62,8 +62,9 @@ dendrogram + reorder) is the shared `TreeSidebarMixin`.
 | [spatialIndex](#getter-spatialindex)                                   | Getters    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [renderState](#getter-renderstate)                                     | Getters    | LinearMultiRowFeatureDisplay                          | Render state passed to the GPU/Canvas2D backend each frame.                                                                                                                                                                                                                                                                                                                                                                                   |
 | [indelGlyphRegions](#getter-indelglyphregions)                         | Getters    | LinearMultiRowFeatureDisplay                          | Per-region data for the indel-glyph overlay, or undefined when the `lengthField` slot is unset and there is no glyph pass.                                                                                                                                                                                                                                                                                                                    |
+| [highlightedBlockRect](#getter-highlightedblockrect)                   | Getters    | LinearMultiRowFeatureDisplay                          | Screen box of the block to mark, or undefined when there's nothing to mark.                                                                                                                                                                                                                                                                                                                                                                   |
 | [rpcProps](#method-rpcprops)                                           | Methods    | LinearMultiRowFeatureDisplay                          | Fetch-input cache keys (tier-1, via SettingsInvalidate → refetch).                                                                                                                                                                                                                                                                                                                                                                            |
-| [featureAt](#method-featureat)                                         | Methods    | LinearMultiRowFeatureDisplay                          | Hit-test the feature under a canvas-relative pixel: row from `mouseY / rowHeight`, genomic bp from the view, then the first feature on that row whose `[start,end)` covers the bp.                                                                                                                                                                                                                                                            |
+| [featureAt](#method-featureat)                                         | Methods    | LinearMultiRowFeatureDisplay                          | Hit-test the feature under a display-relative pixel: row from `mouseY / rowHeight`, genomic bp from the view, then the first feature on that row whose `[start,end)` covers the bp.                                                                                                                                                                                                                                                           |
 | [isCacheValid](#method-iscachevalid)                                   | Methods    | LinearMultiRowFeatureDisplay                          | A region is cache-valid only once its features are committed.                                                                                                                                                                                                                                                                                                                                                                                 |
 | [contextMenuItems](#method-contextmenuitems)                           | Methods    | LinearMultiRowFeatureDisplay                          | Items for the right-click context menu, built from the clicked position (contextMenuInfo).                                                                                                                                                                                                                                                                                                                                                    |
 | [trackMenuItems](#method-trackmenuitems)                               | Methods    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -78,7 +79,7 @@ dendrogram + reorder) is the shared `TreeSidebarMixin`.
 | [sortRowsByValueAt](#action-sortrowsbyvalueat)                         | Actions    | LinearMultiRowFeatureDisplay                          | Reorder the rows by the value each carries at (refName, pos) — the feature covering that position on each row.                                                                                                                                                                                                                                                                                                                                |
 | [openContextMenu](#action-opencontextmenu)                             | Actions    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [closeContextMenu](#action-closecontextmenu)                           | Actions    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [setHoveredFeature](#action-sethoveredfeature)                         | Actions    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [setHoveredFeature](#action-sethoveredfeature)                         | Actions    | LinearMultiRowFeatureDisplay                          | Writes only when the hovered block actually changes, so a mouse moving within one block (blocks are many px wide) doesn't invalidate the observers watching this.                                                                                                                                                                                                                                                                             |
 | [selectFeatureById](#action-selectfeaturebyid)                         | Actions    | LinearMultiRowFeatureDisplay                          | Re-fetch the full clicked feature by id and open it in the feature details widget.                                                                                                                                                                                                                                                                                                                                                            |
 | [setRpcData](#action-setrpcdata)                                       | Actions    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [clearDisplaySpecificData](#action-cleardisplayspecificdata)           | Actions    | LinearMultiRowFeatureDisplay                          |                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -279,14 +280,15 @@ hiddenCategories: types.array(types.string)
 
 #### volatile: hoveredFeature
 
-The feature under the mouse (+ client coords for tooltip placement), or
-undefined when not hovering a block.
+The feature under the mouse, or undefined when not hovering a block. Pure hover
+identity — the cursor position that places the tooltip is component state, so
+moving inside one block doesn't invalidate this.
 
 ```ts
 // type signature
-type hoveredFeature = HoveredFeature | undefined
+type hoveredFeature = MultiRowHit | undefined
 // code
-hoveredFeature: undefined as HoveredFeature | undefined
+hoveredFeature: undefined as MultiRowHit | undefined
 ```
 
 #### volatile: contextMenuInfo
@@ -563,6 +565,18 @@ identity changes exactly when the data does.
 type indelGlyphRegions = Map<number, MultiRowGetFeaturesResult> | undefined
 ```
 
+#### getter: highlightedBlockRect
+
+Screen box of the block to mark, or undefined when there's nothing to mark. The
+hover drops when a right-click menu opens (else its tooltip sticks under the
+menu), so the menu's own feature stands in — the block a menu is acting on is
+exactly the one that should stay marked.
+
+```ts
+type highlightedBlockRect =
+  { left: number; width: number; top: number; height: number } | undefined
+```
+
 </details>
 
 <details>
@@ -599,10 +613,16 @@ type rpcProps = () => {
 
 #### method: featureAt
 
-Hit-test the feature under a canvas-relative pixel: row from
+Hit-test the feature under a display-relative pixel: row from
 `mouseY / rowHeight`, genomic bp from the view, then the first feature on that
 row whose `[start,end)` covers the bp. Returns undefined over the sidebar,
 off-row, out-of-bounds, or over a gap.
+
+The sidebar bound is `treeSidebarRightEdge`, not `sidebarOffset`: the latter is
+where labels are _drawn_ from, while the resize handle sitting in the 4px past
+it is the sidebar's interactive edge, and a hit under the handle would fight the
+drag. Same bound the wiggle family hit-tests against, and the same one the
+crosshair's guide stops at.
 
 ```ts
 type featureAt = (mouseX: number, mouseY: number) => MultiRowHit | undefined
@@ -682,6 +702,16 @@ refetch/RPC) and writes the new order via `layout`.
 type sortRowsByValueAt = (refName: string, pos: number) => void
 ```
 
+#### action: setHoveredFeature
+
+Writes only when the hovered block actually changes, so a mouse moving within
+one block (blocks are many px wide) doesn't invalidate the observers watching
+this.
+
+```ts
+type setHoveredFeature = (arg?: MultiRowHit | undefined) => void
+```
+
 #### action: selectFeatureById
 
 Re-fetch the full clicked feature by id and open it in the feature details
@@ -737,7 +767,6 @@ type setFitToHeight = () => void
 | <span id="action-setshowbranchlength">setShowBranchLength</span>           | `(f: boolean) => void`                                                                                                |
 | <span id="action-opencontextmenu">openContextMenu</span>                   | `(info: { clientX: number; clientY: number; refName: string; pos: number; hit?: MultiRowHit \| undefined; }) => void` |
 | <span id="action-closecontextmenu">closeContextMenu</span>                 | `() => void`                                                                                                          |
-| <span id="action-sethoveredfeature">setHoveredFeature</span>               | `(arg?: HoveredFeature \| undefined) => void`                                                                         |
 | <span id="action-setrpcdata">setRpcData</span>                             | `(regionIndex: number, data: MultiRowGetFeaturesResult) => void`                                                      |
 | <span id="action-cleardisplayspecificdata">clearDisplaySpecificData</span> | `() => void`                                                                                                          |
 | <span id="action-startrenderingbackend">startRenderingBackend</span>       | `(backend: MultiRowRenderingBackend) => void`                                                                         |

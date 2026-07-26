@@ -17,13 +17,14 @@ disagree.
 
 ## Members
 
-| Member                           | Kind       | Defined by        | Description                                                             |
-| -------------------------------- | ---------- | ----------------- | ----------------------------------------------------------------------- |
-| [id](#property-id)               | Properties | UcscResultsWidget |                                                                         |
-| [type](#property-type)           | Properties | UcscResultsWidget |                                                                         |
-| [features](#property-features)   | Properties | UcscResultsWidget | hits, best first (BLAT sorts by score; hgPcr returns products in order) |
-| [assembly](#property-assembly)   | Properties | UcscResultsWidget | assembly the hits are on, for navigating and for the header line        |
-| [trackName](#property-trackname) | Properties | UcscResultsWidget | name of the on-the-fly track these hits were added as                   |
+| Member                             | Kind       | Defined by        | Description                                                             |
+| ---------------------------------- | ---------- | ----------------- | ----------------------------------------------------------------------- |
+| [id](#property-id)                 | Properties | UcscResultsWidget |                                                                         |
+| [type](#property-type)             | Properties | UcscResultsWidget |                                                                         |
+| [features](#property-features)     | Properties | UcscResultsWidget | hits, best first (BLAT sorts by score; hgPcr returns products in order) |
+| [assembly](#property-assembly)     | Properties | UcscResultsWidget | assembly the hits are on, for navigating and for the header line        |
+| [trackName](#property-trackname)   | Properties | UcscResultsWidget | name of the on-the-fly track these hits were added as                   |
+| [resultNoun](#property-resultnoun) | Properties | UcscResultsWidget | what one result is called.                                              |
 
 <details>
 <summary>UcscResultsWidget - Properties</summary>
@@ -63,6 +64,19 @@ name of the on-the-fly track these hits were added as
 type trackName = ISimpleType<string>
 // code
 trackName: types.string
+```
+
+#### property: resultNoun
+
+what one result is called. A BLAT result is a hit; an hgPcr result is a product,
+which is a band on a gel — the word a bench scientist reasons in, and "2 hits"
+understates what two of them mean for a PCR run
+
+```ts
+// type signature
+type resultNoun = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+resultNoun: types.optional(types.enumeration(['hit', 'product']), 'hit')
 ```
 
 </details>

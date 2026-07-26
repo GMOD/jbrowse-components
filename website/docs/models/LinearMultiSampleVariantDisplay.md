@@ -22,9 +22,10 @@ per-cell feature widget on click.
 | [visibleRegions](#getter-visibleregions)                                 | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [renderState](#getter-renderstate)                                       | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [prefersOffset](#getter-prefersoffset)                                   | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
-| [perRegionCellMap](#getter-perregioncellmap)                             | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
-| [insertionGlyphRegions](#getter-insertionglyphregions)                   | Getters    | LinearMultiSampleVariantDisplay                               | Per-region cell data for the insertion-glyph overlay, or undefined when the slot is off or there is no regular-mode payload.                                                                                                                                      |
-| [flatbushIndices](#getter-flatbushindices)                               | Getters    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
+| [perRegionCellMap](#getter-perregioncellmap)                             | Getters    | LinearMultiSampleVariantDisplay                               | The one walk of `perRegionCellData`.                                                                                                                                                                                                                              |
+| [insertionGlyphRegions](#getter-insertionglyphregions)                   | Getters    | LinearMultiSampleVariantDisplay                               | Per-region cell data for the insertion-glyph overlay, or undefined when the slot is off.                                                                                                                                                                          |
+| [featureIndices](#getter-featureindices)                                 | Getters    | LinearMultiSampleVariantDisplay                               | Per-region spatial index over feature intervals, for the hit-test.                                                                                                                                                                                                |
+| [rpcProps](#method-rpcprops)                                             | Methods    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [showSubmenuItems](#method-showsubmenuitems)                             | Methods    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [renderSvg](#method-rendersvg)                                           | Methods    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
 | [startRenderingBackend](#action-startrenderingbackend)                   | Actions    | LinearMultiSampleVariantDisplay                               |                                                                                                                                                                                                                                                                   |
@@ -83,7 +84,6 @@ per-cell feature widget on click.
 | [hasOverflow](#getter-hasoverflow)                                       | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Whether the rows are taller than the viewport, i.e. the display scrolls.                                                                                                                                                                                          |
 | [scrollableHeight](#getter-scrollableheight)                             | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Max valid `scrollTop`: how far the rows can scroll before the bottom row reaches the viewport floor.                                                                                                                                                              |
 | [featuresReady](#getter-featuresready)                                   | Getters    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
-| [rpcProps](#method-rpcprops)                                             | Methods    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
 | [trackMenuItems](#method-trackmenuitems)                                 | Methods    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
 | [contextMenuItems](#method-contextmenuitems)                             | Methods    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) |                                                                                                                                                                                                                                                                   |
 | [getPortableSettings](#method-getportablesettings)                       | Methods    | [MultiSampleVariantBaseModel](../multisamplevariantbasemodel) | Called by BaseTrackModel.replaceDisplay when switching between the regular and matrix variant displays.                                                                                                                                                           |
@@ -243,19 +243,40 @@ The configuration slots for this model are documented on its
 <details>
 <summary>LinearMultiSampleVariantDisplay - Getters</summary>
 
+#### getter: perRegionCellMap
+
+The one walk of `perRegionCellData`. Every regular-mode consumer reads this map,
+so "does the glyph overlay see the same regions as the canvas" has a single
+answer — `ShippedRegionData` structurally satisfies both `VariantUploadData`
+(GPU/Canvas upload) and `VariantInsertionGlyphData` (overlay), and carries
+`featureIndexData` for the hit-test index.
+
+A computed returning a plain Map, for the same reason the multi-row display's
+is: the overlay draws inside an effect, where nothing it reads is tracked, so
+the read has to happen here for a refetch to repaint. Rebuilding is cheap
+(typical view shows 1-3 regions); MobX caches the computed so only cellData
+changes invalidate it.
+
+```ts
+type perRegionCellMap = Map<number, ShippedRegionData>
+```
+
 #### getter: insertionGlyphRegions
 
 Per-region cell data for the insertion-glyph overlay, or undefined when the slot
-is off or there is no regular-mode payload.
-
-A computed returning a plain Map, for the same reason the multi-row display's
-does: the overlay draws inside an effect, where nothing it reads is tracked, so
-the read has to happen here for a refetch to repaint. `perRegionCellMap` is the
-same walk narrowed to the GPU upload fields, and the glyphs need
-`cellCarriesAlt` / `featureInsertedBp` / `cellFeatureIndices` too.
+is off.
 
 ```ts
-type insertionGlyphRegions = Map<number, VariantInsertionGlyphData> | undefined
+type insertionGlyphRegions = Map<number, ShippedRegionData> | undefined
+```
+
+#### getter: featureIndices
+
+Per-region spatial index over feature intervals, for the hit-test. One entry per
+variant, not per cell — see computeVariantCells.
+
+```ts
+type featureIndices = Map<number, Flatbush>
 ```
 
 </details>
@@ -263,13 +284,11 @@ type insertionGlyphRegions = Map<number, VariantInsertionGlyphData> | undefined
 <details>
 <summary>LinearMultiSampleVariantDisplay - Getters (other undocumented members)</summary>
 
-| Member                                                     | Type                                                                                                                                                                                 |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <span id="getter-visibleregions">visibleRegions</span>     | `{ refName: string; start: number; end: number; assemblyName: string; reversed: boolean \| undefined; displayedRegionIndex: number; screenStartPx: number; screenEndPx: number; }[]` |
-| <span id="getter-renderstate">renderState</span>           | `{ canvasWidth: number; canvasHeight: number; rowHeight: number; scrollTop: number; }`                                                                                               |
-| <span id="getter-prefersoffset">prefersOffset</span>       | `boolean`                                                                                                                                                                            |
-| <span id="getter-perregioncellmap">perRegionCellMap</span> | `Map<number, VariantUploadData>`                                                                                                                                                     |
-| <span id="getter-flatbushindices">flatbushIndices</span>   | `Map<number, Flatbush>`                                                                                                                                                              |
+| Member                                                 | Type                                                                                                                                                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <span id="getter-visibleregions">visibleRegions</span> | `{ refName: string; start: number; end: number; assemblyName: string; reversed: boolean \| undefined; displayedRegionIndex: number; screenStartPx: number; screenEndPx: number; }[]` |
+| <span id="getter-renderstate">renderState</span>       | `{ canvasWidth: number; canvasHeight: number; rowHeight: number; scrollTop: number; }`                                                                                               |
+| <span id="getter-prefersoffset">prefersOffset</span>   | `boolean`                                                                                                                                                                            |
 
 </details>
 
@@ -278,6 +297,7 @@ type insertionGlyphRegions = Map<number, VariantInsertionGlyphData> | undefined
 
 | Member                                                     | Type                                                                                                                                                         |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <span id="method-rpcprops">rpcProps</span>                 | `() => {…}`                                                                                                                                                  |
 | <span id="method-showsubmenuitems">showSubmenuItems</span> | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]`                 |
 | <span id="method-rendersvg">renderSvg</span>               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
 
@@ -658,7 +678,6 @@ type legendSections = () => LegendSection[]
 
 | Member                                                     | Type               |
 | ---------------------------------------------------------- | ------------------ |
-| <span id="method-rpcprops">rpcProps</span>                 | `() => {…}`        |
 | <span id="method-trackmenuitems">trackMenuItems</span>     | `() => MenuItem[]` |
 | <span id="method-contextmenuitems">contextMenuItems</span> | `() => MenuItem[]` |
 
