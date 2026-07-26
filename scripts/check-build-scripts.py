@@ -121,9 +121,13 @@ kept, dropped = reroot_maf.reroot(
     [row("REF#1#chr", 500), row("other#1#chr", 20), row("REF#1#chr", 100)]
 )
 check("reroot anchors on the leftmost reference row", kept[0][2], "100")
-check("reroot drops the surplus reference rows", dropped, 1)
+check("reroot drops the surplus reference rows", [r[2] for r in dropped], ["500"])
 check("reroot keeps every non-reference row", [r[1] for r in kept],
       ["REF#1#chr", "other#1#chr"])
+# the dropped rows are returned, not just counted, so the run can report the
+# reference bases that lose their alignment (0.45% of K12 on the real MAF)
+check("reroot returns the dropped rows for base accounting",
+      sum(int(r[3]) for r in dropped), 10)
 # a '-' reference row flips the block, and leftmost is decided after the flip
 kept, _ = reroot_maf.reroot([row("REF#1#chr", 100, "-"), row("other#1#chr", 20)])
 check("reroot normalizes the reference to '+'", kept[0][4], "+")

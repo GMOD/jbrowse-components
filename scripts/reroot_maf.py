@@ -22,11 +22,24 @@ surplus rows in was worse: JBrowse maps a MAF row to a sample by name, so a
 second row named for the reference collides with the reference itself in that
 sample's lane.
 
-What this does NOT fix: pggb emits several blocks over the same reference span
-for the same reason (13.6% of K12 is covered twice, 431 blocks overlap their
-predecessor), and no reordering can turn that into a partition. Sorting makes the
-.tai correct; picking one block per reference interval would be a different tool.
-The run prints both counts so a rebuild surfaces them instead of hiding them.
+What dropping them costs, measured on the five-strain E. coli MAF: the raw pggb
+output has 4,791 K12 rows covering 4,641,600 of K12's 4,641,652 bases, and is
+already almost exactly a partition (one overlapping pair, 52 bases covered
+twice). Dropping the 55 surplus rows leaves 4,736 blocks covering 4,620,778
+bases, so 20,822 bases (0.45% of K12) lose their alignment. That is the trade:
+0.45% of the reference goes uncovered so the remaining rows map one-to-one onto
+sample lanes and the .tai's ordering assumption holds. The run prints the
+dropped-base count so a rebuild states the cost instead of hiding it.
+
+The printed count is the sum of the dropped rows' sizes (20,874 here), which is
+52 more than the 20,822 the coverage shrinks by, because it counts the 52
+doubly-covered bases twice. Sum is what the script can compute per block without
+holding the whole file; the union is the number to quote.
+
+(An earlier revision of this docstring claimed 13.6% of K12 was covered twice
+and 431 blocks overlapped their predecessor, and concluded no reordering could
+produce a partition. Both numbers were wrong — see the counts above, which the
+script now measures on every run.)
 
 Usage: reroot_maf.py <in.maf> <out.maf> [reference_path]   (default K12#1#chr)
 """
@@ -60,7 +73,7 @@ def _flip(rows):
 
 
 def reroot(rows):
-    """Return (block rooted on REF, surplus reference rows dropped), or None."""
+    """Return (block rooted on REF, the surplus reference rows dropped), or None."""
     refs = [k for k, r in enumerate(rows) if r[1] == REF]
     if not refs:
         return None
@@ -73,15 +86,17 @@ def reroot(rows):
     surplus = set(refs) - {anchor}
     kept = [rows[anchor]] + [r for k, r in enumerate(rows)
                              if k != anchor and k not in surplus]
-    return kept, len(surplus)
+    return kept, [rows[k] for k in sorted(surplus)]
 
 
 def main():
     with open(sys.argv[1]) as fh:
         rerooted = [r for r in map(reroot, parse_blocks(fh)) if r]
     blocks = [b for b, _ in rerooted]
-    dropped = sum(n for _, n in rerooted)
-    multi = sum(1 for _, n in rerooted if n)
+    surplus = [r for _, rows in rerooted for r in rows]
+    dropped = len(surplus)
+    dropped_bases = sum(int(r[3]) for r in surplus)
+    multi = sum(1 for _, rows in rerooted if rows)
     # end as a tiebreaker so equal starts order deterministically between runs
     blocks.sort(key=lambda rows: (int(rows[0][2]), int(rows[0][3])))
     with open(sys.argv[2], "w") as out:
@@ -97,11 +112,12 @@ def main():
                    if int(blocks[i][0][2])
                    < int(blocks[i - 1][0][2]) + int(blocks[i - 1][0][3]))
     sys.stderr.write("kept %d blocks rooted on %s\n" % (len(blocks), REF))
-    sys.stderr.write("dropped %d surplus %s rows from %d repeat-collapsed blocks\n"
-                     % (dropped, REF, multi))
-    sys.stderr.write("%d blocks overlap their predecessor on %s "
-                     "(inherent to the input, see the module docstring)\n"
-                     % (overlaps, REF))
+    sys.stderr.write("dropped %d surplus %s rows from %d repeat-collapsed blocks, "
+                     "losing %d aligned %s bases\n"
+                     % (dropped, REF, multi, dropped_bases, REF))
+    # should be 0: the kept rows are one per block, anchored on the leftmost copy.
+    # A nonzero count means the .tai's ordering assumption is broken again.
+    sys.stderr.write("%d blocks overlap their predecessor on %s\n" % (overlaps, REF))
 
 
 if __name__ == "__main__":
