@@ -1,5 +1,5 @@
 import { ChildProcess, execSync, spawn } from 'child_process'
-import { mkdtempSync } from 'fs'
+import { chmodSync, mkdtempSync, writeFileSync } from 'fs'
 import http from 'http'
 import { createRequire } from 'module'
 import { tmpdir } from 'os'
@@ -65,7 +65,33 @@ export async function startChromedriver(): Promise<ChildProcess> {
   })
 }
 
-export async function createDriver(): Promise<WebDriver> {
+// Launching the app *with a file argument* (the `jbrowse-desktop config.json`
+// route) can't go through chromeOptions.args: chromedriver reads every entry
+// there as a switch and re-emits it with a `--` prefix, so a bare path arrives
+// as `--/tmp/…/config.json` and the app resolves it against its own cwd. A
+// wrapper script puts the path in argv itself, ahead of chromedriver's own
+// switches, and `exec` replaces the shell so no extra process outlives the app.
+function writeLaunchWrapper(launchFile: string) {
+  if (isWindows) {
+    throw new Error(
+      'createDriver({ launchFile }) is implemented for the sh wrapper only, and the desktop figures are generated on linux',
+    )
+  }
+  const wrapper = join(
+    mkdtempSync(join(tmpdir(), 'jbrowse-desktop-launch-')),
+    'launch.sh',
+  )
+  writeFileSync(
+    wrapper,
+    `#!/bin/sh\nexec "${APP_BINARY}" "${launchFile}" "$@"\n`,
+  )
+  chmodSync(wrapper, 0o755)
+  return wrapper
+}
+
+export async function createDriver({
+  launchFile,
+}: { launchFile?: string } = {}): Promise<WebDriver> {
   // A throwaway profile per run, not the developer's own JBrowse Desktop one.
   // createMainWindow sizes itself from windowStateKeeper, which persists into
   // userData, so a machine where the app was last left 845px wide captured
@@ -102,7 +128,7 @@ export async function createDriver(): Promise<WebDriver> {
     .usingServer(`http://localhost:${CHROMEDRIVER_PORT}`)
     .withCapabilities({
       'goog:chromeOptions': {
-        binary: APP_BINARY,
+        binary: launchFile ? writeLaunchWrapper(launchFile) : APP_BINARY,
         args: chromeArgs,
       },
       'goog:loggingPrefs': {

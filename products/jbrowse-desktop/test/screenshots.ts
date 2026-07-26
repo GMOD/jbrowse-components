@@ -1,8 +1,14 @@
-import { ChildProcess } from 'child_process'
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { ChildProcess, execFileSync } from 'child_process'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from 'fs'
 import http from 'http'
 import { tmpdir } from 'os'
-import { dirname, resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
 import { By, WebDriver, until } from 'selenium-webdriver'
@@ -52,6 +58,7 @@ const ONLY =
 // capture() rejects a name missing from this list, so the list can't silently
 // drift out of step with the flow.
 const FIGURES = [
+  'desktop-cli-config.png',
   'desktop-landing.png',
   'desktop-ispcr.png',
   'desktop-ispcr-results.png',
@@ -585,6 +592,110 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   await returnToStartScreen(driver)
 }
 
+// The cli_desktop tutorial's own commands, run for real against the bundled
+// volvox files, so the figure opens whatever the CLI actually writes rather than
+// a config shape hand-copied into the docs. `--load copy` is what makes the
+// output folder self-contained (the portability the tutorial is about), and
+// set-default-session is what gives it a view to open on: without one the app
+// lands on the empty "Select a view to launch" chooser.
+function buildCliConfig(): string {
+  const cliEntry = resolve(REPO_ROOT, 'products/jbrowse-cli/dist/index.js')
+  if (!existsSync(cliEntry)) {
+    throw new Error(
+      `@jbrowse/cli is not built (${cliEntry} missing). Run: pnpm --filter @jbrowse/cli build`,
+    )
+  }
+  const workdir = mkdtempSync(join(tmpdir(), 'jbrowse-cli-config-'))
+  const out = join(workdir, 'myproject')
+  const volvox = resolve(REPO_ROOT, 'test_data/volvox')
+  // Every command takes the same --out, which is the tutorial's whole shape: the
+  // first writes myproject/config.json and the rest edit it in place.
+  const cli = (...args: string[]) => {
+    execFileSync(
+      'node',
+      [
+        resolve(REPO_ROOT, 'products/jbrowse-cli/bin/run'),
+        ...args,
+        '--out',
+        out,
+      ],
+      { stdio: 'pipe' },
+    )
+  }
+  const load = ['--load', 'copy']
+  cli('add-assembly', join(volvox, 'volvox.fa'), '--name', 'volvox', ...load)
+  cli(
+    'add-track',
+    join(volvox, 'volvox-sorted.bam'),
+    ...load,
+    '--name',
+    'My reads',
+  )
+  cli(
+    'add-track',
+    join(volvox, 'volvox.filtered.vcf.gz'),
+    ...load,
+    '--name',
+    'My variants',
+  )
+
+  // Track ids are read back out of the config the CLI just wrote (it derives
+  // them from the filenames) rather than assumed here.
+  const config = resolve(out, 'config.json')
+  const trackIds = (
+    JSON.parse(readFileSync(config, 'utf8')) as {
+      tracks: { trackId: string }[]
+    }
+  ).tracks.map(track => track.trackId)
+  const session = join(workdir, 'session.json')
+  writeFileSync(
+    session,
+    JSON.stringify({
+      name: 'myproject',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          init: { assembly: 'volvox', loc: 'ctgA:1-20,000', tracks: trackIds },
+        },
+      ],
+    }),
+  )
+  cli('set-default-session', '--session', session)
+  return config
+}
+
+// The tutorial's `jbrowse-desktop myproject/config.json` route. A *local* config
+// is otherwise only reachable through the native file picker, which selenium
+// cannot drive, so the app is launched with the path in argv instead of faking
+// the open in the renderer. That means its own app instance, which is why this
+// runs before the rest of the flow rather than in the middle of it.
+async function captureCliConfigFigure(): Promise<void> {
+  console.log('Building a config with @jbrowse/cli...')
+  const config = buildCliConfig()
+  console.log(`  built ${config}`)
+
+  console.log('Launching Electron app with the config as its argument...')
+  driver = await createDriver({ launchFile: config })
+
+  const probe = await waitForSession(
+    driver,
+    s => s.trackIds.length === 2,
+    60000,
+  )
+  if (probe?.trackIds.length !== 2) {
+    throw new Error(
+      `config.json opened without its two tracks: ${JSON.stringify(probe)}`,
+    )
+  }
+  await waitForAppReady(driver)
+  await waitForStableSession(driver)
+  await freezeAnimations(driver)
+  await capture(driver, 'desktop-cli-config.png')
+
+  await driver.quit()
+  driver = null
+}
+
 async function main(): Promise<void> {
   console.log(`Running in ${isHeadless ? 'headless' : 'headed'} mode`)
   console.log(`App binary: ${APP_BINARY}`)
@@ -621,6 +732,13 @@ async function main(): Promise<void> {
 
   console.log('Starting ChromeDriver...')
   chromedriverProcess = await startChromedriver()
+
+  // A CLI-built config.json opened straight from disk. Skipped when --only
+  // selects only later figures: it builds a config and runs an extra app
+  // instance, neither of which any other figure needs.
+  if (ONLY.length === 0 || selected.includes('desktop-cli-config.png')) {
+    await captureCliConfigFigure()
+  }
 
   console.log('Launching Electron app...')
   driver = await createDriver()

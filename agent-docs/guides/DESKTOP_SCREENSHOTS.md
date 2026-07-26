@@ -47,6 +47,34 @@ against one labeled TP53 model instead of a stack of near-identical transcripts.
 Menu rows go by testid because the labels also appear in the track label above,
 where a text match resolves first.
 
+## The CLI-config figure
+
+`desktop-cli-config.png` (the `cli_desktop` tutorial) runs the real
+`@jbrowse/cli` (`add-assembly`, two `add-track`s, `set-default-session`) into a
+temp dir against the bundled volvox files, then opens that `config.json`. It
+needs `products/jbrowse-cli/dist` built (`pnpm --filter @jbrowse/cli build`) and
+fails with that instruction if it isn't. Track ids are read back out of the
+config the CLI wrote rather than assumed.
+
+- **It launches through a wrapper script, not `chromeOptions.args`.**
+  chromedriver reads every args entry as a switch and re-emits it with a `--`
+  prefix, so a bare path arrives as `--/tmp/…/config.json` and the app resolves
+  it against its own cwd (`Session file no longer exists: …/products/jbrowse-desktop/--/tmp/…`).
+  `createDriver({ launchFile })` writes an `exec`ing `sh` wrapper instead, which
+  is the only way to reach the `jbrowse-desktop <file>` argv route. A *local*
+  config has no other entry point: every in-app affordance goes through the
+  native file picker, which selenium can't drive.
+- **It owns its own app instance**, so it runs before the rest of the flow (and
+  is skipped entirely when `--only` selects only later figures). That is also why
+  it is first in `FIGURES`.
+- **A run must build a fresh config**, never reuse one: Desktop treats the file
+  it opens as its session file and saves the live session back into it, rewriting
+  relative `uri`s into absolute `LocalPathLocation` paths and replacing
+  `defaultSession` with current view state. Opening alone is enough: a config
+  whose session launched no view still came back rewritten. The tutorial
+  documents this. A harness that reopened a previous run's config would be
+  capturing the rewritten form.
+
 ## "Is it done loading?"
 
 `waitForAppReady` in `test/harness.ts` replaces the `delay(3000) // let the track

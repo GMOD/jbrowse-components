@@ -8,13 +8,13 @@ tutorial_category: Configuration & embedding
 
 **TL;DR:** build a `config.json` from the command line with `@jbrowse/cli`.
 Because it records each data file by a path relative to the config, the same
-folder opens unchanged in JBrowse Desktop or served on the web.
+folder opens in JBrowse Desktop or served on the web. Desktop saves session
+state back into the file it opens, so keep a copy if you need both.
 
 The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
 command line instead of clicking through the **Add track** form. You run a few
 commands and end up with one folder (a `config.json` sitting next to your data
-files) that you can open directly in JBrowse Desktop _or_ serve on the web,
-unchanged.
+files) that you can open directly in JBrowse Desktop _or_ serve on the web.
 
 It works in both places because the CLI records each file by a path _relative_
 to `config.json`: Desktop resolves those paths against the folder on disk, and a
@@ -44,21 +44,11 @@ command below.
 
 The CLI references and copies your data, but it does not compress or index it,
 and JBrowse reads only indexed, compressed formats. So get each input into a
-JBrowse-ready form first, using [samtools](http://www.htslib.org/) / htslib:
-
-```bash
-# reference FASTA: bgzip-compress, then index -> .fa.gz + .fa.gz.fai + .fa.gz.gzi
-bgzip GRCh38.fa
-samtools faidx GRCh38.fa.gz
-
-# alignments: sort, then index -> sample.bam + sample.bam.bai
-samtools sort reads.bam -o sample.bam
-samtools index sample.bam
-
-# variants: bgzip, then index -> variants.vcf.gz + variants.vcf.gz.tbi
-bgzip variants.vcf
-tabix -p vcf variants.vcf.gz
-```
+JBrowse-ready form first: a bgzipped and `faidx`-indexed FASTA, a sorted and
+indexed BAM or CRAM, a bgzipped and tabixed VCF, GFF3, or BED. The
+[web quickstart](/docs/quickstart_web#adding-tracks) has the
+[samtools](http://www.htslib.org/) / htslib recipe per format, and the commands
+below assume you have already run them.
 
 ## Build the config directory
 
@@ -105,10 +95,45 @@ Inside `config.json`, the CLI referenced each file by its bare relative name
 ```json
 "adapter": {
   "type": "BamAdapter",
-  "uri": "sample.bam",
-  "index": { "location": { "uri": "sample.bam.bai" } }
+  "bamLocation": { "uri": "sample.bam", "locationType": "UriLocation" },
+  "index": {
+    "location": { "uri": "sample.bam.bai", "locationType": "UriLocation" },
+    "indexType": "BAI"
+  }
 }
 ```
+
+## Open on a view by default
+
+A config with tracks but no session opens on the view chooser: the assembly and
+tracks are loaded, but nothing is displayed until you launch a view and tick
+them in the track selector. To have the folder open ready to read, write the
+session you want and hand it to the CLI. `assembly` is the `--name` you gave
+`add-assembly`, and `tracks` takes the `trackId`s the CLI derived from your
+filenames (they are in `config.json`), not the display names:
+
+```json
+{
+  "name": "myproject",
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr1:1-100,000",
+        "tracks": ["sample", "variants.vcf"]
+      }
+    }
+  ]
+}
+```
+
+```bash
+jbrowse set-default-session --session session.json --out myproject
+```
+
+`session.json` itself is not part of the folder, only what it wrote into
+`config.json` is.
 
 ## Open it in JBrowse Desktop
 
@@ -128,9 +153,22 @@ jbrowse-desktop myproject/config.json
 (On macOS: `open -a "JBrowse 2" myproject/config.json`. See
 [launching from the command line](/docs/quickstart_desktop#launching-from-the-command-line).)
 
+<Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name, the assembly, and the My reads and My variants labels all come from the commands above (this one was built from the bundled volvox sample files)."/>
+
 (Prefer the GUI for a one-off file? Desktop's **Add track** picker still works.
 This CLI route is best when you want a scripted, repeatable setup, or the same
 config on both Desktop and the web.)
+
+:::caution
+
+Desktop treats the file you open as its session file and saves back to it, so
+the `config.json` you built is rewritten on open: each relative `uri` becomes an
+absolute local path on that machine, and `defaultSession` is replaced by
+whatever you were last looking at. Keep a pristine copy (or rerun the CLI
+commands, which are cheap) if the same folder also has to be served on the web
+or moved to another machine.
+
+:::
 
 ## Also use it on the web
 

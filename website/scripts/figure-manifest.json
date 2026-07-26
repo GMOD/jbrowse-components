@@ -235,8 +235,18 @@
     "type": "manual",
     "docs": ["docs/user_guides/blat.md"]
   },
+  "desktop-cli-config": {
+    "name": "desktop-cli-config",
+    "type": "manual",
+    "docs": ["docs/tutorials/cli_desktop.md"]
+  },
   "desktop-ispcr": {
     "name": "desktop-ispcr",
+    "type": "manual",
+    "docs": ["docs/user_guides/blat.md"]
+  },
+  "desktop-ispcr-results": {
+    "name": "desktop-ispcr-results",
     "type": "manual",
     "docs": ["docs/user_guides/blat.md"]
   },
