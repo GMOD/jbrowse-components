@@ -90,6 +90,44 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
     expect(display.statusMessage).toBeUndefined()
   })
 
+  // The status channel is out-of-band from the call's return value, so a
+  // progress message can be delivered after the RPC has already resolved. With
+  // nothing running and the phase back to `ready`, such a write would set a
+  // status no run will ever clear, pinning the chip up for good.
+  it('ignores a status delivered after the run finished', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    let late: ((status: RpcStatus) => void) | undefined
+    mockRpcCall.mockImplementation(
+      (
+        _sid: string,
+        method: string,
+        args: { statusCallback?: (status: RpcStatus) => void },
+      ) => {
+        if (method === 'MultiWiggleClusterScoreMatrix') {
+          late = args.statusCallback
+          return Promise.resolve({ order: [1, 0], tree: '(b,a);' })
+        }
+        return Promise.resolve(makeMultiWiggleData('a', 'b'))
+      },
+    )
+
+    const { display } = createDisplay({ runClustering: true })
+
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.sourcesVolatile.length).toBe(2)
+    })
+    jest.advanceTimersByTime(700)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.clusterTree).toBe('(b,a);')
+    })
+
+    late?.({ message: 'Clustering rows', current: 3, total: 4 })
+    expect(display.statusMessage).toBeUndefined()
+  })
+
   it('does not call the clustering RPC when runClustering is unset', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeMultiWiggleData('a', 'b'))

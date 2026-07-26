@@ -27,11 +27,20 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // cluster is many seconds of otherwise invisible work. Owned here rather than
 // per flavor so none of them can forget the clear (a status left set outlives
 // the run and pins the chip up).
+//
+// It is `makeStatusCallback` rather than `setStatusMessage` for the same reason
+// the fetch path uses it: the throttle that keeps a per-iteration RPC progress
+// stream from writing MST (and re-rendering the chip) on every callback lives
+// there, and `setStatusMessage` is deliberately unthrottled. The extra
+// `applying` gate is this path's own: the status channel is out-of-band from the
+// call's return value, so a callback landing after the `finally` would otherwise
+// set a status with no run behind it and pin the chip up for good.
 export function setupRunClusteringAutorun(
   self: IAnyStateTreeNode & {
     runClustering?: boolean
     setRunClustering: (arg?: boolean) => void
     setStatusMessage: (status?: RpcStatus) => void
+    makeStatusCallback: () => (status: RpcStatus) => void
   },
   opts: {
     name: string
@@ -59,10 +68,11 @@ export function setupRunClusteringAutorun(
         }
         applying = true
         const stopToken = createStopToken()
+        const report = self.makeStatusCallback()
         try {
           await opts.run(view, stopToken, status => {
-            if (isAlive(self)) {
-              self.setStatusMessage(status)
+            if (applying) {
+              report(status)
             }
           })
         } catch (e) {

@@ -18,6 +18,7 @@ export function getMultiSampleVariantClusterAutorun(
       runClustering?: boolean
       setRunClustering: (arg?: boolean) => void
       setStatusMessage: (status?: RpcStatus) => void
+      makeStatusCallback: () => (status: RpcStatus) => void
     },
 ) {
   setupRunClusteringAutorun(self, {
