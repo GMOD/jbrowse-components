@@ -82,20 +82,27 @@ def _flip(rows):
 
 
 def reroot(rows):
-    """Yield one block per REF row, each with that row moved to position 0.
+    """Yield one block per REF row: that row at position 0, plus the other rows.
 
-    A block with several REF rows is a collapsed repeat. taffy's .tai files a
-    block under row 0's coordinates only, so a surplus copy cannot be reached by
-    a region query while it shares a block. One block per copy makes every copy
-    queryable, at the cost of repeating the other rows once per copy.
+    A block with several REF rows is a collapsed repeat. A block is found through
+    row 0's interval alone, so a surplus copy cannot be reached by a region query
+    while it shares a block. One block per copy makes every copy queryable, at
+    the cost of repeating the non-reference rows once per copy.
+
+    Each emitted block carries exactly ONE reference row, its own. Keeping the
+    other copies would break every consumer that maps a row to a sample by name:
+    the adapters key on assembly name and the last row wins, so the block's
+    interval would say one copy while its reference sequence came from another.
+    Nothing is lost by leaving them out, since each copy anchors its own block.
 
     Blocks are emitted per copy in row order and sorted by reference start
-    afterwards, which the .tai requires.
+    afterwards, which an interval index needs.
     """
     for i in (k for k, r in enumerate(rows) if r[1] == REF):
         # order-preserving, so i still indexes the same row
         block = _flip(rows) if rows[i][4] == "-" else rows
-        yield [block[i]] + [r for k, r in enumerate(block) if k != i]
+        yield [block[i]] + [r for k, r in enumerate(block)
+                            if k != i and r[1] != REF]
 
 
 def main():

@@ -114,9 +114,10 @@ def load(path, name):
 #   - SPLIT into one block per reference row. Any MAF index keys a block on row 0
 #     (a .tai record, a tabix BED interval), so a copy sharing a block is
 #     unreachable by region query.
-#   - keep every row in every emitted block. The adapters key `alignments` by
-#     sample name, so a duplicate is one lane at display time; dropping deletes
-#     data to fix nothing.
+#   - keep every NON-reference row, and only this block's own reference row. The
+#     adapters key `alignments` by sample name with last-row-wins, so a second
+#     reference copy would supply the sequence for an interval that came from the
+#     first. Dropping copies outright was tried and reverted; it deletes data.
 #   - anchor the first emitted block on the FIRST reference row, not the leftmost.
 #     Leftmost perturbs taffy's differential TAF encoding and loses region
 #     queries.
@@ -132,12 +133,17 @@ kept = list(reroot_maf.reroot(
 check("reroot splits one block per reference row", len(kept), 2)
 check("reroot anchors each block on its own reference copy",
       [b[0][2] for b in kept], ["500", "100"])
-check("reroot keeps every row in every block",
-      [sorted((r[1], r[2]) for r in b) for b in kept],
-      [sorted([("REF#1#chr", "500"), ("other#1#chr", "20"),
-               ("REF#1#chr", "100")])] * 2)
-check("reroot loses no aligned bases",
-      [sum(int(r[3]) for r in b) for b in kept], [30, 30])
+# exactly one reference row per block, its own: the adapters key `alignments` by
+# assembly name and the last row wins, so a second copy in the block would supply
+# the reference sequence while the block's interval came from the first.
+check("reroot keeps one reference row per block, its own",
+      [[r[1] for r in b] for b in kept],
+      [["REF#1#chr", "other#1#chr"]] * 2)
+check("reroot keeps every non-reference row",
+      [[(r[1], r[2]) for r in b[1:]] for b in kept],
+      [[("other#1#chr", "20")]] * 2)
+check("reroot loses no reference copy across the emitted blocks",
+      sorted(b[0][2] for b in kept), ["100", "500"])
 # a '-' reference row flips the block
 kept = list(reroot_maf.reroot([row("REF#1#chr", 100, "-"), row("other#1#chr", 20)]))
 check("reroot normalizes the reference to '+'", kept[0][0][4], "+")
