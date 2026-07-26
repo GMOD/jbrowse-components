@@ -20,6 +20,8 @@ import { newSessionName, resolveSessionName } from './sessionName.ts'
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { JBrowseConfig } from './types.ts'
 
+import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
+
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
 export { fetchConfig } from './fetchConfig.ts'
@@ -70,7 +72,7 @@ export async function createPluginManager(
   initialTimestamp = Date.now(),
 ) {
   const pluginLoader = new PluginLoader(
-    dropVendoredPlugins(configSnapshot.plugins ?? []),
+    dropVendoredPlugins(configSnapshot.plugins ?? [], DESKTOP_VENDORED),
     {
       fetchESM: url => import(/* webpackIgnore:true */ url),
       fetchCJS,

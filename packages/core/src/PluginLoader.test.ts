@@ -58,3 +58,15 @@ test('loadPlugin refuses a definition that names more than one plugin type', asy
     /more than one plugin type/,
   )
 })
+
+// Desktop bundles Blat and Web does not, so the same hub config must be treated
+// differently by each: dropping it globally would leave Web with no BLAT at all,
+// and not dropping it on Desktop installs the plugin twice.
+test('drops a per-product vendored plugin only when that product asks', () => {
+  const defs = [
+    { name: 'Blat', url: 'https://jbrowse.org/plugins/blat.js' },
+    { name: 'MsaView', url: 'https://jbrowse.org/plugins/msa.js' },
+  ]
+  expect(dropVendoredPlugins(defs)).toEqual(defs)
+  expect(dropVendoredPlugins(defs, ['Blat'])).toEqual([defs[1]])
+})

@@ -45,8 +45,7 @@ export interface ESMUrlPluginDefinition {
 }
 
 export type ESMPluginDefinition =
-  | ESMLocPluginDefinition
-  | ESMUrlPluginDefinition
+  ESMLocPluginDefinition | ESMUrlPluginDefinition
 
 export function isESMPluginDefinition(
   def: PluginDefinition,
@@ -130,10 +129,19 @@ export type PluginDefinition =
 // which hides these so a user can't install a colliding second copy.
 export const vendoredPluginNames = new Set(['MafViewer', 'GWAS'])
 
-export function dropVendoredPlugins(defs: PluginDefinition[]) {
-  return defs.filter(
-    d => !(isUMDPluginDefinition(d) && vendoredPluginNames.has(d.name)),
-  )
+/**
+ * `alsoVendored` is for a plugin one product bundles and another does not, which
+ * the shared set above cannot express: Desktop vendors Blat (so a hub config
+ * naming it must be dropped, or its menu items are appended twice — once by the
+ * core copy, once by the downloaded one), while Web does not and has to load
+ * exactly that entry to have BLAT at all.
+ */
+export function dropVendoredPlugins(
+  defs: PluginDefinition[],
+  alsoVendored: Iterable<string> = [],
+) {
+  const vendored = new Set([...vendoredPluginNames, ...alsoVendored])
+  return defs.filter(d => !(isUMDPluginDefinition(d) && vendored.has(d.name)))
 }
 
 export interface PluginRecord {
@@ -283,8 +291,7 @@ export default class PluginLoader {
     )
 
     const plugin = (globalThis as Record<string, unknown>)[umdName] as
-      | { default: PluginConstructor }
-      | undefined
+      { default: PluginConstructor } | undefined
     if (!plugin) {
       throw new Error(
         `Failed to load UMD bundle for ${moduleName}, ${umdName} is undefined`,
