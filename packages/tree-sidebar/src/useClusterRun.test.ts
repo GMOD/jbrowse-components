@@ -46,23 +46,33 @@ afterEach(() => {
 
 describe('useClusterRun', () => {
   it('reports the run status and hands the result to onSuccess', async () => {
+    const g = gate()
     const { result, onSuccess } = setup(async ({ statusCallback }) => {
       statusCallback({ message: 'Clustering samples', current: 1, total: 4 })
+      await g.opened
     })
 
-    await act(async () => {
-      await result.current.run()
+    let running: Promise<void> | undefined
+    act(() => {
+      running = result.current.run()
     })
-
-    expect(onSuccess).toHaveBeenCalled()
+    expect(result.current.loading).toBe(true)
     expect(result.current.status).toEqual({
       message: 'Clustering samples',
       current: 1,
       total: 4,
     })
-    // success is left mid-flight on purpose: onSuccess closes the dialog, so
-    // there is nothing left to put back in order
-    expect(result.current.loading).toBe(true)
+
+    g.open()
+    await act(async () => {
+      await running
+    })
+
+    expect(onSuccess).toHaveBeenCalled()
+    // back to idle on success too, not only on failure — the hook doesn't assume
+    // onSuccess unmounted it
+    expect(result.current.loading).toBe(false)
+    expect(result.current.status).toBeUndefined()
   })
 
   it('surfaces a failure and puts the dialog back to idle', async () => {

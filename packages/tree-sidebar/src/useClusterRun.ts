@@ -63,24 +63,28 @@ export function useClusterRun({
     },
     run: async () => {
       const token = createStopToken()
+      setError(undefined)
+      setStatus('Initializing')
+      setLoading(true)
+      // registered before the await, so an unmount mid-run has a live token to
+      // abort
+      setStopToken(token)
       try {
-        setError(undefined)
-        setStatus('Initializing')
-        setLoading(true)
-        setStopToken(token)
         await run({ stopToken: token, statusCallback: setStatus })
-        // success unmounts the dialog, so there is no progress state left to
-        // reset — only the catch below (a real error, or Stop) has a dialog to
-        // put back in order
         onSuccess()
       } catch (e) {
-        setLoading(false)
-        setStatus(undefined)
-        setStopToken(undefined)
         if (!isAbortException(e) && isAlive(model)) {
           console.error(e)
           setError(e)
         }
+      } finally {
+        // every exit, not just the failures: `onSuccess` closing the dialog is
+        // the caller's business, and a hook that only returns to idle when its
+        // caller happens to unmount is one reuse away from a dialog stuck
+        // showing a finished run's progress bar
+        setLoading(false)
+        setStatus(undefined)
+        setStopToken(undefined)
       }
     },
   }
