@@ -218,6 +218,12 @@ in_cactus gfatools view -R "${REF}#1#chr:1000000-1300000" -r 1 \
 cp "$SCRIPT_DIR/build_rgfa_tabix.sh" .
 in_cactus bash /data/build_rgfa_tabix.sh /data/ecoli_minigraph.rgfa /data/ecoli_minigraph
 
+# What the graph holds, read out of those two indexes alone: one row per allele,
+# anchored on the reference. Plain awk on the host (no gfatools), and unlike the
+# per-strain paths below it needs no assemblies, which is what makes it the
+# fallback for someone else's rGFA.
+bash "$SCRIPT_DIR/build_rgfa_alleles.sh" ecoli_minigraph
+
 # Each strain's actual path through every bubble of that graph, one row per
 # (bubble x strain). The segments/links indexes above say what the graph
 # contains; this says which strain takes what, which the rGFA tags alone cannot
@@ -377,6 +383,27 @@ cat > paths_track.json <<JSON
 }
 JSON
 jb add-track-json paths_track.json --update --out "$APP"
+
+# The same variation read out of the graph alone, with no assemblies re-mapped:
+# one feature per allele rather than one row per strain. An AlignmentsTrack over
+# a BED is deliberate — each allele carries a CIGAR against the reference span it
+# replaces, so the display packs the (overlapping) alleles into rows and draws
+# each one's insertion marker at its real size. As a plain feature track a 63 kb
+# insertion would be a 1 bp box.
+cp ecoli_minigraph.alleles.bed.gz ecoli_minigraph.alleles.bed.gz.tbi "$APP/"
+cat > alleles_track.json <<'JSON'
+{
+  "type": "AlignmentsTrack",
+  "trackId": "ecoli_minigraph_alleles",
+  "name": "minigraph graph: allele inventory (from the rGFA alone)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_minigraph.alleles.bed.gz"
+  }
+}
+JSON
+jb add-track-json alleles_track.json --update --out "$APP"
 
 # The adapter and the view both come from the graph genome view plugin, which is
 # not bundled in JBrowse Web and has no CLI command, so declare it directly. It

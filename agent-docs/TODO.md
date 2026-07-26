@@ -264,11 +264,15 @@ The derived record is a CIGAR in all but name: `refConsumed = refEnd - refStart`
 against `altLen`, so `altLen > refConsumed` is an insertion, `<` a deletion, and
 either end falling outside the window is a clip (6 of 78 in MHC).
 
-- **The rGFA-only allele inventory is still unbuilt.** It would be a third BED
-  out of `build_rgfa_tabix.sh` (which already holds the segment table in memory
-  while joining L-lines, so the derivation is offline awk). It is the fallback
-  for a graph with neither paths nor the assemblies to re-map. **One lane, not
-  rows** — see the rank-1-hoovering measurement above.
+- **The rGFA-only allele inventory shipped** as `scripts/build_rgfa_alleles.sh`,
+  offline awk over the two BEDs. 845 alleles on the five-strain E. coli graph,
+  208,308 on HPRC in 23 s from the hosted indexes alone. It reproduces 747 of
+  `minigraph --call`'s 842 alleles with the identical delta in the same bubble;
+  the 95 residuals are compound routes at 69 nested bubbles, every one at a
+  bubble the file does describe. Still **one lane, not haplotype rows** (the
+  columns are named `firstSeenIn`/`discoveryRank` so the name carries that), but
+  the lane packs into rows via the alignments display, because each allele
+  carries a CIGAR — see the handoff.
 - **`minigraph --call` superseded the rest of this list, and shipped.** See
   below.
 

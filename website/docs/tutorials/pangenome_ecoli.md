@@ -415,6 +415,71 @@ them (pggb, odgi, the base-level Minigraph-Cactus graph) needs no re-mapping at
 all, because `pggb -V` and `vg deconstruct` turn those same walks into the
 variant projection below.
 
+### When all you have is the graph
+
+Someone else's rGFA usually arrives without the assemblies it was built from,
+which rules out the re-mapping above. The two indexes still state every allele
+the graph holds, because each L-line row carries both of its endpoints in full:
+a link between two backbone segments that leaves a coordinate _gap_ is a
+deletion, and a link from the backbone into a rank>0 segment enters an allele
+whose length is the segments it walks before rejoining.
+[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
+does that walk in awk and needs nothing but the two files:
+
+```bash
+bash build_rgfa_alleles.sh ecoli_minigraph   # -> ecoli_minigraph.alleles.bed.gz
+```
+
+Each row is an allele stated against the reference it replaces, which is an
+alignment — so the BED carries a `CIGAR` column (`2062M63348I`) and an
+[alignments track](/docs/user_guides/alignments_track) reads it directly:
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "ecoli_minigraph_alleles",
+  "name": "minigraph graph: allele inventory (from the rGFA alone)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_minigraph.alleles.bed.gz"
+  }
+}
+```
+
+`AlignmentsTrack` over a BED looks like a mistake and is the point: the display
+draws whatever carries a CIGAR, so the alleles pack into rows and each one draws
+the same insertion marker and deletion bar a read does, at its real size. That
+matters more here than on the per-strain track, because these alleles overlap —
+at a nested site several routes share an anchor — and because an insertion
+consumes no reference at all. Without the CIGAR a 63 kb allele is a 1 bp
+feature with the number hidden in its label.
+
+<Figure caption="The same bubble as the per-strain figure above, derived from the graph alone with no assemblies re-mapped. The segments track carries the alt segments (s399, s401, s403, s405); below, each allele is one packed row, its insertion drawn at real size and labelled — 63,348 bp, 49,838, 46,983 — and the 3,217 bp deletion as a grey bar. Nobody's name is on them, which is the trade for not needing the assemblies." src="/img/pangenome/rgfa_allele_inventory.png" />
+
+The five-strain graph yields 845 alleles: 393 insertions, 441 deletions, 11
+same-length substitutions. `altLen`, `discoveryRank` and the traversed
+`segments` are in the popup, and `class`/`delta` drive the same **Edit filters**
+jexl the per-strain track uses — `jexl:get(feature,'delta')>10000` is the one
+worth starting from on a graph this size, and the only one that scales to the
+208,308 alleles the 464-haplotype HPRC graph yields.
+
+**What it costs against the per-strain route above.** Run on this graph, 747 of
+that caller's 842 alleles come back with the identical length change inside the
+same bubble. The 95 that do not are compound routes at 69 nested bubbles, where
+`--call` reports one strain's whole traversal and this reports the individual
+alleles it is built from — every one of them at a bubble this file does
+describe. So nesting costs exact compound lengths, never a whole site; the 53
+alleles whose length is one route among several say so in a `nested` column.
+
+The real limit is whose allele it is. `discoveryRank` and `firstSeenIn` name the
+**first** assembly to contribute a segment, because minigraph collapses: an
+allele that four strains share is attributed to whichever was added first. That
+is build order, not carriage, which is why the columns are named for what they
+are and why this track is a lane of alleles rather than rows of haplotypes. When
+you have the assemblies, the per-strain route above answers the carriage
+question properly; use this one when you do not.
+
 ## All-vs-all synteny projection
 
 pggb's first step is a wfmash all-vs-all PAF, exactly the input the

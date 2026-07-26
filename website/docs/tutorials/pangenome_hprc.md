@@ -328,6 +328,7 @@ chromosome and sample count:
 
 ```bash
 bash scripts/build_rgfa_tabix.sh hprc-v2.0-mc-grch38.sv.gfa.gz out
+bash scripts/build_rgfa_alleles.sh out
 bash scripts/build_hprc2_pclai.sh out chr1 64
 ```
 
@@ -337,6 +338,18 @@ rGFA (nothing to unpack); on the full 464-haplotype graph it turns the 842 MB
 download into about 50 MB of index in under a minute. It needs an **rGFA** -
 `sv.gfa.gz` is one, the `.gfa.gz` beside it is not (see
 [Regular GFA vs rGFA](#regular-gfa-vs-rgfa)).
+
+[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
+reads only those two indexes and writes a third: one row per allele the graph
+holds, anchored on GRCh38. It is the route that survives having no assemblies,
+which is the normal situation with a downloaded graph — the E. coli tutorial's
+[per-strain paths](/docs/tutorials/pangenome_ecoli#which-strain-takes-which-path)
+need every haplotype re-mapped, and HPRC's are 464. Whole graph, 23 seconds off
+the two hosted index files (41 MB, against a 2.6 GB GFA): **208,308 alleles**,
+112,866 of them insertions, 652 longer than 50 kb. Read `rank` and `donor` as the
+first haplotype to contribute an allele, never as who carries it — minigraph
+collapses, so in the MHC window one rank absorbs 41 of 78 alleles purely by
+having been added first.
 
 [`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)
 fetches the per-haplotype PCLAI BEDs, keeps the columns the painting needs, and

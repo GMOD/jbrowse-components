@@ -18,6 +18,10 @@
 # a whole human pangenome: HPRC's hprc-v2.0-mc-grch38.sv.gfa.gz is 751k segments
 # and indexes in about 45 seconds, peaking near 3.7 GB.
 #
+# These two files also state, between them, every allele the graph holds:
+# build_rgfa_alleles.sh derives that inventory from this pair alone, with no
+# graph, no assemblies and no VCF.
+#
 set -euo pipefail
 
 GFA="${1:?usage: build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix]}"

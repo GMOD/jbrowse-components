@@ -116,12 +116,80 @@ works there, the upload is fine and the index you are reusing is not.
 `node --experimental-strip-types website/scripts/generate-screenshots.ts --filter
 pangenome/rgfa_strain_paths --force`.
 
-## Open
+## The rGFA-only inventory (shipped)
 
-- **The rGFA-only fallback** (a graph with neither paths nor assemblies to
-  re-map): derive an allele inventory from `links.bed.gz` in
-  `build_rgfa_tabix.sh`. **One lane, not rows** — donor rows are misleading, see
-  the rank-1 measurement in TODO.md.
+`scripts/build_rgfa_alleles.sh <prefix>` reads `segs.bed.gz` + `links.bed.gz` and
+writes `alleles.bed.gz`: one row per allele the graph holds, no assemblies, no
+VCF, no graph file. Header is the contract (`… class delta altLen refLen rank
+donor nested segments`). Plain BED, so a plain feature track packs it into rows;
+deletions draw at true width, an insertion's size is its `name`.
+
+How an allele comes out of the links index, and the three things that were wrong
+on the first pass:
+
+- **Deletions can be written backwards.** A backbone-to-backbone link with a
+  coordinate gap is a deletion, but a reverse-orientation pair states the same
+  skip with `tgt < src`. Requiring `tgt > src` silently dropped 4 of the 98 in
+  the E. coli graph, including IAI39's at 1,072,931.
+- **Walk bidirected, not by donor contig.** State is (segment, orientation) and
+  each L-line also yields its reverse complement; that resolves all 745 entries
+  (no dead ends, chains up to 35 segments). Pairing entry to exit by `SN` +
+  donor offset — what TODO.md proposed off the windowed HPRC measurement — gets
+  the branchy ones wrong: an undirected greedy walk left 16 dangling and picked
+  arbitrarily at 130 branch points.
+- **`nested` is a column, not a caveat.** 53 of the 845 E. coli walks pass a
+  branch point, so their length is one route among several; the file says which.
+
+**Validated against `minigraph --call` on the same graph**: 747 of that caller's
+842 alleles come back with the identical delta inside the same bubble. All 95
+residuals are compound routes at 69 nested bubbles, and every one sits at a
+bubble the inventory does describe — nesting costs exact compound lengths, never
+a site. The C4-window records also reproduce TODO.md's own HPRC measurements
+(`s462766`, 1 bp, HG01952.1, bridging 31,984,683→31,991,051).
+
+**Scale**: HPRC whole graph in 23 s / 1.7 GB from the two *hosted* indexes
+(6.7 MB + 34 MB, no 2.6 GB GFA download): 208,308 alleles, 4.8 MB output.
+
+**The BED carries a `CIGAR` column and loads as an `AlignmentsTrack`.** That
+looks wrong and is the whole point: an allele is a mini-alignment against the
+span it replaces (`2062M63348I`), so the alignments display packs the overlapping
+alleles into rows and draws each insertion marker at its real magnitude. Drawn as
+a plain feature track, a 63 kb insertion is a 1 bp box with the number in its
+label — the exact defect this project exists to fix, so don't "simplify" it back
+to a `FeatureTrack`. Verified in jbrowse-web on the shipped file: markers labelled
+46,983 / 49,838 / 63,348 and a 3,217 bp deletion bar at K12 chr:1,094,197.
+
+Two column names are load-bearing: `firstSeenIn` and `discoveryRank` were
+`donor`/`rank` until the obvious misreading (a haplotype pileup) made the name
+the place to carry the caveat.
+
+## Any feature with a CIGAR now draws its indels
+
+`extractFeatureArrays` gated CIGAR extraction on `isMismatchFeature`, i.e. on
+`forEachMismatch`, which only BAM/CRAM features implement. So every non-BAM
+alignment drew as a flat block — including every PAF/PIF track in an
+`LGVSyntenyDisplay`, which is *the* display for assembly alignments in a linear
+view. A 113 kb insertion in a contig alignment was invisible there, while the
+two-row `LinearSyntenyDisplay` drew CIGAR indel tiles off the same data.
+
+`extractCigarFeaturesFromString` closes it: `parseCigar2Typed` +
+`forEachMismatchNumeric`'s `seqLength === 0` branch, which already emitted
+exactly the ops needing no bases (I/D/N/S/H) and no mismatches. Both entry points
+share one emit callback. Verified on the hosted E. coli all-vs-all PIF (its
+`cg:Z` CIGARs do exist — a `tabix` returning nothing there is the stale-local-
+`.tbi` trap below, not missing tags).
+
+Also fixed alongside: `interbaseLengths`/`gapLengths` were `Uint16Array`, so any
+insertion or deletion past 65,535 bp *labelled itself 65535* — Sakai's 113,174 bp
+allele did exactly that on screen. Now `Uint32Array`; the GPU field was already
+u32, so nothing downstream changed.
+
+**Figure regeneration is not attributable in a shared worktree.** Regenerating
+the synteny figure set here changed 13 PNGs, and the one inspected differed by a
+"Longest isoform" chip from another agent's uncommitted config work, not by
+indel glyphs. All were reverted. Regenerate figures only from a clean tree.
+
+## Open
 - **HPRC has no per-haplotype path track.** `--call` needs the 464 assemblies
   re-mapped, so HPRC stays on `wave.vcf.gz`, which now draws its insertions
   properly. Nothing to do unless someone wants that compute.
