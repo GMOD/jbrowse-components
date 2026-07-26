@@ -41,6 +41,7 @@ import {
   computeCodonConservation,
   computeVisibleCodons,
   findCodonAt,
+  locateVisibleCodons,
 } from './components/computeVisibleCodons.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
@@ -74,6 +75,7 @@ import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
 import type {
   CodonConservationBar,
   CodonMarker,
+  LocatedCodon,
 } from './components/computeVisibleCodons.ts'
 import type {
   LinearMafDisplayConfig,
@@ -100,6 +102,10 @@ export interface MafSource {
   label?: string
   color?: string
 }
+
+// Floor a coverage/conservation band can be dragged to before its Y axis and
+// filled histogram stop reading as anything.
+const MIN_BAND_HEIGHT = 20
 
 /**
  * #stateModel LinearMafDisplay
@@ -194,6 +200,16 @@ export default function stateModelFactory(
          * rather than re-fetching it.
          */
         treeNewickVolatile: undefined as string | undefined,
+        /**
+         * #volatile
+         * Bumped by `setSamples` when the worker reports a row set that differs
+         * from the one already established — never on the first fetch populating
+         * an empty set. It's the invalidation half of the sample set, split out so
+         * `rpcProps()` can key on "the set changed" without keying on the set
+         * itself (which is fetch-derived, and made every track fetch twice). See
+         * `rpcProps`.
+         */
+        sampleSetGeneration: 0,
         /**
          * #volatile
          * True during an active height drag. Gates the dense per-base letter
@@ -363,6 +379,24 @@ export default function stateModelFactory(
          * recompute) on later scroll/zoom. The active `clusterTree` is set from
          * the worker tree only when there's no custom arrangement — a reorder has
          * cleared it and must keep it cleared until the user clears the layout.
+         *
+         * The guard covers the sample set only: a tree can change while the set
+         * doesn't (an edited `.nh`), and folding it in left `treeNewickVolatile`
+         * — and so what "Clear arrangement" restores — pinned to the first tree
+         * the session ever saw.
+         *
+         * A set that *changes* after one was already established bumps
+         * `sampleSetGeneration`, which invalidates the fetched rows through
+         * `rpcProps()`: they carry `rowIndex`es assigned against the old set. That
+         * only happens on a sample-discovery track whose regions align different
+         * genomes. The first fetch populating an empty set does NOT bump — that
+         * transition is not a change of anything, and treating it as one is what
+         * made every MAF track fetch its alignment twice.
+         *
+         * The bump has to route through the cache key rather than clearing here:
+         * `fetchRegions` calls `setLoadedRegion` *after* this commit returns, so an
+         * imperative clear would be immediately overwritten by the very regions
+         * that were fetched against the old set.
          */
         setSamples({
           samples,
@@ -377,7 +411,12 @@ export default function stateModelFactory(
             color: s.color,
           }))
           if (!deepEqual(next, self.sourcesVolatile)) {
+            if (self.sourcesVolatile.length > 0) {
+              self.sampleSetGeneration += 1
+            }
             self.sourcesVolatile = next
+          }
+          if (treeNewick !== self.treeNewickVolatile) {
             self.treeNewickVolatile = treeNewick
             if (!self.layout.length) {
               self.setClusterTree(treeNewick)
@@ -419,6 +458,21 @@ export default function stateModelFactory(
          */
         setCoverageHeight(arg: number) {
           setConf(self, 'coverageHeight', arg)
+        },
+        /**
+         * #action
+         * Apply one drag delta to the coverage band. Reads the current height
+         * inside the action rather than taking an absolute target: `ResizeHandle`
+         * emits one delta per animation frame, so a component computing
+         * `renderHeight + delta` drops every tick that lands before React
+         * re-renders. Mirrors `resizeHeight`.
+         */
+        resizeCoverageHeight(distance: number) {
+          setConf(
+            self,
+            'coverageHeight',
+            Math.max(MIN_BAND_HEIGHT, self.coverageHeight + distance),
+          )
         },
         /**
          * #action
@@ -473,6 +527,18 @@ export default function stateModelFactory(
          */
         setConservationHeight(arg: number) {
           setConf(self, 'conservationHeight', arg)
+        },
+        /**
+         * #action
+         * Per-frame drag delta for the conservation band — see
+         * `resizeCoverageHeight` for why this reads the height itself.
+         */
+        resizeConservationHeight(distance: number) {
+          setConf(
+            self,
+            'conservationHeight',
+            Math.max(MIN_BAND_HEIGHT, self.conservationHeight + distance),
+          )
         },
       }))
       .actions(self => {
@@ -609,8 +675,9 @@ export default function stateModelFactory(
         /**
          * #getter
          * Display row order shipped to the worker so its block `rowIndex` matches
-         * the on-screen row. Single source for both `rpcProps` (cache-invalidation
-         * key) and the alignment-fetch RPC arg so the two can't drift.
+         * the on-screen row. The alignment-fetch RPC argument only — deliberately
+         * NOT the cache key, which keys on the user-controlled inputs behind this
+         * instead (see `rpcProps`).
          */
         get orderedSampleIds(): string[] | undefined {
           return self.sources?.map(s => s.name)
@@ -913,11 +980,27 @@ export default function stateModelFactory(
          * #method
          * Worker-fetch inputs that invalidate cached data when changed (tier-1,
          * via MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
-         * `orderedSampleIds` is the display row order (layout reorder + subtree
-         * filter); the worker emits block rows in it so `rowIndex` is the
-         * on-screen row. Loop-safe despite deriving from worker output: `sources`
-         * is set-stable (`sourcesVolatile` deepEqual-guarded in `setSamples`,
-         * `layout`/`subtreeFilter` user-driven), so it doesn't churn per fetch.
+         *
+         * The fetch argument that actually decides row placement is
+         * `orderedSampleIds` (see `fetchMafAlignmentData`), but this keys on the
+         * three *inputs* that produce it instead of on the value: `layout` order
+         * and `subtreeFilter` are user-driven and already settled before the first
+         * fetch, while `sampleSetGeneration` carries the one thing only the worker
+         * can tell us — that the row set changed out from under already-fetched
+         * rows.
+         *
+         * Keying on `orderedSampleIds` itself is what this replaces: it is
+         * undefined until the first fetch lands and defined after, so the key
+         * flipped on every track load and `SettingsInvalidate` threw away the
+         * region that had just arrived — a measured 2 × `LinearMafGetAlignmentData`
+         * per region, on the heaviest payload in the plugin. Loop-safe but not
+         * free, which is exactly the case ARCHITECTURE.md's "rpcProps() must read
+         * only user-controlled settings" is about. Pinned by
+         * `singleFetchPerRegion.test.ts`.
+         *
+         * Reorder and subtree-filter changes still refetch, deliberately: the
+         * worker assigns `rowIndex` from the order and scopes coverage/identity to
+         * the set, so both have to go back through it.
          */
         rpcProps() {
           // `annotationDataActive` is a cache key so toggling the CDS-frame strip
@@ -925,7 +1008,12 @@ export default function stateModelFactory(
           // `framesDataMap` for the loaded regions (the frames piggyback on the
           // same fetch pass).
           return {
-            orderedSampleIds: self.orderedSampleIds,
+            // Names only, so relabelling or recoloring a row doesn't refetch; both
+            // copied to plain arrays, since the key is a JSON string and an MST
+            // node's serialization is not this module's to depend on.
+            layoutOrder: self.layout.map(row => row.name),
+            subtreeFilter: self.subtreeFilter?.slice(),
+            sampleSetGeneration: self.sampleSetGeneration,
             annotationDataActive: self.annotationDataActive,
           }
         },
@@ -1131,13 +1219,17 @@ export default function stateModelFactory(
           rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
+        // Every rows overlay is a full per-cell scan of the visible blocks, and
+        // with `showAlignments` off the rows area is 0 px tall — so gate them all
+        // here rather than let each one scan for a layer nothing paints.
+        const rowsVisible = () => self.lgv.initialized && self.showAlignments
         return {
           /**
            * #getter
            * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
            */
           get visibleEmptyLines() {
-            return self.lgv.initialized
+            return rowsVisible()
               ? computeVisibleEmptyLines(overlayParams())
               : []
           },
@@ -1146,7 +1238,7 @@ export default function stateModelFactory(
            * Positioned insertion markers (interbase) for the visible aligned rows.
            */
           get visibleInsertions() {
-            return self.lgv.initialized
+            return rowsVisible()
               ? computeVisibleInsertions(overlayParams())
               : []
           },
@@ -1156,9 +1248,7 @@ export default function stateModelFactory(
            * the deleted-base count inside each run when it fits.
            */
           get visibleDeletions() {
-            return self.lgv.initialized
-              ? computeVisibleDeletions(overlayParams())
-              : []
+            return rowsVisible() ? computeVisibleDeletions(overlayParams()) : []
           },
           /**
            * #getter
@@ -1166,7 +1256,7 @@ export default function stateModelFactory(
            * Empty unless the indicator is toggled on.
            */
           get visibleInversions() {
-            return self.lgv.initialized && self.showInversions
+            return rowsVisible() && self.showInversions
               ? computeVisibleInversions(overlayParams())
               : []
           },
@@ -1269,6 +1359,7 @@ export default function stateModelFactory(
           // replace the per-base letters).
           if (
             !view.initialized ||
+            !self.showAlignments ||
             !self.sources ||
             self.resizing ||
             self.activeRowRendering !== 'bases'
@@ -1293,7 +1384,7 @@ export default function stateModelFactory(
          */
         get visibleSummaryBars() {
           const view = self.lgv
-          if (!self.showSummary || !self.sources) {
+          if (!self.showSummary || !self.showAlignments || !self.sources) {
             return []
           }
           return computeVisibleSummaryBars({
@@ -1313,7 +1404,12 @@ export default function stateModelFactory(
          */
         get visibleFrames(): FrameMarker[] {
           const view = self.lgv
-          if (!view.initialized || !self.annotationsActive || !self.sources) {
+          if (
+            !view.initialized ||
+            !self.showAlignments ||
+            !self.annotationsActive ||
+            !self.sources
+          ) {
             return []
           }
           return computeVisibleAnnotations({
@@ -1326,65 +1422,94 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * The codon overlay is what the rows area is painting.
+         */
+        get codonCellsActive() {
+          return (
+            self.lgv.initialized &&
+            self.showAlignments &&
+            self.activeRowRendering === 'codon' &&
+            !!self.defaultCodonSpecies
+          )
+        },
+        /**
+         * #getter
+         * The conservation band is in per-codon (amino-acid identity) mode, with
+         * frames to define codons and per-base blocks to translate — the cheap
+         * summary path ships neither.
+         */
+        get codonConservationActive() {
+          return (
+            self.lgv.initialized &&
+            self.showConservation &&
+            self.conservationMode === 'codon' &&
+            !!self.annotationAdapterConfig &&
+            !self.showSummary &&
+            !!self.defaultCodonSpecies
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Every reference codon the fetched blocks resolve, in the anchor species'
+         * reading frame — the shared spine of the codon cells and the codon
+         * conservation band. A memoized computed rather than a call inside each
+         * consumer: the resolution (enumerate the anchor's codons, index every
+         * block's reference columns, locate each codon) is the expensive half, and
+         * with both modes on it used to run twice per frame. Empty when neither
+         * consumer is active, so a track with codon view off pays nothing.
+         */
+        get locatedCodons(): LocatedCodon[] {
+          const src = self.defaultCodonSpecies
+          return (self.codonCellsActive || self.codonConservationActive) &&
+            src !== undefined
+            ? locateVisibleCodons({
+                view: self.lgv,
+                rpcDataMap: self.rpcDataMap,
+                framesDataMap: self.framesDataMap,
+                defaultSrc: src,
+              })
+            : []
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Per-species codon cells for the codon view (the per-codon change
          * coloring that replaces the SNP cells). Empty unless codon view is the
          * active rendering and an anchor species is known.
          */
         get visibleCodons(): CodonMarker[] {
-          const view = self.lgv
-          if (
-            !view.initialized ||
-            self.activeRowRendering !== 'codon' ||
-            !self.defaultCodonSpecies
-          ) {
-            return []
-          }
-          return computeVisibleCodons({
-            view,
-            rpcDataMap: self.rpcDataMap,
-            framesDataMap: self.framesDataMap,
-            defaultSrc: self.defaultCodonSpecies,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-          })
+          return self.codonCellsActive
+            ? computeVisibleCodons(self.locatedCodons, {
+                rowHeight: self.effectiveRowHeight,
+                rowProportion: self.rowProportion,
+              })
+            : []
         },
         /**
          * #getter
          * Per-codon amino-acid conservation bars for the conservation band's codon
-         * mode. Empty unless the band is on in `codon` mode, an anchor species is
-         * known, and we're not in the cheap summary path (which ships no per-base
-         * blocks to translate). Draws only inside the CDS (where frames define
-         * codons); everywhere else the band is blank.
+         * mode. Draws only inside the CDS (where frames define codons); everywhere
+         * else the band is blank.
          */
         get visibleCodonConservation(): CodonConservationBar[] {
-          const view = self.lgv
-          const src = self.defaultCodonSpecies
-          const refAssembly = view.assemblyNames[0]
-          if (
-            !view.initialized ||
-            !self.showConservation ||
-            self.conservationMode !== 'codon' ||
-            !self.annotationAdapterConfig ||
-            self.showSummary ||
-            !src
-          ) {
-            return []
-          }
-          return computeCodonConservation({
-            view,
-            rpcDataMap: self.rpcDataMap,
-            framesDataMap: self.framesDataMap,
-            defaultSrc: src,
-            // Exclude the *reference assembly's* row (matching the per-base band's
-            // worker-side `refRowIndex`), not `src`'s row: `src`
-            // (`defaultCodonSpecies`) falls back to row 0 when the reference isn't
-            // a listed sample, which would wrongly drop a real species from the
-            // denominator. `-1` when the reference isn't a visible row.
-            refRowIndex:
-              refAssembly === undefined
-                ? -1
-                : (self.rowIndexBySrc.get(refAssembly) ?? -1),
-          })
+          const refAssembly = self.lgv.assemblyNames[0]
+          return self.codonConservationActive
+            ? computeCodonConservation(self.locatedCodons, {
+                // Exclude the *reference assembly's* row (matching the per-base
+                // band's worker-side `refRowIndex`), not the anchor's:
+                // `defaultCodonSpecies` falls back to row 0 when the reference
+                // isn't a listed sample, which would wrongly drop a real species
+                // from the denominator. `-1` when the reference isn't a visible
+                // row.
+                refRowIndex:
+                  refAssembly === undefined
+                    ? -1
+                    : (self.rowIndexBySrc.get(refAssembly) ?? -1),
+              })
+            : []
         },
         /**
          * #getter
@@ -1503,7 +1628,15 @@ export default function stateModelFactory(
           self.framesDataMap.set(regionIndex, records)
         },
         // Drop alignment blocks when entering summary mode so the GPU sequence
-        // canvas paints nothing under the summary overlay (and vice versa).
+        // canvas paints nothing under the summary overlay.
+        //
+        // Deliberately one-directional: there is no twin on the alignment path.
+        // `summaryDataMap` is what `isCacheValid` tests in summary mode, so
+        // keeping it through a zoom-in is exactly what lets the zoom back out
+        // reuse the cache instead of re-reading the summary adapter. It doesn't
+        // accumulate either — it only ever holds the buffered regions of the
+        // current chromosome, since `clearDisplaySpecificData` empties it on
+        // chromosome nav and on any settings invalidation.
         clearAlignmentData() {
           self.rpcDataMap.clear()
         },

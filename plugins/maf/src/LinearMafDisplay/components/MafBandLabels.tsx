@@ -2,12 +2,15 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { YSCALE_AXIS_WIDTH } from './MafYScaleGutter.tsx'
+
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 const useStyles = makeStyles()(theme => ({
   label: {
     position: 'absolute',
-    left: 52,
+    // just clear of the Y-axis gutter the two bands share
+    left: YSCALE_AXIS_WIDTH + 2,
     fontSize: 9,
     lineHeight: 1,
     padding: '1px 3px',

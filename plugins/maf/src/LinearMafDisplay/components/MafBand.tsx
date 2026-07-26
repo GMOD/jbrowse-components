@@ -28,7 +28,7 @@ const MafBand = observer(function MafBand({
   height,
   ticks,
   draw,
-  setHeight,
+  resize,
   onResizeActiveChange,
 }: {
   model: LinearMafDisplayModel
@@ -37,7 +37,7 @@ const MafBand = observer(function MafBand({
   height: number
   ticks: YScaleTicks | undefined
   draw: (ctx: CanvasRenderingContext2D) => void
-  setHeight: (n: number) => void
+  resize: (distance: number) => void
   onResizeActiveChange: (active: boolean) => void
 }) {
   return (
@@ -55,8 +55,7 @@ const MafBand = observer(function MafBand({
       <MafBandResizeHandle
         model={model}
         show={show}
-        height={height}
-        setHeight={setHeight}
+        resize={resize}
         // straddles the band/rows seam
         top={top + height - 4}
         onActiveChange={onResizeActiveChange}

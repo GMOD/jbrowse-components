@@ -82,22 +82,62 @@ export function rowSpanAtY(model: RowGeometry, y0: number, y1: number) {
   }
 }
 
+/** A projected cursor with its row hover already resolved. */
+export interface MafPointerHit extends MafPointer {
+  /**
+   * The cursor is on a hoverable row: over the rows area, inside a displayed
+   * region, and row resolution was requested.
+   */
+  onRow: boolean
+  /**
+   * The row hover (aligned base / insertion / deletion / bridged region) under
+   * the cursor, or undefined when `onRow` is false or no fetched block covers
+   * it.
+   */
+  hover: MafHover | undefined
+}
+
 /**
- * The row hover (aligned base / insertion / deletion / bridged region) under
- * the cursor. Undefined over the bands, out of bounds, or where no fetched
- * block covers the row.
+ * Project the cursor and resolve its row hover in one pass. The cursor style and
+ * the tooltip both need the same answer for the same coordinates on every
+ * mousemove, and resolving it here rather than in each of them halves the
+ * per-move block scan (and means the pointer they show can't disagree).
+ *
+ * `resolveRowHover` false keeps the projection but skips the hover — the
+ * drag-selection readout wants the coordinate, not the cell under it.
+ */
+export function resolveMafPointerHit({
+  model,
+  mouseX,
+  mouseY,
+  resolveRowHover,
+}: {
+  model: MafHitTestModel
+  mouseX: number
+  mouseY: number
+  resolveRowHover: boolean
+}): MafPointerHit {
+  const pointer = mafPointerAt(model, mouseX, mouseY)
+  const { pos, gposFrac, rowIndex, inBands } = pointer
+  const onRow = resolveRowHover && !pos.oob && !inBands
+  return {
+    ...pointer,
+    onRow,
+    hover: onRow
+      ? model.rowHoverInfo(pos.index, gposFrac, rowIndex, model.lgv.bpPerPx)
+      : undefined,
+  }
+}
+
+/**
+ * The row hover under the cursor on its own, for the one-shot click path (which
+ * has no projected pointer to reuse).
  */
 export function resolveMafRowHover(
   model: MafHitTestModel,
   mouseX: number,
   mouseY: number,
 ): MafHover | undefined {
-  const { pos, gposFrac, rowIndex, inBands } = mafPointerAt(
-    model,
-    mouseX,
-    mouseY,
-  )
-  return pos.oob || inBands
-    ? undefined
-    : model.rowHoverInfo(pos.index, gposFrac, rowIndex, model.lgv.bpPerPx)
+  return resolveMafPointerHit({ model, mouseX, mouseY, resolveRowHover: true })
+    .hover
 }

@@ -60,10 +60,16 @@ export function identityRgb(t: number) {
  *
  * `[xLo, xHi)` is the block's own pixel span (`clip.scissorX` .. `+scissorW`),
  * NOT the whole canvas — see `accumulateConservation` for why.
+ *
+ * The accumulators are the caller's whole flattened row-major buffers and
+ * `rowBase` is this row's offset into them, rather than a per-row `subarray`
+ * view: this runs once per row per block per frame, and the two views were the
+ * only allocation in the pass.
  */
 export function accumulateRowIdentity(
   matchSum: Float32Array,
   classCount: Float32Array,
+  rowBase: number,
   refBytes: Uint8Array,
   alignmentBytes: Uint8Array,
   startBp: number,
@@ -90,9 +96,9 @@ export function accumulateRowIdentity(
         )
         const isMatch = (sampleByte & ~LOWER_BIT) === refUpper
         for (let px = lo; px < hi; px++) {
-          classCount[px]! += 1
+          classCount[rowBase + px]! += 1
           if (isMatch) {
-            matchSum[px]! += 1
+            matchSum[rowBase + px]! += 1
           }
         }
       }
@@ -144,10 +150,10 @@ export function drawRowIdentity(
       for (const mafBlock of region.blocks) {
         for (const row of mafBlock.rows) {
           if (row.rowIndex < nRows) {
-            const base = row.rowIndex * width
             accumulateRowIdentity(
-              matchSum.subarray(base, base + width),
-              classCount.subarray(base, base + width),
+              matchSum,
+              classCount,
+              row.rowIndex * width,
               mafBlock.refSeqBytes,
               row.alignmentBytes,
               mafBlock.startBp,

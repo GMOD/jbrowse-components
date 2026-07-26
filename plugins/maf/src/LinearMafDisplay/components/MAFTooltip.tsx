@@ -4,19 +4,20 @@ import { observer } from 'mobx-react'
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
 import MafCoverageTooltipContents from './MafCoverageTooltipContents.tsx'
 import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
-import { mafPointerAt } from './mafHitTest.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { MafPointerHit } from './mafHitTest.ts'
 
 const MAFTooltip = observer(function ({
   model,
-  mouseX,
+  hit,
   mouseY,
   clientX,
   clientY,
   origMouseX,
 }: {
-  mouseX: number
+  /** the cursor already projected + hit-tested by the display body */
+  hit: MafPointerHit
   mouseY: number
   clientX?: number
   clientY?: number
@@ -33,12 +34,7 @@ const MAFTooltip = observer(function ({
       : undefined
   const view = model.lgv
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
-  const {
-    pos: p2,
-    gposFrac,
-    rowIndex,
-    inBands,
-  } = mafPointerAt(model, mouseX, mouseY)
+  const { pos: p2, gposFrac, rowIndex, inBands, onRow, hover } = hit
 
   // Over the band area above the rows (coverage and/or conservation). Both show
   // the depth + SNP + identity breakdown via the shared alignments-core tooltip
@@ -71,19 +67,16 @@ const MAFTooltip = observer(function ({
     ) : null
   }
 
-  // Per-row hover, skipped during a selection drag (origMouseX set) so the
-  // drag's range readout stays. `frame` is the CDS gene at this row, so gene
-  // structure is identifiable by hovering any species rather than only the
-  // colored strip; `codon` is the actual codon/amino-acid change in codon view,
-  // so a specific change reads directly instead of being inferred from color.
-  const rowsHover = origMouseX === undefined && !p2.oob
-  const hover = rowsHover
-    ? model.rowHoverInfo(p2.index, gposFrac, rowIndex, view.bpPerPx)
-    : undefined
-  const frame = rowsHover
+  // `hover` (the cell) came resolved with the pointer; `onRow` is false during a
+  // selection drag, so the drag's range readout stays. `frame` is the CDS gene at
+  // this row, so gene structure is identifiable by hovering any species rather
+  // than only the colored strip; `codon` is the actual codon/amino-acid change in
+  // codon view, so a specific change reads directly instead of being inferred
+  // from color.
+  const frame = onRow
     ? model.frameHoverInfo(p2.index, gposFrac, rowIndex)
     : undefined
-  const codon = rowsHover
+  const codon = onRow
     ? model.codonHoverInfo(p2.index, gposFrac, rowIndex)
     : undefined
 

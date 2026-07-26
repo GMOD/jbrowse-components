@@ -32,39 +32,43 @@ const useStyles = makeStyles()({
 const MafBandResizeHandle = observer(function MafBandResizeHandle({
   model,
   show,
-  height,
-  setHeight,
+  resize,
   top,
   onActiveChange,
 }: {
   model: LinearMafDisplayModel
   show: boolean
-  height: number
-  setHeight: (arg: number) => void
+  /** one drag delta; the model action reads the band's height itself */
+  resize: (distance: number) => void
   top: number
   onActiveChange: (active: boolean) => void
 }) {
   const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   const [dragging, setDragging] = useState(false)
+  // A band drag never touches `rowHeight`, so the mode is the same at both ends
+  // of the drag: clear `resizing` only if this handle set it, or a drag here
+  // cancels the suppression a concurrent track-height drag owns.
+  const suppressesLetters = model.rowHeight === 0
 
   return show ? (
     <ResizeHandle
       onDrag={n => {
-        setHeight(Math.max(20, height + n))
-        return undefined
+        resize(n)
       }}
       onDragStart={() => {
         setDragging(true)
         onActiveChange(true)
-        if (model.rowHeight === 0) {
+        if (suppressesLetters) {
           model.setResizing(true)
         }
       }}
       onDragEnd={() => {
         setDragging(false)
         onActiveChange(hovered)
-        model.setResizing(false)
+        if (suppressesLetters) {
+          model.setResizing(false)
+        }
       }}
       onMouseEnter={() => {
         setHovered(true)

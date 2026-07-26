@@ -293,8 +293,8 @@ function rowCodonBytes(
     : [b0, b1, b2]
 }
 
-/** The per-region inputs both codon consumers walk. */
-interface EachLocatedCodonParams {
+/** The per-region inputs the codon spine walks. */
+export interface LocateVisibleCodonsParams {
   view: VisibleRegionsView
   rpcDataMap: { get(idx: number): MafRegionData | undefined }
   framesDataMap: { get(idx: number): MafFrameRecord[] | undefined }
@@ -303,7 +303,7 @@ interface EachLocatedCodonParams {
 }
 
 /** One reference codon resolved against the fetched blocks of its region. */
-interface LocatedCodon {
+export interface LocatedCodon {
   /** the codon's three reference positions (ascending) + reading strand */
   codon: Codon
   /** its three reference bytes, in the same ascending order */
@@ -331,7 +331,7 @@ interface LocatedCodon {
  * drift on reading frame, block straddling, or which rows count.
  */
 function* eachLocatedCodon(
-  params: EachLocatedCodonParams,
+  params: LocateVisibleCodonsParams,
 ): Generator<LocatedCodon> {
   const { view, rpcDataMap, framesDataMap, defaultSrc } = params
   for (const {
@@ -373,6 +373,19 @@ function* eachLocatedCodon(
       }
     }
   }
+}
+
+/**
+ * The spine as a list, so the codon overlay and the conservation band share one
+ * resolution pass instead of each re-enumerating the anchor's codons and
+ * rebuilding every block's reference-column index. The model memoizes this
+ * (`locatedCodons`), which is what makes the sharing real: with codon view and
+ * codon conservation both on, that setup used to run twice per frame.
+ */
+export function locateVisibleCodons(
+  params: LocateVisibleCodonsParams,
+): LocatedCodon[] {
+  return [...eachLocatedCodon(params)]
 }
 
 /**
@@ -474,17 +487,15 @@ function widestCell(cells: CodonCell[]): number {
  * always computes when called.
  */
 export function computeVisibleCodons(
-  params: EachLocatedCodonParams & {
-    rowHeight: number
-    rowProportion: number
-  },
+  codons: readonly LocatedCodon[],
+  geometry: { rowHeight: number; rowProportion: number },
 ): CodonMarker[] {
-  const { rowHeight, rowProportion } = params
+  const { rowHeight, rowProportion } = geometry
   const markers: CodonMarker[] = []
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const hp2 = h / 2
 
-  for (const { codon, refBytes, bpToPx, rows } of eachLocatedCodon(params)) {
+  for (const { codon, refBytes, bpToPx, rows } of codons) {
     const refCodon = orientedTriplet(...refBytes, codon.strand)
     // A reference codon with a gap/`N` has no amino acid to compare against,
     // so no species codon can be classified here (mirrors the conservation
@@ -543,7 +554,7 @@ export interface CodonConservationBar {
   fraction: number
 }
 
-interface ComputeCodonConservationParams extends EachLocatedCodonParams {
+interface ComputeCodonConservationParams {
   /**
    * Display row of the reference species, excluded from the numerator and
    * denominator so its trivial self-match doesn't inflate conservation (same
@@ -566,11 +577,11 @@ interface ComputeCodonConservationParams extends EachLocatedCodonParams {
  * disagree about the reading frame.
  */
 export function computeCodonConservation(
-  params: ComputeCodonConservationParams,
+  codons: readonly LocatedCodon[],
+  { refRowIndex }: ComputeCodonConservationParams,
 ): CodonConservationBar[] {
-  const { refRowIndex } = params
   const bars: CodonConservationBar[] = []
-  for (const { codon, refBytes, bpToPx, rows } of eachLocatedCodon(params)) {
+  for (const { codon, refBytes, bpToPx, rows } of codons) {
     const refAa = translateCodonBytes(...refBytes, codon.strand)
     if (refAa === undefined) {
       continue

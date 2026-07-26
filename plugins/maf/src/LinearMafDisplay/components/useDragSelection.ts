@@ -34,7 +34,21 @@ function relativeXY(
 
 export function useDragSelection(
   ref: React.RefObject<HTMLDivElement | null>,
-  onClick?: (x: number, y: number) => void,
+  {
+    dataLeft,
+    onClick,
+  }: {
+    /**
+     * Left edge of the data area: a press at or left of this (the tree sidebar
+     * and its resize handle) neither clicks nor starts a selection, because the
+     * genomic coordinate under it is the one the sidebar is covering. Without
+     * it, clicking a tree node also opened a feature widget for the row beneath
+     * it, and a drag begun over the sidebar produced a subsequence menu for
+     * coordinates the user can't see.
+     */
+    dataLeft: number
+    onClick: (x: number, y: number) => void
+  },
 ) {
   const [state, setState] = useState<DragState>({
     isDragging: false,
@@ -55,13 +69,19 @@ export function useDragSelection(
       return
     }
     const { x, y } = relativeXY(ref, e)
-    setState({
-      isDragging: true,
-      showSelectionBox: false,
-      drag: { startX: x, startY: y, endX: x, endY: y },
-      mouse: { x, y, clientX: e.clientX, clientY: e.clientY },
-    })
+    // Swallow the press wherever it lands in the display, including over the
+    // sidebar: DisplayChrome spreads these handlers onto a div inside the LGV's
+    // TracksContainer, so an un-stopped mousedown starts the view's click-drag
+    // pan. Only the data area additionally begins a selection.
     e.stopPropagation()
+    if (x > dataLeft) {
+      setState({
+        isDragging: true,
+        showSelectionBox: false,
+        drag: { startX: x, startY: y, endX: x, endY: y },
+        mouse: { x, y, clientX: e.clientX, clientY: e.clientY },
+      })
+    }
   }
 
   function handleMouseMove(e: React.MouseEvent) {
@@ -88,9 +108,13 @@ export function useDragSelection(
         endY: y,
       })
       setState(s => ({ ...s, isDragging: false, showSelectionBox: true }))
-    } else {
+    } else if (isDragging) {
+      // Only a release that this display also saw the press for is a click.
+      // `handleMouseDown` bails on resize handles and on the tree sidebar, so
+      // without the `isDragging` test, releasing a band/sidebar resize drag over
+      // an insertion marker opened its feature widget.
       const { x, y } = relativeXY(ref, e)
-      onClick?.(x, y)
+      onClick(x, y)
       setState(s => ({
         ...s,
         isDragging: false,

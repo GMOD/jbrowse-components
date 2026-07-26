@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
+  DisplayCrosshairs,
   SvgRowLabels,
   TreeSidebar,
   treeSidebarRightEdge,
@@ -13,7 +14,6 @@ import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.t
 import { openInsertionWidgetOnClick } from '../openInsertionWidget.ts'
 import AnnotationOverlay from './AnnotationOverlay.tsx'
 import CodonTranslationOverlay from './CodonTranslationOverlay.tsx'
-import Crosshairs from './Crosshairs.tsx'
 import DeletionsOverlay from './DeletionsOverlay.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
 import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
@@ -24,13 +24,12 @@ import MafBandLabels from './MafBandLabels.tsx'
 import MafConservationBand from './MafConservationBand.tsx'
 import MafCoverageBand from './MafCoverageBand.tsx'
 import MafLegends from './MafLegends.tsx'
-import MafRowIdentityCanvas from './MafRowIdentityCanvas.tsx'
-import MafSourceChromCanvas from './MafSourceChromCanvas.tsx'
+import MafRowsCanvas from './MafRowsCanvas.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { resolveMafRowHover } from './mafHitTest.ts'
+import { resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -43,8 +42,11 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
 }) {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
-  const drag = useDragSelection(ref, (x, y) => {
-    openInsertionWidgetOnClick(model, x, y)
+  const drag = useDragSelection(ref, {
+    dataLeft: treeSidebarRightEdge(model),
+    onClick: (x, y) => {
+      openInsertionWidgetOnClick(model, x, y)
+    },
   })
   return (
     <DisplayChrome
@@ -120,15 +122,23 @@ const MafBody = observer(function MafBody({
   const pointerOverData =
     mouseX !== undefined && mouseY !== undefined && mouseX > dataLeft
 
-  // Pointer cursor when an insertion marker is clickable under the cursor, via
-  // the same `resolveMafRowHover` the tooltip and the click handler use, so all
-  // three always agree. Matches the click gate in openInsertionWidgetOnClick:
-  // bases mode only, and never mid drag-selection.
+  // One projection + hit-test per mousemove, shared by the cursor style below and
+  // by the tooltip, which used to resolve the same hover from the same
+  // coordinates a second time. Row resolution is off mid-drag so the tooltip
+  // keeps showing the selection's range readout.
+  const hit = pointerOverData
+    ? resolveMafPointerHit({
+        model,
+        mouseX,
+        mouseY,
+        resolveRowHover: !isDragging,
+      })
+    : undefined
+
+  // Pointer cursor when an insertion marker is clickable under the cursor.
+  // Matches the click gate in openInsertionWidgetOnClick: bases mode only.
   const overInsertion =
-    !isDragging &&
-    pointerOverData &&
-    model.activeRowRendering === 'bases' &&
-    resolveMafRowHover(model, mouseX, mouseY)?.kind === 'insertion'
+    model.activeRowRendering === 'bases' && hit?.hover?.kind === 'insertion'
 
   return (
     <>
@@ -161,8 +171,7 @@ const MafBody = observer(function MafBody({
             height: rowsHeight,
           }}
         />
-        <MafRowIdentityCanvas model={model} />
-        <MafSourceChromCanvas model={model} />
+        <MafRowsCanvas model={model} />
         <MafLegends model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
@@ -235,18 +244,12 @@ const MafBody = observer(function MafBody({
         <TreeSidebar model={model} />
       </div>
       <MsaHighlightOverlay model={model} view={view} height={height} />
-      {pointerOverData && samples && !contextCoord && !resizeActive ? (
+      {pointerOverData && hit && samples && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>
-          <Crosshairs
-            width={width}
-            height={height}
-            top={scrollTop}
-            mouseX={mouseX}
-            mouseY={mouseY}
-          />
+          <DisplayCrosshairs model={model} mouseX={mouseX} mouseY={mouseY} />
           <MAFTooltip
             model={model}
-            mouseX={mouseX}
+            hit={hit}
             mouseY={mouseY}
             clientX={mouseClientX}
             clientY={mouseClientY}
@@ -264,7 +267,6 @@ const MafBody = observer(function MafBody({
           dragEndX={dragEndX}
           dragStartY={dragStartY}
           dragEndY={dragEndY}
-          scrollTop={scrollTop}
         />
       ) : null}
       <SubsequenceContextMenu

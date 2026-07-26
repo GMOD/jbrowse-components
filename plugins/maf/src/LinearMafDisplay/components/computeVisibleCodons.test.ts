@@ -3,6 +3,7 @@ import {
   computeVisibleCodons,
   enumerateCodons,
   findCodonAt,
+  locateVisibleCodons,
   translateCodonBytes,
 } from './computeVisibleCodons.ts'
 import { emptyMafCoverage } from './coverageTestFixture.ts'
@@ -166,21 +167,36 @@ const view = {
   bpPerPx: 0.1,
 }
 
+// The resolution pass the cells and the conservation band share (the model
+// memoizes it as `locatedCodons`); `ref` is the anchor species throughout.
+function locate(
+  rpcDataMap: Map<number, MafRegionData>,
+  framesDataMap: Map<number, MafFrameRecord[]>,
+) {
+  return locateVisibleCodons({
+    view,
+    rpcDataMap,
+    framesDataMap,
+    defaultSrc: 'ref',
+  })
+}
+
+const GEOM = { rowHeight: 15, rowProportion: 0.8 }
+
 test('classifies each species codon vs the reference', () => {
   // ref:  ATG AAA TAA  → M K *
   // row1: ATG AAA TAA  → identical            → same, same, stop
   // row2: ATG GAA TAA  → M E *  (K→E)          → same, nonsyn, stop
   // row3: ATG AAG TAA  → M K *  (AAA→AAG, K=K) → same, syn,   stop
-  const markers = computeVisibleCodons({
-    view,
-    rpcDataMap: new Map([
-      [0, regionData('ATGAAATAA', ['ATGAAATAA', 'ATGGAATAA', 'ATGAAGTAA'])],
-    ]),
-    framesDataMap: new Map([[0, frames]]),
-    defaultSrc: 'ref',
-    rowHeight: 15,
-    rowProportion: 0.8,
-  })
+  const markers = computeVisibleCodons(
+    locate(
+      new Map([
+        [0, regionData('ATGAAATAA', ['ATGAAATAA', 'ATGGAATAA', 'ATGAAGTAA'])],
+      ]),
+      new Map([[0, frames]]),
+    ),
+    GEOM,
+  )
   // 3 rows × 3 codons, emitted codon-major (each codon, then its rows)
   expect(markers.map(m => m.aa)).toEqual([
     'M',
@@ -210,16 +226,13 @@ test('classifies each species codon vs the reference', () => {
 
 test('codons with a gap in a row are skipped for that row only', () => {
   // row2 has a gap in codon 1 → no cell there, but codons 2/3 still classify
-  const markers = computeVisibleCodons({
-    view,
-    rpcDataMap: new Map([
-      [0, regionData('ATGAAATAA', ['ATGAAATAA', 'A-GAAATAA'])],
-    ]),
-    framesDataMap: new Map([[0, frames]]),
-    defaultSrc: 'ref',
-    rowHeight: 15,
-    rowProportion: 0.8,
-  })
+  const markers = computeVisibleCodons(
+    locate(
+      new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA', 'A-GAAATAA'])]]),
+      new Map([[0, frames]]),
+    ),
+    GEOM,
+  )
   // ref: M K * ; row2: (gap) K * — row2's codon-1 cell is dropped
   expect(markers.map(m => m.aa)).toEqual(['M', 'K', 'K', '*', '*'])
 })
@@ -266,22 +279,21 @@ test('a codon straddling a block boundary is stitched from both blocks', () => {
   // (bp 102-108). Codon 1 [100,101,102] crosses the boundary. row0 is in both
   // blocks (full ATGAAATAA); row1 is only in block B, so it has no complete
   // codon 1 and that cell is dropped for it — but codons 2/3 still classify.
-  const markers = computeVisibleCodons({
-    view,
-    rpcDataMap: new Map([
-      [
-        0,
-        twoBlockRegion('AT', ['AT'], 'GAAATAA', [
-          [0, 'GAAATAA'],
-          [1, 'GAAATAA'],
-        ]),
-      ],
-    ]),
-    framesDataMap: new Map([[0, frames]]),
-    defaultSrc: 'ref',
-    rowHeight: 15,
-    rowProportion: 0.8,
-  })
+  const markers = computeVisibleCodons(
+    locate(
+      new Map([
+        [
+          0,
+          twoBlockRegion('AT', ['AT'], 'GAAATAA', [
+            [0, 'GAAATAA'],
+            [1, 'GAAATAA'],
+          ]),
+        ],
+      ]),
+      new Map([[0, frames]]),
+    ),
+    GEOM,
+  )
   // codon 1 (M): only row0 (present in both blocks); codons 2/3: both rows
   expect(markers.map(m => m.aa)).toEqual(['M', 'K', 'K', '*', '*'])
   // the straddling codon still spans its 3 bases as one contiguous cell
@@ -292,21 +304,21 @@ test('computeCodonConservation stitches a boundary-straddling codon', () => {
   // ref M K *; row0 = reference (excluded), row1 = ATGAAATAA (all match).
   // Codon 1 straddles A/B; row1 present in both → conservation 1 there too, not
   // NaN (which is what the old block-local drop produced).
-  const bars = computeCodonConservation({
-    view,
-    rpcDataMap: new Map([
-      [
-        0,
-        twoBlockRegion('AT', ['AT', 'AT'], 'GAAATAA', [
-          [0, 'GAAATAA'],
-          [1, 'GAAATAA'],
-        ]),
-      ],
-    ]),
-    framesDataMap: new Map([[0, frames]]),
-    defaultSrc: 'ref',
-    refRowIndex: 0,
-  })
+  const bars = computeCodonConservation(
+    locate(
+      new Map([
+        [
+          0,
+          twoBlockRegion('AT', ['AT', 'AT'], 'GAAATAA', [
+            [0, 'GAAATAA'],
+            [1, 'GAAATAA'],
+          ]),
+        ],
+      ]),
+      new Map([[0, frames]]),
+    ),
+    { refRowIndex: 0 },
+  )
   expect(bars.map(x => x.fraction)).toEqual([1, 1, 1])
 })
 
@@ -336,11 +348,7 @@ describe('computeCodonConservation', () => {
   ])
 
   test('per-codon amino-acid identity across the non-reference species', () => {
-    const bars = computeCodonConservation({
-      view,
-      rpcDataMap: rpc,
-      framesDataMap: new Map([[0, frames]]),
-      defaultSrc: 'ref',
+    const bars = computeCodonConservation(locate(rpc, new Map([[0, frames]])), {
       refRowIndex: 0,
     })
     // codon 1 (M): both species match → 1; codon 2 (K): row1 E no, row2 K yes
@@ -352,11 +360,7 @@ describe('computeCodonConservation', () => {
   })
 
   test('refRowIndex -1 counts every row (reference included)', () => {
-    const bars = computeCodonConservation({
-      view,
-      rpcDataMap: rpc,
-      framesDataMap: new Map([[0, frames]]),
-      defaultSrc: 'ref',
+    const bars = computeCodonConservation(locate(rpc, new Map([[0, frames]])), {
       refRowIndex: -1,
     })
     // codon 2 (K): ref K + row2 K match, row1 E doesn't → 2/3
@@ -364,26 +368,20 @@ describe('computeCodonConservation', () => {
   })
 
   test('a codon with no translatable non-reference species is NaN', () => {
-    const bars = computeCodonConservation({
-      view,
+    const bars = computeCodonConservation(
       // only the reference row present; excluding it leaves nothing classifiable
-      rpcDataMap: new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA'])]]),
-      framesDataMap: new Map([[0, frames]]),
-      defaultSrc: 'ref',
-      refRowIndex: 0,
-    })
+      locate(
+        new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA'])]]),
+        new Map([[0, frames]]),
+      ),
+      { refRowIndex: 0 },
+    )
     expect(bars.every(x => Number.isNaN(x.fraction))).toBe(true)
   })
 
   test('no frames → no bars', () => {
     expect(
-      computeCodonConservation({
-        view,
-        rpcDataMap: rpc,
-        framesDataMap: new Map(),
-        defaultSrc: 'ref',
-        refRowIndex: 0,
-      }),
+      computeCodonConservation(locate(rpc, new Map()), { refRowIndex: 0 }),
     ).toEqual([])
   })
 })
@@ -493,14 +491,10 @@ test('findCodonAt resolves a codon stitched across an exon boundary', () => {
 
 test('a stitched codon paints one cell per exon piece, glyph on the wider', () => {
   const { region, frames: stitch } = stitchFixture()
-  const markers = computeVisibleCodons({
-    view,
-    rpcDataMap: new Map([[0, region]]),
-    framesDataMap: new Map([[0, stitch]]),
-    defaultSrc: 'ref',
-    rowHeight: 15,
-    rowProportion: 0.8,
-  })
+  const markers = computeVisibleCodons(
+    locate(new Map([[0, region]]), new Map([[0, stitch]])),
+    GEOM,
+  )
   // codon 1 [100,101,102]=CCC→P (one cell), stitched ATG→M as two cells
   const m = markers.filter(x => x.aa === 'M')
   expect(m).toHaveLength(2)

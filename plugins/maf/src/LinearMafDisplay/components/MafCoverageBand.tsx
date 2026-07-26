@@ -31,8 +31,8 @@ const MafCoverageBand = observer(function MafCoverageBand({
       top={0}
       height={coverageHeight}
       ticks={coverageTicks}
-      setHeight={n => {
-        model.setCoverageHeight(n)
+      resize={n => {
+        model.resizeCoverageHeight(n)
       }}
       onResizeActiveChange={onResizeActiveChange}
       draw={ctx => {

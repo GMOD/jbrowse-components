@@ -13,6 +13,7 @@ test('matches vs mismatches against the reference', () => {
   accumulateRowIdentity(
     match,
     cls,
+    0,
     bytes('ACGT'),
     bytes('ACGA'),
     0,
@@ -30,6 +31,7 @@ test('sample gaps are excluded from the denominator', () => {
   accumulateRowIdentity(
     match,
     cls,
+    0,
     bytes('ACGT'),
     bytes('A-GT'),
     0,
@@ -49,6 +51,7 @@ test('reference insertion columns (ref dash) consume no ref position', () => {
   accumulateRowIdentity(
     match,
     cls,
+    0,
     bytes('A-CG'),
     bytes('ATCG'),
     0,
@@ -66,6 +69,7 @@ test('reference N columns are unclassifiable', () => {
   accumulateRowIdentity(
     match,
     cls,
+    0,
     bytes('NA'),
     bytes('CA'),
     0,
@@ -83,6 +87,7 @@ test('comparison is case-insensitive (soft-masking ignored)', () => {
   accumulateRowIdentity(
     match,
     cls,
+    0,
     bytes('AC'),
     bytes('ac'),
     0,
@@ -100,6 +105,7 @@ test('zoomed out: several bases average into one pixel', () => {
   accumulateRowIdentity(
     match,
     cls,
+    0,
     bytes('ACGT'),
     bytes('ATGT'),
     0,
@@ -119,6 +125,7 @@ test('bases outside the block scissor span do not bleed into neighbors', () => {
   accumulateRowIdentity(
     match,
     cls,
+    0,
     bytes('ACGTAC'),
     bytes('ACGTAC'),
     0,
@@ -128,6 +135,26 @@ test('bases outside the block scissor span do not bleed into neighbors', () => {
   )
   expect(Array.from(cls)).toEqual([0, 0, 1, 1, 0, 0])
   expect(Array.from(match)).toEqual([0, 0, 1, 1, 0, 0])
+})
+
+// The draw pass hands one flat row-major buffer to every row, so a row must
+// only ever touch its own [rowBase, rowBase + width) slice.
+test('rowBase confines a row to its slice of the shared accumulators', () => {
+  const match = new Float32Array(6)
+  const cls = new Float32Array(6)
+  accumulateRowIdentity(
+    match,
+    cls,
+    3,
+    bytes('ACG'),
+    bytes('ATG'),
+    0,
+    identityMapper,
+    0,
+    3,
+  )
+  expect(Array.from(cls)).toEqual([0, 0, 0, 1, 1, 1])
+  expect(Array.from(match)).toEqual([0, 0, 0, 1, 0, 1])
 })
 
 test('identityColor ramps from divergent red through grey to conserved blue', () => {

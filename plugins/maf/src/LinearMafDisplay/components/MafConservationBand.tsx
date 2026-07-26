@@ -39,8 +39,8 @@ const MafConservationBand = observer(function MafConservationBand({
       top={coverageDisplayHeight}
       height={conservationHeight}
       ticks={conservationTicks(conservationHeight)}
-      setHeight={n => {
-        model.setConservationHeight(n)
+      resize={n => {
+        model.resizeConservationHeight(n)
       }}
       onResizeActiveChange={onResizeActiveChange}
       draw={ctx => {
