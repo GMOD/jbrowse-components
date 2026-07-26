@@ -47,7 +47,7 @@ drawn in the sidebar.
 - **Show tree** toggles the dendrogram. It stays disabled until clustering has
   been run. The multi-row feature display is the exception: its sidebar carries
   the row labels as well as the tree, which is useful with no clustering at all,
-  so it has a top-level **Show sidebar with tree and labels** instead.
+  so it has **Show... → Show sidebar with tree and labels** instead.
 - The **Clustering** submenu can also draw the tree with **branch lengths**, so
   the horizontal extent of each branch reflects distance rather than nesting
   alone.

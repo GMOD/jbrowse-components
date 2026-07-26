@@ -114,8 +114,8 @@ leaves three settings to write:
 Open the track at whole-genome zoom, then run "Clustering > Cluster rows by
 similarity" action in the track menu. Clustering reorders the rows so tumors
 with similar profiles sit together, which turns a noisy stack into blocks, and
-draws the dendrogram in the sidebar (**Show sidebar with tree and labels**, on
-by default).
+draws the dendrogram in the sidebar (**Show... → Show sidebar with tree and
+labels**, on by default).
 
 - **A vertical stripe** is one locus called the same way across many rows: blue
   for recurrent loss, red for recurrent gain.

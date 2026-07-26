@@ -1,10 +1,16 @@
 import { lazy } from 'react'
 
+import { checkboxItem, radioItems } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { clusteringMenuItem } from '@jbrowse/tree-sidebar'
+import {
+  clusteringMenuItem,
+  treeBranchLengthMenuItem,
+} from '@jbrowse/tree-sidebar'
 import HeightIcon from '@mui/icons-material/Height'
-
-import { radioSubMenu } from '../LinearBasicDisplay/baseModelHelpers.ts'
+import LegendToggleIcon from '@mui/icons-material/LegendToggle'
+import PaletteIcon from '@mui/icons-material/Palette'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
@@ -24,6 +30,25 @@ const SetRowHeightDialog = lazy(
 const ROW_HEIGHT_NORMAL = 14
 const ROW_HEIGHT_COMPACT = 8
 
+const ROW_HEIGHT_PRESETS = [
+  { value: 'fit', label: 'Squeeze to fit view' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'compact', label: 'Compact' },
+] as const
+
+// Which preset the current setting is, or undefined for a hand-entered height
+// (the "Custom..." row). `rowHeight` is one coupled axis — 0 is the fit-to-view
+// sentinel, any positive value a pinned px height — so these are radios.
+function rowHeightPreset(rowHeightSetting: number) {
+  return rowHeightSetting === 0
+    ? 'fit'
+    : rowHeightSetting === ROW_HEIGHT_NORMAL
+      ? 'normal'
+      : rowHeightSetting === ROW_HEIGHT_COMPACT
+        ? 'compact'
+        : undefined
+}
+
 interface MultiRowMenuSelf extends IAnyStateTreeNode {
   showTree: boolean
   showLegend: boolean
@@ -32,6 +57,7 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
+  layout: readonly MultiRowSource[]
   editableSources: MultiRowSource[]
   sourcesWithoutLayout: MultiRowSource[]
   clusterTree?: string
@@ -40,6 +66,7 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   toggleCategory: (label: string) => void
+  setHiddenCategories: (labels: string[]) => void
   setShowBranchLength: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MultiRowSource[]) => void
@@ -50,79 +77,112 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   setRunClustering: (arg?: boolean) => void
 }
 
+// The sidebar toggle shows row labels with or without a tree, so it lives here
+// rather than under "Clustering" (which opts out of its own tree toggle).
+function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
+  return [
+    checkboxItem('Show sidebar with tree and labels', self.showTree, () => {
+      self.setShowTree(!self.showTree)
+    }),
+    ...(self.colorLegend.length
+      ? [
+          checkboxItem('Show legend', self.showLegend, () => {
+            self.setShowLegend(!self.showLegend)
+          }),
+        ]
+      : []),
+    treeBranchLengthMenuItem(self),
+  ]
+}
+
+function rowHeightMenuItems(self: MultiRowMenuSelf): MenuItem[] {
+  const preset = rowHeightPreset(self.rowHeightSetting)
+  return [
+    ...radioItems(ROW_HEIGHT_PRESETS, preset, value => {
+      if (value === 'fit') {
+        self.setFitToHeight()
+      } else {
+        self.setRowHeight(
+          value === 'compact' ? ROW_HEIGHT_COMPACT : ROW_HEIGHT_NORMAL,
+        )
+      }
+    }),
+    // written out rather than going through radioItems because a dialog opener
+    // dismisses the menu instead of keeping it open
+    {
+      label: 'Custom...',
+      type: 'radio',
+      checked: preset === undefined,
+      onClick: () => {
+        getSession(self).queueDialog(handleClose => [
+          SetRowHeightDialog,
+          { model: self, handleClose },
+        ])
+      },
+    },
+  ]
+}
+
+// Per-category visibility. Stays its own submenu rather than folding into
+// "Show..." because a chromHMM painting has 15-25 states; the on-screen legend
+// truncates to what fits the track and delegates the full list here.
+function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
+  const hidden = self.hiddenCategories.length
+  return self.colorLegend.length
+    ? [
+        {
+          label: hidden ? `Categories (${hidden} hidden)` : 'Categories',
+          icon: LegendToggleIcon,
+          subMenu: [
+            ...self.colorLegend.map(entry =>
+              checkboxItem(
+                entry.label,
+                !self.hiddenCategories.includes(entry.label),
+                () => {
+                  self.toggleCategory(entry.label)
+                },
+              ),
+            ),
+            // the only recovery once the legend (where hidden rows render
+            // dimmed) has been dismissed
+            ...(hidden
+              ? [
+                  {
+                    label: 'Show all categories',
+                    onClick: () => {
+                      self.setHiddenCategories([])
+                    },
+                  },
+                ]
+              : []),
+          ],
+        },
+      ]
+    : []
+}
+
 export function buildMultiRowTrackMenuItems(
   self: MultiRowMenuSelf,
 ): MenuItem[] {
-  const rowHeightChoice =
-    self.rowHeightSetting === 0
-      ? 'fit'
-      : self.rowHeightSetting === ROW_HEIGHT_NORMAL
-        ? 'normal'
-        : self.rowHeightSetting === ROW_HEIGHT_COMPACT
-          ? 'compact'
-          : 'custom'
   return [
     {
-      label: 'Show sidebar with tree and labels',
-      type: 'checkbox',
-      checked: self.showTree,
-      onClick: () => {
-        self.setShowTree(!self.showTree)
-      },
+      label: 'Show...',
+      icon: VisibilityIcon,
+      type: 'subMenu',
+      subMenu: showMenuItems(self),
     },
-    ...(self.colorLegend.length
-      ? [
-          {
-            label: 'Show legend',
-            type: 'checkbox' as const,
-            checked: self.showLegend,
-            onClick: () => {
-              self.setShowLegend(!self.showLegend)
-            },
-          },
-          {
-            label: 'Categories',
-            subMenu: self.colorLegend.map(entry => ({
-              label: entry.label,
-              type: 'checkbox' as const,
-              checked: !self.hiddenCategories.includes(entry.label),
-              onClick: () => {
-                self.toggleCategory(entry.label)
-              },
-            })),
-          },
-        ]
-      : []),
     {
+      label: 'Row height',
       icon: HeightIcon,
-      ...radioSubMenu(
-        'Row height',
-        rowHeightChoice,
-        [
-          { value: 'fit', label: 'Squeeze to fit view' },
-          { value: 'normal', label: 'Normal' },
-          { value: 'compact', label: 'Compact' },
-          { value: 'custom', label: 'Custom...' },
-        ],
-        value => {
-          if (value === 'fit') {
-            self.setFitToHeight()
-          } else if (value === 'custom') {
-            getSession(self).queueDialog(handleClose => [
-              SetRowHeightDialog,
-              { model: self, handleClose },
-            ])
-          } else {
-            self.setRowHeight(
-              value === 'compact' ? ROW_HEIGHT_COMPACT : ROW_HEIGHT_NORMAL,
-            )
-          }
-        },
-      ),
+      type: 'subMenu',
+      subMenu: rowHeightMenuItems(self),
     },
+    ...categoriesMenuItems(self),
     {
       label: 'Edit colors/arrangement...',
+      icon: PaletteIcon,
       disabled: !self.editableSources.length,
+      disabledHelpText: 'Loading rows...',
       onClick: () => {
         getSession(self).queueDialog(handleClose => [
           SetRowArrangementDialog,
@@ -130,8 +190,23 @@ export function buildMultiRowTrackMenuItems(
         ])
       },
     },
-    // The sidebar toggle above shows row labels with or without a tree, so it
-    // stays top-level (showTreeToggle: false) rather than moving in here.
+    // Top-level rather than nested under "Clustering" (where the other
+    // clusterable displays keep theirs) because all three ways of reordering
+    // rows land in `layout`: clustering, the arrangement dialog, and the
+    // right-click sort. Only the first leaves a `clusterTree`, so a
+    // clustering-gated item left a dialog reorder undoable from the dialog
+    // alone.
+    ...(self.layout.length
+      ? [
+          {
+            label: 'Reset row order',
+            icon: RestartAltIcon,
+            onClick: () => {
+              self.clearLayout()
+            },
+          },
+        ]
+      : []),
     clusteringMenuItem(
       self,
       {
@@ -145,19 +220,7 @@ export function buildMultiRowTrackMenuItems(
           self.setRunClustering(true)
         },
       },
-      {
-        showTreeToggle: false,
-        extraItems: self.clusterTree
-          ? [
-              {
-                label: 'Clear clustering (reset row order)',
-                onClick: () => {
-                  self.clearLayout()
-                },
-              },
-            ]
-          : [],
-      },
+      { showTreeToggle: false },
     ),
   ]
 }

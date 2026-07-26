@@ -145,7 +145,7 @@ legend entry per distinct color, labeled with the first state name seen in that
 color. Nothing declares it, and it can't disagree with what's painted. States
 that share a color collapse into one entry, which in the Broad 15-state model
 pairs `4_Strong_Enhancer` with `5_`, `6_Weak_Enhancer` with `7_`, and the two
-transcription states with each other. Turn the key off with **Show color
+transcription states with each other. Turn the key off with **Show... → Show
 legend** in the track menu, or spell it out yourself with the
 [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) slot.
 

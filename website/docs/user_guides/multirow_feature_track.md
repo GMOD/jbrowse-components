@@ -102,9 +102,10 @@ segment mean copy number:
 
 <Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by a jexl expression binning the caller's log2 ratio: blue loss, red gain. Recurrent events read as vertical stripes through the stack, under a wiggle track of the same cohort's gain/loss frequency." />
 
-**Show legend** in the track menu keys the colors actually present, and the
+**Show... → Show legend** keys the colors actually present, and the
 **Categories** submenu beside it hides individual categories, so you can drop
-the states or classes you aren't reading and leave the rest painted.
+the states or classes you aren't reading and leave the rest painted. The submenu
+counts what is hidden and offers **Show all categories** to put them back.
 
 You can also recolor a single row by hand from **Edit colors/arrangement...**;
 that overrides every source above for that row and applies at render time, with
@@ -131,13 +132,16 @@ Rows start in file order. Three ways to change that:
   row sort** restores the previous order.
 - **Clustering → Cluster rows by similarity** reorders rows so that samples with
   similar paintings sit together, and draws a dendrogram in the sidebar. Unlike
-  the other clustering displays it runs without a dialog, and **Clear clustering
-  (reset row order)** undoes it. See
+  the other clustering displays it runs without a dialog. See
   [Clustering rows](/docs/user_guides/clustering).
 
-**Show sidebar with tree and labels** toggles the row labels and the dendrogram.
-It is a top-level item rather than part of the Clustering submenu, because the
-row labels are useful with no clustering run at all.
+**Reset row order** appears in the track menu once any of the three has run, and
+returns the rows to file order.
+
+**Show... → Show sidebar with tree and labels** toggles the row labels and the
+dendrogram. It sits with the other visibility toggles rather than in the
+Clustering submenu, because the row labels are useful with no clustering run at
+all.
 
 <Figure src="/img/hprc2/local_ancestry_clustered.png" caption="64 HPRC haplotypes painted by local ancestry, rows clustered by similarity with the dendrogram beside them. Haplotypes sharing an ancestry profile group into blocks, so the colors sort into bands rather than the input file's order." />
 
