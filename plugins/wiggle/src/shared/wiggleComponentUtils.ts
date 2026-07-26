@@ -1,5 +1,5 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
-import { scaleTypeFromString } from '@jbrowse/wiggle-core'
+import { resolveRenderState, scaleTypeFromString } from '@jbrowse/wiggle-core'
 
 import type {
   FeatureArrays,
@@ -500,26 +500,41 @@ export function hitTestMouse<R extends MouseRegion, D>(
   return { region, data, bp: baseAtFraction(region, frac) }
 }
 
-export function makeRenderState(
-  domain: [number, number],
-  scaleType: string,
-  renderingType: string,
-  width: number,
-  height: number,
-  numRows: number,
-  scatterPointSize: number,
-  lineWidth: number,
-  origin: number,
+// Everything in a wiggle-family render state except the canvas box comes off
+// the model, so the two displays supply only what genuinely differs: single
+// wiggle insets by the scalebar label gutter and draws one row, multi stacks
+// rows edge-to-edge over the full height.
+interface WiggleRenderStateModel {
+  domain: [number, number] | undefined
+  scaleType: string
+  renderingType: string
+  scatterPointSize: number
+  lineWidth: number
+  bicolorPivot: number
+}
+
+// Always defined: until autoscale resolves a domain, resolveRenderState
+// substitutes a [0,1] stub so an uncovered region still renders (clears the
+// canvas, flips canvasDrawn, instead of spinning forever). "Still loading" is
+// expressed separately by the boolean `renderBlocks` returns.
+export function makeWiggleRenderState(
+  self: WiggleRenderStateModel,
+  {
+    width,
+    height,
+    numRows,
+  }: { width: number; height: number; numRows: number },
 ): WiggleGPURenderState {
-  return {
-    domainY: domain,
-    scaleType: scaleTypeFromString(scaleType),
-    renderingType: renderingTypeToInt(renderingType),
+  return resolveRenderState(self.domain, domainY => ({
+    domainY,
+    scaleType: scaleTypeFromString(self.scaleType),
+    renderingType: renderingTypeToInt(self.renderingType),
     canvasWidth: width,
     canvasHeight: height,
     numRows,
-    scatterPointSize,
-    lineWidth,
-    origin,
-  }
+    scatterPointSize: self.scatterPointSize,
+    lineWidth: self.lineWidth,
+    // bars pivot around, and density fades from, the bicolor threshold
+    origin: self.bicolorPivot,
+  }))
 }

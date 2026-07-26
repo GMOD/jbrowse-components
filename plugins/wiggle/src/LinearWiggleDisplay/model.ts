@@ -19,14 +19,13 @@ import {
   makeCrossHatchItem,
   makeScoreSubMenu,
   makeShowSubMenu,
-  resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import { wiggleColorAdornment } from '../shared/wiggleColorAdornment.tsx'
-import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
+import { makeWiggleRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
   makeLineWidthMenuItems,
   makePointSizeMenuItems,
@@ -40,6 +39,7 @@ import {
   YSCALEBAR_LABEL_OFFSET,
 } from '../util.ts'
 
+import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { WiggleDataResult } from '../util.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -167,21 +167,13 @@ export default function stateModelFactory(
        */
       get renderState() {
         const view = getContainingView(self) as LGV
-        const width = view.trackWidthPx
-        const height = self.height - 2 * YSCALEBAR_LABEL_OFFSET
-        return resolveRenderState(self.domain, domain =>
-          makeRenderState(
-            domain,
-            self.scaleType,
-            self.renderingType,
-            width,
-            height,
-            1,
-            self.scatterPointSize,
-            self.lineWidth,
-            self.bicolorPivot,
-          ),
-        )
+        return makeWiggleRenderState(self, {
+          width: view.trackWidthPx,
+          // inset by the scalebar label gutter at top and bottom so the plot
+          // never overlaps the axis labels drawn in those bands
+          height: self.height - 2 * YSCALEBAR_LABEL_OFFSET,
+          numRows: 1,
+        })
       },
 
       /**
@@ -359,16 +351,10 @@ export default function stateModelFactory(
 export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>
 
-// Compile-time proof the real MST model still satisfies the structural type its
-// component takes. That type can't be `Instance<...>` here: the contract lives in
-// `@jbrowse/wiggle-core`, a package *below* this one, so it cannot import this
-// model — unlike the canvas display, which registers its component in index.ts and
-// types it off the model directly. Without this, a renamed/dropped field is a
-// silent runtime failure inside the lazy-loaded component, because the
-// `DisplayMessageComponent` getter is typed `React.FC<any>` and erases the check.
-// Type-only, so it's erased at runtime; it lives in this file (not a standalone
-// one) so a "remove files with no importers" sweep can't drop the guard.
-type _ComponentContract<T extends WiggleDisplayModel> = T
+// See SatisfiesComponentContract for why this guard exists and why it's spelled
+// out in each model file rather than centralized.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _ModelSatisfiesComponentContract =
-  _ComponentContract<LinearWiggleDisplayModel>
+type _ModelSatisfiesComponentContract = SatisfiesComponentContract<
+  WiggleDisplayModel,
+  LinearWiggleDisplayModel
+>

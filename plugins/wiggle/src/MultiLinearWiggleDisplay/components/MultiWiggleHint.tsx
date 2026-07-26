@@ -8,17 +8,15 @@ import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 // name the escape inline instead of leaving the user staring at nothing.
 function hintMessage(model: MultiWiggleDisplayModel) {
   const { numSources, isOverlay, rowHeight } = model
-  // #7: a subtree filter that matches nothing. Loaded adapter sources exist but
-  // the filter removed them all (numSources is the post-filter count).
-  if (model.sourcesWithoutLayout.length > 0 && numSources === 0) {
-    return 'No subtracks match the current subtree filter'
-  }
-  // #6: multi-row mode packed so tight rows are sub-pixel — the canvas draws but
-  // shows an unreadable smear.
-  if (!isOverlay && numSources > 0 && rowHeight < 1) {
-    return `${numSources} subtracks in ${Math.round(model.height)}px leaves rows below 1px. Switch to an overlay or density rendering, or increase the track height.`
-  }
-  return undefined
+  // A subtree filter that matches nothing: loaded adapter sources exist but the
+  // filter removed them all (numSources is the post-filter count). Otherwise,
+  // multi-row mode packed so tight rows are sub-pixel — the canvas draws, but
+  // as an unreadable smear.
+  return model.sourcesWithoutLayout.length > 0 && numSources === 0
+    ? 'No subtracks match the current subtree filter'
+    : !isOverlay && numSources > 0 && rowHeight < 1
+      ? `${numSources} subtracks in ${Math.round(model.height)}px leaves rows below 1px. Switch to an overlay or density rendering, or increase the track height.`
+      : undefined
 }
 
 const MultiWiggleHint = observer(function MultiWiggleHint({
