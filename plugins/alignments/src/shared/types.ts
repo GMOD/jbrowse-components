@@ -204,7 +204,6 @@ export type GroupByType =
   | 'tag'
   | 'pairOrientation'
   | 'supplementary'
-  | 'duplicate'
   | 'mapq'
   | 'mateAssembly'
 

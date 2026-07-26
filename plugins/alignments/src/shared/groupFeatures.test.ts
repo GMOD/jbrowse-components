@@ -150,16 +150,6 @@ test('mapq grouping reads the synteny mappingQual field too', () => {
   ])
 })
 
-// Non-duplicate first, like supplementary's Primary-first — the reads that matter
-// head the stack. The keys are digits purely to get that order out of
-// compareGroupKeys ('duplicate' < 'nonduplicate' would invert it).
-test('duplicate grouping splits on the flag, non-duplicates first', () => {
-  const features = [feat('a', { flags: 0x400 }), feat('b', { flags: 0 })]
-  const groups = partitionFeatures(features, { type: 'duplicate' })
-  expect(groups.map(g => g.label)).toEqual(['Non-duplicate', 'Duplicate'])
-  expect(groups[0]!.features.map(f => f.id())).toEqual(['b'])
-})
-
 test('supplementary grouping puts primary reads first', () => {
   const features = [feat('a', { flags: 0x800 }), feat('b', { flags: 0 })]
   const groups = partitionFeatures(features, { type: 'supplementary' })
@@ -199,7 +189,6 @@ test('isChainGroupableType allows only chain-consistent dimensions', () => {
   expect(isChainGroupableType('strand')).toBe(false)
   expect(isChainGroupableType('supplementary')).toBe(false)
   expect(isChainGroupableType('mapq')).toBe(false)
-  expect(isChainGroupableType('duplicate')).toBe(false)
   expect(isChainGroupableType(undefined)).toBe(false)
 })
 

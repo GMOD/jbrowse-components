@@ -3,13 +3,16 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
-import { GROUP_BY_DIMENSIONS } from '../../shared/groupFeatures.ts'
+import {
+  GROUP_BY_DIMENSIONS,
+  pickGroupByOptions,
+} from '../../shared/groupFeatures.ts'
 import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
 import { capitalizeFirst } from './menuHelpers.ts'
 
 import type { SortedBy } from '../../shared/types.ts'
-import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
+import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
 import type { RadioMenuItem } from '@jbrowse/core/ui'
 
 const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
@@ -144,11 +147,23 @@ export function getSortByMenuItem(
 
 // Dimensions this display offers: non-hidden ones in registry order, and in chain
 // mode only the chain-consistent ones (every read of a chain shares one key),
-// matching the worker guard (`groupByForMode`).
-function offeredGroupByDimensions(isChainMode: boolean) {
-  return Object.values(GROUP_BY_DIMENSIONS).filter(
-    d => !d.hidden && (!isChainMode || d.chainConsistent),
-  )
+// matching the worker guard (`groupByForMode`). `tag` is dropped because it needs
+// a tag name, so it is added back below as a dialog-opener rather than a direct
+// select.
+function offeredGroupByTypes(isChainMode: boolean) {
+  return Object.values(GROUP_BY_DIMENSIONS)
+    .filter(
+      d => !d.hidden && d.type !== 'tag' && (!isChainMode || d.chainConsistent),
+    )
+    .map(d => d.type)
+}
+
+// The dialog's surface plus what the radios themselves need. The same node is
+// passed on to GroupByDialog, so it has to be a superset.
+export type GroupByMenuModel = GroupByDialogModel & {
+  isChainMode: boolean
+  collapseGroupRows: boolean
+  setCollapseGroupRows: (flag: boolean) => void
 }
 
 // Every offered dimension selects directly except `tag`, which needs a tag name
@@ -156,11 +171,10 @@ function offeredGroupByDimensions(isChainMode: boolean) {
 // sort menu's "Tag...". `groupByRadioMenuItem` resolves which radio is ticked
 // against what it was handed, so a stored-but-unoffered dimension ticks "None"
 // here without this call site restating the rule.
-export function getGroupByMenuItem(model: GroupByModel) {
-  const dims = offeredGroupByDimensions(model.isChainMode)
+export function getGroupByMenuItem(model: GroupByMenuModel) {
   return groupByRadioMenuItem({
     current: model.groupBy?.type,
-    options: dims.filter(d => d.type !== 'tag'),
+    options: pickGroupByOptions(...offeredGroupByTypes(model.isChainMode)),
     onSelect: type => {
       model.setGroupBy({ type })
     },

@@ -12,7 +12,6 @@ function makeModel(
     setGroupBy: jest.fn(),
     collapseGroupRows,
     setCollapseGroupRows: jest.fn(),
-    prefersOffset: type !== undefined,
     hideSelfAlignments,
     setHideSelfAlignments: jest.fn(),
   }

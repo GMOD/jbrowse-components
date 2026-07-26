@@ -497,12 +497,12 @@ through verbatim as a display state-model name):
 
 Reads & coloring:
 
-| Modifier                         | Example                        | Description                                                                                                                                         |
-| -------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                                                                                                      |
-| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                                       |
-| `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `supplementary`, `duplicate`, `mapq`, or `tag:<TAG>`) |
-| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                                             |
+| Modifier                         | Example                        | Description                                                                                                                            |
+| -------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                                                                                         |
+| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                          |
+| `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `supplementary`, `mapq`, or `tag:<TAG>`) |
+| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                                |
 
 Overlays & subtracks:
 

@@ -16,20 +16,17 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// Shared with the track-menu item (getGroupByMenuItem) so the two can't disagree
-// about the model surface they depend on. The menu reads `isChainMode`/`groupBy`
-// to build its radios; this dialog (tag grouping only — every other dimension is
-// a direct menu radio) reads the tag/color fields.
-export type GroupByModel = {
+// Exactly what this dialog reads. `getGroupByMenuItem` extends it with the
+// radio-building fields (GroupByMenuModel in ../menus/sortGroup.ts) and hands the
+// same node straight through, so the two can't disagree about the tag/color
+// surface while the dialog stays free of menu-only state.
+export type GroupByDialogModel = {
   adapterConfig: AnyConfigurationModel
   configuration: AnyConfigurationModel
   colorBy: ColorBy
   filterBy: FilterBy
   groupBy?: GroupBy
-  isChainMode: boolean
-  collapseGroupRows: boolean
   setGroupBy: (groupBy?: GroupBy) => void
-  setCollapseGroupRows: (flag: boolean) => void
   setColorScheme: (colorBy: ColorBy) => void
 } & IAnyStateTreeNode
 
@@ -58,7 +55,7 @@ function nextColorScheme(
 // dimension is a direct radio in the Group-by menu. Tag is chain-consistent, so
 // this works in linked-read mode too (no per-mode gating needed).
 const GroupByDialog = observer(function GroupByDialog(props: {
-  model: GroupByModel
+  model: GroupByDialogModel
   handleClose: () => void
 }) {
   const { model, handleClose } = props

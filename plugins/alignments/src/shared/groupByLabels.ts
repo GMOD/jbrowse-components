@@ -20,7 +20,6 @@ export const GROUP_BY_LABELS: Record<GroupByType, string> = {
   tag: 'Tag (HP, RG, ...)',
   pairOrientation: 'Pair orientation',
   supplementary: 'Supplementary',
-  duplicate: 'Duplicate',
   mapq: 'Mapping quality',
   mateAssembly: 'Mate assembly',
 }

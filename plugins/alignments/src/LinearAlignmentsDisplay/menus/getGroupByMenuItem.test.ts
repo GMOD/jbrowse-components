@@ -1,7 +1,7 @@
 import { getGroupByMenuItem } from './sortGroup.ts'
 
 import type { GroupByType } from '../../shared/types.ts'
-import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
+import type { GroupByMenuModel } from './sortGroup.ts'
 
 function makeModel(opts?: {
   type?: GroupByType
@@ -18,7 +18,7 @@ function makeModel(opts?: {
     setCollapseGroupRows,
   }
   return {
-    model: model as unknown as GroupByModel,
+    model: model as unknown as GroupByMenuModel,
     setGroupBy,
     setCollapseGroupRows,
   }
@@ -26,7 +26,7 @@ function makeModel(opts?: {
 
 // The dimension radios only — the trailing "One row per group" checkbox is a
 // layout toggle, not a dimension, and is asserted separately below.
-function radios(model: GroupByModel) {
+function radios(model: GroupByMenuModel) {
   return getGroupByMenuItem(model).subMenu.filter(i => i.type === 'radio')
 }
 
@@ -37,7 +37,6 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
     'First-of-pair strand',
     'Pair orientation',
     'Supplementary',
-    'Duplicate',
     'Mapping quality',
     'Tag...',
   ])
@@ -99,21 +98,38 @@ test('grouping by tag checks the Tag... radio', () => {
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['Tag...'])
 })
 
-// `defaultFilterFlags` excludes 0x400, so out of the box this dimension yields
-// one "Non-duplicate" section and looks broken. Say so rather than disabling it.
-test('the duplicate radio names its dependency on the read filter', () => {
-  const item = radios(makeModel().model).find(i => i.label === 'Duplicate')!
-  expect(item.helpText).toMatch(/hidden by default/)
+// No radio carries helpText: the menu reserves a help column across every row as
+// soon as one does, and none of these dimensions needs a sentence to explain it.
+test('the dimension radios need no help column', () => {
+  expect(radios(makeModel().model).filter(i => i.helpText)).toEqual([])
 })
 
-function collapseItem(model: GroupByModel) {
+function collapseItem(model: GroupByMenuModel) {
   return getGroupByMenuItem(model)
     .subMenu.filter(i => i.type === 'checkbox')
     .find(i => i.label === 'One row per group')
 }
 
+// Ungrouped, `collapseGroupRows` reads false whatever the slot says, so clicking
+// only ever wrote `true` — on a track whose config already defaults it on
+// (LGVSyntenyDisplay) that is an unchecked box that can never be unchecked.
+test('the one-row-per-group toggle is disabled while ungrouped', () => {
+  const { model, setCollapseGroupRows } = makeModel()
+  const item = collapseItem(model)!
+  expect(item.disabled).toBe(true)
+  expect(item.disabledHelpText).toMatch(/Pick a dimension/)
+  expect(setCollapseGroupRows).not.toHaveBeenCalled()
+
+  expect(collapseItem(makeModel({ type: 'strand' }).model)!.disabled).toBe(
+    false,
+  )
+})
+
 test('the one-row-per-group toggle reflects and writes the setting', () => {
-  const { model, setCollapseGroupRows } = makeModel({ collapseGroupRows: true })
+  const { model, setCollapseGroupRows } = makeModel({
+    type: 'strand',
+    collapseGroupRows: true,
+  })
   const item = collapseItem(model)!
   expect(item.checked).toBe(true)
   item.onClick()

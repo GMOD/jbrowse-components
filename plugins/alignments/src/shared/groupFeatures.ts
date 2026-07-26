@@ -1,5 +1,4 @@
 import {
-  SAM_FLAG_DUPLICATE,
   SAM_FLAG_REVERSE,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SECOND_IN_PAIR,
@@ -74,16 +73,6 @@ function supplementaryKey(feature: Feature): GroupKey {
     : { key: 'primary', label: 'Primary' }
 }
 
-// Digit keys, not the words, purely for ordering: keys sort by `compareGroupKeys`
-// and 'duplicate' < 'nonduplicate' would stack the duplicates above the reads
-// that matter. Digits put the ordinary case first, matching supplementaryKey
-// above (where 'primary' < 'supplementary' happens to fall out of the alphabet).
-function duplicateKey(feature: Feature): GroupKey {
-  return getFlags(feature) & SAM_FLAG_DUPLICATE
-    ? { key: '1', label: 'Duplicate' }
-    : { key: '0', label: 'Non-duplicate' }
-}
-
 // Synteny features (PAF/all-vs-all) carry a `mate` referencing the other side's
 // assembly. Its `assemblyName` is the loaded assembly if listed, else the bare
 // PanSN sample prefix (sample/haplotype, not necessarily a species). Grouping by
@@ -103,8 +92,10 @@ function mateAssemblyKey(feature: Feature): GroupKey {
 // another at 0 — so decades spent up to 26 mostly-empty sections. These are the
 // thresholds people already filter on (`samtools view -q 10` / `-q 30`), with 0
 // ("no unique placement") and SAM's 255 ("unavailable") called out on their own.
-// Ordinal keys like duplicateKey's, so the confident reads head the stack. Five
-// buckets by construction, so this dimension can't approach MAX_GROUPS.
+// Digit keys, not the words, purely for ordering: keys sort by `compareGroupKeys`,
+// so ordinals put the confident reads at the head of the stack where the labels
+// would not. Five buckets by construction, so this dimension can't approach
+// MAX_GROUPS.
 function mapqKey(feature: Feature): GroupKey {
   const mapq = getMappingQuality(feature)
   return mapq === 255
@@ -118,9 +109,9 @@ function mapqKey(feature: Feature): GroupKey {
           : { key: '3', label: 'MAPQ 0 (multi-mapping)' }
 }
 
-// All-digit key: numeric tag values (a numeric RG, a count-based tag), mapq's
-// confidence bins, and the duplicate flag. Compared by magnitude below so '2'
-// precedes '10' instead of code-point '10' < '2'.
+// All-digit key: numeric tag values (a numeric RG, a count-based tag) and mapq's
+// confidence bins. Compared by magnitude below so '2' precedes '10' instead of
+// code-point '10' < '2'.
 const ALL_DIGITS = /^\d+$/
 
 // Hard ceiling on the sections one fetch may produce. Every group runs the whole
@@ -264,22 +255,16 @@ function chainRepresentative(chain: Feature[]): Feature {
 
 export interface GroupByDimension {
   type: GroupByType
-  // Menu label shown in the group-by dialog.
-  label: string
   // True iff every read of a chain yields the same key for this dimension, so
   // chain-aware partitioning keeps a chain whole — including across separate
   // per-region worker calls. Per-read dimensions split chains and are excluded
   // from chain (linked-reads) mode.
   chainConsistent: boolean
   // True for dimensions that don't apply to ordinary alignment reads and so are
-  // not offered in the general Group-by dialog; a display that supports them
+  // not offered in the general "Group by..." radios; a display that supports them
   // surfaces them itself — mateAssembly is offered by LGVSyntenyDisplay's own
   // "Group by..." radios (see its menus.ts).
   hidden?: boolean
-  // Shown under the radio when the dimension only pays off given some other
-  // setting. Preferred over disabling the radio, which would leave the user
-  // guessing at the dependency.
-  helpText?: string
   // The group-key generator for this dimension. Co-located with the metadata so
   // each dimension is defined in exactly one place — `groupKeyFor` just looks it
   // up. `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
@@ -289,62 +274,44 @@ export interface GroupByDimension {
 // The single registry of group-by dimensions. Typed as a Record keyed by
 // GroupByType, so adding a member to the union is a compile error until it is
 // classified here — a new dimension can't be silently half-wired (missing a
-// label, a chain-mode classification, or a key generator). Insertion order is
-// the menu order (Object.values preserves it). Labels come from the React-free
-// groupByLabels.ts so the website's figure recipes can name a menu path without
-// importing this module (see its header).
+// chain-mode classification or a key generator). Insertion order is the menu
+// order (Object.values preserves it). Labels live in the React-free
+// groupByLabels.ts, keyed by the same union, so the website's figure recipes can
+// name a menu path without importing this module (see its header) —
+// `pickGroupByOptions` is the one place that joins the two.
 export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
   strand: {
     type: 'strand',
-    label: GROUP_BY_LABELS.strand,
     chainConsistent: false,
     key: strandKey,
   },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
-    label: GROUP_BY_LABELS.firstOfPairStrand,
     chainConsistent: true,
     key: firstOfPairStrandKey,
   },
   tag: {
     type: 'tag',
-    label: GROUP_BY_LABELS.tag,
     chainConsistent: true,
     key: (feature, groupBy) => tagKey(feature, groupBy.tag ?? ''),
   },
   pairOrientation: {
     type: 'pairOrientation',
-    label: GROUP_BY_LABELS.pairOrientation,
     chainConsistent: true,
     key: pairOrientationKey,
   },
   supplementary: {
     type: 'supplementary',
-    label: GROUP_BY_LABELS.supplementary,
     chainConsistent: false,
     key: supplementaryKey,
   },
-  duplicate: {
-    type: 'duplicate',
-    label: GROUP_BY_LABELS.duplicate,
-    chainConsistent: false,
-    // `defaultFilterFlags` excludes 0x400, so duplicates never reach the display
-    // until that is relaxed — this dimension would otherwise look broken,
-    // yielding one "Non-duplicate" section however the data actually splits.
-    helpText:
-      'Duplicates are hidden by default — uncheck "Duplicate" under "Filter by" ' +
-      'to see both sections.',
-    key: duplicateKey,
-  },
   mapq: {
     type: 'mapq',
-    label: GROUP_BY_LABELS.mapq,
     chainConsistent: false,
     key: mapqKey,
   },
   mateAssembly: {
     type: 'mateAssembly',
-    label: GROUP_BY_LABELS.mateAssembly,
     chainConsistent: true,
     hidden: true,
     key: mateAssemblyKey,
@@ -370,15 +337,12 @@ export function groupByForMode(
     : groupBy
 }
 
-// Curated subset of dimensions, in the given order, with labels sourced from the
-// registry — for displays (e.g. synteny) that offer a handful of dimensions as
-// plain radios instead of the general Group-by dialog, and shouldn't re-spell
-// the labels at the call site. Mirrors pickColorOptions.
+// Dimensions as menu radio options, in the given order — the one place the
+// behavior registry above is joined to the React-free label table, so no call
+// site re-spells a label. Both the alignments menu (every non-hidden dimension)
+// and LGVSyntenyDisplay (a curated three) go through it. Mirrors pickColorOptions.
 export function pickGroupByOptions(...types: GroupByType[]) {
-  return types.map(type => {
-    const { label, helpText } = GROUP_BY_DIMENSIONS[type]
-    return { type, label, helpText }
-  })
+  return types.map(type => ({ type, label: GROUP_BY_LABELS[type] }))
 }
 
 // Chain-aware partition for linked-reads/chain mode: reads sharing a QNAME form

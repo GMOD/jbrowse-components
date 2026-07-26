@@ -40,6 +40,14 @@ function checkedType(
 // `collapseRows` appends the "One row per group" checkbox below the radios,
 // because it modifies them: it is how tall each group they produce is drawn, not
 // a dimension of its own.
+//
+// Its clarifier is a `subLabel`, not `helpText`: one helpText anywhere in a menu
+// makes every row reserve the "?" column (`getMenuColumnFlags`), and nothing else
+// in this submenu needs one. It also disables itself while "None" is ticked — the
+// display's `collapseGroupRows` getter is gated on the grouping being honored, so
+// ungrouped it reads `false` whatever the slot holds, and clicking the unchecked
+// box wrote `true` into an already-`true` slot (LGVSyntenyDisplay defaults it on)
+// for no visible change, forever.
 export function groupByRadioMenuItem({
   current,
   options,
@@ -94,10 +102,11 @@ export function groupByRadioMenuItem({
               collapseRows.checked,
               collapseRows.onToggle,
               {
-                helpText:
-                  'Draw each group as a single band, shading overlapping ' +
-                  'features darker instead of stacking them. Expand one group ' +
-                  'back to a full stack from its label.',
+                subLabel: 'Overlap shows as darker shading',
+                disabled: checked === undefined,
+                disabledHelpText:
+                  'Pick a dimension above first — with no grouping there is ' +
+                  'nothing to draw one row of.',
               },
             ),
           ]

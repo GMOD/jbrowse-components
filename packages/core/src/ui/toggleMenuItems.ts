@@ -15,7 +15,15 @@ export function checkboxItem(
   label: string,
   checked: boolean,
   onToggle: () => void,
-  opts?: { helpText?: string; disabled?: boolean },
+  // `subLabel` renders inline under the label; `helpText` claims a "?" column
+  // that `getMenuColumnFlags` then reserves on EVERY row of the menu, so prefer
+  // a subLabel for a short clarifier and keep helpText for real prose.
+  opts?: {
+    helpText?: string
+    subLabel?: string
+    disabled?: boolean
+    disabledHelpText?: string
+  },
 ): CheckboxMenuItem {
   return {
     label,
