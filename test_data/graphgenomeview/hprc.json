@@ -39,6 +39,33 @@
       }
     },
     {
+      "type": "AlignmentsTrack",
+      "trackId": "hprc_minigraph_alleles",
+      "name": "HPRC release 2 graph: allele inventory",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hprc2_wave_grch38",
+      "name": "HPRC2 pangenome callset (464 haplotypes)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "hprc2_wave_grch38_regular",
+          "renderingMode": "phased"
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "hprc_minigraph_segments",
       "name": "HPRC release 2 graph (rGFA segments)",

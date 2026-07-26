@@ -3,17 +3,21 @@ title: Pangenome (HPRC)
 description:
   Open HPRC release 2's Minigraph-Cactus graph as a graph in the browser, then
   its 464-haplotype variant callset and per-haplotype ancestry painting, all
-  with no preprocessing
+  from hosted files with no pipeline to run
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
-fivefold expansion over release 1, and three of its products open in a browser
-with no preprocessing. This tutorial opens all three, and it leads with the one
-most people come for: the pangenome graph itself, drawn as a graph. After that
-the variant callset (464 haplotypes as a genotype matrix) and a per-haplotype
-local-ancestry painting.
+fivefold expansion over release 1. This tutorial opens three of its products,
+and it leads with the one most people come for: the pangenome graph itself,
+drawn as a graph. After that the variant callset (464 haplotypes as a genotype
+matrix) and a per-haplotype local-ancestry painting.
+
+Only the callset needs nothing at all: it ships tabix-indexed, so JBrowse reads
+the slice you are looking at straight off HPRC's S3. The other two we have
+prebuilt and host, so every track below is a URL you can paste. The scripts that
+built them are in [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## What release 2 publishes
 
@@ -29,8 +33,8 @@ GRCh38 and a T2T-CHM13 build; everything below uses GRCh38):
 | `*.wave.vcf.gz.tbi` | 2.2 MB | the index, published beside it               |
 
 The `sv.gfa` is the graph route; the VCF is the variant route. Both open without
-downloading the whole file: the VCF ships its index, and we host a small BED
-projection of the graph (below). Release 3 has no graphs at all (it is the
+downloading the whole file: the VCF ships its index, and we host small BED
+projections of the graph (below). Release 3 has no graphs at all (it is the
 verkko assembly and QC release), so release 2 is the one for this.
 
 ## Regular GFA vs rGFA
@@ -70,6 +74,13 @@ Two things follow from those PanSN stable names (`GRCh38#0#chr1`):
 - The track needs `assemblyNameToPanSN: { "hg38": "GRCh38" }` to tie an `hg38`
   assembly to the graph's `GRCh38` sample prefix. The prefix disambiguates: the
   same graph also carries `CHM13#0#chr1`.
+- **Your assembly's own refNames have to match what is left after the prefix.**
+  The adapter looks up `GRCh38` + the refName it is handed, so it finds
+  `GRCh38#0#chr6` from `chr6` and nothing at all from `6`. Aliases are not
+  consulted, so an hg38 whose primary refNames are bare numbers (jbrowse.org's
+  `hg38.prefix.fa.gz` among them) draws the segments track fine, since that
+  query starts from the graph's spelling, but opens an empty graph view. Use a
+  `chr`-prefixed hg38 for the graph view.
 - The variant callset later in this tutorial needs no such mapping, because its
   contigs are plain GRCh38 (`chr6`, not `GRCh38#0#chr6`).
 
@@ -105,9 +116,7 @@ Each segment draws where its tags say it sits, so the GRCh38 backbone tiles the
 reference and the graph becomes queryable by locus. Those hosted files are ours,
 not HPRC's: we ran the `sv.gfa.gz` through
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-and put the output on `jbrowse.org`. The source, its size, the exact commands,
-and the build date are in
-[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
+and put the output on `jbrowse.org`.
 
 ## Open a locus as a graph
 
@@ -142,31 +151,46 @@ Navigate somewhere interesting, then:
 **Track menu > Launch view > Graph genome view (this region)**
 
 This opens the local subgraph, cut from the same two files, as a graph. Above
-100 kb the view declines to draw, since the layout stops being legible. That
-menu and the per-segment right-click are pictured in the
+100 kb the view declines to draw, since the layout stops being legible. A view
+that opens reading "0 nodes, 0 edges" is the refName mismatch
+[above](#regular-gfa-vs-rgfa), not an empty region. That menu and the
+per-segment right-click are pictured in the
 [E. coli tutorial](/docs/tutorials/pangenome_ecoli#opening-any-locus-without-a-slice-per-locus).
 
-<Figure caption="The HLA class II region (chr6:32,500,000-32,560,000) of the HPRC release 2 graph in force-directed layout, with RefSeq genes (HLA-DRB5, HLA-DRB6) and the bubble track above it. The graph's shape: the backbone winds through the frame and every loop and stub hanging off it is an alternate allele from the 464 haplotypes. The segments track is colored by the same rank scheme, so its blue blocks are that blue backbone; the orange loops are the alternates, which have no GRCh38 coordinates to draw at. Node lengths use per-graph Bandage scaling, so a 300 bp allele and a 7 kb backbone segment stay in one picture." src="/img/pangenome/hprc_mhc_bandage.png" />
+<Figure caption="The HLA class II region as a graph, in force-directed layout, under RefSeq genes, the bubble track, and the rGFA segments track. Blue is the GRCh38 backbone and orange the alternate alleles, in both panels: every loop and stub off the winding blue thread is sequence some haplotype carries and GRCh38 does not, which is why it has no coordinate to draw at above." src="/img/pangenome/hprc_mhc_bandage.png" />
 
 That is the picture the graph is really about. The toolbar's **Layout** dropdown
 trades it for an **anchored** layout, which puts the x axis back on GRCh38:
 
-<Figure caption="The same MHC subgraph, anchored. Every x is a GRCh38 coordinate, so the blue rank-0 backbone runs under the segments track that drew the same ids above it, and each allele hangs at the position it attaches to: rank 1 on the first row, the one rank-2 allele at the bottom. A bubble reads as a pair of stalks rather than an eye, and the layout takes about a millisecond." src="/img/pangenome/hprc_mhc_anchored.png" />
+<Figure caption="The same subgraph in the anchored layout. Every x is now a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs directly below the position it attaches to, stacked by rank. The trade against the force layout above: position instead of shape, so a bubble reads as a pair of stalks rather than a loop." src="/img/pangenome/hprc_mhc_anchored.png" />
 
-Loci where the graph is worth a look, all on GRCh38. Zoom to a few tens of kb,
-the scale the view is built for:
+Since the view stops at 100 kb, a locus is only worth naming together with a
+window that fits under it. These four do, and the counts are what the
+[allele inventory](#the-allele-inventory) below holds in each:
 
-| Locus     | Region                         | Why                                                          |
-| --------- | ------------------------------ | ------------------------------------------------------------ |
-| MHC / HLA | `chr6:28,510,000-33,480,000`   | Allelic hyperdiversity, megabase-scale haplotype differences |
-| AMY1      | `chr1:103,570,000-103,760,000` | Amylase copy number varies several-fold                      |
-| C4        | `chr6:31,980,000-32,050,000`   | C4A/C4B copy number plus an HERV insertion                   |
-| SMN       | `chr5:70,900,000-71,000,000`   | Near-identical SMN1/SMN2 duplication                         |
-| KIR       | `chr19:54,700,000-55,100,000`  | Gene content differs between haplotypes                      |
+| Locus        | Window                         | In the graph              |
+| ------------ | ------------------------------ | ------------------------- |
+| MHC class II | `chr6:32,510,000-32,600,000`   | 56 alleles, longest 94 kb |
+| KIR          | `chr19:54,750,000-54,840,000`  | 42 alleles, longest 79 kb |
+| AMY1         | `chr1:103,690,000-103,780,000` | 19 alleles, longest 94 kb |
+| C4           | `chr6:31,980,000-32,050,000`   | 9 alleles, longest 39 kb  |
 
-C4, from that table:
+Two things that table cannot show you, both worth knowing before reading a
+window as empty.
 
-<Figure caption="C4A/C4B and CYP21A2 over 70 kb of GRCh38, with the same window's graph below: 30 nodes, 36 edges. Both panels use the rank colors, so the blue blocks above are the blue backbone winding through the graph, and the orange and crimson branches off it are the alleles that have no GRCh38 coordinates to draw at. One 1-104,702 bp bubble covers the locus in the bubbles track; the graph is what that bubble contains." src="/img/pangenome/hprc_c4_subgraph.png" />
+**Copy number is not in the graph.** minigraph records the distinct sequence a
+bubble can hold, not how many times a haplotype repeats it, so AMY1 and C4 are
+long alternate alleles here and the allele's length is the only proxy for a copy
+count.
+
+**Near-identical duplications collapse.** SMN is the textbook duplication, and
+`chr5:70,880,000-70,980,000` over SMN1 holds 2 alleles whose longest is 334 bp,
+because minigraph merged SMN1 and SMN2 onto one path. A quiet window in this
+graph means collapsed or invariant, never checked and found nothing.
+
+C4, from the table:
+
+<Figure caption="The C4 locus, small enough that the whole subgraph fits in one picture. The bubbles track above reports a single bubble spanning the locus; the graph below is what that one bubble contains." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 ## The bubble track
 
@@ -195,11 +219,45 @@ at `2147483647` and the track labels those bubbles uncountable rather than
 printing the sentinel. HPRC publishes no bubble file, so this one is ours too,
 built with `gfatools bubble` and hosted beside the indexes.
 
-Both the graph projection and the bubbles come from the same `sv.gfa.gz`.
-[`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-builds your own indexes for a different graph, or to check ours: it reads the
-gzipped file HPRC ships (nothing to unpack), and on the full 464-haplotype graph
-turns the 842 MB download into about 50 MB of index in under a minute.
+## The allele inventory
+
+The bubbles say where the graph varies. A third hosted file says what the
+variation is: one row per allele the graph holds, anchored on GRCh38, derived
+from the two indexes above with no assemblies, no VCF and no bubble caller.
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hprc_minigraph_alleles",
+  "name": "HPRC release 2 graph: allele inventory",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz"
+  }
+}
+```
+
+An `AlignmentsTrack` over a BED is the point, not a mistake. Each row carries a
+`CIGAR` against the reference span it replaces (`2062M63348I`), and the
+alignments display draws whatever has one, so the alleles pack into rows and
+each insertion draws at its real magnitude. Without it a 94 kb insertion is a 1
+bp box with the size hidden in its label, because an insertion consumes no
+reference to be drawn across. The
+[E. coli tutorial](/docs/tutorials/pangenome_ecoli#when-all-you-have-is-the-graph)
+walks through the columns and how the walk derives them.
+
+<Figure caption="RefSeq genes, the rGFA segments track, and the allele inventory over the same MHC class II window. Grey bars are deletions at their true width; magenta markers are insertions, each drawn and labelled at its inserted bp rather than at the reference it does not cover." src="/img/pangenome/hprc_allele_inventory.png" />
+
+Whole graph: 208,545 alleles, 112,995 of them insertions, 661 of those longer
+than 50 kb. At that scale start from a size filter in **Edit filters**, e.g.
+`jexl:get(feature,'delta')>10000`.
+
+Read `discoveryRank` and `firstSeenIn` as the first haplotype to contribute an
+allele, never as who carries it. minigraph collapses, so an allele many
+haplotypes share is credited to whichever was added first, and in a dense window
+one sample can end up named on half the rows purely by build order. Carriage is
+the callset's job, [below](#structure-not-sequence).
 
 ## The variant callset
 
@@ -259,11 +317,26 @@ by genotype... > Run clustering** reorders the 464 haplotype rows by genotype
 similarity and draws a dendrogram beside them. It runs in the worker, so the
 view stays responsive:
 
-<Figure caption="Structural alleles (50 bp and up) of chr6:32,450,000-32,650,000 across 464 HPRC2 haplotypes, clustered by genotype, under the HLA class II genes they fall in. Blue carries the allele, red a second allele at the same site, grey reference, yellow no-call. The blocks are haplotype groups sharing whole sets of insertions and deletions across HLA-DRB5/DRB6/DRB1 — the classical HLA haplotypes, recovered from the pangenome with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
+<Figure caption="Structural alleles (50 bp and up) across the HPRC2 haplotypes, one row each, clustered by genotype and drawn under the HLA class II genes they fall in. Haplotypes that share whole sets of insertions and deletions cluster into solid blocks spanning several genes, with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
+
+## Structure, not sequence
+
+The graph and the callset are the same object at two resolutions. minigraph
+records structural variation (roughly >50 bp) and collapses everything smaller,
+so SNPs are absent from the graph even though every one of them is in the VCF.
+Filter the callset to that same tier and the two describe the same events, from
+opposite ends: the graph states an allele and its length but cannot say whose it
+is, because collapsing is what let it be found at all. The callset never lost
+the samples, so it can.
+
+Stack them and the question answers itself. Pick an allele in the inventory,
+read down.
+
+<Figure caption="One window, both routes. Above, the graph's allele inventory: each deletion drawn at its width and each insertion at its inserted bp. Below, the same window's callset filtered to the same 50 bp tier, one row per haplotype, clustered. Every block boundary in the matrix sits under the allele that produced it, so an allele the graph found reads off as the set of haplotypes carrying it." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Local ancestry (PCLAI)
 
-The third no-preprocessing product is a per-haplotype ancestry painting.
+The third product is a per-haplotype ancestry painting.
 [PCLAI](https://github.com/AI-sandbox/hprc-pclai) (Point Cloud Local Ancestry
 Inference) assigns each genomic window a continuous coordinate in PCA space
 rather than a discrete ancestry label, and release 2 publishes those calls as
@@ -312,19 +385,20 @@ builds your own for a chromosome and sample count you pick
 (`bash build_hprc2_pclai.sh out chr1 64`); it fetches the per-haplotype BEDs,
 keeps the columns the painting needs, and writes one bgzipped, tabixed file.
 
-<Figure caption="64 HPRC2 haplotypes painted by PCLAI local ancestry over the last 39 Mb of chr1, one row per haplotype, colored by the published per-window PCA color. Every vertical edge inside a row is a switch between differently-inferred segments; 44 of the 64 haplotypes switch somewhere in this window. Rows are in file order here, so the colors interleave. The key names the three PCA extremes the palette interpolates between." src="/img/hprc2/local_ancestry.png" />
+<Figure caption="HPRC2 haplotypes painted by PCLAI local ancestry over the end of chr1, one row per haplotype, colored by the published per-window PCA coordinate. The key names the three extremes of that space; a color between them is a position between them. Rows are in sample-id order here, so ancestry-similar haplotypes are scattered down the track." src="/img/hprc2/local_ancestry.png" />
 
 This display has its own clustering, **Clustering > Cluster rows by similarity**
 in the track menu, which reorders the haplotype rows so ancestry-similar rows
 sit together:
 
-<Figure caption="The same 64-haplotype painting with the rows clustered and a dendrogram beside them. Haplotypes sharing an ancestry profile group into blocks, so the interleaved rows above sort into three bands, and the haplotypes that switch mid-window stand out against the neighbours they were grouped with." src="/img/hprc2/local_ancestry_clustered.png" />
+<Figure caption="The same painting with the rows clustered and a dendrogram beside them. The scattered rows above collapse into solid bands, and what is left between the bands are the haplotypes that change color partway across the window." src="/img/hprc2/local_ancestry_clustered.png" />
 
 ## Reproduce it end to end
 
-The tracks above load from files we prebuilt and host, so the tutorial needs no
-pipeline. Two scripts rebuild those files, for a different graph or a different
-chromosome and sample count:
+Three scripts rebuild the hosted files, for a different graph or a different
+chromosome and sample count. Their provenance (source, size, exact commands,
+build date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside
+them.
 
 ```bash
 bash scripts/build_rgfa_tabix.sh hprc-v2.0-mc-grch38.sv.gfa.gz out
@@ -334,36 +408,19 @@ bash scripts/build_hprc2_pclai.sh out chr1 64
 
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
 writes the two tabix indexes `RgfaTabixAdapter` reads, straight from the gzipped
-rGFA (nothing to unpack); on the full 464-haplotype graph it turns the 842 MB
-download into about 50 MB of index in under a minute. It needs an **rGFA** -
-`sv.gfa.gz` is one, the `.gfa.gz` beside it is not (see
-[Regular GFA vs rGFA](#regular-gfa-vs-rgfa)).
+rGFA (nothing to unpack). It needs an **rGFA**: `sv.gfa.gz` is one, the
+`.gfa.gz` beside it is not (see [Regular GFA vs rGFA](#regular-gfa-vs-rgfa)).
+Also needs gfatools, for the segment projection and for the bubbles.
 
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
-reads only those two indexes and writes a third: one row per allele the graph
-holds, anchored on GRCh38. It is the route that survives having no assemblies,
-which is the normal situation with a downloaded graph — the E. coli tutorial's
+reads only those two indexes, never the graph, and writes the allele inventory:
+23 seconds off the 41 MB pair, against the 842 MB download they came from. That
+is what makes it the route that survives having no assemblies, the normal
+situation with a graph someone else built. The E. coli tutorial's
 [per-strain paths](/docs/tutorials/pangenome_ecoli#which-strain-takes-which-path)
-need every haplotype re-mapped, and HPRC's are 464. Whole graph, 23 seconds off
-the two hosted index files (41 MB, against a 2.6 GB GFA): **208,308 alleles**,
-112,866 of them insertions, 652 longer than 50 kb. Read `rank` and `donor` as the
-first haplotype to contribute an allele, never as who carries it — minigraph
-collapses, so in the MHC window one rank absorbs 41 of 78 alleles purely by
-having been added first.
+answer the carriage question instead, at the cost of re-mapping every haplotype.
 
 [`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)
 fetches the per-haplotype PCLAI BEDs, keeps the columns the painting needs, and
-concatenates them into one bgzipped, tabixed file. Both need htslib (`bgzip`,
-`tabix`) on your `PATH`.
-
-The provenance of the copies we host - source, size, exact commands, build
-date - is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside
-them.
-
-## Structure, not sequence
-
-The graph view shows structure, not sequence. minigraph records structural
-variation (roughly >50 bp) and collapses everything smaller, so SNPs are absent
-from the graph even though they are all present in the VCF. That split is the
-reason to load both: the matrix for base-level variation across haplotypes, the
-graph for how the sequence itself rearranges.
+concatenates them into one bgzipped, tabixed file. All three need htslib
+(`bgzip`, `tabix`) on your `PATH`.

@@ -71,3 +71,5 @@ products/jbrowse-react-linear-genome-view/examples-site/panukbPhenotypes.json
 
 # profiler/tracer output (scripts/profile-app.ts, profile-spec.ts, trace-tasks.ts)
 perf-out/
+test_data/graphgenomeview/_localdist/
+test_data/graphgenomeview/*_local.json

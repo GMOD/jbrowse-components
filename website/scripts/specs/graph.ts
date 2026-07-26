@@ -110,6 +110,14 @@ const PATHS_WINDOW = 'chr:1,088,000-1,104,000'
 
 const ECOLI_ALLELES_TRACK = 'ecoli_minigraph_alleles'
 
+// Viewport coordinate of CFT073's allele at PATHS_WINDOW's bubble, in the sample
+// rows layout. A bare coordinate because the graph is canvas — there is no DOM
+// node to select — and stable because that layout is deterministic: it is
+// computed from SN/SO/SR, not simulated like FMMM. The hover and the ring drawn
+// over it both read this, and the spec asserts the highlight appeared, so a
+// coordinate that goes stale fails the capture instead of drifting quietly.
+const HOVERED_ALLELE = { x: 295, y: 727 }
+
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
 // beside the graph indexes; the fixture config carries only the assembly.
@@ -159,6 +167,13 @@ const MHC_REGION = {
 // the graph records them. AMY1, the other headline CNV locus, is 190 kb and past
 // the cap.
 const C4_WINDOW = 'chr6:31,980,000-32,050,000'
+
+// The structural tier of the wave VCF, which is what makes it comparable to the
+// graph: minigraph collapses everything under ~50 bp, so an unfiltered callset
+// is thousands of SNP columns the graph never had. `alleleLength` rather than
+// end-start because an insertion consumes no reference and a span filter would
+// keep only deletions. Same filter the hprc2 matrix figures use.
+const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
 
 export const graphSpecs: ScreenshotSpec[] = [
   // The pggb subgraph, over the linear view of the same locus (reviewer: "we need
@@ -386,10 +401,27 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr6:32,500,000-32,560,000',
+          // pinned, same as the anchored figure below: left to themselves the
+          // three tracks take half the frame, and the segments track spends it
+          // on rows of `s101124` labels that carry nothing for this figure. What
+          // it is here for is the blue backbone, which one row of blocks shows
+          // as well as four.
           tracks: [
-            'hg38_ncbiRefSeq_ucsc',
-            'hprc_minigraph_bubbles',
-            SEGMENTS_TRACK,
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              height: 70,
+            },
+            {
+              trackId: 'hprc_minigraph_bubbles',
+              type: 'LinearBasicDisplay',
+              height: 90,
+            },
+            {
+              trackId: SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 70,
+            },
           ],
         },
         {
@@ -407,7 +439,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     diffThreshold: 0.1,
     viewportWidth: 1000,
-    viewportHeight: 1300,
+    viewportHeight: 1260,
     hideTooltip: true,
   },
 
@@ -683,5 +715,241 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 1290,
     hideTooltip: true,
+  },
+
+  // The HPRC counterpart to rgfa_allele_inventory. The E. coli figure proves the
+  // AlignmentsTrack-over-a-BED idea on 845 alleles; this one is the reason it
+  // matters, at 208k. MHC class II, the densest window in the tutorial's locus
+  // table (56 alleles, longest 94 kb), with the segments track above so the same
+  // rank colors tie the two: the blue backbone up top is what these alleles are
+  // stated against.
+  //
+  // No GraphGenomeView here, so the readiness gate is the pileup's, not
+  // TOOLBAR_READY. The graph plugin is still loaded by hprc.json, which is
+  // harmless and keeps the figure openable in the same config as its neighbours.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_allele_inventory',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,510,000-32,600,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 60,
+            },
+            {
+              trackId: SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+            {
+              // tall enough that the packed alleles keep the bp label on their
+              // insertion markers, which is what carries the magnitude, and no
+              // taller: they pack into three rows here
+              trackId: 'hprc_minigraph_alleles',
+              type: 'LinearAlignmentsDisplay',
+              height: 150,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 4000,
+    viewportWidth: 1000,
+    viewportHeight: 545,
+    hideTooltip: true,
+  },
+
+  // The two products at one locus, which is the argument the HPRC tutorial
+  // closes on ("the matrix for base-level variation across haplotypes, the graph
+  // for how the sequence rearranges") and had no picture of. The graph route
+  // above says an allele exists and how long it is but not whose it is;
+  // minigraph collapses, so it cannot. The callset below is the same window's
+  // structural tier, one row per haplotype, and answers exactly the question the
+  // inventory cannot.
+  //
+  // Both panes are filtered to the structural tier so they are comparable: the
+  // graph holds only SVs by construction, and `alleleLength(feature) >= 50`
+  // takes the VCF to the same tier (a span filter would keep deletions only,
+  // since an insertion consumes no reference).
+  //
+  // The regular multi-sample display, not the matrix: these columns have to land
+  // under the allele that produced them, and matrix mode spreads columns evenly
+  // across the width, which would break exactly the correspondence this figure
+  // is for. Clustered so carriers of a shared allele form a block rather than
+  // scattering, via the declarative `runClustering` trigger.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_graph_vs_callset',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,510,000-32,600,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 60,
+            },
+            {
+              trackId: 'hprc_minigraph_alleles',
+              type: 'LinearAlignmentsDisplay',
+              height: 110,
+            },
+            {
+              trackId: 'hprc2_wave_grch38',
+              type: 'LinearMultiSampleVariantDisplay',
+              height: 420,
+              jexlFilters: SV_FILTER,
+              runClustering: true,
+            },
+          ],
+        },
+      ],
+    }),
+    // three signals, ANDed: the alleles painted, the callset's own fetch
+    // finished (not just first paint), and the post-clustering frame. A bare
+    // comma list would be a CSS OR and fire on whichever landed first.
+    readySelector:
+      'body:has([data-testid="pileup-display-done"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
+    readyTimeout: 360000,
+    settleMs: 5000,
+    viewportWidth: 1000,
+    viewportHeight: 865,
+    hideTooltip: true,
+  },
+  // The linearization: x is reference bp and each row is one contributing
+  // assembly, so reading across a row says what that strain does to K12. The
+  // per-rank anchored layout cannot say this — at an HPRC locus one rank holds
+  // alleles from dozens of haplotypes, so a rank row means nothing biological.
+  //
+  // Row labels come from the layout itself (LayoutResult.rowLabels), built from
+  // the same row map that positioned the nodes, so a label cannot name a row the
+  // drawing put elsewhere.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_sample_rows',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PATHS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 80,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: ECOLI_SEGMENTS_TRACK,
+          loadedRegion: {
+            refName: 'chr',
+            assemblyName: 'K12',
+            start: 1088000,
+            end: 1104000,
+          },
+          layoutMode: 'samplerows',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    settleMs: 4000,
+    viewportWidth: 1000,
+    viewportHeight: 1000,
+    hideTooltip: true,
+  },
+  // The correspondence, which is the reason to open the two views together:
+  // hovering a node in the graph highlights the reference interval it occupies
+  // in every linear view connected to it, and hovering the linear view
+  // highlights the node. Both directions run through the plugin's hoverSync;
+  // this captures the graph-to-linear one, because its result is a band drawn
+  // from real coordinates (`getHighlightCoords`) rather than a color change on
+  // one node.
+  //
+  // The hover target is a bare viewport coordinate because the graph is canvas:
+  // there is no DOM node to select. It is stable here in a way it would not be
+  // on the FMMM layout — sample rows is deterministic, computed from SN/SO/SR,
+  // so the allele sits at the same place every run. `readySelector` waits on the
+  // band itself, so a miss fails the spec instead of silently capturing a figure
+  // with nothing highlighted.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_hover_correspondence',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PATHS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 80,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: ECOLI_SEGMENTS_TRACK,
+          loadedRegion: {
+            refName: 'chr',
+            assemblyName: 'K12',
+            start: 1088000,
+            end: 1104000,
+          },
+          layoutMode: 'samplerows',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    // Readiness is the layout having drawn; the highlight cannot exist yet,
+    // because it is the hover below that creates it. Asserting it as an action
+    // instead is what makes a missed hover fail the spec rather than quietly
+    // committing a figure with nothing highlighted.
+    readySelector: '[data-testid="graph-row-label"]',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 900,
+    actions: [
+      { type: 'delay', ms: 3000 },
+      { type: 'hover', from: HOVERED_ALLELE },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="graph-node-highlight"]',
+      },
+      { type: 'delay', ms: 1000 },
+    ],
+    // A hover figure has no cursor in it, so without this the reader sees a band
+    // appear and cannot tell what produced it. Drawn at the same coordinate the
+    // hover uses, so the ring and the pointer cannot end up in different places
+    // — the one case where a raw x/y annotation is not a hand-measurement, it is
+    // the input being echoed.
+    annotations: [
+      { type: 'circle', x: HOVERED_ALLELE.x, y: HOVERED_ALLELE.y, radius: 18 },
+    ],
   },
 ]
