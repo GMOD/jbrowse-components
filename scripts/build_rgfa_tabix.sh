@@ -34,7 +34,7 @@ esac
 # segs.bed.gz — one row per segment, straight from gfatools:
 #   stableName  start  end  segmentId  rank
 gfatools gfa2bed -m <(gfa) | sort -k1,1 -k2,2n | bgzip > "$PREFIX.segs.bed.gz"
-tabix -p bed "$PREFIX.segs.bed.gz"
+tabix -f -p bed "$PREFIX.segs.bed.gz"
 
 # links.bed.gz — one row per L-line *per endpoint*, so a region query finds an
 # edge whether the region covers its source or its target. Each row carries both
@@ -58,6 +58,6 @@ awk -F'\t' '
   }
 ' <(gzip -dc "$PREFIX.segs.bed.gz") <(gfa) |
   sort -k1,1 -k2,2n | bgzip > "$PREFIX.links.bed.gz"
-tabix -p bed "$PREFIX.links.bed.gz"
+tabix -f -p bed "$PREFIX.links.bed.gz"
 
 ls -l "$PREFIX".segs.bed.gz* "$PREFIX".links.bed.gz*

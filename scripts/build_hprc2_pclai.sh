@@ -87,7 +87,7 @@ echo "== using $(wc -l < use.txt) samples on $CHROM"
 : > combined.bed
 while read -r SAMPLE; do
   # Read both haplotype rows for this sample straight out of the index.
-  grep "^${SAMPLE}," pclai_index.csv | while IFS=, read -r sid hap asm loc; do
+  grep "^${SAMPLE}," pclai_index.csv | while IFS=, read -r sid hap _asm loc; do
     url="https://s3-us-west-2.amazonaws.com/${loc#s3://}"
     echo "   ${sid} hap${hap}"
     curl -fsSL "$url" \
