@@ -74,7 +74,6 @@ controls how far the chords bow toward the center:
 | [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | [BaseDisplay](../basedisplay) | if a display-level message should be displayed instead, make this return a react component                                             |
 | [renderingProps](#method-renderingprops)                       | Methods    | [BaseDisplay](../basedisplay) | props passed to the renderer's React "Rendering" component.                                                                            |
 | [trackMenuItems](#method-trackmenuitems)                       | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                        |
-| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                        |
 | [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | [BaseDisplay](../basedisplay) | see the `ignorePromotedDefaults` property                                                                                              |
 | [setStatusMessage](#action-setstatusmessage)                   | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                        |
 | [setError](#action-seterror)                                   | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                        |
@@ -298,10 +297,9 @@ callbacks
 type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
-| Member                                                                 | Type               |
-| ---------------------------------------------------------------------- | ------------------ |
-| <span id="method-trackmenuitems">trackMenuItems</span>                 | `() => MenuItem[]` |
-| <span id="method-regioncannotberendered">regionCannotBeRendered</span> | `() => null`       |
+| Member                                                 | Type               |
+| ------------------------------------------------------ | ------------------ |
+| <span id="method-trackmenuitems">trackMenuItems</span> | `() => MenuItem[]` |
 
 **Actions**
 

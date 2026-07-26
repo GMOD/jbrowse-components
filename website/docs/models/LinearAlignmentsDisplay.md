@@ -87,6 +87,7 @@ State model factory for LinearAlignmentsDisplay
 | [featureIdUnderMouse](#volatile-featureidundermouse)                                   | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [mouseoverExtraInformation](#volatile-mouseoverextrainformation)                       | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [contextMenuFeature](#volatile-contextmenufeature)                                     | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
+| [contextMenuFeatureId](#volatile-contextmenufeatureid)                                 | Volatiles  | LinearAlignmentsDisplay                               | The read/feature id under a right-click, known synchronously (the hit test carries it) unlike `contextMenuFeature`, which only lands after an RPC.                                                                                                                                                                              |
 | [contextMenuCoord](#volatile-contextmenucoord)                                         | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [contextMenuCigarHit](#volatile-contextmenucigarhit)                                   | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [contextMenuIndicatorHit](#volatile-contextmenuindicatorhit)                           | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
@@ -144,6 +145,7 @@ State model factory for LinearAlignmentsDisplay
 | [minScoreBound](#getter-minscorebound)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [maxScoreBound](#getter-maxscorebound)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [numStdDev](#getter-numstddev)                                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
+| [hiddenGroupKeys](#getter-hiddengroupkeys)                                             | Getters    | LinearAlignmentsDisplay                               | Group keys that `groupOrder` drops, so a display can hide a lane its own grouping produces without every consumer of the order learning about it.                                                                                                                                                                               |
 | [featureWidgetType](#getter-featurewidgettype)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [selectedFeatureId](#getter-selectedfeatureid)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [TooltipComponent](#getter-tooltipcomponent)                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
@@ -175,7 +177,7 @@ State model factory for LinearAlignmentsDisplay
 | [coverageTicks](#getter-coverageticks)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [colorLegendCategories](#getter-colorlegendcategories)                                 | Getters    | LinearAlignmentsDisplay                               | Read-color buckets actually present across the rendered reads, the single input that lets the legend list only relevant swatches (see legendUtils).                                                                                                                                                                             |
 | [colorPalette](#getter-colorpalette)                                                   | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [readCloudLegendCategories](#getter-readcloudlegendcategories)                         | Getters    | LinearAlignmentsDisplay                               | Legend categories contributed by the read-cloud endpoint squares — the arc color slots actually plotted, mapped to legend buckets.                                                                                                                                                                                              |
+| [arcLegendCategories](#getter-arclegendcategories)                                     | Getters    | LinearAlignmentsDisplay                               | The arc color slots actually plotted, mapped to legend buckets — curved paired-end arcs and the read cloud's flat lines and endpoint squares alike, since both paint from `arcColorByType`.                                                                                                                                     |
 | [arcBandInput](#getter-arcbandinput)                                                   | Getters    | LinearAlignmentsDisplay                               | The fields `computeArcBand` reads.                                                                                                                                                                                                                                                                                              |
 | [belowCoverageBandsInput](#getter-belowcoveragebandsinput)                             | Getters    | LinearAlignmentsDisplay                               | Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus whether any sashimi junction is present.                                                                                                                                                                                                         |
 | [laidOutByGroup](#getter-laidoutbygroup)                                               | Getters    | LinearAlignmentsDisplay                               | Per-group laid-out data: group key → (region index → laid-out data).                                                                                                                                                                                                                                                            |
@@ -225,6 +227,7 @@ State model factory for LinearAlignmentsDisplay
 | [isGroupCollapsed](#method-isgroupcollapsed)                                           | Methods    | LinearAlignmentsDisplay                               | Whether a stacked group's pileup is collapsed to just its coverage.                                                                                                                                                                                                                                                             |
 | [hasGroupHeightOverride](#method-hasgroupheightoverride)                               | Methods    | LinearAlignmentsDisplay                               | Whether a stacked group carries a custom pileup-height override — set by expanding it (show all reads) or dragging its resize handle (taller or shorter).                                                                                                                                                                       |
 | [legendItems](#method-legenditems)                                                     | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
+| [arcLegendItems](#method-arclegenditems)                                               | Methods    | LinearAlignmentsDisplay                               | Key for the paired-end arc / read-cloud colors.                                                                                                                                                                                                                                                                                 |
 | [groupLaidOutMap](#method-grouplaidoutmap)                                             | Methods    | LinearAlignmentsDisplay                               | Laid-out region map for one group key, or an empty map for a key with no data.                                                                                                                                                                                                                                                  |
 | [isGroupTruncated](#method-isgrouptruncated)                                           | Methods    | LinearAlignmentsDisplay                               | True when the row cap clipped reads from a group's pileup and the user hasn't explicitly sized that group (a height drag/expand makes any truncation intentional, so it isn't flagged).                                                                                                                                         |
 | [findFeatureInRpcData](#method-findfeatureinrpcdata)                                   | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
@@ -304,6 +307,7 @@ State model factory for LinearAlignmentsDisplay
 | [closeContextMenu](#action-closecontextmenu)                                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [selectFeature](#action-selectfeature)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [startRenderingBackend](#action-startrenderingbackend)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
+| [withFeatureById](#action-withfeaturebyid)                                             | Actions    | LinearAlignmentsDisplay                               | Fetch the feature behind `featureId` and hand it to `onFeat`.                                                                                                                                                                                                                                                                   |
 | [selectFeatureById](#action-selectfeaturebyid)                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [openContextMenu](#action-opencontextmenu)                                             | Actions    | LinearAlignmentsDisplay                               | Open the right-click menu over a hit.                                                                                                                                                                                                                                                                                           |
 | [getByteEstimateConfig](#action-getbyteestimateconfig)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
@@ -325,7 +329,6 @@ State model factory for LinearAlignmentsDisplay
 | [effectiveRpcDriverName](#getter-effectiverpcdrivername)                               | Getters    | [BaseDisplay](../basedisplay)                         | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                                                                                                                                            |
 | [DisplayMessageComponent](#getter-displaymessagecomponent)                             | Getters    | [BaseDisplay](../basedisplay)                         | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                                                                      |
 | [renderingProps](#method-renderingprops)                                               | Methods    | [BaseDisplay](../basedisplay)                         | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                                                                                     |
-| [regionCannotBeRendered](#method-regioncannotberendered)                               | Methods    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
 | [setIgnorePromotedDefaults](#action-setignorepromoteddefaults)                         | Actions    | [BaseDisplay](../basedisplay)                         | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                                                                       |
 | [setStatusMessage](#action-setstatusmessage)                                           | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
 | [setRpcDriverName](#action-setrpcdrivername)                                           | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
@@ -344,7 +347,7 @@ State model factory for LinearAlignmentsDisplay
 | [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                                 | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data.                                                                                                                                                                              |
 | [renderBlocks](#getter-renderblocks)                                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display.                                                                                                                                                                                                                                                                             |
 | [displayPhase](#getter-displayphase)                                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`.                                                                                                                                                                                                                              |
-| [rpcPropsCacheKey](#getter-rpcpropscachekey)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The RPC cache key: the subclass's `rpcProps()` payload serialized to a string, so this getter's value is a primitive and MobX invalidates its observers only when the payload actually changed.                                                                                                                                 |
+| [rpcPropsCacheKey](#getter-rpcpropscachekey)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()` payload serialized to a string.                                                                                                                                                                                                                 |
 | [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Derived opt-in for the region-too-large gate: a display that declares a pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two are one decision, so they can't desync (this replaces the old dev-time "config set but gate off" console.error).                                                               |
 | [setLoadedRegion](#action-setloadedregion)                                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                                                       |
 | [clearAllRpcData](#action-clearallrpcdata)                                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag.                                                                                                                                                                                                                       |
@@ -352,20 +355,25 @@ State model factory for LinearAlignmentsDisplay
 | [isCacheValid](#action-iscachevalid)                                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook: return `false` to force re-fetch at the current zoom (wiggle uses this for zoom-level changes).                                                                                                                                                                                                               |
 | [fetchRegions](#action-fetchregions)                                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating.                                                                                                                                                                                                                                                                               |
 | [afterAttach](#action-afterattach)                                                     | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)                                                                                                                                                    |
-| [userByteLimit](#volatile-userbytelimit)                                               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | user-confirmed byte limit after a force-load, disabling the gate.                                                                                                                                                                                                                                                               |
+| [forceLoadTrack](#volatile-forceloadtrack)                                             | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                                                                                                                 |
 | [byteEstimate](#volatile-byteestimate)                                                 | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | Last byte estimate reported for this display, with the adapter's own `fetchSizeLimit` and `alwaysRender` flag.                                                                                                                                                                                                                  |
 | [measuredSpanBp](#volatile-measuredspanbp)                                             | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The span the current `byteEstimate` was measured over, so the derived gate can rescale it to the span on screen now.                                                                                                                                                                                                            |
+| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                                                                                                           |
 | [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The composing display's configured `fetchSizeLimit`, read straight from its config.                                                                                                                                                                                                                                             |
 | [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                                                                                                            |
+| [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                                                                                                                 |
 | [configForceLoad](#getter-configforceload)                                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                                                                                               |
+| [resolvedAdapterByteLimit](#getter-resolvedadapterbytelimit)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The adapter's byte budget, preferring one the estimate computed dynamically over the static `fetchSizeLimit` slot.                                                                                                                                                                                                              |
+| [byteGateExempt](#getter-bytegateexempt)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | True when nothing may gate, on either axis and in both the worker and the banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen resolution), the declarative `forceLoad` slot, or the force-load button.                                                                                                |
 | [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored estimate from the span it was measured over (`measuredSpanBp`).                                                                                                                                                 |
+| [gateByteLimit](#getter-gatebytelimit)                                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                                                                                                |
 | [tooLargeStatus](#getter-toolargestatus)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in.                                                                                                                                                    |
 | [regionTooLarge](#getter-regiontoolarge)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The verdict the whole mixin exists to produce: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips.                                                                                                                                          |
 | [regionTooLargeReason](#getter-regiontoolargereason)                                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                                                                                                        |
-| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)                       | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)         | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                           |
-| [setByteEstimate](#action-setbyteestimate)                                             | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits the byte estimate and records the span it covers (`measuredSpanBp`) so the derived gate can rescale it to the span on screen.                                                                                                                                                                                           |
-| [raiseForceLoadLimits](#action-raiseforceloadlimits)                                   | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | force-load: raise the byte limit past the current request so the gate releases.                                                                                                                                                                                                                                                 |
-| [forceLoad](#action-forceload)                                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Raises the byte limit past the current estimate and triggers a reload.                                                                                                                                                                                                                                                          |
+| [setByteEstimate](#action-setbyteestimate)                                             | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits the byte estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                                                                                                                           |
+| [clearByteEstimate](#action-clearbyteestimate)                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Drops the cached estimate.                                                                                                                                                                                                                                                                                                      |
+| [setForceLoadTrack](#action-setforceloadtrack)                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                                                                                                      |
+| [forceLoad](#action-forceload)                                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                                                                                                        |
 | [canvasDrawn](#volatile-canvasdrawn)                                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                              |
 | [currentRenderingBackend](#volatile-currentrenderingbackend)                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery.                                                                                                                                                                                                                                                                    |
 | [renderTick](#volatile-rendertick)                                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                |
@@ -392,8 +400,6 @@ State model factory for LinearAlignmentsDisplay
 | [cancelFetchByUser](#action-cancelfetchbyuser)                                         | Actions    | [FetchMixin](../fetchmixin)                           | User-initiated cancel from the loading overlay.                                                                                                                                                                                                                                                                                 |
 | [beforeDestroy](#action-beforedestroy)                                                 | Actions    | [FetchMixin](../fetchmixin)                           | Release an in-flight fetch's stop token on teardown.                                                                                                                                                                                                                                                                            |
 | [runFetch](#action-runfetch)                                                           | Actions    | [FetchMixin](../fetchmixin)                           | Run a cancel-safe fetch (cancels any prior).                                                                                                                                                                                                                                                                                    |
-| [displayTypeDefaultChanges](#method-displaytypedefaultchanges)                         | Methods    | [PromotableDefaultsMixin](../promotabledefaultsmixin) | Effective config differences a track following the default inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas).                                                                                                                                                                      |
-| [clearDisplayTypeDefaults](#action-cleardisplaytypedefaults)                           | Actions    | [PromotableDefaultsMixin](../promotabledefaultsmixin) | Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this display (and its siblings of the same type) revert to their config values.                                                                                                                                                                      |
 
 ### LinearAlignmentsDisplay - Configuration
 
@@ -412,6 +418,20 @@ The configuration slots for this model are documented on its
 
 <details>
 <summary>LinearAlignmentsDisplay - Volatiles</summary>
+
+#### volatile: contextMenuFeatureId
+
+The read/feature id under a right-click, known synchronously (the hit test
+carries it) unlike `contextMenuFeature`, which only lands after an RPC. A menu
+item that can act from the id alone — or fetch the feature in its own onClick —
+reads this, so it doesn't blink into existence a fetch later.
+
+```ts
+// type signature
+type contextMenuFeatureId = string | undefined
+// code
+contextMenuFeatureId: undefined as string | undefined
+```
 
 #### volatile: contextMenuModHit
 
@@ -572,6 +592,17 @@ pairs.
 type showLinkedReadLines = boolean
 ```
 
+#### getter: hiddenGroupKeys
+
+Group keys that `groupOrder` drops, so a display can hide a lane its own
+grouping produces without every consumer of the order learning about it. Empty
+here; LGVSyntenyDisplay overrides it to hide the self-alignment lane of an
+all-vs-all track.
+
+```ts
+type hiddenGroupKeys = ReadonlySet<string>
+```
+
 #### getter: isFitting
 
 True when fit-to-display mode is on AND a pitch has been computed
@@ -667,15 +698,17 @@ rpcDataMap + scheme + mode.
 type colorLegendCategories = Set<ReadColorCategory>
 ```
 
-#### getter: readCloudLegendCategories
+#### getter: arcLegendCategories
 
-Legend categories contributed by the read-cloud endpoint squares — the arc color
-slots actually plotted, mapped to legend buckets. Read-fill categories miss the
-cloud-only buckets (split junctions especially), so these are merged into the
-legend. Empty unless in read-cloud mode with the legend shown.
+The arc color slots actually plotted, mapped to legend buckets — curved
+paired-end arcs and the read cloud's flat lines and endpoint squares alike,
+since both paint from `arcColorByType`. This is a separate vocabulary from the
+read fills (a track colored by strand still draws insert-size-colored arcs), so
+it keys its own legend section. Empty unless an overlay is on with the legend
+shown.
 
 ```ts
-type readCloudLegendCategories = Set<ReadColorCategory>
+type arcLegendCategories = Set<ReadColorCategory>
 ```
 
 #### getter: arcBandInput
@@ -1181,6 +1214,15 @@ Drives the group label's restore-to-fit affordance.
 type hasGroupHeightOverride = (key: string) => boolean
 ```
 
+#### method: arcLegendItems
+
+Key for the paired-end arc / read-cloud colors. Empty when no overlay is drawn,
+which is what keeps its legend section out of the box.
+
+```ts
+type arcLegendItems = () => LegendItem[]
+```
+
 #### method: groupLaidOutMap
 
 Laid-out region map for one group key, or an empty map for a key with no data.
@@ -1250,7 +1292,7 @@ type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 Track menu items
 
 ```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<…>> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<…> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -1402,6 +1444,18 @@ refetches.
 
 ```ts
 type setShowBezierConnections = (flag: boolean) => void
+```
+
+#### action: withFeatureById
+
+Fetch the feature behind `featureId` and hand it to `onFeat`. For a menu item
+that needs the whole feature but is offered before one is in hand.
+
+```ts
+type withFeatureById = (
+  featureId: string,
+  onFeat: (feat: Feature) => void,
+) => Promise<void>
 ```
 
 #### action: openContextMenu
@@ -1619,10 +1673,6 @@ callbacks
 type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
-| Member                                                                 | Type         |
-| ---------------------------------------------------------------------- | ------------ |
-| <span id="method-regioncannotberendered">regionCannotBeRendered</span> | `() => null` |
-
 **Actions**
 
 #### action: setIgnorePromotedDefaults
@@ -1825,16 +1875,10 @@ type displayPhase = DisplayPhase
 
 #### getter: rpcPropsCacheKey
 
-The RPC cache key: the subclass's `rpcProps()` payload serialized to a string,
-so this getter's value is a primitive and MobX invalidates its observers only
-when the payload actually changed. Building the payload touches far more
-observables than it returns — canvas builds it from a whole config snapshot
-(`resolvePromotableConfigSnapshot`), which reads every slot on the display
-config — so an observer of the raw call would refetch on purely main-thread
-settings (showLabels, heightMode, a compact/normal displayMode flip) that the
-payload deliberately excludes. A fresh object would also never compare equal.
-`''` for a display with no `rpcProps` (the SettingsInvalidate autorun isn't
-installed there).
+The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()`
+payload serialized to a string. `serializeRpcProps` owns the why;
+`installGlobalFetchAutorun` keys its global-family counterpart on the same
+function, so the two families invalidate on the same axis.
 
 ```ts
 type rpcPropsCacheKey = string
@@ -1847,7 +1891,9 @@ pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two are o
 decision, so they can't desync (this replaces the old dev-time "config set but
 gate off" console.error). Displays that capture the estimate through a custom
 fetch (LD, arc) or fold the byte check into their feature RPC (canvas) leave
-`getByteEstimateConfig` null and flip this true themselves.
+`getByteEstimateConfig` null and contribute through `gateFoldedIntoFetch`, which
+this ORs in — so a gate mixin's opt-in survives regardless of which side of
+`.compose()` it lands on.
 
 Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp` (which
 throws pre-init), and this getter is read from menu code before first paint.
@@ -1929,20 +1975,25 @@ type afterAttach = () => void
 
 **Volatiles**
 
-#### volatile: userByteLimit
+#### volatile: forceLoadTrack
 
-user-confirmed byte limit after a force-load, disabling the gate. Volatile, not
-persisted: the interactive force-load button is a transient "show me this now"
-action and must not leak a raised gate into a saved or shared session. The
-declarative, session-scoped escape hatch is instead the `forceLoad` config slot
-(set per-session via a session spec, or baked into a track config for
-embedded/notebook views).
+The force-load button's answer: render this track regardless of region size or
+feature density. One boolean for the whole track, not a raised ceiling per
+region — the banner already tells the user how much data is involved, so one
+informed click approves the track and they never have to re-approve it per
+locus.
+
+Volatile, not persisted, so it can't leak a disabled gate into a saved or shared
+session (a recipient would download the same data with no warning and no way to
+see why). A page load re-arms the gate. The durable, declarative equivalent is
+the `forceLoad` config slot, for session specs, embeds and
+`jbrowse-img --force`.
 
 ```ts
 // type signature
-type userByteLimit = number | undefined
+type forceLoadTrack = false
 // code
-userByteLimit: undefined as number | undefined
+forceLoadTrack: false
 ```
 
 #### volatile: byteEstimate
@@ -1974,6 +2025,19 @@ measuredSpanBp: undefined as number | undefined
 
 **Getters**
 
+#### getter: gateFoldedIntoFetch
+
+Additive opt-in for displays that measure the estimate inside their own feature
+RPC instead of a pre-flight (canvas). Kept separate from
+`derivedRegionTooLargeEnabled` so a gate mixin contributes by setting _this_
+rather than overriding the verdict switch — the two would otherwise race on
+composition order, and the later `.compose()` argument silently winning is
+invisible to both the type system and the tests.
+
+```ts
+type gateFoldedIntoFetch = boolean
+```
+
 #### getter: configuredFetchSizeLimit
 
 The composing display's configured `fetchSizeLimit`, read straight from its
@@ -1996,6 +2060,21 @@ false.
 type densityTooLargeForDerivedGate = boolean
 ```
 
+#### getter: adapterFetchSizeLimit
+
+The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
+declares none); `resolveByteLimit` prefers it over the display config. Read on
+the main thread rather than trusted only from the estimate: the three adapters
+that attach one (BAM/CRAM/VCF) just echo this same static slot back across the
+worker boundary, and a display whose adapter never attaches it would otherwise
+silently ignore a configured limit. `byteEstimate.fetchSizeLimit` still wins
+where present, so an adapter that computes a limit dynamically keeps the last
+word.
+
+```ts
+type adapterFetchSizeLimit = number | undefined
+```
+
 #### getter: configForceLoad
 
 Declarative force-load: when true the display always renders regardless of
@@ -2009,6 +2088,30 @@ per-display wiring.
 type configForceLoad = boolean
 ```
 
+#### getter: resolvedAdapterByteLimit
+
+The adapter's byte budget, preferring one the estimate computed dynamically over
+the static `fetchSizeLimit` slot. One getter, because the banner, the force-load
+baseline and the canvas worker budget each spelling "the adapter's limit" for
+itself is how the worker ends up rejecting a region the banner considers fine —
+a silently blank display with nothing to refetch it.
+
+```ts
+type resolvedAdapterByteLimit = number | undefined
+```
+
+#### getter: byteGateExempt
+
+True when nothing may gate, on either axis and in both the worker and the
+banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen
+resolution), the declarative `forceLoad` slot, or the force-load button. One
+boolean is the whole force-load mechanism — there is no per-region ceiling to
+carry, expire, or reconcile between the two axes.
+
+```ts
+type byteGateExempt = boolean
+```
+
 #### getter: estimatedBytesForVisibleSpan
 
 How many bytes we estimate a fetch of the span on screen right now would pull,
@@ -2020,6 +2123,17 @@ meaningful when `derivedRegionTooLargeEnabled`.
 
 ```ts
 type estimatedBytesForVisibleSpan = number | undefined
+```
+
+#### getter: gateByteLimit
+
+The byte budget the gate enforces: the adapter's limit, else the display config.
+Also what canvas hands the worker, so the two can't gate against different
+numbers. Force-load doesn't raise this — it exempts the track outright via
+`byteGateExempt`.
+
+```ts
+type gateByteLimit = number
 ```
 
 #### getter: tooLargeStatus
@@ -2055,46 +2169,56 @@ features". Empty string when the region isn't too large.
 type regionTooLargeReason = string
 ```
 
-**Methods**
-
-#### method: regionCannotBeRenderedText
-
-Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
-display chrome via `TooLargeMessage`, not the model.
-
-```ts
-type regionCannotBeRenderedText = () => '' | 'Force load to see features'
-```
-
 **Actions**
 
 #### action: setByteEstimate
 
-Commits the byte estimate and records the span it covers (`measuredSpanBp`) so
-the derived gate can rescale it to the span on screen. Harmless for non-gated
-displays (they ignore it).
+Commits the byte estimate together with the span it covers, so the derived gate
+can rescale it to the span on screen. `measuredSpanBp` must be the `visibleBp`
+captured when the measurement was _requested_, not read at commit time: a view
+that zoomed during the in-flight fetch would otherwise anchor the estimate to
+the wrong span, and since `FetchVisibleRegions` skips while `regionTooLarge`
+holds, an over-anchored estimate wedges the banner with no refetch to correct
+it. Harmless for non-gated displays (they ignore it).
 
 ```ts
-type setByteEstimate = (estimate?: RegionByteEstimate | undefined) => void
+type setByteEstimate = (
+  estimate: RegionByteEstimate,
+  measuredSpanBp: number,
+) => void
 ```
 
-#### action: raiseForceLoadLimits
+#### action: clearByteEstimate
 
-force-load: raise the byte limit past the current request so the gate releases.
-Prefers the estimate for the span on screen now, so it clears even if the view
-zoomed out since the measurement; a display with the derived gate off has no
-such estimate and falls back to the measured-span number. Canvas (which also has
-a density force-load) overrides this entirely.
+Drops the cached estimate. Chromosome navigation only: the estimate
+intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't
+flicker the banner.
+
+`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring
+it on navigation is exactly the per-locus re-approval the button exists to
+avoid.
 
 ```ts
-type raiseForceLoadLimits = (estimate?: RegionByteEstimate | undefined) => void
+type clearByteEstimate = () => void
+```
+
+#### action: setForceLoadTrack
+
+Exempt this track from the gate (or put it back under it). Separate from
+`forceLoad` so turning the gate off and refetching stay separable — a caller
+that just wants the flag (a revoke, a test) doesn't trigger a fetch, and
+`forceLoad` doesn't have to inline a volatile write.
+
+```ts
+type setForceLoadTrack = (flag: boolean) => void
 ```
 
 #### action: forceLoad
 
-Raises the byte limit past the current estimate and triggers a reload. The
-display chrome calls this via TooLargeMessage's force-load button; concrete
-display models override reload() to do the actual refetch.
+Force-load: exempt this track from the gate and refetch. One click covers every
+region and both axes, informed by the size the banner just quoted. The display
+chrome calls this from TooLargeMessage's button; concrete display models
+override `reload()` to do the actual refetch.
 
 ```ts
 type forceLoad = () => void
@@ -2386,37 +2510,6 @@ others are stored in `error` if not stale.
 
 ```ts
 type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
-```
-
-</details>
-
-<details>
-<summary>Derived from PromotableDefaultsMixin</summary>
-
-[PromotableDefaultsMixin →](../promotabledefaultsmixin)
-
-**Methods**
-
-#### method: displayTypeDefaultChanges
-
-Effective config differences a track following the default inherits from
-session-wide defaults (distinct from per-track config edits /
-trackConfigDeltas). Drives the "affected by a session default" badge.
-
-```ts
-type displayTypeDefaultChanges = () => TrackConfigChange[]
-```
-
-**Actions**
-
-#### action: clearDisplayTypeDefaults
-
-Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this
-display (and its siblings of the same type) revert to their config values. Backs
-the "clear default" action on the selector badge.
-
-```ts
-type clearDisplayTypeDefaults = () => void
 ```
 
 </details>

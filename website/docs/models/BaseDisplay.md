@@ -32,7 +32,6 @@ JBrowse core.
 | [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | BaseDisplay | if a display-level message should be displayed instead, make this return a react component                                          |
 | [renderingProps](#method-renderingprops)                       | Methods    | BaseDisplay | props passed to the renderer's React "Rendering" component.                                                                         |
 | [trackMenuItems](#method-trackmenuitems)                       | Methods    | BaseDisplay |                                                                                                                                     |
-| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | BaseDisplay |                                                                                                                                     |
 | [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | BaseDisplay | see the `ignorePromotedDefaults` property                                                                                           |
 | [setStatusMessage](#action-setstatusmessage)                   | Actions    | BaseDisplay |                                                                                                                                     |
 | [setError](#action-seterror)                                   | Actions    | BaseDisplay |                                                                                                                                     |
@@ -178,10 +177,9 @@ type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...;
 <details>
 <summary>BaseDisplay - Methods (other undocumented members)</summary>
 
-| Member                                                                 | Type               |
-| ---------------------------------------------------------------------- | ------------------ |
-| <span id="method-trackmenuitems">trackMenuItems</span>                 | `() => MenuItem[]` |
-| <span id="method-regioncannotberendered">regionCannotBeRendered</span> | `() => null`       |
+| Member                                                 | Type               |
+| ------------------------------------------------------ | ------------------ |
+| <span id="method-trackmenuitems">trackMenuItems</span> | `() => MenuItem[]` |
 
 </details>
 

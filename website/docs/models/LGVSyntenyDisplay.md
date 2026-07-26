@@ -150,7 +150,7 @@ external synteny views
 | [coverageTicks](#getter-coverageticks)                                                 | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [colorLegendCategories](#getter-colorlegendcategories)                                 | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Read-color buckets actually present across the rendered reads, the single input that lets the legend list only relevant swatches (see legendUtils).                                                                                                                                                                             |
 | [colorPalette](#getter-colorpalette)                                                   | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
-| [readCloudLegendCategories](#getter-readcloudlegendcategories)                         | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Legend categories contributed by the read-cloud endpoint squares — the arc color slots actually plotted, mapped to legend buckets.                                                                                                                                                                                              |
+| [arcLegendCategories](#getter-arclegendcategories)                                     | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | The arc color slots actually plotted, mapped to legend buckets — curved paired-end arcs and the read cloud's flat lines and endpoint squares alike, since both paint from `arcColorByType`.                                                                                                                                     |
 | [arcBandInput](#getter-arcbandinput)                                                   | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | The fields `computeArcBand` reads.                                                                                                                                                                                                                                                                                              |
 | [belowCoverageBandsInput](#getter-belowcoveragebandsinput)                             | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus whether any sashimi junction is present.                                                                                                                                                                                                         |
 | [laidOutByGroup](#getter-laidoutbygroup)                                               | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Per-group laid-out data: group key → (region index → laid-out data).                                                                                                                                                                                                                                                            |
@@ -199,6 +199,7 @@ external synteny views
 | [isGroupCollapsed](#method-isgroupcollapsed)                                           | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Whether a stacked group's pileup is collapsed to just its coverage.                                                                                                                                                                                                                                                             |
 | [hasGroupHeightOverride](#method-hasgroupheightoverride)                               | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Whether a stacked group carries a custom pileup-height override — set by expanding it (show all reads) or dragging its resize handle (taller or shorter).                                                                                                                                                                       |
 | [legendItems](#method-legenditems)                                                     | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
+| [arcLegendItems](#method-arclegenditems)                                               | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Key for the paired-end arc / read-cloud colors.                                                                                                                                                                                                                                                                                 |
 | [groupLaidOutMap](#method-grouplaidoutmap)                                             | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Laid-out region map for one group key, or an empty map for a key with no data.                                                                                                                                                                                                                                                  |
 | [isGroupTruncated](#method-isgrouptruncated)                                           | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | True when the row cap clipped reads from a group's pileup and the user hasn't explicitly sized that group (a height drag/expand makes any truncation intentional, so it isn't flagged).                                                                                                                                         |
 | [findFeatureInRpcData](#method-findfeatureinrpcdata)                                   | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
@@ -323,7 +324,7 @@ external synteny views
 | [isCacheValid](#action-iscachevalid)                                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook: return `false` to force re-fetch at the current zoom (wiggle uses this for zoom-level changes).                                                                                                                                                                                                               |
 | [fetchRegions](#action-fetchregions)                                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating.                                                                                                                                                                                                                                                                               |
 | [afterAttach](#action-afterattach)                                                     | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)                                                                                                                                                    |
-| [userByteLimit](#volatile-userbytelimit)                                               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | user-confirmed byte limit after a force-load, disabling the gate.                                                                                                                                                                                                                                                               |
+| [forceLoadTrack](#volatile-forceloadtrack)                                             | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                                                                                                                 |
 | [byteEstimate](#volatile-byteestimate)                                                 | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | Last byte estimate reported for this display, with the adapter's own `fetchSizeLimit` and `alwaysRender` flag.                                                                                                                                                                                                                  |
 | [measuredSpanBp](#volatile-measuredspanbp)                                             | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The span the current `byteEstimate` was measured over, so the derived gate can rescale it to the span on screen now.                                                                                                                                                                                                            |
 | [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                                                                                                           |
@@ -331,14 +332,17 @@ external synteny views
 | [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                                                                                                            |
 | [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                                                                                                                 |
 | [configForceLoad](#getter-configforceload)                                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                                                                                               |
+| [resolvedAdapterByteLimit](#getter-resolvedadapterbytelimit)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The adapter's byte budget, preferring one the estimate computed dynamically over the static `fetchSizeLimit` slot.                                                                                                                                                                                                              |
+| [byteGateExempt](#getter-bytegateexempt)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | True when nothing may gate, on either axis and in both the worker and the banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen resolution), the declarative `forceLoad` slot, or the force-load button.                                                                                                |
 | [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored estimate from the span it was measured over (`measuredSpanBp`).                                                                                                                                                 |
+| [gateByteLimit](#getter-gatebytelimit)                                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                                                                                                |
 | [tooLargeStatus](#getter-toolargestatus)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in.                                                                                                                                                    |
 | [regionTooLarge](#getter-regiontoolarge)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The verdict the whole mixin exists to produce: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips.                                                                                                                                          |
 | [regionTooLargeReason](#getter-regiontoolargereason)                                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                                                                                                        |
 | [setByteEstimate](#action-setbyteestimate)                                             | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits the byte estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                                                                                                                           |
 | [clearByteEstimate](#action-clearbyteestimate)                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Drops the cached estimate.                                                                                                                                                                                                                                                                                                      |
-| [raiseForceLoadLimits](#action-raiseforceloadlimits)                                   | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | force-load: raise the byte limit past the current request so the gate releases.                                                                                                                                                                                                                                                 |
-| [forceLoad](#action-forceload)                                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Raises the byte limit past the current estimate and triggers a reload.                                                                                                                                                                                                                                                          |
+| [setForceLoadTrack](#action-setforceloadtrack)                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                                                                                                      |
+| [forceLoad](#action-forceload)                                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                                                                                                        |
 | [canvasDrawn](#volatile-canvasdrawn)                                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                              |
 | [currentRenderingBackend](#volatile-currentrenderingbackend)                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery.                                                                                                                                                                                                                                                                    |
 | [renderTick](#volatile-rendertick)                                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                |
@@ -787,15 +791,17 @@ rpcDataMap + scheme + mode.
 type colorLegendCategories = Set<ReadColorCategory>
 ```
 
-#### getter: readCloudLegendCategories
+#### getter: arcLegendCategories
 
-Legend categories contributed by the read-cloud endpoint squares — the arc color
-slots actually plotted, mapped to legend buckets. Read-fill categories miss the
-cloud-only buckets (split junctions especially), so these are merged into the
-legend. Empty unless in read-cloud mode with the legend shown.
+The arc color slots actually plotted, mapped to legend buckets — curved
+paired-end arcs and the read cloud's flat lines and endpoint squares alike,
+since both paint from `arcColorByType`. This is a separate vocabulary from the
+read fills (a track colored by strand still draws insert-size-colored arcs), so
+it keys its own legend section. Empty unless an overlay is on with the legend
+shown.
 
 ```ts
-type readCloudLegendCategories = Set<ReadColorCategory>
+type arcLegendCategories = Set<ReadColorCategory>
 ```
 
 #### getter: arcBandInput
@@ -1278,6 +1284,15 @@ Drives the group label's restore-to-fit affordance.
 
 ```ts
 type hasGroupHeightOverride = (key: string) => boolean
+```
+
+#### method: arcLegendItems
+
+Key for the paired-end arc / read-cloud colors. Empty when no overlay is drawn,
+which is what keeps its legend section out of the box.
+
+```ts
+type arcLegendItems = () => LegendItem[]
 ```
 
 #### method: groupLaidOutMap
@@ -2003,20 +2018,25 @@ type afterAttach = () => void
 
 **Volatiles**
 
-#### volatile: userByteLimit
+#### volatile: forceLoadTrack
 
-user-confirmed byte limit after a force-load, disabling the gate. Volatile, not
-persisted: the interactive force-load button is a transient "show me this now"
-action and must not leak a raised gate into a saved or shared session. The
-declarative, session-scoped escape hatch is instead the `forceLoad` config slot
-(set per-session via a session spec, or baked into a track config for
-embedded/notebook views).
+The force-load button's answer: render this track regardless of region size or
+feature density. One boolean for the whole track, not a raised ceiling per
+region — the banner already tells the user how much data is involved, so one
+informed click approves the track and they never have to re-approve it per
+locus.
+
+Volatile, not persisted, so it can't leak a disabled gate into a saved or shared
+session (a recipient would download the same data with no warning and no way to
+see why). A page load re-arms the gate. The durable, declarative equivalent is
+the `forceLoad` config slot, for session specs, embeds and
+`jbrowse-img --force`.
 
 ```ts
 // type signature
-type userByteLimit = number | undefined
+type forceLoadTrack = false
 // code
-userByteLimit: undefined as number | undefined
+forceLoadTrack: false
 ```
 
 #### volatile: byteEstimate
@@ -2111,6 +2131,30 @@ per-display wiring.
 type configForceLoad = boolean
 ```
 
+#### getter: resolvedAdapterByteLimit
+
+The adapter's byte budget, preferring one the estimate computed dynamically over
+the static `fetchSizeLimit` slot. One getter, because the banner, the force-load
+baseline and the canvas worker budget each spelling "the adapter's limit" for
+itself is how the worker ends up rejecting a region the banner considers fine —
+a silently blank display with nothing to refetch it.
+
+```ts
+type resolvedAdapterByteLimit = number | undefined
+```
+
+#### getter: byteGateExempt
+
+True when nothing may gate, on either axis and in both the worker and the
+banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen
+resolution), the declarative `forceLoad` slot, or the force-load button. One
+boolean is the whole force-load mechanism — there is no per-region ceiling to
+carry, expire, or reconcile between the two axes.
+
+```ts
+type byteGateExempt = boolean
+```
+
 #### getter: estimatedBytesForVisibleSpan
 
 How many bytes we estimate a fetch of the span on screen right now would pull,
@@ -2122,6 +2166,17 @@ meaningful when `derivedRegionTooLargeEnabled`.
 
 ```ts
 type estimatedBytesForVisibleSpan = number | undefined
+```
+
+#### getter: gateByteLimit
+
+The byte budget the gate enforces: the adapter's limit, else the display config.
+Also what canvas hands the worker, so the two can't gate against different
+numbers. Force-load doesn't raise this — it exempts the track outright via
+`byteGateExempt`.
+
+```ts
+type gateByteLimit = number
 ```
 
 #### getter: tooLargeStatus
@@ -2182,28 +2237,31 @@ Drops the cached estimate. Chromosome navigation only: the estimate
 intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't
 flicker the banner.
 
+`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring
+it on navigation is exactly the per-locus re-approval the button exists to
+avoid.
+
 ```ts
 type clearByteEstimate = () => void
 ```
 
-#### action: raiseForceLoadLimits
+#### action: setForceLoadTrack
 
-force-load: raise the byte limit past the current request so the gate releases.
-Prefers the estimate for the span on screen now, so it clears even if the view
-zoomed out since the measurement; a display with the derived gate off has no
-such estimate and falls back to the measured-span number. Byte-only, so it asks
-`resolveForceLoadLimits` with the density axis off — canvas overrides with the
-dual-axis form.
+Exempt this track from the gate (or put it back under it). Separate from
+`forceLoad` so turning the gate off and refetching stay separable — a caller
+that just wants the flag (a revoke, a test) doesn't trigger a fetch, and
+`forceLoad` doesn't have to inline a volatile write.
 
 ```ts
-type raiseForceLoadLimits = () => void
+type setForceLoadTrack = (flag: boolean) => void
 ```
 
 #### action: forceLoad
 
-Raises the byte limit past the current estimate and triggers a reload. The
-display chrome calls this via TooLargeMessage's force-load button; concrete
-display models override reload() to do the actual refetch.
+Force-load: exempt this track from the gate and refetch. One click covers every
+region and both axes, informed by the size the banner just quoted. The display
+chrome calls this from TooLargeMessage's button; concrete display models
+override `reload()` to do the actual refetch.
 
 ```ts
 type forceLoad = () => void

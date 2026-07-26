@@ -533,7 +533,9 @@ Assembly-name prefix for the scalebar refName labels, or undefined for none. A
 container view (e.g. LinearSyntenyView) opts its sub-views in by exposing
 showAssemblyNameInSubviewScalebar; duck-typed rather than matching a concrete
 view type so no upward plugin dependency is needed and any container can opt in.
-A wrong nesting depth simply yields no prefix.
+A wrong nesting depth simply yields no prefix — hence the hasParent guard, since
+getParent throws (rather than returning undefined) when the view sits shallower
+than depth 2.
 
 ```ts
 type scalebarDisplayPrefix = string | undefined
@@ -792,7 +794,7 @@ type coarseVisibleLocStrings = string
 | <span id="getter-maxoffset">maxOffset</span>                                         | `number`                    |
 | <span id="getter-minoffset">minOffset</span>                                         | `number`                    |
 | <span id="getter-displayedregionstotalpx">displayedRegionsTotalPx</span>             | `number`                    |
-| <span id="getter-trackmap">trackMap</span>                                           | `Map<any, any>`             |
+| <span id="getter-trackmap">trackMap</span>                                           | `Map<string, any>`          |
 | <span id="getter-showswholechromosome">showsWholeChromosome</span>                   | `boolean`                   |
 | <span id="getter-anycytobandsexist">anyCytobandsExist</span>                         | `boolean`                   |
 | <span id="getter-istrackselectoropen">isTrackSelectorOpen</span>                     | `boolean`                   |

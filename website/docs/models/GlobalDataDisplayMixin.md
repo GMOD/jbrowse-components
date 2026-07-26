@@ -37,21 +37,26 @@ viewport + showLDTriangle + etc). The shared skeleton of that autorun lives in
 | [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                 | Getters   | [GlobalFetchMixin](../globalfetchmixin)         | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                                         |
 | [svgReady](#getter-svgready)                                           | Getters   | [GlobalFetchMixin](../globalfetchmixin)         | Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate.                                                                                                                                                                   |
 | [reload](#action-reload)                                               | Actions   | [GlobalFetchMixin](../globalfetchmixin)         | Satisfies the `reload` contract `DisplayChrome` (and the arc SVG chrome) require of every display.                                                                                                                                                                   |
-| [userByteLimit](#volatile-userbytelimit)                               | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin)   | user-confirmed byte limit after a force-load, disabling the gate.                                                                                                                                                                                                    |
+| [forceLoadTrack](#volatile-forceloadtrack)                             | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin)   | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                                                      |
 | [byteEstimate](#volatile-byteestimate)                                 | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin)   | Last byte estimate reported for this display, with the adapter's own `fetchSizeLimit` and `alwaysRender` flag.                                                                                                                                                       |
 | [measuredSpanBp](#volatile-measuredspanbp)                             | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin)   | The span the current `byteEstimate` was measured over, so the derived gate can rescale it to the span on screen now.                                                                                                                                                 |
+| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                     | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                                                |
 | [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | Opt-in switch: a byte-gated display flips this true to enable the derived, self-releasing region-too-large gate.                                                                                                                                                     |
 | [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | The composing display's configured `fetchSizeLimit`, read straight from its config.                                                                                                                                                                                  |
 | [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate) | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                                                 |
+| [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)                 | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                                                      |
 | [configForceLoad](#getter-configforceload)                             | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                                    |
+| [resolvedAdapterByteLimit](#getter-resolvedadapterbytelimit)           | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | The adapter's byte budget, preferring one the estimate computed dynamically over the static `fetchSizeLimit` slot.                                                                                                                                                   |
+| [byteGateExempt](#getter-bytegateexempt)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | True when nothing may gate, on either axis and in both the worker and the banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen resolution), the declarative `forceLoad` slot, or the force-load button.                                     |
 | [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan)   | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored estimate from the span it was measured over (`measuredSpanBp`).                                                                                      |
+| [gateByteLimit](#getter-gatebytelimit)                                 | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                                     |
 | [tooLargeStatus](#getter-toolargestatus)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in.                                                                                         |
 | [regionTooLarge](#getter-regiontoolarge)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | The verdict the whole mixin exists to produce: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips.                                                                               |
 | [regionTooLargeReason](#getter-regiontoolargereason)                   | Getters   | [RegionTooLargeMixin](../regiontoolargemixin)   | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                                             |
-| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)       | Methods   | [RegionTooLargeMixin](../regiontoolargemixin)   | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                |
-| [setByteEstimate](#action-setbyteestimate)                             | Actions   | [RegionTooLargeMixin](../regiontoolargemixin)   | Commits the byte estimate and records the span it covers (`measuredSpanBp`) so the derived gate can rescale it to the span on screen.                                                                                                                                |
-| [raiseForceLoadLimits](#action-raiseforceloadlimits)                   | Actions   | [RegionTooLargeMixin](../regiontoolargemixin)   | force-load: raise the byte limit past the current request so the gate releases.                                                                                                                                                                                      |
-| [forceLoad](#action-forceload)                                         | Actions   | [RegionTooLargeMixin](../regiontoolargemixin)   | Raises the byte limit past the current estimate and triggers a reload.                                                                                                                                                                                               |
+| [setByteEstimate](#action-setbyteestimate)                             | Actions   | [RegionTooLargeMixin](../regiontoolargemixin)   | Commits the byte estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                                                                |
+| [clearByteEstimate](#action-clearbyteestimate)                         | Actions   | [RegionTooLargeMixin](../regiontoolargemixin)   | Drops the cached estimate.                                                                                                                                                                                                                                           |
+| [setForceLoadTrack](#action-setforceloadtrack)                         | Actions   | [RegionTooLargeMixin](../regiontoolargemixin)   | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                                           |
+| [forceLoad](#action-forceload)                                         | Actions   | [RegionTooLargeMixin](../regiontoolargemixin)   | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                                             |
 | [activeStopToken](#volatile-activestoptoken)                           | Volatiles | [FetchMixin](../fetchmixin)                     | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                            |
 | [fetchGeneration](#volatile-fetchgeneration)                           | Volatiles | [FetchMixin](../fetchmixin)                     | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                     |
 | [error](#volatile-error)                                               | Volatiles | [FetchMixin](../fetchmixin)                     | last non-abort fetch error, or undefined                                                                                                                                                                                                                             |
@@ -235,20 +240,25 @@ type reload = () => void
 
 **Volatiles**
 
-#### volatile: userByteLimit
+#### volatile: forceLoadTrack
 
-user-confirmed byte limit after a force-load, disabling the gate. Volatile, not
-persisted: the interactive force-load button is a transient "show me this now"
-action and must not leak a raised gate into a saved or shared session. The
-declarative, session-scoped escape hatch is instead the `forceLoad` config slot
-(set per-session via a session spec, or baked into a track config for
-embedded/notebook views).
+The force-load button's answer: render this track regardless of region size or
+feature density. One boolean for the whole track, not a raised ceiling per
+region — the banner already tells the user how much data is involved, so one
+informed click approves the track and they never have to re-approve it per
+locus.
+
+Volatile, not persisted, so it can't leak a disabled gate into a saved or shared
+session (a recipient would download the same data with no warning and no way to
+see why). A page load re-arms the gate. The durable, declarative equivalent is
+the `forceLoad` config slot, for session specs, embeds and
+`jbrowse-img --force`.
 
 ```ts
 // type signature
-type userByteLimit = number | undefined
+type forceLoadTrack = false
 // code
-userByteLimit: undefined as number | undefined
+forceLoadTrack: false
 ```
 
 #### volatile: byteEstimate
@@ -279,6 +289,19 @@ measuredSpanBp: undefined as number | undefined
 ```
 
 **Getters**
+
+#### getter: gateFoldedIntoFetch
+
+Additive opt-in for displays that measure the estimate inside their own feature
+RPC instead of a pre-flight (canvas). Kept separate from
+`derivedRegionTooLargeEnabled` so a gate mixin contributes by setting _this_
+rather than overriding the verdict switch — the two would otherwise race on
+composition order, and the later `.compose()` argument silently winning is
+invisible to both the type system and the tests.
+
+```ts
+type gateFoldedIntoFetch = boolean
+```
 
 #### getter: derivedRegionTooLargeEnabled
 
@@ -314,6 +337,21 @@ false.
 type densityTooLargeForDerivedGate = boolean
 ```
 
+#### getter: adapterFetchSizeLimit
+
+The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
+declares none); `resolveByteLimit` prefers it over the display config. Read on
+the main thread rather than trusted only from the estimate: the three adapters
+that attach one (BAM/CRAM/VCF) just echo this same static slot back across the
+worker boundary, and a display whose adapter never attaches it would otherwise
+silently ignore a configured limit. `byteEstimate.fetchSizeLimit` still wins
+where present, so an adapter that computes a limit dynamically keeps the last
+word.
+
+```ts
+type adapterFetchSizeLimit = number | undefined
+```
+
 #### getter: configForceLoad
 
 Declarative force-load: when true the display always renders regardless of
@@ -327,6 +365,30 @@ per-display wiring.
 type configForceLoad = boolean
 ```
 
+#### getter: resolvedAdapterByteLimit
+
+The adapter's byte budget, preferring one the estimate computed dynamically over
+the static `fetchSizeLimit` slot. One getter, because the banner, the force-load
+baseline and the canvas worker budget each spelling "the adapter's limit" for
+itself is how the worker ends up rejecting a region the banner considers fine —
+a silently blank display with nothing to refetch it.
+
+```ts
+type resolvedAdapterByteLimit = number | undefined
+```
+
+#### getter: byteGateExempt
+
+True when nothing may gate, on either axis and in both the worker and the
+banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen
+resolution), the declarative `forceLoad` slot, or the force-load button. One
+boolean is the whole force-load mechanism — there is no per-region ceiling to
+carry, expire, or reconcile between the two axes.
+
+```ts
+type byteGateExempt = boolean
+```
+
 #### getter: estimatedBytesForVisibleSpan
 
 How many bytes we estimate a fetch of the span on screen right now would pull,
@@ -338,6 +400,17 @@ meaningful when `derivedRegionTooLargeEnabled`.
 
 ```ts
 type estimatedBytesForVisibleSpan = number | undefined
+```
+
+#### getter: gateByteLimit
+
+The byte budget the gate enforces: the adapter's limit, else the display config.
+Also what canvas hands the worker, so the two can't gate against different
+numbers. Force-load doesn't raise this — it exempts the track outright via
+`byteGateExempt`.
+
+```ts
+type gateByteLimit = number
 ```
 
 #### getter: tooLargeStatus
@@ -373,46 +446,56 @@ features". Empty string when the region isn't too large.
 type regionTooLargeReason = string
 ```
 
-**Methods**
-
-#### method: regionCannotBeRenderedText
-
-Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
-display chrome via `TooLargeMessage`, not the model.
-
-```ts
-type regionCannotBeRenderedText = () => '' | 'Force load to see features'
-```
-
 **Actions**
 
 #### action: setByteEstimate
 
-Commits the byte estimate and records the span it covers (`measuredSpanBp`) so
-the derived gate can rescale it to the span on screen. Harmless for non-gated
-displays (they ignore it).
+Commits the byte estimate together with the span it covers, so the derived gate
+can rescale it to the span on screen. `measuredSpanBp` must be the `visibleBp`
+captured when the measurement was _requested_, not read at commit time: a view
+that zoomed during the in-flight fetch would otherwise anchor the estimate to
+the wrong span, and since `FetchVisibleRegions` skips while `regionTooLarge`
+holds, an over-anchored estimate wedges the banner with no refetch to correct
+it. Harmless for non-gated displays (they ignore it).
 
 ```ts
-type setByteEstimate = (estimate?: RegionByteEstimate | undefined) => void
+type setByteEstimate = (
+  estimate: RegionByteEstimate,
+  measuredSpanBp: number,
+) => void
 ```
 
-#### action: raiseForceLoadLimits
+#### action: clearByteEstimate
 
-force-load: raise the byte limit past the current request so the gate releases.
-Prefers the estimate for the span on screen now, so it clears even if the view
-zoomed out since the measurement; a display with the derived gate off has no
-such estimate and falls back to the measured-span number. Canvas (which also has
-a density force-load) overrides this entirely.
+Drops the cached estimate. Chromosome navigation only: the estimate
+intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't
+flicker the banner.
+
+`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring
+it on navigation is exactly the per-locus re-approval the button exists to
+avoid.
 
 ```ts
-type raiseForceLoadLimits = (estimate?: RegionByteEstimate | undefined) => void
+type clearByteEstimate = () => void
+```
+
+#### action: setForceLoadTrack
+
+Exempt this track from the gate (or put it back under it). Separate from
+`forceLoad` so turning the gate off and refetching stay separable — a caller
+that just wants the flag (a revoke, a test) doesn't trigger a fetch, and
+`forceLoad` doesn't have to inline a volatile write.
+
+```ts
+type setForceLoadTrack = (flag: boolean) => void
 ```
 
 #### action: forceLoad
 
-Raises the byte limit past the current estimate and triggers a reload. The
-display chrome calls this via TooLargeMessage's force-load button; concrete
-display models override reload() to do the actual refetch.
+Force-load: exempt this track from the gate and refetch. One click covers every
+region and both axes, informed by the size the banner just quoted. The display
+chrome calls this from TooLargeMessage's button; concrete display models
+override `reload()` to do the actual refetch.
 
 ```ts
 type forceLoad = () => void

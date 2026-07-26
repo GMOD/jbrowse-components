@@ -241,11 +241,23 @@ per-display-type default is a flat composite key (see `displayTypeDefaultKey`),
 not a single nested `displayTypeDefaults` object — promoting one default can't
 wake readers of a different one.
 
+`deep: false` is load-bearing, not a micro-optimization. The default enhancer
+wraps an object/array value in a MobX Proxy on `set`, and a promoted default is
+handed straight back out by `getConf` — so an object-valued promotable slot
+(alignments `colorBy`) put a Proxy into `rpcProps()`, and V8's structured-clone
+serializer rejects a Proxy: `worker.postMessage` threw `DataCloneError` on the
+next fetch of any track following that default (electron IPC and
+`structuredClone` in the share bake likewise). Nothing mutates a preference in
+place, and the map still notifies per key on `set`, so shallow values lose no
+reactivity.
+
 ```ts
 // type signature
 type preferencesOverrides = ObservableMap<string, unknown>
 // code
-preferencesOverrides: observable.map<string, unknown>()
+preferencesOverrides: observable.map<string, unknown>(undefined, {
+  deep: false,
+})
 ```
 
 | Member                                                   | Type                                               |
