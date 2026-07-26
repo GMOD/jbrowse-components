@@ -107,35 +107,41 @@ def load(path, name):
     return mod
 
 
-# reroot_maf.py: a repeat-collapsed block carries several reference rows. Both
-# "improvements" to that were measured worse and reverted (module docstring), so
-# these pin the reverted behavior rather than the intuitive one:
-#   - anchor on the FIRST reference row, not the leftmost. Leftmost perturbs
-#     taffy's differential TAF encoding and loses region queries.
-#   - keep every row. BgzipTaffyAdapter keys `alignments` by sample name, so a
-#     duplicate is one lane at display time; dropping deletes data to fix nothing.
+# reroot_maf.py: a repeat-collapsed block carries several reference rows. Three
+# treatments have been tried; these pin the surviving one and the two reverted
+# ones (module docstring):
+#   - SPLIT into one block per reference row. taffy's .tai files a block under row
+#     0 only, so a copy sharing a block is unreachable by region query.
+#   - keep every row in every emitted block. BgzipTaffyAdapter keys `alignments`
+#     by sample name, so a duplicate is one lane at display time; dropping
+#     deletes data to fix nothing.
+#   - anchor the first emitted block on the FIRST reference row, not the leftmost.
+#     Leftmost perturbs taffy's differential TAF encoding and loses region
+#     queries.
 sys.argv = ["reroot_maf.py", "-", "-", "REF#1#chr"]
 reroot_maf = load("scripts/reroot_maf.py", "reroot_maf")
 def row(name, start, strand="+"):
     return ["s", name, str(start), "10", strand, "1000", "A" * 10]
 
 
-kept = reroot_maf.reroot(
+kept = list(reroot_maf.reroot(
     [row("REF#1#chr", 500), row("other#1#chr", 20), row("REF#1#chr", 100)]
-)
-check("reroot anchors on the FIRST reference row, not the leftmost",
-      kept[0][2], "500")
-check("reroot keeps the surplus reference rows", [r[2] for r in kept],
-      ["500", "20", "100"])
-check("reroot keeps every row", [r[1] for r in kept],
-      ["REF#1#chr", "other#1#chr", "REF#1#chr"])
-check("reroot loses no aligned bases", sum(int(r[3]) for r in kept), 30)
-# a '-' reference row flips the block, and leftmost is decided after the flip
-kept = reroot_maf.reroot([row("REF#1#chr", 100, "-"), row("other#1#chr", 20)])
-check("reroot normalizes the reference to '+'", kept[0][4], "+")
-check("reroot remaps the flipped start", kept[0][2], str(1000 - 100 - 10))
+))
+check("reroot splits one block per reference row", len(kept), 2)
+check("reroot anchors each block on its own reference copy",
+      [b[0][2] for b in kept], ["500", "100"])
+check("reroot keeps every row in every block",
+      [sorted((r[1], r[2]) for r in b) for b in kept],
+      [sorted([("REF#1#chr", "500"), ("other#1#chr", "20"),
+               ("REF#1#chr", "100")])] * 2)
+check("reroot loses no aligned bases",
+      [sum(int(r[3]) for r in b) for b in kept], [30, 30])
+# a '-' reference row flips the block
+kept = list(reroot_maf.reroot([row("REF#1#chr", 100, "-"), row("other#1#chr", 20)]))
+check("reroot normalizes the reference to '+'", kept[0][0][4], "+")
+check("reroot remaps the flipped start", kept[0][0][2], str(1000 - 100 - 10))
 check("reroot drops a block with no reference row",
-      reroot_maf.reroot([row("other#1#chr", 20)]), None)
+      list(reroot_maf.reroot([row("other#1#chr", 20)])), [])
 
 # gfa_nodes_to_bed.py: itemRgb has to be the graph view's own viridis Depth ramp
 # sampled over the subgraph's min/max, or the linear strip stops matching the
