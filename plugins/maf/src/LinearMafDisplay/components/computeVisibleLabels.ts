@@ -4,8 +4,7 @@ import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
 export interface VisibleLabel {
   x: number
@@ -14,11 +13,7 @@ export interface VisibleLabel {
   lowerBase: string
 }
 
-interface ComputeVisibleLabelsParams {
-  view: VisibleRegionsView
-  rpcDataMap: { get(idx: number): MafRegionData | undefined }
-  rowHeight: number
-  rowProportion: number
+interface ComputeVisibleLabelsParams extends MafOverlayParams {
   showAllLetters: boolean
   showAsUpperCase: boolean
 }

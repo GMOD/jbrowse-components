@@ -1,8 +1,7 @@
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
 export interface InsertionMarker {
   /** screen px of the cell boundary the marker centers on */
@@ -10,13 +9,6 @@ export interface InsertionMarker {
   rowTop: number
   h: number
   length: number
-}
-
-interface ComputeVisibleInsertionsParams {
-  view: VisibleRegionsView
-  rpcDataMap: { get(idx: number): MafRegionData | undefined }
-  rowHeight: number
-  rowProportion: number
 }
 
 /**
@@ -27,7 +19,7 @@ interface ComputeVisibleInsertionsParams {
  * alignments via `drawInsertionMarker`.
  */
 export function computeVisibleInsertions(
-  params: ComputeVisibleInsertionsParams,
+  params: MafOverlayParams,
 ): InsertionMarker[] {
   const { view, rpcDataMap, rowHeight, rowProportion } = params
   const markers: InsertionMarker[] = []

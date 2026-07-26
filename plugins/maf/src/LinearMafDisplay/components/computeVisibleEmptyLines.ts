@@ -1,8 +1,7 @@
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafStatus } from '../../types.ts'
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
 export interface EmptyLineSegment {
   x: number
@@ -12,13 +11,6 @@ export interface EmptyLineSegment {
   status: MafStatus
 }
 
-interface ComputeVisibleEmptyLinesParams {
-  view: VisibleRegionsView
-  rpcDataMap: { get(idx: number): MafRegionData | undefined }
-  rowHeight: number
-  rowProportion: number
-}
-
 /**
  * Positioned bridge-line segments for every `e`-line (empty/bridged) row in the
  * visible blocks. The genomic extent is the block's reference span
@@ -26,7 +18,7 @@ interface ComputeVisibleEmptyLinesParams {
  * `status` in `drawMafEmptyLines`.
  */
 export function computeVisibleEmptyLines(
-  params: ComputeVisibleEmptyLinesParams,
+  params: MafOverlayParams,
 ): EmptyLineSegment[] {
   const { view, rpcDataMap, rowHeight, rowProportion } = params
   const segments: EmptyLineSegment[] = []

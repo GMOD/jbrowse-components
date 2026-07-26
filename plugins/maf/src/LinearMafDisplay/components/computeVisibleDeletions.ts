@@ -1,8 +1,7 @@
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
 export interface DeletionMarker {
   /** screen px of the left edge of the deleted run */
@@ -15,13 +14,6 @@ export interface DeletionMarker {
   length: number
 }
 
-interface ComputeVisibleDeletionsParams {
-  view: VisibleRegionsView
-  rpcDataMap: { get(idx: number): MafRegionData | undefined }
-  rowHeight: number
-  rowProportion: number
-}
-
 /**
  * Positioned deletion runs for every aligned row in the visible blocks. A
  * deletion spans reference bases `[start, start+length)`, so the marker spans
@@ -30,7 +22,7 @@ interface ComputeVisibleDeletionsParams {
  * hit-test uses.
  */
 export function computeVisibleDeletions(
-  params: ComputeVisibleDeletionsParams,
+  params: MafOverlayParams,
 ): DeletionMarker[] {
   const { view, rpcDataMap, rowHeight, rowProportion } = params
   const markers: DeletionMarker[] = []

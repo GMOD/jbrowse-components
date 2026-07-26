@@ -7,6 +7,8 @@
 
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 
+import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+
 /**
  * The slice of the LGV model the overlay helpers read: the visible regions
  * (each with its screen-px origin and orientation) plus the zoom level.
@@ -20,6 +22,28 @@ export interface VisibleRegionsView {
     reversed?: boolean
   }[]
   bpPerPx: number
+}
+
+/**
+ * A per-region data map, read structurally so an `ObservableMap`, a plain
+ * `Map`, and a test literal all satisfy it.
+ */
+export interface RegionDataMap<T> {
+  get(idx: number): T | undefined
+}
+
+/**
+ * What every block-overlay helper takes. Declared once because the model
+ * assembles it once (`overlayParams`), and because `rowHeight` here is always
+ * the *resolved* height — a helper that re-declared its own params could
+ * quietly be handed the raw `rowHeight` sentinel and mis-place every marker in
+ * fit-to-height mode. Helpers needing more (the label pass) extend it.
+ */
+export interface MafOverlayParams {
+  view: VisibleRegionsView
+  rpcDataMap: RegionDataMap<MafRegionData>
+  rowHeight: number
+  rowProportion: number
 }
 
 /**

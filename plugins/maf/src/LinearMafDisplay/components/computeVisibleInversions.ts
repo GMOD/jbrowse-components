@@ -1,7 +1,18 @@
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type { MafOverlayParams } from './visibleRegionGeometry.ts'
+
+/**
+ * Unlike the other block overlays, this one iterates *every* loaded region
+ * rather than looking regions up by index: the consensus strand each inversion
+ * is measured against is computed across all loaded data, so it stays stable
+ * while the user scrolls within it. Hence a real map, not the structural
+ * `RegionDataMap`.
+ */
+interface ComputeVisibleInversionsParams extends MafOverlayParams {
+  rpcDataMap: ReadonlyMap<number, MafRegionData>
+}
 
 export interface InversionMarker {
   xLeft: number
@@ -46,13 +57,6 @@ function consensusStrandByRowChr(
     }
   }
   return new Map([...totals].map(([key, t]) => [key, t.fwd >= t.rev ? 1 : -1]))
-}
-
-interface ComputeVisibleInversionsParams {
-  view: VisibleRegionsView
-  rpcDataMap: ReadonlyMap<number, MafRegionData>
-  rowHeight: number
-  rowProportion: number
 }
 
 /**
