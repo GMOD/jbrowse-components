@@ -403,6 +403,31 @@ global-fetch helper reads unconditionally, a required `rpcProps` (or an explicit
 resolves `derivedRegionTooLargeEnabled` false. `makeSettingsLoopGuard` is this
 move already applied to the `rpcProps` loop trap. Generalize it.
 
+### LDDisplay is multi-region on the fetch side and single-region on the axis
+
+**Status:** Open, unmeasured (found 2026-07-26, not chased).
+
+`performLDFetch` sends every content block, `executeRenderLDData` sums
+`totalWidthBp` across all of them and orders SNPs across all of them, and then
+projects each SNP's x with `bpOffsetInRegion(regions[0], snp.start)`
+(`RenderLDDataRPC/ldLayout.ts`). Two consumers do the same on the main thread:
+`LDDisplayComponent.tsx` for the hover lines and `renderSvg.tsx` for the
+recombination track.
+
+So in a view showing more than one region, SNPs from the second block are placed
+in the first block's coordinate space: the inter-block offset and the second
+block's own start both drop out. The display is not simply single-region-only,
+which would be a clean limitation. It half-supports the case.
+
+Nobody has confirmed how it looks on screen, and no LD spec or test uses a
+multi-region view, so the size of the error is unknown. Found by grepping for
+the `contentBlocks[0]` pattern behind the region-launch fix in
+[REGION_VIEW_LAUNCH.md](../guides/REGION_VIEW_LAUNCH.md) convention 6.
+
+**Retire when** either the layout takes the whole `regions` array and accumulates
+the inter-region offset the way the launch pickers now do, or the display
+declares itself single-region and the fetch stops pretending otherwise.
+
 ### The plugin ABI is unversioned and the surface is unbounded
 
 **Status:** Open, with a plan.
