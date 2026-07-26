@@ -141,6 +141,12 @@ export interface ScreenshotStage {
   // press Escape before this stage's actions to dismiss a menu/popover the
   // previous stage left open
   closeMenusFirst?: boolean
+  // height for this frame alone, applied after its actions run. The spec's own
+  // viewportHeight has to cover the tallest state, which leaves every shorter
+  // one padded with page background — an open context menu needs twice the
+  // frame the view it launches does. Width is deliberately not per-stage: the
+  // frames are stacked with `-append`, which needs one width.
+  viewportHeight?: number
 }
 
 // Fields every spec shares, whatever produces its PNG. Kept apart from

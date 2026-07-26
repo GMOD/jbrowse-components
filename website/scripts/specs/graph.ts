@@ -150,7 +150,10 @@ const ECOLI_ALLELES_TRACK = 'ecoli_minigraph_alleles'
 // computed from SN/SO/SR, not simulated like FMMM. The hover and the ring drawn
 // over it both read this, and the spec asserts the highlight appeared, so a
 // coordinate that goes stale fails the capture instead of drifting quietly.
-const HOVERED_ALLELE = { x: 295, y: 727 }
+// It does go stale on a plugin layout change: the graph pane used to center its
+// drawing in a fixed box and now sizes itself to it, which lifted every row
+// ~172px and left this pointing below the pane.
+const HOVERED_ALLELE = { x: 295, y: 555 }
 
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
@@ -330,10 +333,11 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
-    // GraphGenomeView takes no `height` through the launch snapshot, and its
-    // auto-fit places a wide-and-flat anchored layout low in the panel, so the
-    // frame has to be tall enough to reach it
-    viewportHeight: 900,
+    // GraphGenomeView takes no `height` through the launch snapshot. It used to
+    // center a wide-and-flat anchored layout in a fixed box, so the frame had to
+    // be 900 to reach it; the pane sizes itself to its drawing now, and the
+    // extra 285px is page background.
+    viewportHeight: 615,
     hideTooltip: true,
   },
   // The graph read as an alignment: five haplotype rows over the bubble where
@@ -611,11 +615,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    // enough for the linear view plus the open context menu, which is also
-    // enough for the graph canvas once the second frame closes that view. Sized
-    // to the shorter of the two states rather than the taller: at 900 the first
-    // frame was a third empty page background and the graph still clipped.
-    viewportHeight: 700,
+    // enough for the linear view plus the open context menu, which is the taller
+    // of the two states; the launched graph gets its own height on its stage
+    viewportHeight: 630,
     hideTooltip: true,
     actions: [
       {
@@ -648,6 +650,10 @@ export const graphSpecs: ScreenshotSpec[] = [
       // The dropdown has no testid, so it goes by its current value, which
       // appears nowhere else on the page.
       {
+        // the graph pane sizes itself to its drawing, and a 13-node subgraph is
+        // a short one; at the frame above it this half was more than half page
+        // background
+        viewportHeight: 345,
         actions: [
           {
             type: 'click',
@@ -959,7 +965,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
-    viewportHeight: 1000,
+    // the graph pane sizes itself to its drawing, so this is the two views and
+    // nothing under them
+    viewportHeight: 745,
     hideTooltip: true,
   },
   // The correspondence, which is the reason to open the two views together:
@@ -1016,7 +1024,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="graph-row-label"]',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 900,
+    // the graph pane sizes itself to its drawing, so this is the two views and
+    // nothing under them
+    viewportHeight: 745,
     actions: [
       { type: 'delay', ms: 3000 },
       { type: 'hover', from: HOVERED_ALLELE },
@@ -1033,6 +1043,71 @@ export const graphSpecs: ScreenshotSpec[] = [
     // the input being echoed.
     annotations: [
       { type: 'circle', x: HOVERED_ALLELE.x, y: HOVERED_ALLELE.y, radius: 18 },
+    ],
+  },
+  // The other direction, which the figure above does not show and the prose only
+  // claimed: hovering the LINEAR view highlights the graph. It is the half a
+  // reader is more likely to use — you arrive at a locus through genes, not
+  // through node ids — and it runs through different code: an LGV publishes
+  // `{hoverPosition, hoverFeature}` to session.hovered, and the graph's own
+  // autorun matches it (hoverSync/lgvHover).
+  //
+  // The target is a gene rather than the graph's own segments track on purpose.
+  // A segment feature matches by name, which is the easy path; a gene supplies
+  // only a coordinate, so this exercises the fallback that finds the backbone
+  // segment covering it — the case that makes the correspondence useful from any
+  // track rather than only from the graph's own.
+  //
+  // Asserted on the same testid as the figure above, which is what makes this a
+  // round trip rather than a screenshot of a tooltip: the band can only appear
+  // if the graph matched a node AND resolved its reference span back.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_hover_from_linear',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PATHS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 80,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: ECOLI_SEGMENTS_TRACK,
+          loadedRegion: {
+            refName: 'chr',
+            assemblyName: 'K12',
+            start: 1088000,
+            end: 1104000,
+          },
+          layoutMode: 'samplerows',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: '[data-testid="graph-row-label"]',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 745,
+    actions: [
+      { type: 'delay', ms: 3000 },
+      // by the gene's own rendered label, so nothing here is a viewport
+      // coordinate measured off a previous capture
+      { type: 'hover', selector: '[data-testid="feature-name-csgG"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="graph-node-highlight"]',
+      },
+      { type: 'delay', ms: 1000 },
     ],
   },
 ]

@@ -45,6 +45,25 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
 5. **Group with `pushLaunchViewMenuItem`** (`@jbrowse/core/ui`) in long menus
    (view menu, track menu) so offers collect under one "Launch view" submenu.
    Rubberband items go in **flat** — that menu is short and contextual.
+6. **Take the widest block, never the first.** Both entry points hand the launch
+   one region, but a linear view can be showing several: `dynamicBlocks
+   .contentBlocks` and `getSelectedRegions()` both return display order, and a
+   launched view is anchored on one stable sequence. A view scrolled just past a
+   region boundary, or a rubberband dragged across one, puts a sliver first —
+   `getSelectedRegions` returns `[{ctgA 49,998-50,001}, {ctgB 0-9,000}]` for a
+   drag that is mostly ctgB (asserted in `LinearGenomeView/index.test.ts`), so
+   `[0]` frames the launch on 3 bp of the region the user dragged away from.
+   `widestRegion` (`regionLaunchMenuItems.ts`) and `widestBlock`
+   (`launchSubgraphView.ts`) are that choice: widest by **bp** (a dynamic block
+   carries `widthPx` and a selected region does not, and bpPerPx is uniform
+   within a view, so the two orders agree), ties keep the leftmost.
+
+   All four call sites had this wrong at some point, and on a launcher with a
+   size guard it is silent rather than merely wrong: reading the sliver puts an
+   illegal window under the cap, so the item renders enabled and cuts a
+   degenerate graph instead of saying "zoom in". **No figure can cover this** —
+   it needs a multi-region view and no spec has one. The unit tests are the
+   coverage.
 
 ## Where they diverge
 
@@ -200,8 +219,17 @@ picture, so review them by eye after a regen. Three things they taught:
 **The figures can only cover what is deployed.** Both tutorials load the plugin
 from `jbrowse.org/demos/graphgenomeviewer`, and that bundle is code-split, so
 audit it by grepping the entry *and every chunk it references* (the color-scheme
-labels live in a chunk, not the entry). As of this writing it carries
-`Graph genome view (this region)` and `(this segment)` only: the LGV view-menu
-and rubberband items, the hover sync, and the refName fix above are all
-uncommitted or unpublished in the plugin repo, so figuring them needs
-`scripts/betabuild.sh` to run first.
+labels live in a chunk, not the entry):
+
+```bash
+curl -s https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js \
+  | grep -c 'Graph genome view (visible region)'
+md5sum ~/src/jb2plugins/jbrowse-plugin-graphgenomeview/dist/*.esm.js   # vs the hosted one
+```
+
+As of 2026-07-26 the hosted bundle carries all four launch labels and both
+halves of the hover sync, and matches the plugin's local `dist/`. What it does
+**not** carry is the widest-block fix from convention 6 — that is uncommitted in
+the plugin repo and needs `scripts/betabuild.sh` before it reaches anyone. No
+committed figure depends on it, since the affected menu item needs a
+multi-region view.

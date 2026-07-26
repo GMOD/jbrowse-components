@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   syntenyRegionMenuItems,
   toWholeBpRegion,
+  widestRegion,
 } from './regionLaunchMenuItems.ts'
 
 import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
@@ -108,6 +109,46 @@ test('a fractional block is rounded out to whole base pairs', () => {
     refName: 'ctgA',
     start: 12345,
     end: 23457,
+  })
+})
+
+// Both launch entries cross region boundaries routinely — a view scrolled past
+// one, a rubberband dragged across one — and the shape getSelectedRegions
+// returns for that drag is the shape this has to survive.
+describe('widestRegion', () => {
+  // typed rather than a bare [], which infers T as never and makes the call
+  // read as a void expression
+  const noBlocks: { start: number; end: number }[] = []
+
+  test('no blocks means no region, so the menu item is absent', () => {
+    expect(widestRegion(noBlocks)).toBeUndefined()
+  })
+
+  test('the leading sliver of a boundary-crossing selection loses', () => {
+    expect(
+      widestRegion([
+        { refName: 'ctgA', start: 49998, end: 50001 },
+        { refName: 'ctgB', start: 0, end: 9000 },
+      ]),
+    ).toEqual({ refName: 'ctgB', start: 0, end: 9000 })
+  })
+
+  test('a tie keeps the leftmost, so a symmetric straddle is stable', () => {
+    expect(
+      widestRegion([
+        { refName: 'ctgA', start: 0, end: 100 },
+        { refName: 'ctgB', start: 0, end: 100 },
+      ]),
+    ).toEqual({ refName: 'ctgA', start: 0, end: 100 })
+  })
+
+  test('a fractional dynamic block is compared on its real width', () => {
+    expect(
+      widestRegion([
+        { refName: 'ctgA', start: 0.5, end: 10.5 },
+        { refName: 'ctgB', start: 0.5, end: 9.4 },
+      ]),
+    ).toEqual({ refName: 'ctgA', start: 0.5, end: 10.5 })
   })
 })
 

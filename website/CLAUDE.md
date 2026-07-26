@@ -79,7 +79,22 @@ generator now logs `⚠ kept` (not `≈ kept`) whenever the keep needed the rais
 value — i.e. the diff cleared the run default but not the spec's own — and
 repeats those specs in a `KEPT BEHIND A RAISED diffThreshold` report at the end
 of the run. **Re-run those with `--force`.** The warning is only a prompt to
-look; nothing can tell an intended recolor from jitter automatically.
+look, nothing can tell an intended recolor from jitter automatically.
+
+**The plain 0.005 default hides small intended changes, and warns about
+nothing.** The `⚠ kept` report above only fires for a spec's _own_ raised
+threshold, so a change under 0.5% of pixels is kept silently as an ordinary
+`≈ kept`. A one-line text change is under it: a dialog figure that lost a
+`{assemblyName}` prefix from its locstring measured 0.366% and read as up to
+date against a freshly rebuilt app. **When a rebuild is supposed to change a
+figure and the regen says unchanged, `--force` it and diff the two** rather than
+trusting the gate.
+
+Distinguishing a real pending change from jitter, on a spec whose threshold is
+raised for jitter: run the regen twice and compare the reported percentages. A
+real change reproduces the same diff, jitter does not. The three FMMM graph
+figures report 1.5-1.8% on one run and 1.7-1.8% on the next, which is how you
+tell them from something you actually moved.
 
 **`--filter` is repeatable and unions.** `--filter a --filter b` renders both,
 as does `--filter a,b`. It was a single-valued flag, where node's `parseArgs`
@@ -232,11 +247,17 @@ mechanisms build one content-stable stacked PNG instead:
   `view_menu_icon`, then `delay` for any refetch.
 
 Either way set `viewportHeight` to just the content so the stacked frames aren't
-mostly whitespace (equal heights for the parts give a clean stack). To open
-_both_ states from one combined figure, `<Figure>` takes
-`links="Label=spec,Label=spec"` — each spec name resolves to its live session
-(so the links can't drift); point them at the two declarative part specs, not
-the compose spec (which has no session of its own).
+mostly whitespace (equal heights for the parts give a clean stack). A `stages`
+spec's frames share one viewport, so when the states differ a lot in height — an
+open context menu against the short view it launches — the spec's own
+`viewportHeight` covers the tallest and each shorter frame sets its own on the
+stage. That resize lands **after** the stage's actions, since a stage usually
+acts on chrome the previous one opened and resizing first moves or dismisses it;
+width stays global, because `-append` needs one. To open _both_ states from one
+combined figure, `<Figure>` takes `links="Label=spec,Label=spec"` — each spec
+name resolves to its live session (so the links can't drift); point them at the
+two declarative part specs, not the compose spec (which has no session of its
+own).
 
 **A compose part is an ingredient, not a figure.** Nothing writes
 `/img/<part>.png` into a doc, so the part is only ever seen as half of the

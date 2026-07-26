@@ -723,6 +723,9 @@ async function captureStages(
     tempPath('jb-shot', spec.name, `-${i}`),
   )
   for (const [i, stage] of stages.entries()) {
+    // Resized before the stage acts, not just before its shot, so the actions
+    // hit the layout they are captured against. Width is left alone — the
+    // frames stack with `-append`.
     if (stage.closeMenusFirst) {
       await page.keyboard.press('Escape')
       await delay(300)
@@ -732,6 +735,19 @@ async function captureStages(
     // target in this stage's actions
     await clearAnnotations(page)
     await runActions(page, spec.name, stage.actions)
+    // Resized after the actions, not before: a stage typically acts on chrome
+    // the previous stage opened (a context menu, a popover), which the resize
+    // would move or dismiss. Width is left alone — the frames stack with
+    // `-append`. The phase wait below covers the re-layout the resize starts.
+    const viewport = page.viewport()
+    if (
+      stage.viewportHeight &&
+      viewport &&
+      viewport.height !== stage.viewportHeight
+    ) {
+      await page.setViewport({ ...viewport, height: stage.viewportHeight })
+      await delay(500)
+    }
     // A stage's actions can start work of their own — alignments_sort_by_base's
     // second stage clicks "Sort by base at position", an async re-sort — and the
     // shot used to race it, landing on the pre-sort order often enough to drift

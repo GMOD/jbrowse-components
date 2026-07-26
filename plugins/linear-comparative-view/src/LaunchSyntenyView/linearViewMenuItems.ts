@@ -1,7 +1,10 @@
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
-import { syntenyRegionMenuItems } from './regionLaunchMenuItems.ts'
+import {
+  syntenyRegionMenuItems,
+  widestRegion,
+} from './regionLaunchMenuItems.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
@@ -13,13 +16,6 @@ const SELECTION_LABEL = 'Linear synteny view of selection'
 
 function isLinearGenomeView(elt: { name: string }): elt is ViewType {
   return elt.name === 'LinearGenomeView'
-}
-
-function widestBlock<T extends { widthPx: number }>(blocks: T[]) {
-  return blocks.reduce<T | undefined>(
-    (best, block) => (best && best.widthPx >= block.widthPx ? best : block),
-    undefined,
-  )
 }
 
 // "Open a synteny view on this locus" from the linear view itself, alongside the
@@ -51,13 +47,7 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                   const items = superMenuItems()
                   for (const item of syntenyRegionMenuItems({
                     label: VISIBLE_LABEL,
-                    // a synteny panel is anchored on one stable sequence, so a
-                    // view straddling a region boundary has to pick one of its
-                    // blocks: the widest, which is the sequence the screen is
-                    // mostly showing. Taking the first instead launched on
-                    // whatever sliver of the previous region was still on
-                    // screen.
-                    region: widestBlock(self.dynamicBlocks.contentBlocks),
+                    region: widestRegion(self.dynamicBlocks.contentBlocks),
                     session: getSession(self),
                   })) {
                     pushLaunchViewMenuItem(items, item)
@@ -73,13 +63,12 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                     ...superRubberBandMenuItems(),
                     ...syntenyRegionMenuItems({
                       label: SELECTION_LABEL,
-                      // the first selected block, for the same reason as
-                      // above: a selection dragged across a region boundary
-                      // spans two sequences, and a panel is anchored on one
-                      region: self.getSelectedRegions(
-                        self.leftOffset,
-                        self.rightOffset,
-                      )[0],
+                      region: widestRegion(
+                        self.getSelectedRegions(
+                          self.leftOffset,
+                          self.rightOffset,
+                        ),
+                      ),
                       session: getSession(self),
                     }),
                   ]

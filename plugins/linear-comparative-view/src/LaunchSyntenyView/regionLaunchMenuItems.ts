@@ -40,6 +40,30 @@ function launchableTracks(
   )
 }
 
+// The one block a launch runs on, out of however many the view or the selection
+// covers. A synteny panel is anchored on one stable sequence, so a span crossing
+// a region boundary has to pick: the widest, which is the sequence the user is
+// mostly looking at. Taking the first instead means a view scrolled just past a
+// boundary launches on the trailing sliver of the region behind it, and a
+// selection dragged across one launches on however few bp sat to the left of it
+// — `getSelectedRegions` returns `[{ctgA 49,998-50,001}, {ctgB 0-9}]` for a drag
+// that is mostly ctgB, so every panel would be framed on 3 bp.
+//
+// Widest in bp rather than in pixels: a dynamic block carries widthPx and a
+// selected region does not, and within one view bpPerPx is uniform, so the two
+// orders agree.
+export function widestRegion<T extends { start: number; end: number }>(
+  regions: T[],
+): T | undefined {
+  return regions.reduce<T | undefined>(
+    (best, region) =>
+      best && best.end - best.start >= region.end - region.start
+        ? best
+        : region,
+    undefined,
+  )
+}
+
 // Whole base pairs, and only the four fields a Region is. A rubberband
 // selection already arrives floored, but a dynamic block does not: its bounds
 // are fractional (see calculateDynamicBlocks), and toLocale renders a
