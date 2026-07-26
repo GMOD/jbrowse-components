@@ -358,7 +358,12 @@ describe('contextMenuFieldsForHit', () => {
   })
 
   it('a cigar hit carries both the cigar hit and its read feature id', () => {
-    const cigar = { type: 'mismatch', index: 0, position: 42 } as const
+    const cigar = {
+      type: 'mismatch',
+      index: 0,
+      position: 42,
+      length: 1,
+    } as const
     expect(
       contextMenuFieldsForHit({
         type: 'cigar',
@@ -377,6 +382,7 @@ describe('contextMenuFieldsForHit', () => {
       type: 'mismatch',
       index: 0,
       position: 7,
+      length: 1,
       base: 'A',
     } as const
     const mod = {

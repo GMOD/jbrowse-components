@@ -311,7 +311,7 @@ export function performHitTest(
         }
       }
       const gapHit = hitTestGap(resolved, coords)
-      if (gapHit && (gapHit.length ?? 0) >= bpPerPx) {
+      if (gapHit && gapHit.length >= bpPerPx) {
         return {
           type: 'cigar',
           hit: gapHit,

@@ -42,6 +42,7 @@ export function hitTestMismatch(
         type: 'mismatch',
         index: i,
         position: pos,
+        length: 1,
         base: String.fromCharCode(baseCode),
         qual: mismatchQuals[i],
       }

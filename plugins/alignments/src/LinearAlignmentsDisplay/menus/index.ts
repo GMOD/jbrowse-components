@@ -1,6 +1,11 @@
 export { getColorByMenuItem } from './colorBy.ts'
 export type { ModificationsModel } from './colorBy.ts'
-export { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
+export {
+  copyFeatureInfo,
+  getContextMenuItems,
+  getHitMenuItems,
+  withContextMenuFeature,
+} from './contextMenu.ts'
 export { getCoverageMenuItem } from './coverage.ts'
 export {
   COMPACTNESS_PRESETS,

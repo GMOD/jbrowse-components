@@ -213,6 +213,10 @@ async function fetchFeatureDetails(
       // coarse and fine rows from different file offsets, so ids only match
       // within one tier — querying the default (fine) tier for a feature drawn
       // from the coarse one found nothing, and the details silently never came.
+      // Read live rather than recorded with the data because the two can't
+      // drift: `lodMode` is part of `rpcProps`, so a tier flip trips
+      // SettingsInvalidate, which drops every fetched region. Data on screen was
+      // always fetched at the tier `rpcProps` names right now.
       lodMode: self.rpcProps().lodMode,
     },
   )
@@ -3086,41 +3090,68 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => {
-        async function fetchAndDo(
+        // The one place a feature is resolved from an id. Menu items are offered
+        // from the id alone (which the hit test knows synchronously) and land
+        // here on click; opening the menu pre-warms `contextMenuFeature` through
+        // the same call, so a click is normally already resolved.
+        //
+        // `onMiss` because an empty result means different things to the two
+        // callers: the id came from the hit test, so nothing coming back means
+        // the lookup itself failed (data evicted under it, or a tier whose ids
+        // don't compare). A user-initiated item must say so — silently doing
+        // nothing is the worst answer to a click — while the speculative
+        // pre-warm stays quiet, since the user asked for nothing and the menu
+        // just doesn't grow its feature items.
+        async function withFeature(
           featureId: string,
-          onFeat: (feat: SimpleFeature) => void,
+          onFeat: (feat: Feature) => void,
+          onMiss: () => void,
         ) {
           const session = getSession(self)
           try {
             const feat = await fetchFeatureDetails(self, featureId)
-            if (isAlive(self) && feat) {
-              onFeat(feat)
+            if (isAlive(self)) {
+              if (feat) {
+                onFeat(feat)
+              } else {
+                onMiss()
+              }
             }
           } catch (e) {
             console.error(e)
             session.notifyError(`${e}`, e)
           }
         }
+        function notifyMiss() {
+          getSession(self).notify(
+            'Could not load details for this feature',
+            'warning',
+          )
+        }
         return {
+          /**
+           * #action
+           * Fetch the feature behind `featureId` and hand it to `onFeat`. For a
+           * menu item that needs the whole feature but is offered before one is
+           * in hand.
+           */
+          async withFeatureById(
+            featureId: string,
+            onFeat: (feat: Feature) => void,
+          ) {
+            await withFeature(featureId, onFeat, notifyMiss)
+          },
           /**
            * #action
            */
           async selectFeatureById(featureId: string) {
-            await fetchAndDo(featureId, feat => {
-              self.selectFeature(feat)
-            })
-          },
-          /**
-           * #action
-           * Run `onFeat` against the fetched feature. For a menu item that needs
-           * the whole feature but must be offered before one is in hand — the id
-           * is known when the menu opens, the feature only after this RPC.
-           */
-          async withFeatureById(
-            featureId: string,
-            onFeat: (feat: SimpleFeature) => void,
-          ) {
-            await fetchAndDo(featureId, onFeat)
+            await withFeature(
+              featureId,
+              feat => {
+                self.selectFeature(feat)
+              },
+              notifyMiss,
+            )
           },
           /**
            * #action
@@ -3156,10 +3187,24 @@ export default function stateModelFactory(
             // coverage/indicator hits, which have no read to box. Mirrors canvas
             // LinearBasicDisplay.openContextMenu.
             self.featureIdUnderMouse = args.featureId
-            if (args.featureId !== undefined) {
-              void fetchAndDo(args.featureId, feat => {
-                self.setContextMenuFeature(feat)
-              })
+            const { featureId } = args
+            if (featureId !== undefined) {
+              void withFeature(
+                featureId,
+                feat => {
+                  // Only if the menu is still open over the read this fetch was
+                  // for. A second right-click repositions the menu without
+                  // closing it, and two lookups are then in flight: if the first
+                  // resolves last it would otherwise publish the previous read's
+                  // feature under the current read's menu, and the items built
+                  // from it would act on the wrong read.
+                  if (self.contextMenuFeatureId === featureId) {
+                    self.setContextMenuFeature(feat)
+                  }
+                },
+                // Speculative: the menu is already open and usable without it.
+                () => {},
+              )
             }
           },
         }
@@ -3326,15 +3371,6 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
-          // Drop the cached byte estimate on chromosome navigation:
-          // displayedRegionIndex is reused across chromosomes, so a stale
-          // estimate would gate the new region against the wrong stats and, since
-          // FetchVisibleRegions gates on !regionTooLarge, wedge the banner. The
-          // estimate intentionally survives viewport-change clears (no flicker on
-          // pan); this hook is the one path that clears it. Mirrors canvas/maf.
-          onDisplayedRegionsChange(self, () => {
-            self.setByteEstimate(undefined)
-          })
           // Keep the fitted-height cache in sync while in "fit to display height"
           // mode — re-fits as the display resizes, data loads, or groups collapse.
           // `fittedFeatureHeight` ignores featureHeight, so caching it (which the

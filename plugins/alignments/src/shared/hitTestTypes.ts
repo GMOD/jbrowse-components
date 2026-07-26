@@ -18,7 +18,11 @@ export interface CigarHitResult {
   type: CigarItemType
   index: number
   position: number
-  length?: number
+  // Span of the op, always known: reference bases for a deletion/skip, read
+  // bases for an insertion/clip, and 1 for a mismatch, which is one base by
+  // construction. Required rather than optional so consumers can size the op
+  // without a fallback — a hit with no length was never a real state.
+  length: number
   base?: string
   sequence?: string
   // Phred base quality for a mismatch (0 = no quality reported / not applicable).

@@ -1,4 +1,5 @@
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
+import { withContextMenuFeature } from '@jbrowse/plugin-alignments'
 import AddIcon from '@mui/icons-material/Add'
 
 import { onClick } from './DotplotReadVsRef.ts'
@@ -21,15 +22,22 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
             const superContextMenuItems = self.contextMenuItems
             return {
               views: {
+                // Offered from the read id, which the hit test carries, so the
+                // item is there when the menu opens rather than a fetch later;
+                // the feature it needs is resolved in the onClick (normally
+                // already in hand, since the fetch rebuilds this menu).
                 contextMenuItems() {
+                  const featureId = self.contextMenuFeatureId
                   const feature = self.contextMenuFeature
                   const items = superContextMenuItems()
-                  if (feature) {
+                  if (featureId !== undefined) {
                     pushLaunchViewMenuItem(items, {
                       label: 'Dotplot of read vs ref',
                       icon: AddIcon,
                       onClick: () => {
-                        onClick(feature, self)
+                        withContextMenuFeature(self, featureId, feature, feat => {
+                          onClick(feat, self)
+                        })
                       },
                     })
                   }

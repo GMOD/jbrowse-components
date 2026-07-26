@@ -183,7 +183,7 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
       return `SNP: ${cigarHit.base} at ${pos}${qual}`
     }
     case 'insertion':
-      return `${formatInsertionLabel(cigarHit.length ?? 0, cigarHit.sequence)} at ${pos}`
+      return `${formatInsertionLabel(cigarHit.length, cigarHit.sequence)} at ${pos}`
     case 'deletion':
       return `Deletion (${cigarHit.length}bp) at ${pos}`
     case 'skip':

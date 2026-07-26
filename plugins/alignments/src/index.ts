@@ -39,6 +39,7 @@ export {
 export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
 export {
   checkboxItem,
+  copyFeatureInfo,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
@@ -46,6 +47,7 @@ export {
   getMaxHeightMenuItem,
   getSortByMenuItem,
   groupByRadioMenuItem,
+  withContextMenuFeature,
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export {
   isRegisteredColorScheme,

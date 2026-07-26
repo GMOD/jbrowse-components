@@ -150,19 +150,20 @@ export function openCigarWidget(
     type: cigarHit.type,
     refName,
     start: cigarHit.position,
-    end: cigarHit.position + (cigarHit.length ?? 1),
+    end: cigarHit.position + cigarHit.length,
   }
 
-  // base (mismatch), length (insertion/deletion/skip/clips), and sequence
-  // (insertion) are populated mutually exclusively by the hit-testers, so copy
-  // whichever the hit carries rather than re-deriving the type here.
+  // base (mismatch) and sequence (insertion) are populated mutually exclusively
+  // by the hit-testers, so copy whichever the hit carries rather than
+  // re-deriving the type here. Length is reported only when it says something:
+  // every mismatch is 1bp, so a "Length: 1" row is noise.
   if (cigarHit.base) {
     featureData.base = cigarHit.base
   }
   if (cigarHit.qual) {
     featureData.quality = cigarHit.qual
   }
-  if (cigarHit.length !== undefined) {
+  if (cigarHit.length > 1) {
     featureData.length = cigarHit.length
   }
   if (cigarHit.sequence) {

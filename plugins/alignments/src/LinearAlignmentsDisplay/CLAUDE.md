@@ -161,6 +161,43 @@ resolved value is confusingly named like the raw slot:
   the seam; don't try to make `featureHeight` read `fittedFeatureHeight`
   directly.
 
+## Context menu: build items from the id, not the feature
+
+A right-click knows a read's **id** synchronously (the hit test carries it into
+`openContextMenu` → `contextMenuFeatureId`) but not the read itself.
+`contextMenuFeature` is filled by a `GetPileupFeatureDetails` round trip and is
+`undefined` for the first paint of every menu.
+
+**So gate a new menu item on `contextMenuFeatureId`, never on
+`contextMenuFeature`** — the latter is what left a right-click showing an empty
+menu that grew its contents a fetch later (worst on a synteny block, whose
+lookup used to re-read the whole block). Items that need the read's own fields
+(mate coordinates, tags, name, sequence) genuinely have to wait, so they read
+`contextMenuFeature` and are pushed **after** the id-built ones: arriving late
+then appends to the menu instead of shifting what is already under the cursor.
+`getContextMenuItems` is split on exactly this line, and LGVSyntenyDisplay plus
+both `ReadVsRef` extension points follow it.
+
+To act on the whole feature from an item, call the exported
+`withContextMenuFeature(self, featureId, feat, onFeat)`. It uses `feat` — the
+feature as captured when this menu was built, present on the rebuild the fetch
+triggers — and only falls back to `withFeatureById` when a click beats the RPC,
+so the common path costs no second lookup. Don't read `contextMenuFeature` or
+`contextMenuBlock` live inside an `onClick`: `closeContextMenu` runs first and
+has already cleared them, which is why everything is captured at build time.
+
+Two more constraints on that path, both load-bearing:
+
+- **The lookup queries a single base at the feature's start**, not its extent —
+  the adapter returns everything overlapping and the id picks the row out. This
+  is only sound because ids don't depend on the queried region (every adapter
+  here numbers features from file offsets). `model.coupling.test.ts` asserts the
+  query shape; an adapter that numbered per query would break it silently.
+- **It sends `rpcProps().lodMode`.** A tiered PIF adapter numbers coarse and
+  fine rows from different file offsets, so ids only compare within one tier.
+  Reading it live is safe because `lodMode` is in `rpcProps`, so a tier flip
+  trips `SettingsInvalidate` and drops every fetched region.
+
 ## Layout architecture
 
 Pileup and chain layout are computed on the **main thread**, not in the RPC

@@ -44,15 +44,27 @@ function makeModel(
     contextMenuBlock?: ResolvedBlock
     contextMenuGenomicPos?: number
     contextMenuFeature?: Feature
+    contextMenuFeatureId?: string
     filterBy?: FilterBy
   } = {},
 ) {
   const sortCalls: SortCall[] = []
   const filterCalls: FilterBy[] = []
+  const selected: Feature[] = []
   const model = {
     sortCalls,
     filterCalls,
+    // What each "open the details" path acted on: a Feature when the fetched
+    // feature was in hand, the id when the menu had to resolve it.
+    selected,
     contextMenuFeature: undefined as Feature | undefined,
+    // A read under the cursor always has an id — the hit test carries it, and
+    // the feature only follows an RPC later — so a mock holding a feature and no
+    // id is a state the display can't be in. Default it from the feature rather
+    // than restating it in every case.
+    contextMenuFeatureId: (over.contextMenuFeature ? 'read1' : undefined) as
+      | string
+      | undefined,
     contextMenuCigarHit: undefined,
     contextMenuIndicatorHit: undefined,
     contextMenuModHit: undefined as ModificationHitResult | undefined,
@@ -68,7 +80,15 @@ function makeModel(
     setSortedByAtPosition(arg: { type: string; pos: number; refName: string }) {
       sortCalls.push([arg.type, arg.pos, arg.refName])
     },
-    selectFeature() {},
+    selectFeature(feature: Feature) {
+      selected.push(feature)
+    },
+    // Stands in for the RPC, resolving to a feature the assertions can tell
+    // apart from one the menu already had in hand.
+    withFeatureById(_featureId: string, onFeat: (feat: Feature) => void) {
+      onFeat(makeFeature({ name: 'fetched' }))
+      return Promise.resolve()
+    },
     ...over,
   }
   return model
@@ -97,6 +117,10 @@ function run(model: ReturnType<typeof makeModel>) {
   return getContextMenuItems(model)
 }
 
+function click(item: unknown) {
+  ;(item as { onClick: () => void }).onClick()
+}
+
 function firstSubMenuItem(item: unknown) {
   if (!item || typeof item !== 'object' || !('subMenu' in item)) {
     throw new Error('expected a subMenu item')
@@ -110,7 +134,12 @@ test('no hits yields an empty menu', () => {
 
 test('a base-pair cigar hit sorts by base at that position', () => {
   const model = makeModel({
-    contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42 },
+    contextMenuCigarHit: {
+      type: 'mismatch',
+      index: 0,
+      position: 42,
+      length: 1,
+    },
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
@@ -121,7 +150,12 @@ test('a base-pair cigar hit sorts by base at that position', () => {
 // silently skip the sort. The item must capture the block when it's built.
 test('sort still fires when the block is cleared before the click', () => {
   const model = makeModel({
-    contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42 },
+    contextMenuCigarHit: {
+      type: 'mismatch',
+      index: 0,
+      position: 42,
+      length: 1,
+    },
   })
   const item = firstSubMenuItem(run(model)[0])
   model.contextMenuBlock = undefined
@@ -131,7 +165,12 @@ test('sort still fires when the block is cleared before the click', () => {
 
 test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
   const model = makeModel({
-    contextMenuCigarHit: { type: 'insertion', index: 0, position: 7 },
+    contextMenuCigarHit: {
+      type: 'insertion',
+      index: 0,
+      position: 7,
+      length: 3,
+    },
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([['insertion', 7, 'ctgA']])
@@ -165,7 +204,12 @@ test('a modification hit offers "Open modification details"', () => {
 
 test('sort is a no-op without a block', () => {
   const model = makeModel({
-    contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42 },
+    contextMenuCigarHit: {
+      type: 'mismatch',
+      index: 0,
+      position: 42,
+      length: 1,
+    },
     contextMenuBlock: undefined,
   })
   firstSubMenuItem(run(model)[0]).onClick()
@@ -212,6 +256,49 @@ test('no "Sort by" submenu without a clicked position', () => {
   expect(run(model).map(i => (i as { label: string }).label)).not.toContain(
     'Sort by',
   )
+})
+
+// The menu opens on the id and grows the rest when the fetch lands. Everything
+// answerable from the id has to be in that first paint — the details item and
+// the position sort, which reads only the clicked block and column. Anything
+// that reads a read field (mate, tags, name, sequence) can only come later.
+describe('what the menu offers before the feature fetch lands', () => {
+  test('details and sort are there from the id alone', () => {
+    const model = makeModel({
+      contextMenuFeatureId: 'read1',
+      contextMenuGenomicPos: 150,
+    })
+    const labels = run(model).map(i => (i as { label?: string }).label)
+    expect(labels).toEqual(['Open feature details', 'Sort by'])
+  })
+
+  test('the read-field items are absent until it does', () => {
+    const withFeat = run(
+      makeModel({
+        contextMenuFeature: makeFeature({ name: 'readABC' }),
+        contextMenuGenomicPos: 150,
+      }),
+    ).map(i => (i as { label?: string }).label)
+    expect(withFeat).toEqual([
+      'Open feature details',
+      'Sort by',
+      'Filter',
+      'Copy',
+    ])
+  })
+
+  // One item, two paths to the same read: it fetches when clicked before the
+  // feature landed, and acts on the one in hand when clicked after.
+  test('"Open feature details" fetches by id, or uses the landed feature', () => {
+    const pending = makeModel({ contextMenuFeatureId: 'read1' })
+    click(run(pending)[0])
+    expect(pending.selected.map(f => f.get('name'))).toEqual(['fetched'])
+
+    const feature = makeFeature({ name: 'readABC' })
+    const landed = makeModel({ contextMenuFeature: feature })
+    click(run(landed)[0])
+    expect(landed.selected).toEqual([feature])
+  })
 })
 
 test('filter for this read sets the read name (QNAME), keeping flags', () => {
@@ -340,7 +427,12 @@ describe('getHitMenuItems with sort: false', () => {
   test('a cigar hit becomes a flat details item', () => {
     const items = getHitMenuItems(
       makeModel({
-        contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42 },
+        contextMenuCigarHit: {
+          type: 'mismatch',
+          index: 0,
+          position: 42,
+          length: 1,
+        },
       }),
       { sort: false },
     )

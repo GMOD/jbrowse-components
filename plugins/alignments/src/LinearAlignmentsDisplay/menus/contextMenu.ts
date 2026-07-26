@@ -39,7 +39,12 @@ const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 type LGV = LinearGenomeViewModel
 
 interface ContextMenuModel extends IAnyStateTreeNode {
+  // The read under the cursor, known only after a GetPileupFeatureDetails round
+  // trip — so it is undefined for the first paint of every menu. Items that can
+  // be built from the id alone must not gate on it (see withContextMenuFeature).
   contextMenuFeature: Feature | undefined
+  // The same read's id, carried by the hit test and so known synchronously.
+  contextMenuFeatureId: string | undefined
   contextMenuCigarHit: CigarHitResult | undefined
   contextMenuIndicatorHit: IndicatorHitResult | undefined
   contextMenuModHit: ModificationHitResult | undefined
@@ -61,6 +66,29 @@ interface ContextMenuModel extends IAnyStateTreeNode {
     tag?: string
   }) => void
   selectFeature: (feature: Feature) => void
+  withFeatureById: (
+    featureId: string,
+    onFeat: (feat: Feature) => void,
+  ) => Promise<void>
+}
+
+// Act on the read the menu was opened over. `feat` is the fetched feature as
+// captured when this menu was built: the fetch landing re-runs the menu builder,
+// so by the time anything is clicked it is normally in hand and this is
+// synchronous. The id path covers the narrow case of a click that beats the RPC.
+// Neither can be read live inside the onClick — closeContextMenu clears both
+// before the callback fires.
+export function withContextMenuFeature(
+  self: ContextMenuModel,
+  featureId: string,
+  feat: Feature | undefined,
+  onFeat: (feat: Feature) => void,
+) {
+  if (feat) {
+    onFeat(feat)
+  } else {
+    void self.withFeatureById(featureId, onFeat)
+  }
 }
 
 // SAM tags live under a `tags` object on the fetched feature, but a few
@@ -95,6 +123,15 @@ async function copyText(self: ContextMenuModel, text: string, what: string) {
     console.error(e)
     session.notifyError(`${e}`, e)
   }
+}
+
+// The whole feature as JSON, minus the synthetic uniqueId — the "all fields"
+// copy, shared with the displays that offer it as a top-level item rather than
+// inside a Copy submenu (LGVSyntenyDisplay, whose PAF block has no read name or
+// sequence to copy beside it).
+export function copyFeatureInfo(self: ContextMenuModel, feat: Feature) {
+  const { uniqueId: _uniqueId, ...rest } = feat.toJSON()
+  void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
 }
 
 // Cigar and coverage-indicator hits build the identical two-item submenu: sort
@@ -250,8 +287,7 @@ function getCopySubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
     label: 'Copy feature info',
     subLabel: 'all fields as JSON',
     onClick: () => {
-      const { uniqueId, ...rest } = feat.toJSON()
-      void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
+      copyFeatureInfo(self, feat)
     },
   })
   return sub
@@ -290,9 +326,7 @@ export function getHitMenuItems(
         // than as an unexplained second kind of detail. A mismatch is 1bp by
         // construction and says nothing.
         detailsLabel: `Open ${typeLabel.toLowerCase()} details${
-          cigarHit.length !== undefined && cigarHit.length > 1
-            ? ` (${cigarHit.length.toLocaleString()} bp)`
-            : ''
+          cigarHit.length > 1 ? ` (${cigarHit.length.toLocaleString()} bp)` : ''
         }`,
         openDetails: b => {
           openCigarWidget(self, cigarHit, b.refName)
@@ -347,15 +381,23 @@ export function getHitMenuItems(
 // model to mirror trackMenuItems (menus/index.ts).
 export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
   const feat = self.contextMenuFeature
+  const featureId = self.contextMenuFeatureId
   const block = self.contextMenuBlock
   const items = getHitMenuItems(self)
 
-  if (feat) {
+  // Split on what each item actually needs. The id says "the cursor is over a
+  // read" the moment the menu opens; the feature says which read, an RPC later.
+  // Everything answerable from the id is offered at first paint — the menu used
+  // to open bare and grow these a fetch later, which on a slow lookup meant
+  // right-clicking a read produced a menu with nothing in it.
+  if (featureId !== undefined) {
     items.push({
       label: 'Open feature details',
       icon: MenuOpenIcon,
       onClick: () => {
-        self.selectFeature(feat)
+        withContextMenuFeature(self, featureId, feat, f => {
+          self.selectFeature(f)
+        })
       },
     })
     // Sort the pileup at the clicked column — the same criteria as the track
@@ -406,6 +448,13 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         ],
       })
     }
+  }
+
+  // The rest read the read's own fields — mate coordinates, tags, name,
+  // sequence — so they genuinely have to wait for the fetch. They append below
+  // the id-built items above, so landing late grows the menu at the bottom
+  // rather than shifting what is already under the cursor.
+  if (feat) {
     const mateFields = getMateFields(feat)
     if (mateFields) {
       items.push({

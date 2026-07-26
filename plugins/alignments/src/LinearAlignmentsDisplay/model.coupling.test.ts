@@ -7,7 +7,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
@@ -82,10 +82,16 @@ function createDisplay() {
     })
     .volatile(() => ({
       // satisfies isSessionModel so getSession(view) resolves; the LGV
-      // localStorage autorun calls getSession via the trackLabels getter
-      rpcManager: {},
+      // localStorage autorun calls getSession via the trackLabels getter.
+      // `call` is replaced per test by the cases that drive an RPC.
+      rpcManager: { call: jest.fn() },
       // `colorPalette` (and so `renderState`) derives from the session theme
       theme: createJBrowseTheme(),
+      // the feature-details lookup asks for the region's sequence adapter, and
+      // reports a failed lookup through notify
+      assemblyManager: { get: () => undefined },
+      notify: jest.fn(),
+      notifyError: jest.fn(),
     }))
     .views(() => ({
       getTrackById(id: string) {
@@ -326,13 +332,14 @@ describe('openContextMenu atomic state and stale-read reset', () => {
     const display = createDisplay()
     display.openContextMenu({
       coord: [10, 20],
-      cigarHit: { type: 'mismatch', index: 0, position: 42 },
+      cigarHit: { type: 'mismatch', index: 0, position: 42, length: 1 },
     })
     expect(display.contextMenuCoord).toEqual([10, 20])
     expect(display.contextMenuCigarHit).toEqual({
       type: 'mismatch',
       index: 0,
       position: 42,
+      length: 1,
     })
   })
 
@@ -366,18 +373,130 @@ describe('openContextMenu atomic state and stale-read reset', () => {
     })
   })
 
+  // The id is what the menu's feature items are built from, so it has to be
+  // there the instant the menu opens — the feature it names is a fetch behind,
+  // and gating the items on that is what left a right-click showing an empty
+  // menu.
+  test('the read id lands synchronously, unlike the feature', () => {
+    const display = createDisplay()
+    display.openContextMenu({ coord: [1, 2], featureId: 'read1' })
+    expect(display.contextMenuFeatureId).toBe('read1')
+    expect(display.contextMenuFeature).toBeUndefined()
+  })
+
   test('closeContextMenu wipes all context-menu state', () => {
     const display = createDisplay()
     display.openContextMenu({
       coord: [3, 4],
-      cigarHit: { type: 'mismatch', index: 1, position: 9 },
+      cigarHit: { type: 'mismatch', index: 1, position: 9, length: 1 },
+      featureId: 'read1',
     })
     display.closeContextMenu()
     expect(display.contextMenuCoord).toBeUndefined()
     expect(display.contextMenuCigarHit).toBeUndefined()
     expect(display.contextMenuIndicatorHit).toBeUndefined()
     expect(display.contextMenuFeature).toBeUndefined()
+    expect(display.contextMenuFeatureId).toBeUndefined()
     expect(display.contextMenuBlock).toBeUndefined()
+  })
+})
+
+// What the display asks the adapter for when a menu item needs the whole
+// feature behind an id.
+describe('the feature-details lookup', () => {
+  // One read, id 'read1', spanning 1000-5000 of a loaded ctgA region.
+  function seedOneRead(display: ReturnType<typeof createDisplay>) {
+    display.setRpcData(0, {
+      groups: [
+        {
+          key: '',
+          label: '',
+          data: {
+            ...makeEmptyPileupData(),
+            readIds: ['read1'],
+            readNames: ['readA'],
+            readPositions: new Uint32Array([1000, 5000]),
+            readYs: new Uint16Array([0]),
+            readFlags: new Uint16Array([0]),
+            readMapqs: new Uint8Array([60]),
+          },
+        },
+      ],
+    })
+    display.setLoadedRegion(0, {
+      refName: 'ctgA',
+      start: 0,
+      end: 10000,
+      assemblyName: 'volvox',
+    })
+  }
+
+  function rpcCall(display: ReturnType<typeof createDisplay>) {
+    const call = jest.fn().mockResolvedValue({ feature: undefined })
+    getSession(display).rpcManager.call = call
+    return call
+  }
+
+  // A single base at the feature's start, not its extent. The adapter returns
+  // everything overlapping the region and only the matching id is kept, so the
+  // extent only ever made the query bigger — a read's length for a BAM, but the
+  // whole block for a synteny alignment, where it re-read a megabase PAF block
+  // just to name it.
+  //
+  // This is only sound because feature ids don't depend on the queried region:
+  // every adapter behind this display numbers features from file offsets
+  // (BamSlightlyLazyFeature, CramSlightlyLazyFeature, the PAF/PIF row readers).
+  // An adapter that numbered per query would break the lookup silently, and
+  // this assertion is the only place that says so.
+  test('asks for one base at the feature start, not its whole extent', async () => {
+    const display = createDisplay()
+    seedOneRead(display)
+    const call = rpcCall(display)
+
+    await display.selectFeatureById('read1')
+
+    expect(call).toHaveBeenCalledWith(
+      expect.any(String),
+      'GetPileupFeatureDetails',
+      expect.objectContaining({
+        featureId: 'read1',
+        regions: [
+          {
+            refName: 'ctgA',
+            assemblyName: 'volvox',
+            start: 1000,
+            end: 1001,
+          },
+        ],
+      }),
+    )
+  })
+
+  // refName and assembly come from the region the read was fetched from, not
+  // from a scan over the view's regions — that scan could pick another region's
+  // assembly, and threw on the one it couldn't resolve.
+  test('an id with no loaded data makes no request at all', async () => {
+    const display = createDisplay()
+    const call = rpcCall(display)
+
+    await display.selectFeatureById('read1')
+
+    expect(call).not.toHaveBeenCalled()
+  })
+
+  // Offering menu items from the id means a lookup can now come back empty
+  // under a click. Saying nothing would make the item look broken.
+  test('a lookup that finds nothing says so', async () => {
+    const display = createDisplay()
+    seedOneRead(display)
+    rpcCall(display)
+
+    await display.selectFeatureById('read1')
+
+    expect(getSession(display).notify).toHaveBeenCalledWith(
+      expect.stringContaining('Could not load details'),
+      'warning',
+    )
   })
 })
 
