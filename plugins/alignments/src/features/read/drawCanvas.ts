@@ -15,6 +15,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface DrawReadsRegion {
@@ -28,7 +29,7 @@ interface DrawReadsRegion {
   readInsertSizes: Float32Array
   readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array
-  insertSizeStats?: { upper: number; lower: number }
+  insertSizeStats?: InsertSizeBand
   // Per-exon segments: reads split at CIGAR N/skip. Each segment carries its
   // parent read index so per-read color/strand/flags resolve via readIndex.
   segmentPositions: Uint32Array

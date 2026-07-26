@@ -7,6 +7,7 @@
  * convention" and "BP precision" for details.
  */
 
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -316,11 +317,12 @@ export interface PileupDataResult {
   // Built by cloneWithLayout after Y assignment; Flatbush item index == modification index.
   modFlatbush?: Flatbush
 
-  // Insert size statistics (mean ± 3 SD thresholds for coloring)
-  insertSizeStats?: {
-    upper: number // mean + 3*SD (too long → red)
-    lower: number // mean - 3*SD (too short → pink)
-  }
+  // The short/normal/long |TLEN| thresholds for insert-size coloring: robust
+  // median ± 3·1.4826·MAD over the fetch's primary proper pairs, pooled across
+  // every group (see computePairedInsertSizeStats / getInsertSizeStats). Absent
+  // when the fetch has no usable paired sample, which classifyInsertSize reads
+  // as "everything normal".
+  insertSizeStats?: InsertSizeBand
 
   // Unique tag values discovered during feature iteration (for colorBy tag mode)
   newTagValues?: string[]

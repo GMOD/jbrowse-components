@@ -25,6 +25,13 @@ function isPrimaryProperPair(flags: number) {
  * the same insert size differently between sections. Takes the per-group feature
  * arrays and iterates them in place, so pooling across groups costs no flattened
  * copy of every read.
+ *
+ * Returns undefined — no insert-size coloring at all, as for unpaired data —
+ * when the sample yields a collapsed `upper === lower` band. One proper pair, or
+ * a handful that happen to share a TLEN, drives both MAD and sd to 0 and pins
+ * the band to a single value, which classifies every *other* read in the view as
+ * a long or short outlier and floods the pileup red/pink. A band with no width
+ * carries no information, so it is better to paint nothing than to paint that.
  */
 export function computePairedInsertSizeStats(groups: FeatureData[][]) {
   const pairedInsertSizes: number[] = []
@@ -35,7 +42,9 @@ export function computePairedInsertSizeStats(groups: FeatureData[][]) {
       }
     }
   }
-  return pairedInsertSizes.length > 0
-    ? getInsertSizeStats(pairedInsertSizes)
-    : undefined
+  const band =
+    pairedInsertSizes.length > 0
+      ? getInsertSizeStats(pairedInsertSizes)
+      : undefined
+  return band && band.upper > band.lower ? band : undefined
 }

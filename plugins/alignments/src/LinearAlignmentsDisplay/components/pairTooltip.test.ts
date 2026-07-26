@@ -3,7 +3,9 @@ import { formatChainTooltip, formatFeatureLabel } from './tooltipUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Single-read payload for the chain/pileup hover tooltip. The pair-anomaly rows
-// read flags / insert size / orientation / mate ref + insertSizeStats.
+// read flags / insert size / orientation / readInterchrom + insertSizeStats.
+// `readNextRefs` only names the mate in the message; whether the mate is on
+// another chromosome is the worker's `readInterchrom` verdict.
 function makeRpcData(
   overrides: Partial<PileupDataResult> = {},
 ): PileupDataResult {
@@ -14,7 +16,8 @@ function makeRpcData(
     readInsertSizes: new Float32Array([500]),
     readPairOrientations: new Uint8Array([1]), // LR
     readNextRefs: ['chr1'],
-    insertSizeStats: { upper: 1000, lower: 200, avg: 600, sd: 100 },
+    readInterchrom: new Uint8Array([0]),
+    insertSizeStats: { upper: 1000, lower: 200 },
     ...overrides,
   } as PileupDataResult
 }
@@ -76,6 +79,7 @@ describe('formatChainTooltip pair anomalies', () => {
     const tip = formatChainTooltip(
       makeRpcData({
         readNextRefs: ['chr2'],
+        readInterchrom: new Uint8Array([1]),
         readPairOrientations: new Uint8Array([2]),
         readInsertSizes: new Float32Array([5000]),
       }),
@@ -85,6 +89,29 @@ describe('formatChainTooltip pair anomalies', () => {
     expect(tip).toContain('Inter-chromosomal (mate on chr2)')
     expect(tip).not.toContain('Long insert size')
     expect(tip).not.toContain('facing pair')
+  })
+
+  // RNEXT carries the BAM header's own naming while the refName handed to the
+  // tooltip is assembly-canonical, so on an aliased BAM (file `chr1`, assembly
+  // `1`) a same-chromosome mate has readNextRefs !== refName. Comparing the two
+  // here called every paired read inter-chromosomal and, being pre-emptive,
+  // swallowed its real anomaly rows. The worker's readInterchrom flag — computed
+  // with both names in file space, and what the read fill already uses — is the
+  // only thing that decides this.
+  it('does not call an aliased same-chromosome mate inter-chromosomal', () => {
+    const tip = formatChainTooltip(
+      makeRpcData({
+        readNextRefs: ['chr1'], // file naming
+        readInterchrom: new Uint8Array([0]), // worker: same chromosome
+        readPairOrientations: new Uint8Array([2]),
+        readInsertSizes: new Float32Array([5000]),
+      }),
+      0,
+      '1', // assembly-canonical naming
+    )
+    expect(tip).not.toContain('Inter-chromosomal')
+    expect(tip).toContain('Outward facing pair')
+    expect(tip).toContain('Long insert size')
   })
 })
 

@@ -108,6 +108,7 @@ import {
   sectionRenderState,
 } from './rendererTypes.ts'
 
+import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
@@ -365,7 +366,7 @@ interface BlockFrame {
 // Per-region data not tracked by the HAL. Extends ChainBoundsRegion so
 // `getChainBounds` accepts it directly.
 interface LocalRegion extends ChainBoundsRegion {
-  insertSizeStats?: { upper: number; lower: number }
+  insertSizeStats?: InsertSizeBand
   maxDepth: number
   binSize: number
   interbaseMaxCount: number
@@ -373,9 +374,17 @@ interface LocalRegion extends ChainBoundsRegion {
 
 const OVERLAY_REGION = 999999
 
-// Sentinel upper bound (bp) for the insert-size color cutoff when no paired
-// stats are available — effectively "no upper cutoff" in the read shader.
-const NO_INSERT_UPPER = 999999
+// Upper bound (bp) for the insert-size color cutoff when no paired stats are
+// available. The shader has no "band is undefined" state — it always compares
+// against insertUpper/insertLower — so this has to be a value nothing can
+// exceed, matching classifyInsertSize's `band === undefined` → always 'normal'.
+// 2^31 is exactly that: TLEN is a BAM int32, so |TLEN| <= 2^31 and the shader's
+// strict `is > u.insertUpper` is false even for INT32_MIN. It is also exact in
+// the f32 uniform. The old 999999 was NOT unreachable — a mate ~1 Mb away in a
+// fetch with no primary proper pairs (SV-heavy or all-discordant region) painted
+// long-insert on the GPU while the Canvas2D/SVG path and the legend said normal.
+// insertLower = 0 needs no such treatment: `is > 0.0 &&` already blocks 'short'.
+const NO_INSERT_UPPER = 2 ** 31
 
 // A device-px vertical span: scissor/viewport top + height in backing-store px.
 interface DevBand {

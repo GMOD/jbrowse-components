@@ -228,12 +228,11 @@ function getArcColorType(args: {
   // blanket pre-switch override, so it can't repaint an abnormal-orientation
   // pair (RL/RR/LL) whose orientation is the real SV signal — the same
   // protection the split branch above relies on.
-  const longRangeColor =
-    longRange && largeInsert ? COLOR_LONG_INSERT : COLOR_DEFAULT
-  const insert =
-    longRange && largeInsert
-      ? COLOR_LONG_INSERT
-      : insertSizeColor(arc.tlen, stats)
+  const isLongRange = longRange && largeInsert
+  const longRangeColor = isLongRange ? COLOR_LONG_INSERT : COLOR_DEFAULT
+  const insert = isLongRange
+    ? COLOR_LONG_INSERT
+    : insertSizeColor(arc.tlen, stats)
   switch (colorByType) {
     case 'insertSize':
       return insert

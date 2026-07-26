@@ -24,8 +24,6 @@ function referenceStats(filtered: number[]) {
   return {
     upper: center + spread,
     lower: Math.max(0, center - spread),
-    avg,
-    sd,
   }
 }
 
@@ -40,33 +38,24 @@ test('randomized: O(n) MAD merge matches the naive double-sort exactly', () => {
     const values = Array.from({ length: len }, () => Math.floor(rng() * 2000))
     const got = getInsertSizeStats(values)
     const ref = referenceStats(values)
-    expect(got.avg).toBeCloseTo(ref.avg, 9)
-    expect(got.sd).toBeCloseTo(ref.sd, 9)
     expect(got.upper).toBeCloseTo(ref.upper, 9)
     expect(got.lower).toBeCloseTo(ref.lower, 9)
   }
 })
 
-test('basic mean/sd', () => {
-  const { avg, sd } = getInsertSizeStats([2, 4, 4, 4, 5, 5, 7, 9])
-  expect(avg).toBe(5)
-  expect(sd).toBeCloseTo(2, 10)
+// MAD = 0 sends the spread through the mean/sd fallback, which for a sample of
+// one (or of N identical values) is also 0 — collapsing the band onto a single
+// value. getInsertSizeStats stays total and reports it faithfully;
+// computePairedInsertSizeStats is what refuses to color from it.
+test('identical values collapse the band onto the shared value', () => {
+  expect(getInsertSizeStats(new Array(1000).fill(500))).toEqual({
+    upper: 500,
+    lower: 500,
+  })
 })
 
-test('identical values give zero sd (no NaN from float cancellation)', () => {
-  const { avg, sd, upper, lower } = getInsertSizeStats(
-    new Array(1000).fill(500),
-  )
-  expect(avg).toBe(500)
-  expect(sd).toBe(0)
-  expect(upper).toBe(500)
-  expect(lower).toBe(500)
-})
-
-test('single element', () => {
-  const { avg, sd } = getInsertSizeStats([350])
-  expect(avg).toBe(350)
-  expect(sd).toBe(0)
+test('single element collapses the band', () => {
+  expect(getInsertSizeStats([350])).toEqual({ upper: 350, lower: 350 })
 })
 
 // MAD = 0 (over half the values identical) is degenerate, so the spread falls
@@ -92,9 +81,9 @@ test('skewed distribution keeps a positive short-insert threshold', () => {
 })
 
 // The old single-pass form (len*Σx² − (Σx)²)/len² overflows 2^53 and loses
-// precision at high coverage with large inserts, yielding NaN sd. The
-// two-pass form stays finite and accurate. Thresholds use the robust
-// median ± 3·1.4826·MAD spread (MAD = 1000 here).
+// precision at high coverage with large inserts, yielding a NaN sd and NaN
+// thresholds. The two-pass form stays finite and accurate. Thresholds here use
+// the robust median ± 3·1.4826·MAD spread (MAD = 1000).
 test('high coverage with large inserts stays finite and accurate', () => {
   const n = 200_000
   const values = new Array<number>(n)
@@ -102,11 +91,9 @@ test('high coverage with large inserts stays finite and accurate', () => {
     // alternate around a large mean so true sd (and MAD) is a clean 1000
     values[i] = i % 2 === 0 ? 1_000_000 - 1000 : 1_000_000 + 1000
   }
-  const { avg, sd, upper, lower } = getInsertSizeStats(values)
-  expect(Number.isFinite(sd)).toBe(true)
-  expect(Number.isNaN(sd)).toBe(false)
-  expect(avg).toBeCloseTo(1_000_000, 3)
-  expect(sd).toBeCloseTo(1000, 6)
+  const { upper, lower } = getInsertSizeStats(values)
+  expect(Number.isFinite(upper)).toBe(true)
+  expect(Number.isFinite(lower)).toBe(true)
   expect(upper).toBeCloseTo(1_004_447.8, 1)
   expect(lower).toBeCloseTo(995_552.2, 1)
 })

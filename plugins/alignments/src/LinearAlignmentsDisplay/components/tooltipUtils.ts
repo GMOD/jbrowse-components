@@ -88,19 +88,38 @@ function orientationDescription(pairOrientation: number) {
 // insert size, so both lines are reported — unlike the single fill color, which
 // must pick one. Insert size flows through the shared classifyInsertSize (its
 // unset-TLEN guard included) so it can't drift from the coloring thresholds.
-function getPairTypeDescriptions(
-  flags: number,
-  pairOrientation: number,
-  insertSize: number,
-  insertSizeStats?: InsertSizeBand,
-  nextRef?: string,
-  refName?: string,
-): string[] {
+//
+// `interchrom` is the worker's per-read flag (buildReadInterchrom), NOT a
+// refName comparison done here. RNEXT carries the BAM header's own naming
+// (`chr1`) while a main-thread refName is assembly-canonical (`1`), so comparing
+// them here reported every paired read on an aliased BAM as inter-chromosomal —
+// and, being pre-emptive, swallowed its real orientation/insert-size lines. The
+// worker does the same comparison with both names in file space, which is where
+// the read fill gets it right, so reuse that verdict rather than re-deriving it.
+function getPairTypeDescriptions({
+  flags,
+  pairOrientation,
+  insertSize,
+  interchrom,
+  insertSizeStats,
+  nextRef,
+}: {
+  flags: number
+  pairOrientation: number
+  insertSize: number
+  interchrom: number
+  insertSizeStats?: InsertSizeBand
+  nextRef: string
+}): string[] {
   if (flags & 8) {
     return ['Unmapped mate']
   }
-  if (nextRef && refName && nextRef !== refName && nextRef !== '=') {
-    return [`Inter-chromosomal (mate on ${nextRef})`]
+  if (interchrom === 1) {
+    return [
+      nextRef
+        ? `Inter-chromosomal (mate on ${nextRef})`
+        : 'Inter-chromosomal mate',
+    ]
   }
   const out: string[] = []
   if (pairOrientation > 1) {
@@ -109,7 +128,7 @@ function getPairTypeDescriptions(
       out.push(orient)
     }
   }
-  const insertClass = classifyInsertSize(Math.abs(insertSize), insertSizeStats)
+  const insertClass = classifyInsertSize(insertSize, insertSizeStats)
   if (insertClass === 'long') {
     out.push('Long insert size')
   } else if (insertClass === 'short') {
@@ -146,8 +165,9 @@ export function formatChainTooltip(
 
   const lines = [`<b>${name}</b>`, formatLocationRange(refName, start, end)]
 
+  // readInsertSizes is |TLEN| already (buildBaseFeatureData abs's it).
   if (insertSize !== 0) {
-    lines.push(`Template length: ${toLocale(Math.abs(insertSize))}`)
+    lines.push(`Template length: ${toLocale(insertSize)}`)
   }
 
   const orientName = PAIR_ORIENTATION_NAMES[pairOrientation]
@@ -155,16 +175,15 @@ export function formatChainTooltip(
     lines.push(`Pair orientation: ${orientName}`)
   }
 
-  const nextRef = rpcData.readNextRefs?.[idx] ?? ''
   lines.push(
-    ...getPairTypeDescriptions(
+    ...getPairTypeDescriptions({
       flags,
       pairOrientation,
       insertSize,
-      rpcData.insertSizeStats,
-      nextRef,
-      refName,
-    ),
+      interchrom: rpcData.readInterchrom[idx] ?? 0,
+      insertSizeStats: rpcData.insertSizeStats,
+      nextRef: rpcData.readNextRefs?.[idx] ?? '',
+    }),
   )
 
   if (flags & 2048) {

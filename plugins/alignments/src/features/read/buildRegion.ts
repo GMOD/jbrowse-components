@@ -1,6 +1,7 @@
 import { buildReadIdToIndex } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 
 // The read trunk owns the per-read fields every CIGAR/coverage/highlight
 // path reads from. Lives at the trunk because chain overlays, hit-tests,
@@ -19,7 +20,7 @@ export interface ReadRegionFields {
   readTagColors: Uint32Array
   readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array
-  insertSizeStats?: { upper: number; lower: number }
+  insertSizeStats?: InsertSizeBand
   // Per-exon segments (reads split at CIGAR N/skip). The Canvas2D/SVG read
   // draw walks these — not whole reads — so intron spans are never filled and
   // the skip pass needs no clearRect, matching the GPU's per-segment quads.

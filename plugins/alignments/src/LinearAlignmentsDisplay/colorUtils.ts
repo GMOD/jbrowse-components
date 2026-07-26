@@ -281,15 +281,18 @@ export function readColorCategory(
 // (≈3σ, i.e. center±6σ) so a moderate outlier already reads as clearly colored
 // rather than near-neutral. SYNC: IS_GRADIENT_SPAN_FRAC and this math mirror
 // insertSizeGradientColor in read.slang (the shader is the source of the const).
+// `stats` is required, not optional: this is only reachable for the longInsert /
+// shortInsert categories, and classifyInsertSize can only produce those from a
+// defined band.
 function gradientInsertColor(
   cat: 'longInsert' | 'shortInsert',
   insertSize: number,
-  stats: InsertSizeBand | undefined,
+  stats: InsertSizeBand,
   palette: ColorPalette,
 ) {
-  const span = stats ? (stats.upper - stats.lower) * IS_GRADIENT_SPAN_FRAC : 0
-  if (stats && span > 0) {
-    return cat === 'longInsert'
+  const span = (stats.upper - stats.lower) * IS_GRADIENT_SPAN_FRAC
+  return span > 0
+    ? cat === 'longInsert'
       ? lerpRgb255(
           palette.colorPairLR,
           palette.colorLongInsert,
@@ -300,8 +303,7 @@ function gradientInsertColor(
           palette.colorShortInsert,
           Math.min((stats.lower - insertSize) / span, 1),
         )
-  }
-  return rgb255(palette.colorPairLR)
+    : rgb255(palette.colorPairLR)
 }
 
 // The one place a category becomes a CSS color. The dynamic categories
@@ -339,7 +341,8 @@ function categoryColor(
     // they (and 'normalInsert') fall through to the flat swatch lookup.
     case 'longInsert':
     case 'shortInsert':
-      return colorScheme === ColorScheme.insertSizeGradient
+      return colorScheme === ColorScheme.insertSizeGradient &&
+        data.insertSizeStats
         ? gradientInsertColor(
             cat,
             data.readInsertSizes[i]!,

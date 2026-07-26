@@ -8,6 +8,8 @@
 // (`clipPass.ts`, `runCoveragePipeline.ts`) don't have to import upward
 // into `LinearAlignmentsDisplay/components/`.
 
+import type { InsertSizeBand } from './insertSizeStats.ts'
+
 export interface ReadUploadData {
   readPositions: Uint32Array
   readYs: Uint16Array
@@ -21,7 +23,7 @@ export interface ReadUploadData {
   readInterchrom: Uint8Array // 1 = mate on a different chromosome
   readIds: string[]
   maxY: number
-  insertSizeStats?: { upper: number; lower: number }
+  insertSizeStats?: InsertSizeBand
   segmentPositions: Uint32Array
   segmentReadIndices: Uint32Array
   segmentEdgeFlags: Uint8Array

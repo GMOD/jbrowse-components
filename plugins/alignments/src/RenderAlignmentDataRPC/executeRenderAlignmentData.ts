@@ -47,6 +47,7 @@ import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import { getFlags } from '../shared/util.ts'
 
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type {
   AlignmentGroup,
@@ -259,7 +260,7 @@ interface GroupContext {
   detectedSimplexModifications: ReadonlySet<string>
   // Shared insert-size color scale, pooled across every group of the fetch so
   // all stacked sections color long/short inserts on one comparable scale.
-  insertSizeStats: { upper: number; lower: number } | undefined
+  insertSizeStats: InsertSizeBand | undefined
   statusCallback: StatusCallback
   stopTokenCheck: StopTokenChecker
 }
