@@ -84,6 +84,33 @@ const reverse = [
 
 const rows = (blat: (string | number)[][]) => parsePslRows({ fields, blat })
 
+const withFields = (
+  row: (string | number)[],
+  edits: Record<string, string | number>,
+) => row.map((value, i) => edits[fields[i]!] ?? value)
+
+// Eight-base variants of the two hits above. A test about names and strands wants
+// a query short enough to read, and pslQuerySeq only carries one whose length is
+// the qSize its row states, so the row has to shrink with the query.
+const forward8 = withFields(forward, {
+  qSize: 8,
+  qEnd: 8,
+  blockSizes: '7',
+  // 1S7M, so the target span shrinks with the block
+  tEnd: 34345901 + 7,
+})
+// 3M1I2D4M: two blocks with a one-base query insert and a two-base target gap
+const reverse8 = withFields(reverse, {
+  qSize: 8,
+  qStart: 0,
+  qEnd: 8,
+  blockCount: 2,
+  blockSizes: '3,4',
+  qStarts: '0,4',
+  tStarts: '17301795,17301800',
+  tEnd: 17301795 + 9,
+})
+
 // summed op lengths for the given ops, e.g. 'MDN' for the reference span
 function cigarSpan(cigar: string, ops: string) {
   let total = 0
@@ -105,12 +132,20 @@ test('a query gap is an I and a target gap a D', () => {
 
 // the two lengths a CIGAR states have to match the spans PSL states, or the
 // alignment would draw at the wrong width or run off its read
-test('the CIGAR spans exactly the target and query PSL reports', () => {
-  const row = rows([reverse])[0]!
-  const cigar = pslToCigar(row)
-  expect(cigarSpan(cigar, 'MDN')).toBe(row.tEnd - row.tStart)
-  expect(cigarSpan(cigar, 'MIS')).toBe(row.qSize)
-})
+test.each([
+  ['forward', forward],
+  ['reverse', reverse],
+  ['forward8', forward8],
+  ['reverse8', reverse8],
+])(
+  '%s: the CIGAR spans exactly the target and query PSL reports',
+  (_n, psl) => {
+    const row = rows([psl])[0]!
+    const cigar = pslToCigar(row)
+    expect(cigarSpan(cigar, 'MDN')).toBe(row.tEnd - row.tStart)
+    expect(cigarSpan(cigar, 'MIS')).toBe(row.qSize)
+  },
+)
 
 test('a hit with no unaligned query ends carries no soft clips', () => {
   const flush = [...forward]
@@ -127,22 +162,21 @@ test('a hit with no unaligned query ends carries no soft clips', () => {
 // Get this wrong and every base reads as a mismatch.
 test('a minus-strand hit carries the reverse-complemented query', () => {
   const queries = new Map([['YourSeq', 'AACCGGTT']])
-  expect(pslQuerySeq(rows([reverse])[0]!, queries)).toBe('AACCGGTT')
-  expect(pslQuerySeq(rows([forward])[0]!, queries)).toBe('AACCGGTT')
+  expect(pslQuerySeq(rows([reverse8])[0]!, queries)).toBe('AACCGGTT')
+  expect(pslQuerySeq(rows([forward8])[0]!, queries)).toBe('AACCGGTT')
 })
 
 test('a plus-strand hit carries the query as submitted', () => {
   const queries = new Map([['YourSeq', 'ACGTTTTT']])
-  expect(pslQuerySeq(rows([forward])[0]!, queries)).toBe('ACGTTTTT')
-  expect(pslQuerySeq(rows([reverse])[0]!, queries)).toBe('AAAAACGT')
+  expect(pslQuerySeq(rows([forward8])[0]!, queries)).toBe('ACGTTTTT')
+  expect(pslQuerySeq(rows([reverse8])[0]!, queries)).toBe('AAAAACGT')
 })
 
 test('a hit whose query text is unavailable states no sequence', () => {
-  const other = [...forward]
-  other[9] = 'probeZ'
+  const other = withFields(forward8, { qName: 'probeZ' })
   const queries = new Map([
-    ['probeA', 'ACGT'],
-    ['probeB', 'TTTT'],
+    ['probeA', 'ACGTACGT'],
+    ['probeB', 'TTTTTTTT'],
   ])
   expect(pslQuerySeq(rows([other])[0]!, queries)).toBeUndefined()
 })
@@ -150,11 +184,10 @@ test('a hit whose query text is unavailable states no sequence', () => {
 // hgBlat renames a headerless query "YourSeq", and truncates long names, so an
 // exact match on the name can't be the only way back to the submitted bases
 test('a single submitted sequence answers for a hit under any name', () => {
-  const other = [...forward]
-  other[9] = 'YourSeq_renamed'
-  expect(pslQuerySeq(rows([other])[0]!, new Map([['probeA', 'ACGT']]))).toBe(
-    'ACGT',
-  )
+  const other = withFields(forward8, { qName: 'YourSeq_renamed' })
+  expect(
+    pslQuerySeq(rows([other])[0]!, new Map([['probeA', 'ACGTACGT']])),
+  ).toBe('ACGTACGT')
 })
 
 const samLines = (blat: (string | number)[][], queries: Map<string, string>) =>
@@ -227,6 +260,15 @@ test('a hit with no query text states SEQ as unavailable', () => {
 test('a query whose length disagrees with qSize is not carried', () => {
   const [record] = samRecords([forward], new Map([['YourSeq', 'ACGT']]))
   expect(record!.split('\t')[9]).toBe('*')
+})
+
+// BLAT counts only letters, so a pasted sequence's line numbers and gap dashes
+// are absent from the qSize its hits report — keeping them would leave the text
+// longer than the hit describes
+test('parsing keeps only the bases BLAT counts', () => {
+  expect(parseQuerySequences('1 ACGT-ACGT 60\n')).toEqual(
+    new Map([['YourSeq', 'ACGTACGT']]),
+  )
 })
 
 test('a query matching qSize is carried in full, and reverse-complemented on the minus strand', () => {

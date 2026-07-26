@@ -57,9 +57,12 @@ export function pslToCigar({
 
 /**
  * The submitted query in the orientation the hit aligned it, which is what SAM's
- * SEQ column holds. Returns undefined when the query text isn't available for
- * this hit's name, in which case the record carries `*` and renders its block
- * structure without per-base mismatches.
+ * SEQ column holds. Answers "do I have the bases this row describes", so it
+ * checks the length the row states as well as the name: the CIGAR spans `qSize`
+ * query bases by construction, and bases of any other length would sit out of
+ * register against the reference, drawing mismatches the whole way along a hit
+ * BLAT scored as near-perfect. Returns undefined for both misses, and the record
+ * then carries `*` and renders its block structure without per-base mismatches.
  */
 export function pslQuerySeq(row: PslRow, querySequences: Map<string, string>) {
   const seq =
@@ -67,7 +70,11 @@ export function pslQuerySeq(row: PslRow, querySequences: Map<string, string>) {
     // hgBlat labels a headerless query "YourSeq"; a single submitted record is
     // unambiguously the one every hit came from whatever it ended up named
     (querySequences.size === 1 ? [...querySequences.values()][0]! : undefined)
-  return seq === undefined ? undefined : row.strand < 0 ? revcom(seq) : seq
+  return seq?.length === row.qSize
+    ? row.strand < 0
+      ? revcom(seq)
+      : seq
+    : undefined
 }
 
 // Kent's psl2sam: the edit distance is the mismatched bases plus the bases
@@ -91,14 +98,7 @@ function pslRowToSamLine(
 ) {
   const secondary = bestOf.has(row.qName)
   bestOf.add(row.qName)
-  const resolved = pslQuerySeq(row, querySequences)
-  // The CIGAR spans qSize query bases by construction, so a SEQ of any other
-  // length is a malformed record: the pileup would compare the query against
-  // the reference out of register and draw mismatches everywhere. It means the
-  // text and the rows came from different queries (a renamed or truncated FASTA
-  // record, a stand-in server), so fall back to the documented "no query text"
-  // record, which draws the blocks and no per-base mismatches.
-  const seq = resolved?.length === row.qSize ? resolved : undefined
+  const seq = pslQuerySeq(row, querySequences)
   return [
     row.qName,
     (row.strand < 0 ? 16 : 0) | (secondary ? 256 : 0),
@@ -142,6 +142,12 @@ export function pslToSam(
  * The submitted query text as name -> residues. hgBlat places each FASTA record
  * separately and labels its hits with that record's name, so this is the map
  * from a hit back to the bases it was made of.
+ *
+ * Keeps only letters, which is what Kent's FASTA reader counts: a pasted
+ * sequence carrying line numbers, or alignment-gap dashes, is those bases to
+ * BLAT and so `qSize` excludes them. Stripping only whitespace left our text
+ * longer than the hit it describes, which is exactly the off-by-N that puts
+ * every base out of register.
  */
 export function parseQuerySequences(text: string) {
   const sequences = new Map<string, string>()
@@ -158,7 +164,7 @@ export function parseQuerySequences(text: string) {
       name = /^>\s*(\S+)/.exec(line)?.[1] ?? 'YourSeq'
       residues = []
     } else {
-      residues.push(line.replaceAll(/\s/g, ''))
+      residues.push(line.replaceAll(/[^A-Za-z]/g, ''))
     }
   }
   flush()
