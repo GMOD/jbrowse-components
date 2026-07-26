@@ -44,6 +44,27 @@ async function browserUcscFetch(urlBase: string, body: string) {
   }
 }
 
+// A CORS proxy in front of hgBlat answers a refusal with `{error}` JSON — a 429
+// when the shared UCSC key's rate budget is spent, which is a sentence worth
+// showing the user rather than the envelope it arrived in.
+function serverMessage(text: string) {
+  let message = text
+  try {
+    const parsed: unknown = JSON.parse(text)
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      'error' in parsed &&
+      typeof parsed.error === 'string'
+    ) {
+      message = parsed.error
+    }
+  } catch {
+    // not JSON, so the body itself is the best message available
+  }
+  return message
+}
+
 // Runs one UCSC query, routing through the desktop main process (to bypass the
 // renderer's CORS restriction and reuse a solved-challenge cookie) or a direct
 // browser fetch that expects a CORS-enabled proxy. The mode-specific pieces are
@@ -67,7 +88,7 @@ export async function runUcscFetch<T>({
     if (isChallengePage(text)) {
       throw challengeError()
     }
-    throw new Error(`UCSC request failed (${status}): ${text}`)
+    throw new Error(`UCSC request failed (${status}): ${serverMessage(text)}`)
   }
   return parse(text)
 }
