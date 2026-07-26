@@ -3,8 +3,7 @@ import { openAsBlob } from 'node:fs'
 // Web streams, not node ones: @gmod/faidx 2.0.5 changed generateFastaIndex to
 // take `ReadableStream`/`WritableStream` (it pipeThroughs them), so handing it
 // a node Readable fails at runtime with "fileDataStream.pipeThrough is not a
-// function". electron/ is outside the typecheck project (tsconfig includes only
-// src), which is why that signature change landed silently.
+// function".
 //
 // Both branches produce a real `ReadableStream<Uint8Array>` on their own, so
 // neither needs a cast: `openAsBlob` streams the file lazily rather than

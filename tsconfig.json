@@ -36,6 +36,12 @@
     "**/component_tests/",
     "**/examples-site/",
     "**/website",
+    // Excluded from *this* project because they run in electron/node, not the
+    // browser: they need `lib: esnext` (no DOM) and node's globals, so e.g.
+    // `fetch`/`ReadableStream` resolve to node's rather than the DOM's. They
+    // are not unchecked: each has its own tsconfig and `pnpm typecheck` runs
+    // all three projects. Leaving them out of a typecheck entirely is how a
+    // @gmod/faidx signature change reached a Windows release unnoticed.
     "products/jbrowse-desktop/test",
     "products/jbrowse-desktop/electron"
   ]
