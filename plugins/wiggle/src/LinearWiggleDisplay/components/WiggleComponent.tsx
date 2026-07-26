@@ -129,7 +129,6 @@ const WiggleBody = observer(function WiggleBody({
         >
           <ScoreLegend
             domain={model.domain}
-            dataRange={model.dataRange}
             scaleType={model.scaleType}
             canvasWidth={legendWidth}
           />

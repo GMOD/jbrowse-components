@@ -9,7 +9,6 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 // of ../model.ts, which is what caught the mismatch.
 export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   domain: [number, number] | undefined
-  dataRange: [number, number] | undefined
   scaleType: string
   summaryScoreMode: string
   isDensityMode: boolean

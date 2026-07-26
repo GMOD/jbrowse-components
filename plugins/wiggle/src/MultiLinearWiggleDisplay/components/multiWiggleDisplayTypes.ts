@@ -12,7 +12,6 @@ export interface MultiWiggleDisplayModel
   sources: { name: string; color?: string; labelColor?: string }[]
   sourcesWithoutLayout: { name: string }[]
   domain: [number, number] | undefined
-  dataRange: [number, number] | undefined
   scaleType: string
   isOverlay: boolean
   isDensityMode: boolean

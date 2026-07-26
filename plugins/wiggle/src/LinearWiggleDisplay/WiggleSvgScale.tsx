@@ -13,7 +13,6 @@ import type { YScaleTicks } from '@jbrowse/wiggle-core'
 interface ScaleModel {
   isDensityMode: boolean
   domain: [number, number] | undefined
-  dataRange: [number, number] | undefined
   scaleType: string
 }
 
@@ -30,11 +29,10 @@ export default observer(function WiggleSvgScale({
   legendRight: number
   ticks: YScaleTicks | undefined
 }) {
-  const { isDensityMode, domain, dataRange, scaleType } = model
+  const { isDensityMode, domain, scaleType } = model
   return !domain ? null : isDensityMode ? (
     <ScoreLegend
       domain={domain}
-      dataRange={dataRange}
       scaleType={scaleType}
       canvasWidth={legendRight}
     />

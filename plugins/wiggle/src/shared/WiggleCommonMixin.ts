@@ -17,9 +17,8 @@ import type { ObservableMap } from 'mobx'
 // The visible per-source feature arrays that feed autoscale, clipped to the
 // coarse (500ms debounced) blocks so the domain doesn't recompute on every
 // animation frame during zoom. `undefined` until the view + data are ready.
-// Shared by visibleScoreRange (clipped domain) and dataRange (true extent) so
-// they can't diverge; a free function rather than a getter to keep the mixin's
-// `.views` layering shallow enough for MST's compose type inference.
+// A free function rather than a getter to keep the mixin's `.views` layering
+// shallow enough for MST's compose type inference.
 function visibleEntries(
   self: IAnyStateTreeNode & {
     rpcDataMap: ObservableMap<number, WiggleDataResult>
@@ -81,9 +80,8 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       * The visible feature arrays plus their min/max/mean/stddev, walked once.
-       * `visibleScoreRange` and `dataRange` both derive from this so the score
-       * arrays aren't scanned twice per domain recompute.
+       * The visible feature arrays plus their min/max/mean/stddev, walked once
+       * per domain recompute rather than once per autoscale input.
        */
       get visibleScoreStats() {
         const entries = visibleEntries(self)
@@ -111,16 +109,6 @@ export function WiggleCommonMixin() {
               visibleEntries: visible.entries,
             })
           : undefined
-      },
-      /**
-       * #getter
-       * The true, unclipped `[min, max]` of the visible data. The displayed
-       * `domain` may clip this (localpercentile/localsd/fixed bounds), so the
-       * score legend compares the two to flag clipped signal.
-       */
-      get dataRange(): [number, number] | undefined {
-        const stats = self.visibleScoreStats?.stats
-        return stats ? [stats.scoreMin, stats.scoreMax] : undefined
       },
     }))
     .views(self => ({
