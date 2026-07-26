@@ -79,12 +79,15 @@ export function useSideScroll(model: LinearGenomeViewModel) {
       return
     }
     // skip the click-drag pan when pressing an interactive control: a
-    // draggable element, a resize handle, or a button (e.g. the menu button on
-    // a highlight/bookmark chip, whose actual target is the icon inside it)
+    // draggable element, a control that claimed the press (resize handles, the
+    // scalebar), or a button (e.g. the menu button on a highlight/bookmark
+    // chip, whose actual target is the icon inside it). All three are matched
+    // with `closest`, since the press usually lands on a child of the control
+    // rather than the control itself.
     const target = event.target as HTMLElement
     if (
       target.draggable ||
-      target.dataset.resizer ||
+      target.closest('[data-gesture-owner]') ||
       target.closest('button')
     ) {
       return

@@ -45,7 +45,7 @@ test('press and release over the data area is a click', () => {
 })
 
 // A release the display never saw the press for: the press landed on a resize
-// handle (coverage/conservation band, tree sidebar) whose `data-resizer` target
+// handle (coverage/conservation band, tree sidebar) whose `data-gesture-owner`
 // makes `handleMouseDown` bail, and the pointer-capture drag then delivers the
 // release here. Without the `isDragging` test this opened a feature widget for
 // whatever insertion marker the cursor happened to land on.

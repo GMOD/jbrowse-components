@@ -80,7 +80,14 @@ function ResizeHandle({
 
   return (
     <div
-      data-resizer="true"
+      // Claims the press: gesture ancestors (the LGV click-drag pan, MAF's
+      // drag-selection) test `closest('[data-gesture-owner]')` and don't begin
+      // their own drag. It's a marker rather than a `stopPropagation` because
+      // this drag runs on *pointer* events while those ancestors listen on
+      // *mouse* events, so there is no shared event to stop — and stopping the
+      // mousedown would also cost focus-on-click, whose document-level listener
+      // (`useFocusOnInteraction`) React's stopPropagation does block.
+      data-gesture-owner="true"
       className={cx(
         originalClassName,
         vertical ? classes.verticalHandle : classes.horizontalHandle,

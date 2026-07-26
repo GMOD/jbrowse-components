@@ -44,7 +44,11 @@ const Scalebar = observer(function Scalebar({
 
   return (
     <Paper
-      data-resizer="true"
+      // The rubberband owns presses on the scalebar (it wraps this as its
+      // ControlComponent), so the view's click-drag pan must not also start one
+      // on the paths where the rubberband doesn't stopPropagation — a press with
+      // the refName menu already open. See ResizeHandle for the marker contract.
+      data-gesture-owner="true"
       className={cx(classes.container, className)}
       variant="outlined"
       style={style}
