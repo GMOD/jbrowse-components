@@ -282,8 +282,8 @@ much larger Fst.
 
 A multi-wiggle is appropriate when the rows are on the same scale, such as the
 same statistic across groups. The per-group π bigWigs (`pi_INV.bw`/`pi_STD.bw`)
-share a scale, so inverted and standard diversity can be compared
-window-for-window on a shared axis:
+share a scale, so inverted and standard diversity load as one track on one
+shared y-domain:
 
 ```json
 {
@@ -296,12 +296,12 @@ window-for-window on a shared axis:
     "subadapters": [
       {
         "type": "BigWigAdapter",
-        "name": "π inverted",
+        "source": "π In(2L)t",
         "uri": "https://jbrowse.org/demos/popgen/pi_INV.bw"
       },
       {
         "type": "BigWigAdapter",
-        "name": "π standard",
+        "source": "π standard",
         "uri": "https://jbrowse.org/demos/popgen/pi_STD.bw"
       }
     ]
@@ -309,14 +309,10 @@ window-for-window on a shared axis:
 }
 ```
 
-On the shared axis, inverted-arrangement π runs mildly below standard across the
-inverted region on `2L`, and roughly equal to it outside. The contrast between
-arrangements is stronger in the Fst scan than in within-group π.
-
-Read that difference with the group sizes in mind: 19 inverted lines against 161
-standard ones. π itself corrects for sample size, so the two rows are on a
-comparable scale, but the 19-line row is much noisier window to window. Trust
-the trend across the region, not any single window.
+The inverted lines carry somewhat less diversity than the standard ones across
+the inverted region, most noticeably near the breakpoints, but it is a mild
+difference. Fst, below, is the signal that actually makes this arrangement stand
+out.
 
 ## Reading the signals
 

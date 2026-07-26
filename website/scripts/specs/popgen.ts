@@ -83,6 +83,15 @@ const TAJD_TRACK = {
   },
 }
 
+// No per-group-pi figure, deliberately. The tutorial documents the
+// MultiQuantitativeTrack config for pi_INV.bw + pi_STD.bw, but there is no view
+// of it worth publishing: across the inverted region pi_INV/pi_STD sits at
+// 0.7-0.9 and only reaches 0.38 in one 200 kb bin near the distal breakpoint
+// (measured off the pipeline bedGraphs). Every framing tried — whole arm,
+// multirowxy, a 0-0.012 heatmap zoomed to the strongest trough — produced two
+// rows a reader cannot tell apart. Fst is the signal that reads; leave the
+// contrast to the prose rather than shipping a figure that shows nothing.
+
 // The same inversion as per-sample SV calls: one <INV> record spanning the
 // published breakpoints, genotyped across every karyotyped DGRP line. This is the
 // per-sample counterpart to the Fst scan — the scan says the arrangement is
@@ -116,7 +125,20 @@ const IN2LT_SV_TRACK = {
       type: 'LinearMultiSampleVariantDisplay',
       groupBy: 'karyotype',
       colorBy: 'karyotype',
-      height: 300,
+      // The carrier block has to out-contrast the hom-ref field, and by default
+      // it doesn't: hom-ref genotypes paint #CCCCCC, the same gray as an empty
+      // canvas, so the figure read as a blank track. featureColor repaints only
+      // the alt-carrying cells, leaving ref/no-call alone — exactly the "who
+      // carries it" contrast this figure exists for.
+      featureColor: '#d95f02',
+      // Pinned rather than fit-to-height: 19 carriers out of 180 lines is ~10%
+      // of the display whatever its height, and at the old 300px that was 30px
+      // holding 19 rows — 0.33px each, which aliased into a smear instead of
+      // rows. 2px/row keeps the carrier block thick enough to show individual
+      // lines without spending 480px of figure on the featureless hom-ref
+      // field. 360 = 180 * 2, so nothing scrolls out of the capture.
+      rowHeight: 2,
+      height: 360,
     },
   ],
 }
@@ -174,8 +196,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="wiggle-display-done"]',
     readyText: 'π (whole panel)',
     readyTimeout: 90000,
-    // inversion(40) + fst(280) + pi(200) + headers clear the crop
-    viewportHeight: 780,
+    // inversion(40) + fst(280) + pi(200) + 3 track headers + ruler/overview +
+    // app bar. At 780 the π track was cut off flush at its own 0 baseline and
+    // the app frame's bottom border was gone.
+    viewportHeight: 840,
     settleMs: 14000,
   },
 
@@ -227,11 +251,18 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'dm6-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
-              // grow so the gene track sizes to its full feature stack (reviewer:
-              // taller gene track) instead of a fixed thin strip
-              heightMode: 'grow',
-              height: 110,
+              height: 150,
               showOnlyGenes: true,
+              // Name-only highlights: resolveFeatureHighlights boxes the match
+              // AND pins it to the top row. Without that Cyp6g1 sits seven rows
+              // down a ~120-gene wall of CG numbers, so the one gene the figure
+              // is about is the hardest thing in it to find. Pinning also means
+              // the track needs no `heightMode: 'grow'`, which grew past the
+              // viewport and cut the bottom row of genes mid-glyph.
+              featureHighlights: [
+                { refName: 'chr2R', name: 'Cyp6g1' },
+                { refName: 'chr2R', name: 'Cyp6g2' },
+              ],
             },
           ],
         },
@@ -240,8 +271,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="wiggle-display-done"]',
     readyText: 'Tajima',
     readyTimeout: 90000,
-    // tajd(200) + pi(180) + grow gene track + 3 headers + ruler/overview
-    viewportHeight: 960,
+    // tajd(200) + pi(180) + genes(150) + 3 headers + ruler/overview + app bar
+    viewportHeight: 800,
     settleMs: 12000,
   },
 
@@ -281,10 +312,49 @@ export const popgenSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
+    // One label per block, because the two blocks ARE the figure. They anchor to
+    // the genotype track's own rendering container, where row r sits at fracY
+    // r/180: the standard label rides the middle of rows 0-160, and the carrier
+    // arrow lands in the middle of rows 161-179 (170.5/180). Without the arrow
+    // the carrier block reads as a stray strip at the bottom edge, since 19 of
+    // 180 rows is a tenth of the track however tall it is.
+    annotations: [
+      {
+        type: 'text',
+        text: '161 standard lines',
+        anchor: {
+          track: 'dgrp_In2Lt_sv',
+          locus: 'chr2L:7,000,000',
+          fracY: 0.35,
+        },
+      },
+      {
+        type: 'text',
+        text: '19 In(2L)t carriers',
+        anchor: {
+          track: 'dgrp_In2Lt_sv',
+          locus: 'chr2L:7,000,000',
+          fracY: 0.7,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'dgrp_In2Lt_sv',
+          locus: 'chr2L:7,000,000',
+          fracY: 0.78,
+        },
+        anchor: {
+          track: 'dgrp_In2Lt_sv',
+          locus: 'chr2L:7,000,000',
+          fracY: 0.947,
+        },
+      },
+    ],
     readySelector: '[data-testid="variant-display-done"]',
     readyText: 'In(2L)t genotyped',
     readyTimeout: 120000,
-    // inversion(40) + fst(160) + genotypes(300) + 3 track headers + ruler and
+    // inversion(40) + fst(160) + genotypes(360) + 3 track headers + ruler and
     // overview + app bar. Undersize this and the rows below the fold are simply
     // cropped away, silently: the genotype canvas still reports first paint, so
     // the capture succeeds with the informative rows missing.
