@@ -151,6 +151,49 @@ check("reroot remaps the flipped start", kept[0][0][2], str(1000 - 100 - 10))
 check("reroot drops a block with no reference row",
       list(reroot_maf.reroot([row("other#1#chr", 20)])), [])
 
+# smoothxg pads every row past its declared size, downstream of the declared
+# interval -- so on an antiparallel row the pad lands at the block's left edge,
+# where the reference is gap, and renders as a phantom insertion at the edge of
+# every POA block (1,989 of them, ~311 bp, in the five-strain E. coli graph).
+# Crop to the reference's own declared span; the pad is sequence the neighbouring
+# block already covers.
+pad = [["s", "REF#1#chr", "100", "4", "+", "1000", "---ACGTAC"],
+       ["s", "other#1#chr", "50", "4", "-", "1000", "TTTACGT--"]]
+cropped = reroot_maf.crop_to_reference(pad)
+check("crop trims columns to the reference's declared interval",
+      [r[6] for r in cropped], ["ACGT", "ACGT"])
+check("crop leaves the reference's own start and size", cropped[0][2:4], ["100", "4"])
+check("crop recomputes each row's size from the cropped sequence",
+      cropped[1][3], "4")
+check("crop drops a row left with no bases",
+      [r[1] for r in reroot_maf.crop_to_reference(
+          pad + [["s", "gone#1#chr", "0", "3", "+", "1000", "GGG------"]])],
+      ["REF#1#chr", "other#1#chr"])
+check("crop keeps a reference-gap column inside the interval",
+      [r[6] for r in reroot_maf.crop_to_reference(
+          [["s", "REF#1#chr", "100", "4", "+", "1000", "AC-GTAC"],
+           ["s", "other#1#chr", "50", "5", "+", "1000", "ACGGTAC"]])],
+      ["AC-GT", "ACGGT"])
+# a row's pad is not always flush with the block edge -- the reference can carry a
+# base or two before it, which leaves the pad inside the crop. What the crop leaves
+# over the row's own declared size is that pad, on the end its strand puts it on:
+# outward from the declared interval, so the row still starts where it said it did.
+inside = [["s", "REF#1#chr", "100", "5", "+", "1000", "A----CGTA"],
+          ["s", "fwd#1#chr", "50", "5", "+", "1000", "ACGTACGTT"],
+          ["s", "rev#1#chr", "70", "5", "-", "1000", "ATTTTCGTA"]]
+trimmed = reroot_maf.crop_to_reference(inside)
+check("pad inside the crop is blanked from the strand's outward end",
+      [r[6] for r in trimmed], ["A----CGTA", "ACGTA----", "----TCGTA"])
+check("blanking the pad leaves each row at its declared size",
+      [r[3] for r in trimmed], ["5", "5", "5"])
+check("blanking the pad leaves each row's start alone",
+      [r[2] for r in trimmed], ["100", "50", "70"])
+check("a column left gap in every row is dropped",
+      [r[6] for r in reroot_maf.crop_to_reference(
+          [["s", "REF#1#chr", "100", "2", "+", "1000", "A--C"],
+           ["s", "other#1#chr", "50", "3", "+", "1000", "A-GC"]])],
+      ["A-C", "AGC"])
+
 # maf_to_bed.py: MafTabixAdapter reads column 6 as comma-separated
 # sample.chr:start:size:strand:srcSize:seq, and finds a block by the interval on
 # the line, which is row 0's. Pin the encoding and that a block becomes one line.

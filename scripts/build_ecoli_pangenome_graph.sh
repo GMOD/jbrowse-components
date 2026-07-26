@@ -130,6 +130,9 @@ tabix -f -p vcf ecoli_pggb.vcf.gz
 # blocks that lack it, flip blocks where REF is on '-', give each REF row in a
 # repeat-collapsed block its own block), then rename PanSN 'sample#1#chr' ->
 # 'sample.chr' (JBrowse splits the species off on the '.').
+# reroot_maf.py also crops away smoothxg's block padding, which otherwise draws a
+# phantom ~311 bp insertion at the edge of every POA block on any strain running
+# antiparallel to REF there. See its docstring; this is not cosmetic.
 python3 "$SCRIPT_DIR/reroot_maf.py" "$(ls pggb/*.smooth.maf)" ecoli_pggb.maf "${REF}#1#chr"
 python3 "$SCRIPT_DIR/maf_to_bed.py" ecoli_pggb.maf ecoli_pggb.maf.bed
 bgzip -f ecoli_pggb.maf.bed
