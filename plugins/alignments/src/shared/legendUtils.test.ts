@@ -1,5 +1,8 @@
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import { getReadDisplayLegendItems } from './legendUtils.ts'
+import {
+  getArcLegendItems,
+  getReadDisplayLegendItems,
+} from './legendUtils.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
@@ -217,9 +220,9 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('the unvalued bucket is omitted when every read resolved a color', () => {
-    expect(
-      tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' }),
-    ).not.toContain('No HP value')
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' })).not.toContain(
+      'No HP value',
+    )
   })
 
   // Chromosome painting rides the same CPU-baked color path as tag coloring, so
@@ -366,5 +369,31 @@ describe('getReadDisplayLegendItems', () => {
       { color: 'rgb(0,0,255)', label: 'Forward strand' },
       { color: 'rgb(0,255,0)', label: 'Supplementary/split' },
     ])
+  })
+})
+
+// The arc colors are their own vocabulary — a track colored by strand still
+// draws insert-size-colored arcs — so they key a separate section rather than
+// merging into the read swatches, where the arcs' neutral slot would land
+// beside an identically-colored read swatch.
+describe('getArcLegendItems', () => {
+  test('keys only the arc color slots plotted, in table order', () => {
+    expect(
+      getArcLegendItems(
+        new Set<ReadColorCategory>(['splitInversion', 'longInsert']),
+        makeTestPalette(),
+      ).map(i => i.label),
+    ).toEqual(['Long insert', 'Split-read inversion'])
+    expect(getArcLegendItems(new Set(), makeTestPalette())).toEqual([])
+  })
+
+  test('takes no per-scheme rewording — an arc never produces a strand bucket', () => {
+    // under a read scheme these two would read as "Split read (forward/reverse)"
+    expect(
+      getArcLegendItems(
+        new Set<ReadColorCategory>(['fwdStrand', 'revStrand']),
+        makeTestPalette(),
+      ).map(i => i.label),
+    ).toEqual(['Forward strand', 'Reverse strand'])
   })
 })

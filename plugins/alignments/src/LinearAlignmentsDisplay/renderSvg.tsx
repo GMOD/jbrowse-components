@@ -195,10 +195,10 @@ function AlignmentsSvgBody({
 // floated over the right edge of the plot so it lands where the on-screen legend
 // does. No `onDismiss`: an exported legend can't be clicked.
 //
-// On screen the read fills and the connection curves split into two titled
-// sections. Here that becomes one flat list with a color-less heading row,
-// emitted only when both vocabularies are present, the same condition
-// `LegendHost` uses to decide between its sectioned and untitled forms.
+// On screen each color vocabulary gets its own titled section. Here that
+// becomes one flat list with color-less heading rows, emitted only for the
+// sections that survive alongside the read fills — the same condition
+// `LegendHost` relies on to decide whether titles appear at all.
 function ColorKey({
   model,
   canvasWidth,
@@ -208,15 +208,20 @@ function ColorKey({
   canvasWidth: number
   maxHeight: number
 }) {
-  const connectionItems = model.bezierLegendItems()
+  const sections = [
+    { id: 'arcs', title: 'Arc colors', items: model.arcLegendItems() },
+    {
+      id: 'connections',
+      title: 'Read connections',
+      items: model.bezierLegendItems(),
+    },
+  ].filter(s => s.items.length > 0)
   const entries = [
     ...model.legendItems().map((item, i) => ({ key: `read-${i}`, ...item })),
-    ...(connectionItems.length > 0
-      ? [
-          { key: 'connections-heading', label: 'Read connections' },
-          ...connectionItems.map((item, i) => ({ key: `conn-${i}`, ...item })),
-        ]
-      : []),
+    ...sections.flatMap(s => [
+      { key: `${s.id}-heading`, label: s.title },
+      ...s.items.map((item, i) => ({ key: `${s.id}-${i}`, ...item })),
+    ]),
   ]
   return (
     <SvgColorLegend

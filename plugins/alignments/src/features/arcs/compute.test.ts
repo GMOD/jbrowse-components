@@ -1436,8 +1436,9 @@ describe('arcsToRegionResult', () => {
   })
 })
 
-// The read-cloud legend is otherwise driven purely by read-fill categories, so
-// the cloud-only split-junction buckets (which no read fill emits outside chain
+// The arc/read-cloud colors get their own legend section, keyed off these — the
+// read-fill categories describe a different vocabulary entirely, so
+// the arc-only split-junction buckets (which no read fill emits outside chain
 // mode) would be missing. These map the arc color slots back to legend
 // categories; each returned category's swatch must equal the plotted marker's
 // color (see arcMarkerColorPalette / swatchPaletteKeys).

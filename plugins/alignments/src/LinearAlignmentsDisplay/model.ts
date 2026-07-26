@@ -53,7 +53,10 @@ import {
   workerColorBy,
 } from '../shared/colorSchemes.ts'
 import { groupByForMode, normalizeGroupBy } from '../shared/groupFeatures.ts'
-import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
+import {
+  getArcLegendItems,
+  getReadDisplayLegendItems,
+} from '../shared/legendUtils.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
   normalizeFilterBy,
@@ -1186,15 +1189,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Legend categories contributed by the read-cloud endpoint
-         * squares — the arc color slots actually plotted, mapped to legend
-         * buckets. Read-fill categories miss the cloud-only buckets (split
-         * junctions especially), so these are merged into the legend. Empty
-         * unless in read-cloud mode with the legend shown.
+         * The arc color slots actually plotted, mapped to legend buckets —
+         * curved paired-end arcs and the read cloud's flat lines and endpoint
+         * squares alike, since both paint from `arcColorByType`. This is a
+         * separate vocabulary from the read fills (a track colored by strand
+         * still draws insert-size-colored arcs), so it keys its own legend
+         * section. Empty unless an overlay is on with the legend shown.
          */
-        get readCloudLegendCategories(): Set<ReadColorCategory> {
+        get arcLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
-          if (this.showLegend && self.readConnections === 'cloud') {
+          if (this.showLegend && self.readConnections !== 'off') {
             for (const regionMap of this.arcsByGroup.values()) {
               for (const data of regionMap.values()) {
                 for (const ct of data.arcColorTypes) {
@@ -1215,14 +1219,20 @@ export default function stateModelFactory(
         legendItems() {
           return getReadDisplayLegendItems({
             colorBy: this.colorBy,
-            presentCategories: new Set([
-              ...this.colorLegendCategories,
-              ...this.readCloudLegendCategories,
-            ]),
+            presentCategories: this.colorLegendCategories,
             palette: this.colorPalette,
             detectedModifications: self.detectedModifications,
             colorTagMap: self.colorTagMap,
           })
+        },
+
+        /**
+         * #method
+         * Key for the paired-end arc / read-cloud colors. Empty when no overlay
+         * is drawn, which is what keeps its legend section out of the box.
+         */
+        arcLegendItems() {
+          return getArcLegendItems(this.arcLegendCategories, this.colorPalette)
         },
 
         /**

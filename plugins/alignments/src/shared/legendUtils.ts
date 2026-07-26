@@ -168,18 +168,40 @@ function methylationLegend(
 // scheme appends them after its own key rather than any one branch owning them.
 // fwd/rev are reworded per scheme (split read vs. fragment strand) — see
 // strandLabelOverrides.
-function crossCuttingBuckets(
+function bucketItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
-  colorBy: ColorBy | undefined,
+  overrides: Partial<Record<SwatchCategory, string>>,
 ): LegendItem[] {
-  const overrides = categoryLabelOverrides(colorBy)
   return CATEGORY_LEGEND.filter(({ category }) =>
     presentCategories.has(category),
   ).map(({ category, label }) => ({
     color: categorySwatchColor(category, palette),
     label: overrides[category] ?? label,
   }))
+}
+
+function crossCuttingBuckets(
+  presentCategories: ReadonlySet<ReadColorCategory>,
+  palette: ColorPalette,
+  colorBy: ColorBy | undefined,
+): LegendItem[] {
+  return bucketItems(presentCategories, palette, categoryLabelOverrides(colorBy))
+}
+
+/**
+ * Key for the paired-end arc / read-cloud colors, which are their own
+ * vocabulary — insert size and pair orientation, whatever the reads underneath
+ * are colored by — so they get their own legend section rather than merging
+ * into the read swatches, where the arcs' neutral slot would sit next to an
+ * identically-colored read swatch. No per-scheme rewording for the same reason:
+ * an arc never produces a strand bucket.
+ */
+export function getArcLegendItems(
+  presentCategories: ReadonlySet<ReadColorCategory>,
+  palette: ColorPalette,
+): LegendItem[] {
+  return bucketItems(presentCategories, palette, {})
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and
