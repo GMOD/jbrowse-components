@@ -41,6 +41,46 @@ Parameters:
       Reserved concurrency. At one upstream call per 15s there is nothing for a
       larger fleet to do but return 429s, and this caps the blast radius of a
       traffic spike on the rest of the account.
+  ThrottleRateLimit:
+    Type: Number
+    Default: 20
+    Description: >-
+      Requests/second the stage accepts before shedding. Every request that
+      reaches the function costs an invocation and a DynamoDB read even when the
+      budget refuses it, so a flood is cheaper to drop at the API.
+  ThrottleBurstLimit:
+    Type: Number
+    Default: 40
+    Description: Burst allowance above ThrottleRateLimit.
+  DomainName:
+    Type: String
+    Default: ''
+    Description: >-
+      Custom domain to serve from, e.g. api.jbrowse.org. Empty deploys without
+      one, leaving only the generated execute-api URL. Worth setting for any
+      deployment a released client will point at: an execute-api hostname is
+      regenerated if the API is ever recreated, and a URL compiled into a
+      shipped bundle can never be moved.
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: >-
+      ACM certificate for DomainName. Must live in THIS region — an HTTP API
+      custom domain is regional, unlike a CloudFront one.
+  HostedZoneId:
+    Type: String
+    Default: ''
+    Description: Route53 zone to add the DomainName alias record to.
+  BasePath:
+    Type: String
+    Default: ucsc/v1
+    Description: >-
+      Path the API is mounted at under DomainName, so one api.* domain can carry
+      several services. Versioned because clients compile the URL in: a v2 can
+      be mounted alongside while v1 keeps answering released builds.
+
+Conditions:
+  HasCustomDomain: !Not [!Equals [!Ref DomainName, '']]
 
 Globals:
   Function:
@@ -111,6 +151,46 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref Stage
+      DefaultRouteSettings:
+        ThrottlingRateLimit: !Ref ThrottleRateLimit
+        ThrottlingBurstLimit: !Ref ThrottleBurstLimit
+
+  # api.<domain>/<BasePath>/blat rather than a path on the website's CloudFront
+  # distribution: that one also serves www.jbrowse.org and jbrow.se, and
+  # CloudFront cannot cache a POST anyway, so routing through it would add
+  # coupling and blast radius for nothing. The domain is regional, which is why
+  # the certificate has to be in this region too.
+  BlatProxyDomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Condition: HasCustomDomain
+    Properties:
+      DomainName: !Ref DomainName
+      DomainNameConfigurations:
+        - CertificateArn: !Ref CertificateArn
+          EndpointType: REGIONAL
+
+  # The mapping key is stripped before routing, but the function still sees the
+  # full request path, and routeForPath matches on its last segment — so
+  # /ucsc/v1/ispcr resolves the same as the bare /ispcr a local invoke sends.
+  BlatProxyApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Condition: HasCustomDomain
+    Properties:
+      ApiId: !Ref BlatProxyApi
+      ApiMappingKey: !Ref BasePath
+      DomainName: !Ref BlatProxyDomainName
+      Stage: !Ref Stage
+
+  BlatProxyDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: HasCustomDomain
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt BlatProxyDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt BlatProxyDomainName.RegionalHostedZoneId
 
   # One table, three kinds of item keyed by prefix: `slot` (the single spacing
   # lock, rewritten forever), `day#<UTC date>` (the daily counter), and
@@ -139,16 +219,27 @@ Resources:
       RetentionInDays: 7
 
 Outputs:
+  # The URL a client should be pointed at: the custom domain when there is one,
+  # since the execute-api hostname does not survive the API being recreated.
   BlatProxyApiUrl:
-    Description: API Gateway endpoint to point the plugin's BLAT server URL at
-    Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
+    Description: Endpoint to point the plugin's BLAT server URL at
+    Value: !If
+      - HasCustomDomain
+      - !Sub https://${DomainName}/${BasePath}/blat
+      - !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
     Export:
       Name: JBrowseBlatProxyApiUrl
   IsPcrProxyApiUrl:
-    Description: API Gateway endpoint to point the plugin's isPCR server URL at
-    Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/ispcr
+    Description: Endpoint to point the plugin's isPCR server URL at
+    Value: !If
+      - HasCustomDomain
+      - !Sub https://${DomainName}/${BasePath}/ispcr
+      - !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/ispcr
     Export:
       Name: JBrowseIsPcrProxyApiUrl
+  BlatProxyExecuteApiUrl:
+    Description: The generated endpoint, for debugging the API without DNS
+    Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
   BlatProxyFunctionArn:
     Description: BLAT proxy Lambda Function ARN
     Value: !GetAtt BlatProxyFunction.Arn
