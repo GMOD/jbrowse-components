@@ -8,6 +8,7 @@ import {
 } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
+  featureHasPhaseSet,
   getPhasedColor,
   isNoCall,
   splitPhasedAlleles,
@@ -84,6 +85,7 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   featureColor,
+  colorByPhaseSet,
   featureGenotypes,
   report,
 }: {
@@ -95,6 +97,11 @@ export function computeVariantCells({
   // per feature; alt-carrying cells take it, ref/no-call cells keep their normal
   // coloring. Undefined = default genotype coloring.
   featureColor?: (feature: Feature) => string | undefined
+  // Color phased alt cells by their FORMAT PS (phase set) instead of by allele.
+  // Explicit rather than inferred from the presence of PS: the implicit trigger
+  // silently swapped the alt-allele colors the legend was describing, with no
+  // way to switch back.
+  colorByPhaseSet?: boolean
   // featureId -> genotypes, resolved once for every filtered variant by
   // `computeSampleInfo` (which returns this map for exactly that reason) so the
   // per-cell loops never re-parse a feature's genotype block. Prepopulated for
@@ -110,20 +117,31 @@ export function computeVariantCells({
 
   const numSources = sources.length
   const maxCells = filteredVariants.length * numSources
+  // One buffer set, written from both ends: reference cells forward from 0,
+  // non-reference backward from the end. That lands the two paint buckets in a
+  // single allocation instead of filling a scratch set and copying it into a
+  // second one — which, once the per-cell spatial index went away, was the
+  // largest transient left in the worker (23 B/cell scratch held alongside
+  // 22 B/cell output: 135 MB peak for 1000 variants x 3000 samples, against
+  // 66 MB here). The backward half lands reversed and is flipped back below;
+  // that flip is what preserves the stable (featureIndex, rowIndex) ordering
+  // `findCellIndex` binary-searches.
   const positions = new Uint32Array(maxCells * 2)
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint32Array(maxCells)
   const shapeTypes = new Uint8Array(maxCells)
   const carriesAlt = new Uint8Array(maxCells)
-  const isRef = new Uint8Array(maxCells)
   const featureIndices = new Uint32Array(maxCells)
   const featureIdList: string[] = []
   const insertedBp = new Int32Array(filteredVariants.length)
   const featurePositions = new Uint32Array(filteredVariants.length * 2)
 
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
-  let cellCount = 0
-  let numRefCells = 0
+  // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
+  // shrinks down from maxCells, so they can never collide before the buffer is
+  // full: every genotype contributes at most one cell.
+  let refEnd = 0
+  let nonRefStart = maxCells
 
   function addCell(
     genomicStart: number,
@@ -135,7 +153,7 @@ export function computeVariantCells({
     isAlt: boolean,
     featureIdx: number,
   ) {
-    const ci = cellCount
+    const ci = isReference ? refEnd++ : --nonRefStart
     // Absolute uint32 genomic positions — the shader hp-splits these against the
     // per-block bpRangeX (no region origin in the uniform). Rendering only: the
     // hit-test and hover highlight read the per-feature `featurePositions`, since
@@ -146,12 +164,34 @@ export function computeVariantCells({
     colors[ci] = colorAbgr
     shapeTypes[ci] = shape
     carriesAlt[ci] = isAlt ? 1 : 0
-    isRef[ci] = isReference ? 1 : 0
-    if (isReference) {
-      numRefCells++
-    }
     featureIndices[ci] = featureIdx
-    cellCount++
+  }
+
+  // Exchange two cells across every parallel array. Defined once (not per
+  // iteration), and it only reads the captured buffers, so the reversal below
+  // stays allocation-free.
+  function swapCells(a: number, b: number) {
+    const p0 = positions[a * 2]!
+    const p1 = positions[a * 2 + 1]!
+    positions[a * 2] = positions[b * 2]!
+    positions[a * 2 + 1] = positions[b * 2 + 1]!
+    positions[b * 2] = p0
+    positions[b * 2 + 1] = p1
+    const r = rowIndices[a]!
+    rowIndices[a] = rowIndices[b]!
+    rowIndices[b] = r
+    const c = colors[a]!
+    colors[a] = colors[b]!
+    colors[b] = c
+    const s = shapeTypes[a]!
+    shapeTypes[a] = shapeTypes[b]!
+    shapeTypes[b] = s
+    const t = carriesAlt[a]!
+    carriesAlt[a] = carriesAlt[b]!
+    carriesAlt[b] = t
+    const f = featureIndices[a]!
+    featureIndices[a] = featureIndices[b]!
+    featureIndices[b] = f
   }
 
   let featureIdx = 0
@@ -175,11 +215,11 @@ export function computeVariantCells({
     if (renderingMode === 'phased') {
       // PS (phase-set) coloring requires per-sample FORMAT data, which only the
       // heavier `samples` field preserves — the flat `genotypes` map doesn't
-      // carry it. PS in FORMAT is uncommon, so the slower samples path runs only
-      // when a feature actually declares PS.
-      const hasPhaseSet = (
-        feature.get('FORMAT') as string | undefined
-      )?.includes('PS')
+      // carry it. So the slower samples path runs only when the user asked for
+      // phase-set coloring AND this feature actually declares PS.
+      const hasPhaseSet =
+        colorByPhaseSet &&
+        featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
       const samp = hasPhaseSet
         ? (feature.get('samples') as Record<string, Record<string, string[]>>)
         : undefined
@@ -288,38 +328,35 @@ export function computeVariantCells({
     featureIdx++
   }
 
-  // Stable two-bucket reorder: ref cells first (when drawn), then non-ref.
-  // Skip ref cells entirely when drawRef is false.
-  //
-  // Cells were appended feature-major, row-minor, and this partition is stable,
-  // so *within each bucket* the cells stay sorted by (featureIndex, rowIndex).
-  // The hit-test binary-searches that ordering instead of carrying a per-cell
-  // spatial index — see variantCellLookup.ts. Anything that reorders cells
-  // (a different paint order, a sort) has to preserve it or update that lookup.
-  const outCount = drawRef ? cellCount : cellCount - numRefCells
-  const refCellCount = drawRef ? numRefCells : 0
-  const outPositions = new Uint32Array(outCount * 2)
-  const outRowIndices = new Uint32Array(outCount)
-  const outColors = new Uint32Array(outCount)
-  const outShapeTypes = new Uint8Array(outCount)
-  const outCarriesAlt = new Uint8Array(outCount)
-  const outFeatureIndices = new Uint32Array(outCount)
-  let refPos = 0
-  let nonRefPos = refCellCount
-  for (let i = 0; i < cellCount; i++) {
-    const ref = isRef[i]
-    if (ref && !drawRef) {
-      continue
-    }
-    const w = ref ? refPos++ : nonRefPos++
-    outPositions[w * 2] = positions[i * 2]!
-    outPositions[w * 2 + 1] = positions[i * 2 + 1]!
-    outRowIndices[w] = rowIndices[i]!
-    outColors[w] = colors[i]!
-    outShapeTypes[w] = shapeTypes[i]!
-    outCarriesAlt[w] = carriesAlt[i]!
-    outFeatureIndices[w] = featureIndices[i]!
+  // The backward-written bucket sits reversed at [nonRefStart, maxCells): cells
+  // appended c1..cN landed as cN..c1. Flip it in place so *within each bucket*
+  // the cells are again sorted by (featureIndex, rowIndex) — the invariant the
+  // hit-test binary-searches instead of carrying a per-cell spatial index (see
+  // variantCellLookup.ts). Anything that reorders cells (a different paint
+  // order, a per-cell sort) has to preserve it or rework that lookup.
+  for (let lo = nonRefStart, hi = maxCells - 1; lo < hi; lo++, hi--) {
+    swapCells(lo, hi)
   }
+
+  // Ref cells first (when drawn), then non-ref, so alt paints over ref. Close
+  // the gap that skipped genotypes left between the two cursors; a no-op in the
+  // dense case (every sample genotyped at every site, reference cells drawn),
+  // where they already meet.
+  const refCellCount = refEnd
+  const numCells = refCellCount + (maxCells - nonRefStart)
+  if (nonRefStart !== refCellCount) {
+    positions.copyWithin(refCellCount * 2, nonRefStart * 2, maxCells * 2)
+    rowIndices.copyWithin(refCellCount, nonRefStart, maxCells)
+    colors.copyWithin(refCellCount, nonRefStart, maxCells)
+    shapeTypes.copyWithin(refCellCount, nonRefStart, maxCells)
+    carriesAlt.copyWithin(refCellCount, nonRefStart, maxCells)
+    featureIndices.copyWithin(refCellCount, nonRefStart, maxCells)
+  }
+
+  // Trim to the used prefix. `slice` copies, so it is skipped when nothing was
+  // skipped and the buffers are already exact — which is precisely the case
+  // that costs memory, a fully-genotyped VCF filling every cell.
+  const trim = numCells !== maxCells
 
   // One interval per *feature*, not per cell. Every cell of a variant shares its
   // x-extent, so a per-cell index stored numSamples identical copies of each
@@ -355,15 +392,17 @@ export function computeVariantCells({
   featureIndex.finish()
 
   return {
-    cellPositions: outPositions,
-    cellRowIndices: outRowIndices,
-    cellColors: outColors,
-    cellShapeTypes: outShapeTypes,
-    cellCarriesAlt: outCarriesAlt,
-    numCells: outCount,
+    cellPositions: trim ? positions.slice(0, numCells * 2) : positions,
+    cellRowIndices: trim ? rowIndices.slice(0, numCells) : rowIndices,
+    cellColors: trim ? colors.slice(0, numCells) : colors,
+    cellShapeTypes: trim ? shapeTypes.slice(0, numCells) : shapeTypes,
+    cellCarriesAlt: trim ? carriesAlt.slice(0, numCells) : carriesAlt,
+    numCells,
     refCellCount,
     featureGenotypeMap,
-    cellFeatureIndices: outFeatureIndices,
+    cellFeatureIndices: trim
+      ? featureIndices.slice(0, numCells)
+      : featureIndices,
     featureIdList,
     featurePositions,
     featureIndexData: featureIndex.data,

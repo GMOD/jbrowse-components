@@ -10,6 +10,7 @@ import {
   capitalizeFirst,
   getAltColorForDosage,
 } from './constants.ts'
+import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL, IMPACT_TIERS } from './variantConsequence.ts'
 import { SV_TYPE_COLOR, svTypeDisplayLabel } from './variantSvType.ts'
 
@@ -153,14 +154,23 @@ export function getVariantLegendSections({
   sources: Source[] | undefined
 }): LegendSection[] {
   const groupItems = getSampleGroupLegendItems(colorBy, sources)
-  const cellSection: LegendSection | undefined = featureColor
-    ? featureColor === CONSEQUENCE_IMPACT_JEXL
+  // Phase-set coloring exists only on the phased path — the allele-count cell
+  // loop never reads PS — so outside phased mode the cells are genotype-colored
+  // and the legend has to say that instead of describing a scheme that isn't on
+  // screen. Resolved here rather than by forbidding the combination, since
+  // renderingMode can change after the color is chosen.
+  const cellColorKey =
+    featureColor === PHASE_SET_COLOR && renderingMode !== 'phased'
+      ? ''
+      : featureColor
+  const cellSection: LegendSection | undefined = cellColorKey
+    ? cellColorKey === CONSEQUENCE_IMPACT_JEXL
       ? {
           id: 'consequenceImpact',
           title: 'Consequence impact',
           items: IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
         }
-      : featureColor === SV_TYPE_COLOR
+      : cellColorKey === SV_TYPE_COLOR
         ? {
             id: 'svType',
             title: 'SV type',
@@ -169,7 +179,28 @@ export function getVariantLegendSections({
               label: svTypeDisplayLabel(type),
             })),
           }
-        : undefined
+        : cellColorKey === PHASE_SET_COLOR
+          ? {
+              id: 'phaseSet',
+              title: 'Phase set',
+              // No swatch list of the phase sets present: a PS id is an
+              // arbitrary per-sample integer with unbounded cardinality in a
+              // viewport, so enumerating them is noise that would also have to
+              // be truncated arbitrarily. The rule is what a reader needs —
+              // equal hue down a row means one phasing block. Ref/no-call/
+              // unphased keep their own colors, so those swatches stay literal.
+              items: [
+                { color: REFERENCE_COLOR, label: 'Reference' },
+                { label: 'Alt allele (hue identifies the phase set)' },
+                ...(hasUnphased
+                  ? [{ color: UNPHASED_COLOR, label: 'Unphased' }]
+                  : []),
+                ...(hasNoCall
+                  ? [{ color: NO_CALL_COLOR, label: 'No call' }]
+                  : []),
+              ],
+            }
+          : undefined
     : {
         id: 'genotypes',
         title: 'Genotypes',

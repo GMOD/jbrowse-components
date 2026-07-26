@@ -14,6 +14,7 @@ import TuneIcon from '@mui/icons-material/Tune'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { capitalizeFirst } from './constants.ts'
+import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 import { SV_TYPE_COLOR } from './variantSvType.ts'
 
@@ -160,6 +161,28 @@ export function variantTrackMenuItems(
           checked: !self.featureColor,
           onClick: () => {
             self.setFeatureColor('')
+          },
+        },
+        {
+          label: `Phase set${
+            self.hasPhaseSet
+              ? ''
+              : !self.featuresVolatile
+                ? ' (checking for phase sets...)'
+                : ' (no PS field found)'
+          }`,
+          helpText:
+            'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
+          type: 'radio',
+          checked: self.featureColor === PHASE_SET_COLOR,
+          disabled: !self.hasPhaseSet || self.renderingMode !== 'phased',
+          disabledHelpText: !self.hasPhaseSet
+            ? !self.featuresVolatile
+              ? 'Checking for phase sets...'
+              : 'No phase sets (FORMAT PS) found in this dataset'
+            : 'Only applies in phased mode — switch Rendering mode to phased',
+          onClick: () => {
+            self.setFeatureColor(PHASE_SET_COLOR)
           },
         },
         {

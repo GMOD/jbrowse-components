@@ -5,6 +5,23 @@ import {
   SECONDARY_ALT_COLOR,
 } from './constants.ts'
 
+// `featureColor` sentinel selecting phase-set coloring, alongside
+// CONSEQUENCE_IMPACT_JEXL and SV_TYPE_COLOR. Not a jexl expression and not a
+// per-feature color like those two: phase set is a per-(feature, sample) FORMAT
+// field, so `makeFeatureColor` returns no resolver for it and the worker passes
+// the mode down to the cell loops instead. It shares the `featureColor` slot
+// because these are all answers to "what do the alt cells mean", and only one
+// can be on the screen at a time — a separate toggle would let a user select two
+// and need a precedence rule to settle it.
+export const PHASE_SET_COLOR = 'phaseSet'
+
+// Whether a variant declares a phase set, i.e. carries PS in FORMAT. Gates both
+// the "Color by...→Phase set" menu entry and the heavier per-sample `samples`
+// read the coloring needs.
+export function featureHasPhaseSet(format: string | undefined) {
+  return !!format?.includes('PS')
+}
+
 // Fast-path diploid genotype split. The 3-char form "a|b" hits on the vast
 // majority of human VCFs; the general split handles polyploid or multi-digit
 // allele indices ("10|0").

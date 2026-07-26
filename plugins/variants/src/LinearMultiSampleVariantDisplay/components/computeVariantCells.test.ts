@@ -401,4 +401,130 @@ describe('cell bucket ordering', () => {
     expect(result.numCells).toBe(4)
     expect(sortedWithinBucket(result, 0, result.numCells)).toBe(true)
   })
+
+  test('ungenotyped samples: buckets stay adjacent and sorted across the gap', () => {
+    // Cells are written from both ends of one buffer, so a sample with no
+    // genotype leaves a hole between the two write cursors. Both buckets must
+    // still come out sorted AND contiguous — a non-empty ref bucket is what
+    // makes the gap-closing move non-trivial (the 'skip' case above closes onto
+    // index 0, which would also pass if the move were dropped entirely).
+    const sparse = makeFeature(
+      {
+        genotypes: { S1: '0/0', S3: '1/1' },
+        ALT: ['A'],
+        REF: 'G',
+        name: 'sparse',
+        description: '',
+        type: 'SNV',
+        start: 200,
+        end: 201,
+      },
+      'sparse',
+    )
+    const result = computeVariantCells({
+      filteredVariants: [
+        { feature: a, mostFrequentAlt: '1' },
+        { feature: sparse, mostFrequentAlt: '1' },
+      ],
+      sources,
+      renderingMode: 'alleleCount',
+      referenceDrawingMode: 'draw',
+      featureGenotypes: genotypeLookup([a, sparse]),
+    })
+    // 6 slots, 5 cells: S2 has no call at the second site.
+    expect(result.numCells).toBe(5)
+    expect(result.refCellCount).toBe(2)
+    // Asserted as the exact sequence rather than "each bucket is sorted": an
+    // unclosed gap leaves a zeroed cell whose (feature 0, row 0) sort key still
+    // reads as increasing, so the ordering predicate alone would not catch it.
+    // ref bucket: a/S1, sparse/S1 — then non-ref in append order: a/S2, a/S3,
+    // sparse/S3.
+    expect([...result.cellFeatureIndices]).toEqual([0, 1, 0, 0, 1])
+    expect([...result.cellRowIndices]).toEqual([0, 0, 1, 2, 2])
+    // The trailing slot must be trimmed off, not left as a zeroed cell that the
+    // renderer would paint at bp 0 and the hit-test would binary-search into.
+    expect(result.cellPositions).toHaveLength(10)
+  })
+})
+
+describe('phase-set coloring is opt-in', () => {
+  // PS coloring used to switch itself on for any feature whose FORMAT carried
+  // PS, which silently replaced the alt-allele colors the legend was still
+  // describing and offered no way back. It is now driven by the explicit
+  // `colorByPhaseSet` flag (the PHASE_SET_COLOR featureColor sentinel).
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+  ]
+  const feature = makeFeature({
+    genotypes: { S1: '1|0' },
+    samples: { S1: { GT: ['1|0'], PS: ['4815162342'] } },
+    FORMAT: 'GT:PS',
+    ALT: ['A'],
+    REF: 'G',
+    name: 'v1',
+    description: '',
+    type: 'SNV',
+    start: 100,
+    end: 101,
+  })
+
+  function altColors(colorByPhaseSet: boolean) {
+    const result = computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'skip',
+      colorByPhaseSet,
+      featureGenotypes: genotypeLookup([feature]),
+    })
+    return [...result.cellColors.slice(0, result.numCells)]
+  }
+
+  test('a PS-carrying feature keeps allele coloring when not asked for', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { PRIMARY_ALT_COLOR } = await import('../../shared/constants.ts')
+    // Without the flag the alt cell is the ordinary primary-alt color, even
+    // though this feature declares PS — that is the implicit trigger being gone.
+    expect(altColors(false)).toEqual([getCachedABGR(PRIMARY_ALT_COLOR)])
+    expect(altColors(true)).not.toEqual([getCachedABGR(PRIMARY_ALT_COLOR)])
+  })
+
+  test('the hue is derived from the PS id, not the allele', () => {
+    // Two samples on the same allele but different phase sets must not share a
+    // color under phase-set coloring, and must share one without it.
+    const other = makeFeature(
+      {
+        genotypes: { S1: '1|0' },
+        samples: { S1: { GT: ['1|0'], PS: ['999'] } },
+        FORMAT: 'GT:PS',
+        ALT: ['A'],
+        REF: 'G',
+        name: 'v2',
+        description: '',
+        type: 'SNV',
+        start: 200,
+        end: 201,
+      },
+      'f2',
+    )
+    const run = (colorByPhaseSet: boolean) =>
+      computeVariantCells({
+        filteredVariants: [
+          { feature, mostFrequentAlt: '1' },
+          { feature: other, mostFrequentAlt: '1' },
+        ],
+        sources,
+        renderingMode: 'phased',
+        referenceDrawingMode: 'skip',
+        colorByPhaseSet,
+        featureGenotypes: genotypeLookup([feature, other]),
+      })
+
+    const off = run(false)
+    expect(off.cellColors[0]).toBe(off.cellColors[1])
+
+    const on = run(true)
+    expect(on.cellColors[0]).not.toBe(on.cellColors[1])
+  })
 })

@@ -6,6 +6,7 @@ import {
 } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
+  featureHasPhaseSet,
   getPhasedColor,
   isNoCall,
   splitPhasedAlleles,
@@ -53,6 +54,7 @@ export function computeVariantMatrixCells({
   sources,
   renderingMode,
   featureColor,
+  colorByPhaseSet,
   featureGenotypes,
   report,
 }: {
@@ -61,6 +63,9 @@ export function computeVariantMatrixCells({
   renderingMode: string
   // Optional per-variant color override (see computeVariantCells).
   featureColor?: (feature: Feature) => string | undefined
+  // Color phased alt cells by FORMAT PS instead of by allele (see
+  // computeVariantCells).
+  colorByPhaseSet?: boolean
   // Prepopulated for every filtered variant — see computeVariantCells.
   featureGenotypes: ReadonlyMap<string, Record<string, string>>
   report?: ProgressReporter
@@ -106,9 +111,9 @@ export function computeVariantMatrixCells({
     const { feature, mostFrequentAlt } = filteredVariants[idx]!
     const featureId = feature.id()
     const overrideColor = featureColor?.(feature)
-    const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
-      'PS',
-    )
+    const hasPhaseSet =
+      colorByPhaseSet &&
+      featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
 
     let samp: Record<string, Record<string, string[]>> | undefined
     let stringGenotypes: Record<string, string> | undefined

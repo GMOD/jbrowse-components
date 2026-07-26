@@ -6,8 +6,8 @@ import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
-import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
+import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type {
   VariantRenderingBackend,
   VariantUploadData,

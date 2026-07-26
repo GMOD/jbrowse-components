@@ -1,3 +1,4 @@
+import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import {
   getGenotypeLegendItems,
   getMaxLabelWidth,
@@ -221,5 +222,48 @@ describe('getMaxLabelWidth', () => {
     expect(
       getMaxLabelWidth({ sources, fontSize: 12, canDisplayLabels: true }),
     ).toBeGreaterThanOrEqual(10)
+  })
+})
+
+describe('phase-set legend section', () => {
+  const base = {
+    hasSecondaryAlt: false,
+    hasUnphased: false,
+    hasNoCall: false,
+    svTypeColors: {},
+    colorBy: '',
+    sources: undefined,
+  }
+
+  test('replaces the alt-allele swatches with the hue rule', () => {
+    const [section] = getVariantLegendSections({
+      ...base,
+      renderingMode: 'phased',
+      featureColor: PHASE_SET_COLOR,
+    })
+    expect(section!.id).toBe('phaseSet')
+    const labels = section!.items.map(i => i.label)
+    // The two swatches that would now match nothing on screen are gone; the
+    // rule replaces them, and Reference (still literal) stays.
+    expect(labels).not.toContain('Alt allele')
+    expect(labels).not.toContain('Other alt allele')
+    expect(labels).toContain('Reference')
+    expect(labels).toContain('Alt allele (hue identifies the phase set)')
+    // A rule line carries no swatch — there is no single color to show.
+    expect(
+      section!.items.find(i => i.label.startsWith('Alt allele ('))!.color,
+    ).toBeUndefined()
+  })
+
+  test('falls back to the genotype legend outside phased mode', () => {
+    // Only the phased cell loop reads PS, so in allele-count mode the cells are
+    // genotype-colored and the legend must describe that, not phase sets.
+    const [section] = getVariantLegendSections({
+      ...base,
+      renderingMode: 'alleleCount',
+      featureColor: PHASE_SET_COLOR,
+    })
+    expect(section!.id).toBe('genotypes')
+    expect(section!.items.map(i => i.label)).toContain('Homozygous reference')
   })
 })

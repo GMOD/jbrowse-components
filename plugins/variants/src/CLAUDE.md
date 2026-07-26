@@ -41,15 +41,45 @@ That works because x, y, and existence are resolved separately:
   skip rule would be a second copy of it, free to drift.
 
 **Invariant this rests on:** `computeVariantCells` appends cells feature-major /
-row-minor, then stably partitions them into a reference bucket
-`[0, refCellCount)` and a non-reference bucket `[refCellCount, numCells)` — so
-each bucket stays sorted by `(featureIndex, rowIndex)`. Anything that reorders
-cells (a new paint order, a per-cell sort) must preserve that or rework
-`findCellIndex`. `computeVariantCells.test.ts` (`cell bucket ordering`) pins it,
-in both `draw` and `skip` reference modes.
+row-minor, then partitions them into a reference bucket `[0, refCellCount)` and
+a non-reference bucket `[refCellCount, numCells)` — so each bucket stays sorted
+by `(featureIndex, rowIndex)`. Anything that reorders cells (a new paint order,
+a per-cell sort) must preserve that or rework `findCellIndex`.
+`computeVariantCells.test.ts` (`cell bucket ordering`) pins it, in `draw` and
+`skip` reference modes and with ungenotyped samples.
+
+The partition is done by **writing from both ends of one buffer set** — ref
+cells forward from 0, non-ref backward from `maxCells` — rather than filling a
+scratch set and copying it into a second. That halves peak worker memory (23
+B/cell scratch + 22 B/cell output → 22 B/cell; 135 MB → 66 MB at 1000 variants ×
+3000 samples), which is what the per-cell cost is dominated by now that the
+spatial index is gone. Two consequences to keep in mind when editing it: the
+backward-written half lands **reversed** and is flipped back in place (that flip
+is what preserves the sort invariant above), and the buffers are only `slice`d
+when cells were skipped — a fully-genotyped VCF returns them untrimmed, so read
+`numCells`, never `.length`.
 
 The matrix display does not use any of this — it inverts `columnGeometry`
 instead, since its columns are laid out by feature index rather than position.
+
+## Cell coloring is one exclusive axis (`featureColor`)
+
+`featureColor` is the single "what do the alt cells mean" selector, and only one
+answer can be on screen at once. It holds either a jexl expression or one of
+three sentinels the worker special-cases: `CONSEQUENCE_IMPACT_JEXL`,
+`SV_TYPE_COLOR`, `PHASE_SET_COLOR`. Add new cell-coloring modes here rather than
+as sibling toggles — two independent switches would need a precedence rule to
+settle which wins, and the legend would have to guess the same way.
+
+`PHASE_SET_COLOR` is the odd one: phase set is a per-**(feature, sample)**
+FORMAT field, not a per-feature color, so `makeFeatureColor` returns no resolver
+for it and the worker passes a `colorByPhaseSet` flag into the cell loops
+instead. It used to have no control at all — any FORMAT carrying PS silently
+switched the alt cells to a hue hash while the legend went on showing "Alt
+allele" / "Other alt allele" swatches that then matched nothing. Being explicit
+is the fix; keep it that way. It only applies in phased mode (the allele-count
+loop never reads PS), so `getVariantLegendSections` falls back to the genotype
+legend outside it rather than describing a scheme that isn't painted.
 
 ## Genotype maps cross the RPC boundary keyed by `sampleName`
 

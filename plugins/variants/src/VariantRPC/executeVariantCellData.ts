@@ -6,6 +6,10 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import { internGenotype } from '../shared/genotypeCodec.ts'
+import {
+  PHASE_SET_COLOR,
+  featureHasPhaseSet,
+} from '../shared/getPhasedColor.ts'
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
@@ -51,6 +55,11 @@ function makeFeatureColor(
   if (featureColor === SV_TYPE_COLOR) {
     return feature => svTypeColors[getVariantSvType(feature)]
   }
+  if (featureColor === PHASE_SET_COLOR) {
+    // Per-(feature, sample), not per-feature — the cell loops read PS out of
+    // FORMAT themselves, driven by the `colorByPhaseSet` flag.
+    return undefined
+  }
   const cfg = { color: featureColor }
   return feature => {
     try {
@@ -90,6 +99,9 @@ interface CellDataBase {
   // by...→SV type" menu option, and the color assigned to each present SV type
   // so the legend swatches match the painted cells exactly.
   hasSvType: boolean
+  // Whether any visible variant declares a phase set (PS in FORMAT), gating the
+  // "Color by...→Phase set" menu option.
+  hasPhaseSet: boolean
   svTypeColors: Record<string, string>
   simplifiedFeatures: SimplifiedVariantFeature[]
   // Interned genotype payload (see shared/genotypeCodec.ts): the distinct
@@ -179,6 +191,7 @@ function computeSampleInfo(
   let hasUnphased = false
   let hasNoCall = false
   let hasConsequence = false
+  let hasPhaseSet = false
   const svTypes = new Set<string>()
 
   // Single pass: accumulate sampleInfo/legend flags and build the simplified
@@ -197,6 +210,12 @@ function computeSampleInfo(
     }
     if (!hasConsequence && featureHasConsequence(feature)) {
       hasConsequence = true
+    }
+    if (
+      !hasPhaseSet &&
+      featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
+    ) {
+      hasPhaseSet = true
     }
     const svType = getVariantSvType(feature)
     if (svType) {
@@ -261,6 +280,7 @@ function computeSampleInfo(
     hasUnphased,
     hasNoCall,
     hasConsequence,
+    hasPhaseSet,
     svTypeColors: assignSvTypeColors([...svTypes]),
     simplifiedFeatures,
     // Handed back rather than left as a side effect on the caller's map: the
@@ -393,6 +413,7 @@ export async function executeVariantCellData({
     hasUnphased,
     hasNoCall,
     hasConsequence,
+    hasPhaseSet,
     svTypeColors,
     simplifiedFeatures,
     featureGenotypes,
@@ -413,6 +434,10 @@ export async function executeVariantCellData({
     pluginManager.jexl,
     svTypeColors,
   )
+  // Explicit, not inferred from the data: PS coloring used to switch itself on
+  // whenever a FORMAT carried PS, which silently replaced the alt-allele colors
+  // the legend was still describing and gave no way back.
+  const colorByPhaseSet = featureColor === PHASE_SET_COLOR
 
   // For phased mode: expand sources into per-haplotype rows. The client sends
   // layout-ordered sources without HP to avoid a circular sampleInfo dependency;
@@ -453,6 +478,7 @@ export async function executeVariantCellData({
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               featureColor: featureColorFn,
+              colorByPhaseSet,
               featureGenotypes,
               report,
             })
@@ -466,6 +492,7 @@ export async function executeVariantCellData({
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             featureColor: featureColorFn,
+            colorByPhaseSet,
             featureGenotypes,
             report,
           }),
@@ -514,6 +541,7 @@ export async function executeVariantCellData({
         hasNoCall,
         hasConsequence,
         hasSvType,
+        hasPhaseSet,
         svTypeColors,
         simplifiedFeatures,
         genotypeDict,
@@ -535,6 +563,7 @@ export async function executeVariantCellData({
           sources: effectiveSources,
           renderingMode,
           featureColor: featureColorFn,
+          colorByPhaseSet,
           featureGenotypes,
           report,
         }),
@@ -568,6 +597,7 @@ export async function executeVariantCellData({
         hasNoCall,
         hasConsequence,
         hasSvType,
+        hasPhaseSet,
         svTypeColors,
         simplifiedFeatures,
         genotypeDict,

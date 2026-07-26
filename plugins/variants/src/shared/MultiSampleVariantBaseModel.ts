@@ -475,6 +475,14 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Whether any visible variant declares a phase set (PS in FORMAT),
+         * gating the "Color by...→Phase set" menu option.
+         */
+        get hasPhaseSet() {
+          return self.cellData?.hasPhaseSet ?? false
+        },
+        /**
+         * #getter
          * The color assigned to each present SV type, built in the worker so the
          * legend swatches match the painted cells (drives the "SV type" legend
          * section).
