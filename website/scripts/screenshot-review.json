@@ -1807,16 +1807,16 @@
   "desktop-blat-search": {
     "name": "desktop-blat-search",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T15:40:22.250Z",
-    "hash": "7946f93968fe296445c6907884bd042e9c29d731"
+    "note": "regenerated: Cancel is now contained/secondary beside the primary Submit, per house style. No other change.",
+    "reviewedAt": "2026-07-26T08:05:00.000Z",
+    "hash": "b0b7d041761aaf4ad61eeb0206c52d081d118aed"
   },
   "desktop-ispcr": {
     "name": "desktop-ispcr",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T14:16:56.774Z",
-    "hash": "14b2b3b5e3e37e1e225b6385c9435d1e07216ca5"
+    "note": "regenerated: Cancel is now contained/secondary beside the primary Submit, per house style. No other change.",
+    "reviewedAt": "2026-07-26T08:05:00.000Z",
+    "hash": "94917115350aa5f418692000a0adbeb9bddaf7e9"
   },
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
@@ -1994,10 +1994,10 @@
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
-    "status": "bad",
-    "note": "might benefit from plottingjust longestCoding geneglyph. IN PROGRESS, handed off: the glyph step is implemented (collapseGeneGlyph in products/jbrowse-desktop/test/screenshots.ts, track menu -> Gene glyph -> Longest coding transcript) and produced the intended one-model TP53 figure, but the harness captured it 845px wide instead of 1400 (window size came from the developer's own app profile; xvfb's 1280x1024 screen was also too small) and runs die intermittently with the electron app closing mid-flow. Fixes for the two size bugs are in the tree; the flakiness is not diagnosed. See agent-docs/guides/DESKTOP_SCREENSHOT_HANDOFF.md.",
-    "reviewedAt": "2026-07-26T07:20:00.000Z",
-    "hash": "83e71ec295a5092834032477d5d640637b65612c"
+    "status": "good",
+    "note": "resolved: the RefSeq lane is collapsed to the longest coding transcript before capture (collapseGeneGlyph in products/jbrowse-desktop/test/screenshots.ts), so the hit is compared against one labeled TP53 model plus the \"Longest isoform\" chip instead of a stack of near-identical transcripts. Captured at the intended 1400x763 on a freshly packaged app.",
+    "reviewedAt": "2026-07-26T08:05:00.000Z",
+    "hash": "cf3f6b14c1bd919cc8bac3477d2b9a727d090864"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",

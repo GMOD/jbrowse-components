@@ -23,6 +23,7 @@ import {
   openVolvoxGenome,
   startChromedriver,
   startStaticServer,
+  waitForAppReady,
   waitForStartScreen,
 } from './harness.ts'
 
@@ -31,29 +32,103 @@ const OUT_DIR = resolve(__dirname, '../../../website/static/img')
 const DATA_PORT = 9444
 const BLAT_PORT = 9445
 
-// `--only <substring>` still walks the whole flow but writes only the matching
-// figures, so regenerating one image can't churn the others with re-encoded
-// pixels (unlike the web generator, this harness has no content-stable gate).
+// `--only <substring>[,<substring>]` still walks the whole flow but writes only
+// the matching figures, so regenerating one image can't churn the others with
+// re-encoded pixels (unlike the web generator, this harness has no
+// content-stable gate). A comma list keeps a change that touches several
+// figures — a shared dialog button, say — to one run.
 const onlyIndex = process.argv.indexOf('--only')
-const ONLY = onlyIndex === -1 ? '' : process.argv[onlyIndex + 1]!
+const ONLY =
+  onlyIndex === -1
+    ? []
+    : process.argv[onlyIndex + 1]!.split(',').map(s => s.trim())
+
+// The figures in the order the flow captures them, which is what tells a run
+// which of the selected figures is its *last* one — a substring can match
+// several, so "every pattern has matched something" is not the same question.
+// capture() rejects a name missing from this list, so the list can't silently
+// drift out of step with the flow.
+const FIGURES = [
+  'desktop-landing.png',
+  'desktop-ispcr.png',
+  'desktop-blat-search.png',
+  'desktop-blat-results.png',
+  'desktop-open-genome.png',
+  'desktop-available-genomes.png',
+  'desktop-session.png',
+  'desktop-add-track.png',
+]
+
+const selected = FIGURES.filter(name => ONLY.some(only => name.includes(only)))
+const LAST_SELECTED = selected.at(-1)
 
 let chromedriverProcess: ChildProcess | null = null
 let dataServer: http.Server | null = null
 let blatServer: http.Server | null = null
 let driver: WebDriver | null = null
 
+// Every capture logs the size it is about to write, whether or not --only lets
+// it write: the committed figures are 1400px wide and a run that silently
+// captures a different width is the failure mode this harness keeps hitting, so
+// the sizes need to be in the log next to the step that changed them.
+async function logViewport(driver: WebDriver, name: string): Promise<void> {
+  const size = await driver.executeScript<string>(`
+    const body = document.body.getBoundingClientRect()
+    return [
+      'inner ' + window.innerWidth + 'x' + window.innerHeight,
+      'outer ' + window.outerWidth + 'x' + window.outerHeight,
+      'body ' + Math.round(body.width) + 'x' + Math.round(body.height),
+      'dpr ' + window.devicePixelRatio,
+      'screen ' + screen.width + 'x' + screen.height,
+    ].join(', ')
+  `)
+  console.log(`  · ${name}: ${size}`)
+}
+
+// One teardown for the normal end, the early exit, and the fatal handler: each
+// piece is skipped if it never started, so it is safe to call at any point.
+async function shutdown(code: number): Promise<never> {
+  console.log('\nCleaning up...')
+  if (driver) {
+    try {
+      await driver.quit()
+    } catch (e) {
+      console.warn('WARN: driver.quit() failed during cleanup:', e)
+    }
+  }
+  chromedriverProcess?.kill('SIGKILL')
+  dataServer?.close()
+  blatServer?.close()
+  await killProcesses()
+  console.log('Done.')
+  process.exit(code)
+}
+
 async function capture(
   driver: WebDriver,
   name: string,
   dir = OUT_DIR,
+  { ignoreOnly = false } = {},
 ): Promise<void> {
-  if (ONLY && !name.includes(ONLY)) {
-    console.log(`  ≈ skipped ${name} (--only ${ONLY})`)
+  if (!ignoreOnly && !FIGURES.includes(name)) {
+    throw new Error(`${name} is missing from the FIGURES list`)
+  }
+  await logViewport(driver, name)
+  if (ONLY.length > 0 && !ignoreOnly && !selected.includes(name)) {
+    console.log(`  ≈ skipped ${name} (--only ${ONLY.join(',')})`)
   } else {
     const png = await driver.takeScreenshot()
     const out = resolve(dir, name)
     writeFileSync(out, Buffer.from(png, 'base64'))
     console.log(`  ✓ wrote ${out}`)
+    // Walking the rest of the flow with nothing left to write is a real risk,
+    // not just wasted minutes: the app has died outright at the
+    // available-genomes table, which would fail a run whose figures are all
+    // already on disk.
+    if (name === LAST_SELECTED) {
+      console.log('\nEvery --only figure written, stopping early.')
+      await shutdown(0)
+    }
   }
 }
 
@@ -90,6 +165,79 @@ async function freezeAnimations(driver: WebDriver): Promise<void> {
 }
 
 const SAMPLE_SEQ = 'CACGTGACTGAGGCTTGATCCGGATTACAGTGCCATTGACCTGAAGTTCAGG'
+
+// Track menu of the first track in the view (hg19's RefSeq lane) -> Gene glyph
+// -> Longest coding transcript. At the 205 bp the BLAT hit frames, "All
+// transcripts" is four near-identical TP53 models with the same exon under the
+// hit, so the reader compares the hit against a stack instead of against one
+// gene. Menu rows go by testid: their labels also appear in the track label
+// above, and a text match resolves to the first of those.
+async function collapseGeneGlyph(driver: WebDriver): Promise<void> {
+  const trackMenu = await driver.wait(
+    until.elementLocated(By.css('[data-testid="track_menu_icon"]')),
+    10000,
+  )
+  await driver.executeScript('arguments[0].click();', trackMenu)
+  const submenu = await driver.wait(
+    until.elementLocated(
+      By.css('[data-testid="cascading-submenu-gene_glyph"]'),
+    ),
+    10000,
+  )
+  await driver.executeScript('arguments[0].click();', submenu)
+  const option = await driver.wait(
+    until.elementLocated(
+      By.css('[data-testid="cascading-menuitem-longest_coding_transcript"]'),
+    ),
+    10000,
+  )
+  await driver.executeScript('arguments[0].click();', option)
+  await cleanupUI(driver)
+  await waitForAppReady(driver) // the lane re-renders with one model per gene
+}
+
+// Reads the open dialog's text without going through findElements, whose 30s
+// implicit wait makes "no dialog" cost 30 seconds to observe.
+async function openDialogText(driver: WebDriver): Promise<string | null> {
+  return driver.executeScript(`
+    const d = document.querySelector('.MuiDialog-root')
+    return d ? d.innerText : null
+  `)
+}
+
+// Submit, then block until the query has actually settled rather than guessing
+// with a delay. runQuery closes the dialog only on the success path (hits ->
+// track -> navigate -> handleClose), so a still-open dialog whose Submit button
+// has dropped back out of its 'Searching…' loading label means the query
+// finished and did *not* produce a result — the reason is printed in the dialog,
+// so read it out instead of leaving a later navigation wait to time out blank.
+async function submitUcscQuery(driver: WebDriver): Promise<void> {
+  const submit = await driver.wait(
+    until.elementLocated(By.xpath("//button[contains(., 'Submit')]")),
+    10000,
+  )
+  if (!(await submit.isEnabled())) {
+    throw new Error(
+      `Submit is disabled, dialog reads: ${await openDialogText(driver)}`,
+    )
+  }
+  await driver.executeScript('arguments[0].click();', submit)
+  await delay(500) // let the click's setLoading(true) render before polling
+
+  const deadline = Date.now() + 60000
+  while (Date.now() < deadline) {
+    const text = await openDialogText(driver)
+    if (text === null) {
+      console.log('    DEBUG: query settled, dialog closed')
+      return
+    }
+    if (!text.includes('Searching')) {
+      throw new Error(`BLAT query did not produce a result: ${text}`)
+    }
+    await delay(300)
+  }
+  throw new Error('BLAT query still searching after 60s')
+}
 
 // A stand-in hgBlat. Public UCSC BLAT sits behind a Cloudflare CAPTCHA and
 // needs an account apiKey, so a result figure can't be captured against it;
@@ -151,7 +299,8 @@ async function startMockBlatServer(port: number): Promise<http.Server> {
 // favorite from the start screen, capture both Tools-menu dialogs in their
 // default (collapsed) state — which fits the window and keeps hg19 prominent;
 // the guide prose covers the "advanced settings" apiKey/CAPTCHA path the toggle
-// reveals — then hand the run back a clean start screen for the remaining shots.
+// reveals — then submit the BLAT one to get the result figure, and hand the run
+// back a clean start screen for the remaining shots.
 async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   console.log('Launching hg19 for BLAT/in-silico PCR dialogs...')
   const hg19Link = await driver.wait(
@@ -160,13 +309,27 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   )
   await driver.executeScript('arguments[0].click();', hg19Link)
   // the app bar (where the blat plugin's Tools items live) appears once the
-  // session opens; the hg19 config is fetched from jbrowse.org, so allow time
+  // session opens; the hg19 config is fetched from jbrowse.org, and the RefSeq
+  // lane behind the dialogs has to have painted before anything is captured
   await findByText(driver, 'Tools')
-  await delay(3000)
+  await waitForAppReady(driver)
   await freezeAnimations(driver)
 
+  // Tools -> In-silico PCR first: the hgPcr primer-pair dialog, whose
+  // forward/reverse fields carry their own example placeholders. It goes before
+  // BLAT because the BLAT visit ends by submitting a query, which adds a track
+  // and moves the view — anything captured after that shows the result state
+  // rather than the pristine one.
+  console.log('Capturing In-silico PCR dialog...')
+  await openMenuItem(driver, 'Tools', 'In-silico PCR')
+  await findByText(driver, 'In-silico PCR (UCSC)')
+  await delay(500)
+  await capture(driver, 'desktop-ispcr.png')
+  await cleanupUI(driver)
+
   // Tools -> BLAT search: paste a sample sequence so the figure shows a query
-  // being set up against hg19.
+  // being set up against hg19, capture that, then drive the same dialog to a
+  // result — the two figures are two states of one visit, not two visits.
   console.log('Capturing BLAT search dialog...')
   await openMenuItem(driver, 'Tools', 'BLAT search')
   await findByText(driver, 'BLAT search (UCSC)')
@@ -179,30 +342,12 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   await blatSeqInput.sendKeys(SAMPLE_SEQ)
   await delay(500)
   await capture(driver, 'desktop-blat-search.png')
-  await cleanupUI(driver)
-
-  // Tools -> In-silico PCR: the hgPcr primer-pair dialog. Its forward/reverse
-  // primer fields carry their own example placeholders.
-  console.log('Capturing In-silico PCR dialog...')
-  await openMenuItem(driver, 'Tools', 'In-silico PCR')
-  await findByText(driver, 'In-silico PCR (UCSC)')
-  await delay(500)
-  await capture(driver, 'desktop-ispcr.png')
-  await cleanupUI(driver)
 
   // The result of a search is a track plus a navigation, so capture the state
-  // after submitting: the hits as an on-the-fly track with the view sitting on
-  // the best one. Submitted against the stand-in server (see MOCK_BLAT_RESPONSE).
+  // after submitting too: the hits as an on-the-fly track with the view sitting
+  // on the best one. Submitted against the stand-in server (see
+  // MOCK_BLAT_RESPONSE) via the url field under advanced settings.
   console.log('Capturing BLAT results...')
-  await openMenuItem(driver, 'Tools', 'BLAT search')
-  await findByText(driver, 'BLAT search (UCSC)')
-  await delay(500)
-  const resultSeqInput = await driver.wait(
-    until.elementLocated(By.css('textarea:not([aria-hidden="true"])')),
-    10000,
-  )
-  await resultSeqInput.click()
-  await resultSeqInput.sendKeys(SAMPLE_SEQ)
   await clickButton(driver, 'Show advanced settings')
   const urlField = await driver.wait(
     until.elementLocated(
@@ -210,21 +355,41 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
     ),
     10000,
   )
+  const mockUrl = `http://127.0.0.1:${BLAT_PORT}/hgBlat`
   await clearInput(driver, urlField)
-  await urlField.sendKeys(`http://127.0.0.1:${BLAT_PORT}/hgBlat`)
-  await clickButton(driver, 'Submit')
+  await urlField.sendKeys(mockUrl)
+  // a clearInput that didn't take leaves the default UCSC url with the mock one
+  // appended, and the resulting failure reads as an unrelated network error
+  const typedUrl = await urlField.getAttribute('value')
+  if (typedUrl !== mockUrl) {
+    throw new Error(`BLAT url field reads "${typedUrl}", wanted "${mockUrl}"`)
+  }
+  await submitUcscQuery(driver)
 
-  // done when the view has navigated to the best hit, which is also what the
-  // figure is meant to show — no fixed-timeout guess at when the query landed
-  await driver.wait(async () => {
-    const box = await driver.findElement(
+  // The dialog closes once navToFeature has resolved, but the search box reads
+  // the view's coarse dynamic blocks, which lag the navigation — so this polls
+  // rather than reading once, and reports where the view actually sits if the
+  // hit never arrives.
+  let locstring: string | null = null
+  const navDeadline = Date.now() + 30000
+  while (Date.now() < navDeadline && !locstring?.includes('chr17')) {
+    const searchBox = await driver.findElement(
       By.css('input[placeholder="Search for location"]'),
     )
-    const locstring = await box.getAttribute('value')
-    return !!locstring?.includes('chr17')
-  }, 30000)
-  await delay(3000) // let the track paint
+    locstring = await searchBox.getAttribute('value')
+    await delay(300)
+  }
+  if (!locstring?.includes('chr17')) {
+    throw new Error(`BLAT left the view at "${locstring}", wanted chr17`)
+  }
+  console.log(`    DEBUG: navigated to ${locstring}`)
+  await waitForAppReady(driver) // the new track fetches and paints
+  await collapseGeneGlyph(driver)
   await capture(driver, 'desktop-blat-results.png')
+  // the query's own console output (runQuery logs its failures) is otherwise
+  // only flushed by the fatal handler, so a run that captured a wrong-looking
+  // figure without throwing left no trace of what the renderer saw
+  await flushBrowserLogs(driver)
 
   console.log('Returning to start screen...')
   await openMenuItem(driver, 'File', 'Return to start screen')
@@ -235,6 +400,15 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
 async function main(): Promise<void> {
   console.log(`Running in ${isHeadless ? 'headless' : 'headed'} mode`)
   console.log(`App binary: ${APP_BINARY}`)
+  if (ONLY.length > 0) {
+    // a typo would otherwise drive the entire flow and write nothing
+    if (selected.length === 0) {
+      console.error(`ERROR: --only ${ONLY.join(',')} matches no figure`)
+      console.error(`Known figures: ${FIGURES.join(', ')}`)
+      process.exit(1)
+    }
+    console.log(`Writing ${selected.join(', ')}`)
+  }
 
   if (!existsSync(APP_BINARY)) {
     console.error(`ERROR: App binary not found at ${APP_BINARY}`)
@@ -283,7 +457,7 @@ async function main(): Promise<void> {
   await clickButton(driver, 'Show all available genomes')
   await findByText(driver, 'Available genomes')
   await driver.wait(until.elementLocated(By.css('table tbody tr')), 30000)
-  await delay(2000) // let rows/network settle
+  await waitForAppReady(driver)
   await capture(driver, 'desktop-available-genomes.png')
   await cleanupUI(driver)
 
@@ -293,7 +467,7 @@ async function main(): Promise<void> {
     driver,
     `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa`,
   )
-  await delay(2000) // let the view fully paint
+  await waitForAppReady(driver)
 
   // Add the bundled volvox GFF3 genes track over http so the session screenshot
   // shows annotated genes instead of a bare sequence. An hg38 demo with NCBI
@@ -317,7 +491,7 @@ async function main(): Promise<void> {
   await clickActiveAddTrackButton(driver) // Next: source -> confirm track type
   await delay(1500)
   await clickActiveAddTrackButton(driver) // Add: shows track + closes widget
-  await delay(3000) // let the GFF3 track fetch + paint
+  await waitForAppReady(driver) // the GFF3 track fetches and paints
 
   await capture(driver, 'desktop-session.png')
 
@@ -329,20 +503,7 @@ async function main(): Promise<void> {
   await capture(driver, 'desktop-add-track.png')
   await cleanupUI(driver)
 
-  console.log('\nCleaning up...')
-  try {
-    await driver.quit()
-  } catch (e) {
-    console.warn('WARN: driver.quit() failed during cleanup:', e)
-  }
-  if (chromedriverProcess) {
-    chromedriverProcess.kill('SIGKILL')
-  }
-  dataServer.close()
-  blatServer.close()
-  await killProcesses()
-  console.log('Done.')
-  process.exit(0)
+  await shutdown(0)
 }
 
 main().catch(async e => {
@@ -354,25 +515,14 @@ main().catch(async e => {
       console.warn('WARN: could not flush browser logs:', err)
     }
     try {
-      await capture(driver, 'desktop-debug-failure.png', tmpdir())
+      // the whole point of this one is diagnosing the failure, so --only can't
+      // be allowed to skip it
+      await capture(driver, 'desktop-debug-failure.png', tmpdir(), {
+        ignoreOnly: true,
+      })
     } catch (err) {
       console.warn('WARN: could not capture debug screenshot:', err)
     }
-    try {
-      await driver.quit()
-    } catch (err) {
-      console.warn('WARN: driver.quit() failed after fatal error:', err)
-    }
   }
-  if (chromedriverProcess) {
-    chromedriverProcess.kill('SIGKILL')
-  }
-  if (dataServer) {
-    dataServer.close()
-  }
-  if (blatServer) {
-    blatServer.close()
-  }
-  await killProcesses()
-  process.exit(1)
+  await shutdown(1)
 })

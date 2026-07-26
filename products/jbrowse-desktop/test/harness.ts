@@ -186,14 +186,131 @@ export async function waitForStartScreen(
   await findByText(driver, 'Launch new session', timeout)
 }
 
+// "Is this gone yet?" asked through the DOM rather than findElements, which
+// waits out the 30s implicit timeout every time the answer is "yes, none left" —
+// the dominant cost of a screenshot run, since every cleanup step ends that way.
+export async function countElements(
+  driver: WebDriver,
+  css: string,
+): Promise<number> {
+  return driver.executeScript<number>(
+    'return document.querySelectorAll(arguments[0]).length',
+    css,
+  )
+}
+
+// Readiness instead of a sleep, off the same signals the web screenshot
+// generator waits on (`packages/browser-test-utils/src/waits.ts`), read through
+// executeScript because this harness drives selenium rather than puppeteer:
+//
+// - `data-view-phase=loading` — the view is still waiting on its assembly (or on
+//   init's navigation) and has mounted no displays at all, so every signal below
+//   is silent and a capture lands on a bare spinner. Blocking: a view that never
+//   leaves this has no content to fall through to, so the timeout is the answer.
+// - a *visible* `loading-overlay` — the idle overlay stays in the DOM at
+//   opacity 0, so it has to be tested for visibility rather than presence.
+// - `data-display-phase=loading` — a display's fetch is still in flight.
+// - a display wrapper still wearing its base test-id: DisplayChrome flips the id
+//   to `<base>-done` on first paint, so anything still on the base id is pending.
+//
+// The last two are best-effort, as they are in the web generator: a display in a
+// terminal too-large/error state renders no wrapper and publishes no phase, so
+// waiting on them strictly would fail a figure whose subject is that state.
+const PENDING_DISPLAYS = [
+  '[data-testid^="display-"]:not([data-testid$="-done"])',
+  '[data-testid$="-display"]',
+  '[data-testid="synteny_canvas"]',
+].join(',')
+
+interface PendingWork {
+  blocking: string[]
+  settling: string[]
+}
+
+async function getPendingWork(driver: WebDriver): Promise<PendingWork> {
+  return driver.executeScript<PendingWork>(
+    `
+    const pendingDisplays = arguments[0]
+    const isVisible = el => {
+      for (let cur = el; cur; cur = cur.parentElement) {
+        const s = getComputedStyle(cur)
+        if (
+          s.display === 'none' ||
+          s.visibility === 'hidden' ||
+          Number(s.opacity) === 0
+        ) {
+          return false
+        }
+      }
+      const { width, height } = el.getBoundingClientRect()
+      return width > 0 && height > 0
+    }
+    const count = sel => document.querySelectorAll(sel).length
+    const overlays = Array.from(
+      document.querySelectorAll('[data-testid="loading-overlay"]'),
+    ).filter(isVisible).length
+    const blocking = []
+    const settling = []
+    const views = count('[data-view-phase="loading"]')
+    if (views) { blocking.push(views + ' view(s) loading') }
+    if (overlays) { blocking.push(overlays + ' loading overlay(s)') }
+    const displays = count('[data-display-phase="loading"]')
+    if (displays) { settling.push(displays + ' display(s) loading') }
+    const unpainted = count(pendingDisplays)
+    if (unpainted) { settling.push(unpainted + ' display(s) unpainted') }
+    return { blocking, settling }
+  `,
+    PENDING_DISPLAYS,
+  )
+}
+
+// Blocks until the app has nothing left in flight, and says what it was waiting
+// on if it runs out of time rather than failing as a bare timeout.
+//
+// The signals have to stay clear for `settleMs`, not merely read clear once. A
+// display's fetch autorun is debounced, so straight after a navigation nothing
+// has started loading yet: every signal reads ready, and a capture taken there
+// gets the track's blank canvas. (That is not hypothetical — it blanked the
+// RefSeq lane behind the in-silico PCR dialog.) The settle window has to outlast
+// that debounce.
+export async function waitForAppReady(
+  driver: WebDriver,
+  { timeout = 60000, settleMs = 1500 } = {},
+): Promise<void> {
+  const deadline = Date.now() + timeout
+  let last: PendingWork = { blocking: [], settling: [] }
+  let clearSince: number | undefined
+  while (Date.now() < deadline) {
+    last = await getPendingWork(driver)
+    if (last.blocking.length === 0 && last.settling.length === 0) {
+      if (clearSince === undefined) {
+        clearSince = Date.now()
+      }
+      if (Date.now() - clearSince >= settleMs) {
+        return
+      }
+    } else {
+      clearSince = undefined
+    }
+    await delay(250)
+  }
+  const detail = [...last.blocking, ...last.settling].join(', ')
+  if (last.blocking.length > 0) {
+    throw new Error(`app never finished loading: ${detail}`)
+  }
+  // a too-large or errored display publishes no phase and renders no wrapper, so
+  // anything still pending here is a display that legitimately has no more to
+  // say — worth reporting next to the capture, not worth failing the run over
+  console.warn(`    WARN: proceeding with ${detail}`)
+}
+
 export async function waitForBackdropsToDisappear(
   driver: WebDriver,
   timeout = 5000,
 ): Promise<void> {
   const startTime = Date.now()
   while (Date.now() - startTime < timeout) {
-    const backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
-    if (backdrops.length === 0) {
+    if ((await countElements(driver, '.MuiBackdrop-root')) === 0) {
       return
     }
     await delay(200)
@@ -203,24 +320,25 @@ export async function waitForBackdropsToDisappear(
 // Close all dialogs, menus, and backdrops
 export async function cleanupUI(driver: WebDriver): Promise<void> {
   for (let i = 0; i < 5; i++) {
-    const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
-    if (dialogs.length === 0) {
+    if ((await countElements(driver, '.MuiDialog-root')) === 0) {
       break
     }
     await driver.actions().sendKeys(Key.ESCAPE).perform()
     await delay(300)
   }
 
-  const backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
-  for (const backdrop of backdrops) {
-    try {
-      await driver.executeScript('arguments[0].click();', backdrop)
-      await delay(200)
-    } catch (e) {
-      console.warn(
-        '    WARN: backdrop dismiss failed (likely already gone):',
-        e,
-      )
+  if ((await countElements(driver, '.MuiBackdrop-root')) > 0) {
+    const backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
+    for (const backdrop of backdrops) {
+      try {
+        await driver.executeScript('arguments[0].click();', backdrop)
+        await delay(200)
+      } catch (e) {
+        console.warn(
+          '    WARN: backdrop dismiss failed (likely already gone):',
+          e,
+        )
+      }
     }
   }
 
@@ -318,9 +436,10 @@ export async function openVolvoxGenome(
   // and OpenSequenceDialog is showing its ErrorMessage, so read that text out —
   // dismissing it blind (the ESCAPE this used to send, which hung chromedriver
   // outright) only buried the cause under a later "no view launched" failure.
-  const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
-  console.log(`    DEBUG: ${dialogs.length} dialogs open after submit`)
-  if (dialogs.length > 0) {
+  const openDialogs = await countElements(driver, '.MuiDialog-root')
+  console.log(`    DEBUG: ${openDialogs} dialogs open after submit`)
+  if (openDialogs > 0) {
+    const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
     throw new Error(
       `Open genome dialog stayed open after submit: ${await dialogs[0]!.getText()}`,
     )
@@ -367,7 +486,20 @@ export async function openVolvoxGenome(
   )
 }
 
-// Kill leftover chromedriver / electron processes
+// Kill leftover chromedriver / electron processes from an earlier run.
+//
+// The patterns are deliberately narrow. `pkill -f jbrowse-desktop` matches any
+// command line mentioning the product — a `pnpm start`, a packaging build, this
+// harness's own wrapper shell — which in a shared checkout kills someone else's
+// work, and `pkill -f chromedriver` even matched the `sh -c` running it and
+// SIGTERMed itself (the source of a permanent "process cleanup failed" warning).
+// The `[c]` form keeps the pattern from matching its own command line; the
+// unpacked path keeps it to the app this harness launches.
+const KILL_PATTERNS = [
+  '[c]hromedriver',
+  'unpacked/[j]browse-desktop-linux-x64/jbrowse-desktop',
+]
+
 export async function killProcesses(): Promise<void> {
   try {
     if (isWindows) {
@@ -376,8 +508,9 @@ export async function killProcesses(): Promise<void> {
         stdio: 'ignore',
       })
     } else {
-      execSync('pkill -f chromedriver || true', { stdio: 'ignore' })
-      execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
+      for (const pattern of KILL_PATTERNS) {
+        execSync(`pkill -f "${pattern}" || true`, { stdio: 'ignore' })
+      }
     }
   } catch (e) {
     console.warn('    WARN: process cleanup failed:', e)

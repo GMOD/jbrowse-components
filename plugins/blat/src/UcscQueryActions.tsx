@@ -24,6 +24,7 @@ const UcscQueryActions = observer(function UcscQueryActions({
     <DialogActions>
       <Button
         variant="contained"
+        color="secondary"
         onClick={() => {
           onCancel()
         }}

@@ -71,6 +71,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [PERF_INSTRUMENTATION.md](guides/PERF_INSTRUMENTATION.md) — diagnosing render / scroll jank
 - [CONFIG_WRITE_PATH_HANDOFF.md](guides/CONFIG_WRITE_PATH_HANDOFF.md), finishing the raw `setSlot` to typed `setConf` migration
 - [SCREENSHOT_REVIEW_HANDOFF.md](guides/SCREENSHOT_REVIEW_HANDOFF.md) / [SCREENSHOT_CAPTURE_RACE.md](guides/SCREENSHOT_CAPTURE_RACE.md) — website figure pipeline
+- [DESKTOP_SCREENSHOTS.md](guides/DESKTOP_SCREENSHOTS.md) — the `desktop-*.png` selenium harness: readiness gates, capture size, what still breaks
 - [DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md) — desktop IPC, preload, plugin loading
 - [REGION_VIEW_LAUNCH.md](guides/REGION_VIEW_LAUNCH.md) — "open view X for this region" entry points (synteny stack, graph subgraph)
 - [PANGENOME_PATHS_HANDOFF.md](guides/PANGENOME_PATHS_HANDOFF.md) — per-haplotype graph paths as a linear track, the indel-glyph passes, `--call` traps
