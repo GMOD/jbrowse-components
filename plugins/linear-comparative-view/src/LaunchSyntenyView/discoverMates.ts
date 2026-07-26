@@ -5,6 +5,9 @@ import { pickMatesForRegion } from './pickMatesForRegion.ts'
 import type { MateCandidate } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+export type MateDiscovery = (stopToken: StopToken) => Promise<MateCandidate[]>
 
 // Which assemblies a region aligns to, and on which alignment each.
 //
@@ -14,6 +17,11 @@ import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 // output keyed by feature index, while the panels need whole Features with
 // their mate and CIGAR). The region is one rubberband selection, and an
 // in-memory PAF is already parsed behind the adapter's shared setup.
+//
+// The caller's `stopToken` travels with the RPC: a selection can be a whole
+// chromosome, and the download+parse behind it is exactly the phase that honors
+// the token, so closing the dialog aborts the work rather than leaving a worker
+// grinding on a view nobody is waiting for.
 export function makeMateDiscovery({
   session,
   track,
@@ -25,8 +33,8 @@ export function makeMateDiscovery({
   session: AbstractSessionModel
   track: AnyConfigurationModel
   region: Region
-}): () => Promise<MateCandidate[]> {
-  return async () => {
+}): MateDiscovery {
+  return async stopToken => {
     const { rpcManager } = session
     const trackId = readConfObject(track, 'trackId') as string
     const features: Feature[] = await rpcManager.call(
@@ -38,6 +46,7 @@ export function makeMateDiscovery({
           unknown
         >,
         regions: [region],
+        stopToken,
       },
     )
     return pickMatesForRegion({

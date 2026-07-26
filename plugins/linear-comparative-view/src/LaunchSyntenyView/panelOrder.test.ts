@@ -1,12 +1,14 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
-  checkedPanels,
+  launchOrder,
   movePanel,
+  setAllPanelsChecked,
   setPanelChecked,
   toPanelRows,
 } from './panelOrder.ts'
 
+import type { PanelRow } from './panelOrder.ts'
 import type { MateCandidate } from './pickMatesForRegion.ts'
 
 function candidates(...assemblyNames: string[]): MateCandidate[] {
@@ -21,45 +23,84 @@ function candidates(...assemblyNames: string[]): MateCandidate[] {
   }))
 }
 
-const rows = toPanelRows(candidates('Sakai', 'CFT073', 'IAI39'))
+const rows = toPanelRows('K12', candidates('Sakai', 'CFT073', 'IAI39'))
 
-function names(list: ReturnType<typeof toPanelRows>) {
+function names(list: PanelRow[]) {
   return list.map(r => r.assemblyName)
 }
 
-test('every discovered mate starts as a panel', () => {
-  expect(rows.every(r => r.checked)).toBe(true)
-  expect(names(rows)).toEqual(['Sakai', 'CFT073', 'IAI39'])
+test('the anchor leads the list and every discovered mate starts checked', () => {
+  expect(names(rows)).toEqual(['K12', 'Sakai', 'CFT073', 'IAI39'])
+  expect(rows.filter(r => r.kind === 'mate').every(r => r.checked)).toBe(true)
 })
 
 test('moving a panel swaps it with its neighbour', () => {
-  expect(names(movePanel(rows, 2, -1))).toEqual(['Sakai', 'IAI39', 'CFT073'])
-  expect(names(movePanel(rows, 0, 1))).toEqual(['CFT073', 'Sakai', 'IAI39'])
+  expect(names(movePanel(rows, 3, -1))).toEqual([
+    'K12',
+    'Sakai',
+    'IAI39',
+    'CFT073',
+  ])
+  expect(names(movePanel(rows, 0, 1))).toEqual([
+    'Sakai',
+    'K12',
+    'CFT073',
+    'IAI39',
+  ])
 })
 
 test('moving past either end is a no-op', () => {
   expect(names(movePanel(rows, 0, -1))).toEqual(names(rows))
-  expect(names(movePanel(rows, 2, 1))).toEqual(names(rows))
+  expect(names(movePanel(rows, 3, 1))).toEqual(names(rows))
 })
 
 // unchecking must not drop the row, or re-checking would append it at the
 // bottom and silently change which panels are adjacent
 test('unchecking keeps the row in place', () => {
+  const unchecked = setPanelChecked(rows, 2, false)
+  expect(names(unchecked)).toEqual(['K12', 'Sakai', 'CFT073', 'IAI39'])
+  expect(names(launchOrder(unchecked).mates)).toEqual(['Sakai', 'IAI39'])
+  expect(names(launchOrder(setPanelChecked(unchecked, 2, true)).mates)).toEqual(
+    ['Sakai', 'CFT073', 'IAI39'],
+  )
+})
+
+test('reordering carries the unchecked rows along', () => {
   const unchecked = setPanelChecked(rows, 1, false)
-  expect(names(unchecked)).toEqual(['Sakai', 'CFT073', 'IAI39'])
-  expect(names(checkedPanels(unchecked))).toEqual(['Sakai', 'IAI39'])
-  expect(names(checkedPanels(setPanelChecked(unchecked, 1, true)))).toEqual([
+  expect(names(movePanel(unchecked, 3, -1))).toEqual([
+    'K12',
+    'Sakai',
+    'IAI39',
+    'CFT073',
+  ])
+})
+
+// the anchor is where the coordinates came from, so the launch can't drop it
+test('the anchor cannot be unchecked, one at a time or in bulk', () => {
+  expect(launchOrder(setPanelChecked(rows, 0, false)).anchorIndex).toBe(0)
+  const none = setAllPanelsChecked(rows, false)
+  expect(names(launchOrder(none).mates)).toEqual([])
+  expect(launchOrder(none).anchorIndex).toBe(0)
+  expect(names(launchOrder(setAllPanelsChecked(none, true)).mates)).toEqual([
     'Sakai',
     'CFT073',
     'IAI39',
   ])
 })
 
-test('reordering carries the unchecked rows along', () => {
-  const unchecked = setPanelChecked(rows, 0, false)
-  expect(names(movePanel(unchecked, 2, -1))).toEqual([
-    'Sakai',
-    'IAI39',
-    'CFT073',
-  ])
+// three panels off a reference-anchored dataset: with the anchor in the middle
+// both bands are direct pairs, with it on top only the first one is
+test('dragging the anchor down reports its index in the launched stack', () => {
+  const middle = movePanel(rows, 0, 1)
+  expect(names(middle)).toEqual(['Sakai', 'K12', 'CFT073', 'IAI39'])
+  expect(launchOrder(middle).anchorIndex).toBe(1)
+  expect(names(launchOrder(middle).mates)).toEqual(['Sakai', 'CFT073', 'IAI39'])
+})
+
+// an unchecked row above the anchor must not count toward its index, or the
+// anchor lands one panel lower than the list showed
+test('the anchor index counts only the panels being launched', () => {
+  const middle = movePanel(rows, 0, 2)
+  expect(names(middle)).toEqual(['Sakai', 'CFT073', 'K12', 'IAI39'])
+  expect(launchOrder(setPanelChecked(middle, 0, false)).anchorIndex).toBe(1)
 })

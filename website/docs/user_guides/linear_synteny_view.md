@@ -29,6 +29,36 @@ two genomes, from an [all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
 
 <Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 
+### From a locus you are already looking at
+
+The import form starts from two assemblies. The other way round is to start from
+a locus in a linear genome view that has a synteny dataset covering its
+assembly, and let JBrowse frame the panels for you. The dataset does not have to
+be an open track:
+
+- **Drag-select a region** on the scale bar and pick **Linear synteny view of
+  selection**. JBrowse reads that region back out of the alignment, finds every
+  assembly aligning to it, and opens a panel for each. The dialog lists them top
+  to bottom with up/down arrows, the assembly you selected in among them:
+  ribbons are drawn between neighbouring panels only, so that order decides
+  which comparisons the view can show. This is the form to use for an
+  [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus reaches
+  several assemblies at once.
+- **Right-click a single alignment** in a synteny track drawn in a linear genome
+  view and pick **Launch synteny view for this position**, which opens the one
+  pair that alignment describes. Its **Use CIGAR to map the current visible
+  region to the target** option walks the alignment to find the interval that
+  actually matches what you are looking at, rather than framing on the whole
+  block's endpoints. Worked through in
+  [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny).
+- The same **Linear synteny view (visible region)** entry sits in the view's
+  hamburger menu under **Launch view**, for when the region you want is the
+  whole view and there is nothing to select.
+
+Both dialogs offer a **window size** (padding added to every panel) and a
+**horizontally flip inverted targets** checkbox. Without flipping, an inverted
+panel's coordinates run right to left.
+
 ## Navigating each panel
 
 Each genome panel is a full linear genome view and is controlled independently:

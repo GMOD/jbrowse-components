@@ -1,11 +1,32 @@
 import type { MateCandidate } from './pickMatesForRegion.ts'
 
-export interface PanelRow extends MateCandidate {
+// The anchor is a row like any other so it can be dragged through the stack.
+// It carries no feature and cannot be unchecked: it is the assembly the region
+// was selected on, and every mate's coordinates were resolved against it.
+export interface AnchorPanelRow {
+  kind: 'anchor'
+  assemblyName: string
+}
+
+export interface MatePanelRow extends MateCandidate {
+  kind: 'mate'
   checked: boolean
 }
 
-export function toPanelRows(candidates: MateCandidate[]): PanelRow[] {
-  return candidates.map(candidate => ({ ...candidate, checked: true }))
+export type PanelRow = AnchorPanelRow | MatePanelRow
+
+export function toPanelRows(
+  anchorAssembly: string,
+  candidates: MateCandidate[],
+): PanelRow[] {
+  return [
+    { kind: 'anchor', assemblyName: anchorAssembly },
+    ...candidates.map(candidate => ({
+      ...candidate,
+      kind: 'mate' as const,
+      checked: true,
+    })),
+  ]
 }
 
 // Move one row by one position. Order is not cosmetic here: a LinearSyntenyView
@@ -28,9 +49,23 @@ export function setPanelChecked(
   index: number,
   checked: boolean,
 ) {
-  return rows.map((row, i) => (i === index ? { ...row, checked } : row))
+  return rows.map((row, i) =>
+    i === index && row.kind === 'mate' ? { ...row, checked } : row,
+  )
 }
 
-export function checkedPanels(rows: PanelRow[]) {
-  return rows.filter(row => row.checked)
+export function setAllPanelsChecked(rows: PanelRow[], checked: boolean) {
+  return rows.map(row => (row.kind === 'mate' ? { ...row, checked } : row))
+}
+
+// The stack the launch will build: the checked mates in list order, plus where
+// the anchor sits among them. A three-panel launch off a reference-anchored
+// dataset (an MCScan blocks table) wants the anchor in the middle, where both
+// bands are direct pairs — with it on top, the second band is mate-to-mate.
+export function launchOrder(rows: PanelRow[]) {
+  const kept = rows.filter(row => row.kind === 'anchor' || row.checked)
+  return {
+    anchorIndex: kept.findIndex(row => row.kind === 'anchor'),
+    mates: kept.filter(row => row.kind === 'mate'),
+  }
 }

@@ -1,15 +1,18 @@
 import { useState } from 'react'
 
-import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel } from '@mui/material'
 
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
+import {
+  DEFAULT_WINDOW_SIZE,
+  FlipInvertedTargetsCheckbox,
+  WindowSizeField,
+} from './launchOptionFields.tsx'
 
 import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-
-const DEFAULT_WINDOW_SIZE = 1000
 
 const useStyles = makeStyles()({
   formControl: {
@@ -73,6 +76,7 @@ export default function LaunchSyntenyViewDialog({
           className={classes.formControl}
           control={
             <Checkbox
+              size="small"
               checked={useRegionOfInterest}
               onChange={event => {
                 setUseRegionOfInterest(event.target.checked)
@@ -83,27 +87,17 @@ export default function LaunchSyntenyViewDialog({
         />
       ) : null}
       {inverted ? (
-        <FormControlLabel
-          className={classes.formControl}
-          control={
-            <Checkbox
-              checked={flipReversedMates}
-              onChange={event => {
-                setFlipReversedMates(event.target.checked)
-              }}
-            />
-          }
-          label="Horizontally flip targets that are inverted (without flipping, an inverted panel's coordinates decrease left to right)"
+        <FlipInvertedTargetsCheckbox
+          checked={flipReversedMates}
+          onChange={val => {
+            setFlipReversedMates(val)
+          }}
         />
       ) : null}
-      <NumberTextField
-        label="Add window size in bp"
-        defaultValue={DEFAULT_WINDOW_SIZE}
-        onValueChange={val => {
+      <WindowSizeField
+        onChange={val => {
           setWindowSize(val)
         }}
-        min={0}
-        errorText="Must be a non-negative number"
       />
     </SubmitDialog>
   )

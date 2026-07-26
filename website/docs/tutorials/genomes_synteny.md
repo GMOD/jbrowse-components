@@ -55,6 +55,14 @@ track drawn as ribbons between the panels.
 Set the ribbon coloring to **Strand** from the palette button in the synteny
 track header.
 
+A locus that no single chain block covers (a gene that several blocks tile, or
+one you have only navigated to) has the other route: drag-select it on the scale
+bar and pick **Linear synteny view of selection**. That one starts from the
+region rather than from a block, and offers every assembly the session's synteny
+datasets align to it, so it is also what to use when more than one liftOver
+track is on. See
+[the linear synteny view guide](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
+
 ## Two settings worth changing
 
 Both live on the synteny view's **View options** button:

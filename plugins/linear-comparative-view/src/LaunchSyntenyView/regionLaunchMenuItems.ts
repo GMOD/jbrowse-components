@@ -40,6 +40,21 @@ function launchableTracks(
   )
 }
 
+// Whole base pairs, and only the four fields a Region is. A rubberband
+// selection already arrives floored, but a dynamic block does not: its bounds
+// are fractional (see calculateDynamicBlocks), and toLocale renders a
+// fractional bp as `1,234,6.6,789` — which is what the dialog title showed for
+// the visible-region launch. Rebuilding the fields also drops the block's pixel
+// bookkeeping (offsetPx/widthPx/key) before the region crosses the RPC boundary.
+export function toWholeBpRegion(region: Region): Region {
+  return {
+    assemblyName: region.assemblyName,
+    refName: region.refName,
+    start: Math.floor(region.start),
+    end: Math.ceil(region.end),
+  }
+}
+
 // Menu items that open a synteny view on `region`, one per synteny dataset that
 // could supply it. A single dataset is the common case and gets a flat item —
 // a submenu of one is a needless click; several become a submenu naming each,
@@ -57,23 +72,24 @@ export function syntenyRegionMenuItems({
   region: Region | undefined
   session: AbstractSessionModel
 }): MenuItem[] {
-  return region
+  const roi = region ? toWholeBpRegion(region) : undefined
+  return roi
     ? oneOrManyMenuItem({
         label,
         icon: CompareArrowsIcon,
-        entries: launchableTracks(session, region.assemblyName),
+        entries: launchableTracks(session, roi.assemblyName),
         entryLabel: track => track.name,
         onSelect: track => () => {
           session.queueDialog(handleClose => [
             LaunchSyntenyViewForRegionDialog,
             {
               session,
-              region,
+              region: roi,
               track: { trackId: track.trackId, name: track.name },
               discoverMates: makeMateDiscovery({
                 session,
                 track: track.conf,
-                region,
+                region: roi,
               }),
               handleClose,
             },

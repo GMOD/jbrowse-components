@@ -269,11 +269,12 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             const anchorAssembly = (
               getContainingView(self) as LinearGenomeViewModel
             ).assemblyNames[0]
+            const track = getContainingTrack(self)
             if (
               feature &&
               anchorAssembly !== undefined &&
               canLaunchSyntenyForMate(
-                getConf(getContainingTrack(self), 'assemblyNames'),
+                getConf(track, 'assemblyNames'),
                 getMate(feature)?.assemblyName,
               )
             ) {
@@ -295,7 +296,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                       region: block
                         ? { start: block.bpRange[0], end: block.bpRange[1] }
                         : undefined,
-                      trackId: getConf(getContainingTrack(self), 'trackId'),
+                      trackId: getConf(track, 'trackId'),
                       handleClose,
                       session: getSession(self),
                       anchorAssembly,

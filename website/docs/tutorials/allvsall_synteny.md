@@ -399,11 +399,11 @@ reads that region back out of the same PAF, finds every assembly aligning to it,
 and opens a row for each with a ribbon band in between. Selecting the paa operon
 window above gives the five-strain stack for that locus alone.
 
-The dialog lists the assemblies it found, top to bottom, and lets you reorder
-them before launching. That order is not cosmetic: ribbons are drawn between
-neighbouring rows only, so the pairs you put next to each other are the
-comparisons the view can show. It is the same reason IAI39 sits directly below
-K-12 in the figure above.
+The dialog lists the assemblies it found plus the one you selected in, top to
+bottom, and lets you reorder them before launching. That order is not cosmetic:
+ribbons are drawn between neighbouring rows only, so the pairs you put next to
+each other are the comparisons the view can show. It is the same reason IAI39
+sits directly below K-12 in the figure above.
 
 Clicking a single alignment instead of selecting a region still offers **Launch
 synteny view for this position**, which opens the one pair that alignment

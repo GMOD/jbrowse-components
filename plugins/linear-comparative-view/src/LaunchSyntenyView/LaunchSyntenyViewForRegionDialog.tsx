@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { ErrorMessage, NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
+import { ErrorMessage, SubmitDialog } from '@jbrowse/core/ui'
+import {
+  assembleLocString,
+  getBpDisplayStr,
+  isAbortException,
+} from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useFetch } from '@jbrowse/core/util/useFetch'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import {
+  Button,
   Checkbox,
   CircularProgress,
   FormControlLabel,
@@ -16,23 +21,28 @@ import {
 
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
-  checkedPanels,
+  CollapsePanelsCheckbox,
+  DEFAULT_WINDOW_SIZE,
+  FlipInvertedTargetsCheckbox,
+  WindowSizeField,
+} from './launchOptionFields.tsx'
+import {
+  launchOrder,
   movePanel,
+  setAllPanelsChecked,
   setPanelChecked,
   toPanelRows,
 } from './panelOrder.ts'
 
+import type { MateDiscovery } from './discoverMates.ts'
 import type { PanelRow } from './panelOrder.ts'
-import type { MateCandidate } from './pickMatesForRegion.ts'
 import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 
-const DEFAULT_WINDOW_SIZE = 1000
-
+// The panel list is one row per aligning assembly, so an all-vs-all locus can
+// produce a dozen; at MUI's default checkbox padding that list alone is taller
+// than the rest of the dialog. Rows are compacted to a single text line each
+// (small checkbox, no vertical margin) so the whole list stays readable at once.
 const useStyles = makeStyles()({
-  formControl: {
-    margin: 10,
-    border: '1px solid #ccc',
-  },
   panels: {
     margin: 10,
     maxHeight: 260,
@@ -44,6 +54,7 @@ const useStyles = makeStyles()({
   },
   panelLabel: {
     flex: 1,
+    margin: 0,
   },
 })
 
@@ -57,43 +68,65 @@ export default function LaunchSyntenyViewForRegionDialog({
   session: AbstractSessionModel
   region: Region
   track: { trackId: string; name: string }
-  discoverMates: () => Promise<MateCandidate[]>
+  discoverMates: MateDiscovery
   handleClose: () => void
 }) {
   const { classes } = useStyles()
   const [rows, setRows] = useState<PanelRow[] | undefined>()
+  const [error, setError] = useState<unknown>()
   const [flipReversedMates, setFlipReversedMates] = useState(true)
+  const [collapseEmptyRows, setCollapseEmptyRows] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
-  const { error } = useFetch(
-    ['syntenyMatesForRegion', track.trackId, assembleLocString(region)],
-    discoverMates,
-    {
-      // seeded once from the fetch rather than derived every render, because
-      // from here on the list is the user's: they reorder it and uncheck rows
-      onSuccess: candidates => {
-        setRows(toPanelRows(candidates))
-      },
-    },
-  )
-  const selected = rows ? checkedPanels(rows) : []
+
+  // Hand-rolled rather than useFetch because the point here is the cleanup: a
+  // selection can be a whole chromosome, and useFetch's fetcher takes the cache
+  // key, with no way to hand it a stop token, so dismissing the dialog left the
+  // RPC running. The token is created and stopped by the same effect, so its
+  // lifetime is the fetch's. `discoverMates` is stable — queueDialog resolves
+  // the dialog's props once, at the point the menu item was clicked.
+  useEffect(() => {
+    const stopToken = createStopToken()
+    let alive = true
+    discoverMates(stopToken)
+      .then(candidates => {
+        if (alive) {
+          // seeded once from the fetch rather than derived every render,
+          // because from here on the list is the user's: they reorder it and
+          // uncheck rows
+          setRows(toPanelRows(region.assemblyName, candidates))
+        }
+      })
+      .catch((e: unknown) => {
+        if (alive && !isAbortException(e)) {
+          setError(e)
+        }
+      })
+    return () => {
+      alive = false
+      stopStopToken(stopToken)
+    }
+  }, [discoverMates, region.assemblyName])
+  const { anchorIndex, mates } = launchOrder(rows ?? [])
 
   return (
     <SubmitDialog
       open
       title="Launch synteny view for region"
-      submitDisabled={windowSize === undefined || !selected.length}
+      submitDisabled={windowSize === undefined || !mates.length}
       onCancel={() => {
         handleClose()
       }}
       onSubmit={() => {
-        if (windowSize !== undefined && selected.length) {
+        if (windowSize !== undefined && mates.length) {
           launchSyntenyViewForFeatures({
-            features: selected.map(row => row.feature),
+            features: mates.map(row => row.feature),
             anchorAssembly: region.assemblyName,
+            anchorIndex,
             windowSize,
             flipReversedMates,
+            collapseEmptyRows,
             trackId: track.trackId,
             session,
             region,
@@ -102,34 +135,54 @@ export default function LaunchSyntenyViewForRegionDialog({
         }
       }}
     >
+      {/* the size, because a rubberband can cover a whole chromosome without
+       looking like it, and every panel is framed on what it says. No assembly
+       in the locstring: it is the anchor row of the list right below, and
+       `{volvox}ctgA:1..50,000` reads as punctuation noise next to it */}
       <Typography>
-        {assembleLocString(region)} on {track.name}
+        {assembleLocString({
+          refName: region.refName,
+          start: region.start,
+          end: region.end,
+        })}{' '}
+        ({getBpDisplayStr(region.end - region.start)}) on {track.name}
       </Typography>
-      <div className={classes.panels}>
-        <Typography variant="subtitle2">
-          Panels, top to bottom. Alignments are drawn between neighbouring
-          panels, so the order decides which comparisons the view shows.
+      {/* outside the scroller below: with a dozen panels the list scrolls, and
+       the line saying what the order means is what would scroll away first */}
+      <Typography variant="subtitle2">
+        Panels, top to bottom. Alignments are drawn between neighbouring panels,
+        so the order decides which comparisons the view shows.
+      </Typography>
+      {error ? <ErrorMessage error={error} /> : null}
+      {!rows && !error ? <CircularProgress size={20} /> : null}
+      {rows && rows.length === 1 ? (
+        <Typography variant="body2">
+          Nothing in this dataset aligns to this region
         </Typography>
-        {error ? <ErrorMessage error={error} /> : null}
-        {!rows && !error ? <CircularProgress size={20} /> : null}
-        {rows && !rows.length ? (
-          <Typography variant="body2">
-            No other assembly aligns to this region
-          </Typography>
-        ) : null}
+      ) : null}
+      <div className={classes.panels}>
         {rows?.map((row, index) => (
           <div className={classes.panelRow} key={row.assemblyName}>
             <FormControlLabel
               className={classes.panelLabel}
               control={
                 <Checkbox
-                  checked={row.checked}
+                  size="small"
+                  // the anchor is the assembly the region was selected on, and
+                  // every mate's coordinates were resolved against it, so it is
+                  // in the stack unconditionally — it can only be moved
+                  disabled={row.kind === 'anchor'}
+                  checked={row.kind === 'anchor' || row.checked}
                   onChange={event => {
                     setRows(setPanelChecked(rows, index, event.target.checked))
                   }}
                 />
               }
-              label={row.assemblyName}
+              label={
+                row.kind === 'anchor'
+                  ? `${row.assemblyName} (your selection)`
+                  : row.assemblyName
+              }
             />
             <IconButton
               size="small"
@@ -154,26 +207,44 @@ export default function LaunchSyntenyViewForRegionDialog({
           </div>
         ))}
       </div>
-      <FormControlLabel
-        className={classes.formControl}
-        control={
-          <Checkbox
-            checked={flipReversedMates}
-            onChange={event => {
-              setFlipReversedMates(event.target.checked)
+      {/* an all-vs-all locus can list a dozen assemblies, all checked, and
+       picking two of them out is otherwise ten clicks of unchecking */}
+      {rows && rows.length > 3 ? (
+        <div>
+          <Button
+            size="small"
+            onClick={() => {
+              setRows(setAllPanelsChecked(rows, true))
             }}
-          />
-        }
-        label="Horizontally flip targets that are inverted (without flipping, an inverted panel's coordinates decrease left to right)"
+          >
+            Select all
+          </Button>
+          <Button
+            size="small"
+            onClick={() => {
+              setRows(setAllPanelsChecked(rows, false))
+            }}
+          >
+            Select none
+          </Button>
+        </div>
+      ) : null}
+      <FlipInvertedTargetsCheckbox
+        checked={flipReversedMates}
+        onChange={val => {
+          setFlipReversedMates(val)
+        }}
       />
-      <NumberTextField
-        label="Add window size in bp"
-        defaultValue={DEFAULT_WINDOW_SIZE}
-        onValueChange={val => {
+      <CollapsePanelsCheckbox
+        checked={collapseEmptyRows}
+        onChange={val => {
+          setCollapseEmptyRows(val)
+        }}
+      />
+      <WindowSizeField
+        onChange={val => {
           setWindowSize(val)
         }}
-        min={0}
-        errorText="Must be a non-negative number"
       />
     </SubmitDialog>
   )

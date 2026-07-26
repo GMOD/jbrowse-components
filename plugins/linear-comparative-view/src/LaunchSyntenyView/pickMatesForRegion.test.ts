@@ -100,3 +100,20 @@ test('a mate that is not a declared assembly is dropped', () => {
     names([feat({ id: 'x', start: 1000, end: 2000, mateAssembly: 'sampleZ' })]),
   ).toEqual([])
 })
+
+// A track declaring one assembly twice is a genome against its own paralogy, so
+// its self lane is the comparison rather than noise beside one. The pairwise
+// right-click launch always allowed it; dropping it here left the region launch
+// saying nothing aligned on exactly the tracks where everything does.
+test('a self-alignment track keeps its own lane, once', () => {
+  expect(
+    pickMatesForRegion({
+      features: [
+        feat({ id: 'a', start: 1000, end: 2000, mateAssembly: 'K12' }),
+      ],
+      region,
+      trackAssemblyNames: ['K12', 'K12'],
+      anchorAssembly: 'K12',
+    }).map(m => m.assemblyName),
+  ).toEqual(['K12'])
+})

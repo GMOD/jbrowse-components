@@ -222,6 +222,13 @@ rubberband-select a region.
 
 <Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
 
+The main scale bar's menu holds **Zoom to region**, **Get sequence** and **Copy
+range**, plus whatever the session adds: **Highlight region** and **Bookmark
+region**, and, when a synteny dataset in the session covers this assembly,
+**[Linear synteny view of selection](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at)**,
+which opens a panel per assembly that aligns to the selection, whether or not
+the synteny track itself is turned on.
+
 ## Scalebar chromosome name menu
 
 The chromosome (reference sequence) names drawn along the scale bar are

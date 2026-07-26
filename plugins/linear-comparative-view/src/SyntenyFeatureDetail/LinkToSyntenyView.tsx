@@ -7,6 +7,7 @@ import {
   assembleLocString,
   getSession,
 } from '@jbrowse/core/util'
+import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
@@ -29,11 +30,15 @@ const LaunchSyntenyViewDialog = lazy(
 // right-click menu applies. Without it, a one-vs-all mate that is only a PanSN
 // sample label (no declared assembly) opens a synteny view that can resolve
 // nothing and lands on the import form with an error.
+//
+// allSessionTracks rather than session.tracks, which holds only the session's
+// own: a synteny track arriving from a connection is the case this link used to
+// drop, hiding the launch on exactly the datasets that are loaded by reference.
 function findTrackAssemblyNames(
   session: AbstractSessionModel,
   trackId: string | undefined,
 ) {
-  const track = session.tracks.find(
+  const track = allSessionTracks(session).find(
     t => readConfObject(t, 'trackId') === trackId,
   )
   return track
