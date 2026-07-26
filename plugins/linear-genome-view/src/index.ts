@@ -118,11 +118,8 @@ export {
   installGlobalFetchAutorun,
   installGrowExitBake,
   onDisplayedRegionsChange,
-  raiseLimitPast,
   resolveByteLimit,
-  resolveForceLoadLimits,
   rescaleByteEstimateToVisibleSpan,
-  forceLoadByteLimit,
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {

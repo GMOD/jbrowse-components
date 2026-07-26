@@ -75,11 +75,8 @@ export {
   bytesTooLargeReason,
   evaluateRegionTooLarge,
   getDisplayStr,
-  raiseLimitPast,
   resolveByteLimit,
-  resolveForceLoadLimits,
   rescaleByteEstimateToVisibleSpan,
-  forceLoadByteLimit,
 } from '../shared/regionTooLargeUtils.ts'
 export type { RegionTooLargeStatus } from '../shared/regionTooLargeUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'

@@ -1,136 +1,14 @@
 import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 import {
-  FORCE_LOAD_HEADROOM,
   TOO_MANY_FEATURES_REASON,
   bytesTooLargeReason,
   evaluateRegionTooLarge,
-  forceLoadByteLimit,
-  raiseLimitPast,
   rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
-  resolveForceLoadLimits,
 } from './regionTooLargeUtils.ts'
 
-describe('raiseLimitPast', () => {
-  it('raises the limit past the estimate by the shared headroom, rounded up', () => {
-    expect(raiseLimitPast(1_000_000)).toBe(
-      Math.ceil(1_000_000 * FORCE_LOAD_HEADROOM),
-    )
-    expect(raiseLimitPast(3)).toBe(Math.ceil(3 * FORCE_LOAD_HEADROOM))
-  })
-
-  it('always returns strictly more than the estimate so a re-check clears', () => {
-    for (const estimate of [1, 100, 5_000_000]) {
-      expect(raiseLimitPast(estimate)).toBeGreaterThan(estimate)
-    }
-  })
-})
-
-describe('forceLoadByteLimit', () => {
-  it('is undefined when neither estimate is available', () => {
-    expect(
-      forceLoadByteLimit({
-        estimatedBytesForVisibleSpan: undefined,
-        estimatedBytesForMeasuredSpan: undefined,
-      }),
-    ).toBeUndefined()
-    // an adapter with no index estimate reports 0, which is not a budget
-    expect(
-      forceLoadByteLimit({
-        estimatedBytesForVisibleSpan: 0,
-        estimatedBytesForMeasuredSpan: 0,
-      }),
-    ).toBeUndefined()
-  })
-
-  it('raises past the visible-span estimate, not the measured-span one (the LD force-load bug)', () => {
-    // view zoomed out after the measurement: the visible-span estimate (6MB)
-    // far exceeds the measured-span one (1.5MB). Basing the limit on the
-    // measured-span number would under-raise and leave the banner up.
-    expect(
-      forceLoadByteLimit({
-        estimatedBytesForVisibleSpan: 6_000_000,
-        estimatedBytesForMeasuredSpan: 1_500_000,
-      }),
-    ).toBe(raiseLimitPast(6_000_000))
-  })
-
-  it('falls back to the measured-span estimate when there is no visible-span one', () => {
-    expect(
-      forceLoadByteLimit({
-        estimatedBytesForVisibleSpan: undefined,
-        estimatedBytesForMeasuredSpan: 900,
-      }),
-    ).toBe(raiseLimitPast(900))
-  })
-})
-
-describe('resolveForceLoadLimits', () => {
-  const base = {
-    baselineByteLimit: 5_000_000,
-    densityGateActive: true,
-    observedMaxDensity: 4,
-    configuredMaxDensity: 1,
-  }
-
-  it('raises the byte axis when the estimate genuinely exceeds the baseline', () => {
-    const { userByteLimit, userFeatureDensityLimit } = resolveForceLoadLimits({
-      ...base,
-      estimatedBytesForVisibleSpan: 8_000_000,
-      estimatedBytesForMeasuredSpan: 8_000_000,
-    })
-    expect(userByteLimit).toBe(raiseLimitPast(8_000_000))
-    expect(userFeatureDensityLimit).toBeUndefined()
-  })
-
-  // The core "don't lower the ceiling" guard: a density-gated tabix region
-  // carries a small byte estimate under the baseline. Raising the byte ceiling
-  // to 1.5× that would install a limit BELOW the baseline and gate later,
-  // larger-byte regions — so the byte axis is skipped and density is raised.
-  it('raises density (not bytes) when the byte estimate is under the baseline', () => {
-    const { userByteLimit, userFeatureDensityLimit } = resolveForceLoadLimits({
-      ...base,
-      estimatedBytesForVisibleSpan: 100_000,
-      estimatedBytesForMeasuredSpan: 100_000,
-    })
-    expect(userByteLimit).toBeUndefined()
-    expect(userFeatureDensityLimit).toBe(raiseLimitPast(4)) // past observedMax
-  })
-
-  it('raises past the configured density when nothing is observed yet', () => {
-    const { userFeatureDensityLimit } = resolveForceLoadLimits({
-      ...base,
-      observedMaxDensity: 0,
-      estimatedBytesForVisibleSpan: undefined,
-      estimatedBytesForMeasuredSpan: undefined,
-    })
-    expect(userFeatureDensityLimit).toBe(raiseLimitPast(1)) // configuredMaxDensity
-  })
-
-  it('raises nothing when neither axis is gating (no bytes, density inactive)', () => {
-    expect(
-      resolveForceLoadLimits({
-        ...base,
-        densityGateActive: false,
-        estimatedBytesForVisibleSpan: undefined,
-        estimatedBytesForMeasuredSpan: undefined,
-      }),
-    ).toEqual({})
-  })
-})
-
 describe('resolveByteLimit', () => {
-  it('prefers the user force-load override over everything', () => {
-    expect(
-      resolveByteLimit({
-        userByteLimit: 10,
-        adapterFetchSizeLimit: 20,
-        configFetchSizeLimit: 30,
-      }),
-    ).toBe(10)
-  })
-
-  it('falls back to the adapter limit when there is no user override', () => {
+  it('prefers the adapter limit over the display config', () => {
     expect(
       resolveByteLimit({
         adapterFetchSizeLimit: 20,
@@ -139,7 +17,7 @@ describe('resolveByteLimit', () => {
     ).toBe(20)
   })
 
-  it('falls back to the config default when no override or adapter limit', () => {
+  it('falls back to the config default when there is no adapter limit', () => {
     expect(resolveByteLimit({ configFetchSizeLimit: 30 })).toBe(30)
   })
 
@@ -165,17 +43,6 @@ describe('resolveByteLimit', () => {
         configFetchSizeLimit: 30,
       }),
     ).toBe(30)
-  })
-
-  it('does not special-case a user override of 0', () => {
-    // userByteLimit is only ever set by force-load (always > 0 with
-    // headroom), but document that ?? only skips null/undefined here
-    expect(
-      resolveByteLimit({
-        userByteLimit: 0,
-        configFetchSizeLimit: 30,
-      }),
-    ).toBe(0)
   })
 })
 

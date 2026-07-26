@@ -31,7 +31,7 @@ const TooLargeMessage = observer(function TooLargeMessage({
       }
       message={[
         regionTooLargeReason,
-        'Zoom in to see features or force load (may be slow)',
+        'Zoom in to see features, or force load this track for the rest of the session (may be slow)',
       ]
         .filter(f => !!f)
         .join('. ')}

@@ -181,7 +181,7 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits()
+    display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -206,7 +206,7 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     view.zoomTo(400)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits()
+    display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
   })
 

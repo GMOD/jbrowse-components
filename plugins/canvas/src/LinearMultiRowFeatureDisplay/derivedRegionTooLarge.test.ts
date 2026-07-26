@@ -240,15 +240,16 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-  it('force-load raises the limit and clears the banner', () => {
+  it('force-load exempts the track and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
     display.forceLoad()
-    expect(display.userByteLimit).toBeDefined()
+    expect(display.forceLoadTrack).toBe(true)
     expect(display.regionTooLarge).toBe(false)
+    expect(display.resolvedByteLimit()).toBeUndefined()
   })
 
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
@@ -271,25 +272,25 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(true)
 
     // MultiRegionDisplayMixin's DisplayedRegionsChange autorun drops the
-    // estimate; the gate mixin drops the per-region density stats and the
-    // force-load ceilings on the same trigger.
+    // estimate; the gate mixin drops the per-region density stats on the same
+    // trigger.
     display.clearByteEstimate()
     display.clearGateMeasurements()
     expect(display.byteEstimate).toBeUndefined()
     expect(display.regionTooLarge).toBe(false)
   })
 
-  it('drops the force-load ceilings on region navigation', () => {
+  it('keeps force-load across region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({ bytes: 8_000_000 }, view.visibleBp)
     display.forceLoad()
-    expect(display.userByteLimit).toBeDefined()
 
-    // a raised byte ceiling carried onto the next chromosome would also
-    // silently disable the density axis there (maxFeatureDensity)
+    // track-wide approval, so the nav clears survive it
+    display.clearByteEstimate()
     display.clearGateMeasurements()
-    expect(display.userByteLimit).toBeUndefined()
+    expect(display.forceLoadTrack).toBe(true)
+    expect(display.regionTooLarge).toBe(false)
   })
 })
 

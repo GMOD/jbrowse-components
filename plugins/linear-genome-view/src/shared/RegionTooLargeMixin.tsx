@@ -6,7 +6,6 @@ import {
   evaluateRegionTooLarge,
   rescaleByteEstimateToVisibleSpan,
   resolveByteLimit,
-  resolveForceLoadLimits,
 } from './regionTooLargeUtils.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
@@ -65,14 +64,19 @@ export default function RegionTooLargeMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * user-confirmed byte limit after a force-load, disabling the gate.
-       * Volatile, not persisted: the interactive force-load button is a transient
-       * "show me this now" action and must not leak a raised gate into a saved or
-       * shared session. The declarative, session-scoped escape hatch is instead
-       * the `forceLoad` config slot (set per-session via a session spec, or baked
-       * into a track config for embedded/notebook views).
+       * The force-load button's answer: render this track regardless of region
+       * size or feature density. One boolean for the whole track, not a raised
+       * ceiling per region — the banner already tells the user how much data is
+       * involved, so one informed click approves the track and they never have to
+       * re-approve it per locus.
+       *
+       * Volatile, not persisted, so it can't leak a disabled gate into a saved or
+       * shared session (a recipient would download the same data with no warning
+       * and no way to see why). A page load re-arms the gate. The durable,
+       * declarative equivalent is the `forceLoad` config slot, for session specs,
+       * embeds and `jbrowse-img --force`.
        */
-      userByteLimit: undefined as number | undefined,
+      forceLoadTrack: false,
       /**
        * #volatile
        * Last byte estimate reported for this display, with the adapter's own
@@ -168,6 +172,33 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
+       * The adapter's byte budget, preferring one the estimate computed
+       * dynamically over the static `fetchSizeLimit` slot. One getter, because
+       * the banner, the force-load baseline and the canvas worker budget each
+       * spelling "the adapter's limit" for itself is how the worker ends up
+       * rejecting a region the banner considers fine — a silently blank display
+       * with nothing to refetch it.
+       */
+      get resolvedAdapterByteLimit() {
+        return self.byteEstimate?.fetchSizeLimit ?? self.adapterFetchSizeLimit
+      },
+      /**
+       * #getter
+       * True when nothing may gate, on either axis and in both the worker and the
+       * banner: a self-summarizing adapter (BigWig/HiC cap what they return at
+       * screen resolution), the declarative `forceLoad` slot, or the force-load
+       * button. One boolean is the whole force-load mechanism — there is no
+       * per-region ceiling to carry, expire, or reconcile between the two axes.
+       */
+      get byteGateExempt() {
+        return (
+          !!self.byteEstimate?.alwaysRender ||
+          self.configForceLoad ||
+          self.forceLoadTrack
+        )
+      },
+      /**
+       * #getter
        * How many bytes we estimate a fetch of the span on screen right now would
        * pull, obtained by rescaling the stored estimate from the span it was
        * measured over (`measuredSpanBp`). Rescaling is what makes
@@ -193,6 +224,21 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
+       * The byte budget the gate enforces: the adapter's limit, else the display
+       * config. Also what canvas hands the worker, so the two can't gate against
+       * different numbers. Force-load doesn't raise this — it exempts the track
+       * outright via `byteGateExempt`.
+       */
+      get gateByteLimit() {
+        return resolveByteLimit({
+          adapterFetchSizeLimit: self.resolvedAdapterByteLimit,
+          configFetchSizeLimit: self.configuredFetchSizeLimit,
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then
        * bytes-over-limit, then the density axis), fed the scaled estimate so the
        * byte gate self-releases on zoom-in. Same helper as every other gating
@@ -206,23 +252,9 @@ export default function RegionTooLargeMixin() {
           ? evaluateRegionTooLarge({
               visibleBp: view.visibleBp,
               estimatedBytesForVisibleSpan: self.estimatedBytesForVisibleSpan,
-              byteLimit: resolveByteLimit({
-                userByteLimit: self.userByteLimit,
-                adapterFetchSizeLimit:
-                  self.byteEstimate?.fetchSizeLimit ??
-                  self.adapterFetchSizeLimit,
-                configFetchSizeLimit: self.configuredFetchSizeLimit,
-              }),
+              byteLimit: self.gateByteLimit,
               densityTooLarge: self.densityTooLargeForDerivedGate,
-              // Self-summarizing adapters (BigWig/HiC — cap returned data at
-              // screen resolution) never gate. None of the currently gated
-              // adapters set it (BigMaf explicitly does NOT), but honoring it
-              // here keeps the derived gate matching evaluateRegionTooLarge's
-              // contract if one ever does. `configForceLoad` folds in here too:
-              // the declarative force-load short-circuits the verdict exactly as
-              // a self-summarizing adapter would.
-              alwaysRender:
-                self.byteEstimate?.alwaysRender || self.configForceLoad,
+              alwaysRender: self.byteGateExempt,
             })
           : { tooLarge: false, reason: '' }
       },
@@ -276,6 +308,10 @@ export default function RegionTooLargeMixin() {
        * Drops the cached estimate. Chromosome navigation only: the estimate
        * intentionally survives `clearAllRpcData` so an ordinary viewport change
        * doesn't flicker the banner.
+       *
+       * `forceLoadTrack` deliberately survives: it is a track-wide approval, so
+       * expiring it on navigation is exactly the per-locus re-approval the button
+       * exists to avoid.
        */
       clearByteEstimate() {
         self.byteEstimate = undefined
@@ -284,32 +320,13 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
-       * force-load: raise the byte limit past the current request so the gate
-       * releases. Prefers the estimate for the span on screen now, so it clears
-       * even if the view zoomed out since the measurement; a display with the
-       * derived gate off has no such estimate and falls back to the
-       * measured-span number. Byte-only, so it asks `resolveForceLoadLimits`
-       * with the density axis off — canvas overrides with the dual-axis form.
+       * Exempt this track from the gate (or put it back under it). Separate from
+       * `forceLoad` so turning the gate off and refetching stay separable — a
+       * caller that just wants the flag (a revoke, a test) doesn't trigger a
+       * fetch, and `forceLoad` doesn't have to inline a volatile write.
        */
-      raiseForceLoadLimits() {
-        const { userByteLimit } = resolveForceLoadLimits({
-          estimatedBytesForVisibleSpan: self.derivedRegionTooLargeEnabled
-            ? self.estimatedBytesForVisibleSpan
-            : undefined,
-          estimatedBytesForMeasuredSpan: self.byteEstimate?.bytes,
-          baselineByteLimit: resolveByteLimit({
-            userByteLimit: undefined,
-            adapterFetchSizeLimit:
-              self.byteEstimate?.fetchSizeLimit ?? self.adapterFetchSizeLimit,
-            configFetchSizeLimit: self.configuredFetchSizeLimit,
-          }),
-          densityGateActive: false,
-          observedMaxDensity: 0,
-          configuredMaxDensity: 0,
-        })
-        if (userByteLimit !== undefined) {
-          self.userByteLimit = userByteLimit
-        }
+      setForceLoadTrack(flag: boolean) {
+        self.forceLoadTrack = flag
       },
 
       /**
@@ -322,13 +339,13 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * Raises the byte limit past the current estimate and triggers a
-       * reload. The display chrome calls this via TooLargeMessage's force-load
-       * button; concrete display models override reload() to do the actual
-       * refetch.
+       * Force-load: exempt this track from the gate and refetch. One click covers
+       * every region and both axes, informed by the size the banner just quoted.
+       * The display chrome calls this from TooLargeMessage's button; concrete
+       * display models override `reload()` to do the actual refetch.
        */
       forceLoad() {
-        self.raiseForceLoadLimits()
+        self.setForceLoadTrack(true)
         self.reload()
       },
     }))

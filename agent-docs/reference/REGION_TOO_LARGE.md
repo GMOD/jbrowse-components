@@ -38,10 +38,10 @@ don't opt in never gate.
 - Canvas doesn't do a separate estimate RPC. It folds the byte check **inside**
   its feature RPC (via the adapter's `getRegionByteSize`), so an over-budget
   region short-circuits before downloading any features.
-- Force-load ("show me this anyway") is **volatile** — never saved to a session,
-  and dropped on chromosome navigation. `resolveForceLoadLimits` raises
-  whichever axis actually tripped. The durable escape hatch is the `forceLoad`
-  config slot.
+- Force-load ("show me this anyway") is one **volatile boolean per track**
+  (`forceLoadTrack`) — never saved to a session, but deliberately kept across
+  chromosome navigation, since it approves the track rather than a locus. The
+  durable escape hatch is the `forceLoad` config slot.
 - `alwaysRender` exempts adapters that summarize at screen resolution (BigWig,
   MultiWiggle, HiC, sequence) — they can never be "too large". Latent today:
   none of those adapters backs a gated display, so the flag reaches
@@ -97,17 +97,21 @@ is `clearByteEstimate()`, fired from `MultiRegionDisplayMixin`'s
 wiring anything. LD and arc run on `GlobalFetchMixin` instead and call it from
 their own `onDisplayedRegionsChange`.
 
+`clearByteEstimate()` deliberately does **not** touch `forceLoadTrack`: that flag
+is a track-wide approval, so expiring it here would reinstate exactly the
+per-locus re-prompting it exists to avoid. See § Force-load.
+
 One smaller wire: `onRegionTooLarge()` fires on the false→true transition
 (alignments overrides it to clear its hover).
 
-**The `AUTO_FORCE_LOAD_BP` floor is applied in four places**, at three different
+**The `AUTO_FORCE_LOAD_BP` floor is applied in three places**, at three different
 layers, and they must agree: `evaluateRegionTooLarge` (the verdict),
-`checkByteEstimate` (skip the pre-flight RPC), and `maxFeatureDensity` /
-`resolvedByteLimit()` (the two worker budgets, which go undefined below it).
-They can't collapse to one call site — each answers a different question at a
-different moment — so changing the floor means changing all four. MAF's
-`showSummary` reads it too, flipping to the cheap summary adapter exactly where
-the detail fetch would be blocked.
+`checkByteEstimate` (skip the pre-flight RPC), and `gateInactive` on the canvas
+gate, which both worker budgets (`maxFeatureDensity`, `resolvedByteLimit()`) read
+so they go undefined below the floor together. They can't collapse further —
+each answers a different question at a different moment — so changing the floor
+means changing all three. MAF's `showSummary` reads it too, flipping to the cheap
+summary adapter exactly where the detail fetch would be blocked.
 
 **Live vs debounced.** The byte axis reads live `view.visibleBp`, so the banner
 releases the instant you zoom past the threshold — that responsiveness is the
@@ -177,9 +181,10 @@ just because the regions add up. An adapter with no index estimate contributes
 no count at all, and the published `bytes` stays `undefined` rather than
 collapsing to `0` — "unmeasurable" keeps the byte axis out of the verdict, where
 a zero would read as a measured value. An all-stale batch commits nothing, so a
-superseded fetch can't wipe a good estimate. It publishes the adapter's
-`fetchSizeLimit` alongside the estimate, which is how the banner's
-`resolveByteLimit` ends up picking the same budget the worker gated on.
+superseded fetch can't wipe a good estimate. It publishes `bytes` and nothing
+else: canvas has no pre-flight to learn an adapter's `fetchSizeLimit` from, so
+both the worker budget and the banner take the adapter tier from the main-thread
+`adapterFetchSizeLimit` config read, and agree by construction.
 
 Multi-row's fetch RPC (`MultiRowGetFeatures`) is **byte-only**: it takes a
 `byteLimit` and deliberately no `maxFeatureDensity`, because the display turns
@@ -195,9 +200,9 @@ Composed on top of `RegionTooLargeMixin` by both canvas feature displays:
 `LinearBasicDisplay` and `LinearVariantDisplay` through `baseModel`, plus
 `LinearMultiRowFeatureDisplay`. It contributes the density axis
 (`densityStatsPerRegion`, `observedMaxDensity`, `densityTooLarge` feeding
-`densityTooLargeForDerivedGate`), the budgets the worker needs
-(`resolvedByteLimit()` and `maxFeatureDensity`), and the dual-axis
-`raiseForceLoadLimits`. Overriding `densityGateEnabled` to false drops the
+`densityTooLargeForDerivedGate`) and the budgets the worker needs
+(`resolvedByteLimit()` and `maxFeatureDensity`, both gated behind the shared
+`gateInactive`). Overriding `densityGateEnabled` to false drops the
 density axis for a display that paints into fixed lanes, such as multi-row,
 leaving byte-only gating.
 
@@ -225,38 +230,54 @@ pushes nothing and there's no stale-feature flash.
 
 ## Force-load
 
-`userByteLimit` and `userFeatureDensityLimit` are both volatile, never
-persisted, and dropped on chromosome navigation: clicking force-load is a
-transient "show me *this* now" action that must not leak a raised gate into a
-saved or shared session, nor onto the next locus. The durable escape hatch is
-the declarative `forceLoad` config slot — which is also what `jbrowse-img`'s
-`--force` sets, via the display snapshot, so the gate is off before the first
-fetch rather than raised after it.
+Force-load is **one boolean for the whole track**: `forceLoadTrack`, a volatile on
+`RegionTooLargeMixin`. `forceLoad()` sets it (via `setForceLoadTrack`) and calls
+`reload()`; `byteGateExempt` ORs it with the declarative `forceLoad` config slot
+and an adapter's `alwaysRender`, and everything downstream — the verdict, the
+worker byte budget, the worker density budget — reads that one getter.
 
-A dual-axis display has to pick which axis to raise, and it picks by which gate
-actually tripped — not by whether a byte estimate happens to exist. That matters
-because tabix adapters report an index-byte estimate even when the rejection was
-about density: a dense-but-small region still carries a small `bytes` value, and
-adopting it as `userByteLimit` would install a ceiling below the config or
-adapter default, then wrongly gate later regions that really are large.
+The banner quotes the estimated size before the click, so a user approving it is
+approving the track with the magnitude in front of them. They are then never asked
+again for that track, which is the point: it deliberately **survives chromosome
+navigation** (`clearByteEstimate` drops the estimate but not the flag), because
+re-prompting per locus is the friction this replaced.
 
-`raiseForceLoadLimits` (the button's action, overridden by
-`CanvasFeatureGateMixin`) takes no arguments — it reads the stored estimate — and
-defers to `resolveForceLoadLimits`, the single place that decides:
+Volatile, so it never reaches a saved or shared session — a recipient would
+otherwise download the same data with no warning and no visible reason. A page load
+re-arms the gate. The durable, declarative escape hatch is the `forceLoad` config
+slot, which is also what `jbrowse-img --force` sets via the display snapshot, so
+the gate is off before the first fetch. `setForceLoadTrack(false)` puts the track
+back under the gate.
 
-- Raise the **byte** limit only when the raised value exceeds the baseline
-  `resolveByteLimit` — that means the byte gate was the real blocker.
-- Otherwise raise the **density** axis, past the highest *observed* density.
+**This replaced a per-region, per-axis ceiling system**, and the simplification is
+the point — the deleted machinery (`userByteLimit`, `userFeatureDensityLimit`,
+`resolveForceLoadLimits`, `forceLoadByteLimit`, `raiseLimitPast`,
+`FORCE_LOAD_HEADROOM`, two `raiseForceLoadLimits` implementations) existed only to
+answer questions a boolean doesn't raise. Each of these was a real bug or a real
+guard against one, and all of them are now unrepresentable rather than handled:
 
-It reads observed density rather than the current `maxFeatureDensity`, which
-already folds in any earlier force-load and would compound across attempts —
-and it reads it at the same debounced `coarseBpPerPx` the density verdict trips
-on, so a click mid-zoom can't raise past a number the gate isn't comparing
-against and leave the banner up.
+- **Which axis do we raise?** A tabix adapter reports an index-byte estimate even
+  when the rejection was about *density*, so a dense-but-small region carried a
+  small `bytes`. Adopting it as a ceiling installed a limit *below* the standing
+  budget and then wrongly gated later regions that really were large. The fix was
+  a "only raise the byte axis if it actually lifts the baseline" rule; now there is
+  no ceiling to install.
+- **Raise past which number?** The byte axis compares the *rescaled* estimate, so
+  raising past the measured-span number left the banner up after a zoom-out (this
+  shipped as an LD bug). The density axis had to read the debounced
+  `coarseBpPerPx` reading, not a live one, or a click mid-zoom raised past a number
+  the gate wasn't comparing against.
+- **Does raising one axis disable the other?** It did: `maxFeatureDensity` returned
+  `undefined` whenever `userByteLimit` was set, so approving a track's *size*
+  silently switched off its *density* gate for the rest of the chromosome.
+- **When does a ceiling expire?** Ceilings were dropped on chromosome nav, but only
+  `CanvasFeatureGateMixin` did it — the five non-canvas gated displays carried a
+  raised ceiling to the next locus and downloaded it unguarded with no banner.
 
-The byte-only path (`RegionTooLargeMixin`'s own `raiseForceLoadLimits`) calls
-the same helper with `densityGateActive: false`, so there is one force-load
-decision in the system rather than a byte-only copy that could drift.
+The trade accepted in exchange: force-load is now all-or-nothing per track, so a
+user who wanted one huge locus has the gate off for the whole session. That is the
+intended scope, not an oversight — the gate exists to prevent an *unwitting*
+download, and a click on a banner quoting the size is witting.
 
 ## Shared primitives (`shared/regionTooLargeUtils.ts`)
 
@@ -264,15 +285,27 @@ The derived gate and canvas's in-RPC short-circuit differ only in how they
 measure. The verdict, the threshold, and the banner text live here so the two
 paths can't drift apart.
 
-- `resolveByteLimit({ userByteLimit, adapterFetchSizeLimit, configFetchSizeLimit })`
-  is the one place a byte budget gets resolved, highest-priority first. Those
-  three arguments are the only byte-budget *inputs* in the system; the resolved
-  *output* is `resolvedByteLimit()` on the canvas gate, and the same value
-  travels to the worker as the `byteLimit` RPC arg. A non-positive adapter limit
-  means "no opinion" and is skipped, guarding both a `0` and a negative
+- `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one
+  place a byte budget gets resolved: the adapter's limit, else the display config.
+  Those two arguments are the only byte-budget *inputs* in the system — force-load
+  is not a tier here, it bypasses the comparison entirely. A non-positive adapter
+  limit means "no opinion" and is skipped, guarding both a `0` and a negative
   sentinel.
-- `rescaleByteEstimateToVisibleSpan`, `forceLoadByteLimit` and `raiseLimitPast`
-  hold the scaling math and the shared `FORCE_LOAD_HEADROOM`.
+
+  Its single caller is `gateByteLimit` on `RegionTooLargeMixin` — what the verdict
+  compares against, and what canvas's `resolvedByteLimit()` hands the worker, so
+  the two cannot gate against different numbers. It takes the adapter tier from
+  `resolvedAdapterByteLimit` (`byteEstimate?.fetchSizeLimit ??
+  adapterFetchSizeLimit`), so a dynamically computed limit wins over the static
+  slot in one place. Read the getter; don't re-assemble the call. Canvas doing so
+  is how its worker budget came to ignore the estimate's dynamic limit and
+  `alwaysRender` while the banner honored both — a worker rejection with no banner
+  is a blank display that never refetches.
+
+  Note an adapter-declared limit **outranks** the display config, so a
+  display-level `fetchSizeLimit` cannot lower a BAM/CRAM/VCF adapter's own default.
+  Lower it on the adapter.
+- `rescaleByteEstimateToVisibleSpan` holds the span-scaling math.
 - `bytesTooLargeReason(bytes)` and `TOO_MANY_FEATURES_REASON` are the only two
   banner strings.
 - `evaluateRegionTooLarge({ visibleBp, estimatedBytesForVisibleSpan, byteLimit, densityTooLarge, alwaysRender })`
@@ -288,6 +321,6 @@ cap what they return at screen resolution (BigWig, MultiWiggle, HiC, the
 sequence adapters) report it from `getMultiRegionByteEstimate`, so no
 region is ever too large for them however wide the view gets. BigMaf
 deliberately does not, since it returns full alignment rows rather than a
-screen-reduced summary. `tooLargeStatus` also passes `configForceLoad` in
-through `alwaysRender`, so the declarative force-load short-circuits the verdict
-exactly as a self-summarizing adapter does.
+screen-reduced summary. `tooLargeStatus` passes `byteGateExempt` in
+through `alwaysRender`, so both the declarative slot and the force-load button
+short-circuit the verdict exactly as a self-summarizing adapter does.

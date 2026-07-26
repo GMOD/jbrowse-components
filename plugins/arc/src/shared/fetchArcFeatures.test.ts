@@ -194,7 +194,7 @@ describe('arc derived regionTooLarge', () => {
     // limit raised only past the raw bytes would leave the banner up
     view.zoomTo(8000)
     expect(display.regionTooLarge).toBe(true)
-    display.raiseForceLoadLimits()
+    display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
   })
 

@@ -1,7 +1,9 @@
+import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+
 import {
   assertCanvasHasContent,
   findByTestId,
-  navigateWithSessionSpec,
+  navigateToUrl,
   waitForDataLoaded,
 } from '../helpers.ts'
 
@@ -16,11 +18,37 @@ import type { Page } from 'puppeteer'
 // equivalent StatsEstimation.test cases are `test.skip` for exactly that
 // reason), so this lives in browser-tests.
 //
-// volvox.sv.vcf.gz is tiny so the byte-estimate gate never trips on its own;
-// presetting `userByteLimit: 1` (first in the effective-limit precedence,
-// ahead of the adapter's own limit) forces the too-large state deterministically
-// — the estimate (~66Kb) exceeds 1. forceLoad then raises `userByteLimit` to
-// ~1.5× the estimated bytes, clearing the gate.
+// volvox.sv.vcf.gz is tiny (~66Kb estimate) so the gate never trips on its own,
+// and the trigger has to sit on the ADAPTER: `resolveByteLimit` prefers an
+// adapter-declared `fetchSizeLimit` over the display config, so a display-level
+// limit can't lower a VcfTabixAdapter's 5MB default. Hence a `sessionTracks`
+// clone of the track carrying `fetchSizeLimit: 1`, rather than anything routed
+// through `displaySnapshot`.
+//
+// (The previous `displaySnapshot: { userByteLimit: 1 }` could never have worked:
+// `showTrackGeneric` keeps a displaySnapshot key only if it is a real MST prop or
+// a config slot, and `userByteLimit` was a volatile — so it was dropped and the
+// gate never tripped. Force-load is a track-wide boolean now, with no ceiling to
+// preset at all.)
+const TRACK_ID = 'volvox multi-sample sv force load'
+
+// Same track as the config's 'volvox multi-sample sv', with a 1-byte adapter
+// fetch budget so every region is over budget.
+const gatedTrack = {
+  type: 'VariantTrack',
+  trackId: TRACK_ID,
+  name: TRACK_ID,
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'volvox.sv.vcf.gz',
+    samplesTsvLocation: {
+      uri: 'volvox.sv.samples.tsv',
+      locationType: 'UriLocation',
+    },
+    fetchSizeLimit: 1,
+  },
+}
 async function waitForForceLoadButton(page: Page) {
   await page.waitForFunction(
     () =>
@@ -54,21 +82,24 @@ function forceLoadTest({
   return {
     name,
     fn: async (page: Page) => {
-      await navigateWithSessionSpec(page, {
+      const spec = encodeSessionSpec({
         views: [
           {
             type: 'LinearGenomeView',
             assembly: 'volvox',
             loc: 'ctgA:1..50,001',
             tracks: [
-              {
-                trackId: 'volvox multi-sample sv',
-                displaySnapshot: { type: displayType, userByteLimit: 1 },
-              },
+              { trackId: TRACK_ID, displaySnapshot: { type: displayType } },
             ],
           },
         ],
       })
+      await navigateToUrl(
+        page,
+        `config=test_data/volvox/config.json&session=${spec}` +
+          `&sessionTracks=${encodeURIComponent(JSON.stringify([gatedTrack]))}` +
+          `&sessionName=Test%20Session`,
+      )
 
       // Too-large early-return: TooLargeMessage is mounted, the canvas is not.
       await waitForForceLoadButton(page)

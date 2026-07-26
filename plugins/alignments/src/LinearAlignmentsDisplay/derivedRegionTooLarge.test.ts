@@ -184,7 +184,7 @@ describe('alignments derived regionTooLarge', () => {
     display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits()
+    display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -209,7 +209,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(400)
     expect(display.regionTooLarge).toBe(true)
 
-    display.raiseForceLoadLimits()
+    display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -224,6 +224,25 @@ describe('alignments derived regionTooLarge', () => {
       { assemblyName: 'volvox', start: 0, end: 8_000_000, refName: 'ctgA' },
     ])
     expect(display.byteEstimate).toBeUndefined()
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  // Force-load approves the whole track, not one locus, so navigation must not
+  // re-arm the gate — re-prompting on every chromosome is the friction the
+  // track-wide flag replaced the per-region ceiling to avoid.
+  it('keeps force-load across region navigation', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+
+    view.zoomTo(100)
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    display.setForceLoadTrack(true)
+    expect(display.regionTooLarge).toBe(false)
+
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 8_000_000, refName: 'ctgA' },
+    ])
+    display.setByteEstimate({ bytes: 1_500_000 }, view.visibleBp)
+    expect(display.forceLoadTrack).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 

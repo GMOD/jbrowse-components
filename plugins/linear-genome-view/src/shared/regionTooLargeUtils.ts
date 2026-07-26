@@ -1,12 +1,19 @@
 import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
+// Round to 3 significant digits, dropping trailing zeros ("1.00" -> "1").
+function round3(n: number) {
+  return Number.parseFloat(n.toPrecision(3))
+}
+
 export function getDisplayStr(totalBytes: number) {
   // pick the unit from the rounded value so e.g. 999,999 bytes reads "1 Mb"
   // rather than "1000 Kb"
-  if (Number.parseFloat((totalBytes / 1000000).toPrecision(3)) >= 1) {
-    return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
-  } else if (Number.parseFloat((totalBytes / 1000).toPrecision(3)) >= 1) {
-    return `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+  const mb = round3(totalBytes / 1_000_000)
+  const kb = round3(totalBytes / 1000)
+  if (mb >= 1) {
+    return `${mb} Mb`
+  } else if (kb >= 1) {
+    return `${kb} Kb`
   } else {
     return `${Math.floor(totalBytes)} bytes`
   }
@@ -38,63 +45,27 @@ export function bytesTooLargeReason(bytes: number) {
 }
 
 /**
- * Resolve the effective byte budget from the layered sources, newest-wins: a
- * user force-load override, then the adapter's self-reported limit, then the
+ * Resolve the effective byte budget: the adapter's self-reported limit, else the
  * display's configured default. A non-positive adapter limit means "no opinion"
  * (e.g. htsget/no-index adapters report 0) and is skipped — without this guard a
  * 0 would gate every request as too-large, and a negative sentinel (-1) would
  * survive `|| undefined` (truthy) and do the same. Single source of truth for
- * all three paths.
+ * every gating path.
+ *
+ * There is deliberately no force-load tier here. Force-load is a boolean "render
+ * this track regardless" (`byteGateExempt`), not a raised ceiling — see
+ * agent-docs/reference/REGION_TOO_LARGE.md § Force-load.
  */
 export function resolveByteLimit({
-  userByteLimit,
   adapterFetchSizeLimit,
   configFetchSizeLimit,
 }: {
-  userByteLimit?: number
   adapterFetchSizeLimit?: number
   configFetchSizeLimit: number
 }) {
-  const adapterLimit =
-    adapterFetchSizeLimit !== undefined && adapterFetchSizeLimit > 0
-      ? adapterFetchSizeLimit
-      : undefined
-  return userByteLimit ?? adapterLimit ?? configFetchSizeLimit
-}
-
-/**
- * Force-load raises the tripped gate's limit this far past the offending
- * estimate: enough that the just-confirmed request clears and a small zoom-out
- * doesn't immediately re-trip the banner. One constant so the byte and density
- * force-load paths use identical headroom.
- */
-export const FORCE_LOAD_HEADROOM = 1.5
-
-export function raiseLimitPast(estimate: number) {
-  return Math.ceil(estimate * FORCE_LOAD_HEADROOM)
-}
-
-/**
- * The byte limit a derived-path force-load should install. Raises past the
- * visible-span estimate, not the measured-span one, because the visible-span
- * estimate is what the gate compares against: if the view zoomed out between
- * the measurement and the force-load click, raising past the measured-span
- * number leaves the gate still tripped and the banner up. Returns undefined
- * when there's nothing to gate. Single source for canvas and LD so the two
- * force-load paths can't drift (a drift that once left LD's force-load
- * under-raising — it used the RegionTooLargeMixin measured-span default).
- */
-export function forceLoadByteLimit({
-  estimatedBytesForVisibleSpan,
-  estimatedBytesForMeasuredSpan,
-}: {
-  estimatedBytesForVisibleSpan?: number
-  estimatedBytesForMeasuredSpan?: number
-}) {
-  // the measured-span number is the fallback for a display with no rescaled
-  // estimate (view not measured yet, or the derived gate turned off)
-  const estimate = estimatedBytesForVisibleSpan ?? estimatedBytesForMeasuredSpan
-  return estimate ? raiseLimitPast(estimate) : undefined
+  return adapterFetchSizeLimit !== undefined && adapterFetchSizeLimit > 0
+    ? adapterFetchSizeLimit
+    : configFetchSizeLimit
 }
 
 /**
@@ -123,57 +94,6 @@ export function rescaleByteEstimateToVisibleSpan({
   return measuredSpanBp
     ? (estimatedBytesForMeasuredSpan * visibleBp) / measuredSpanBp
     : estimatedBytesForMeasuredSpan
-}
-
-/**
- * The dual-axis force-load decision, shared by every canvas feature display with
- * both a byte and a density gate (LinearBasicDisplay/LinearVariantDisplay base,
- * LinearMultiRowFeatureDisplay) so the two can't drift. Given a cleared
- * force-load state, decides which single axis to raise:
- *
- * - Raise the BYTE ceiling only when doing so actually LIFTS the baseline
- *   (`raisedByteLimit > baselineByteLimit`). A tabix adapter reports an index-byte
- *   estimate alongside a *density* rejection, so a dense-but-byte-small region
- *   carries a small `bytes`; adopting it as `userByteLimit` would install a
- *   ceiling BELOW the config/adapter default and wrongly gate later, larger-byte
- *   regions. When the byte gate wasn't the blocker, fall through to density.
- * - Otherwise, if a density gate is active, raise past the highest observed
- *   density (not the current `maxFeatureDensity`, which already folds in any prior
- *   force-load — basing on it would multiply attempts exponentially).
- *
- * Returns at most one defined field; both are assigned by the caller each call so
- * the other axis's stale value is always cleared.
- */
-export function resolveForceLoadLimits({
-  estimatedBytesForVisibleSpan,
-  estimatedBytesForMeasuredSpan,
-  baselineByteLimit,
-  densityGateActive,
-  observedMaxDensity,
-  configuredMaxDensity,
-}: {
-  estimatedBytesForVisibleSpan?: number
-  estimatedBytesForMeasuredSpan?: number
-  baselineByteLimit: number
-  densityGateActive: boolean
-  observedMaxDensity: number
-  configuredMaxDensity: number
-}): { userByteLimit?: number; userFeatureDensityLimit?: number } {
-  const raisedByteLimit = forceLoadByteLimit({
-    estimatedBytesForVisibleSpan,
-    estimatedBytesForMeasuredSpan,
-  })
-  if (raisedByteLimit !== undefined && raisedByteLimit > baselineByteLimit) {
-    return { userByteLimit: raisedByteLimit }
-  }
-  if (densityGateActive) {
-    return {
-      userFeatureDensityLimit: raiseLimitPast(
-        observedMaxDensity > 0 ? observedMaxDensity : configuredMaxDensity,
-      ),
-    }
-  }
-  return {}
 }
 
 export interface RegionTooLargeStatus {

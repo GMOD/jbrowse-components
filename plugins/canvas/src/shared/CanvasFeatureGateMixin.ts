@@ -4,8 +4,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   onDisplayedRegionsChange,
-  resolveByteLimit,
-  resolveForceLoadLimits,
 } from '@jbrowse/plugin-linear-genome-view'
 import { observable } from 'mobx'
 
@@ -26,12 +24,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  */
 interface GateHost {
   configuration: AnyConfigurationModel
-  userByteLimit?: number
-  byteEstimate?: RegionByteEstimate
-  adapterFetchSizeLimit?: number
-  estimatedBytesForVisibleSpan?: number
-  configuredFetchSizeLimit: number
-  configForceLoad: boolean
+  byteGateExempt: boolean
+  gateByteLimit: number
   setByteEstimate: (
     estimate: RegionByteEstimate,
     measuredSpanBp: number,
@@ -98,13 +92,6 @@ export default function CanvasFeatureGateMixin() {
        * on chromosome nav by `clearGateMeasurements`.
        */
       densityStatsPerRegion: observable.map<number, RegionDensityStats>(),
-      /**
-       * #volatile
-       * density force-load ceiling; the density-axis counterpart to
-       * `RegionTooLargeMixin.userByteLimit`, volatile for the same reason (a
-       * force-load must not leak into a saved session).
-       */
-      userFeatureDensityLimit: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -152,18 +139,31 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #getter
+       * No axis gates at all: an exempt adapter / declarative force-load, or a
+       * span under the AUTO_FORCE_LOAD_BP floor. Both worker budgets go
+       * undefined here, so the fetch skips the estimate rather than paying for
+       * one the verdict ignores.
+       */
+      get gateInactive() {
+        return (
+          host(self).byteGateExempt ||
+          gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The density budget passed to the worker and used by the derived verdict:
-       * undefined (gate off) under a declarative/byte force-load or below
-       * AUTO_FORCE_LOAD_BP; otherwise the density force-load ceiling or the config.
+       * undefined (gate off) when nothing gates, otherwise the config. Force-load
+       * reaches this through `gateInactive`, so approving a track's *size* no
+       * longer half-disables its *density* axis by side effect — both axes are the
+       * one boolean now.
        */
       get maxFeatureDensity(): number | undefined {
-        return !self.densityGateEnabled ||
-          host(self).configForceLoad ||
-          host(self).userByteLimit !== undefined ||
-          gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
+        return !self.densityGateEnabled || self.gateInactive
           ? undefined
-          : (self.userFeatureDensityLimit ??
-              getConf(host(self), 'maxFeatureScreenDensity'))
+          : getConf(host(self), 'maxFeatureScreenDensity')
       },
     }))
     .views(self => ({
@@ -186,20 +186,12 @@ export default function CanvasFeatureGateMixin() {
       /**
        * #method
        * The byte budget the fetch RPC enforces, short-circuiting an over-budget
-       * region before downloading features. Undefined (unlimited) under
-       * force-load or below the gate floor; otherwise whatever
-       * `resolveByteLimit` picks from the three tiers (user force-load →
-       * adapter limit → display config).
+       * region before downloading features. Undefined (unlimited) when nothing
+       * gates; otherwise the very number the banner compares against, so the
+       * worker can't reject a region the banner then calls fine.
        */
       resolvedByteLimit(): number | undefined {
-        return host(self).configForceLoad ||
-          gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
-          ? undefined
-          : resolveByteLimit({
-              userByteLimit: host(self).userByteLimit,
-              adapterFetchSizeLimit: host(self).adapterFetchSizeLimit,
-              configFetchSizeLimit: host(self).configuredFetchSizeLimit,
-            })
+        return self.gateInactive ? undefined : host(self).gateByteLimit
       },
     }))
     .actions(self => ({
@@ -218,15 +210,11 @@ export default function CanvasFeatureGateMixin() {
        * dropped by `MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun
        * on the same trigger.
        *
-       * The force-load ceilings go too: they are a "show me *this* region
-       * anyway" answer, and carrying a raised byte ceiling onto the next
-       * chromosome also silently disables the density axis there (see
-       * `maxFeatureDensity`).
+       * Measurements only. Force-load is a track-wide boolean that deliberately
+       * outlives navigation, so there is no per-region ceiling to expire here.
        */
       clearGateMeasurements() {
         self.densityStatsPerRegion.clear()
-        host(self).userByteLimit = undefined
-        self.userFeatureDensityLimit = undefined
       },
     }))
     .actions(self => ({
@@ -274,36 +262,6 @@ export default function CanvasFeatureGateMixin() {
           },
           measuredSpanBp,
         )
-      },
-      /**
-       * #action
-       * Dual-axis force-load: clear both user ceilings, then raise exactly the one
-       * axis that's actually blocking (`resolveForceLoadLimits` — byte only when it
-       * lifts the baseline, else density).
-       */
-      raiseForceLoadLimits() {
-        // Clear first so maxFeatureDensity (undefined while userByteLimit is
-        // set) re-evaluates for the density branch.
-        host(self).userByteLimit = undefined
-        self.userFeatureDensityLimit = undefined
-        const limits = resolveForceLoadLimits({
-          estimatedBytesForVisibleSpan: host(self).estimatedBytesForVisibleSpan,
-          estimatedBytesForMeasuredSpan: host(self).byteEstimate?.bytes,
-          baselineByteLimit: resolveByteLimit({
-            userByteLimit: undefined,
-            adapterFetchSizeLimit: host(self).adapterFetchSizeLimit,
-            configFetchSizeLimit: host(self).configuredFetchSizeLimit,
-          }),
-          densityGateActive: self.maxFeatureDensity !== undefined,
-          // the density the gate actually tripped on — `densityTooLarge`
-          // measures at the debounced coarseBpPerPx, so raising past a
-          // live-bpPerPx reading mid-zoom can land below it and leave the
-          // banner up after the click
-          observedMaxDensity: self.visibleFeatureDensityPerPx,
-          configuredMaxDensity: getConf(host(self), 'maxFeatureScreenDensity'),
-        })
-        host(self).userByteLimit = limits.userByteLimit
-        self.userFeatureDensityLimit = limits.userFeatureDensityLimit
       },
     }))
     .actions(self => ({
