@@ -221,17 +221,16 @@ export function WiggleScoreConfigMixin() {
       /**
        * #action
        * Strict zoom equality: see adr-008.
-       *
-       * An action, not a view, because it overrides MultiRegionDisplayMixin's
-       * hook — which means MobX untracks the `view.bpPerPx` read below. That's
-       * fine only because the one caller (`FetchVisibleRegions`) already reads
-       * `view.visibleRegions`, which changes on every zoom; don't make this the
-       * sole dependency on some other observable.
        */
       isCacheValid(_displayedRegionIndex: number) {
         if (self.loadedBpPerPx === undefined) {
           return true
         }
+        // An action, not a view, because it overrides MultiRegionDisplayMixin's
+        // hook — so MobX untracks this read. Safe only because the one caller
+        // (FetchVisibleRegions) already reads view.visibleRegions, which
+        // changes on every zoom; don't make this the sole dependency on some
+        // other observable.
         const view = getContainingView(self) as LinearGenomeViewModel
         return view.bpPerPx === self.loadedBpPerPx
       },
