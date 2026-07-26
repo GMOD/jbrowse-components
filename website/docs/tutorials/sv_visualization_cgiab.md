@@ -518,8 +518,8 @@ pick the matching synteny track.
 The resulting dotplot is a whole-genome overview of the assembly aligned to
 GRCh38: each contig's alignments run as diagonal segments, and it is the launch
 point for drilling into a region of interest. Drag over a region and open a
-linear synteny view (below), where a specific rearrangement becomes legible at
-base level.
+linear synteny view (below), then zoom in on a breakpoint to read it at base
+level.
 
 HG008-T v3.2 is haplotype-resolved, so its scaffold names end in `_hap1` or
 `_hap2` and a single plot stacks both haplotypes on one axis, so every GRCh38
@@ -536,7 +536,7 @@ Use **Linear synteny view of selection** from the drag selection, then enter
 **minimum alignment length** (in the synteny view's menu) drops short, noisy
 anchors so the large syntenic blocks read clearly.
 
-<Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot. Base-level alignment makes the breakpoints easy to read. The minimum alignment length was raised (to ~50kb) to drop short, noisy anchors so the large syntenic blocks read clearly." src="/img/sv_cgiab/synteny_view.png" />
+<Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot: GRCh38 chr3 and chr13 on top, the fused chr3_chr13_hap1 scaffold and chr13_hap2 below. The minimum alignment length was raised, so what remains is the arm-level blocks rather than a solid fan of short anchors." src="/img/sv_cgiab/synteny_view.png" />
 
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the

@@ -169,9 +169,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // The coordinates are pinned to the pinned graph (fixed RefSeq accessions +
   // pinned cactus image, see build_ecoli_pangenome_cactus.sh) and were picked by
   // walking the graph's own K12 path: chr:1,000,000-1,100,000 is the 100 kb K12
-  // window spanning the most PANGENOME sequence, 466 kb of it. That is the whole
-  // point of the pair — 2.2% of the K12 axis, 5.1% of the graph's, same locus,
-  // because one axis counts K12 bases and the other counts pangenome bases.
+  // window spanning the most PANGENOME sequence. That is the whole point of the
+  // pair — 2.2% of the K12 axis, ~4.3% of the graph's, same locus, because one
+  // axis counts K12 bases and the other counts pangenome bases.
   //
   // The partner track is the odgi pav rows, not the aggregate depth wiggle it
   // used to be (reviewer: the correspondence with odgi viz was unreadable). odgi

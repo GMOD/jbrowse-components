@@ -301,13 +301,13 @@ so there's nothing to see. Zoom to a few hundred kb around one boundary instead,
 where the block-step is obvious and the genotype columns resolve into individual
 variants. Start with the paternal crossover near chr1:29.7 Mb:
 
-<Figure caption="Paternal crossover near chr1:29.7 Mb (~400 kb wide). Up top the painting steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes. The tinted frames read that switch off the raw genotypes: yellow ties Child hap1 to Father hap2 on the left, purple ties it to Father hap1 on the right, and the two abut at the breakpoint." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="Paternal crossover at chr1:29,697,418, in a 400 kb window. Up top the painting steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes. The tinted frames read that switch off the raw genotypes: yellow ties Child hap1 to Father hap2 on the left, purple ties it to Father hap1 on the right, and the two abut at the breakpoint." src="/img/trio-crossover-paternal.png"/>
 
 The maternal chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
-<Figure caption="Maternal crossover near chr1:55.8 Mb (~400 kb wide). Same idea in a different palette: the painting steps from Mother hap2 (pink) to Mother hap1 (red), the green frame ties Child hap2 to Mother hap2 on the left, orange ties it to Mother hap1 on the right." src="/img/trio-crossover-maternal.png"/>
+<Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window. Same idea in a different palette: the painting steps from Mother hap2 (pink) to Mother hap1 (red), the green frame ties Child hap2 to Mother hap2 on the left, orange ties it to Mother hap1 on the right." src="/img/trio-crossover-maternal.png"/>
 
 The painting is the clean summary. The genotypes underneath switch between the
 two parental copies far more often than real crossovers do, so the painted

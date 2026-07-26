@@ -126,7 +126,7 @@ Zooming to a single locus turns the stripe back into per-tumor calls, and
 clustering on just that window sorts the cohort into its copy-number classes
 there.
 
-<Figure caption="chr17:39.0-40.5Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified (dark red), gained (salmon), lost (blue) and balanced bands. The pale band is the balanced majority, drawn near-white, not empty track. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="chr17:39.0-40.5Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified (dark red), gained (salmon), lost (blue) and balanced bands. The pale band is the balanced group, the largest of the four, drawn near-white rather than empty track. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 Do not read proportions off this display. At 1104 rows in a few hundred pixels
 each row is well under one pixel tall, so rows alias together and the saturated

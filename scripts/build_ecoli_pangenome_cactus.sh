@@ -198,8 +198,11 @@ in_cactus odgi viz -i /data/mc/ecoli.full.og -o /data/ecoli_cactus_graph.png -x 
 # locus in both, in the same translucent gold, and the correspondence becomes
 # readable WITHOUT pretending the axes match — the band is visibly wider on the
 # graph axis, because there the other strains' accessory sequence is counted too.
-# K12 1.00-1.10 Mb is the widest of the candidate windows: 100 kb of K12 spans
-# 466 kb of pangenome, 5.1% of the graph axis against 2.2% of the K12 axis.
+# K12 1.00-1.10 Mb is the widest of the candidate windows. On the shipped
+# raster the band measures 64 of the 1500 data px, 4.3% of the graph axis
+# against 2.2% of the K12 axis (100 kb of 4,641,652), so roughly 2x. An earlier
+# comment here claimed 466 kb / 5.1% / 2.4x; that does not match the PNG in
+# static/img/pangenome_cactus/graph.png, so re-measure before quoting a number.
 #
 # The mapping is exact, not eyeballed: node ids in a cactus graph run 1..N in node
 # order, so a node's pangenome offset is the cumulative length of every lower id,
