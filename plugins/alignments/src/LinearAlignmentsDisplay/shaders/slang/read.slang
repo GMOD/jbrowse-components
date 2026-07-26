@@ -24,17 +24,17 @@ static const int CS_MODIFICATIONS = 7;
 static const int CS_TAG           = 8;
 static const int CS_IS_GRADIENT   = 9;
 
-// The mate-aware schemes as a bitmask over the CS_* indices above: the schemes
+// The mate-aware schemes, as a bitmask over the CS_* indices above: the ones
 // whose color depends on the read's MATE (insert size / pair orientation), so
 // an unmapped or inter-chromosomal mate needs its own bucket rather than a
-// misleading hue. 616 == (1<<CS_INSERT_SIZE) | (1<<CS_PAIR_ORIENT)
-// | (1<<CS_IS_AND_ORIENT) | (1<<CS_IS_GRADIENT); spelled as the literal because
-// `export-consts` reads the right-hand side with parseFloat. Exported alongside
-// the indices so this membership is no longer a SYNC comment:
-// colorScheme.test.ts asserts that the `mateAware` flags in the COLOR_SCHEMES
-// registry — which build the Canvas2D twin's `orientationSchemes` — describe
-// exactly these schemes, from both directions.
-static const int CS_ORIENTATION_MASK = 616;
+// misleading hue. Exported alongside the indices so this membership is no
+// longer a SYNC comment: colorScheme.test.ts asserts that the `mateAware` flags
+// in the COLOR_SCHEMES registry — which build the Canvas2D twin's
+// `orientationSchemes` — describe exactly these schemes, from both directions.
+static const int CS_ORIENTATION_MASK = (1 << CS_INSERT_SIZE)
+                                     | (1 << CS_PAIR_ORIENT)
+                                     | (1 << CS_IS_AND_ORIENT)
+                                     | (1 << CS_IS_GRADIENT);
 
 static const int CM_LINKED_READ = 1;
 
