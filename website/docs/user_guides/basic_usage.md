@@ -245,14 +245,18 @@ clickable. Clicking a name opens a menu with:
     single-step move)
   - Remove this region from view
 
-## Track label positioning
+## View and layout controls
+
+Three layout controls, reached from the view's hamburger menu or the header bar.
+
+### Track label positioning
 
 Track labels can be positioned on their own row, overlapping the data to save
 vertical space, or hidden entirely, via the view's hamburger menu.
 
 <Figure caption="Example of using the overlap and offset track label positioning options." src="/img/tracklabels.png" />
 
-## Horizontally flip
+### Horizontally flip
 
 The view can be horizontally flipped (reverse complemented), reversing the
 coordinate direction. Triangles in the overview bar indicate the current
@@ -260,7 +264,7 @@ orientation.
 
 <Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" />
 
-## Toggle drawer widget on left or right side of screen
+### Drawer widget position
 
 The drawer widget can be toggled to the left or right side of the screen using
 the header bar dropdown. It appears on the right by default.

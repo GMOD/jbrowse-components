@@ -45,6 +45,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [BLAT and in-silico PCR](/docs/user_guides/blat)
 - [Bookmark widget](/docs/user_guides/bookmark_widget)
+- [Clustering rows](/docs/user_guides/clustering)
 - [Consensus sequence](/docs/user_guides/consensus_sequence)
 - [Plugin store](/docs/user_guides/plugin_store)
 - [Sequence search](/docs/user_guides/sequence_search)

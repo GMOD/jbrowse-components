@@ -63,7 +63,11 @@ predicted consequence, read from SnpEff `ANN` or VEP `CSQ` in the INFO field:
 HIGH red, MODERATE orange, LOW yellow, MODIFIER grey. **SV type** colors by
 structural-variant class instead, with fixed colors per class and an ascending
 rainbow for copy-number alleles (`<CN0>`, `<CN1>`, ...). Both draw a floating
-color key naming only the classes present, which you can dismiss.
+color key naming only the classes present, which you can dismiss. The same two
+presets work on the multi-sample displays, where
+[consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations)
+and [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type) are
+covered in full, with the terms in each tier and the color per SV class.
 
 **Attribute...** takes any attribute name and colors by its value, generating a
 `jexl:randomColor(get(feature,'<attr>'))` expression for you. Distinct values

@@ -82,7 +82,7 @@ inversion arc. The figure below shows this ~1.2 kb inversion in one 1000 Genomes
 sample (HG00151) with Oxford Nanopore long reads, the 1KGP ensemble SV call
 marking the locus above.
 
-<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, supplementary alignments linked. Each read's reverse-strand middle (blue) paints between its forward-strand ends (red), and the magenta split-read arc joins the two breakpoints — both directly read out the inversion. The 1KGP ensemble VCF call marks the locus above." src="/img/inversion_long_read.png" />
+<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, supplementary alignments linked. Each read's reverse-strand middle (blue) paints between its forward-strand ends (red), and the magenta split-read arc joins the two breakpoints, both directly reading out the inversion. The 1KGP ensemble VCF call marks the locus above." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 
@@ -184,8 +184,9 @@ The teal RL signature also appears in the inverted-duplication figure in the
 
 ### Translocation / inter-chromosomal fusion
 
-- With read arcs or the read cloud enabled, reads with mates on a different
-  chromosome are colored purple; in the pileup they appear dark grey
+- Under the pair orientation and insert size schemes, reads with mates on a
+  different chromosome take the brown inter-chromosomal color in the pileup and
+  on their arcs alike, rather than being classified by orientation
 - A cluster of such reads at a locus marks one end of a translocation; open the
   [breakpoint split view](#breakpoint-split-view) from the feature details to
   see both ends at once
@@ -206,13 +207,15 @@ own bezier curve, colored here by pair orientation. The abnormal
 same-orientation pairs of an inverted duplication then read as a coherent bundle
 of curves rather than scattered singleton pileup rows.
 
-A read can look concordant (light-grey LR fill) yet still carry a dark-blue
+A read can look concordant (light-grey LR fill) yet still carry a colored
 connector. That happens when the read itself crosses the inversion breakpoint:
 it splits into a primary and a strand-flipped supplementary alignment, and the
-arc joining them is colored for the inversion, the same dark blue as an RR pair.
-This is a second, independent line of evidence for the inversion, from a single
-split read rather than a pair. Hover any connector to read its classification
-(for example, _Split-read inversion_ versus _RR, both mates reverse strand_).
+arc joining them takes the split-read inversion color, which is deliberately
+distinct from the RR-pair blue so the two kinds of evidence stay
+distinguishable. This is a second, independent line of evidence for the
+inversion, from a single split read rather than a pair. Hover any connector to
+read its classification (for example, _Split-read inversion_ versus _RR, both
+mates reverse strand_).
 
 ## Read cloud
 

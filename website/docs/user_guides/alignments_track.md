@@ -6,8 +6,9 @@ guide_category: Track types
 
 **TL;DR:** An alignments track shows BAM/CRAM reads two ways at once: a coverage
 histogram on top (read depth at each position) and a pileup below (one box per
-read). Zoom to base level and most of what you need is already on screen. The
-sections below cover the track-menu options you'll reach for most often.
+read). Zoom to base level and most of what you need is already on screen. Almost
+everything else is a track-menu option that changes how reads are sorted,
+colored, grouped, sized, or filtered.
 
 <Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
 
@@ -105,16 +106,13 @@ _Arabidopsis_ data.
 For paired-end data, **Color by → Pair orientation** and **Color by → Insert
 size** highlight discordant pairs, the main way to scan short reads for
 structural variants. Reads with an unexpectedly large insert turn red, smaller
-turn pink, and abnormal pair orientations get their own colors. The combined
-**Insert size and orientation** mode prioritizes the strongest cue: a short
-insert always paints pink (an insertion is here), otherwise abnormal orientation
-wins, otherwise a large insert paints red (deletion). Insert-size thresholds are
-robust to the long tail of large inserts (`median ± 3·1.4826·MAD`) so the
-short-insert signal isn't washed out. See the
-[SV visualization guide](/docs/user_guides/sv_visualization) for the full color
-tables.
+turn pink, and abnormal pair orientations get their own colors. A combined
+**Insert size and orientation** mode paints whichever cue is strongest. The
+[SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation-color-scheme)
+has the full color tables, the threshold the "expected" insert range is built
+from, and how the combined mode breaks ties.
 
-<Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints — green LL, navy RR, and magenta split reads over the inverted segment." src="/img/inverted_duplication.png" />
+<Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints: green LL, navy RR, and magenta split reads over the inverted segment." src="/img/inverted_duplication.png" />
 
 ### By tag
 

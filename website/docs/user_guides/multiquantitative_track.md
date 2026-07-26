@@ -103,35 +103,13 @@ the Methylation category (assembly hg38, chr21).
 
 ## Clustering rows by score
 
-Reorder subtracks by signal similarity using hierarchical clustering. From the
-track menu, select **Clustering → Cluster rows by score...**. A dialog opens
-with two modes:
-
-- Auto mode runs hierarchical clustering (hclust via JavaScript) directly in the
-  browser, sampling signal values at each pixel across the visible region.
-- Manual mode downloads an R script that builds the score matrix and runs
-  `hclust`. Run the script in R, then paste the resulting row ordering back into
-  the dialog and click **Apply clustering**.
-
-After clustering, the rows are reordered so that subtracks with similar signal
-profiles sit together.
+Reorder subtracks by signal similarity, via **Clustering → Cluster rows by
+score...** in the track menu. Auto mode samples signal values at each pixel
+across the visible region to build the matrix. See
+[Clustering rows](/docs/user_guides/clustering) for the modes, the dendrogram,
+and how to share a result in a session URL.
 
 <Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster rows by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
-
-The "Show tree" toggle in the track menu displays a dendrogram sidebar alongside
-the reordered rows. With the tree shown, click any internal node to collapse the
-view to that clade, and click it again to clear the subtree filter. Clustering
-uses only the signal in the currently visible region, so navigate to a region of
-interest before running it.
-
-### Encoding a clustering result in a session URL
-
-A clustering result can be embedded in a session snapshot to share a
-pre-computed clustering via URL. Set `layout`, `clusterTree`, `treeAreaWidth`,
-and `subtreeFilter` in the display's `displaySnapshot` (see
-[URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
-The [MultiLinearWiggleDisplay config](/docs/config/multilinearwiggledisplay) has
-the display's full config reference.
 
 ## See also
 

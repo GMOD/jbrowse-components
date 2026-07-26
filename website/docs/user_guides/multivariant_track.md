@@ -234,39 +234,15 @@ track is open.
 
 ## Clustering samples by genotype
 
-Samples can be reordered by genotype similarity using hierarchical clustering.
-From the track menu, select **Clustering → Cluster rows by genotype...**. A
-dialog opens with two modes:
-
-- Auto - runs hierarchical clustering (hclust via JavaScript) directly in the
-  browser. Works well for a few hundred samples; larger cohorts may be slow.
-- Manual - downloads an R script that builds the genotype matrix and runs
-  `hclust`. Run the script in R, then paste the resulting sample ordering back
-  into the dialog and click **Apply clustering**.
-
-After clustering, a dendrogram appears on the left side of the track and rows
-are reordered so genotypically similar samples sit next to each other.
+Samples can be reordered by genotype similarity, via **Clustering → Cluster rows
+by genotype...** in the track menu. See
+[Clustering rows](/docs/user_guides/clustering) for the modes, the dendrogram,
+and how to share a result in a session URL.
 
 <Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog with its auto/manual mode options. Bottom: after clustering, samples are reordered by genotype similarity with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
 
-Click any internal node in the dendrogram to collapse the view to that clade
-(subtree filter). Click the same node again to clear the filter and restore all
-rows.
-
 In phased mode, clustering treats each haplotype as a separate row, so the
 dendrogram shows haplotype-level relationships rather than sample-level ones.
-
-The clustering uses only the variants currently visible in the view; navigate to
-a region with informative variants for the best separation.
-
-### Encoding a clustering result in a session URL
-
-A clustering result can be embedded in a session snapshot, useful for sharing a
-pre-computed clustering via URL. Set `layout` and `clusterTree` (and optionally
-`treeAreaWidth` / `subtreeFilter`) in the display's `displaySnapshot` (see
-[URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
-The [MultiSampleVariantBaseModel](/docs/models/multisamplevariantbasemodel) docs
-have the full field reference.
 
 ## See also
 

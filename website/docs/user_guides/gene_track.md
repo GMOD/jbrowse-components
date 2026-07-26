@@ -7,9 +7,9 @@ guide_category: Track types
 ---
 
 **TL;DR:** Gene and transcript features (GFF3, GTF, BED12, and similar) render
-as glyphs with their exons, UTRs, and CDS segments. The sections below cover the
-display and analysis options, from reading the coding sequence off the track to
-reshaping the view around a gene's exons.
+as glyphs with their exons, UTRs, and CDS segments. Beyond that the track can
+translate the CDS in place (reading frame colors, amino-acid lettering, mature
+peptides) and reshape the view around a gene by collapsing its introns.
 
 ## Choosing which transcripts to show
 
@@ -38,7 +38,7 @@ This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
 spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and
 with the introns collapsed those arcs span directly between the adjacent exons.
 
-<Figure caption="Collapsing introns on PTEN (hg38). Top: right-click the gene and choose Collapse introns. Bottom: the reshaped view with the exons side by side — the NA12878 direct-RNA nanopore track's sashimi arcs (auto-placed above and below to minimize crossings) now span directly between adjacent exons." src="/img/gene_track_collapse_introns.png" />
+<Figure caption="Collapsing introns on PTEN (hg38). Top: right-click the gene and choose Collapse introns. Bottom: the reshaped view with the exons side by side, where the NA12878 direct-RNA nanopore track's sashimi arcs (auto-placed above and below to minimize crossings) now span directly between adjacent exons." src="/img/gene_track_collapse_introns.png" />
 
 ## Display density and labels
 

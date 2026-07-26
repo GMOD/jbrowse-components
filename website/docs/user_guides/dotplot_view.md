@@ -11,16 +11,12 @@ off-diagonal blocks.
 
 ## Opening a dotplot view
 
-Launch a new Dotplot view from the Add menu. If your config already has a
-synteny track, the form opens in **Quick start**: pick the track and click
-**Launch**. Both axes come from that track's `assemblyNames`, and because a
-synteny track is queryable either way, **Swap** transposes the plot. Switch to
-**Manual** to pick the two assemblies yourself and optionally supply a synteny
-file. The import form and supported file types (`.paf`, `.out`, `.delta`,
-`.chain`, `.anchors`/`.anchors.simple`) are shared with the linear synteny view.
-See
+Launch a new Dotplot view from the Add menu. The import form is the same one the
+linear synteny view uses, so see
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
-for the full file-format details.
+for its Quick start / Manual modes and the file types it accepts. The only
+dotplot-specific thing to know is that both axes come from the chosen track's
+`assemblyNames`, and **Swap** transposes the plot rather than reordering panels.
 
 <Figure caption="Launching a dotplot view from the Add menu (top), then the import form's Manual mode, where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 

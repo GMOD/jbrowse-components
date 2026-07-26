@@ -53,17 +53,15 @@ Each hub becomes its own category in the track selector.
 ## How it behaves once loaded
 
 Each hub URL becomes a UCSC track hub
-[connection](/docs/user_guides/connections) in the session, so it behaves just
-like a connection you added by hand:
+[connection](/docs/user_guides/connections) in the session, and from there it
+behaves exactly like a connection you added by hand: lazily loaded, its own
+category in the track selector, and only the tracks you open stored in the
+session.
 
-- the hub is a category in the track selector, loaded lazily when you expand it,
-  so even a hub with thousands of tracks stays out of the way until you want it;
-- only the tracks you actually open are stored in the session, so saving or
-  sharing that session stays lightweight.
-
-A hub's tracks match to assemblies by genome ID. Tracks targeting an assembly
-that is not present (from the hub itself, or from a `?config=` you combined it
-with) will not appear.
+The one thing to watch when launching from a link is assembly matching. Hub
+tracks match to assemblies by genome ID, and the assemblies available are
+whatever the hub carries plus whatever a combined `?config=` defines, so a hub
+opened with `config=none` shows only the tracks its own assemblies cover.
 
 ## See also
 

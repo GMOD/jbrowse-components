@@ -130,11 +130,10 @@ Rows start in file order. Three ways to change that:
   what turns a QTL painting at its peak into a clean split by allele. **Clear
   row sort** restores the previous order.
 - **Clustering → Cluster rows by similarity** reorders rows so that samples with
-  similar paintings sit together, and draws a dendrogram in the sidebar. Click
-  an internal node to filter to that clade (**Clear subtree filter** restores
-  the rest), and **Clear clustering (reset row order)** undoes it. Clustering
-  reads only the region currently in view, so navigate to an informative locus
-  first.
+  similar paintings sit together, and draws a dendrogram in the sidebar. Unlike
+  the other clustering displays it runs without a dialog, and **Clear clustering
+  (reset row order)** undoes it. See
+  [Clustering rows](/docs/user_guides/clustering).
 
 **Show sidebar with tree and labels** toggles the row labels and the dendrogram.
 It is a top-level item rather than part of the Clustering submenu, because the

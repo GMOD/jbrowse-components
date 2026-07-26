@@ -19,10 +19,9 @@ inter-chromosomal breakends, and other whole-genome rearrangements at a glance.
 - Add a variant track from the view's track selector; SV chords render
   automatically as a **Chord variant display**
 
-The view reads standard VCF/VCF.gz variant tracks. It is aimed at the same
-long-range records as the [SV inspector](/docs/user_guides/sv_inspector_view):
-`SVTYPE=BND` breakends and translocations. Single-locus deletions and
-duplications load but don't produce an informative chord.
+The view reads standard VCF/VCF.gz variant tracks. Chords are drawn from
+long-range records (`SVTYPE=BND` breakends and translocations). Single-locus
+deletions and duplications load but don't produce an informative chord.
 
 ## Interacting with chords
 
@@ -33,10 +32,10 @@ duplications load but don't produce an informative chord.
   [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
   centered on the event's two breakpoints
 
-The [SV inspector](/docs/user_guides/sv_inspector_view) pairs this same circular
-overview with a filterable variant table and wires a chord click straight to the
-breakpoint split view. Reach for it to triage many variants at once rather than
-plot a single track.
+To triage many variants at once rather than plot a single track, use the
+[SV inspector](/docs/user_guides/sv_inspector_view), which pairs this same
+circular overview with a filterable variant table and cross-filters the two
+together.
 
 ## See also
 

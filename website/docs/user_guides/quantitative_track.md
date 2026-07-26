@@ -25,7 +25,7 @@ slot) offers these styles:
 - Scatter - draws individual points without filling; useful for sparse data and
   seeing single values
 
-<Figure caption="The same BigWig rendered in every plot type at once — XY plot, Density, Line (step), Line (interpolated), and Scatter — so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
+<Figure caption="The same BigWig rendered in every plot type at once (XY plot, Density, Line (step), Line (interpolated), and Scatter), so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
 
 ## Autoscale options
 
