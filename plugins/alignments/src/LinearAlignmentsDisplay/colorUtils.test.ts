@@ -314,6 +314,27 @@ describe('readColorCategory', () => {
       readColorCategory(0, makeData({ interchrom: 1 }), ColorScheme.strand),
     ).toBe('fwdStrand')
   })
+
+  // The CPU-baked schemes (tag values, chromosome painting) resolve no color
+  // for a read the tag is absent from, or a block with no mate. It paints the
+  // palette fallback, so it gets its own bucket and the legend can key that
+  // neutral instead of leaving it as the one painted color with no entry.
+  test('a read with no baked color is its own bucket under the tag scheme', () => {
+    expect(
+      readColorCategory(0, makeData({ tagColor: 0xff00ff00 }), ColorScheme.tag),
+    ).toBe('tag')
+    expect(readColorCategory(0, makeData({}), ColorScheme.tag)).toBe(
+      'noTagValue',
+    )
+  })
+
+  // Before the main thread bakes readTagColors the array is empty, and every
+  // read is on the fallback for a different reason — don't report them all as
+  // unvalued, which would key a "No HP value" swatch over the whole pileup.
+  test('an unbaked (empty) color array is not reported as missing values', () => {
+    const data = { ...makeData({}), readTagColors: new Uint32Array(0) }
+    expect(readColorCategory(0, data, ColorScheme.tag)).toBe('tag')
+  })
 })
 
 describe('getReadColor maps each category to its palette color', () => {

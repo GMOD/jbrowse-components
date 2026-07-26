@@ -58,6 +58,8 @@ const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
   { category: 'interchrom', label: 'Inter-chromosomal' },
   { category: 'unmappedMate', label: 'Unmapped mate' },
   { category: 'supplementary', label: 'Supplementary/split' },
+  // last: the leftover bucket of the CPU-baked schemes, named per scheme below
+  { category: 'noTagValue', label: 'No value' },
 ]
 
 // Under any scheme that colors ordinary reads by something OTHER than their own
@@ -84,15 +86,31 @@ const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
 }
 
 // Per-scheme relabeling of the shared fwd/rev-strand swatches. The plain
-// `strand` scheme (and undefined = no relabel here) keeps CATEGORY_LEGEND's
-// wording; every other scheme reframes fwd/rev as either the fragment strand or
-// a split read (see the two maps above).
+// `strand` scheme keeps CATEGORY_LEGEND's wording; every other scheme reframes
+// fwd/rev as either the fragment strand or a split read (see the two maps
+// above).
 function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
   return colorType === 'firstOfPairStrand'
     ? FIRST_OF_PAIR_LABELS
     : colorType === 'strand'
       ? undefined
       : SPLIT_STRAND_LABELS
+}
+
+// Per-scheme relabeling of the whole shared swatch table. On top of the strand
+// rewording, the CPU-baked schemes name what the leftover neutral bucket means
+// in their own terms — a read the tag is absent from, or a block with no mate —
+// rather than the bare "No value" the table can't specialize.
+function categoryLabelOverrides(
+  colorBy: ColorBy | undefined,
+): Partial<Record<SwatchCategory, string>> {
+  return {
+    ...strandLabelOverrides(colorBy?.type),
+    ...(colorBy?.type === 'mateRefName' ? { noTagValue: 'No mate' } : {}),
+    ...(colorBy?.type === 'tag' && colorBy.tag !== undefined
+      ? { noTagValue: `No ${colorBy.tag} value` }
+      : {}),
+  }
 }
 
 // Per-base nucleotide swatches, colored from the live palette base colors.
@@ -153,14 +171,14 @@ function methylationLegend(
 function crossCuttingBuckets(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
-  colorType: ColorSchemeType | undefined,
+  colorBy: ColorBy | undefined,
 ): LegendItem[] {
-  const overrides = strandLabelOverrides(colorType)
+  const overrides = categoryLabelOverrides(colorBy)
   return CATEGORY_LEGEND.filter(({ category }) =>
     presentCategories.has(category),
   ).map(({ category, label }) => ({
     color: categorySwatchColor(category, palette),
-    label: overrides?.[category] ?? label,
+    label: overrides[category] ?? label,
   }))
 }
 
@@ -310,6 +328,6 @@ export function getReadDisplayLegendItems({
     : presentCategories
   return [
     ...schemeLegend(colorBy, palette, detectedModifications, colorTagMap),
-    ...crossCuttingBuckets(categories, palette, colorBy?.type),
+    ...crossCuttingBuckets(categories, palette, colorBy),
   ]
 }

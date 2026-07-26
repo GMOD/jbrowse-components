@@ -200,6 +200,28 @@ describe('getReadDisplayLegendItems', () => {
     ).toEqual(['Forward strand', 'Reverse strand', 'Supplementary/split'])
   })
 
+  // Reads the tag is absent from paint the neutral fallback, which used to be
+  // the one painted color with no legend entry. Named per scheme, since "no
+  // value" means a missing tag under one and a mateless block under the other.
+  test('the unvalued bucket is named for the scheme that produced it', () => {
+    expect(
+      legendFor({ type: 'tag', tag: 'HP' }, ['tag', 'noTagValue'], {
+        colorTagMap: { '1': 'red' },
+      }).map(i => i.label),
+    ).toEqual(['1', 'No HP value'])
+    expect(
+      legendFor({ type: 'mateRefName' }, ['tag', 'noTagValue'], {
+        colorTagMap: { ctgA: 'red' },
+      }).map(i => i.label),
+    ).toEqual(['ctgA', 'No mate'])
+  })
+
+  test('the unvalued bucket is omitted when every read resolved a color', () => {
+    expect(
+      tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' }),
+    ).not.toContain('No HP value')
+  })
+
   // Chromosome painting rides the same CPU-baked color path as tag coloring, so
   // it keys the discovered mate refNames. It listed nothing at all before.
   test('chromosome painting keys each discovered mate refName', () => {

@@ -68,12 +68,19 @@ function makeColorResolver(
             : fwdStrand
           : noStrand
   }
-  // Categorical tag: parse+pack the color table once.
+  // Categorical tag: parse+pack the color table once. A read the tag is absent
+  // from packs 0 — "no color", the shader's palette fallback (colorPairLR, the
+  // same neutral an uncolored read paints) — rather than colorNostrand. The tag
+  // encodes no strand, so "no strand" was never the right neutral for it, and
+  // being a fixed light grey it painted untagged reads BRIGHTER than ordinary
+  // reads under the dark theme, where colorPairLR darkens and colorNostrand
+  // does not. The strand tags above keep colorNostrand: there, absent genuinely
+  // means "strand unknown".
   const packedByValue = new Map<string, number>()
   for (const [k, v] of Object.entries(colorTagMap)) {
     packedByValue.set(k, packRgb(cssColorToRgb(v)))
   }
-  return val => packedByValue.get(val) ?? noStrand
+  return val => packedByValue.get(val) ?? 0
 }
 
 function applyResolver(

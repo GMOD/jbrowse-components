@@ -58,6 +58,7 @@ export type ReadColorCategory =
   | 'plain'
   | 'mapq'
   | 'tag'
+  | 'noTagValue'
   | 'modFwd'
   | 'modRev'
 
@@ -257,7 +258,15 @@ export function readColorCategory(
       return (flags & 16) !== 0 ? 'modRev' : 'modFwd'
 
     case ColorScheme.tag:
-      return 'tag'
+      // A read this scheme resolved no color for — the tag is absent, or under
+      // chromosome painting the read has no mate — paints the palette fallback
+      // (colorPairLR). Its own bucket, so the legend keys that neutral instead
+      // of leaving it as the one painted color with no entry. Guarded on the
+      // array being baked at all: until the main thread bakes it, it is empty
+      // and every read is on the fallback for a different reason.
+      return data.readTagColors.length > 0 && data.readTagColors[i] === 0
+        ? 'noTagValue'
+        : 'tag'
 
     default:
       return 'plain'
@@ -388,6 +397,9 @@ const swatchPaletteKeys = {
   // co-linear (deletion) split reuses the supplementary yellow — "ordinary split
   // read", with magenta reserved for the special inverted case
   splitDeletion: 'colorSupplementary',
+  // read a CPU-baked scheme resolved no color for: the shader's tagColor==0
+  // fallback, which is the same neutral 'plain' paints
+  noTagValue: 'colorPairLR',
 } satisfies Partial<Record<ReadColorCategory, keyof ColorPalette>>
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys
