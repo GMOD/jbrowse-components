@@ -62,6 +62,11 @@ export interface SetColorDialogProps<
   // `sampleName`/`HP`): hidden from both the auto-derived "extras" column
   // list and the palettizer's per-field buttons.
   reservedFields?: ReadonlySet<string>
+  // Display-level color controls (not per-row), rendered above the grid. These
+  // write the model directly rather than joining `currLayout`, so they take
+  // effect immediately and Cancel does not revert them — keep them to settings
+  // whose own dialog would be overkill (multi-wiggle's score-sign palette).
+  displayControls?: React.ReactNode
 }
 
 export default observer(function SetColorDialog<
@@ -75,6 +80,7 @@ export default observer(function SetColorDialog<
   enableBulkEdit = false,
   enableRowPalettizer = false,
   reservedFields,
+  displayControls,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
   const getSources = () => model.editableSources ?? []
@@ -153,6 +159,8 @@ export default observer(function SetColorDialog<
                 </Button>
               ) : null}
             </div>
+
+            {displayControls}
 
             {colorColumns.length > 1 ? (
               <ToggleButtonGroup

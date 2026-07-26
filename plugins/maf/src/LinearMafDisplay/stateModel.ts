@@ -25,6 +25,7 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
+  filterRowsBySubtree,
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
@@ -587,14 +588,9 @@ export default function stateModelFactory(
          */
         get sources(): MafSource[] | undefined {
           const base = self.editableSources
-          if (!base) {
-            return undefined
-          }
-          if (self.subtreeFilter?.length) {
-            const filterSet = new Set(self.subtreeFilter)
-            return base.filter(s => filterSet.has(s.name))
-          }
           return base
+            ? filterRowsBySubtree(base, self.subtreeFilter)
+            : undefined
         },
       }))
       .views(self => ({

@@ -18,6 +18,7 @@ interface OverlayModel {
   showRowSeparators: boolean
   displayCrossHatches: boolean
   numSources: number
+  numRows: number
   rowHeight: number
   ticks?: YScaleTicks
 }
@@ -35,6 +36,7 @@ export default observer(function MultiWiggleOverlayLines({
     showRowSeparators,
     displayCrossHatches,
     numSources,
+    numRows,
     rowHeight,
     ticks,
   } = model
@@ -69,11 +71,11 @@ export default observer(function MultiWiggleOverlayLines({
         })
       : null
 
-  // overlay draws one set of hatches over the full height (rowHeight === height,
-  // top === 0); rows repeat them per source.
+  // overlay is one row over the full height (rowHeight === height, top === 0),
+  // so its hatches draw once; multi-row repeats them per source.
   const crossHatches =
     displayCrossHatches && ticks
-      ? Array.from({ length: isOverlay ? 1 : numSources }).map((_, rowIdx) => (
+      ? Array.from({ length: numRows }).map((_, rowIdx) => (
           <CrossHatchLines
             // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one hatch set per source row
             key={`ch-${rowIdx}`}

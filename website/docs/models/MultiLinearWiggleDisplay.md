@@ -47,6 +47,7 @@ with optional clustering and a tree sidebar.
 | [numSources](#getter-numsources)                                       | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [autoscaleSourceNames](#getter-autoscalesourcenames)                   | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [rowHeight](#getter-rowheight)                                         | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
+| [numRows](#getter-numrows)                                             | Getters    | MultiLinearWiggleDisplay                              | Rows actually drawn: overlay collapses every source onto one shared plot.                                                                                                                                                                                         |
 | [effectiveRowHeight](#getter-effectiverowheight)                       | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [rowHeightTooSmallForScalebar](#getter-rowheighttoosmallforscalebar)   | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [ticks](#getter-ticks)                                                 | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
@@ -55,8 +56,10 @@ with optional clustering and a tree sidebar.
 | [showBranchLength](#getter-showbranchlength)                           | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [showRowSeparators](#getter-showrowseparators)                         | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [showLegend](#getter-showlegend)                                       | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
+| [overlayLegendApplies](#getter-overlaylegendapplies)                   | Getters    | MultiLinearWiggleDisplay                              | Whether the overlay color key applies at all: one source needs no key, and multi-row mode identifies sources by their sidebar row label instead.                                                                                                                  |
+| [hasOverlayLegend](#getter-hasoverlaylegend)                           | Getters    | MultiLinearWiggleDisplay                              | Whether the overlay color key actually draws.                                                                                                                                                                                                                     |
 | [prefersOffset](#getter-prefersoffset)                                 | Getters    | MultiLinearWiggleDisplay                              | Offset the track label above the visualization so the stacked per-source rows aren't hidden behind an overlapping label.                                                                                                                                          |
-| [hierarchy](#getter-hierarchy)                                         | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
+| [hierarchy](#getter-hierarchy)                                         | Getters    | MultiLinearWiggleDisplay                              | The positioned dendrogram, or undefined in an overlay mode: overlay collapses every source onto one row, so a tree spreading its leaves over the full height would align to nothing.                                                                              |
 | [spatialIndex](#getter-spatialindex)                                   | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [rpcProps](#method-rpcprops)                                           | Methods    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
 | [gpuProps](#method-gpuprops)                                           | Methods    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                                   |
@@ -192,6 +195,8 @@ with optional clustering and a tree sidebar.
 | [setLoadedBpPerPx](#action-setloadedbpperpx)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                   |
 | [setScaleType](#action-setscaletype)                                   | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                   |
 | [setBicolorPivot](#action-setbicolorpivot)                             | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                   |
+| [setPosColor](#action-setposcolor)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   | Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so both the single- and multi-wiggle color editors write the score-sign palette the same way.                                                                                           |
+| [setNegColor](#action-setnegcolor)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                   |
 | [setMinScore](#action-setminscore)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                   |
 | [setMaxScore](#action-setmaxscore)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                   |
 | [setRenderingType](#action-setrenderingtype)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                   |
@@ -248,6 +253,37 @@ The configuration slots for this model are documented on its
 <details>
 <summary>MultiLinearWiggleDisplay - Getters</summary>
 
+#### getter: numRows
+
+Rows actually drawn: overlay collapses every source onto one shared plot. Read
+by the render state and by everything that repeats itself per row (scalebars,
+cross hatches), so they can't disagree about how many rows exist.
+
+```ts
+type numRows = number
+```
+
+#### getter: overlayLegendApplies
+
+Whether the overlay color key applies at all: one source needs no key, and
+multi-row mode identifies sources by their sidebar row label instead. Gates the
+menu checkbox, which has to stay visible while the legend is toggled off.
+
+```ts
+type overlayLegendApplies = boolean
+```
+
+#### getter: hasOverlayLegend
+
+Whether the overlay color key actually draws. The on-screen overlay and the SVG
+export both read this, so a dismissed legend can't linger in the export. Reads
+the slot rather than the sibling `showLegend` getter, which isn't on `self`'s
+type until the next `.views` layer.
+
+```ts
+type hasOverlayLegend = boolean
+```
+
 #### getter: prefersOffset
 
 Offset the track label above the visualization so the stacked per-source rows
@@ -255,6 +291,21 @@ aren't hidden behind an overlapping label.
 
 ```ts
 type prefersOffset = boolean
+```
+
+#### getter: hierarchy
+
+The positioned dendrogram, or undefined in an overlay mode: overlay collapses
+every source onto one row, so a tree spreading its leaves over the full height
+would align to nothing. This is the single gate — the on-screen sidebar, the SVG
+export, `spatialIndex` (subtree hover), and `treeSidebarRightEdge` (the
+tooltip/crosshair dead zone the sidebar reserves) all read it, so none of them
+can keep drawing or reserving space on their own. A subtree filter set in a row
+mode still applies and is still clearable from the track menu and
+MultiWiggleHint.
+
+```ts
+type hierarchy = ClusterHierarchyNode | undefined
 ```
 
 </details>
@@ -281,7 +332,6 @@ type prefersOffset = boolean
 | <span id="getter-showbranchlength">showBranchLength</span>                         | `boolean`                                                                           |
 | <span id="getter-showrowseparators">showRowSeparators</span>                       | `boolean`                                                                           |
 | <span id="getter-showlegend">showLegend</span>                                     | `boolean`                                                                           |
-| <span id="getter-hierarchy">hierarchy</span>                                       | `ClusterHierarchyNode \| undefined`                                                 |
 | <span id="getter-spatialindex">spatialIndex</span>                                 | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined`                  |
 
 </details>
@@ -1361,6 +1411,16 @@ type dataRange = [number, number] | undefined
 
 **Actions**
 
+#### action: setPosColor
+
+Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so
+both the single- and multi-wiggle color editors write the score-sign palette the
+same way.
+
+```ts
+type setPosColor = (color?: string | undefined) => void
+```
+
 | Member                                                           | Type                                     |
 | ---------------------------------------------------------------- | ---------------------------------------- |
 | <span id="action-togglecrosshatches">toggleCrossHatches</span>   | `() => void`                             |
@@ -1368,6 +1428,7 @@ type dataRange = [number, number] | undefined
 | <span id="action-setloadedbpperpx">setLoadedBpPerPx</span>       | `(bpPerPx: number \| undefined) => void` |
 | <span id="action-setscaletype">setScaleType</span>               | `(scaleType: string) => void`            |
 | <span id="action-setbicolorpivot">setBicolorPivot</span>         | `(val?: number \| undefined) => void`    |
+| <span id="action-setnegcolor">setNegColor</span>                 | `(color?: string \| undefined) => void`  |
 | <span id="action-setminscore">setMinScore</span>                 | `(val?: number \| undefined) => void`    |
 | <span id="action-setmaxscore">setMaxScore</span>                 | `(val?: number \| undefined) => void`    |
 | <span id="action-setrenderingtype">setRenderingType</span>       | `(type: string) => void`                 |

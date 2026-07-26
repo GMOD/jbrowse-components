@@ -31,6 +31,7 @@ interface ScaleModel {
   ticks?: YScaleTicks
   rowHeightTooSmallForScalebar: boolean
   numSources: number
+  numRows: number
 }
 
 export default observer(function MultiWiggleSvgScales({
@@ -57,6 +58,7 @@ export default observer(function MultiWiggleSvgScales({
     ticks,
     rowHeightTooSmallForScalebar,
     numSources,
+    numRows,
   } = model
 
   const labels =
@@ -73,9 +75,9 @@ export default observer(function MultiWiggleSvgScales({
   const scoreLegendOnly = isDensityMode || rowHeightTooSmallForScalebar
 
   // A domain is what makes any scale real (`ticks` derives from it, so the axis
-  // branch needs no separate tick guard). Overlay draws a single scalebar over
-  // the full height (rowHeight === height, so getRowTop(0) === 0); rows draw one
-  // per source down the track.
+  // branch needs no separate tick guard). Overlay is one row over the full
+  // height (rowHeight === height, so getRowTop(0) === 0); multi-row draws one
+  // scalebar per source down the track.
   const scalebars = !domain ? null : scoreLegendOnly ? (
     <ScoreLegend
       domain={domain}
@@ -85,7 +87,7 @@ export default observer(function MultiWiggleSvgScales({
     />
   ) : (
     <g transform={`translate(${scalebarLeft})`}>
-      {Array.from({ length: isOverlay ? 1 : numSources }).map((_, idx) => (
+      {Array.from({ length: numRows }).map((_, idx) => (
         <g
           // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one scalebar per source row
           key={`scalebar-${idx}`}

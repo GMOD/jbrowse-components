@@ -14,6 +14,7 @@ export {
   buildClusteredLayout,
   buildTree,
   computeClusterHierarchy,
+  filterRowsBySubtree,
   parseClusterOrder,
   parseClusterTree,
   reconcileLayout,

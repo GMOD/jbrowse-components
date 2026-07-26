@@ -17,6 +17,7 @@ export interface MultiWiggleDisplayModel
   isOverlay: boolean
   isDensityMode: boolean
   numSources: number
+  numRows: number
   rowHeight: number
   effectiveRowHeight: number
   rowHeightTooSmallForScalebar: boolean
@@ -24,7 +25,7 @@ export interface MultiWiggleDisplayModel
   treeAreaWidth: number
   showTree: boolean
   showRowSeparators: boolean
-  showLegend: boolean
+  hasOverlayLegend: boolean
   setShowLegend: (arg: boolean) => void
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode

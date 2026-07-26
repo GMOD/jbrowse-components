@@ -127,6 +127,29 @@ export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
   return applySubtreeFilter(buildTree(newick), subtreeFilter)
 }
 
+// The row-side half of applySubtreeFilter: narrow a display's rows to the same
+// filter the tree was narrowed to, so the dendrogram's leaves and the rows drawn
+// beside it can't disagree about who survived. Every tree-sidebar consumer
+// (multi-wiggle, multi-row features, MAF, multi-sample variants) needs this, and
+// two rules are easy to get wrong per-plugin, so they live here:
+//
+//   - Keyed on `name`, never a per-plugin alias like `sampleName`: the filter
+//     holds tree *leaf* names, and phased variant clustering makes those
+//     haplotype names ("HG001 HP0") rather than sample names.
+//   - Hide-only. Anything derived from a row's index in the full list (an index
+//     palette color, a group color) must be computed before filtering, or
+//     focusing a clade silently recolors the rows it kept.
+//
+// Returns the input array by reference when no filter is set, so callers can
+// short-circuit on identity (same contract as reconcileLayout).
+export function filterRowsBySubtree<T extends { name: string }>(
+  rows: T[],
+  subtreeFilter: readonly string[] | undefined,
+): T[] {
+  const filterSet = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+  return filterSet ? rows.filter(r => filterSet.has(r.name)) : rows
+}
+
 // Position the (filtered) cluster tree for drawing: leaves spaced over
 // `leafExtent` px along the row axis, branches over `treeAreaWidth` along the
 // depth axis. Undefined when there's no tree or no rows to align it against.

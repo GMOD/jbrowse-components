@@ -31,11 +31,21 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
     >
       {activeMode === 'auto' ? (
         <WiggleClusterDialogAuto model={model} handleClose={handleClose}>
-          <ClusterModeSelector value={activeMode} onChange={setActiveMode} />
+          <ClusterModeSelector
+            value={activeMode}
+            onChange={arg => {
+              setActiveMode(arg)
+            }}
+          />
         </WiggleClusterDialogAuto>
       ) : (
         <WiggleClusterDialogManual model={model} handleClose={handleClose}>
-          <ClusterModeSelector value={activeMode} onChange={setActiveMode} />
+          <ClusterModeSelector
+            value={activeMode}
+            onChange={arg => {
+              setActiveMode(arg)
+            }}
+          />
         </WiggleClusterDialogManual>
       )}
     </Dialog>

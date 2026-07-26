@@ -168,6 +168,17 @@ export default function stateModelFactory(
           ? self.height
           : getRowHeight(self.height, self.numSources)
       },
+
+      /**
+       * #getter
+       * Rows actually drawn: overlay collapses every source onto one shared
+       * plot. Read by the render state and by everything that repeats itself
+       * per row (scalebars, cross hatches), so they can't disagree about how
+       * many rows exist.
+       */
+      get numRows() {
+        return self.isOverlay ? 1 : self.numSources
+      },
     }))
     .views(self => ({
       // `rowHeight` is already resolved here; this satisfies tree-sidebar's
@@ -197,7 +208,7 @@ export default function stateModelFactory(
           // rows stack edge-to-edge for maximum density. Don't "unify" with
           // LinearWiggleDisplay's inset — the divergence is intentional.
           height: self.height,
-          numRows: self.isOverlay ? 1 : self.numSources,
+          numRows: self.numRows,
         })
       },
 
@@ -223,20 +234,44 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      get showTree() {
+      get showTree(): boolean {
         return getConf(self, 'showTree')
       },
 
-      get showBranchLength() {
+      get showBranchLength(): boolean {
         return getConf(self, 'showBranchLength')
       },
 
-      get showRowSeparators() {
+      get showRowSeparators(): boolean {
         return getConf(self, 'showRowSeparators')
       },
 
-      get showLegend() {
+      get showLegend(): boolean {
         return getConf(self, 'showLegend')
+      },
+
+      /**
+       * #getter
+       * Whether the overlay color key applies at all: one source needs no key,
+       * and multi-row mode identifies sources by their sidebar row label
+       * instead. Gates the menu checkbox, which has to stay visible while the
+       * legend is toggled off.
+       */
+      get overlayLegendApplies() {
+        return self.isOverlay && self.numSources > 1
+      },
+
+      /**
+       * #getter
+       * Whether the overlay color key actually draws. The on-screen overlay and
+       * the SVG export both read this, so a dismissed legend can't linger in
+       * the export. Reads the slot rather than the sibling `showLegend` getter,
+       * which isn't on `self`'s type until the next `.views` layer.
+       */
+      get hasOverlayLegend(): boolean {
+        return (
+          self.isOverlay && self.numSources > 1 && getConf(self, 'showLegend')
+        )
       },
 
       /**
@@ -249,14 +284,27 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The positioned dendrogram, or undefined in an overlay mode: overlay
+       * collapses every source onto one row, so a tree spreading its leaves over
+       * the full height would align to nothing. This is the single gate — the
+       * on-screen sidebar, the SVG export, `spatialIndex` (subtree hover), and
+       * `treeSidebarRightEdge` (the tooltip/crosshair dead zone the sidebar
+       * reserves) all read it, so none of them can keep drawing or reserving
+       * space on their own. A subtree filter set in a row mode still applies and
+       * is still clearable from the track menu and MultiWiggleHint.
+       */
       get hierarchy() {
-        return computeClusterHierarchy(
-          self.root,
-          self.sources.length,
-          self.height,
-          self.treeAreaWidth,
-          self.showBranchLength,
-        )
+        return self.isOverlay
+          ? undefined
+          : computeClusterHierarchy(
+              self.root,
+              self.sources.length,
+              self.height,
+              self.treeAreaWidth,
+              self.showBranchLength,
+            )
       },
     }))
     .views(self => ({
@@ -414,7 +462,7 @@ export default function stateModelFactory(
                 },
               ]),
           // the color key only renders as an overlay of >1 source
-          ...(self.isOverlay && self.sources.length > 1
+          ...(self.overlayLegendApplies
             ? [
                 {
                   label: 'Show legend',
@@ -432,20 +480,47 @@ export default function stateModelFactory(
         ]
         return [
           makeGroupedRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERING_GROUPS),
-          clusteringMenuItem(self, {
-            label: 'Cluster rows by score...',
-            disabled: !self.renderingType.startsWith('multirow'),
-            disabledHelpText: 'Only available for multi-row rendering types',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                WiggleClusterDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
+          clusteringMenuItem(
+            self,
+            {
+              label: 'Cluster rows by score...',
+              // clustering reorders rows, so it needs rows to reorder and at
+              // least two of them — the dialog would otherwise open only to
+              // report the same thing after the user clicks Run
+              disabled:
+                !self.renderingType.startsWith('multirow') ||
+                self.sourcesWithoutLayout.length < 2,
+              disabledHelpText: self.renderingType.startsWith('multirow')
+                ? 'Needs at least two subtracks to cluster'
+                : 'Only available for multi-row rendering types',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  WiggleClusterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
             },
-          }),
+            {
+              // the row order clustering wrote is otherwise only undoable from
+              // the color/arrangement dialog's reset
+              extraItems: self.clusterTree
+                ? [
+                    {
+                      label: 'Clear clustering (reset row order)',
+                      onClick: () => {
+                        self.clearLayout()
+                      },
+                    },
+                  ]
+                : [],
+              // overlay draws no dendrogram (see the `hierarchy` getter), so
+              // neither tree-display control has a subject there
+              treeApplies: !self.isOverlay,
+            },
+          ),
           ...makeResolutionSubMenu(self),
           makeScoreSubMenu(self, {
             scaleType: true,

@@ -178,6 +178,21 @@ export function WiggleScoreConfigMixin() {
       },
       /**
        * #action
+       * Lives here beside the `posColor`/`negColor` getters and
+       * `setBicolorPivot` so both the single- and multi-wiggle color editors
+       * write the score-sign palette the same way.
+       */
+      setPosColor(color?: string) {
+        setConf(confNode(self), 'posColor', color)
+      },
+      /**
+       * #action
+       */
+      setNegColor(color?: string) {
+        setConf(confNode(self), 'negColor', color)
+      },
+      /**
+       * #action
        */
       setMinScore(val?: number) {
         setConf(confNode(self), 'minScore', val)

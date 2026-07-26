@@ -3,7 +3,6 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   buildEditableSources,
-  buildSources,
   orderPartitionValues,
   resolveRowColors,
 } from './sourcesLogic.ts'
@@ -108,18 +107,6 @@ test('buildEditableSources: layout label/color overrides merge over discovered',
   expect(buildEditableSources(discovered, layout)).toEqual([
     { name: 'mom', label: 'Mother', color: 'red' },
     { name: 'dad' },
-    { name: 'kid' },
-  ])
-})
-
-test('buildSources: no filter returns editable unchanged', () => {
-  expect(buildSources(discovered, undefined)).toBe(discovered)
-  expect(buildSources(discovered, [])).toBe(discovered)
-})
-
-test('buildSources: filter narrows to the named subset, keeping order', () => {
-  expect(buildSources(discovered, ['kid', 'mom'])).toEqual([
-    { name: 'mom' },
     { name: 'kid' },
   ])
 })

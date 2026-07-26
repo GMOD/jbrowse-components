@@ -1,6 +1,8 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import ScoreSignColors from './ScoreSignColors.tsx'
+
 import type { Source } from '../../util.ts'
 import type { ColorColumn, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
@@ -36,6 +38,10 @@ export default observer(function MultiWiggleSetColorDialog({
   model: TreeLayoutModel<Source> & {
     isOverlay: boolean
     isDensityMode: boolean
+    posColor: string
+    negColor: string
+    setPosColor: (arg?: string) => void
+    setNegColor: (arg?: string) => void
   }
   handleClose: () => void
 }) {
@@ -50,6 +56,9 @@ export default observer(function MultiWiggleSetColorDialog({
         multirow && model.isDensityMode ? 'labelColor' : 'color'
       }
       reservedFields={multirow ? undefined : OVERLAY_RESERVED}
+      // overlay paints a source's negative features in its own (positive)
+      // color, so only a multirow mode has two sides to color
+      displayControls={multirow ? <ScoreSignColors model={model} /> : null}
       enableBulkEdit
       enableRowPalettizer
     />

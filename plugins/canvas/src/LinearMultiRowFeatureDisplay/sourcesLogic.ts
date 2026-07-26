@@ -63,15 +63,3 @@ export function buildEditableSources(
 ): MultiRowSource[] {
   return reconcileLayout(discovered, layout)
 }
-
-/** Narrow the editable rows by the active subtree filter (tree-sidebar). */
-export function buildSources(
-  editable: MultiRowSource[],
-  subtreeFilter: readonly string[] | undefined,
-): MultiRowSource[] {
-  if (!subtreeFilter?.length) {
-    return editable
-  }
-  const filter = new Set(subtreeFilter)
-  return editable.filter(s => filter.has(s.name))
-}

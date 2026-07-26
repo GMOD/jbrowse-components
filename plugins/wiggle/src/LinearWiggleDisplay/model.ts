@@ -241,20 +241,6 @@ export default function stateModelFactory(
       setColor(color?: string) {
         setConf(self, 'color', color)
       },
-
-      /**
-       * #action
-       */
-      setPosColor(color?: string) {
-        setConf(self, 'posColor', color)
-      },
-
-      /**
-       * #action
-       */
-      setNegColor(color?: string) {
-        setConf(self, 'negColor', color)
-      },
     }))
     .actions(self => ({
       /**

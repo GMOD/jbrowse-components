@@ -1,27 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
-
 import { ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getSession,
-  isAbortException,
-  statusFraction,
-  statusProgressLabel,
-} from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { statusFraction, statusProgressLabel } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { runWiggleClustering } from '../../runWiggleClustering.ts'
 import SamplesPerPixelField from './SamplesPerPixelField.tsx'
 import { useClusterSamplingOptions } from './clusterOptions.ts'
+import { useWiggleClusterRun } from './useWiggleClusterRun.ts'
 
 import type { ReducedModel } from './types.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   model,
@@ -32,25 +18,15 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   children: React.ReactNode
   handleClose: () => void
 }) {
-  const [status, setStatus] = useState<RpcStatus>()
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(false)
-  const [stopToken, setStopToken] = useState<StopToken>()
   const { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel } =
     useClusterSamplingOptions()
-
-  // Abort an in-flight clustering RPC if the dialog is dismissed (title-bar X /
-  // Escape) — the explicit Cancel button does this too, but closing any other
-  // way would otherwise leave the RPC running. A ref mirrors the active token
-  // so the unmount cleanup sees its latest value without re-subscribing.
-  const stopTokenRef = useRef<StopToken>(undefined)
-  stopTokenRef.current = stopToken
-  useEffect(
-    () => () => {
-      stopStopToken(stopTokenRef.current)
+  const { status, error, loading, run, stop } = useWiggleClusterRun({
+    model,
+    samplesPerPixel,
+    onSuccess: () => {
+      handleClose()
     },
-    [],
-  )
+  })
   return (
     <>
       <DialogContent>
@@ -80,7 +56,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               <Button
                 variant="contained"
                 onClick={() => {
-                  stopStopToken(stopToken)
+                  stop()
                 }}
               >
                 Stop
@@ -98,46 +74,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
         <Button
           variant="contained"
           disabled={loading}
-          onClick={async () => {
-            try {
-              setError(undefined)
-              const view = getContainingView(model) as LinearGenomeViewModel
-              const { sourcesWithoutLayout } = model
-              if (!view.initialized) {
-                setError(
-                  new Error(
-                    'The view is not initialized yet, please wait and try again',
-                  ),
-                )
-              } else if (!sourcesWithoutLayout.length) {
-                setError(new Error('No subtracks available to cluster'))
-              } else {
-                setStatus('Initializing')
-                setLoading(true)
-                const stopToken = createStopToken()
-                setStopToken(stopToken)
-                await runWiggleClustering({
-                  model,
-                  rpcManager: getSession(model).rpcManager,
-                  sessionId: getRpcSessionId(model),
-                  samplesPerPixel,
-                  stopToken,
-                  statusCallback: (arg: RpcStatus) => {
-                    setStatus(arg)
-                  },
-                })
-                handleClose()
-              }
-            } catch (e) {
-              if (!isAbortException(e) && isAlive(model)) {
-                console.error(e)
-                setError(e)
-              }
-            } finally {
-              setLoading(false)
-              setStatus(undefined)
-              setStopToken(undefined)
-            }
+          onClick={() => {
+            void run()
           }}
         >
           Run clustering
@@ -146,10 +84,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
           variant="contained"
           color="secondary"
           onClick={() => {
+            stop()
             handleClose()
-            if (stopToken) {
-              stopStopToken(stopToken)
-            }
           }}
         >
           Cancel

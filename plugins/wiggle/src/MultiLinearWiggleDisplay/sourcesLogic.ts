@@ -1,5 +1,5 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
-import { reconcileLayout } from '@jbrowse/tree-sidebar'
+import { filterRowsBySubtree, reconcileLayout } from '@jbrowse/tree-sidebar'
 
 import type { EditableSource, Source, SourceInfo } from '../util.ts'
 
@@ -68,18 +68,23 @@ export function buildEditableSources(
 // Group colors apply in both row and overlay mode so samples from the same
 // group always share a color. The overlay index palette fills remaining gaps
 // only in overlay mode (existing behavior for tracks without groups).
+//
+// Synthesis runs over the full list and filterRowsBySubtree applies after, so a
+// source's color is keyed to its position among all sources rather than among
+// the survivors: focusing a clade in the tree hides rows without recoloring the
+// ones it keeps, and the overlay legend a user just read stays valid. This is
+// the ordering filterRowsBySubtree documents as hide-only.
 export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,
   isOverlay: boolean,
 ): Source[] {
-  const filter = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
-  const base = filter
-    ? editableSources.filter(s => filter.has(s.name))
-    : editableSources
-  const groupColors = buildGroupColors(base)
-  return base.map((s, i) => ({
-    ...s,
-    color: s.color ?? synthesizeColor(s, i, isOverlay, groupColors),
-  }))
+  const groupColors = buildGroupColors(editableSources)
+  return filterRowsBySubtree(
+    editableSources.map((s, i) => ({
+      ...s,
+      color: s.color ?? synthesizeColor(s, i, isOverlay, groupColors),
+    })),
+    subtreeFilter,
+  )
 }

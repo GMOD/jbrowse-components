@@ -169,6 +169,8 @@ the genome, with a feature widget on click.
 | [setLoadedBpPerPx](#action-setloadedbpperpx)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [setScaleType](#action-setscaletype)                                   | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [setBicolorPivot](#action-setbicolorpivot)                             | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
+| [setPosColor](#action-setposcolor)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   | Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so both the single- and multi-wiggle color editors write the score-sign palette the same way.                                                                                                                            |
+| [setNegColor](#action-setnegcolor)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [setMinScore](#action-setminscore)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [setMaxScore](#action-setmaxscore)                                     | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
 | [setRenderingType](#action-setrenderingtype)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin)   |                                                                                                                                                                                                                                                                                                    |
@@ -1478,6 +1480,16 @@ type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 
 **Actions**
 
+#### action: setPosColor
+
+Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so
+both the single- and multi-wiggle color editors write the score-sign palette the
+same way.
+
+```ts
+type setPosColor = (color?: string | undefined) => void
+```
+
 | Member                                                           | Type                                     |
 | ---------------------------------------------------------------- | ---------------------------------------- |
 | <span id="action-togglecrosshatches">toggleCrossHatches</span>   | `() => void`                             |
@@ -1485,6 +1497,7 @@ type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 | <span id="action-setloadedbpperpx">setLoadedBpPerPx</span>       | `(bpPerPx: number \| undefined) => void` |
 | <span id="action-setscaletype">setScaleType</span>               | `(scaleType: string) => void`            |
 | <span id="action-setbicolorpivot">setBicolorPivot</span>         | `(val?: number \| undefined) => void`    |
+| <span id="action-setnegcolor">setNegColor</span>                 | `(color?: string \| undefined) => void`  |
 | <span id="action-setminscore">setMinScore</span>                 | `(val?: number \| undefined) => void`    |
 | <span id="action-setmaxscore">setMaxScore</span>                 | `(val?: number \| undefined) => void`    |
 | <span id="action-setrenderingtype">setRenderingType</span>       | `(type: string) => void`                 |

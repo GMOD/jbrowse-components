@@ -20,7 +20,7 @@ const MultiWiggleLegendOverlay = observer(function MultiWiggleLegendOverlay({
   const view = getContainingView(model) as LinearGenomeViewModel
   const totalWidth = view.trackWidthPx
   const legendWidth = legendRightEdgePx(view.visibleRegions, totalWidth)
-  return model.isOverlay && model.sources.length > 1 && model.showLegend ? (
+  return model.hasOverlayLegend ? (
     <FloatingSvgOverlay width={totalWidth} height={model.height}>
       <g style={{ pointerEvents: 'auto' }}>
         <OverlayColorLegend

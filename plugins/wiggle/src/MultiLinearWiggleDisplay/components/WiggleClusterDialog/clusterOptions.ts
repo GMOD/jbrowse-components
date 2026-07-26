@@ -6,6 +6,12 @@ import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 import type { ReducedModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+// One sample per pixel. The declarative `runClustering` autorun deliberately
+// clusters at this density rather than reading the persisted preference below:
+// it fires from a session snapshot or a website figure spec, so its result has
+// to be reproducible on a machine that has never opened the dialog.
+export const DEFAULT_SAMPLES_PER_PIXEL = '1'
+
 // The auto and manual dialogs persist these sampling controls to the same
 // localStorage keys so a value set in one dialog carries to the other — sharing
 // one hook keeps the keys from drifting apart.
@@ -16,7 +22,7 @@ export function useClusterSamplingOptions() {
   )
   const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
     'cluster-samplesPerPixel',
-    '1',
+    DEFAULT_SAMPLES_PER_PIXEL,
   )
   return { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel }
 }

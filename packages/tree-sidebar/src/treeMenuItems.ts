@@ -1,3 +1,4 @@
+import { checkboxItem } from '@jbrowse/core/ui'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -16,18 +17,19 @@ interface BranchLengthMenuModel {
 export function treeBranchLengthMenuItem(
   self: BranchLengthMenuModel,
 ): MenuItem {
-  return {
-    label: 'Tree branch lengths',
-    type: 'checkbox',
-    checked: self.showBranchLength,
-    disabled: !self.showTree || !self.treeHasBranchLengths,
-    disabledHelpText: self.showTree
-      ? 'This tree has no branch lengths'
-      : 'Show the tree first',
-    onClick: () => {
+  return checkboxItem(
+    'Tree branch lengths',
+    self.showBranchLength,
+    () => {
       self.setShowBranchLength(!self.showBranchLength)
     },
-  }
+    {
+      disabled: !self.showTree || !self.treeHasBranchLengths,
+      disabledHelpText: self.showTree
+        ? 'This tree has no branch lengths'
+        : 'Show the tree first',
+    },
+  )
 }
 
 interface ClusteringMenuModel extends BranchLengthMenuModel {
@@ -45,7 +47,9 @@ interface ClusteringMenuModel extends BranchLengthMenuModel {
 // the three menus can't drift into three different layouts for one concept.
 //
 // `extraItems` land after the run item, for a display that can also undo the
-// clustering itself (the multi-row display's "Clear clustering").
+// clustering itself (multi-wiggle's "Clear clustering"). The multi-row display
+// instead resets from one top-level item, since clustering is only one of the
+// three things that write its row order.
 //
 // `showTreeToggle` is opt-out because `showTree` does not mean the same thing
 // everywhere: on variants and wiggle it reveals only the dendrogram, so it
@@ -53,13 +57,24 @@ interface ClusteringMenuModel extends BranchLengthMenuModel {
 // (dendrogram AND row labels), which is useful with no clustering run at all.
 // Filing that toggle under "Clustering" would bury it, so that display keeps it
 // top-level and opts out.
+//
+// `treeApplies` is false when the display's current rendering mode has no row
+// axis for a dendrogram to align to (multi-wiggle's overlay modes collapse every
+// source onto one row). Both tree-display controls then drop out entirely rather
+// than sitting there as no-ops — a persisted `showTree` is left untouched, so it
+// comes back on return to a row mode.
 export function clusteringMenuItem(
   self: ClusteringMenuModel,
   runItem: MenuItem,
   {
     extraItems = [],
     showTreeToggle = true,
-  }: { extraItems?: MenuItem[]; showTreeToggle?: boolean } = {},
+    treeApplies = true,
+  }: {
+    extraItems?: MenuItem[]
+    showTreeToggle?: boolean
+    treeApplies?: boolean
+  } = {},
 ): MenuItem {
   return {
     label: 'Clustering',
@@ -68,21 +83,22 @@ export function clusteringMenuItem(
     subMenu: [
       runItem,
       ...extraItems,
-      ...(showTreeToggle
+      ...(showTreeToggle && treeApplies
         ? [
-            {
-              label: 'Show tree',
-              type: 'checkbox' as const,
-              checked: self.showTree,
-              disabled: !self.clusterTree,
-              disabledHelpText: 'Run clustering first',
-              onClick: () => {
+            checkboxItem(
+              'Show tree',
+              self.showTree,
+              () => {
                 self.setShowTree(!self.showTree)
               },
-            },
+              {
+                disabled: !self.clusterTree,
+                disabledHelpText: 'Run clustering first',
+              },
+            ),
           ]
         : []),
-      treeBranchLengthMenuItem(self),
+      ...(treeApplies ? [treeBranchLengthMenuItem(self)] : []),
       ...(self.subtreeFilter?.length
         ? [
             {

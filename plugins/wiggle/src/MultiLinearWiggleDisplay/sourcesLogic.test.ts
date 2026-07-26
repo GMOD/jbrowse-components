@@ -102,12 +102,27 @@ describe('buildSources', () => {
     expect(out[n + 1]!.color).toBe(overlayColors[1])
   })
 
-  it('re-indexes overlay palette after subtree filter', () => {
+  it('keeps each overlay palette color across a subtree filter', () => {
     const editable = buildEditableSources(adapter(12), [])
+    const unfiltered = buildSources(editable, undefined, true)
     const out = buildSources(editable, ['source_0', 'source_5'], true)
     expect(out.map(s => s.name)).toEqual(['source_0', 'source_5'])
-    expect(out[0]!.color).toBe(overlayColors[0])
-    expect(out[1]!.color).toBe(overlayColors[1])
+    expect(out[0]!.color).toBe(unfiltered[0]!.color)
+    expect(out[1]!.color).toBe(unfiltered[5]!.color)
+  })
+
+  it('keeps each group color across a subtree filter', () => {
+    const editable = buildEditableSources(
+      [
+        { name: 'a', group: 'g1' },
+        { name: 'b', group: 'g2' },
+        { name: 'c', group: 'g3' },
+      ],
+      [],
+    )
+    const unfiltered = buildSources(editable, undefined, false)
+    const out = buildSources(editable, ['c'], false)
+    expect(out[0]!.color).toBe(unfiltered[2]!.color)
   })
 
   it('layout color survives through to sources view', () => {

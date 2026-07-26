@@ -22,6 +22,7 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
+  filterRowsBySubtree,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -45,7 +46,6 @@ import {
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   buildEditableSources,
-  buildSources,
   orderPartitionValues,
   resolveRowColors,
 } from './sourcesLogic.ts'
@@ -301,7 +301,7 @@ export default function stateModelFactory(
        * this, so reordering/filtering flows through to the painting.
        */
       get sources(): MultiRowSource[] {
-        return buildSources(self.editableSources, self.subtreeFilter)
+        return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
       },
     }))
     .views(self => ({
@@ -319,11 +319,19 @@ export default function stateModelFactory(
        * color change repaints without a refetch.
        */
       get rowColorsByIndex(): (number | undefined)[] {
-        return resolveRowColors(
-          self.sources,
+        // Resolved over the unfiltered rows, then read back per display row: the
+        // fallback palette indexes by row position, so resolving over the
+        // filtered list would recolor every surviving row when the user focuses
+        // a clade in the tree (filterRowsBySubtree is hide-only).
+        const colors = resolveRowColors(
+          self.editableSources,
           self.sampleColorMap,
           self.colorConfig === undefined && !self.usedItemRgb,
         )
+        const byName = new Map(
+          self.editableSources.map((s, i) => [s.name, colors[i]] as const),
+        )
+        return self.sources.map(s => byName.get(s.name))
       },
       /**
        * #getter

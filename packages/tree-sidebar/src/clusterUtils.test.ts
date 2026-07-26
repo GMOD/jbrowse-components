@@ -1,5 +1,6 @@
 import {
   buildClusteredLayout,
+  filterRowsBySubtree,
   getLeafNames,
   parseClusterTree,
   pruneNewickToLeaves,
@@ -165,4 +166,23 @@ test('pruneNewickToLeaves drops merge heights when collapsing a unary node', () 
   const laid = clusterLayout(root, 100, 80, true)
   // both leaves stay flush at the leaf edge, as they were before the filter
   expect(leaves(laid).map(l => l.y)).toEqual([80, 80])
+})
+
+test('filterRowsBySubtree returns the input array itself when unfiltered', () => {
+  const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
+  expect(filterRowsBySubtree(rows, undefined)).toBe(rows)
+  expect(filterRowsBySubtree(rows, [])).toBe(rows)
+})
+
+test('filterRowsBySubtree keeps row order, not filter order', () => {
+  const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
+  expect(filterRowsBySubtree(rows, ['kid', 'mom'])).toEqual([
+    { name: 'mom' },
+    { name: 'kid' },
+  ])
+})
+
+test('filterRowsBySubtree ignores filter names no row has', () => {
+  const rows = [{ name: 'mom' }, { name: 'dad' }]
+  expect(filterRowsBySubtree(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
 })
