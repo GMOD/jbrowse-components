@@ -31,14 +31,21 @@ describe('calculateRedispatchRange', () => {
   const noSkip = new Set<string>()
 
   it('returns undefined when all features fit inside the query', () => {
-    const features = [{ start: 11, end: 50, type: 'gene' }] // 1-based start -> 10
+    const features = [{ start: 10, end: 50, type: 'gene' }]
     expect(calculateRedispatchRange(features, noSkip, 0, 100)).toBeUndefined()
+  })
+
+  // coordinates come in interbase, already offset by @gmod/tabix: a feature
+  // flush with the query edge is inside it and must not provoke a refetch
+  it('returns undefined for a feature starting exactly at the query start', () => {
+    const features = [{ start: 100, end: 150, type: 'gene' }]
+    expect(calculateRedispatchRange(features, noSkip, 100, 200)).toBeUndefined()
   })
 
   it('expands to feature bounds when a feature extends past the query', () => {
     const features = [
-      { start: 11, end: 50, type: 'gene' }, // -> [10, 50]
-      { start: 41, end: 200, type: 'mRNA' }, // -> [40, 200]
+      { start: 10, end: 50, type: 'gene' },
+      { start: 40, end: 200, type: 'mRNA' },
     ]
     expect(calculateRedispatchRange(features, noSkip, 60, 100)).toEqual({
       start: 10,
@@ -46,10 +53,20 @@ describe('calculateRedispatchRange', () => {
     })
   })
 
+  it('never returns a range narrower than the query', () => {
+    // the gene extends left, but the right edge stays at the query end so a
+    // dontRedispatch feature sitting at [150,200] still comes back
+    const features = [{ start: 50, end: 120, type: 'gene' }]
+    expect(calculateRedispatchRange(features, noSkip, 100, 200)).toEqual({
+      start: 50,
+      end: 200,
+    })
+  })
+
   it('ignores dontRedispatch types when computing the range', () => {
     const features = [
-      { start: 1, end: 100000, type: 'chromosome' },
-      { start: 71, end: 90, type: 'gene' }, // -> [70, 90]
+      { start: 0, end: 100000, type: 'chromosome' },
+      { start: 70, end: 90, type: 'gene' },
     ]
     const skip = new Set(['chromosome'])
     // only the gene contributes; it fits, so no redispatch
@@ -57,7 +74,7 @@ describe('calculateRedispatchRange', () => {
   })
 
   it('returns undefined when every feature is a dontRedispatch type', () => {
-    const features = [{ start: 1, end: 100000, type: 'chromosome' }]
+    const features = [{ start: 0, end: 100000, type: 'chromosome' }]
     const skip = new Set(['chromosome'])
     expect(calculateRedispatchRange(features, skip, 0, 100)).toBeUndefined()
   })

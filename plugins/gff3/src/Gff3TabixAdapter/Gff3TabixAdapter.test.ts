@@ -104,6 +104,90 @@ describe('redispatch when features extend beyond the query', () => {
     expect(Math.min(...cdsStarts)).toBeLessThan(7000)
     expect(cdsStarts).toContain(1200)
   })
+
+  // regression: the gene at [50,120] extends left out of the query and drives
+  // the redispatch, but `region` is a dontRedispatch type and so contributes
+  // nothing to the expanded bounds. Unless the refetch range is unioned with
+  // the original query it lands on [50,120], which no longer covers the region
+  // at [150,200] and silently drops it from the output
+  it('keeps a dontRedispatch feature the expanded range would miss', async () => {
+    const adapter = new Gff3TabixAdapter(
+      configSchema.create({
+        gffGzLocation: {
+          localPath: require.resolve('../test_data/redispatch_region.gff3.gz'),
+        },
+        index: {
+          location: {
+            localPath:
+              require.resolve('../test_data/redispatch_region.gff3.gz.tbi'),
+          },
+        },
+      }),
+    )
+    const features = await firstValueFrom(
+      adapter
+        .getFeatures({
+          refName: 'ctgA',
+          start: 100,
+          end: 200,
+          assemblyName: 'volvox',
+        })
+        .pipe(toArray()),
+    )
+    expect(features.map(f => f.get('name')).sort()).toEqual([
+      'gene1',
+      'region1',
+    ])
+  })
+
+  // Ensembl labels non-chromosomal sequences `supercontig`, and its record
+  // spans the whole scaffold. Unless that type is in dontRedispatch, opening
+  // any locus on the scaffold expands the refetch to all 100kb of it — one
+  // extra "Downloading features" round trip that returns nothing new
+  it('does not redispatch on an Ensembl supercontig record', async () => {
+    const adapter = new Gff3TabixAdapter(
+      configSchema.create({
+        gffGzLocation: {
+          localPath:
+            require.resolve('../test_data/ensembl_supercontig.gff3.gz'),
+        },
+        index: {
+          location: {
+            localPath:
+              require.resolve('../test_data/ensembl_supercontig.gff3.gz.tbi'),
+          },
+        },
+      }),
+    )
+    const seen: string[] = []
+    const features = await firstValueFrom(
+      adapter
+        .getFeatures(
+          {
+            refName: 'KI270728.1',
+            start: 50000,
+            end: 50100,
+            assemblyName: 'hg38',
+          },
+          {
+            statusCallback: s => {
+              seen.push(statusMessageText(s) ?? '')
+            },
+          },
+        )
+        .pipe(toArray()),
+    )
+    expect(features.map(f => f.get('type')).sort()).toEqual([
+      'gene',
+      'supercontig',
+    ])
+    // a fetch writes the label once and then repeats it on every byte tick, so
+    // count entries into the phase rather than raw occurrences
+    const fetches = seen.filter(
+      (s, i) => s === 'Downloading features' && seen[i - 1] !== s,
+    )
+    expect(fetches.length).toBe(1)
+  })
 })
 
 describe('discontinuous feature parsing', () => {

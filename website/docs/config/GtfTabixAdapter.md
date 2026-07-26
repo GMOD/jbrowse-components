@@ -74,7 +74,14 @@ the GtfTabixAdapter has to "redispatch" if it fetches a region and features it
 finds inside that region extend outside the region we requested. you can disable
 this for certain feature types to avoid fetching e.g. the entire chromosome
 
-**Type:** `stringArray` · **Default:** `['chromosome', 'region', 'contig']`
+the defaults are the whole-sequence records the common annotation sources emit:
+`region` (NCBI), `supercontig`/`scaffold` (Ensembl, for non-chromosomal
+sequences), plus `chromosome` and `contig`. They span an entire reference and
+have no children, so letting one expand the fetch would pull a whole chromosome
+to gain nothing
+
+**Type:** `stringArray` · **Default:**
+`[ 'chromosome', 'region', 'contig', 'supercontig', 'scaffold' ]`
 
 #### slot: aggregateField
 

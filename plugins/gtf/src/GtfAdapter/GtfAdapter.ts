@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
@@ -15,51 +18,46 @@ import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
 export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig> {
-  private gtfFeatures?: ReturnType<GtfAdapter['loadDataP']>
+  // the whole file is resident after one load, so genes are aggregated once
+  // here and stored in the interval tree already spanning all their
+  // transcripts; getFeatures is then a plain tree search with no per-query
+  // aggregation or redispatch. Progress comes from inside the load itself
+  // rather than a label wrapped around it
+  private loadData = cachedSetup({
+    setup: async (opts?: BaseOptions) => {
+      const aggregateField = this.getConf('aggregateField')
+      const buffer = await fetchAndMaybeUnzip(
+        openLocation(this.getConf('gtfLocation'), this.pluginManager),
+        opts,
+      )
+      const { headerLines, linesByRef } = groupLinesByRef(
+        buffer,
+        opts?.statusCallback,
+      )
 
-  private async loadDataP(opts?: BaseOptions) {
-    // the whole file is resident, so genes are aggregated once here and stored
-    // in the interval tree already spanning all their transcripts; getFeatures
-    // is then a plain tree search with no per-query aggregation or redispatch
-    const aggregateField = this.getConf('aggregateField')
-    const buffer = await fetchAndMaybeUnzip(
-      openLocation(this.getConf('gtfLocation'), this.pluginManager),
-      opts,
-    )
-    const { headerLines, linesByRef } = groupLinesByRef(
-      buffer,
-      opts?.statusCallback,
-    )
+      const intervalTreeMap =
+        makeFeatureIntervalTreeMap<SimpleFeatureSerialized>(
+          linesByRef,
+          (lines, refName) =>
+            aggregateGtfFeatures({
+              feats: parseGtfToFeatures(
+                lines.map(line => ({ line })),
+                (_record, i) => `${this.id}-${refName}-${i}`,
+              ),
+              aggregateField,
+              refName,
+              idPrefix: this.id,
+              // whole-ref bounds so nothing is clipped at load; the tree search
+              // in getFeatures does the per-query clipping instead
+              regionStart: 0,
+              regionEnd: Number.MAX_SAFE_INTEGER,
+            }),
+          'Parsing GTF data',
+        )
 
-    const intervalTreeMap = makeFeatureIntervalTreeMap<SimpleFeatureSerialized>(
-      linesByRef,
-      (lines, refName) =>
-        aggregateGtfFeatures({
-          feats: parseGtfToFeatures(
-            lines.map(line => ({ line })),
-            (_record, i) => `${this.id}-${refName}-${i}`,
-          ),
-          aggregateField,
-          refName,
-          idPrefix: this.id,
-          // whole-ref bounds so nothing is clipped at load; the tree search in
-          // getFeatures does the per-query clipping instead
-          regionStart: 0,
-          regionEnd: Number.MAX_SAFE_INTEGER,
-        }),
-      'Parsing GTF data',
-    )
-
-    return { header: headerLines.join('\n'), intervalTreeMap }
-  }
-
-  private async loadData(opts: BaseOptions = {}) {
-    this.gtfFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
-      this.gtfFeatures = undefined
-      throw e
-    })
-    return this.gtfFeatures
-  }
+      return { header: headerLines.join('\n'), intervalTreeMap }
+    },
+  })
 
   public async getRefNames(opts: BaseOptions = {}) {
     const { intervalTreeMap } = await this.loadData(opts)

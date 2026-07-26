@@ -74,11 +74,19 @@ export function isContainedWithin(
 /**
  * Compute the expanded fetch range a tabix adapter must "redispatch" to when
  * features found in a query extend past the requested window. Returns the union
- * of the bounds of every feature whose type is not in `dontRedispatchSet`, or
- * `undefined` when nothing extends past the query (no redispatch needed).
+ * of the query with the bounds of every feature whose type is not in
+ * `dontRedispatchSet`, or `undefined` when nothing extends past the query (no
+ * redispatch needed).
  *
- * Feature starts arrive 1-based from the tabix line callback and are converted
- * to interbase (0-based) here, matching the query coordinates.
+ * Feature coordinates arrive interbase, matching the query: @gmod/tabix applies
+ * the index's coordinate offset before invoking the line callback, so a GFF/GTF
+ * line's 1-based start is already decremented by the time it gets here.
+ *
+ * Seeding the accumulator with the query bounds is what makes the result a
+ * union rather than just the feature bounds. A redispatch narrower than the
+ * original window would drop a dontRedispatch-typed feature that the first
+ * fetch found inside the query but that falls outside the expanded range, since
+ * those types are deliberately excluded from the bounds.
  */
 export function calculateRedispatchRange(
   features: { start: number; end: number; type: string }[],
@@ -86,20 +94,19 @@ export function calculateRedispatchRange(
   queryStart: number,
   queryEnd: number,
 ): { start: number; end: number } | undefined {
-  let minStart = Number.POSITIVE_INFINITY
-  let maxEnd = Number.NEGATIVE_INFINITY
+  let minStart = queryStart
+  let maxEnd = queryEnd
   for (const feature of features) {
     if (!dontRedispatchSet.has(feature.type)) {
-      const start = feature.start - 1 // gff/gtf lines are 1-based
-      if (start < minStart) {
-        minStart = start
+      if (feature.start < minStart) {
+        minStart = feature.start
       }
       if (feature.end > maxEnd) {
         maxEnd = feature.end
       }
     }
   }
-  return maxEnd > queryEnd || minStart < queryStart
+  return minStart < queryStart || maxEnd > queryEnd
     ? { start: minStart, end: maxEnd }
     : undefined
 }

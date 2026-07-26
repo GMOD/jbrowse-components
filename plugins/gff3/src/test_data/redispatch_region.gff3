@@ -1,0 +1,3 @@
+##gff-version 3
+ctgA	test	gene	51	120	.	+	.	ID=gene1;Name=gene1
+ctgA	test	region	151	200	.	+	.	ID=region1;Name=region1

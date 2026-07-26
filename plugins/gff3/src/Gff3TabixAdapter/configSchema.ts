@@ -80,10 +80,22 @@ const Gff3TabixAdapter = ConfigurationSchema(
      * features it finds inside that region extend outside the region we requested.
      * you can disable this for certain feature types to avoid fetching e.g. the
      * entire chromosome
+     *
+     * the defaults are the whole-sequence records the common GFF3 sources emit:
+     * `region` (NCBI), `supercontig`/`scaffold` (Ensembl, for non-chromosomal
+     * sequences), plus `chromosome` and `contig`. They span an entire reference
+     * and have no children, so letting one expand the fetch would pull a whole
+     * chromosome to gain nothing
      */
     dontRedispatch: {
       type: 'stringArray',
-      defaultValue: ['chromosome', 'region', 'contig'],
+      defaultValue: [
+        'chromosome',
+        'region',
+        'contig',
+        'supercontig',
+        'scaffold',
+      ],
     },
   },
   {

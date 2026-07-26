@@ -8,6 +8,10 @@ import type { StatusCallback } from './progress.ts'
  * survives redispatch and panning, and start/end/type feed the redispatch
  * calculation (see {@link calculateRedispatchRange}) that runs before any line
  * is parsed.
+ *
+ * `start`/`end` are interbase, not the raw column values: @gmod/tabix applies
+ * the index's coordinate offset (-1 for a 1-based-closed preset such as GFF)
+ * before it calls back.
  */
 export interface TabixLine {
   line: string
