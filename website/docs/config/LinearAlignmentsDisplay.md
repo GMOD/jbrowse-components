@@ -81,7 +81,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | Slot                                                       | Type                                                             | Description                                                                                                                                                                |
 | ---------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [featureHeight](#slot-featureheight)                       | `maybeNumber`                                                    | Height of each feature (read) in pixels.                                                                                                                                   |
-| [heightMode](#slot-heightmode)                             | `stringEnum` (inherit, fixed, grow, fit)                         | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). |
+| [heightMode](#slot-heightmode)                             | `maybeStringEnum` (fixed, grow, fit)                             | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). |
 | [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                        |
 | [showSashimiLabels](#slot-showsashimilabels)               | `maybeBoolean`                                                   | Draw the supporting-read count on each sashimi arc                                                                                                                         |
 | [height](#slot-height)                                     | `number`                                                         |                                                                                                                                                                            |
@@ -91,7 +91,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [mismatchAlpha](#slot-mismatchalpha)                       | `maybeBoolean`                                                   | Fade mismatch bases by their per-base Phred quality.                                                                                                                       |
 | [showLegend](#slot-showlegend)                             | `boolean`                                                        | Show the color-scheme legend overlay                                                                                                                                       |
 | [largeFeaturesFirst](#slot-largefeaturesfirst)             | `boolean`                                                        | Lay out the widest features in the lowest pileup rows instead of by genomic start, so large alignments cluster at the top rather than interleaving with small ones.        |
-| [linkedReads](#slot-linkedreads)                           | `stringEnum` (inherit, off, normal)                              | Linked-read (barcode-chain) layout mode                                                                                                                                    |
+| [linkedReads](#slot-linkedreads)                           | `maybeStringEnum` (off, normal)                                  | Linked-read (barcode-chain) layout mode                                                                                                                                    |
 | [showBezierConnections](#slot-showbezierconnections)       | `boolean`                                                        | Draw paired-read connection curves over the pileup                                                                                                                         |
 | [showCoverage](#slot-showcoverage)                         | `boolean`                                                        | Draw the coverage histogram band                                                                                                                                           |
 | [showPileup](#slot-showpileup)                             | `boolean`                                                        | Draw the stacked-read pileup band                                                                                                                                          |
@@ -106,10 +106,10 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [drawInter](#slot-drawinter)                               | `boolean`                                                        | Draw inter-chromosomal read-connection arcs                                                                                                                                |
 | [drawLongRange](#slot-drawlongrange)                       | `boolean`                                                        | Draw long-range read-connection arcs                                                                                                                                       |
 | [arcColorByType](#slot-arccolorbytype)                     | `stringEnum` (insertSizeAndOrientation, insertSize, orientation) | How to color read-connection arcs                                                                                                                                          |
-| [readConnections](#slot-readconnections)                   | `stringEnum` (inherit, off, arc, cloud)                          | Read-connection rendering mode (mate pairs + split reads)                                                                                                                  |
+| [readConnections](#slot-readconnections)                   | `maybeStringEnum` (off, arc, cloud)                              | Read-connection rendering mode (mate pairs + split reads)                                                                                                                  |
 | [readConnectionsDown](#slot-readconnectionsdown)           | `maybeBoolean`                                                   | Draw read connections below the coverage band.                                                                                                                             |
 | [showSashimiArcs](#slot-showsashimiarcs)                   | `boolean`                                                        | Draw sashimi (splice-junction) arcs                                                                                                                                        |
-| [sashimiArcsMode](#slot-sashimiarcsmode)                   | `stringEnum` (inherit, up, down, auto)                           | Sashimi junction-arc placement                                                                                                                                             |
+| [sashimiArcsMode](#slot-sashimiarcsmode)                   | `maybeStringEnum` (up, down, auto)                               | Sashimi junction-arc placement                                                                                                                                             |
 | [minSashimiScore](#slot-minsashimiscore)                   | `number`                                                         | Hide sashimi arcs with fewer than this many supporting reads                                                                                                               |
 | [sashimiArcsHeight](#slot-sashimiarcsheight)               | `number`                                                         | Height of the sashimi-arc band in pixels                                                                                                                                   |
 | [readConnectionsHeight](#slot-readconnectionsheight)       | `number`                                                         | Height of the read-connection band in pixels                                                                                                                               |
@@ -118,18 +118,18 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 <details>
 <summary>Advanced slots (10)</summary>
 
-| Slot                                                 | Type      | Description                                                                                                                                                 |
-| ---------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [maxHeight](#slot-maxheight)                         | `number`  | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)                                           |
-| [colorBy](#slot-colorby)                             | `frozen`  | Color scheme for reads                                                                                                                                      |
-| [filterBy](#slot-filterby)                           | `frozen`  | default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)         |
-| [groupBy](#slot-groupby)                             | `frozen`  | In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)                                                        |
-| [minScore](#slot-minscore)                           | `number`  | Minimum coverage depth bound                                                                                                                                |
-| [maxScore](#slot-maxscore)                           | `number`  | Maximum coverage depth bound                                                                                                                                |
-| [numStdDev](#slot-numstddev)                         | `number`  | Number of standard deviations for localsd autoscale                                                                                                         |
-| [showLowFreqMismatches](#slot-showlowfreqmismatches) | `boolean` | Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. |
-| [sortedBy](#slot-sortedby)                           | `frozen`  | Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)                                                                          |
-| [showOutline](#slot-showoutline)                     | `frozen`  | null = auto: outline is drawn only in chain/linked-read modes.                                                                                              |
+| Slot                                                 | Type          | Description                                                                                                                                                 |
+| ---------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [maxHeight](#slot-maxheight)                         | `number`      | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)                                           |
+| [colorBy](#slot-colorby)                             | `maybeFrozen` | Color scheme for reads                                                                                                                                      |
+| [filterBy](#slot-filterby)                           | `frozen`      | default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)         |
+| [groupBy](#slot-groupby)                             | `frozen`      | In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)                                                        |
+| [minScore](#slot-minscore)                           | `number`      | Minimum coverage depth bound                                                                                                                                |
+| [maxScore](#slot-maxscore)                           | `number`      | Maximum coverage depth bound                                                                                                                                |
+| [numStdDev](#slot-numstddev)                         | `number`      | Number of standard deviations for localsd autoscale                                                                                                         |
+| [showLowFreqMismatches](#slot-showlowfreqmismatches) | `boolean`     | Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. |
+| [sortedBy](#slot-sortedby)                           | `frozen`      | Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)                                                                          |
+| [showOutline](#slot-showoutline)                     | `frozen`      | null = auto: outline is drawn only in chain/linked-read modes.                                                                                              |
 
 </details>
 
@@ -150,15 +150,14 @@ _promotable_
 
 Track-sizing strategy — how the track responds when there are more reads than
 fit (shared vocabulary with the canvas feature display, exposed in the "Track
-sizing" menu). `inherit` (the default) follows the session-wide default for this
+sizing" menu). Unset (the default) follows the session-wide default for this
 display type, falling back to `fixed`; `fixed` keeps `featureHeight` and
 scrolls; `grow` expands the track to show every read at the configured height;
 `fit` squeezes reads so every uncollapsed group fills the display without
 scrolling. Orthogonal to the per-read size set by `featureHeight`
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `fixed`, `grow`, `fit`) · **Default:** `'inherit'` · **Resolves to:**
-`'fixed'` · _promotable_
+**Type:** `maybeStringEnum` (one of `fixed`, `grow`, `fit`) · **Default:**
+`undefined` · **Resolves to:** `'fixed'` · _promotable_
 
 #### slot: readConnectionsLineWidth
 
@@ -189,14 +188,13 @@ Maximum pixel height of the pileup layout; reads beyond this are not stacked
 
 Color scheme for reads
 
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`{ type: 'inherit' }` · **Resolves to:** `{ type: 'normal' }` · _advanced,
-promotable_
+**Type:** `maybeFrozen` · **Default:** `undefined` · **Resolves to:**
+`{ type: 'normal' }` · _advanced, promotable_
 
 ```js
 {
-  type: 'frozen',
-  defaultValue: { type: 'inherit' },
+  type: 'maybeFrozen',
+  defaultValue: undefined,
   promotedBase: { type: 'normal' },
   promotable: true,
   validate: isRegisteredColorScheme,
@@ -324,9 +322,8 @@ force it on or off regardless of mode.
 
 Linked-read (barcode-chain) layout mode
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `normal`) · **Default:** `'inherit'` · **Resolves to:**
-`'off'` · _promotable_
+**Type:** `maybeStringEnum` (one of `off`, `normal`) · **Default:** `undefined`
+· **Resolves to:** `'off'` · _promotable_
 
 #### slot: showBezierConnections
 
@@ -431,9 +428,8 @@ How to color read-connection arcs
 
 Read-connection rendering mode (mate pairs + split reads)
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `arc`, `cloud`) · **Default:** `'inherit'` · **Resolves to:**
-`'off'` · _promotable_
+**Type:** `maybeStringEnum` (one of `off`, `arc`, `cloud`) · **Default:**
+`undefined` · **Resolves to:** `'off'` · _promotable_
 
 #### slot: readConnectionsDown
 
@@ -456,9 +452,8 @@ Draw sashimi (splice-junction) arcs
 
 Sashimi junction-arc placement
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `up`, `down`, `auto`) · **Default:** `'inherit'` · **Resolves to:**
-`'up'` · _promotable_
+**Type:** `maybeStringEnum` (one of `up`, `down`, `auto`) · **Default:**
+`undefined` · **Resolves to:** `'up'` · _promotable_
 
 #### slot: minSashimiScore
 

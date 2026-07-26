@@ -80,16 +80,16 @@ export function resolveConf<
   model: { configuration: CONFMODEL },
   slot: SLOT,
   args: Record<string, unknown> = {},
-): ConfigurationSlotValueResolved<ConfigurationSchemaForModel<CONFMODEL>, SLOT> {
+): ConfigurationSlotValueResolved<
+  ConfigurationSchemaForModel<CONFMODEL>,
+  SLOT
+> {
   // `model` is the display state node the resolver needs (type + session +
   // ignorePromotedDefaults); only display state models carry promotable slots.
   // `resolveSlot(...).value` is `unknown`, which the declared return type can't
   // infer on its own.
-  return resolveSlot(
-    model as unknown as PromotableDisplay,
-    slot,
-    args,
-  ).value as ConfigurationSlotValueResolved<
+  return resolveSlot(model as unknown as PromotableDisplay, slot, args)
+    .value as ConfigurationSlotValueResolved<
     ConfigurationSchemaForModel<CONFMODEL>,
     SLOT
   >

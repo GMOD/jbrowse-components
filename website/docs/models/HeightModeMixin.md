@@ -45,7 +45,7 @@ slot: getConf walks the customized-track -> session-default -> `fixed` cascade
 and never returns the `inherit` sentinel.
 
 ```ts
-type heightMode = HeightMode
+type heightMode = 'fixed' | 'grow' | 'fit'
 ```
 
 #### getter: fitTargetHeight

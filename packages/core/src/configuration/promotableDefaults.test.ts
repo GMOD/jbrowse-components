@@ -924,7 +924,7 @@ describe('resolveConf cascades; getConf and readConfObject stay raw', () => {
     expect(getConf(display, 'guardedHeight')).toBeUndefined()
   })
 
-  test('getConf is exactly readConfObject on the model\'s configuration', () => {
+  test("getConf is exactly readConfObject on the model's configuration", () => {
     const { display } = createDisplay(schema, { guardedHeight: 5 })
     expect(getConf(display, 'guardedHeight')).toBe(5)
     expect(getConf(display, 'plainLabel')).toBe('hello')
@@ -1131,7 +1131,11 @@ test('a promoted jexl string is rejected and falls back to the base', () => {
   })
   const { session, display } = createDisplay(schema)
   // passes maybeColor's bare `typeof === 'string'` shape check
-  session.setDisplayTypeDefault('TestDisplay', 'stroke', 'jexl:get(feature,"c")')
+  session.setDisplayTypeDefault(
+    'TestDisplay',
+    'stroke',
+    'jexl:get(feature,"c")',
+  )
   expect(resolveConf(display, 'stroke')).toBe('black')
 })
 

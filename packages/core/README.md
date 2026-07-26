@@ -42,10 +42,10 @@ their own config values. Backs the badge's "clear default" action.
 A promotable "default for all tracks of this type" control, bundled so a menu
 row's trailing pin consumes it as a single prop. `active` = this value is
 currently the session default (a filled pin); `toggle` sets it as the default or
-clears it. On set, `toggle` immediately applies the value to the display the pin
-was clicked from (so the active track updates with one click) and raises a
-snackbar with an "Apply to N open tracks" action for the remaining open tracks
-not already showing this value (see `applyDefaultToggle`).
+clears it, touching no track's own value (see `applyDefaultToggle`). On set it
+raises a snackbar with an "Apply to N open tracks" action for every open track
+not already showing this value — that action is the only thing in the subsystem
+that rewrites a track.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
@@ -55,13 +55,16 @@ Reads a configuration value from a state model that has a `.configuration`
 member (a track or display state model). For a raw configuration model, use
 `readConfObject` instead.
 
-A `promotable` slot is resolved through the display-type-default cascade (track
-value -> session-wide promoted default -> base) rather than read raw, so a
-display's own value getter can be a plain `getConf(self, 'slot')` and still
-follow the cascade — and can never surface a slot's inherit sentinel. That
-resolution is main-thread only (it consults the session); the worker reads plain
-config snapshots through `readConfObject`, which stays raw. See
-`promotableResolve.ts`.
+**This is exactly `readConfObject(model.configuration, path)`** — sugar for the
+`.configuration` hop, plus a stricter slot-name check (see ./CLAUDE.md). It does
+not consult the session and has no per-slot behavior; what you read is what the
+track stores.
+
+A `promotable` slot read this way therefore yields the raw stored value,
+`undefined` included — that `undefined` is the cascade's inherit sentinel, and
+`resolveConf` is what turns it into a real value. The read type keeps the
+`undefined` on purpose, so reaching for the wrong reader is a compile error
+rather than a silent one.
 
 ```js
 // type signature
@@ -148,14 +151,14 @@ Session-wide "promoted defaults" for display-type config slots — the UI /
 control layer over the read-time cascade in `promotableResolve.ts`. A
 `promotable` slot resolves through three tiers (track's own customized value ->
 session-wide default for this display type -> base); a display reads the
-resolved value with `getConf` (which routes promotable slots through
-`resolveSlot`), and the session store (`get/setDisplayTypeDefault`) holds the
-promoted value. Everything here reads a field off `resolveSlot`. Whether this
-track has customized the slot (holds a non-default value of its own) rather than
-following the display type's default. The correct "reset to default" predicate
-for a promotable slot: comparing the resolved value to the base instead reads as
-at-default for a track merely _following_ a non-base promoted default, so the
-reset control lights up on a no-op.
+resolved value with `resolveConf` (a thin reader over `resolveSlot`), and the
+session store (`get/setDisplayTypeDefault`) holds the promoted value. Everything
+here reads a field off `resolveSlot`. Whether this track has customized the slot
+(holds a non-default value of its own) rather than following the display type's
+default. The correct "reset to default" predicate for a promotable slot:
+comparing the resolved value to the base instead reads as at-default for a track
+merely _following_ a non-base promoted default, so the reset control lights up
+on a no-op.
 
 ```js
 // type signature
@@ -170,6 +173,13 @@ Promote-current control: "make this track's current resolved value(s) the
 session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
 multi-mode slot like displayMode) where the pin means "whatever I'm showing",
 not a fixed on-value. Groups multiple slots behind one control.
+
+The one cascade consumer that reads `.value`, so it's also the one that has to
+honour the callback branch: a `jexl:` slot computes a different value per
+feature, and this builder runs while a track menu is being assembled, with no
+feature to supply. Reading `.value` there evaluated the callback with empty args
+and threw out of the menu, so a callback disables the pin instead — there is no
+single current value to promote.
 
 ```js
 // type signature
@@ -214,12 +224,18 @@ Every display on an open track, across all open views — the reach of anything
 that acts on "the tracks the user is looking at": the cascade's own "apply to
 open tracks", and the share/export bake. One walk so those can't drift apart.
 
-Views that don't show tracks (e.g. dotplot) drop out via the structural guard,
-as does a display nested inside a composite view (breakpoint-split,
-SV-inspector, synteny read-vs-ref) — an accepted limitation of the subsystem,
-not a per-caller gap. In practice a track has one display (`replaceDisplay`
-swaps in place, `activeDisplay` is `displays[0]`), so the inner flatMap just
-collects each track's display without relying on multiple-per-track.
+Recurses into composite views, because a display nested in one resolves the
+cascade at read time like any other but was invisible to both callers: "apply to
+N open tracks" undercounted it, and — the real bug — the share/export bake
+neither baked its inherited values nor flagged it `ignorePromotedDefaults`, so a
+shared session containing a breakpoint-split or synteny view rendered
+differently for the recipient. `LGVSyntenyDisplay` (a promotable adopter) is
+only ever reached through this branch.
+
+Views that show no tracks at all (e.g. dotplot) drop out via the structural
+guards. In practice a track has one display (`replaceDisplay` swaps in place,
+`activeDisplay` is `displays[0]`), so the inner flatMap just collects each
+track's display without relying on multiple-per-track.
 
 ```js
 // type signature
@@ -241,18 +257,46 @@ model directly, e.g. an entry from `session.tracks`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
 
+### resolveConf
+
+Reads a `promotable` slot through the display-type-default cascade — the track's
+own value, else the session-wide promoted default for this display type, else
+the slot's `promotedBase`. Always yields a real value, never the `undefined`
+inherit sentinel, so a display's value getter is
+`get displayMode(): DisplayMode { return resolveConf(self, 'displayMode') }`
+with no post-guard and no cast.
+
+Separate from `getConf` rather than folded into it, deliberately. Resolution is
+not free and not universal: it consults the session (so it's main-thread only,
+and throws on a detached node) and it means something only for the ~15
+promotable slots out of 1300-odd config reads in the repo. Hiding it inside
+`getConf` made every one of those reads a maybe-cascade whose behavior you
+couldn't see at the call site and which turned on a `promotable: true` flag in
+another file. Naming it at the call site costs one word and restores `getConf`
+to being what everyone already believed it was.
+
+Throws if `slot` isn't promotable — the cascade has nothing to say about a plain
+slot, and `getConf` is what you want there.
+
+```js
+// type signature
+<…>(model: { ...; }, slot: SLOT, args?: Record<...>) => ConfigurationSlotValueResolved<...>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
 ### resolvePromotableConfigSnapshot
 
-The display's full config snapshot (`getConfSnapshot`) with every `promotable`
-slot overwritten by its resolved value in place. For building a worker payload:
-a promotable slot serializes as its raw inherit sentinel — an `'inherit'` enum
-member, or the `undefined` of a `maybeBoolean`/`maybeNumber` — which the worker
-can't interpret. This hands it concrete values instead, with no per-slot
-bookkeeping, so adding a promotable worker-consumed slot needs no rpcProps
-change and can't silently ship a sentinel. Main-thread only (`getConf` consults
-the session). Display-only promotable slots the worker never reads (e.g.
-displayMode) are still excluded by the caller — resolving them here is a
-harmless no-op since they're dropped anyway.
+The display's full config snapshot with every `promotable` slot overwritten by
+its resolved value in place. For building a worker payload: a promotable slot
+serializes as its raw inherit sentinel (`undefined`, since they're all `maybe*`
+types), which the worker can't interpret — it has no session to resolve against.
+This hands it concrete values instead, with no per-slot bookkeeping, so adding a
+promotable worker-consumed slot needs no rpcProps change and can't silently ship
+a sentinel. Main-thread only (the cascade consults the session). Display-only
+promotable slots the worker never reads (e.g. displayMode) are still excluded by
+the caller — resolving them here is a harmless no-op since they're dropped
+anyway.
 
 ```js
 // type signature

@@ -486,13 +486,7 @@ the per-config label/description reservation flags. One source so the candidate
 layouts can't drift on bpPerPx / region keys / display mode / pins.
 
 ```ts
-type layoutInputs = {
-  bpPerPx: number
-  regionKeys: Map<number, string>
-  reversedRegions: Set<number>
-  displayMode: DisplayMode
-  pinnedFeatureIds: ReadonlySet<string>
-}
+type layoutInputs = { bpPerPx: number; regionKeys: Map<…>; reversedRegions: Set<number>; displayMode: "normal" | "compact" | "superCompact" | "collapsed"; pinnedFeatureIds: ReadonlySet<string>; }
 ```
 
 #### getter: layoutReady
@@ -721,7 +715,7 @@ type renderedShowLabels = boolean
 | <span id="getter-renderstate">renderState</span>                             | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }` |
 | <span id="getter-labelscrollbucket">labelScrollBucket</span>                 | `number`                                                          |
 | <span id="getter-maxheight">maxHeight</span>                                 | `any`                                                             |
-| <span id="getter-displaymode">displayMode</span>                             | `DisplayMode`                                                     |
+| <span id="getter-displaymode">displayMode</span>                             | `"normal" \| "compact" \| "superCompact" \| "collapsed"`          |
 | <span id="getter-labelfontsize">labelFontSize</span>                         | `number`                                                          |
 | <span id="getter-showlabelsmode">showLabelsMode</span>                       | `any`                                                             |
 | <span id="getter-showlabels">showLabels</span>                               | `boolean`                                                         |
@@ -949,8 +943,8 @@ type resizeHeight = (distance: number) => number
 | <span id="action-setutrcolor">setUtrColor</span>                                   | `(color?: string \| undefined) => void`                                                                                                                                          |
 | <span id="action-setsequencehoverposition">setSequenceHoverPosition</span>         | `(pos: SequenceHoverPosition \| undefined) => void`                                                                                                                              |
 | <span id="action-opencontextmenu">openContextMenu</span>                           | `(featureInfo: FlatbushItem, displayedRegionIndex: number, clientX: number, clientY: number, subfeature?: SubfeatureInfo \| undefined, hgvsLabel?: string \| undefined) => void` |
-| <span id="action-setdisplaymode">setDisplayMode</span>                             | `(value: DisplayMode) => void`                                                                                                                                                   |
-| <span id="action-setheightmode">setHeightMode</span>                               | `(mode: HeightMode) => void`                                                                                                                                                     |
+| <span id="action-setdisplaymode">setDisplayMode</span>                             | `(value: "normal" \| "compact" \| "superCompact" \| "collapsed") => void`                                                                                                        |
+| <span id="action-setheightmode">setHeightMode</span>                               | `(mode: "fixed" \| "grow" \| "fit") => void`                                                                                                                                     |
 | <span id="action-opensetcolordialog">openSetColorDialog</span>                     | `(showUtrColor?: any) => void`                                                                                                                                                   |
 | <span id="action-opencolorbyattributedialog">openColorByAttributeDialog</span>     | `() => void`                                                                                                                                                                     |
 | <span id="action-openfilterdialog">openFilterDialog</span>                         | `() => void`                                                                                                                                                                     |
@@ -1135,7 +1129,7 @@ slot: getConf walks the customized-track -> session-default -> `fixed` cascade
 and never returns the `inherit` sentinel.
 
 ```ts
-type heightMode = HeightMode
+type heightMode = 'fixed' | 'grow' | 'fit'
 ```
 
 #### getter: fitTargetHeight

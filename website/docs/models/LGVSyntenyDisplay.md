@@ -104,8 +104,6 @@ external synteny views
 | [readConnectionsDownDisplayTypeDefault](#getter-readconnectionsdowndisplaytypedefault) | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [showSashimiArcs](#getter-showsashimiarcs)                                             | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [sashimiArcsMode](#getter-sashimiarcsmode)                                             | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
-| [sashimiDownDisplayTypeDefault](#getter-sashimidowndisplaytypedefault)                 | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
-| [sashimiAutoDisplayTypeDefault](#getter-sashimiautodisplaytypedefault)                 | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [minSashimiScore](#getter-minsashimiscore)                                             | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [sashimiArcsHeight](#getter-sashimiarcsheight)                                         | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [readConnectionsHeight](#getter-readconnectionsheight)                                 | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
@@ -196,6 +194,7 @@ external synteny views
 | [arcsYDomainBp](#getter-arcsydomainbp)                                                 | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [insertSizeTicks](#getter-insertsizeticks)                                             | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
 | [featureUnderMouse](#getter-featureundermouse)                                         | Getters    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
+| [sashimiArcsModeDisplayTypeDefault](#method-sashimiarcsmodedisplaytypedefault)         | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | "make this arc placement the default for all tracks" control (pin), one per option of the radio group.                                                                                                                                                                                                                          |
 | [isGroupCollapsed](#method-isgroupcollapsed)                                           | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Whether a stacked group's pileup is collapsed to just its coverage.                                                                                                                                                                                                                                                             |
 | [hasGroupHeightOverride](#method-hasgroupheightoverride)                               | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) | Whether a stacked group carries a custom pileup-height override — set by expanding it (show all reads) or dragging its resize handle (taller or shorter).                                                                                                                                                                       |
 | [legendItems](#method-legenditems)                                                     | Methods    | [LinearAlignmentsDisplay](../linearalignmentsdisplay) |                                                                                                                                                                                                                                                                                                                                 |
@@ -815,7 +814,7 @@ type arcBandInput = {
   showCoverage: boolean
   coverageHeight: number
   coverageYOffset: number
-  readConnections: ReadConnectionsMode
+  readConnections: 'off' | 'arc' | 'cloud'
   readConnectionsDown: boolean
   readConnectionsHeight: number
 }
@@ -1187,7 +1186,7 @@ type fittedFeatureHeight = number
 
 | Member                                                                                               | Type                                                                            |
 | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| <span id="getter-linkedreads">linkedReads</span>                                                     | `LinkedReadsMode`                                                               |
+| <span id="getter-linkedreads">linkedReads</span>                                                     | `"normal" \| "off"`                                                             |
 | <span id="getter-pairsdisplaytypedefault">pairsDisplayTypeDefault</span>                             | `DisplayTypeDefaultControl`                                                     |
 | <span id="getter-showbezierconnections">showBezierConnections</span>                                 | `boolean`                                                                       |
 | <span id="getter-showcoverage">showCoverage</span>                                                   | `boolean`                                                                       |
@@ -1203,15 +1202,13 @@ type fittedFeatureHeight = number
 | <span id="getter-drawinter">drawInter</span>                                                         | `boolean`                                                                       |
 | <span id="getter-drawlongrange">drawLongRange</span>                                                 | `boolean`                                                                       |
 | <span id="getter-arccolorbytype">arcColorByType</span>                                               | `ArcColorByType`                                                                |
-| <span id="getter-readconnections">readConnections</span>                                             | `ReadConnectionsMode`                                                           |
+| <span id="getter-readconnections">readConnections</span>                                             | `"off" \| "arc" \| "cloud"`                                                     |
 | <span id="getter-arcsdisplaytypedefault">arcsDisplayTypeDefault</span>                               | `DisplayTypeDefaultControl`                                                     |
 | <span id="getter-readclouddisplaytypedefault">readCloudDisplayTypeDefault</span>                     | `DisplayTypeDefaultControl`                                                     |
 | <span id="getter-readconnectionsdown">readConnectionsDown</span>                                     | `boolean`                                                                       |
 | <span id="getter-readconnectionsdowndisplaytypedefault">readConnectionsDownDisplayTypeDefault</span> | `DisplayTypeDefaultControl`                                                     |
 | <span id="getter-showsashimiarcs">showSashimiArcs</span>                                             | `boolean`                                                                       |
-| <span id="getter-sashimiarcsmode">sashimiArcsMode</span>                                             | `SashimiArcsMode`                                                               |
-| <span id="getter-sashimidowndisplaytypedefault">sashimiDownDisplayTypeDefault</span>                 | `DisplayTypeDefaultControl`                                                     |
-| <span id="getter-sashimiautodisplaytypedefault">sashimiAutoDisplayTypeDefault</span>                 | `DisplayTypeDefaultControl`                                                     |
+| <span id="getter-sashimiarcsmode">sashimiArcsMode</span>                                             | `"auto" \| "up" \| "down"`                                                      |
 | <span id="getter-minsashimiscore">minSashimiScore</span>                                             | `number`                                                                        |
 | <span id="getter-sashimiarcsheight">sashimiArcsHeight</span>                                         | `number`                                                                        |
 | <span id="getter-readconnectionsheight">readConnectionsHeight</span>                                 | `number`                                                                        |
@@ -1267,6 +1264,19 @@ type fittedFeatureHeight = number
 | <span id="getter-featureundermouse">featureUnderMouse</span>                                         | `SimpleFeature \| undefined`                                                    |
 
 **Methods**
+
+#### method: sashimiArcsModeDisplayTypeDefault
+
+"make this arc placement the default for all tracks" control (pin), one per
+option of the radio group. A method rather than a getter per value: the options
+share one slot and differ only in the on-value, so naming each combination was
+what made the base value 'up' look unpinnable.
+
+```ts
+type sashimiArcsModeDisplayTypeDefault = (
+  mode: 'auto' | 'up' | 'down',
+) => DisplayTypeDefaultControl
+```
 
 #### method: isGroupCollapsed
 
@@ -1478,7 +1488,7 @@ autoruns then keep `featureHeight` (fit) or `height` (grow) sized as the
 display/data change.
 
 ```ts
-type setHeightMode = (mode: HeightMode) => void
+type setHeightMode = (mode: 'fixed' | 'grow' | 'fit') => void
 ```
 
 #### action: setFittedHeightPx
@@ -1564,7 +1574,7 @@ type resizeHeight = (distance: number) => number
 | <span id="action-setmaxscore">setMaxScore</span>                                   | `(val?: number \| undefined) => void`                                                                                                                                                  |
 | <span id="action-setmaxheight">setMaxHeight</span>                                 | `(height?: number \| undefined) => void`                                                                                                                                               |
 | <span id="action-setshowsashimiarcs">setShowSashimiArcs</span>                     | `(show: boolean) => void`                                                                                                                                                              |
-| <span id="action-setreadconnections">setReadConnections</span>                     | `(mode: ReadConnectionsMode) => void`                                                                                                                                                  |
+| <span id="action-setreadconnections">setReadConnections</span>                     | `(mode: "off" \| "arc" \| "cloud") => void`                                                                                                                                            |
 | <span id="action-setreadconnectionsdown">setReadConnectionsDown</span>             | `(down: boolean) => void`                                                                                                                                                              |
 | <span id="action-setshowcoverage">setShowCoverage</span>                           | `(show: boolean) => void`                                                                                                                                                              |
 | <span id="action-setshowpileup">setShowPileup</span>                               | `(show: boolean) => void`                                                                                                                                                              |
@@ -1572,7 +1582,7 @@ type resizeHeight = (distance: number) => number
 | <span id="action-setreadconnectionsheight">setReadConnectionsHeight</span>         | `(height: number) => void`                                                                                                                                                             |
 | <span id="action-setsashimiarcsheight">setSashimiArcsHeight</span>                 | `(height: number) => void`                                                                                                                                                             |
 | <span id="action-setminsashimiscore">setMinSashimiScore</span>                     | `(score: number) => void`                                                                                                                                                              |
-| <span id="action-setsashimiarcsmode">setSashimiArcsMode</span>                     | `(mode: SashimiArcsMode) => void`                                                                                                                                                      |
+| <span id="action-setsashimiarcsmode">setSashimiArcsMode</span>                     | `(mode: "auto" \| "up" \| "down") => void`                                                                                                                                             |
 | <span id="action-setshowsashimilabels">setShowSashimiLabels</span>                 | `(show: boolean) => void`                                                                                                                                                              |
 | <span id="action-setreadconnectionslinewidth">setReadConnectionsLineWidth</span>   | `(width: number) => void`                                                                                                                                                              |
 | <span id="action-setdrawinter">setDrawInter</span>                                 | `(draw: boolean) => void`                                                                                                                                                              |
@@ -1586,7 +1596,7 @@ type resizeHeight = (distance: number) => number
 | <span id="action-setshowinterbaseindicators">setShowInterbaseIndicators</span>     | `(show: boolean) => void`                                                                                                                                                              |
 | <span id="action-setflipstrandlongreadchains">setFlipStrandLongReadChains</span>   | `(flag: boolean) => void`                                                                                                                                                              |
 | <span id="action-setcolorsupplementarychains">setColorSupplementaryChains</span>   | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setlinkedreads">setLinkedReads</span>                             | `(mode: LinkedReadsMode) => void`                                                                                                                                                      |
+| <span id="action-setlinkedreads">setLinkedReads</span>                             | `(mode: "normal" \| "off") => void`                                                                                                                                                    |
 | <span id="action-updatevisiblemodifications">updateVisibleModifications</span>     | `(uniqueModifications: string[]) => void`                                                                                                                                              |
 | <span id="action-setmodificationsready">setModificationsReady</span>               | `(flag: boolean) => void`                                                                                                                                                              |
 | <span id="action-setfeatureidundermouse">setFeatureIdUnderMouse</span>             | `(feature?: string \| undefined) => void`                                                                                                                                              |
@@ -1768,7 +1778,7 @@ slot: getConf walks the customized-track -> session-default -> `fixed` cascade
 and never returns the `inherit` sentinel.
 
 ```ts
-type heightMode = HeightMode
+type heightMode = 'fixed' | 'grow' | 'fit'
 ```
 
 #### getter: fitTargetHeight

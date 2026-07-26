@@ -160,15 +160,14 @@ _promotable_
 
 Track-sizing strategy — how the track responds when there are more reads than
 fit (shared vocabulary with the canvas feature display, exposed in the "Track
-sizing" menu). `inherit` (the default) follows the session-wide default for this
+sizing" menu). Unset (the default) follows the session-wide default for this
 display type, falling back to `fixed`; `fixed` keeps `featureHeight` and
 scrolls; `grow` expands the track to show every read at the configured height;
 `fit` squeezes reads so every uncollapsed group fills the display without
 scrolling. Orthogonal to the per-read size set by `featureHeight`
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `fixed`, `grow`, `fit`) · **Default:** `'inherit'` · **Resolves to:**
-`'fixed'` · _promotable_
+**Type:** `maybeStringEnum` (one of `fixed`, `grow`, `fit`) · **Default:**
+`undefined` · **Resolves to:** `'fixed'` · _promotable_
 
 #### slot: readConnectionsLineWidth
 
@@ -294,9 +293,8 @@ force it on or off regardless of mode.
 
 Linked-read (barcode-chain) layout mode
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `normal`) · **Default:** `'inherit'` · **Resolves to:**
-`'off'` · _promotable_
+**Type:** `maybeStringEnum` (one of `off`, `normal`) · **Default:** `undefined`
+· **Resolves to:** `'off'` · _promotable_
 
 #### slot: showBezierConnections
 
@@ -394,9 +392,8 @@ How to color read-connection arcs
 
 Read-connection rendering mode (mate pairs + split reads)
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `arc`, `cloud`) · **Default:** `'inherit'` · **Resolves to:**
-`'off'` · _promotable_
+**Type:** `maybeStringEnum` (one of `off`, `arc`, `cloud`) · **Default:**
+`undefined` · **Resolves to:** `'off'` · _promotable_
 
 #### slot: readConnectionsDown
 
@@ -419,9 +416,8 @@ Draw sashimi (splice-junction) arcs
 
 Sashimi junction-arc placement
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `up`, `down`, `auto`) · **Default:** `'inherit'` · **Resolves to:**
-`'up'` · _promotable_
+**Type:** `maybeStringEnum` (one of `up`, `down`, `auto`) · **Default:**
+`undefined` · **Resolves to:** `'up'` · _promotable_
 
 #### slot: minSashimiScore
 

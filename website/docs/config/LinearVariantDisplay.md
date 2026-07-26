@@ -82,16 +82,15 @@ limit fixed or fit mode, where taller content scrolls)
 
 Track-sizing strategy — how the track responds when there are more features than
 fit (shared vocabulary with the alignments display, exposed in the "Track
-sizing" menu). `inherit` (the default) follows the session-wide default for this
+sizing" menu). Unset (the default) follows the session-wide default for this
 display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height,
 `grow` expands the track to show all features, `fit` squeezes features to fill
 the current height. Orthogonal to the per-feature size set by `displayMode`.
 Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit)
 settings.
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `fixed`, `grow`, `fit`) · **Default:** `'inherit'` · **Resolves to:**
-`'fixed'` · _promotable_
+**Type:** `maybeStringEnum` (one of `fixed`, `grow`, `fit`) · **Default:**
+`undefined` · **Resolves to:** `'fixed'` · _promotable_
 
 #### slot: showLabels
 
@@ -154,15 +153,15 @@ height in pixels of the main body of each feature
 
 #### slot: displayMode
 
-Feature height preset. `inherit` (the default) follows the session-wide default
-for this display type, falling back to `normal`;
-`normal`/`compact`/`superCompact` customize the track explicitly (including
-customizing `normal` back over a `compact` session default); `collapsed` packs
-every feature onto a single row with all labels hidden
+Feature height preset. Unset (the default) follows the session-wide default for
+this display type, falling back to `normal`; `normal`/`compact`/`superCompact`
+customize the track explicitly (including customizing `normal` back over a
+`compact` session default); `collapsed` packs every feature onto a single row
+with all labels hidden
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `normal`, `compact`, `superCompact`, `collapsed`) · **Default:**
-`'inherit'` · **Resolves to:** `'normal'` · _promotable_
+**Type:** `maybeStringEnum` (one of `normal`, `compact`, `superCompact`,
+`collapsed`) · **Default:** `undefined` · **Resolves to:** `'normal'` ·
+_promotable_
 
 #### slot: geneGlyphMode
 
@@ -174,13 +173,12 @@ transcripts, "longestCoding" shows only the longest coding transcript
 
 #### slot: subfeatureLabels
 
-subfeature label display mode. `inherit` (the default) follows the session-wide
+subfeature label display mode. Unset (the default) follows the session-wide
 default for this display type, falling back to `none`; `none`/`below`/`overlay`
 customize the track explicitly
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `none`, `below`, `overlay`) · **Default:** `'inherit'` · **Resolves
-to:** `'none'` · _promotable_
+**Type:** `maybeStringEnum` (one of `none`, `below`, `overlay`) · **Default:**
+`undefined` · **Resolves to:** `'none'` · _promotable_
 
 #### slot: displayDirectionalChevrons
 

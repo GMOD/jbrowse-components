@@ -85,7 +85,7 @@ test('a deep observable store would hand out a value postMessage rejects', () =>
   session.setDisplayTypeDefault('CloneDisplay', 'colorBy', {
     type: 'insertSizeAndOrientation',
   })
-  expect(() => structuredClone(resolveConf(session.display, 'colorBy'))).toThrow(
-    /could not be cloned/,
-  )
+  expect(() =>
+    structuredClone(resolveConf(session.display, 'colorBy')),
+  ).toThrow(/could not be cloned/)
 })

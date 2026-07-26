@@ -5,22 +5,23 @@
 A `promotable` slot resolves through a live read-time CSS-cascade (track value →
 session-wide promoted default → base). **`resolveConf(self, 'x')` is what walks
 it** — one named call, at the ~15 display getters that own a promotable slot.
-`getConf` does NOT: it stays exactly `readConfObject(model.configuration, path)`.
+`getConf` does NOT: it stays exactly
+`readConfObject(model.configuration, path)`.
 
 That split is deliberate and was re-made after trying the other way. `getConf`
 briefly auto-detected promotable slots and cascaded them, so flipping
 `promotable: true` silently changed every existing read. It cost a `getType` on
 all ~1300 `getConf` calls in the repo (≈60% overhead over `readConfObject`,
-measured) to serve ~15, made resolution invisible at the call site, made `getConf`
-throw on a detached node for some slots and not others, and — decisively — broke
-the one thing every reader already knew about `getConf`. Resolution is not free
-and not universal, so it is named where it happens.
+measured) to serve ~15, made resolution invisible at the call site, made
+`getConf` throw on a detached node for some slots and not others, and —
+decisively — broke the one thing every reader already knew about `getConf`.
+Resolution is not free and not universal, so it is named where it happens.
 
-The forgotten-resolution failure mode is caught by the **type system** instead of
-by magic: a promotable slot is always a `maybe*` type, so a raw `getConf` read is
-`T | undefined` while `resolveConf` is `T`. Hand the raw one to a consumer
-expecting a real value and tsc points at the call. (Don't paper over it with
-`?? someDefault` — that silently bypasses the cascade.)
+The forgotten-resolution failure mode is caught by the **type system** instead
+of by magic: a promotable slot is always a `maybe*` type, so a raw `getConf`
+read is `T | undefined` while `resolveConf` is `T`. Hand the raw one to a
+consumer expecting a real value and tsc points at the call. (Don't paper over it
+with `?? someDefault` — that silently bypasses the cascade.)
 
 **The inherit sentinel is always `undefined`.** A promotable slot must be a
 `maybe*` type (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/
@@ -39,14 +40,14 @@ that serializes a display's config for elsewhere must flatten** — the worker v
 `resolvePromotableConfigSnapshot(display)`; the unguarded `rawConfSnapshot` is
 off the barrel and exists only for the resolver itself), and
 `getShareableSessionSnapshot` fuses the snapshot and the bake so the pair can't
-be split. A resolved value is handed out **by
-reference** from that store, so it must stay structured-cloneable:
-`preferencesOverrides` is a `deep: false` `observable.map` because a MobX Proxy
-makes `worker.postMessage` throw `DataCloneError`
-(`promotedValueCloneable.test.ts`). Layering: `promotableResolve.ts` (resolver)
-← `getConf.ts` (reader) ← `promotableDefaults.ts` (control builders +
-share/worker helpers + `openPromotableDisplays`, the one open-display walk).
-Full model + the `ignorePromotedDefaults` opt-out:
+be split. A resolved value is handed out **by reference** from that store, so it
+must stay structured-cloneable: `preferencesOverrides` is a `deep: false`
+`observable.map` because a MobX Proxy makes `worker.postMessage` throw
+`DataCloneError` (`promotedValueCloneable.test.ts`). Layering:
+`promotableResolve.ts` (resolver) ← `getConf.ts` (reader) ←
+`promotableDefaults.ts` (control builders + share/worker helpers +
+`openPromotableDisplays`, the one open-display walk). Full model + the
+`ignorePromotedDefaults` opt-out:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
 ## A config snapshot is transport, not a value-read API
