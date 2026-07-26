@@ -659,7 +659,7 @@ tabix -p bed ecoli_pggb.maf.bed.gz
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "MafTabixAdapter",
-    "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
+    "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
     "uri": "ecoli_pggb.maf.bed.gz"
   }
 }

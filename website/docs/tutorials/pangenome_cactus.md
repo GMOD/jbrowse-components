@@ -261,7 +261,7 @@ writes one line per block, carrying that block's rows, which a
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "MafTabixAdapter",
-    "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
+    "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
     "uri": "ecoli_cactus.maf.bed.gz"
   }
 }
