@@ -65,500 +65,518 @@ export function isBlockCovered(
  * `fetchRegions` / `loadedRegions` machinery.
  */
 export default function MultiRegionDisplayMixin() {
-  return types
-    .compose(
-      'MultiRegionDisplayMixin',
-      RegionTooLargeMixin(),
-      RenderLifecycleMixin(),
-      FetchMixin(),
-      types.model({}),
-    )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * regions whose data has been fetched and committed, keyed by
-       * displayedRegionIndex; populated only after the fetch work callback
-       * returns
-       */
-      loadedRegions: observable.map<number, Region>(),
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The render-lifecycle precondition for every LGV display (overrides
-       * `RenderLifecycleMixin`'s default-true hook): don't run the upload/render
-       * callbacks until the view is measured. Before that, `renderBlocks` →
-       * `visibleRegions` → `view.width` throws by design, and the render
-       * autorun's catch would show that as a GPU render-error banner. Gating here
-       * — once, for all of them — is what lets a display's `renderState` be a
-       * plain resolved getter and its render callback gate only on its own data.
-       * The render-lifecycle twin of `autorunOnReadyView`.
-       */
-      get canRender() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return view.initialized
-      },
+  return (
+    types
+      .compose(
+        'MultiRegionDisplayMixin',
+        RegionTooLargeMixin(),
+        RenderLifecycleMixin(),
+        FetchMixin(),
+        types.model({}),
+      )
+      .volatile(() => ({
+        /**
+         * #volatile
+         * regions whose data has been fetched and committed, keyed by
+         * displayedRegionIndex; populated only after the fetch work callback
+         * returns
+         */
+        loadedRegions: observable.map<number, Region>(),
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The render-lifecycle precondition for every LGV display (overrides
+         * `RenderLifecycleMixin`'s default-true hook): don't run the upload/render
+         * callbacks until the view is measured. Before that, `renderBlocks` →
+         * `visibleRegions` → `view.width` throws by design, and the render
+         * autorun's catch would show that as a GPU render-error banner. Gating here
+         * — once, for all of them — is what lets a display's `renderState` be a
+         * plain resolved getter and its render callback gate only on its own data.
+         * The render-lifecycle twin of `autorunOnReadyView`.
+         */
+        get canRender() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return view.initialized
+        },
 
-      /**
-       * #getter
-       * true once the canvas has painted and no fetch is in flight
-       */
-      get isReady() {
-        return self.canvasDrawn && !self.isLoading
-      },
+        /**
+         * #getter
+         * true once the canvas has painted and no fetch is in flight
+         */
+        get isReady() {
+          return self.canvasDrawn && !self.isLoading
+        },
 
-      /**
-       * #getter
-       * true when every visible block lies within an already-fetched region —
-       * i.e. the viewport shows data we actually loaded, not the stale fringe
-       * left after a zoom-out/pan. Drives the loading overlay through the
-       * pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact
-       * and for the resolution-staleness gap.
-       */
-      get viewportWithinLoadedData() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return view.initialized
-          ? view.visibleRegions.every(block =>
-              isBlockCovered(
-                self.loadedRegions.get(block.displayedRegionIndex),
-                block,
-              ),
-            )
-          : false
-      },
-
-      /**
-       * #getter
-       * This family's answer to the shared freshness question every display
-       * foundation must answer (`dataCurrent`): the held data corresponds to
-       * what is on screen right now. Here that is spatial — every visible block
-       * lies within a fetched region — plus `loadedRegions.size`, which rules
-       * out the vacuously-true empty viewport. Regions stream in one at a time,
-       * so this (not "the first datum arrived") is what keeps a
-       * multi-region/whole-genome export complete.
-       *
-       * Distinct from `viewportWithinLoadedData`, which is the raw coverage
-       * predicate the fetch autorun and the loading overlay use.
-       */
-      get dataCurrent(): boolean {
-        return this.viewportWithinLoadedData && self.loadedRegions.size > 0
-      },
-
-      /**
-       * #getter
-       * true once an off-screen (SVG) export can safely read this display's
-       * data. Policy single-sourced in `computeSvgReady`; this family supplies
-       * only its `dataCurrent` predicate. Off-screen renderers gate on it via
-       * `awaitSvgReady(model)` instead of inlining the condition.
-       */
-      get svgReady(): boolean {
-        return computeSvgReady(
-          {
-            error: self.error,
-            regionTooLarge: self.regionTooLarge,
-            extraTerminal: this.svgReadyExtraTerminal,
-          },
-          () => this.dataCurrent,
-        )
-      },
-
-      /**
-       * #getter
-       * Overridable hook (default false): a subclass returns true to mark an
-       * extra terminal state where off-screen export can proceed with no loaded
-       * data. Sequence sets it when zoomed past base resolution — it renders a
-       * static "zoom in" message and fetches nothing, so `svgReady` would
-       * otherwise never resolve.
-       */
-      get svgReadyExtraTerminal(): boolean {
-        return false
-      },
-
-      /**
-       * #getter
-       * Overridable hook (default false): whether a searchable feature layout
-       * currently exists. Any display defining a feature-lookup method
-       * (`searchFeatureByID`, `getFeatureById`) must override it, so callers can
-       * tell "laid out, but off-display" from "no layout exists yet" — a
-       * distinction only the display can make. See BaseLinearDisplay/CLAUDE.md,
-       * "The three readiness axes".
-       */
-      get layoutReady(): boolean {
-        // fail-safe: forgetting the override drops overlays (visibly absent)
-        // rather than pinning them to one edge (a plausible lie)
-        return false
-      },
-
-      /**
-       * #getter
-       * Shared cached view for every LGV-based GPU display. A single
-       * displayedRegion may produce multiple render blocks (shared GPU
-       * buffer, different scissor clips on screen). Plugins that want to
-       * suppress rendering in certain states (e.g. no domain yet) can
-       * override this getter to return [] — the autorun lifecycle will
-       * then issue an empty-blocks render that clears the canvas.
-       */
-      get renderBlocks() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return buildRenderBlocks(view.visibleRegions)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The display's mutually-exclusive visual state, precedence single-sourced
-       * in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or
-       * stale data (viewport past loaded) is still on screen through the
-       * pre-refetch debounce.
-       */
-      get displayPhase(): DisplayPhase {
-        // fetchCanceled keeps the overlay up (showing its retry affordance)
-        // after the user canceled mid-load
-        return computeDisplayPhase(
-          self,
-          () =>
-            !self.isReady ||
-            !self.viewportWithinLoadedData ||
-            self.fetchCanceled,
-        )
-      },
-
-      /**
-       * #getter
-       * The RPC cache key watched by `SettingsInvalidate` — the subclass's
-       * `rpcProps()` payload serialized to a string. `serializeRpcProps` owns
-       * the why; `installGlobalFetchAutorun` keys its global-family counterpart
-       * on the same function, so the two families invalidate on the same axis.
-       */
-      get rpcPropsCacheKey(): string {
-        return serializeRpcProps(self)
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * Action wrapper so callers after async boundaries stay in MST strict
-       * mode.
-       */
-      setLoadedRegion(displayedRegionIndex: number, region: Region) {
-        self.loadedRegions.set(displayedRegionIndex, region)
-      },
-
-      /**
-       * #action
-       * no-op base — subclasses override to clear rpcDataMap etc.
-       */
-      clearDisplaySpecificData() {},
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * full reset: cancels fetch, clears error, loadedRegions,
-       * display-specific data, and the canvas-drawn flag. The too-large gate is
-       * derived (a pure function of the cached estimate × viewport), so it needs
-       * no explicit clear here — it self-releases when the viewport changes.
-       */
-      clearAllRpcData() {
-        self.cancelFetch()
-        self.setError(undefined)
-        self.loadedRegions.clear()
-        self.clearDisplaySpecificData()
-        self.resetCanvasDrawn()
-      },
-
-      /**
-       * #action
-       * Default reload: full reset. Subclasses with extra teardown can
-       * override (and chain to `clearAllRpcData` directly if needed).
-       */
-      reload() {
-        this.clearAllRpcData()
-      },
-
-      /**
-       * #action
-       * lighter reset: cancels fetch and clears loadedRegions, leaving error
-       * and regionTooLarge intact
-       */
-      invalidateLoadedRegions() {
-        self.cancelFetch()
-        self.loadedRegions.clear()
-      },
-    }))
-    .actions(_self => ({
-      /**
-       * #action
-       * Overridable hook (no-op base): override to call
-       * `this.fetchRegions(needed, async ctx => { ... })`.
-       */
-      fetchNeeded(_needed: { region: Region; displayedRegionIndex: number }[]) {
-        // no-op base
-      },
-
-      /**
-       * #action
-       * Overridable hook: return `false` to force re-fetch at the current
-       * zoom (wiggle uses this for zoom-level changes).
-       */
-      isCacheValid(_displayedRegionIndex: number): boolean {
-        return true
-      },
-
-      /**
-       * #action
-       * Overridable hook: return config to enable byte-estimate gating
-       * before fetch.
-       */
-      getByteEstimateConfig(): ByteEstimateConfig | null {
-        return null
-      },
-
-      /**
-       * #action
-       * Overridable hook (no-op base): called when `regionTooLarge` transitions
-       * to true. Displays with transient hover/tooltip state override it to clear
-       * that state — the too-large banner replaces the rendered content, so a
-       * lingering hover would otherwise pin to a now-hidden feature. Wired to the
-       * `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.
-       */
-      onRegionTooLarge() {},
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Derived opt-in for the region-too-large gate: a display that declares a
-       * pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two
-       * are one decision, so they can't desync (this replaces the old dev-time
-       * "config set but gate off" console.error). Displays that capture the
-       * estimate through a custom fetch (LD, arc) or fold the byte check into
-       * their feature RPC (canvas) leave `getByteEstimateConfig` null and
-       * contribute through `gateFoldedIntoFetch`, which this ORs in — so a gate
-       * mixin's opt-in survives regardless of which side of `.compose()` it
-       * lands on.
-       *
-       * Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp`
-       * (which throws pre-init), and this getter is read from menu code before
-       * first paint. Pre-init the banner never shows anyway, so `false` is right.
-       */
-      get derivedRegionTooLargeEnabled() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return (
-          self.gateFoldedIntoFetch ||
-          (view.initialized && self.getByteEstimateConfig() !== null)
-        )
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * Run a per-region fetch with byte-estimate gating. Marks regions as
-       * loaded only AFTER the work callback has populated display-specific
-       * data (rpcDataMap, cellData, etc) so the GPU upload autorun sees
-       * committed data when it observes loadedRegions.
-       */
-      async fetchRegions(
-        needed: { region: Region; displayedRegionIndex: number }[],
-        work: (ctx: FetchContext) => Promise<void>,
-      ) {
-        await self.runFetch(async ctx => {
-          const byteEstimateConfig = self.getByteEstimateConfig()
-          if (byteEstimateConfig) {
-            const session = getSession(self)
-            const estimate = await checkByteEstimate(
-              session.rpcManager,
-              getRpcSessionId(self),
-              needed.map(r => r.region),
-              byteEstimateConfig,
-              ctx,
-            )
-            if (ctx.isStale()) {
-              return
-            }
-            if (estimate) {
-              // anchor to the visibleBp captured with the config, before the
-              // await — reading it now would pin the estimate to whatever span
-              // a mid-fetch zoom left on screen
-              self.setByteEstimate(estimate, byteEstimateConfig.visibleBp)
-              // The derived regionTooLarge getter reflects the just-captured
-              // estimate (setByteEstimate recorded the current viewport as
-              // its capture span), so short-circuit the download when it's over
-              // budget.
-              if (self.regionTooLarge) {
-                return
-              }
-            }
-          }
-          await work(ctx)
-          if (!ctx.isStale()) {
-            for (const { displayedRegionIndex, region } of needed) {
-              self.setLoadedRegion(displayedRegionIndex, region)
-            }
-          }
-        })
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * installs the five fetch-lifecycle autoruns (DisplayedRegionsChange,
-       * FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange,
-       * ClearHoverOnRegionTooLarge)
-       */
-      afterAttach() {
-        // Clear loaded data whenever the displayed-regions list
-        // changes. `displayedRegions` is a frozen array on the LGV
-        // model, so any mutation replaces the reference and the
-        // autorun re-fires on the bare read below. Fires once at
-        // mount as a harmless no-op (nothing loaded yet).
-        //
-        // The cached byte estimate goes with it — and only here.
-        // displayedRegionIndex is reused across chromosomes, so a stale
-        // estimate would gate the new region against the previous
-        // chromosome's numbers and, since FetchVisibleRegions skips while
-        // regionTooLarge holds, wedge the banner with no refetch to correct
-        // it. clearAllRpcData deliberately leaves it alone (no banner flicker
-        // on an ordinary viewport-change clear), which is why the drop lives
-        // in this autorun rather than in that action.
-        autorunOnReadyView(
-          self,
-          view => {
-            void view.displayedRegions
-            self.clearAllRpcData()
-            self.clearByteEstimate()
-          },
-          { name: 'DisplayedRegionsChange' },
-        )
-
-        // Autorun: fetch data when the visible viewport isn't covered
-        // by loaded data. Fetches with an explicit buffer for smooth
-        // scrolling without blank gaps.
-        autorunOnReadyView(
-          self,
-          view => {
-            void self.fetchGeneration
-            if (self.error || self.regionTooLarge || self.fetchCanceled) {
-              return
-            }
-
-            // perf guard: isLoading flip would re-fire this autorun mid-fetch;
-            // fetchGeneration (bumped after fetch) is the real re-trigger.
-            if (untracked(() => self.isLoading)) {
-              return
-            }
-
-            const { assemblyManager } = getSession(self)
-            const track = getContainingTrack(self)
-            // Skip fetching while the track is minimized (hidden). `minimized`
-            // is exactly what the display's `isMinimized` getter resolves to,
-            // and it's a tracked observable, so un-minimizing re-fires this
-            // autorun and the fetch resumes. Reuses the track already resolved
-            // for the assembly-name check below — no extra getContainingTrack.
-            if (track.minimized) {
-              return
-            }
-            const trackAssemblyNames = getTrackAssemblyNames(track)
-            const visibleRegions = view.visibleRegions
-            for (const block of visibleRegions) {
-              const regionAsm = block.assemblyName
-              if (
-                !trackAssemblyNames.includes(regionAsm) &&
-                !trackAssemblyNames.some(name =>
-                  assemblyManager.get(name)?.hasName(regionAsm),
-                )
-              ) {
-                self.setError(
-                  new Error(
-                    `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
-                  ),
-                )
-                return
-              }
-            }
-
-            const bufferedByIndex = new Map(
-              view.bufferedVisibleRegions.map(b => [b.displayedRegionIndex, b]),
-            )
-            const needed: {
-              region: Region
-              displayedRegionIndex: number
-            }[] = []
-            for (const block of visibleRegions) {
-              // perf guard: loadedRegions population would re-fire this autorun;
-              // fetchGeneration bump after setLoadedRegion is the real signal.
-              const loaded = untracked(() =>
-                self.loadedRegions.get(block.displayedRegionIndex),
+        /**
+         * #getter
+         * true when every visible block lies within an already-fetched region —
+         * i.e. the viewport shows data we actually loaded, not the stale fringe
+         * left after a zoom-out/pan. Drives the loading overlay through the
+         * pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact
+         * and for the resolution-staleness gap.
+         */
+        get viewportWithinLoadedData() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return view.initialized
+            ? view.visibleRegions.every(block =>
+                isBlockCovered(
+                  self.loadedRegions.get(block.displayedRegionIndex),
+                  block,
+                ),
               )
-              if (
-                isBlockCovered(loaded, block) &&
-                self.isCacheValid(block.displayedRegionIndex)
-              ) {
-                continue
-              }
-              const buffered = bufferedByIndex.get(block.displayedRegionIndex)
-              if (buffered) {
-                needed.push(buffered)
-              }
-            }
-            if (needed.length > 0) {
-              self.fetchNeeded(needed)
-            }
-          },
-          {
-            name: 'FetchVisibleRegions',
-            delay: 600,
-          },
-        )
+            : false
+        },
 
-        // Re-fetch when the RPC payload changes. The cache key is what
-        // rpcProps() *returns*, not what building it reads — see the
-        // `rpcPropsCacheKey` getter.
-        if ((self as { rpcProps?: () => unknown }).rpcProps) {
-          const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
+        /**
+         * #getter
+         * This family's answer to the shared freshness question every display
+         * foundation must answer (`dataCurrent`): the held data corresponds to
+         * what is on screen right now. Here that is spatial — every visible block
+         * lies within a fetched region — plus `loadedRegions.size`, which rules
+         * out the vacuously-true empty viewport. Regions stream in one at a time,
+         * so this (not "the first datum arrived") is what keeps a
+         * multi-region/whole-genome export complete.
+         *
+         * Distinct from `viewportWithinLoadedData`, which is the raw coverage
+         * predicate the fetch autorun and the loading overlay use.
+         */
+        get dataCurrent(): boolean {
+          return this.viewportWithinLoadedData && self.loadedRegions.size > 0
+        },
+
+        /**
+         * #getter
+         * true once an off-screen (SVG) export can safely read this display's
+         * data. Policy single-sourced in `computeSvgReady`; this family supplies
+         * only its `dataCurrent` predicate. Off-screen renderers gate on it via
+         * `awaitSvgReady(model)` instead of inlining the condition.
+         */
+        get svgReady(): boolean {
+          return computeSvgReady(
+            {
+              error: self.error,
+              regionTooLarge: self.regionTooLarge,
+              extraTerminal: this.svgReadyExtraTerminal,
+            },
+            () => this.dataCurrent,
+          )
+        },
+
+        /**
+         * #getter
+         * Overridable hook (default false): a subclass returns true to mark an
+         * extra terminal state where off-screen export can proceed with no loaded
+         * data. Sequence sets it when zoomed past base resolution — it renders a
+         * static "zoom in" message and fetches nothing, so `svgReady` would
+         * otherwise never resolve.
+         */
+        get svgReadyExtraTerminal(): boolean {
+          return false
+        },
+
+        /**
+         * #getter
+         * Overridable hook (default false): whether a searchable feature layout
+         * currently exists. Any display defining a feature-lookup method
+         * (`searchFeatureByID`, `getFeatureById`) must override it, so callers can
+         * tell "laid out, but off-display" from "no layout exists yet" — a
+         * distinction only the display can make. See BaseLinearDisplay/CLAUDE.md,
+         * "The three readiness axes".
+         */
+        get layoutReady(): boolean {
+          // fail-safe: forgetting the override drops overlays (visibly absent)
+          // rather than pinning them to one edge (a plausible lie)
+          return false
+        },
+
+        /**
+         * #getter
+         * Shared cached view for every LGV-based GPU display. A single
+         * displayedRegion may produce multiple render blocks (shared GPU
+         * buffer, different scissor clips on screen). Plugins that want to
+         * suppress rendering in certain states (e.g. no domain yet) can
+         * override this getter to return [] — the autorun lifecycle will
+         * then issue an empty-blocks render that clears the canvas.
+         */
+        get renderBlocks() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return buildRenderBlocks(view.visibleRegions)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The display's mutually-exclusive visual state, precedence single-sourced
+         * in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or
+         * stale data (viewport past loaded) is still on screen through the
+         * pre-refetch debounce.
+         */
+        get displayPhase(): DisplayPhase {
+          // fetchCanceled keeps the overlay up (showing its retry affordance)
+          // after the user canceled mid-load
+          return computeDisplayPhase(
+            self,
+            () =>
+              !self.isReady ||
+              !self.viewportWithinLoadedData ||
+              self.fetchCanceled,
+          )
+        },
+
+        /**
+         * #getter
+         * The RPC cache key watched by `SettingsInvalidate` — the subclass's
+         * `rpcProps()` payload serialized to a string. `serializeRpcProps` owns
+         * the why; `installGlobalFetchAutorun` keys its global-family counterpart
+         * on the same function, so the two families invalidate on the same axis.
+         */
+        get rpcPropsCacheKey(): string {
+          return serializeRpcProps(self)
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Action wrapper so callers after async boundaries stay in MST strict
+         * mode.
+         */
+        setLoadedRegion(displayedRegionIndex: number, region: Region) {
+          self.loadedRegions.set(displayedRegionIndex, region)
+        },
+
+        /**
+         * #action
+         * no-op base — subclasses override to clear rpcDataMap etc.
+         */
+        clearDisplaySpecificData() {},
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * full reset: cancels fetch, clears error, loadedRegions,
+         * display-specific data, and the canvas-drawn flag. The too-large gate is
+         * derived (a pure function of the cached estimate × viewport), so it needs
+         * no explicit clear here — it self-releases when the viewport changes.
+         */
+        clearAllRpcData() {
+          self.cancelFetch()
+          self.setError(undefined)
+          self.loadedRegions.clear()
+          self.clearDisplaySpecificData()
+          self.resetCanvasDrawn()
+        },
+
+        /**
+         * #action
+         * Default reload: full reset. Subclasses with extra teardown can
+         * override (and chain to `clearAllRpcData` directly if needed).
+         */
+        reload() {
+          this.clearAllRpcData()
+        },
+
+        /**
+         * #action
+         * lighter reset: cancels fetch and clears loadedRegions, leaving error
+         * and regionTooLarge intact
+         */
+        invalidateLoadedRegions() {
+          self.cancelFetch()
+          self.loadedRegions.clear()
+        },
+      }))
+      .actions(_self => ({
+        /**
+         * #action
+         * Overridable hook (no-op base): override to call
+         * `this.fetchRegions(needed, async ctx => { ... })`.
+         */
+        fetchNeeded(
+          _needed: { region: Region; displayedRegionIndex: number }[],
+        ) {
+          // no-op base
+        },
+
+        /**
+         * #action
+         * Overridable hook (no-op base): called when `regionTooLarge` transitions
+         * to true. Displays with transient hover/tooltip state override it to clear
+         * that state — the too-large banner replaces the rendered content, so a
+         * lingering hover would otherwise pin to a now-hidden feature. Wired to the
+         * `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.
+         */
+        onRegionTooLarge() {},
+      }))
+      // Both hooks are pure reads of view/display state, and both are read from
+      // computeds (`derivedRegionTooLargeEnabled`) and autoruns
+      // (`FetchVisibleRegions`). They are **views, not actions**, deliberately:
+      // MobX runs an action inside `untracked`, so as actions their `view.bpPerPx`
+      // / `view.visibleBp` / `self.showSummary` reads registered no dependency and
+      // the caller silently kept a stale answer. That worked only by accident —
+      // every caller happened to read some other observable that changed in
+      // lockstep — which made "don't let this be your only dependency" an unwritten
+      // precondition on every override. Overrides must stay views for the same
+      // reason.
+      .views(() => ({
+        /**
+         * #method
+         * Overridable hook: return `false` to force re-fetch at the current
+         * zoom (wiggle uses this for zoom-level changes).
+         */
+        isCacheValid(_displayedRegionIndex: number): boolean {
+          return true
+        },
+
+        /**
+         * #method
+         * Overridable hook: return config to enable byte-estimate gating
+         * before fetch.
+         */
+        getByteEstimateConfig(): ByteEstimateConfig | null {
+          return null
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Derived opt-in for the region-too-large gate: a display that declares a
+         * pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two
+         * are one decision, so they can't desync (this replaces the old dev-time
+         * "config set but gate off" console.error). Displays that capture the
+         * estimate through a custom fetch (LD, arc) or fold the byte check into
+         * their feature RPC (canvas) leave `getByteEstimateConfig` null and
+         * contribute through `gateFoldedIntoFetch`, which this ORs in — so a gate
+         * mixin's opt-in survives regardless of which side of `.compose()` it
+         * lands on.
+         *
+         * Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp`
+         * (which throws pre-init), and this getter is read from menu code before
+         * first paint. Pre-init the banner never shows anyway, so `false` is right.
+         */
+        get derivedRegionTooLargeEnabled() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return (
+            self.gateFoldedIntoFetch ||
+            (view.initialized && self.getByteEstimateConfig() !== null)
+          )
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Run a per-region fetch with byte-estimate gating. Marks regions as
+         * loaded only AFTER the work callback has populated display-specific
+         * data (rpcDataMap, cellData, etc) so the GPU upload autorun sees
+         * committed data when it observes loadedRegions.
+         */
+        async fetchRegions(
+          needed: { region: Region; displayedRegionIndex: number }[],
+          work: (ctx: FetchContext) => Promise<void>,
+        ) {
+          await self.runFetch(async ctx => {
+            const byteEstimateConfig = self.getByteEstimateConfig()
+            if (byteEstimateConfig) {
+              const session = getSession(self)
+              const estimate = await checkByteEstimate(
+                session.rpcManager,
+                getRpcSessionId(self),
+                needed.map(r => r.region),
+                byteEstimateConfig,
+                ctx,
+              )
+              if (ctx.isStale()) {
+                return
+              }
+              if (estimate) {
+                // anchor to the visibleBp captured with the config, before the
+                // await — reading it now would pin the estimate to whatever span
+                // a mid-fetch zoom left on screen
+                self.setByteEstimate(estimate, byteEstimateConfig.visibleBp)
+                // The derived regionTooLarge getter reflects the just-captured
+                // estimate (setByteEstimate recorded the current viewport as
+                // its capture span), so short-circuit the download when it's over
+                // budget.
+                if (self.regionTooLarge) {
+                  return
+                }
+              }
+            }
+            await work(ctx)
+            if (!ctx.isStale()) {
+              for (const { displayedRegionIndex, region } of needed) {
+                self.setLoadedRegion(displayedRegionIndex, region)
+              }
+            }
+          })
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * installs the five fetch-lifecycle autoruns (DisplayedRegionsChange,
+         * FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange,
+         * ClearHoverOnRegionTooLarge)
+         */
+        afterAttach() {
+          // Clear loaded data whenever the displayed-regions list
+          // changes. `displayedRegions` is a frozen array on the LGV
+          // model, so any mutation replaces the reference and the
+          // autorun re-fires on the bare read below. Fires once at
+          // mount as a harmless no-op (nothing loaded yet).
+          //
+          // The cached byte estimate goes with it — and only here.
+          // displayedRegionIndex is reused across chromosomes, so a stale
+          // estimate would gate the new region against the previous
+          // chromosome's numbers and, since FetchVisibleRegions skips while
+          // regionTooLarge holds, wedge the banner with no refetch to correct
+          // it. clearAllRpcData deliberately leaves it alone (no banner flicker
+          // on an ordinary viewport-change clear), which is why the drop lives
+          // in this autorun rather than in that action.
+          autorunOnReadyView(
+            self,
+            view => {
+              void view.displayedRegions
+              self.clearAllRpcData()
+              self.clearByteEstimate()
+            },
+            { name: 'DisplayedRegionsChange' },
+          )
+
+          // Autorun: fetch data when the visible viewport isn't covered
+          // by loaded data. Fetches with an explicit buffer for smooth
+          // scrolling without blank gaps.
+          autorunOnReadyView(
+            self,
+            view => {
+              void self.fetchGeneration
+              if (self.error || self.regionTooLarge || self.fetchCanceled) {
+                return
+              }
+
+              // perf guard: isLoading flip would re-fire this autorun mid-fetch;
+              // fetchGeneration (bumped after fetch) is the real re-trigger.
+              if (untracked(() => self.isLoading)) {
+                return
+              }
+
+              const { assemblyManager } = getSession(self)
+              const track = getContainingTrack(self)
+              // Skip fetching while the track is minimized (hidden). `minimized`
+              // is exactly what the display's `isMinimized` getter resolves to,
+              // and it's a tracked observable, so un-minimizing re-fires this
+              // autorun and the fetch resumes. Reuses the track already resolved
+              // for the assembly-name check below — no extra getContainingTrack.
+              if (track.minimized) {
+                return
+              }
+              const trackAssemblyNames = getTrackAssemblyNames(track)
+              const visibleRegions = view.visibleRegions
+              for (const block of visibleRegions) {
+                const regionAsm = block.assemblyName
+                if (
+                  !trackAssemblyNames.includes(regionAsm) &&
+                  !trackAssemblyNames.some(name =>
+                    assemblyManager.get(name)?.hasName(regionAsm),
+                  )
+                ) {
+                  self.setError(
+                    new Error(
+                      `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
+                    ),
+                  )
+                  return
+                }
+              }
+
+              const bufferedByIndex = new Map(
+                view.bufferedVisibleRegions.map(b => [
+                  b.displayedRegionIndex,
+                  b,
+                ]),
+              )
+              const needed: {
+                region: Region
+                displayedRegionIndex: number
+              }[] = []
+              for (const block of visibleRegions) {
+                // perf guard: loadedRegions population would re-fire this autorun;
+                // fetchGeneration bump after setLoadedRegion is the real signal.
+                const loaded = untracked(() =>
+                  self.loadedRegions.get(block.displayedRegionIndex),
+                )
+                if (
+                  isBlockCovered(loaded, block) &&
+                  self.isCacheValid(block.displayedRegionIndex)
+                ) {
+                  continue
+                }
+                const buffered = bufferedByIndex.get(block.displayedRegionIndex)
+                if (buffered) {
+                  needed.push(buffered)
+                }
+              }
+              if (needed.length > 0) {
+                self.fetchNeeded(needed)
+              }
+            },
+            {
+              name: 'FetchVisibleRegions',
+              delay: 600,
+            },
+          )
+
+          // Re-fetch when the RPC payload changes. The cache key is what
+          // rpcProps() *returns*, not what building it reads — see the
+          // `rpcPropsCacheKey` getter.
+          if ((self as { rpcProps?: () => unknown }).rpcProps) {
+            const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
+            autorunOnReadyView(
+              self,
+              () => {
+                void self.rpcPropsCacheKey
+                loopGuard()
+                self.clearAllRpcData()
+              },
+              { name: 'SettingsInvalidate' },
+            )
+          }
+
+          // When zoom or viewport position changes while an error or a canceled
+          // fetch is set, clear so the fetch autorun retries. (The too-large gate
+          // is derived — a pure function of the viewport — so it self-releases and
+          // needs no clear here; only the terminal error/cancel states, which are
+          // imperative flags, do.) Reads them untracked so setting them doesn't
+          // trigger this autorun to immediately wipe them — only the viewport read
+          // should fire it.
+          autorunOnReadyView(
+            self,
+            view => {
+              void view.visibleRegions
+              if (untracked(() => self.fetchCanceled || self.error)) {
+                self.clearAllRpcData()
+              }
+            },
+            { name: 'ClearBlockingStateOnViewportChange' },
+          )
+
+          // Clear display-specific transient state (hover/tooltip) whenever
+          // `regionTooLarge` becomes true — the banner replaces the rendered
+          // content, so a lingering hover would pin to a now-hidden feature. Fires
+          // the overridable `onRegionTooLarge` hook on the transition; no-op unless
+          // the display overrides the hook.
           autorunOnReadyView(
             self,
             () => {
-              void self.rpcPropsCacheKey
-              loopGuard()
-              self.clearAllRpcData()
+              if (self.regionTooLarge) {
+                self.onRegionTooLarge()
+              }
             },
-            { name: 'SettingsInvalidate' },
+            { name: 'ClearHoverOnRegionTooLarge' },
           )
-        }
-
-        // When zoom or viewport position changes while an error or a canceled
-        // fetch is set, clear so the fetch autorun retries. (The too-large gate
-        // is derived — a pure function of the viewport — so it self-releases and
-        // needs no clear here; only the terminal error/cancel states, which are
-        // imperative flags, do.) Reads them untracked so setting them doesn't
-        // trigger this autorun to immediately wipe them — only the viewport read
-        // should fire it.
-        autorunOnReadyView(
-          self,
-          view => {
-            void view.visibleRegions
-            if (untracked(() => self.fetchCanceled || self.error)) {
-              self.clearAllRpcData()
-            }
-          },
-          { name: 'ClearBlockingStateOnViewportChange' },
-        )
-
-        // Clear display-specific transient state (hover/tooltip) whenever
-        // `regionTooLarge` becomes true — the banner replaces the rendered
-        // content, so a lingering hover would pin to a now-hidden feature. Fires
-        // the overridable `onRegionTooLarge` hook on the transition; no-op unless
-        // the display overrides the hook.
-        autorunOnReadyView(
-          self,
-          () => {
-            if (self.regionTooLarge) {
-              self.onRegionTooLarge()
-            }
-          },
-          { name: 'ClearHoverOnRegionTooLarge' },
-        )
-      },
-    }))
+        },
+      }))
+  )
 }
 
 export type MultiRegionDisplayMixinType = ReturnType<

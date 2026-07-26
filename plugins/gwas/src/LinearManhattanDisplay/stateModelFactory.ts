@@ -494,9 +494,9 @@ export function stateModelFactory(
           ]
         },
       }))
-      .actions(self => ({
+      .views(() => ({
         /**
-         * #action
+         * #method
          * Manhattan features are 1:1 with the underlying SNPs (pre-transformed
          * -log10 p values) and don't downsample by zoom, so cached data is valid
          * at any bpPerPx. Stated outright rather than left to
@@ -507,6 +507,8 @@ export function stateModelFactory(
         isCacheValid(_displayedRegionIndex: number) {
           return true
         },
+      }))
+      .actions(self => ({
         /**
          * #action
          */

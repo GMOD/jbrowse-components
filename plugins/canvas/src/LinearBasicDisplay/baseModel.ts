@@ -2067,9 +2067,10 @@ export default function baseStateModelFactory(
             region,
           )
         },
-
+      }))
+      .views(self => ({
         /**
-         * #action
+         * #method
          */
         // The only bpPerPx-dependent worker decision is the amino-acid overlay
         // (gated by shouldRenderPeptideBackground). Refetch when crossing that
@@ -2079,6 +2080,8 @@ export default function baseStateModelFactory(
         // pruned off-screen or not yet fetched — always refetch. The
         // FetchVisibleRegions autorun gates on regionTooLarge before calling
         // this, so the density-blocking case is handled there, not here.
+        //
+        // A view, not an action: an action would untrack the view.bpPerPx read.
         isCacheValid(displayedRegionIndex: number) {
           const view = getView(self)
           const regionData = self.rpcDataMap.get(displayedRegionIndex)

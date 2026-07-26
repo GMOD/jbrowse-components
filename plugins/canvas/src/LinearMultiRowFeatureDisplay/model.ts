@@ -821,14 +821,6 @@ export default function stateModelFactory(
             ),
         )
       },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        return fetchMultiRowFeatures(self, needed)
-      },
       /**
        * #method
        * A region is cache-valid only once its features are committed. A too-large
@@ -838,6 +830,14 @@ export default function stateModelFactory(
        */
       isCacheValid(displayedRegionIndex: number) {
         return self.rpcDataMap.has(displayedRegionIndex)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+        return fetchMultiRowFeatures(self, needed)
       },
       /**
        * #action

@@ -1569,8 +1569,10 @@ export default function stateModelFactory(
             ? fetchMafSummaryData(self, needed)
             : fetchMafAlignmentData(self, needed)
         },
+      }))
+      .views(self => ({
         /**
-         * #action
+         * #method
          * Force a refetch when the loaded data is the wrong kind for the current
          * zoom: crossing the summary↔detail threshold within an already-loaded
          * region wouldn't trip the bounds-based coverage check, so the mode is
@@ -1582,7 +1584,7 @@ export default function stateModelFactory(
             : self.rpcDataMap.has(displayedRegionIndex)
         },
         /**
-         * #action
+         * #method
          * Enable byte-estimate gating: above ~20kb visible, the adapter's
          * MAF-aware byte estimate (per-species sequence × span) is checked against
          * `fetchSizeLimit`, blocking the detail fetch with a force-load prompt
@@ -1590,6 +1592,11 @@ export default function stateModelFactory(
          *
          * Returns null in summary mode — the summary read is cheap (zoom-reduced
          * BigBed), so it must never be blocked by the gate.
+         *
+         * A view, not an action: `derivedRegionTooLargeEnabled` is a computed
+         * that calls this, and an action would untrack the `showSummary` read
+         * below, leaving the gate's opt-in frozen at whatever it was when first
+         * evaluated.
          */
         getByteEstimateConfig() {
           if (self.showSummary) {

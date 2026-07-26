@@ -3312,16 +3312,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          getByteEstimateConfig() {
-            return {
-              adapterConfig: self.adapterConfig,
-              visibleBp: (getContainingView(self) as LGV).visibleBp,
-            }
-          },
-
-          /**
-           * #action
-           */
           async fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
@@ -3363,6 +3353,20 @@ export default function stateModelFactory(
           },
         }
       })
+      .views(self => ({
+        /**
+         * #method
+         * A view, not an action, so the `visibleBp` read registers with the
+         * `derivedRegionTooLargeEnabled` computed that calls it (see
+         * MultiRegionDisplayMixin's hook block).
+         */
+        getByteEstimateConfig() {
+          return {
+            adapterConfig: self.adapterConfig,
+            visibleBp: (getContainingView(self) as LGV).visibleBp,
+          }
+        },
+      }))
       .views(self => ({
         /**
          * #method

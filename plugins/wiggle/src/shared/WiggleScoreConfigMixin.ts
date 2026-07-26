@@ -233,24 +233,21 @@ export function WiggleScoreConfigMixin() {
       setAutoscale(val?: string) {
         setConf(confNode(self), 'autoscale', val)
       },
+    }))
+    .views(self => ({
       /**
-       * #action
-       * Strict zoom equality: see adr-008.
+       * #method
+       * Strict zoom equality: see adr-008. A view, not an action, so the
+       * `view.bpPerPx` read below actually registers as a dependency of whoever
+       * calls it (see MultiRegionDisplayMixin's hook block).
        */
       isCacheValid(_displayedRegionIndex: number) {
         if (self.loadedBpPerPx === undefined) {
           return true
         }
-        // An action, not a view, because it overrides MultiRegionDisplayMixin's
-        // hook — so MobX untracks this read. Safe only because the one caller
-        // (FetchVisibleRegions) already reads view.visibleRegions, which
-        // changes on every zoom; don't make this the sole dependency on some
-        // other observable.
         const view = getContainingView(self) as LinearGenomeViewModel
         return view.bpPerPx === self.loadedBpPerPx
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        */

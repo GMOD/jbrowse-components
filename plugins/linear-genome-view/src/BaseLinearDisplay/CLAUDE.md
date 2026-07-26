@@ -74,8 +74,8 @@ exists for the two gated displays outside this family (LD, arc), which run on
 | ---------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `fetchNeeded(needed)`        | no-op       | call `this.fetchRegions(needed, async ctx => { ... })`                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `rpcProps()`                 | not defined | declare a method returning the literal RPC payload; every field it **returns** becomes a cache key, and only those — both families watch the serialized payload (`rpcPropsCacheKey` here, a `computed` in `installGlobalFetchAutorun` there), never the reads that built it; `serializeRpcProps` owns the why. The mixin doesn't declare a base default so subclass return types stay narrow through MST `.views()` chains; subclasses extend via the standard super-capture pattern |
-| `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes)                                                                                                                                                                                                                                                                                                                                                                                           |
-| `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes). **A view, not an action**                                                                                                                                                                                                                                                                                                                                                                |
+| `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch. **A view, not an action**                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `onRegionTooLarge()`         | no-op       | clear transient hover/tooltip state when `regionTooLarge` becomes true (the banner replaces the content); fired by the `ClearHoverOnRegionTooLarge` autorun                                                                                                                                                                                                                                                                                                                          |
 | `layoutReady`                | `false`     | **required if the display defines a feature-lookup method** (`searchFeatureByID`/`getFeatureById`) — return whether a searchable layout currently exists                                                                                                                                                                                                                                                                                                                             |
@@ -119,6 +119,23 @@ estimate outside the pre-flight (LD, arc, canvas fold-into-fetch) opt in through
 — additive rather than an override, so a gate mixin's opt-in doesn't hinge on
 which side of `.compose()` it lands. Canvas adds `densityTooLargeForDerivedGate`
 for its second axis. See that mixin's header comment.
+
+### `isCacheValid` / `getByteEstimateConfig` are views, not actions
+
+Both are pure reads, and both are called from reactive contexts — `isCacheValid`
+from the `FetchVisibleRegions` autorun, `getByteEstimateConfig` from the
+`derivedRegionTooLargeEnabled` **computed**. MobX runs an action inside
+`untracked`, so while these were actions every observable they read
+(`view.bpPerPx`, `view.visibleBp`, MAF's `showSummary`) registered no dependency
+and the caller silently kept a stale answer.
+
+Nothing failed, because each caller happened to read some other observable that
+changed in lockstep — `FetchVisibleRegions` reads `view.visibleRegions`, which
+moves on every zoom. That coincidence was an unwritten precondition on every
+override ("don't let this be your only dependency", as the wiggle override used
+to warn). **Overrides must stay views.** Pinned by
+`variants/LinearMultiSampleVariantMatrixDisplay/isCacheValidTracking.test.ts`,
+which fails if either is converted back.
 
 ### `loadedRegions`
 
