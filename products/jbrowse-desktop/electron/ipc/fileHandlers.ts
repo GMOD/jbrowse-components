@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { Writable } from 'node:stream'
 
 import { generateFastaIndex } from '@gmod/faidx'
 import { app, dialog } from 'electron'
@@ -39,7 +40,7 @@ export function registerFileHandlers(paths: AppPaths) {
       `${path.basename(filename)}-${Date.now()}`,
     )
     const stream = await getFileStream(location)
-    const write = fs.createWriteStream(faiPath)
+    const write = Writable.toWeb(fs.createWriteStream(faiPath))
 
     await generateFastaIndex(write, stream)
     return faiPath

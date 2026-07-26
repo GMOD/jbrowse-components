@@ -1,11 +1,19 @@
-import fs from 'node:fs'
-import { Readable } from 'node:stream'
+import { openAsBlob } from 'node:fs'
 
+// Web streams, not node ones: @gmod/faidx 2.0.5 changed generateFastaIndex to
+// take `ReadableStream`/`WritableStream` (it pipeThroughs them), so handing it
+// a node Readable fails at runtime with "fileDataStream.pipeThrough is not a
+// function". electron/ is outside the typecheck project (tsconfig includes only
+// src), which is why that signature change landed silently.
+//
+// Both branches produce a real `ReadableStream<Uint8Array>` on their own, so
+// neither needs a cast: `openAsBlob` streams the file lazily rather than
+// reading it in, and a fetch body already is one.
 export async function getFileStream(
   location: { uri: string } | { localPath: string },
-) {
+): Promise<ReadableStream<Uint8Array>> {
   if ('localPath' in location) {
-    return fs.createReadStream(location.localPath)
+    return (await openAsBlob(location.localPath)).stream()
   }
   const response = await fetch(location.uri)
   if (!response.ok) {
@@ -16,10 +24,5 @@ export async function getFileStream(
   if (!response.body) {
     throw new Error(`No response body for ${location.uri}`)
   }
-  // Safe here: this runs in the Electron main process, where the global fetch
-  // is Node's undici and response.body is genuinely a node:stream/web
-  // ReadableStream. The realm mismatch that bans fromWeb elsewhere only happens
-  // under Chromium's fetch (renderer/worker). See the no-restricted-syntax rule.
-  // eslint-disable-next-line no-restricted-syntax
-  return Readable.fromWeb(response.body)
+  return response.body
 }
