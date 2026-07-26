@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { App } from '@jbrowse/app-core'
 import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
@@ -12,6 +14,15 @@ const JBrowseNonNullRoot = observer(function JBrowseNonNullRoot({
   rootModel: DesktopRootModel
 }) {
   const { session, error } = rootModel
+
+  // Publish the live models the way jbrowse-web does. Read by the console, by
+  // ErrorMessageStackTraceDialog (which puts the version and rpc driver in a bug
+  // report and found nothing here before), and by the screenshot harness, which
+  // can now assert on the model rather than on rendered header text.
+  useEffect(() => {
+    window.JBrowseRootModel = rootModel
+    window.JBrowseSession = session
+  }, [rootModel, session])
 
   if (error) {
     // eslint-disable-next-line @typescript-eslint/only-throw-error

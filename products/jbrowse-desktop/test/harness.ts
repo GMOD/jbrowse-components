@@ -186,6 +186,62 @@ export async function waitForStartScreen(
   await findByText(driver, 'Launch new session', timeout)
 }
 
+// The live session model, published on window by the desktop JBrowse component
+// the same way jbrowse-web does. Reading state from it beats reading rendered
+// text: `visibleLocStrings` is the view's actual position, while the location box
+// shows the debounced `coarseVisibleLocStrings`, and the track and widget lists
+// have no faithful DOM equivalent at all.
+export interface SessionProbe {
+  locStrings: string[]
+  trackIds: string[]
+  widgetTypes: string[]
+}
+
+export async function readSession(
+  driver: WebDriver,
+): Promise<SessionProbe | undefined> {
+  // `visibleLocStrings` reaches `view.width`, which throws by design on a view
+  // that hasn't been measured yet, so each read is guarded rather than letting
+  // one pre-init view fail the whole probe.
+  return driver.executeScript<SessionProbe | undefined>(`
+    const session = window.JBrowseSession
+    if (!session) { return undefined }
+    const views = session.views ?? []
+    const locStrings = []
+    for (const view of views) {
+      try {
+        if (view.visibleLocStrings) { locStrings.push(view.visibleLocStrings) }
+      } catch (e) {}
+    }
+    return {
+      locStrings,
+      trackIds: views.flatMap(view =>
+        (view.tracks ?? []).map(t => t.configuration.trackId),
+      ),
+      widgetTypes: [...(session.activeWidgets?.values() ?? [])].map(w => w.type),
+    }
+  `)
+}
+
+// Blocks until the session satisfies `check`, returning the last probe so a
+// caller can put the real state in its own error message.
+export async function waitForSession(
+  driver: WebDriver,
+  check: (probe: SessionProbe) => boolean,
+  timeout = 30000,
+): Promise<SessionProbe | undefined> {
+  const deadline = Date.now() + timeout
+  let last: SessionProbe | undefined
+  while (Date.now() < deadline) {
+    last = await readSession(driver)
+    if (last && check(last)) {
+      return last
+    }
+    await delay(250)
+  }
+  return last
+}
+
 // "Is this gone yet?" asked through the DOM rather than findElements, which
 // waits out the 30s implicit timeout every time the answer is "yes, none left" —
 // the dominant cost of a screenshot run, since every cleanup step ends that way.

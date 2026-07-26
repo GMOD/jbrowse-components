@@ -2,6 +2,12 @@ declare module '@fontsource/roboto'
 declare module 'dockview-react/dist/styles/dockview.css'
 
 interface Window {
+  // Debug/automation handles, the same pair jbrowse-web publishes: the console,
+  // ErrorMessageStackTraceDialog (which reads JBrowseSession for the version and
+  // rpc driver in a bug report), and the screenshot harness, which asserts on the
+  // model instead of scraping the header for the view's position.
+  JBrowseRootModel?: unknown
+  JBrowseSession?: unknown
   // MST utilities exposed for testing (temporary)
   getSnapshot?: unknown
   resolveIdentifier?: unknown

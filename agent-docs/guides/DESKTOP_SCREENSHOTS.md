@@ -75,6 +75,25 @@ outlast that debounce, which is why the gate isn't simply "no pending work".
 A timeout names what it was still waiting on, so it doesn't land as a bare
 "Waiting failed".
 
+## Asserting on the model, not on rendered text
+
+The desktop JBrowse component publishes `window.JBrowseSession` /
+`window.JBrowseRootModel`, the pair jbrowse-web has always published, so
+`readSession` / `waitForSession` can ask the model what happened: each view's
+`visibleLocStrings`, the track ids on it, and the open widget types. Prefer that
+over reading the UI. The location box shows the *debounced*
+`coarseVisibleLocStrings`, and nothing in the DOM faithfully answers "did the
+query add its track and open its results widget" — the BLAT assertions check all
+three.
+
+`visibleLocStrings` reaches `view.width`, which throws by design on a view that
+hasn't been measured, so the probe guards each view rather than letting one
+pre-init view fail the read.
+
+The binary is a build artifact, so it can predate the global. When it is absent
+the harness logs a `WARN` and falls back to what the DOM can still answer, rather
+than failing a run for being built yesterday.
+
 ## Reading a failed run
 
 - **Every capture logs the size it is about to write** (`· <name>: inner …,

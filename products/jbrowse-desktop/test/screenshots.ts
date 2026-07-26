@@ -24,6 +24,7 @@ import {
   startChromedriver,
   startStaticServer,
   waitForAppReady,
+  waitForSession,
   waitForStartScreen,
 } from './harness.ts'
 
@@ -366,23 +367,51 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   }
   await submitUcscQuery(driver)
 
-  // The dialog closes once navToFeature has resolved, but the search box reads
-  // the view's coarse dynamic blocks, which lag the navigation — so this polls
-  // rather than reading once, and reports where the view actually sits if the
-  // hit never arrives.
-  let locstring: string | null = null
-  const navDeadline = Date.now() + 30000
-  while (Date.now() < navDeadline && !locstring?.includes('chr17')) {
+  // What the query is supposed to have produced, asked of the model rather than
+  // of rendered text: the view on the best hit, the hits as a track, and the hit
+  // list in the drawer. The location box would answer the first question with the
+  // debounced locstring, and nothing in the DOM answers the other two.
+  const probe = await waitForSession(
+    driver,
+    s =>
+      s.locStrings.some(loc => loc.includes('chr17')) &&
+      s.trackIds.some(id => id.startsWith('blat-')) &&
+      s.widgetTypes.includes('UcscResultsWidget'),
+  )
+  if (probe) {
+    console.log(`    DEBUG: session ${JSON.stringify(probe)}`)
+    if (!probe.locStrings.some(loc => loc.includes('chr17'))) {
+      throw new Error(
+        `BLAT left the view at ${probe.locStrings.join('; ')}, wanted chr17`,
+      )
+    }
+    if (!probe.trackIds.some(id => id.startsWith('blat-'))) {
+      throw new Error(`BLAT added no track: ${probe.trackIds.join(', ')}`)
+    }
+    if (!probe.widgetTypes.includes('UcscResultsWidget')) {
+      throw new Error(`BLAT opened no results widget: ${probe.widgetTypes}`)
+    }
+  } else {
+    // The binary is a build artifact, so it can predate the global that the
+    // desktop JBrowse component publishes. Say so rather than failing the run,
+    // and check what the DOM can still answer — the location box, which shows
+    // the debounced locstring and knows nothing about the track or the widget.
+    console.warn(
+      '    WARN: no window.JBrowseSession (binary predates it?) — falling back to the location box',
+    )
     const searchBox = await driver.findElement(
       By.css('input[placeholder="Search for location"]'),
     )
-    locstring = await searchBox.getAttribute('value')
-    await delay(300)
+    let locstring: string | null = null
+    const deadline = Date.now() + 30000
+    while (Date.now() < deadline && !locstring?.includes('chr17')) {
+      locstring = await searchBox.getAttribute('value')
+      await delay(300)
+    }
+    if (!locstring?.includes('chr17')) {
+      throw new Error(`BLAT left the view at "${locstring}", wanted chr17`)
+    }
   }
-  if (!locstring?.includes('chr17')) {
-    throw new Error(`BLAT left the view at "${locstring}", wanted chr17`)
-  }
-  console.log(`    DEBUG: navigated to ${locstring}`)
   await waitForAppReady(driver) // the new track fetches and paints
   await collapseGeneGlyph(driver)
   await capture(driver, 'desktop-blat-results.png')
