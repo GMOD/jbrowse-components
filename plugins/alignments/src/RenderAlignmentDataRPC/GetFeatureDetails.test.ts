@@ -19,18 +19,13 @@ const region = {
 // with — the tier is the point of these cases.
 function mockAdapter(features: SimpleFeature[]) {
   const getFeaturesArray = jest.fn().mockResolvedValue(features)
-  jest
-    .mocked(getFeatureAdapter)
-    .mockResolvedValue({
-      getFeaturesArray,
-    } as unknown as BaseFeatureDataAdapter)
+  jest.mocked(getFeatureAdapter).mockResolvedValue({
+    getFeaturesArray,
+  } as unknown as BaseFeatureDataAdapter)
   return getFeaturesArray
 }
 
-function run(args: {
-  featureId: string
-  lodMode?: 'auto' | 'fine' | 'coarse'
-}) {
+function run(args: { featureId: string; lodMode?: 'fine' | 'coarse' }) {
   return new GetFeatureDetails(new PluginManager()).execute(
     {
       sessionId: 'sess',

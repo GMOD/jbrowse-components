@@ -122,17 +122,6 @@ export async function executeSyntenyFeaturesAndPositions({
   const v1 = queryView
   const v2 = targetView
 
-  // The coarse-vs-fine LOD decision (resolveCoarseTier in the indexed PIF
-  // adapters) turns on whether CIGAR detail is visible, but a synteny band spans
-  // two independently-zoomed axes. Detail is worth drawing when the alignment is
-  // wide on EITHER axis — buildSyntenyGeometry's MIN_CIGAR_PX_WIDTH gate uses
-  // max(widthPx0, widthPx1) — so the no-CIGAR coarse tier is only safe once BOTH
-  // axes are past the threshold, i.e. the smaller bpPerPx must be over it. Using
-  // the query axis alone would drop to coarse (losing indel/mismatch detail) when
-  // the query is zoomed out but the target is zoomed in on the same band. The
-  // query-scoped fetch window still uses v1.bpPerPx (below); this min only feeds
-  // the tier choice. Non-tiering adapters ignore bpPerPx, so it is inert there.
-  const bpPerPx = Math.min(v1.bpPerPx, v2.bpPerPx)
   // forward statusCallback so the adapter's determinate download + parse phases
   // drive the bar; the loading overlay shows a plain "Loading" label otherwise.
   // fetchRegions is the visible window + pan buffer (a superset of the cull
@@ -149,7 +138,7 @@ export async function executeSyntenyFeaturesAndPositions({
     v1.fetchRegions,
     {
       stopToken,
-      bpPerPx,
+      bpPerPx: v1.bpPerPx,
       lodMode,
       statusCallback,
       // the assembly on the other side of this band; a multi-genome adapter

@@ -11,10 +11,6 @@ export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 // see-through (transparent), 'off' draws blocks only.
 export type CigarMode = 'off' | 'matches' | 'full'
 
-// Level-of-detail tier: 'auto' follows the adapter's bpPerPx threshold, 'fine'
-// pins the per-row CIGAR tier, 'coarse' the no-CIGAR tier.
-export type LodMode = 'auto' | 'fine' | 'coarse'
-
 // Sub-pixel width fade: 'auto' turns on once the view is dense enough to tangle.
 export type FadeThinMode = 'auto' | 'on' | 'off'
 

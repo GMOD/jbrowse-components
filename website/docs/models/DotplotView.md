@@ -78,7 +78,7 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [alpha](#getter-alpha)                                                         | Getters    | DotplotView                                             | Plot-wide alpha.                                                                                                                                                                                    |
 | [minAlignmentLength](#getter-minalignmentlength)                               | Getters    | DotplotView                                             | Plot-wide minimum alignment length filter, in bp.                                                                                                                                                   |
 | [settled](#getter-settled)                                                     | Getters    | DotplotView                                             | Canvas has painted and no display is still fetching, so what's on screen is the final settled content.                                                                                              |
-| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | DotplotView                                             | True if any track has an adapter that declares the 'lod' capability.                                                                                                                                |
+| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | DotplotView                                             | True if any track has an adapter with tiered storage.                                                                                                                                               |
 | [geometryByTrackIndex](#getter-geometrybytrackindex)                           | Getters    | DotplotView                                             | Per-display GPU geometry keyed by track index.                                                                                                                                                      |
 | [dotplotRenderState](#getter-dotplotrenderstate)                               | Getters    | DotplotView                                             | Aggregated per-frame render state.                                                                                                                                                                  |
 | [error](#getter-error)                                                         | Getters    | DotplotView                                             |                                                                                                                                                                                                     |
@@ -419,8 +419,8 @@ type settled = boolean
 
 #### getter: hasLodCapableAdapter
 
-True if any track has an adapter that declares the 'lod' capability. Used to
-gate the LOD menu — only PIF supports it.
+True if any track has an adapter with tiered storage. Used to gate the LOD menu
+— only the indexed PIF adapters have tiers.
 
 ```ts
 type hasLodCapableAdapter = boolean
@@ -530,9 +530,9 @@ type getVHighlightCoords = (region: {
 <details>
 <summary>DotplotView - Methods (other undocumented members)</summary>
 
-| Member                                       | Type                                                                                                                                                                           |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <span id="method-menuitems">menuItems</span> | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; } \| { ...; })[]` |
+| Member                                       | Type                                                                                                                                                     |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <span id="method-menuitems">menuItems</span> | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; } \| { ...; })[]` |
 
 </details>
 
@@ -637,7 +637,7 @@ type squareView = () => void
 | <span id="action-startrenderingbackend">startRenderingBackend</span>           | `(backend: DotplotRenderingBackend) => void`         |
 | <span id="action-setcursormode">setCursorMode</span>                           | `(mode: CursorMode) => void`                         |
 | <span id="action-setdrawcigar">setDrawCigar</span>                             | `(flag: boolean) => void`                            |
-| <span id="action-setlodmode">setLodMode</span>                                 | `(value: "auto" \| "fine" \| "coarse") => void`      |
+| <span id="action-setlodmode">setLodMode</span>                                 | `(value: LodMode) => void`                           |
 | <span id="action-setlockaspectratio">setLockAspectRatio</span>                 | `(flag: boolean) => void`                            |
 | <span id="action-setlinewidth">setLineWidth</span>                             | `(value: number) => void`                            |
 | <span id="action-setshowcolorlegend">setShowColorLegend</span>                 | `(arg: boolean) => void`                             |

@@ -5,7 +5,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   SyntenyFetchStateMixin,
+  getCoarseBpPerPxThreshold,
   isDataCurrent,
+  resolveLodTier,
   swappedAssembliesWarning,
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
@@ -22,7 +24,7 @@ import type { DotplotRpcData } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { LodTier, SyntenyColorBy } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
 /**
@@ -145,11 +147,27 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get currentFetchKey(): string {
         const view = getContainingView(self) as DotplotViewModel
         return dotplotFetchKey(
-          view.lodMode,
+          this.lodTier,
           view.hview,
           view.vview,
           this.fetchRegions,
         )
+      },
+      /**
+       * #getter
+       * The detail tier this plot's fetch asks the adapter for. Resolved here on
+       * the main thread, not adapter-side from `bpPerPx`, so it is part of
+       * `currentFetchKey` — see `resolveLodTier`. Both axes feed it: CIGAR detail
+       * is worth drawing when a block is wide on either one, so dropping to the
+       * no-CIGAR tier is only safe once both are past the threshold.
+       */
+      get lodTier(): LodTier {
+        const view = getContainingView(self) as DotplotViewModel
+        return resolveLodTier({
+          bpPerPx: Math.min(view.hview.bpPerPx, view.vview.bpPerPx),
+          coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
+          lodMode: view.lodMode,
+        })
       },
       /**
        * #getter

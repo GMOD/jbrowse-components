@@ -47,21 +47,28 @@ operations are consistent with the q-line's column order (query is primary):
 
 The t-line carries the original PAF CIGAR unchanged.
 
-### Identity tag
+### Identity
 
-`make-pif` enriches each alignment with a `de:f:` tag (minimap2's gap-compressed
-per-base divergence) when the CIGAR contains `=`/`X` operators and no `de:f:`
-tag is present. The renderer reads it as `identity = 1 - de`, falling back to
-`numMatches / blockLen` when absent.
+Fine-tier rows pass the aligner's tags through untouched. The renderer derives
+per-alignment identity from the first of these that a row carries:
 
-For accurate identity, run minimap2 with `--eqx` so the CIGAR distinguishes
-matches (`=`) from mismatches (`X`). Without it the CIGAR uses ambiguous `M`
-operators and identity is approximated from the standard PAF columns.
+- `de:f:` (minimap2's gap-compressed per-base divergence), read as
+  `identity = 1 - de`
+- `id:f:` (odgi untangle writes this, as a fraction or a percentage)
+- the standard `num_matches` / `block_len` columns
 
 This matches [rustybam](https://github.com/mrvollger/rustybam) (`rb stats --paf`
 writes the same `perID_by_all` quantity) and
-[SVbyEye](https://github.com/daewoooo/SVbyEye). Storing identity at build time
-makes view-time coloring a cheap column lookup.
+[SVbyEye](https://github.com/daewoooo/SVbyEye).
+
+Coarse-tier rows carry a `de:f:` tag that `make-pif` writes from that same
+chain, so identity coloring does not jump at the zoom where the view switches
+tiers. It is never recomputed from the CIGAR: a plain `M` CIGAR folds mismatches
+into matches, so a recompute would report a divergent alignment as 100%
+identical.
+
+For the most accurate identity, run minimap2 with `--eqx` so the CIGAR
+distinguishes matches (`=`) from mismatches (`X`).
 
 ### Tabix index parameters
 
@@ -107,23 +114,36 @@ the `PairwiseIndexedPAFAdapter`.
 ### Level-of-detail coarse tier
 
 By default `make-pif` also writes a no-CIGAR "coarse" tier of the same
-alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the
-`PairwiseIndexedPAFAdapter` serves this tier automatically (controlled by the
-[`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
-slot), drawing clean ribbons without parsing megabyte-scale CIGAR strings.
-Zooming in switches back to the fine `t`/`q` tier. No configuration is needed;
-the view's "Level of detail" menu defaults to `auto`.
+alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view
+serves this tier automatically, drawing clean ribbons without parsing
+megabyte-scale CIGAR strings; zooming in switches back to the fine `t`/`q` tier.
+No configuration is needed — the "Level of detail" menu defaults to `auto`, and
+`fine`/`coarse` pin a tier.
+
+A coarse row has no CIGAR, so it is drawn as a straight ribbon between its
+endpoints. To keep that honest, a row is split into several coarse rows wherever
+its CIGAR contains an indel of at least `--coarse` bp, so no coarse ribbon spans
+a large gap. Each piece reports the row's identity, and their `num_matches` sum
+back to the row's.
 
 ```bash
-# coarse tier is on by default
+# coarse tier is on by default, split at indels >= 10kb
 jbrowse make-pif input.paf
 
 # tune the gap (bp) at which a coarse row is split to keep its bbox tight
 jbrowse make-pif input.paf --coarse 50000
 
+# one coarse row per alignment, never split
+jbrowse make-pif input.paf --coarse 0
+
 # disable the coarse tier (fine t/q tier only)
 jbrowse make-pif input.paf --no-coarse
 ```
+
+Keep
+[`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
+at or above the `--coarse` gap you built with. Below it, the coarse tier is
+served at zooms where the indels it was allowed to span are wide enough to see.
 
 ### Optional preprocessing with rustybam
 
@@ -141,9 +161,17 @@ minimap2 -cx asm5 --eqx reference.fa query.fa \
   | jbrowse make-pif /dev/stdin --out alignment.pif.gz
 ```
 
-The rustybam tags pass through to the renderer, but `make-pif` alone is
+The rustybam tags pass through to both tiers, but `make-pif` alone is
 sufficient. The [SafFire](https://github.com/mrvollger/SafFire) viewer documents
 the rationale for each rustybam step.
+
+`rb break-paf --max-size N` is worth calling out: it splits the input alignments
+themselves at large indels, so **both** tiers inherit the same pieces. That is
+different from `--coarse`, which splits only the coarse tier — the fine tier
+keeps whole alignments and draws each large indel as a colored wedge. Break the
+PAF upstream if you would rather see those indels as genuine breaks between
+separate alignments, and have feature identity stay the same across a tier
+switch.
 
 ## JBrowse configuration
 

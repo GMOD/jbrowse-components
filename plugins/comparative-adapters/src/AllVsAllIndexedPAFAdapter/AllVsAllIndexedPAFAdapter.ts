@@ -158,8 +158,6 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
       const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
 
       const coarse = resolveCoarseTier({
-        bpPerPx: opts.bpPerPx,
-        threshold: this.getConf('coarseBpPerPxThreshold'),
         hasCoarseTier: await this.hasCoarseTier(opts),
         lodMode: opts.lodMode,
       })

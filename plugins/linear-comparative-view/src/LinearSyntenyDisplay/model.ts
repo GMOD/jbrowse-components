@@ -7,8 +7,10 @@ import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
   coerceColorBy,
+  getCoarseBpPerPxThreshold,
   isDataCurrent,
   regionSignature,
+  resolveLodTier,
   swappedAssembliesWarning,
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
@@ -23,7 +25,11 @@ import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type {
+  CigarOpMask,
+  LodTier,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 
 // 'auto' fade-thin (see autoFadeThinAlignments): fade on when the mean on-screen
 // alignment-block width is below this many pixels — i.e. thin ribbons dominate,
@@ -404,7 +410,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
           view.drawLocationMarkers,
-          view.lodMode,
+          // the resolved tier, not view.lodMode: in 'auto' the mode is constant
+          // while the tier flips, and the tier is what the fetch differs by
+          this.lodTier,
         ].join('|')
       },
       /**
@@ -584,6 +592,38 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return connected
           ? `${bucketBpPerPx(connected.v0.bpPerPx)}_${bucketBpPerPx(connected.v1.bpPerPx)}`
           : undefined
+      },
+      /**
+       * #getter
+       * The detail tier this level's fetch asks the adapter for, resolved here on
+       * the main thread so it can enter `currentFetchKey`.
+       *
+       * It cannot be resolved adapter-side from `bpPerPx`: the refetch key carries
+       * only `bpPerPxBucketKey`, a log2 bucket, and the default 10000 threshold
+       * sits *inside* bucket 13 (8192..16384). Zooming across the threshold within
+       * one bucket therefore changed nothing the key could see, and the view kept
+       * drawing the coarse tier's gap-free ribbons while reporting itself current.
+       *
+       * The zoom fed in is `min` of both axes, because CIGAR detail is worth
+       * drawing when the band is wide on EITHER axis — buildSyntenyGeometry's
+       * MIN_CIGAR_PX_WIDTH gate uses `max(widthPx0, widthPx1)` — so dropping to
+       * coarse is only safe once BOTH axes are past the threshold. Taking the
+       * query axis alone lost indel detail on a band whose query was zoomed out
+       * but whose target was zoomed in.
+       */
+      get lodTier(): LodTier {
+        const connected = this.connectedViews
+        // Nothing fetches before both views are ready; 'fine' is the neutral
+        // answer there, and also what a non-tiered adapter resolves to.
+        return connected
+          ? resolveLodTier({
+              bpPerPx: Math.min(connected.v0.bpPerPx, connected.v1.bpPerPx),
+              coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(
+                self.parentTrack,
+              ),
+              lodMode: this.view.lodMode,
+            })
+          : 'fine'
       },
       /**
        * #getter

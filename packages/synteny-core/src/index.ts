@@ -6,6 +6,13 @@ export {
   syntenyPanBufferPx,
 } from './syntenyFetchWindow.ts'
 export { regionSignature } from './regionSignature.ts'
+export {
+  getCoarseBpPerPxThreshold,
+  lodMenuItems,
+  resolveLodTier,
+  trackHasLodTiers,
+} from './lodTier.ts'
+export type { LodMode, LodTier } from './lodTier.ts'
 export { extractAlignmentData } from './extractAlignmentData.ts'
 // Promoted to core (a pure signature compare, no synteny deps); re-exported here
 // so the comparative-view consumers keep importing it from @jbrowse/synteny-core.

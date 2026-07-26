@@ -2,7 +2,11 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { DiagonalizeProgressMixin } from '@jbrowse/synteny-core'
+import {
+  DiagonalizeProgressMixin,
+  lodMenuItems,
+  trackHasLodTiers,
+} from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -16,7 +20,6 @@ import {
   autoScaleMenuItems,
   cigarModeMenuItems,
   genomeViewsMenuItems,
-  lodMenuItems,
   removeRowMenuItems,
 } from './menus.ts'
 
@@ -27,11 +30,14 @@ import type {
   FadeThinMode,
   ImportFormSyntenyTrack,
   LinearSyntenyViewInit,
-  LodMode,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type {
+  CigarOpMask,
+  LodMode,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 
 const DEFAULT_OVERDRAW_PX = 1000
 
@@ -208,15 +214,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * True if any track on any level has an adapter that declares the
-       * 'lod' capability. Used to gate the LOD menu — adapters without
-       * tiered storage (e.g. PAFAdapter, BlastTabularAdapter) have nothing
-       * to switch between.
+       * True if any track on any level has an adapter with tiered storage. Used
+       * to gate the LOD menu — PAFAdapter, BlastTabularAdapter and friends have
+       * nothing to switch between.
        */
       get hasLodCapableAdapter() {
-        return self.levels
-          .flatMap(l => l.tracks)
-          .some(t => t.adapterType.adapterCapabilities.includes('lod'))
+        return self.levels.flatMap(l => l.tracks).some(trackHasLodTiers)
       },
       /**
        * #getter

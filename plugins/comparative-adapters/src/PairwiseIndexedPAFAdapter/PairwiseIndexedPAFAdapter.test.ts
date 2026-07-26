@@ -215,102 +215,36 @@ describe('PairwiseIndexedPAFAdapter', () => {
     })
   })
 
+  // The prefix is the perspective letter (flip) upper-cased for the coarse tier.
+  // The tier itself arrives already resolved — the zoom-based 'auto' decision is
+  // resolveLodTier's, on the main thread, so it lands in the fetch cache key.
   describe('LOD prefix selection', () => {
     const cases = [
-      // [name, flip, bpPerPx, threshold, hasCoarseTier, expected]
+      // [name, flip, hasCoarseTier, lodMode, expected]
+      ['target perspective, fine tier', false, true, 'fine', 't'],
+      ['query perspective, fine tier', true, true, 'fine', 'q'],
+      ['target perspective, coarse tier', false, true, 'coarse', 'T'],
+      ['query perspective, coarse tier', true, true, 'coarse', 'Q'],
+      ['no stated tier reads fine', false, true, undefined, 't'],
       [
-        'fine when bpPerPx below threshold (target)',
+        'coarse degrades to fine when the file has none',
         false,
-        100,
-        10000,
-        true,
-        't',
-      ],
-      [
-        'fine when bpPerPx below threshold (query)',
-        true,
-        100,
-        10000,
-        true,
-        'q',
-      ],
-      [
-        'coarse when bpPerPx >= threshold (target)',
         false,
-        50000,
-        10000,
-        true,
-        'T',
-      ],
-      [
-        'coarse when bpPerPx >= threshold (query)',
-        true,
-        50000,
-        10000,
-        true,
-        'Q',
-      ],
-      [
-        'fine even at high zoom when no coarse tier',
-        false,
-        1e9,
-        10000,
-        false,
-        't',
-      ],
-      ['fine when bpPerPx is undefined', false, undefined, 10000, true, 't'],
-      ['coarse exactly at the threshold', false, 10000, 10000, true, 'T'],
-    ] as const
-    const overrideCases = [
-      // [name, lodMode, bpPerPx, hasCoarseTier, expected]
-      ['fine override beats auto at high zoom', 'fine', 1e9, true, 't'],
-      ['coarse override beats auto at low zoom', 'coarse', 1, true, 'T'],
-      [
-        'coarse override degrades to fine when no coarse tier',
         'coarse',
-        1,
-        false,
         't',
       ],
+      ['query side degrades to fine too', true, false, 'coarse', 'q'],
     ] as const
-    for (const [
-      name,
-      flip,
-      bpPerPx,
-      threshold,
-      hasCoarseTier,
-      expected,
-    ] of cases) {
+    for (const [name, flip, hasCoarseTier, lodMode, expected] of cases) {
       it(name, () => {
-        expect(pickPifPrefix({ flip, bpPerPx, threshold, hasCoarseTier })).toBe(
-          expected,
-        )
-      })
-    }
-    for (const [
-      name,
-      lodMode,
-      bpPerPx,
-      hasCoarseTier,
-      expected,
-    ] of overrideCases) {
-      it(name, () => {
-        expect(
-          pickPifPrefix({
-            flip: false,
-            bpPerPx,
-            threshold: 10000,
-            hasCoarseTier,
-            lodMode,
-          }),
-        ).toBe(expected)
+        expect(pickPifPrefix({ flip, hasCoarseTier, lodMode })).toBe(expected)
       })
     }
 
-    it('uses fine tier when fixture has no T/Q tier even at very high bpPerPx', async () => {
-      // Locks in the integration behavior the unit-test asserts: feeding a
-      // huge bpPerPx into an adapter pointed at a fine-only fixture must
-      // still return features, not silently degrade to zero.
+    it('uses fine tier when fixture has no T/Q tier even if coarse is asked for', async () => {
+      // Locks in the integration behavior the unit-test asserts: asking an
+      // adapter pointed at a fine-only fixture for the coarse tier must still
+      // return features, not silently degrade to zero.
       const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
       const features = await firstValueFrom(
         adapter
@@ -321,7 +255,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
               end: 60000,
               assemblyName: 'volvox',
             },
-            { bpPerPx: 1e9 },
+            { lodMode: 'coarse' },
           )
           .pipe(toArray()),
       )
@@ -330,13 +264,13 @@ describe('PairwiseIndexedPAFAdapter', () => {
   })
 
   describe('coarse tier integration', () => {
-    it('serves fine-tier features (with CIGAR) when zoomed in', async () => {
+    it('serves fine-tier features (with CIGAR) when the fine tier is asked for', async () => {
       const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
       const features = await firstValueFrom(
         adapter
           .getFeatures(
             { refName: 'ctgA', start: 0, end: 60000, assemblyName: 'volvox' },
-            { bpPerPx: 1 },
+            { lodMode: 'fine' },
           )
           .pipe(toArray()),
       )
@@ -344,13 +278,13 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(features[0]!.get('CIGAR')).toBe('31198M4800I18803M')
     })
 
-    it('serves coarse-tier features (no CIGAR) when zoomed out past threshold', async () => {
+    it('serves coarse-tier features (no CIGAR) when the coarse tier is asked for', async () => {
       const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
       const features = await firstValueFrom(
         adapter
           .getFeatures(
             { refName: 'ctgA', start: 0, end: 60000, assemblyName: 'volvox' },
-            { bpPerPx: 50000 },
+            { lodMode: 'coarse' },
           )
           .pipe(toArray()),
       )

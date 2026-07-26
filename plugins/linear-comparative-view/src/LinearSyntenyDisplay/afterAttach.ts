@@ -72,12 +72,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         void self.fetchRegionsKey
         void self.bpPerPxBucketKey
         const adapterConfig = self.adapterConfig
-        const {
-          drawCIGAR,
-          drawCIGARMatchesOnly,
-          drawLocationMarkers,
-          lodMode,
-        } = view
+        const { drawCIGAR, drawCIGARMatchesOnly, drawLocationMarkers } = view
+        // Tracked: the tier is a fetch input, and in 'auto' it flips at a zoom
+        // the bucket key above cannot see (see the getter).
+        const lodTier = self.lodTier
         // Snapshot the fetch-input signature now, from the same tracked inputs
         // this fetch depends on, so the resulting data is tagged with what it
         // was fetched for even if the view changes again mid-RPC.
@@ -155,7 +153,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               drawCIGAR,
               drawCIGARMatchesOnly,
               drawLocationMarkers,
-              lodMode,
+              lodMode: lodTier,
               statusCallback,
             },
           )

@@ -20,7 +20,12 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
-import { DiagonalizeProgressMixin, coerceColorBy } from '@jbrowse/synteny-core'
+import {
+  DiagonalizeProgressMixin,
+  coerceColorBy,
+  lodMenuItems,
+  trackHasLodTiers,
+} from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { observable } from 'mobx'
@@ -47,7 +52,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { LodMode, SyntenyColorBy } from '@jbrowse/synteny-core'
 import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
 
@@ -497,13 +502,11 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * True if any track has an adapter that declares the 'lod'
-         * capability. Used to gate the LOD menu — only PIF supports it.
+         * True if any track has an adapter with tiered storage. Used to gate the
+         * LOD menu — only the indexed PIF adapters have tiers.
          */
         get hasLodCapableAdapter() {
-          return self.tracks.some(t =>
-            t.adapterType.adapterCapabilities.includes('lod'),
-          )
+          return self.tracks.some(trackHasLodTiers)
         },
         /**
          * #getter
@@ -612,7 +615,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setLodMode(value: 'auto' | 'fine' | 'coarse') {
+        setLodMode(value: LodMode) {
           self.lodMode = value
         },
         /**
@@ -1052,43 +1055,7 @@ export default function stateModelFactory(pm: PluginManager) {
                 ])
               },
             },
-            ...(self.hasLodCapableAdapter
-              ? [
-                  {
-                    label: 'Level of detail',
-                    subMenu: (
-                      [
-                        {
-                          label: 'Automatic (by zoom)',
-                          value: 'auto',
-                          helpText:
-                            'Show base-level detail when zoomed in, blocks-only when zoomed out.',
-                        },
-                        {
-                          label: 'Indels + mismatches',
-                          value: 'fine',
-                          helpText:
-                            'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
-                        },
-                        {
-                          label: 'Alignment blocks only',
-                          value: 'coarse',
-                          helpText:
-                            'Skip base-level detail for speed — no indel or mismatch coloring.',
-                        },
-                      ] as const
-                    ).map(({ label, value, helpText }) => ({
-                      helpText,
-                      label,
-                      type: 'radio' as const,
-                      checked: self.lodMode === value,
-                      onClick: () => {
-                        self.setLodMode(value)
-                      },
-                    })),
-                  },
-                ]
-              : []),
+            ...lodMenuItems(self),
             ...(isSessionModelWithWidgets(session)
               ? [
                   {

@@ -79,6 +79,7 @@ and the `renderParams` the view reads out.
 | [tooltipText](#getter-tooltiptext)                             | Getters    | LinearSyntenyDisplay                                |                                                                                                                                                                                                       |
 | [connectedViews](#getter-connectedviews)                       | Getters    | LinearSyntenyDisplay                                | The two adjacent genome views this level draws between, or undefined until both are initialized with regions.                                                                                         |
 | [bpPerPxBucketKey](#getter-bpperpxbucketkey)                   | Getters    | LinearSyntenyDisplay                                | Stable key over the log2 zoom bucket of both connected views.                                                                                                                                         |
+| [lodTier](#getter-lodtier)                                     | Getters    | LinearSyntenyDisplay                                | The detail tier this level's fetch asks the adapter for, resolved here on the main thread so it can enter `currentFetchKey`.                                                                          |
 | [fetchRegionsKey](#getter-fetchregionskey)                     | Getters    | LinearSyntenyDisplay                                | Stable key over the _snapped_ fetch window of both connected views.                                                                                                                                   |
 | [renderParams](#getter-renderparams)                           | Getters    | LinearSyntenyDisplay                                | Per-track render params consumed by the view's aggregator.                                                                                                                                            |
 | [getFeature](#method-getfeature)                               | Methods    | LinearSyntenyDisplay                                | The parent feature under an INSTANCE index (what the pick engine and the hover/click state carry).                                                                                                    |
@@ -102,7 +103,6 @@ and the `renderParams` the view reads out.
 | [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | [BaseDisplay](../basedisplay)                       | if a display-level message should be displayed instead, make this return a react component                                                                                                            |
 | [renderingProps](#method-renderingprops)                       | Methods    | [BaseDisplay](../basedisplay)                       | props passed to the renderer's React "Rendering" component.                                                                                                                                           |
 | [trackMenuItems](#method-trackmenuitems)                       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
-| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
 | [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | [BaseDisplay](../basedisplay)                       | see the `ignorePromotedDefaults` property                                                                                                                                                             |
 | [setStatusMessage](#action-setstatusmessage)                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
 | [setError](#action-seterror)                                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                       |
@@ -388,6 +388,27 @@ zoom within a bucket.
 type bpPerPxBucketKey = string | undefined
 ```
 
+#### getter: lodTier
+
+The detail tier this level's fetch asks the adapter for, resolved here on the
+main thread so it can enter `currentFetchKey`.
+
+It cannot be resolved adapter-side from `bpPerPx`: the refetch key carries only
+`bpPerPxBucketKey`, a log2 bucket, and the default 10000 threshold sits _inside_
+bucket 13 (8192..16384). Zooming across the threshold within one bucket
+therefore changed nothing the key could see, and the view kept drawing the
+coarse tier's gap-free ribbons while reporting itself current.
+
+The zoom fed in is `min` of both axes, because CIGAR detail is worth drawing
+when the band is wide on EITHER axis — buildSyntenyGeometry's MIN_CIGAR_PX_WIDTH
+gate uses `max(widthPx0, widthPx1)` — so dropping to coarse is only safe once
+BOTH axes are past the threshold. Taking the query axis alone lost indel detail
+on a band whose query was zoomed out but whose target was zoomed in.
+
+```ts
+type lodTier = LodTier
+```
+
 #### getter: fetchRegionsKey
 
 Stable key over the _snapped_ fetch window of both connected views. The fetch
@@ -598,10 +619,9 @@ callbacks
 type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
-| Member                                                                 | Type               |
-| ---------------------------------------------------------------------- | ------------------ |
-| <span id="method-trackmenuitems">trackMenuItems</span>                 | `() => MenuItem[]` |
-| <span id="method-regioncannotberendered">regionCannotBeRendered</span> | `() => null`       |
+| Member                                                 | Type               |
+| ------------------------------------------------------ | ------------------ |
+| <span id="method-trackmenuitems">trackMenuItems</span> | `() => MenuItem[]` |
 
 **Actions**
 

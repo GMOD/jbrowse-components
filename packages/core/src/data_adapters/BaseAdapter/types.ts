@@ -28,11 +28,16 @@ export interface BaseOptions {
   // pair a band draws — `assemblyName` alone can't, since one file backs every
   // pair. Pairwise adapters (which already know their pair) ignore it.
   targetAssemblyName?: string
-  // Used by comparative adapters that expose multiple level-of-detail tiers
-  // (e.g. PIF's per-row CIGAR vs merged-block coarse tier). 'auto' uses the
-  // adapter's bpPerPx threshold; 'fine'/'coarse' force a specific tier.
-  // Adapters without tiering ignore it.
-  lodMode?: 'auto' | 'fine' | 'coarse'
+  // Which level-of-detail tier to read, for adapters that expose more than one
+  // (e.g. PIF's per-row CIGAR fine tier vs its no-CIGAR coarse tier). Absent, the
+  // fine tier is served; adapters without tiering ignore it entirely.
+  //
+  // This is a *resolved* tier, never the user's 'auto' setting: resolving auto
+  // needs a zoom, and it happens on the main thread in a display getter that
+  // feeds the fetch cache key (`resolveLodTier` in @jbrowse/synteny-core).
+  // Resolving it here instead hides a fetch input from that key, which is how a
+  // zoom across the threshold came to leave a view holding the wrong tier.
+  lodMode?: 'fine' | 'coarse'
 }
 
 export interface BaseOptionsWithRegions extends BaseOptions {

@@ -53,7 +53,7 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [showAssemblyNameInSubviewScalebar](#getter-showassemblynameinsubviewscalebar) | Getters    | LinearSyntenyView                                       | Opt each sub-view's scalebar into prefixing its refName labels with the assembly name (e.g. "hg38:chr1"), so stacked genome rows of different assemblies stay distinguishable.                          |
 | [drawCIGAR](#getter-drawcigar)                                                 | Getters    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
 | [drawCIGARMatchesOnly](#getter-drawcigarmatchesonly)                           | Getters    | LinearSyntenyView                                       |                                                                                                                                                                                                         |
-| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | LinearSyntenyView                                       | True if any track on any level has an adapter that declares the 'lod' capability.                                                                                                                       |
+| [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | LinearSyntenyView                                       | True if any track on any level has an adapter with tiered storage.                                                                                                                                      |
 | [hasCigarData](#getter-hascigardata)                                           | Getters    | LinearSyntenyView                                       | True if any currently-loaded synteny display has at least one feature with a CIGAR.                                                                                                                     |
 | [presentCigarKinds](#getter-presentcigarkinds)                                 | Getters    | LinearSyntenyView                                       | Union across every loaded synteny display of which CIGAR indel ops are actually drawn on screen.                                                                                                        |
 | [fadeThinAlignments](#getter-fadethinalignments)                               | Getters    | LinearSyntenyView                                       | Resolved fade-thin flag that every display's renderParams reads.                                                                                                                                        |
@@ -299,9 +299,9 @@ type showAssemblyNameInSubviewScalebar = boolean
 
 #### getter: hasLodCapableAdapter
 
-True if any track on any level has an adapter that declares the 'lod'
-capability. Used to gate the LOD menu — adapters without tiered storage (e.g.
-PAFAdapter, BlastTabularAdapter) have nothing to switch between.
+True if any track on any level has an adapter with tiered storage. Used to gate
+the LOD menu — PAFAdapter, BlastTabularAdapter and friends have nothing to
+switch between.
 
 ```ts
 type hasLodCapableAdapter = boolean

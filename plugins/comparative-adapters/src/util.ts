@@ -1,4 +1,4 @@
-import { csToCigar } from '@jbrowse/cigar-utils'
+import { csToCigar, pafIdentity } from '@jbrowse/cigar-utils'
 import {
   createStatusFanOut,
   downloadStatus,
@@ -177,32 +177,6 @@ export function collectLines<T>({
   return records
 }
 
-// Identity in [0,1] from a parsed PAF row's `extra` map. Prefers the
-// `de:f:` tag (minimap2 / make-pif gap-compressed divergence) since it is
-// computed from the actual CIGAR — same identity source rustybam's `rb stats
-// --paf` writes and SVbyEye computes per-bin. Falls back to odgi untangle's
-// `id:f:` tag (a percentage or fraction), then to residue matches over block
-// length.
-export function pafIdentity(
-  extra: Record<string, string | number | undefined>,
-) {
-  if (extra.de !== undefined) {
-    const d = +extra.de
-    if (Number.isFinite(d) && d >= 0 && d <= 1) {
-      return 1 - d
-    }
-  }
-  if (extra.id !== undefined) {
-    const v = +extra.id
-    if (Number.isFinite(v)) {
-      return v > 1 ? v / 100 : v
-    }
-  }
-  const matches = +(extra.numMatches ?? 0)
-  const blockLen = +(extra.blockLen ?? 0)
-  return blockLen > 0 ? matches / blockLen : 0
-}
-
 export function parsePAFLine(line: string) {
   const parts = line.split('\t')
   const extra: Record<string, string | number> = {
@@ -377,25 +351,20 @@ export function hasCoarseTierPrefix(refSeqNames: string[]) {
 
 // The coarse (uppercase T/Q) tier is a no-CIGAR summary served when zoomed out;
 // the fine (lowercase t/q) tier carries per-row CIGARs. A file only has the
-// coarse tier if make-pif emitted it. In 'auto' mode it is used past the
-// bpPerPx threshold; a manual 'coarse' override forces it but still falls back
+// coarse tier if make-pif emitted it, so a request for 'coarse' still falls back
 // to fine when the tier is absent — the alternative would be returning no data.
-// Shared by the two indexed PIF adapters.
+//
+// The zoom-based `auto` decision is deliberately NOT here: it is resolved on the
+// main thread by `resolveLodTier`, where it can reach the fetch cache key. See
+// BaseOptions.lodMode. Shared by the two indexed PIF adapters.
 export function resolveCoarseTier({
-  bpPerPx,
-  threshold,
   hasCoarseTier,
-  lodMode = 'auto',
+  lodMode,
 }: {
-  bpPerPx: number | undefined
-  threshold: number
   hasCoarseTier: boolean
   lodMode?: BaseOptions['lodMode']
 }) {
-  const zoomedOut = bpPerPx !== undefined && bpPerPx >= threshold
-  return (
-    hasCoarseTier && (lodMode === 'coarse' || (lodMode === 'auto' && zoomedOut))
-  )
+  return hasCoarseTier && lodMode === 'coarse'
 }
 
 // Build a SyntenyFeature from a parsed PIF row. Unlike the in-memory adapters'

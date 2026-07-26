@@ -8,12 +8,12 @@ function call({
   qend = 100,
   splitGap,
 }: {
-  cigar?: string | undefined
+  cigar?: string
   strand?: string
   tstart?: number
   qstart?: number
   qend?: number
-  splitGap: number | undefined
+  splitGap: number
 }) {
   return splitCigarOnLargeGaps({
     cigar,
@@ -34,7 +34,6 @@ describe('splitCigarOnLargeGaps', () => {
       tend: 100,
       qstart: 0,
       qend: 100,
-      numMatches: 100,
       blockLen: 100,
     })
   })
@@ -114,21 +113,6 @@ describe('splitCigarOnLargeGaps', () => {
     })
   })
 
-  test('does not split when splitGap is 0 (strip-only)', () => {
-    const segs = call({
-      cigar: '20M1000D20M',
-      qend: 40,
-      splitGap: 0,
-    })
-    expect(segs).toHaveLength(1)
-    expect(segs[0]).toMatchObject({
-      tstart: 0,
-      tend: 1040,
-      qstart: 0,
-      qend: 40,
-    })
-  })
-
   test('multiple large gaps yield N+1 segments', () => {
     const segs = call({
       cigar: '10M1000D10M1000I10M',
@@ -151,46 +135,21 @@ describe('splitCigarOnLargeGaps', () => {
     })
   })
 
-  test('counts = as matches and X as block-only', () => {
-    const segs = call({
-      cigar: '50=10X40=',
-      qend: 100,
-      splitGap: 0,
-    })
+  test('block length counts aligned bases and the small indels kept inside', () => {
+    // 50=5D45= — the 5bp deletion is below the split gap, so it stays inside the
+    // piece and counts toward its aligned length
+    const segs = call({ cigar: '50=5D45=', qend: 95, splitGap: 500 })
     expect(segs).toHaveLength(1)
-    // = counts as a residue match, X does not; both add to block length
-    expect(segs[0]).toMatchObject({
-      numMatches: 90,
-      blockLen: 100,
-    })
+    expect(segs[0]!.blockLen).toBe(100)
   })
 
-  test('block length includes small indel bases; matches exclude them', () => {
+  test('a split drops the large gaps from every piece block length', () => {
     const segs = call({
-      cigar: '50=5D45=',
-      qend: 95,
-      splitGap: 0,
-    })
-    expect(segs).toHaveLength(1)
-    // 95 residue matches, block length 100 (includes the 5bp deletion)
-    expect(segs[0]).toMatchObject({
-      numMatches: 95,
-      blockLen: 100,
-    })
-  })
-
-  test('missing cigar returns a single passthrough record', () => {
-    const segs = call({
-      cigar: undefined,
-      qend: 100,
+      cigar: '10M1000D10M',
+      qend: 20,
       splitGap: 500,
     })
-    expect(segs).toHaveLength(1)
-    expect(segs[0]).toMatchObject({
-      tstart: 0,
-      tend: 100,
-      qstart: 0,
-      qend: 100,
-    })
+    // the 1000bp gap belongs to neither piece
+    expect(segs.map(s => s.blockLen)).toEqual([10, 10])
   })
 })

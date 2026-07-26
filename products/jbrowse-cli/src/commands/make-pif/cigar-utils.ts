@@ -3,17 +3,19 @@ export interface CigarSegment {
   tend: number
   qstart: number
   qend: number
-  // Residue matches and total block length for this piece, used as the coarse
-  // row's num_matches/block_len columns. Identity (de:f:) is derived by the
-  // caller from the whole row, not from these, so coloring stays continuous
-  // across the fine/coarse LOD switch (see pif-generator).
-  numMatches: number
+  // Aligned length of this piece: M/=/X plus the small indels kept inside it,
+  // excluding the large gaps split on. Only ever used as the weight that
+  // apportions the row's PAF num_matches/block_len across its pieces (see
+  // pif-generator) — residue matches are deliberately NOT counted here, because
+  // an M-style CIGAR folds mismatches into M and a count off it would claim
+  // ~100% identity for a divergent alignment.
   blockLen: number
 }
 
-// Walk a CIGAR and split the alignment whenever an insertion or deletion
-// is at least `splitGap` bp. Returns one segment per contiguous run. When
-// splitGap is 0 or undefined, returns a single segment with full stats.
+// Walk a CIGAR and split the alignment wherever an insertion or deletion is at
+// least `splitGap` bp, so each coarse-tier row's bounding box stays tight.
+// Returns one segment per contiguous run; `splitGap` must be positive (the
+// caller keeps the whole row when there is nothing to split on).
 // PAF semantics: qstart < qend always; '-' strand CIGAR walks query backward.
 // The target end is derived from the walk, so it isn't taken as an input.
 export function splitCigarOnLargeGaps({
@@ -29,14 +31,13 @@ export function splitCigarOnLargeGaps({
   tstart: number
   qstart: number
   qend: number
-  splitGap: number | undefined
+  splitGap: number
 }): CigarSegment[] {
   const qStep = strand === '-' ? -1 : 1
   let tCursor = tstart
   let qCursor = strand === '-' ? qend : qstart
   let segTStart = tCursor
   let segQAnchor = qCursor
-  let segMatches = 0
   let segBlockLen = 0
   const out: CigarSegment[] = []
 
@@ -47,7 +48,6 @@ export function splitCigarOnLargeGaps({
         tend: tCursor,
         qstart: Math.min(segQAnchor, qCursor),
         qend: Math.max(segQAnchor, qCursor),
-        numMatches: segMatches,
         blockLen: segBlockLen,
       })
     }
@@ -69,13 +69,8 @@ export function splitCigarOnLargeGaps({
       tCursor += len
       qCursor += len * qStep
       segBlockLen += len
-      // = and M count as residue matches; X is a mismatch, so excluded from
-      // num_matches (but still part of the block length above).
-      if (op !== 'X') {
-        segMatches += len
-      }
     } else if ('DIN'.includes(op)) {
-      const isLarge = splitGap !== undefined && splitGap > 0 && len >= splitGap
+      const isLarge = len >= splitGap
       if (isLarge) {
         emit()
       }
@@ -87,7 +82,6 @@ export function splitCigarOnLargeGaps({
       if (isLarge) {
         segTStart = tCursor
         segQAnchor = qCursor
-        segMatches = 0
         segBlockLen = 0
       } else {
         segBlockLen += len

@@ -273,11 +273,11 @@ test('the anchor is found whether it is the PAF query or target side', async () 
   expect(mates.G1).toMatchObject({ assemblyName: 'peach' })
 })
 
-test('zoomed out (bpPerPx over threshold) serves the coarse tier', async () => {
+test('the coarse tier serves the same one-vs-all set without CIGARs', async () => {
   const fa = await feats(
     makeAdapter(['grape', 'peach', 'cacao']),
     { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grape' },
-    { bpPerPx: 20000 },
+    { lodMode: 'coarse' },
   )
   // same one-vs-all set as the fine tier (peach, cacao, paralog), but coarse
   // rows carry no CIGAR
@@ -331,9 +331,9 @@ test('real all-vs-all fixture: draws against an assembly missing from assemblyNa
 // The tier the reader serves. all_vs_all.pif.gz carries both (make-pif wrote
 // uppercase Q/T rows alongside the lowercase q/t ones) and only the coarse rows
 // carry a de:f: tag, so the tag says which prefix was actually read. An LGV
-// synteny track reaches these through the alignments fetch path, which supplies
-// no bpPerPx — so `lodMode` is the only thing that can move it off the fine
-// tier there, and it had never been exercised from that direction.
+// The tier is always stated outright: it is resolved on the main thread by
+// resolveLodTier so it can enter the fetch cache key, and the adapter's job is
+// only to honor it (and to degrade when the file has no coarse tier).
 const tiersOf = (fa: Awaited<ReturnType<typeof feats>>) =>
   new Set(fa.map(f => (f.get('de') === undefined ? 'fine' : 'coarse')))
 
@@ -344,7 +344,7 @@ const grapeChr1 = {
   assemblyName: 'grape',
 }
 
-test('an explicit coarse lodMode reads the coarse tier with no bpPerPx', async () => {
+test('an explicit coarse lodMode reads the coarse tier', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1, {
     lodMode: 'coarse',
   })
@@ -357,13 +357,13 @@ test('an explicit fine lodMode holds the fine tier however far out the view is',
     lodMode: 'fine',
     bpPerPx: 1e9,
   })
+
   expect(fa.length).toBeGreaterThan(0)
   expect(tiersOf(fa)).toEqual(new Set(['fine']))
 })
 
-// the pre-lodMode behavior of the LGV path, kept as the documented default:
-// absent both a tier and a bpPerPx, the reader stays fine
-test('no lodMode and no bpPerPx stays on the fine tier', async () => {
+// a direct getFeatures call (feature-by-id lookup, text search) states no tier
+test('no stated lodMode stays on the fine tier', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), grapeChr1)
   expect(fa.length).toBeGreaterThan(0)
   expect(tiersOf(fa)).toEqual(new Set(['fine']))

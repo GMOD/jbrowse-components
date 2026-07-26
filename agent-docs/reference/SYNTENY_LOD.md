@@ -15,8 +15,12 @@ adapters, or the synteny fetch RPC.
   CIGAR), coarse `T`/`Q` (no CIGAR, split at indels `>= --coarse`).
 - Coarse cuts **per-alignment** cost, not alignment **count**. It's the tool for
   few-huge-CIGARs, marginal for many-short-alignments.
-- Coarse identity must reuse the fine `de:f:` tag, never recompute from CIGAR —
-  `M` folds in mismatches, giving spurious 100% identity across the LOD switch.
+- **`auto` resolves on the main thread only** (`resolveLodTier`), never in the
+  adapter: the tier is a fetch input and must reach the refetch cache key.
+- Coarse identity is written from `pafIdentity`, the same function the fine tier
+  is read with — never recomputed from CIGAR (`M` folds in mismatches, giving
+  spurious 100% identity across the LOD switch) and never a private copy of the
+  fallback chain (a copy is what skipped the `id:f:` rung).
 - Profiled, not guessed: ~66% of cost is fetch + parse (unavoidable at read
   time), ~34% construct + downstream. So read-time binning caps at ~1.5×.
 - The only lever on the dominant cost is a **precomputed binned tier in
@@ -30,30 +34,81 @@ adapters, or the synteny fetch RPC.
 `jbrowse make-pif` writes two tiers into one tabix-indexed PIF, distinguished by
 a one-letter prefix on the seqid (tabix column 1):
 
-- **fine** — `t<target>` / `q<query>` (lowercase). Per-row CIGAR. One `t` line
-  and one `q` line per PAF row (the two indexed perspectives).
-- **coarse** — `T<target>` / `Q<query>` (uppercase). No CIGAR. Each row is split
-  wherever a CIGAR indel is `>= --coarse` (default 10 kb) so each coarse piece's
-  bounding box stays tight and its straight ribbon is accurate. Emitted by
-  default; suppress with `--no-coarse`.
+- **fine** — `t<target>` / `q<query>` (lowercase). Per-row CIGAR, and every
+  optional tag the PAF carried. One `t` line and one `q` line per PAF row (the
+  two indexed perspectives). Never split: the fine tier draws a large indel as a
+  colored `KIND_CIGAR_D`/`_I` wedge, which is the whole reason it exists. To
+  split the alignments themselves, `rb break-paf` upstream of `make-pif` — that
+  splits both tiers, keeping them 1:1.
+- **coarse** — `T<target>` / `Q<query>` (uppercase). No CIGAR/`cs`, every other
+  tag passed through. Each row is split wherever a CIGAR indel is `>= --coarse`
+  (default 10 kb) so each coarse piece's bounding box stays tight and its
+  straight ribbon is accurate. Emitted by default; suppress with `--no-coarse`
+  (which is now an error alongside an explicit `--coarse`).
 
-Reader side (`plugins/comparative-adapters/src/util.ts`):
-`resolveCoarseTier({ bpPerPx, threshold, hasCoarseTier, lodMode })` picks the
-tier — coarse when `lodMode === 'coarse'`, or `auto` + `bpPerPx >= threshold`
-(default `coarseBpPerPxThreshold` 10000). `pickPifPrefix` upper-cases the
-perspective letter for coarse.
+## Where `auto` resolves — main thread, once
 
-Identity continuity: a coarse row reuses the fine row's `de:f:` tag, or — absent
-one — derives divergence from the PAF `num_matches`/`block_len` columns (the
-same source `pafIdentity` uses for fine). It must **never** recompute divergence
-from the CIGAR: a `cg` (M-style) CIGAR folds mismatches into `M`, so a recompute
-reports ~0 divergence (spurious 100% identity) and colors discontinuously across
-the LOD switch. Split rows lacking `de:f:` deliberately flatten to the row-level
-identity to preserve fine/coarse continuity.
+`resolveLodTier` (`packages/synteny-core/src/lodTier.ts`) is the only place
+`auto` becomes a tier. It **must** run in a display getter that feeds the fetch
+cache key, and the adapter option (`BaseOptions.lodMode`) is typed
+`'fine' | 'coarse'` so it cannot drift back.
 
-The `auto` tier decision uses `min(v1.bpPerPx, v2.bpPerPx)` (both synteny axes),
-because CIGAR detail is worth drawing when the band is wide on either axis
-(`MIN_CIGAR_PX_WIDTH` uses `max(widthPx0, widthPx1)`).
+This was a real bug: `LinearSyntenyDisplay` keys refetches on
+`bpPerPxBucketKey` = `floor(log2(bpPerPx))`, and the default 10000 threshold sits
+*inside* bucket 13 (`[8192, 16384)`). With the decision made adapter-side from
+`bpPerPx`, zooming across the threshold within one bucket changed nothing the key
+could see — the view kept the coarse tier's gap-free ribbons below the threshold
+and `dataCurrent` reported fresh. `fetchRegionsKey` doesn't rescue it either: at
+that zoom `syntenyFetchRegions` clamps to the whole displayed region, so it is
+identical across the band.
+
+Consumers: `LinearSyntenyDisplay.lodTier` → `currentFetchKey`,
+`DotplotDisplay.lodTier` → `dotplotFetchKey`, `LGVSyntenyDisplay.lodTier` →
+`rpcProps`. All three read the threshold with `getCoarseBpPerPxThreshold`, which
+goes through the **slot path** — `adapterConfig` is a snapshot carrying only
+explicitly-set keys, so it reads `undefined` for the ~all tracks at the default
+and the tier was never resolved. The presence of that slot is also the single
+gate for the "Level of detail" menu (`trackHasLodTiers`); the old `'lod'`
+`adapterCapabilities` string was a second signal that could disagree with it and
+is gone.
+
+The two synteny/dotplot surfaces feed `min` of both axes, because CIGAR detail is
+worth drawing when the band is wide on either axis (`MIN_CIGAR_PX_WIDTH` uses
+`max(widthPx0, widthPx1)`), so dropping to coarse is only safe once both axes are
+past the threshold.
+
+Adapter side (`plugins/comparative-adapters/src/util.ts`) is now just
+`resolveCoarseTier({ hasCoarseTier, lodMode })` = `hasCoarseTier && lodMode ===
+'coarse'`. A request for coarse on a file without the tier degrades to fine
+rather than querying `T`/`Q` prefixes that match nothing.
+
+## Identity continuity across the switch
+
+A coarse row's `de:f:` is written as `1 - pafIdentity(row)` using
+**`pafIdentity` itself** (`@jbrowse/cigar-utils`), the same function the adapters
+read the fine tier with, so the two tiers cannot disagree. When the row's own
+`de:f:` is what that chain lands on, the string is copied byte-for-byte rather
+than reformatted, so a 7-decimal tag isn't truncated by `toFixed(6)`.
+
+Two traps this replaced, both of which shipped:
+
+- A private copy of the chain in `make-pif` that went `de:f:` →
+  `num_matches/block_len`, **skipping the `id:f:` rung** `pafIdentity` honors. An
+  odgi-untangle PAF therefore colored off `id` when zoomed in and off
+  `num_matches/block_len` when zoomed out.
+- `blockLen === 0` wrote `de:f:0` (100% identity) while `pafIdentity` returns 0
+  (0% identity).
+
+Never recompute divergence from the CIGAR: a `cg` (M-style) CIGAR folds
+mismatches into `M`, so a recompute reports ~0 divergence for a divergent
+alignment.
+
+Split pieces get the row's `num_matches`/`block_len` **apportioned by aligned
+length**, so each piece implies exactly the row's identity (agreeing with the
+`de:f:` beside it) and the pieces sum back to the row. `splitCigarOnLargeGaps`
+therefore does not count residue matches at all — counting `M` as a match was
+inflating them. A row that doesn't split keeps its PAF coordinate/count columns
+verbatim rather than the walk's reconstruction of them.
 
 ## What the coarse tier does and does NOT solve
 

@@ -105,8 +105,10 @@ export function doAfterAttach(
         // Untracked: the values behind that key. Reading them here rather than
         // as deps keeps raw offsetPx/width changes from refiring the fetch,
         // while the worker still sees the current axes.
-        const { lodMode, hViewSnap, vViewSnap, regions } = untracked(() => ({
-          lodMode: view.lodMode,
+        const { lodTier, hViewSnap, vViewSnap, regions } = untracked(() => ({
+          // the resolved tier, which is what `currentFetchKey` above carries —
+          // `view.lodMode` stays 'auto' while the tier flips under it
+          lodTier: self.lodTier,
           hViewSnap: makeViewSnap(view.hview),
           vViewSnap: makeViewSnap(view.vview),
           regions: self.fetchRegions,
@@ -149,7 +151,7 @@ export function doAfterAttach(
                 displayedRegions: await rename(vViewSnap.displayedRegions),
               },
               stopToken,
-              lodMode,
+              lodMode: lodTier,
               statusCallback,
             },
           )

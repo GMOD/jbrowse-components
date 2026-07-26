@@ -1,6 +1,6 @@
 import RemoveIcon from '@mui/icons-material/Remove'
 
-import type { CigarMode, LodMode } from './types.ts'
+import type { CigarMode } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The conditional sections of the LinearSyntenyView header menu, each gated on
@@ -119,54 +119,6 @@ export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
             checked: model.cigarMode === mode,
             onClick: () => {
               model.setCigarMode(mode)
-            },
-          })),
-        },
-      ]
-    : []
-}
-
-interface LodModel {
-  hasLodCapableAdapter: boolean
-  lodMode: LodMode
-  setLodMode: (arg: LodMode) => void
-}
-
-const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
-  {
-    label: 'Automatic (by zoom)',
-    value: 'auto',
-    helpText:
-      'Show base-level detail when zoomed in, blocks-only when zoomed out.',
-  },
-  {
-    label: 'Indels + mismatches',
-    value: 'fine',
-    helpText:
-      'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
-  },
-  {
-    label: 'Alignment blocks only',
-    value: 'coarse',
-    helpText:
-      'Skip base-level detail for speed — no indel or mismatch coloring.',
-  },
-]
-
-// Adapters without tiered storage (PAFAdapter, BlastTabularAdapter) have nothing
-// to switch between.
-export function lodMenuItems(model: LodModel): MenuItem[] {
-  return model.hasLodCapableAdapter
-    ? [
-        {
-          label: 'Level of detail',
-          subMenu: LOD_MODES.map(({ label, value, helpText }) => ({
-            helpText,
-            label,
-            type: 'radio' as const,
-            checked: model.lodMode === value,
-            onClick: () => {
-              model.setLodMode(value)
             },
           })),
         },

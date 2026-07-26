@@ -87,12 +87,16 @@ export async function run(args?: string[]) {
 
   const { out, csi = false, coarse, 'no-coarse': noCoarse = false } = flags
   const outputFile = getOutputFilename(file, out)
-  let coarseSplitGap: number | undefined
-  if (noCoarse) {
-    coarseSplitGap = undefined
-  } else {
-    coarseSplitGap = coarse === undefined ? DEFAULT_COARSE_SPLIT_GAP : +coarse
+  // --no-coarse used to silently win over an explicit --coarse, so a run asking
+  // for both wrote a file with no coarse tier and said nothing about it
+  if (noCoarse && coarse !== undefined) {
+    throw new Error('--coarse and --no-coarse are mutually exclusive')
   }
+  const coarseSplitGap = noCoarse
+    ? undefined
+    : coarse === undefined
+      ? DEFAULT_COARSE_SPLIT_GAP
+      : +coarse
   if (
     coarseSplitGap !== undefined &&
     (!Number.isFinite(coarseSplitGap) || coarseSplitGap < 0)
@@ -104,14 +108,30 @@ export async function run(args?: string[]) {
   const stdin = child.stdin
   // end stdin even if createPIF throws, otherwise the spawned sort/index child
   // is left running with an open stdin
-  const { samples } = await createPIF(file, stdin, coarseSplitGap).finally(
-    () => {
-      stdin.end()
-    },
-  )
+  const { samples, rows, skipped } = await createPIF(
+    file,
+    stdin,
+    coarseSplitGap,
+  ).finally(() => {
+    stdin.end()
+  })
   const exitCode = await waitForProcessClose(child)
   if (exitCode !== 0) {
     throw new Error(`PIF sort/index pipeline exited with code ${exitCode}`)
+  }
+
+  // A file that yielded nothing is almost always the wrong file, not an empty
+  // alignment: without this the command wrote a valid, indexed, empty PIF and
+  // printed the add-track suggestion for it
+  if (rows === 0) {
+    throw new Error(
+      `No valid PAF rows found in ${file ?? 'stdin'} (${skipped} line(s) had fewer than the 12 mandatory PAF columns). Is this a PAF file?`,
+    )
+  }
+  if (skipped > 0) {
+    console.warn(
+      `Warning: skipped ${skipped} of ${rows + skipped} line(s) with fewer than the 12 mandatory PAF columns`,
+    )
   }
 
   const indexFile = `${outputFile}.${csi ? 'csi' : 'tbi'}`

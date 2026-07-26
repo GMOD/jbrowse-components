@@ -22,18 +22,24 @@ import {
   pickColorOptions,
   withContextMenuFeature,
 } from '@jbrowse/plugin-alignments'
+import {
+  getCoarseBpPerPxThreshold,
+  lodMenuItems,
+  resolveLodTier,
+  trackHasLodTiers,
+} from '@jbrowse/synteny-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
 import { getMate } from '../syntenyMate.ts'
-import { resolveDisplayLodMode } from './lodMode.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LodMode } from '@jbrowse/synteny-core'
 
 const LaunchSyntenyViewDialog = lazy(
   () => import('../LaunchSyntenyView/LaunchSyntenyViewDialog.tsx'),
@@ -85,6 +91,18 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
            * #property
            */
           configuration: ConfigurationReference(schema),
+          /**
+           * #property
+           * Level-of-detail tier selection for tiered PIF adapters. 'auto' uses
+           * the adapter's bpPerPx threshold; 'fine' pins the per-row CIGAR tier
+           * (t/q); 'coarse' the no-CIGAR tier (T/Q). Matches the synteny view and
+           * dotplot setting of the same name — this display draws the same tracks
+           * and had no way to pin a tier.
+           */
+          lodMode: types.stripDefault(
+            types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+            'auto',
+          ),
         }),
       )
       // showCoverage defaults to false for synteny via the config-slot override
@@ -138,34 +156,42 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             : new Set()
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * Whether this track's adapter has tiered storage to switch between —
+         * gates the "Level of detail" menu.
+         */
+        get hasLodCapableAdapter() {
+          return trackHasLodTiers(self.parentTrack)
+        },
+        /**
+         * #getter
+         * The tier this display's fetch asks for. Resolved here, on the main
+         * thread, so it lands in `rpcProps` — which is the refetch cache key, so
+         * a tier flip trips a refetch and a mid-zoom threshold crossing cannot go
+         * unnoticed. Forwarding a raw `bpPerPx` instead would invalidate every
+         * fetch on every zoom step; this changes only when the tier flips.
+         */
+        get lodTier() {
+          return resolveLodTier({
+            bpPerPx: (getContainingView(self) as LinearGenomeViewModel).bpPerPx,
+            coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
+            lodMode: self.lodMode,
+          })
+        },
+      }))
       .views(self => {
         const superRpcProps = self.rpcProps
         return {
           /**
            * #method
-           * Adds the detail tier to the base alignments RPC payload — see
-           * `resolveDisplayLodMode` for why the display resolves it rather than
-           * forwarding `bpPerPx` to the adapter.
+           * Adds the resolved detail tier to the base alignments RPC payload.
            */
           rpcProps() {
-            // via the slot path rather than `self.adapterConfig`, which is a
-            // snapshot and so carries only explicitly-set keys — the threshold
-            // read undefined for every track that leaves it at its default,
-            // which is nearly all of them, and the tier was never sent. An
-            // adapter with no tiering has no such slot and reads undefined here,
-            // which is the "send no lodMode" case.
-            const threshold: unknown = getConf(self.parentTrack, [
-              'adapter',
-              'coarseBpPerPxThreshold',
-            ])
             return {
               ...superRpcProps(),
-              lodMode: resolveDisplayLodMode({
-                bpPerPx: (getContainingView(self) as LinearGenomeViewModel)
-                  .bpPerPx,
-                coarseBpPerPxThreshold:
-                  typeof threshold === 'number' ? threshold : undefined,
-              }),
+              lodMode: self.lodTier,
             }
           },
         }
@@ -178,6 +204,12 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
         setHideSelfAlignments(flag: boolean) {
           setConf(self, 'hideSelfAlignments', flag)
           self.scrollTop = 0
+        },
+        /**
+         * #action
+         */
+        setLodMode(arg: LodMode) {
+          self.lodMode = arg
         },
       }))
       .views(self => ({
@@ -309,6 +341,9 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             getFiltersMenuItem(self),
             getSyntenyGroupByMenuItem(self),
             getSyntenyShowMenuItem(self),
+            // Same submenu the synteny view and dotplot show, from one source, so
+            // the three surfaces can't word the same setting differently
+            ...lodMenuItems(self),
             getFeatureHeightMenuItem(self, 'feature'),
           ] satisfies MenuItem[]
         },

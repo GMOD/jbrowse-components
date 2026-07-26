@@ -223,6 +223,149 @@ test('coarse identity matches fine for a cg CIGAR with no de:f: tag', async () =
   })
 })
 
+// A PAF row helper: 12 mandatory columns plus whatever tags the test needs
+function pafRow(
+  tags: string[],
+  overrides: Partial<Record<number, string>> = {},
+) {
+  const cols = [
+    'q1',
+    '100',
+    '0',
+    '100',
+    '+',
+    't1',
+    '100',
+    '0',
+    '100',
+    '90',
+    '100',
+    '60',
+  ]
+  for (const [i, v] of Object.entries(overrides)) {
+    cols[+i] = v!
+  }
+  return `${[...cols, ...tags].join('\t')}\n`
+}
+
+async function pifLines(paf: string, args: string[] = []) {
+  const pafPath = path.join(process.cwd(), 'in.paf')
+  fs.writeFileSync(pafPath, paf)
+  await runCommand(['make-pif', pafPath, '--out', 'out.pif.gz', ...args])
+  return gunzipSync(fs.readFileSync('out.pif.gz'))
+    .toString()
+    .split('\n')
+    .filter(Boolean)
+}
+
+const tagValue = (line: string, prefix: string) =>
+  line
+    .split('\t')
+    .find(f => f.startsWith(prefix))
+    ?.slice(prefix.length)
+
+// odgi untangle writes id:f: and no de:f:. pafIdentity reads de -> id ->
+// num_matches/block_len, so a coarse tier that skipped the id rung colored off
+// 90/100 while the fine tier colored off id=0.99 — a visible jump at the zoom
+// where the tier switches.
+test('coarse identity follows the id:f: tag when there is no de:f:', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(pafRow(['cg:Z:100M', 'id:f:0.99']))
+    const coarseT = lines.find(l => l.startsWith('T'))!
+    // 1 - 0.99, not 1 - 90/100
+    expect(+tagValue(coarseT, 'de:f:')!).toBeCloseTo(0.01, 6)
+    expect(tagValue(coarseT, 'id:f:')).toBe('0.99')
+  })
+})
+
+test('a degenerate zero block length reads as 0% identity on both tiers', async () => {
+  await runInTmpDir(async () => {
+    // block_len 0 makes pafIdentity return 0; the coarse tier used to write
+    // de:f:0, which reads back as 100%
+    const lines = await pifLines(pafRow(['cg:Z:100M'], { 9: '0', 10: '0' }))
+    const coarseT = lines.find(l => l.startsWith('T'))!
+    expect(tagValue(coarseT, 'de:f:')).toBe('1.000000')
+  })
+})
+
+test('coarse rows carry the non-alignment tags through', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(
+      pafRow(['tp:A:P', 'cm:i:87', 'cg:Z:100M', 'cs:Z::100', 'de:f:0.0908']),
+    )
+    for (const l of lines.filter(l => /^[TQ]/.test(l))) {
+      expect(l).toContain('tp:A:P')
+      expect(l).toContain('cm:i:87')
+      // the alignment strings are the whole point of the tier being coarse
+      expect(l).not.toContain('cg:Z:')
+      expect(l).not.toContain('cs:Z:')
+      // the aligner's own de string, not a toFixed restatement of it
+      expect(tagValue(l, 'de:f:')).toBe('0.0908')
+      expect(l.split('\t').filter(f => f.startsWith('de:f:'))).toHaveLength(1)
+    }
+  })
+})
+
+test('coarse pieces report the row identity, not an M-inflated one', async () => {
+  await runInTmpDir(async () => {
+    // 40M + a 1kb deletion + 40M, no de:f: tag. Both pieces must imply the row's
+    // 50% identity; counting M as a match would claim 40/40 = 100% on each.
+    const lines = await pifLines(
+      pafRow(['cg:Z:40M1000D40M'], { 3: '80', 8: '1080', 9: '40', 10: '80' }),
+      ['--coarse', '500'],
+    )
+    const coarseT = lines.filter(l => l.startsWith('T'))
+    expect(coarseT).toHaveLength(2)
+    for (const l of coarseT) {
+      const [, , , , , , , , , numMatches, blockLen] = l.split('\t')
+      expect(+numMatches! / +blockLen!).toBeCloseTo(0.5, 6)
+      expect(+tagValue(l, 'de:f:')!).toBeCloseTo(0.5, 6)
+    }
+    // and the pieces sum back to the row's num_matches
+    expect(coarseT.reduce((a, l) => a + +l.split('\t')[9]!, 0)).toBe(40)
+  })
+})
+
+test('an unsplit coarse row keeps the PAF coordinate columns verbatim', async () => {
+  await runInTmpDir(async () => {
+    // a CIGAR whose spans disagree with the coordinate columns: the fine tier
+    // draws the columns, so the coarse row must not drift onto the walk's answer
+    const lines = await pifLines(pafRow(['cg:Z:50M']))
+    const coarseT = lines.find(l => l.startsWith('T'))!
+    const [, , start, end] = coarseT.split('\t')
+    expect([start, end]).toEqual(['0', '100'])
+  })
+})
+
+test('--coarse and --no-coarse together is an error', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand([
+      'make-pif',
+      simplePaf,
+      '--out',
+      'o.pif.gz',
+      '--no-coarse',
+      '--coarse',
+      '500',
+    ])
+    expect(error?.message).toMatch('mutually exclusive')
+  })
+})
+
+test('a file with no valid PAF rows fails instead of writing an empty PIF', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    const notPaf = path.join(dir, 'notpaf.txt')
+    fs.writeFileSync(notPaf, 'chr1\t100\t200\nchr1\t300\t400\n')
+    const { error } = await runCommand([
+      'make-pif',
+      notPaf,
+      '--out',
+      'o.pif.gz',
+    ])
+    expect(error?.message).toMatch('Is this a PAF file?')
+  })
+})
+
 test('detects a plain-named PAF as pairwise (no PanSN samples)', async () => {
   const { samples } = await createPIF(simplePaf, sink())
   expect(samples.size).toBe(0)

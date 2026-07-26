@@ -14,7 +14,6 @@ export default function AllVsAllIndexedPAFAdapterF(
         displayName: 'All-vs-all indexed PAF adapter',
         normalizeSnapshot,
         configSchema,
-        adapterCapabilities: ['lod'],
         adapterMetadata: {
           category: 'Synteny adapters',
         },

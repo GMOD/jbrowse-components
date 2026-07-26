@@ -69,6 +69,9 @@ function syntenyDisplay(adapter: Record<string, unknown>) {
   // displays[0] is `any`, so annotate to keep phantom getters from typechecking
   const display = session.views[0].tracks[0].displays[0] as {
     rpcProps: () => Record<string, unknown>
+    hasLodCapableAdapter: boolean
+    setLodMode: (arg: 'auto' | 'fine' | 'coarse') => void
+    trackMenuItems: () => { label?: string }[]
   }
   return { view, display }
 }
@@ -120,7 +123,28 @@ test('a threshold below the current bpPerPx asks for the coarse tier', () => {
   expect(display.rpcProps().lodMode).toBe('coarse')
 })
 
-test('an adapter with no coarse tier sends no lodMode', () => {
+// An untiered adapter has only the fine tier to serve, so that is the honest
+// answer at any zoom — and, having no threshold slot, it is also the reason the
+// "Level of detail" menu stays hidden for it
+test('an adapter with no coarse tier asks for the fine tier and offers no menu', () => {
   const { display } = syntenyDisplay(UNTIERED)
-  expect(display.rpcProps().lodMode).toBeUndefined()
+  expect(display.rpcProps().lodMode).toBe('fine')
+  expect(display.hasLodCapableAdapter).toBe(false)
+})
+
+test('a tiered adapter offers the level-of-detail menu', () => {
+  const { display } = syntenyDisplay(tiered())
+  expect(display.hasLodCapableAdapter).toBe(true)
+  expect(display.trackMenuItems().map(i => i.label)).toContain(
+    'Level of detail',
+  )
+})
+
+// The bug this whole resolution point exists for: pinning a tier must move the
+// value that goes into rpcProps, which is the refetch cache key
+test('pinning a tier overrides the zoom-based answer', () => {
+  const { display } = syntenyDisplay(tiered(0.5))
+  expect(display.rpcProps().lodMode).toBe('coarse')
+  display.setLodMode('fine')
+  expect(display.rpcProps().lodMode).toBe('fine')
 })

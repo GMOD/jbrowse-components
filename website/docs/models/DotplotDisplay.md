@@ -28,6 +28,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | [refetching](#getter-refetching)                               | Getters    | DotplotDisplay                                      | Refetch in-flight: a new fetch is running but a stale plot is still on screen (zoom, diagonalize reorder, pan past the buffer).                                                                                                                                           |
 | [fetchRegions](#getter-fetchregions)                           | Getters    | DotplotDisplay                                      | The h-axis fetch window: the visible content blocks expanded by the shared pan buffer and snapped outward to a buffer-sized grid, so a pan within the buffer neither refetches nor exposes an unfetched strip, and zoomed out it collapses to the whole displayed region. |
 | [currentFetchKey](#getter-currentfetchkey)                     | Getters    | DotplotDisplay                                      | The fetch-input signature (see fetchKey.ts) for the view's current state.                                                                                                                                                                                                 |
+| [lodTier](#getter-lodtier)                                     | Getters    | DotplotDisplay                                      | The detail tier this plot's fetch asks the adapter for.                                                                                                                                                                                                                   |
 | [dataCurrent](#getter-datacurrent)                             | Getters    | DotplotDisplay                                      | True when the rendered rpcData was fetched for the view's current inputs.                                                                                                                                                                                                 |
 | [warnings](#getter-warnings)                                   | Getters    | DotplotDisplay                                      | Per-render fetch warnings, plus the load-time reversed-assembly hint.                                                                                                                                                                                                     |
 | [svgReady](#getter-svgready)                                   | Getters    | DotplotDisplay                                      | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)).                                                                                                                                    |
@@ -56,7 +57,6 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | [DisplayMessageComponent](#getter-displaymessagecomponent)     | Getters    | [BaseDisplay](../basedisplay)                       | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                |
 | [renderingProps](#method-renderingprops)                       | Methods    | [BaseDisplay](../basedisplay)                       | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                               |
 | [trackMenuItems](#method-trackmenuitems)                       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
-| [regionCannotBeRendered](#method-regioncannotberendered)       | Methods    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
 | [setIgnorePromotedDefaults](#action-setignorepromoteddefaults) | Actions    | [BaseDisplay](../basedisplay)                       | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                 |
 | [setStatusMessage](#action-setstatusmessage)                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
 | [setRpcDriverName](#action-setrpcdrivername)                   | Actions    | [BaseDisplay](../basedisplay)                       |                                                                                                                                                                                                                                                                           |
@@ -199,6 +199,18 @@ pans.
 
 ```ts
 type currentFetchKey = string
+```
+
+#### getter: lodTier
+
+The detail tier this plot's fetch asks the adapter for. Resolved here on the
+main thread, not adapter-side from `bpPerPx`, so it is part of `currentFetchKey`
+— see `resolveLodTier`. Both axes feed it: CIGAR detail is worth drawing when a
+block is wide on either one, so dropping to the no-CIGAR tier is only safe once
+both are past the threshold.
+
+```ts
+type lodTier = LodTier
 ```
 
 #### getter: dataCurrent
@@ -381,10 +393,9 @@ callbacks
 type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
-| Member                                                                 | Type               |
-| ---------------------------------------------------------------------- | ------------------ |
-| <span id="method-trackmenuitems">trackMenuItems</span>                 | `() => MenuItem[]` |
-| <span id="method-regioncannotberendered">regionCannotBeRendered</span> | `() => null`       |
+| Member                                                 | Type               |
+| ------------------------------------------------------ | ------------------ |
+| <span id="method-trackmenuitems">trackMenuItems</span> | `() => MenuItem[]` |
 
 **Actions**
 

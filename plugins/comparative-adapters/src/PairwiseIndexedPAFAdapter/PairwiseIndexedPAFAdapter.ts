@@ -27,19 +27,15 @@ import type { Region } from '@jbrowse/core/util/types'
 // tier and upper-cases it when the coarse tier should be served.
 export function pickPifPrefix({
   flip,
-  bpPerPx,
-  threshold,
   hasCoarseTier,
-  lodMode = 'auto',
+  lodMode,
 }: {
   flip: boolean
-  bpPerPx: number | undefined
-  threshold: number
   hasCoarseTier: boolean
   lodMode?: BaseOptions['lodMode']
 }) {
   const fineLetter = flip ? 'q' : 't'
-  return resolveCoarseTier({ bpPerPx, threshold, hasCoarseTier, lodMode })
+  return resolveCoarseTier({ hasCoarseTier, lodMode })
     ? fineLetter.toUpperCase()
     : fineLetter
 }
@@ -138,8 +134,6 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
 
       const letter = pickPifPrefix({
         flip,
-        bpPerPx: opts.bpPerPx,
-        threshold: this.getConf('coarseBpPerPxThreshold'),
         hasCoarseTier: await this.hasCoarseTier(opts),
         lodMode: opts.lodMode,
       })

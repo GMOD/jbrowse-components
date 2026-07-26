@@ -14,7 +14,6 @@ export default function PairwiseIndexedPAFAdapterF(
         displayName: 'Pairwise indexed PAF adapter',
         normalizeSnapshot,
         configSchema,
-        adapterCapabilities: ['lod'],
         adapterMetadata: {
           category: 'Synteny adapters',
         },

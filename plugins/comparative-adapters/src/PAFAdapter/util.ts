@@ -1,8 +1,8 @@
+import { pafIdentity } from '@jbrowse/cigar-utils'
 import { fetchAndMaybeUnzip, updateStatus } from '@jbrowse/core/util'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { orientAlignment } from '../csUtils.ts'
-import { pafIdentity } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GenericFilehandle } from 'generic-filehandle2'
