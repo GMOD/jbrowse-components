@@ -1,7 +1,20 @@
 import { useRef, useState } from 'react'
 
-import type { MouseState } from '../components/types.ts'
+export interface MouseState {
+  x: number
+  y: number
+  clientX: number
+  clientY: number
+}
 
+/**
+ * Container-relative mouse position for the overlays that follow the pointer
+ * (`Crosshairs`, tooltips), coalesced to one update per frame so a fast drag
+ * across a display doesn't queue a re-render per mousemove event.
+ *
+ * Bind the handlers and the ref to the same element — the position is measured
+ * against that element's box, which is what the overlays are positioned in.
+ */
 export function useMouseTracking(ref: React.RefObject<HTMLDivElement | null>) {
   const rafRef = useRef<ReturnType<typeof requestAnimationFrame> | undefined>(
     undefined,

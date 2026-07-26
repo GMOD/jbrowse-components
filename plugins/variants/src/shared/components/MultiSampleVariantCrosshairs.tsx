@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import MultiSampleVariantTooltip from './MultiSampleVariantTooltip.tsx'
 
 import type { MultiSampleVariantBaseModel } from '../MultiSampleVariantBaseModel.ts'
-import type { MouseState } from './types.ts'
+import type { MouseState } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const MultiSampleVariantCrosshairs = observer(

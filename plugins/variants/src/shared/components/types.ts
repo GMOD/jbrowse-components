@@ -13,10 +13,3 @@ export interface RowColorsModel {
   sources?: Source[]
   showTree: boolean
 }
-
-export interface MouseState {
-  x: number
-  y: number
-  clientX: number
-  clientY: number
-}
