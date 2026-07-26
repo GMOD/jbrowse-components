@@ -16,7 +16,7 @@ function makeRpcData(
     mismatchBases: new Uint8Array(),
     mismatchStrands: new Int8Array(),
     interbasePositions: new Uint32Array(),
-    interbaseLengths: new Uint16Array(),
+    interbaseLengths: new Uint32Array(),
     interbaseTypes: new Uint8Array(),
     interbaseSequences: [],
     gapPositions: new Uint32Array(),

@@ -40,7 +40,12 @@ export function buildInterbaseArrays(
 
   const interbasePositions = new Uint32Array(totalInterbases)
   const interbaseYs = new Uint16Array(totalInterbases)
-  const interbaseLengths = new Uint16Array(totalInterbases)
+  // 32 bits because an insertion is not bounded by the read's reference span:
+  // an assembly-to-reference BAM (dipcall, `minimap2 -a` on contigs, a pangenome
+  // graph path) carries insertions of 100 kb and up, and the length here is what
+  // both the on-screen label and the tooltip report. At 16 bits every one of
+  // those read "65535". The GPU field is already u32 (packInsertions).
+  const interbaseLengths = new Uint32Array(totalInterbases)
   const interbaseTypes = new Uint8Array(totalInterbases)
   const interbaseReadIndices = new Uint32Array(totalInterbases)
   const interbaseSequences: string[] = []
@@ -49,7 +54,7 @@ export function buildInterbaseArrays(
   function addItems(items: InterbaseInput[], type: number) {
     for (const item of items) {
       interbasePositions[idx] = item.position
-      interbaseLengths[idx] = Math.min(65535, item.length)
+      interbaseLengths[idx] = item.length
       interbaseTypes[idx] = type
       interbaseReadIndices[idx] = item.readIndex
       interbaseSequences.push(item.sequence ?? '')

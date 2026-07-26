@@ -168,7 +168,7 @@ function pileupData(): PileupDataResult {
     // marker must land at the mirror position on a reversed block.
     interbasePositions: new Uint32Array([1018]),
     interbaseYs: new Uint16Array([0]),
-    interbaseLengths: new Uint16Array([3]),
+    interbaseLengths: new Uint32Array([3]),
     interbaseFrequencies: new Uint8Array([255]),
     numInsertions: 1,
     numSoftclips: 0,

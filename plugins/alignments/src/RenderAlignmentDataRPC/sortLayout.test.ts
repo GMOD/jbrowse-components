@@ -75,7 +75,7 @@ function makePileupData(opts: {
   )
   const numSoftclips = softclipEntries.length
   const interbasePositions = new Uint32Array(numSoftclips)
-  const interbaseLengths = new Uint16Array(numSoftclips)
+  const interbaseLengths = new Uint32Array(numSoftclips)
   const interbaseTypes = new Uint8Array(numSoftclips)
   const interbaseReadIndices = new Uint32Array(numSoftclips)
   for (let i = 0; i < numSoftclips; i++) {
@@ -104,7 +104,7 @@ function makePileupData(opts: {
     numSegments: 0,
     gapPositions: new Uint32Array(0),
     gapYs: new Uint16Array(0),
-    gapLengths: new Uint16Array(0),
+    gapLengths: new Uint32Array(0),
     gapTypes: new Uint8Array(0),
     gapReadIndices: new Uint32Array(0),
     gapFrequencies: new Uint8Array(0),

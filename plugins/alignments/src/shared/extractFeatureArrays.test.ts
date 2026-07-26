@@ -120,3 +120,49 @@ describe('mateRefName extraction', () => {
     ).toBeUndefined()
   })
 })
+
+// A feature with a CIGAR but no forEachMismatch — a PAF/PIF synteny block, or a
+// BED of graph alleles read by an AlignmentsTrack — used to contribute no indels
+// at all, so an assembly alignment drew as one flat block and its insertions
+// were invisible. Locks the contract both of those displays now depend on.
+describe('CIGAR-only features', () => {
+  function alleleFeature(cigar: string) {
+    return new SimpleFeature({
+      uniqueId: `allele-${cigar}`,
+      refName: 'ctgA',
+      start: 1000,
+      end: 1100,
+      strand: 1,
+      type: 'match',
+      CIGAR: cigar,
+    })
+  }
+
+  test('an insertion is extracted at its reference position', () => {
+    const { insertions } = extract([alleleFeature('2062M63348I')], {
+      type: 'strand',
+    })
+    expect(insertions).toHaveLength(1)
+    expect(insertions[0]!.position).toBe(3062)
+    expect(insertions[0]!.length).toBe(63348)
+  })
+
+  test('a deletion is extracted as a gap over the reference it skips', () => {
+    const { gaps } = extract([alleleFeature('48M3217D')], { type: 'strand' })
+    expect(gaps).toHaveLength(1)
+    expect(gaps[0]!.start).toBe(1048)
+    expect(gaps[0]!.end).toBe(4265)
+  })
+
+  test('a plain match contributes nothing', () => {
+    const { insertions, gaps } = extract([alleleFeature('100M')], {
+      type: 'strand',
+    })
+    expect(insertions).toHaveLength(0)
+    expect(gaps).toHaveLength(0)
+  })
+
+  test('a feature with no CIGAR is skipped rather than throwing', () => {
+    expect(() => extract([bamRead('')], { type: 'strand' })).not.toThrow()
+  })
+})

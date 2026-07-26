@@ -108,6 +108,8 @@ const ECOLI_PATHS_SESSION_TRACK = {
 // the bubble so the flanking reference-path blocks show it is a local event.
 const PATHS_WINDOW = 'chr:1,088,000-1,104,000'
 
+const ECOLI_ALLELES_TRACK = 'ecoli_minigraph_alleles'
+
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
 // beside the graph indexes; the fixture config carries only the assembly.
@@ -311,6 +313,65 @@ export const graphSpecs: ScreenshotSpec[] = [
     // is the whole point of the figure, fell below the fold, and at 620 its last
     // row sat on the frame edge
     viewportHeight: 660,
+    hideTooltip: true,
+  },
+  // The same window derived from the graph ALONE — no assemblies re-mapped, so
+  // no haplotype rows. Same locus as the paths figure above on purpose: the two
+  // are the with-assemblies and without-assemblies readings of one graph, and
+  // the insertion sizes agree.
+  //
+  // An AlignmentsTrack over a BED is the point, not a mistake. Each allele
+  // carries a CIGAR against the reference span it replaces (`2062M63348I`), and
+  // the alignments display draws whatever has a CIGAR — so the alleles pack into
+  // rows and each insertion draws at its real magnitude. As a plain feature
+  // track the 63 kb allele would be a 1 bp box, which is the defect this whole
+  // projection exists to avoid.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_allele_inventory',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        ECOLI_SEGMENTS_SESSION_TRACK,
+        {
+          type: 'AlignmentsTrack',
+          trackId: ECOLI_ALLELES_TRACK,
+          name: 'minigraph graph: allele inventory (from the rGFA alone)',
+          assemblyNames: ['K12'],
+          adapter: {
+            type: 'BedTabixAdapter',
+            uri: `${DATA}/ecoli_minigraph.alleles.bed.gz`,
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PATHS_WINDOW,
+          tracks: [
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+            {
+              trackId: ECOLI_ALLELES_TRACK,
+              type: 'LinearAlignmentsDisplay',
+              // tall enough that the packed rows keep the bp labels on their
+              // insertion markers, which is what carries the magnitude
+              height: 150,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 90000,
+    settleMs: 3000,
+    viewportWidth: 1000,
+    // the two tracks plus both headers, no more: the alleles pack into four
+    // rows here, so anything taller is whitespace
+    viewportHeight: 430,
     hideTooltip: true,
   },
   // The same window in the force layout, the Bandage picture the graph is really

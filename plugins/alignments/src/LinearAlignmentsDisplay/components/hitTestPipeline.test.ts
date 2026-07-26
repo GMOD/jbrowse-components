@@ -28,7 +28,7 @@ function makeRpcData(
     readYs: new Uint16Array(),
     readIds: [],
     interbaseYs: new Uint16Array(),
-    interbaseLengths: new Uint16Array(),
+    interbaseLengths: new Uint32Array(),
     interbaseTypes: new Uint8Array(),
     interbaseSequences: [],
     indicatorPositions: new Uint32Array(),
@@ -303,7 +303,7 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
         interbasePositions: new Uint32Array([1000]),
         interbaseYs: new Uint16Array([0]),
         interbaseTypes: new Uint8Array([INTERBASE_INSERTION]),
-        interbaseLengths: new Uint16Array([1]), // < LONG_INSERTION_MIN_LENGTH → 'small'
+        interbaseLengths: new Uint32Array([1]), // < LONG_INSERTION_MIN_LENGTH → 'small'
         interbaseSequences: ['A'],
         interbaseFrequencies: new Uint8Array([0]), // filtered out by draw threshold
       }),

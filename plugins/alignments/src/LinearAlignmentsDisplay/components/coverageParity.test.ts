@@ -134,7 +134,7 @@ const EMPTY_PILEUP_STUBS = {
   mismatchQuals: new Uint8Array(),
   interbasePositions: new Uint32Array(),
   interbaseYs: new Uint16Array(),
-  interbaseLengths: new Uint16Array(),
+  interbaseLengths: new Uint32Array(),
   interbaseFrequencies: new Uint8Array(),
   numInsertions: 0,
   numSoftclips: 0,

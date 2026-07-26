@@ -5,6 +5,8 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
+  forEachMismatchNumeric,
+  parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
 import { emitGap } from '../features/gap/extract.ts'
@@ -54,22 +56,19 @@ export interface CigarEmitOutput {
   hardclips: HardclipData[]
 }
 
-// Single dispatch loop emitting per-feature CIGAR data. Driven by
-// forEachMismatch so no intermediate Mismatch[] is allocated — each branch
-// routes the callback primitives straight into a feature folder's emitter.
-// extractFeatureArrays runs this for thousands of features per region.
-export function extractCigarFeatures(
-  feature: MismatchFeature,
+// Single dispatch loop emitting per-feature CIGAR data. No intermediate
+// Mismatch[] is allocated — each branch routes the callback primitives straight
+// into a feature folder's emitter. extractFeatureArrays runs this for thousands
+// of features per region, so the callback is built once per feature.
+function makeCigarEmitter(
+  feature: Feature,
   readIndex: number,
   featureStart: number,
   strand: number,
   output: CigarEmitOutput,
   showSoftClipping: boolean,
-  windowStart?: number,
-  windowEnd?: number,
-) {
-  feature.forEachMismatch(
-    (type, start, length, base, qual, _altbase, cliplen) => {
+): MismatchCallback {
+  return (type, start, length, base, qual, _altbase, cliplen) => {
       if (type === MISMATCH_TYPE) {
         emitMismatch(
           start,
@@ -124,8 +123,73 @@ export function extractCigarFeatures(
       } else if (type === HARDCLIP_TYPE) {
         emitHardclip(start, cliplen!, readIndex, featureStart, output.hardclips)
       }
-    },
+  }
+}
+
+// BAM/CRAM features drive the emitter off their own zero-alloc iterator.
+export function extractCigarFeatures(
+  feature: MismatchFeature,
+  readIndex: number,
+  featureStart: number,
+  strand: number,
+  output: CigarEmitOutput,
+  showSoftClipping: boolean,
+  windowStart?: number,
+  windowEnd?: number,
+) {
+  feature.forEachMismatch(
+    makeCigarEmitter(
+      feature,
+      readIndex,
+      featureStart,
+      strand,
+      output,
+      showSoftClipping,
+    ),
     windowStart,
     windowEnd,
+  )
+}
+
+// Everything else that carries an alignment carries it as a CIGAR *string* — a
+// PAF/PIF synteny block is the case in this repo — so walk that instead. It is
+// the same walk BAM uses: forEachMismatchNumeric's no-sequence branch emits the
+// ops that need no bases (I/D/N/S/H) and no mismatches, which is all a CIGAR on
+// its own can support. Without this, the display purpose-built for assembly
+// alignments (LGVSyntenyDisplay, which reuses this render path) draws every
+// alignment as a plain block: a 113 kb insertion in a contig looks like no
+// insertion at all.
+const NO_SEQ = new Uint8Array(0)
+
+export function extractCigarFeaturesFromString(
+  feature: Feature,
+  cigar: string,
+  readIndex: number,
+  featureStart: number,
+  strand: number,
+  output: CigarEmitOutput,
+  showSoftClipping: boolean,
+  windowStart?: number,
+  windowEnd?: number,
+) {
+  forEachMismatchNumeric(
+    parseCigar2Typed(cigar),
+    NO_SEQ,
+    0,
+    undefined,
+    undefined,
+    undefined,
+    makeCigarEmitter(
+      feature,
+      readIndex,
+      featureStart,
+      strand,
+      output,
+      showSoftClipping,
+    ),
+    0,
+    // the walk is in read-relative reference offsets, like the BAM one
+    windowStart === undefined ? undefined : windowStart - featureStart,
+    windowEnd === undefined ? undefined : windowEnd - featureStart,
   )
 }

@@ -42,7 +42,7 @@ export interface CigarUploadData {
   mismatchQuals: Uint8Array
   interbasePositions: Uint32Array
   interbaseYs: Uint16Array
-  interbaseLengths: Uint16Array
+  interbaseLengths: Uint32Array
   interbaseTypes: Uint8Array
   interbaseFrequencies: Uint8Array
   numInsertions: number

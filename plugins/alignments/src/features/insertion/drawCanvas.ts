@@ -20,7 +20,7 @@ export function drawInsertions(
   region: {
     insertionPositions: Uint32Array
     insertionYs: Uint16Array
-    insertionLengths: Uint16Array
+    insertionLengths: Uint32Array
     insertionFrequencies: Uint8Array
   },
   block: DrawBlock,

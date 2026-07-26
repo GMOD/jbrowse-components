@@ -9,11 +9,11 @@ function makeRpcData(
   return {
     gapPositions: new Uint32Array(),
     gapYs: new Uint16Array(),
-    gapLengths: new Uint16Array(),
+    gapLengths: new Uint32Array(),
     gapTypes: new Uint8Array(),
     interbasePositions: new Uint32Array(),
     interbaseYs: new Uint16Array(),
-    interbaseLengths: new Uint16Array(),
+    interbaseLengths: new Uint32Array(),
     interbaseTypes: new Uint8Array(),
     mismatchPositions: new Uint32Array(),
     mismatchYs: new Uint16Array(),
@@ -55,7 +55,7 @@ function run(rpcData: PileupDataResult, bpPerPx = 0.1) {
 const largeInsertionAt10 = {
   interbasePositions: new Uint32Array([10]),
   interbaseYs: new Uint16Array([0]),
-  interbaseLengths: new Uint16Array([20]),
+  interbaseLengths: new Uint32Array([20]),
   interbaseTypes: new Uint8Array([INTERBASE_INSERTION]),
 }
 
@@ -119,7 +119,7 @@ test('the large insertion still emits its own length label', () => {
 const deletionLen100 = {
   gapPositions: new Uint32Array([0, 100]),
   gapYs: new Uint16Array([0]),
-  gapLengths: new Uint16Array([100]),
+  gapLengths: new Uint32Array([100]),
   gapTypes: new Uint8Array([0]),
 }
 
@@ -174,7 +174,7 @@ test('the (S<len>) summary is suppressed when per-base clip letters render', () 
   const softclipInterbase = {
     interbasePositions: new Uint32Array([30]),
     interbaseYs: new Uint16Array([2]),
-    interbaseLengths: new Uint16Array([2]),
+    interbaseLengths: new Uint32Array([2]),
     interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
   }
   const labels = run(
@@ -190,7 +190,7 @@ test('the (S<len>) summary still renders when no per-base clip data', () => {
   const softclipInterbase = {
     interbasePositions: new Uint32Array([30]),
     interbaseYs: new Uint16Array([2]),
-    interbaseLengths: new Uint16Array([5]),
+    interbaseLengths: new Uint32Array([5]),
     interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
   }
   const labels = run(makeRpcData(softclipInterbase))

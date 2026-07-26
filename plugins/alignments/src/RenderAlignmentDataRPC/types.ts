@@ -104,7 +104,7 @@ export interface PileupDataResult {
   // Gap data (deletions/skips) - absolute genomic uint32
   gapPositions: Uint32Array // [start, end] pairs
   gapYs: Uint16Array
-  gapLengths: Uint16Array // length of each gap in bp
+  gapLengths: Uint32Array // length of each gap in bp (u32: assembly alignments exceed 65,535)
   gapTypes: Uint8Array // 0=deletion, 1=skip
   gapReadIndices: Uint32Array // maps each gap to its parent read index
   gapFrequencies: Uint8Array // 0-255 representing 0-100% frequency at start position
@@ -130,7 +130,7 @@ export interface PileupDataResult {
   // counts below let consumers slice subranges without re-scanning types.
   interbasePositions: Uint32Array
   interbaseYs: Uint16Array
-  interbaseLengths: Uint16Array
+  interbaseLengths: Uint32Array
   interbaseTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
   interbaseReadIndices: Uint32Array // maps each interbase to its parent read index
   interbaseSequences: string[] // insertion sequences (empty string for clips or if unavailable)

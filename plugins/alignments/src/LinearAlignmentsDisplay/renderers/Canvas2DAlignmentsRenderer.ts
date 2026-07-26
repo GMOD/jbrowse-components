@@ -82,7 +82,7 @@ export interface Canvas2DRegionData
   // interbase arrays sliced from merged worker buffer
   insertionPositions: Uint32Array
   insertionYs: Uint16Array
-  insertionLengths: Uint16Array
+  insertionLengths: Uint32Array
   insertionFrequencies: Uint8Array
   softclipPositions: Uint32Array
   softclipYs: Uint16Array
@@ -144,7 +144,7 @@ const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
   mismatchQuals: new Uint8Array(0),
   insertionPositions: new Uint32Array(0),
   insertionYs: new Uint16Array(0),
-  insertionLengths: new Uint16Array(0),
+  insertionLengths: new Uint32Array(0),
   insertionFrequencies: new Uint8Array(0),
   softclipPositions: new Uint32Array(0),
   softclipYs: new Uint16Array(0),

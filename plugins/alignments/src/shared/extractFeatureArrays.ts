@@ -10,6 +10,7 @@ import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 import {
   extractCigarFeatures,
+  extractCigarFeaturesFromString,
   isMismatchFeature,
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
@@ -106,6 +107,10 @@ export function extractFeatureArrays<T extends FeatureData>(
     nextRefs.push((feature.get('next_ref') as string | undefined) ?? '')
     suppAlignments.push((getTag(feature, 'SA') as string | undefined) ?? '')
     const isMismatch = isMismatchFeature(feature)
+    // Read once: it drives both the start clip and the indel walk below.
+    const cigarString = isMismatch
+      ? ''
+      : ((feature.get('CIGAR') as string | undefined) ?? '')
     // clipAtStart: BAM/CRAM read the start clip straight off NUMERIC_CIGAR
     // (clipLengthAtStartOfRead), avoiding a full per-read CIGAR string build (and
     // for CRAM, its retention in the feature LRU). Synteny features carry only a
@@ -113,7 +118,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     clipAtStart.push(
       isMismatch
         ? (feature.get('clipLengthAtStartOfRead') as number)
-        : getClip((feature.get('CIGAR') as string | undefined) ?? '', strand),
+        : getClip(cigarString, strand),
     )
 
     if (isTagColorMode) {
@@ -126,16 +131,30 @@ export function extractFeatureArrays<T extends FeatureData>(
       sortTagValues.push(extractFeatureTagValue(feature, sortTag))
     }
 
-    // alignment features (BAM/CRAM) implement forEachMismatch; drive CIGAR
+    // Alignment features (BAM/CRAM) implement forEachMismatch; drive CIGAR
     // extraction off it directly rather than allocating a Mismatch[] per read.
-    // Synteny features (LGVSyntenyDisplay reuses this path) have no such method,
-    // so skip them — otherwise the call throws and fails the whole RPC.
+    // A synteny feature (LGVSyntenyDisplay reuses this path) has no such method
+    // but does carry a CIGAR string, so it walks that instead — an assembly
+    // alignment's indels are the whole point of drawing it. A PIF's coarse tier
+    // carries no CIGAR at all, and an empty string walks to nothing.
     if (isMismatch) {
       // Clip CIGAR extraction to the visible region. For reads far larger than
       // the viewport (whole-chromosome assembly contigs) this skips walking the
       // off-screen bulk of the CIGAR entirely.
       extractCigarFeatures(
         feature,
+        readIndex,
+        featureStart,
+        strand,
+        cigarOutput,
+        showSoftClipping,
+        region.start,
+        region.end,
+      )
+    } else if (cigarString) {
+      extractCigarFeaturesFromString(
+        feature,
+        cigarString,
         readIndex,
         featureStart,
         strand,
