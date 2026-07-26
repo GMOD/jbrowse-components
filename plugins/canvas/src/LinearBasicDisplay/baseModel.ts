@@ -4,6 +4,7 @@ import {
   ConfigurationReference,
   getConf,
   readConfObject,
+  resolveConf,
   resolvePromotableConfigSnapshot,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -517,7 +518,7 @@ export default function baseStateModelFactory(
         // customized-track -> session-default -> `normal` cascade and always returns
         // a concrete preset, never the `inherit` sentinel.
         get displayMode(): DisplayMode {
-          return getConf(self, 'displayMode')
+          return resolveConf(self, 'displayMode')
         },
 
         /**

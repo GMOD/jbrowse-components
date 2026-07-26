@@ -3,15 +3,15 @@
 // display). Keeping the enum members, the resolved type, and the grow ceiling in
 // one place keeps the two plugins' modes identical rather than drifting.
 
-// Config-slot enum members. `inherit` is the promotable sentinel (the inherit
-// state that resolves through the session-default cascade); the rest are the
-// real, concrete modes.
-export const HEIGHT_MODE_VALUES = ['inherit', 'fixed', 'grow', 'fit'] as const
+// Config-slot enum members: the real modes only. The slot is a promotable
+// `maybeStringEnum`, so the inherit state is the slot being unset, not a member
+// here — the vocabulary stays free of the cascade's plumbing.
+export const HEIGHT_MODE_VALUES = ['fixed', 'grow', 'fit'] as const
 
-// What a resolved `heightMode` getter (getConf) returns — never the
-// `inherit` sentinel. `fixed` scrolls, `grow` resizes the track to fit all
-// content, `fit` shrinks content to fill the current height.
-export type HeightMode = 'fixed' | 'grow' | 'fit'
+// What a resolved `heightMode` getter (getConf) returns. `fixed` scrolls, `grow`
+// resizes the track to fit all content, `fit` shrinks content to fill the
+// current height.
+export type HeightMode = (typeof HEIGHT_MODE_VALUES)[number]
 
 // Display-height ceiling for `grow` mode, in px, so a deep pileup / dense track
 // doesn't grow the track to thousands of px. Content past this scrolls, the same

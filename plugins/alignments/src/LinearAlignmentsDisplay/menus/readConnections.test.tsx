@@ -9,6 +9,7 @@ import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 function control(): DisplayTypeDefaultControl {
   return {
     active: false,
+    disabled: false,
     toggle() {
       this.active = !this.active
     },

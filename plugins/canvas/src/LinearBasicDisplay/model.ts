@@ -5,6 +5,7 @@ import {
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   readConfObject,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
@@ -37,7 +38,7 @@ const SUBFEATURE_LABEL_OPTIONS = [
   { value: 'below', label: 'Below' },
   { value: 'overlay', label: 'Overlay' },
 ] as const satisfies readonly {
-  value: Exclude<DisplayConfig['subfeatureLabels'], 'inherit'>
+  value: DisplayConfig['subfeatureLabels']
   label: string
 }[]
 
@@ -93,9 +94,9 @@ export default function stateModelFactory(
     .views(self => ({
       // Promotable sentinel enum (see baseConfigSchema.ts): getConf walks
       // the cascade (pinned track value -> session default -> base 'none') and
-      // always yields a real mode, never the 'inherit' sentinel.
+      // always yields a real mode, never the unset sentinel.
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
-        return getConf(self, 'subfeatureLabels')
+        return resolveConf(self, 'subfeatureLabels')
       },
 
       get geneGlyphMode() {
@@ -106,7 +107,7 @@ export default function stateModelFactory(
       // walks the cascade (pinned track value -> session default -> base `true`)
       // and always yields a concrete boolean, never the unset sentinel.
       get displayDirectionalChevrons(): boolean {
-        return getConf(self, 'displayDirectionalChevrons')
+        return resolveConf(self, 'displayDirectionalChevrons')
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {

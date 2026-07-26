@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, resolveConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
@@ -38,7 +38,7 @@ export default function HeightModeMixin<
        * -> `fixed` cascade and never returns the `inherit` sentinel.
        */
       get heightMode(): HeightMode {
-        return getConf(self as unknown as TConf, 'heightMode')
+        return resolveConf(self as unknown as TConf, 'heightMode')
       },
       /**
        * #getter

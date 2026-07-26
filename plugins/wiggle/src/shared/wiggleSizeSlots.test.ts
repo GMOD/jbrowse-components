@@ -1,5 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  resolveConf,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
@@ -63,19 +66,19 @@ describe.each([
 ] as const)('$slot', ({ slot, base, promoted }) => {
   test('resolves to its base with nothing promoted', () => {
     const { display } = createDisplay()
-    expect(getConf(display, slot)).toBe(base)
+    expect(resolveConf(display, slot)).toBe(base)
   })
 
   test('follows a session-wide default', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault('TestDisplay', slot, promoted)
-    expect(getConf(display, slot)).toBe(promoted)
+    expect(resolveConf(display, slot)).toBe(promoted)
   })
 
   test('can be pinned back to its base over a session-wide default', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault('TestDisplay', slot, promoted)
     display.configuration.setSlot(slot, base)
-    expect(getConf(display, slot)).toBe(base)
+    expect(resolveConf(display, slot)).toBe(base)
   })
 })

@@ -12,16 +12,16 @@ import { observable } from 'mobx'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import { getConf } from './getConf.ts'
+import { resolveConf } from './getConf.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
-// mirrors alignments' `colorBy`: a promotable object-valued (frozen) slot
+// mirrors alignments' `colorBy`: a promotable object-valued slot
 const configSchema = ConfigurationSchema('CloneDisplay', {
   colorBy: {
-    type: 'frozen',
-    defaultValue: { type: 'inherit' },
+    type: 'maybeFrozen',
+    defaultValue: undefined,
     promotedBase: { type: 'normal' },
     promotable: true,
   },
@@ -72,7 +72,7 @@ test('a promoted object default resolves to a structured-cloneable value', () =>
     type: 'insertSizeAndOrientation',
   })
   // what `rpcProps()` puts on the wire for a track following the default
-  const onTheWire = getConf(session.display, 'colorBy')
+  const onTheWire = resolveConf(session.display, 'colorBy')
   expect(() => structuredClone(onTheWire)).not.toThrow()
   expect(onTheWire).toEqual({ type: 'insertSizeAndOrientation' })
 })
@@ -85,7 +85,7 @@ test('a deep observable store would hand out a value postMessage rejects', () =>
   session.setDisplayTypeDefault('CloneDisplay', 'colorBy', {
     type: 'insertSizeAndOrientation',
   })
-  expect(() => structuredClone(getConf(session.display, 'colorBy'))).toThrow(
+  expect(() => structuredClone(resolveConf(session.display, 'colorBy'))).toThrow(
     /could not be cloned/,
   )
 })

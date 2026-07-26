@@ -40,6 +40,7 @@ export {
   TracksManagerSessionMixin,
   aboutTrackMenuItem,
   bakePromotedDefaultsIntoSnapshot,
+  getShareableSessionSnapshot,
   copyTrackSnapshot,
   displayTypeDefaultKey,
   finalizeSession,

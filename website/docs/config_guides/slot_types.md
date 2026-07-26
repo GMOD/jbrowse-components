@@ -68,6 +68,14 @@ only) and `BlobLocation` (a file opened from the browser's file picker).
 One value from a fixed set. The allowed values are listed next to the slot, e.g.
 `stringEnum (linear, log)`.
 
+## maybeStringEnum
+
+One value from a fixed set, or unset. Leaving it unset is a distinct extra
+state, exactly as with [`maybeBoolean`](#maybeboolean): the slot defers to a
+higher-tier default (the display-type or session default) instead of pinning a
+value. Used for settings you can make the default for every track of a type,
+e.g. a display's `heightMode` or `displayMode`.
+
 ## color
 
 A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` value, or a named color.
@@ -80,6 +88,13 @@ An arbitrary JSON value (object or array) stored as-is, for structured settings
 that are not broken out into individual slots, for example a `colorBy` of
 `{ "type": "methylation" }` or a `groupBy` of `{ "type": "strand" }`. The shape
 a given `frozen` slot expects is described in that slot's own text.
+
+## maybeFrozen
+
+An arbitrary JSON value, or unset — the [`maybeBoolean`](#maybeboolean) story
+for object-valued settings. Used where "follow the display-type default" has to
+stay distinguishable from any object you could write, e.g. an alignments track's
+`colorBy`.
 
 ## text
 

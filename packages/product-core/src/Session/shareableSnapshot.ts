@@ -4,8 +4,26 @@ import {
   openPromotableDisplays,
 } from '@jbrowse/core/configuration'
 import { getContainingTrack, mergeTrackConfig } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+/**
+ * The session snapshot to hand to anyone else — a share link, an exported
+ * `session.json`, a desktop→web export. Snapshotting and baking are one call so
+ * the pair can't be split: a bare `getSnapshot(session)` is never a correct
+ * outgoing snapshot (see `bakePromotedDefaultsIntoSnapshot`), and three of the
+ * four boundaries were spelling the two steps out identically.
+ *
+ * The fourth (desktop `ExportToWebDialog`) bakes a *transformed* snapshot from
+ * `planWebExport`, so it calls `bakePromotedDefaultsIntoSnapshot` directly.
+ */
+export function getShareableSessionSnapshot(session: AbstractSessionModel) {
+  return bakePromotedDefaultsIntoSnapshot(
+    session,
+    getSnapshot(session) as Record<string, unknown>,
+  )
+}
 
 interface Bake {
   trackId: string
@@ -42,10 +60,11 @@ interface Bake {
  * actual state of the (open) tracks".
  *
  * Reach is `openPromotableDisplays` — literally the same walk the cascade's own
- * "apply to open tracks" uses, so the two can't drift. A display nested inside a
- * composite view (breakpoint-split, SV-inspector, synteny read-vs-ref) is
- * therefore not baked; that's an accepted limitation shared with the rest of the
- * subsystem, not a special case to add here.
+ * "apply to open tracks" uses, so the two can't drift. It recurses into
+ * composite views (breakpoint-split, SV-inspector, the linear-comparative /
+ * synteny family), which hold child views rather than tracks of their own —
+ * `LGVSyntenyDisplay` is only reachable that way, and before the recursion a
+ * shared session containing one rendered differently for the recipient.
  */
 export function bakePromotedDefaultsIntoSnapshot(
   session: AbstractSessionModel,
@@ -80,7 +99,9 @@ export function bakePromotedDefaultsIntoSnapshot(
 
 // A display state serializes its `configuration` reference as the displayId
 // string; stamp `ignorePromotedDefaults` on every open one so the recipient
-// resolves it from its own config only.
+// resolves it from its own config only. Recurses into a composite view's child
+// views, matching `openPromotableDisplays` — the two walks have to cover the
+// same set or a nested display gets its values baked but not the flag.
 function markIgnorePromotedDefaults(
   views: unknown,
   openDisplayIds: Set<string>,
@@ -97,6 +118,7 @@ function markIgnorePromotedDefaults(
         }
       }
     }
+    markIgnorePromotedDefaults(getField(view, 'views'), openDisplayIds)
   }
 }
 

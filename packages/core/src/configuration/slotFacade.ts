@@ -69,7 +69,7 @@ export interface SlotFacade {
   type: string
   contextVariable: string[]
   defaultValue: unknown
-  /** enum choices, present only for `stringEnum` slots */
+  /** enum choices, present only for `stringEnum`/`maybeStringEnum` slots */
   choices?: string[]
   pluginManager: PluginManager
   readonly value: unknown
@@ -119,7 +119,9 @@ export function makeSlotFacade(
     contextVariable,
     defaultValue,
     choices:
-      type === 'stringEnum' && model ? getEnumerationValues(model) : undefined,
+      (type === 'stringEnum' || type === 'maybeStringEnum') && model
+        ? getEnumerationValues(model)
+        : undefined,
     pluginManager: getEnv(node).pluginManager,
     get value() {
       return node[slotName]

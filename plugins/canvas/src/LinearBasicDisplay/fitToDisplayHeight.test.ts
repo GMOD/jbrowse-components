@@ -336,9 +336,9 @@ describe('canvas display fit-to-display-height', () => {
     const grown = display.grownHeight
     expect(display.height).toBe(grown)
 
-    // Reset the slot to its 'inherit' sentinel, exactly as clearing a customized
+    // Reset the slot to its unset sentinel, exactly as clearing a customized
     // value does. Resolved heightMode falls to 'fixed' with no setHeightMode call.
-    display.configuration.setSlot('heightMode', 'inherit')
+    display.configuration.setSlot('heightMode', undefined)
     expect(display.autoHeight).toBe(false)
     expect(readConfObject(display.configuration, 'height')).toBe(grown)
     expect(display.height).toBe(grown)

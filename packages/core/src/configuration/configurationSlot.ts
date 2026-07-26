@@ -1,6 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { deepEqual } from '../util/deepEqual.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
@@ -51,7 +50,7 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   // value for "unset" — exactly the `maybeNumber` justification above — so an
   // undefined-defaulted boolean lets `undefined` mean "inherit" while both `true`
   // and `false` stay customizable. Pair with `promotedBase` for the value `undefined`
-  // resolves to. Read promotable slots with `getConf` (never raw), which
+  // resolves to. Read promotable slots with `resolveConf` (never raw), which
   // always yields a concrete boolean.
   maybeBoolean: { model: types.maybe(types.boolean) },
   // a color that may be unset (`undefined`), for a slot whose default isn't a
@@ -69,6 +68,10 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   // default. `undefined` is the only value no config can spell, which is
   // exactly the `maybeNumber` justification above.
   maybeColor: { model: types.maybe(types.string) },
+  // the `frozen` analogue of the above, for an object-valued slot that may be
+  // unset — alignments `colorBy`. Same justification: an object slot has no
+  // spare in-band value for "unset" that a config couldn't also spell.
+  maybeFrozen: { model: types.maybe(types.frozen()) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },
   fileLocation: {
@@ -82,14 +85,18 @@ const slotTypes: Record<string, SlotTypeSpec> = {
 }
 
 // The slot types whose default is `undefined` — the genuine "unset" state,
-// distinguishable from every value a config can spell. Derived from the table
-// above (they're exactly the entries with no `fallbackDefault`, since "unset" is
-// their fixed form) so the two can't drift.
-const MAYBE_TYPES = new Set(
-  Object.entries(slotTypes)
+// distinguishable from every value a config can spell. Mostly derived from the
+// table above (they're exactly the entries with no `fallbackDefault`, since
+// "unset" is their fixed form) so the two can't drift. `maybeStringEnum` is
+// named explicitly because, like plain `stringEnum`, it has no builtin model:
+// the author supplies the enumeration and `ConfigSlot` wraps it in
+// `types.maybe`.
+const MAYBE_TYPES = new Set([
+  ...Object.entries(slotTypes)
     .filter(([, spec]) => spec.fallbackDefault === undefined)
     .map(([name]) => name),
-)
+  'maybeStringEnum',
+])
 
 const JexlStringType = types.refinement('JexlString', types.string, isJexl)
 
@@ -111,23 +118,21 @@ export interface ConfigSlotDefinition {
   advanced?: boolean
   /**
    * a user can promote this slot's current value to a session-wide default for
-   * all tracks of the same display type (track menu pin). A slot left at its
-   * `defaultValue` follows (inherits) that promoted default; any other value
-   * customizes the track. See `getConf` / `promotableResolve.ts`.
+   * all tracks of the same display type (track menu pin). An *unset* slot
+   * follows (inherits) that promoted default; any concrete value customizes the
+   * track. Read it with `resolveConf`; see `promotableResolve.ts`.
    *
-   * Requires `promotedBase`: `defaultValue` is spent as the "inherit" signal, so
-   * it can't also be a usable value.
+   * Requires a `maybe*` slot type (whose `undefined` is the inherit sentinel)
+   * plus `promotedBase` for what inheriting resolves to.
    */
   promotable?: boolean
   /**
-   * Required for a `promotable` slot: the concrete value its inherit sentinel
+   * Required for a `promotable` slot: the concrete value its unset state
    * resolves to when a track inherits and nothing is promoted.
    *
-   * This is the CSS model — `defaultValue` is the `inherit` keyword (the
-   * inherit/stripped state, either a spare enum member like displayMode's
-   * `'inherit'` or the `undefined` of a `maybeBoolean`/`maybeNumber`), and
+   * This is the CSS model — being unset is the `inherit` keyword and
    * `promotedBase` is `initial` (the value at the bottom of the cascade).
-   * Spending `defaultValue` on the sentinel is what leaves every *real* value —
+   * Spending only `undefined` on the sentinel is what leaves every *real* value —
    * `promotedBase` included — customizable over an opposite session default, so a
    * track can hold `displayMode: 'normal'` under a promoted `'compact'`.
    */
@@ -179,27 +184,39 @@ export default function ConfigSlot({
   if (defaultValue === undefined && !MAYBE_TYPES.has(type)) {
     throw new Error("no 'defaultValue' provided")
   }
-  // A promotable slot spends `defaultValue` on the inherit sentinel, so it needs
-  // a separate `promotedBase` to say what inheriting resolves to, and the two
-  // must differ — writing `promotedBase` equal to `defaultValue` would make that
-  // one value indistinguishable from "inherit", silently un-customizable under an
-  // opposite promoted default. Both are authoring mistakes with no runtime
-  // symptom other than a setting that won't stay put, so fail at construction.
+  // A promotable slot spends being-unset on the inherit sentinel, so it must be
+  // a `maybe*` type and needs a separate `promotedBase` to say what inheriting
+  // resolves to. Any *concrete* default would double as the inherit signal,
+  // making that one value un-customizable under an opposite promoted default —
+  // an authoring mistake with no runtime symptom other than a setting that won't
+  // stay put, so fail at construction.
   if (promotable) {
+    if (!MAYBE_TYPES.has(type)) {
+      throw new Error(
+        `a 'promotable' slot needs a maybe* type whose undefined is the inherit sentinel, not "${type}"`,
+      )
+    }
+    if (defaultValue !== undefined) {
+      throw new Error(
+        "a 'promotable' slot must leave 'defaultValue' undefined — that IS the inherit sentinel",
+      )
+    }
     if (promotedBase === undefined) {
       throw new Error(
         "a 'promotable' slot requires 'promotedBase' (the value its inherit sentinel resolves to)",
       )
     }
-    if (deepEqual(promotedBase, defaultValue)) {
-      throw new Error(
-        "a 'promotable' slot needs 'defaultValue' to be a dedicated inherit sentinel distinct from 'promotedBase'",
-      )
-    }
   }
 
   return types.stripDefault(
-    types.union(JexlStringType, valueModel),
+    types.union(
+      JexlStringType,
+      // `maybeStringEnum` is the only maybe type whose model comes from the
+      // author: they write the plain vocabulary (`['fixed','grow','fit']`) and
+      // the nullability is added here, so no enumeration has to carry a fake
+      // member for the cascade's benefit.
+      type === 'maybeStringEnum' ? types.maybe(valueModel) : valueModel,
+    ),
     defaultValue,
   )
 }

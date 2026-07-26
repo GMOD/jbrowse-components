@@ -42,29 +42,35 @@ export function DefaultForAllAdornment({
   return (
     <Tooltip
       title={
-        isDefault
-          ? `${what} is the default for all tracks of this type (click to clear)`
-          : `Make ${what} the default for all tracks of this type`
+        control.disabled
+          ? `${what} is set by a callback, so there is no single value to make the default`
+          : isDefault
+            ? `${what} is the default for all tracks of this type (click to clear)`
+            : `Make ${what} the default for all tracks of this type`
       }
     >
-      <ToggleButton
-        className={classes.button}
-        value="default"
-        selected={isDefault}
-        color="primary"
-        size="small"
-        aria-label={`make ${what} the default for all tracks`}
-        onChange={e => {
-          e.stopPropagation()
-          control.toggle()
-        }}
-      >
-        {isDefault ? (
-          <PushPinIcon fontSize="small" />
-        ) : (
-          <PushPinOutlinedIcon fontSize="small" />
-        )}
-      </ToggleButton>
+      {/* a disabled button fires no events, so the tooltip needs a live wrapper */}
+      <span>
+        <ToggleButton
+          className={classes.button}
+          value="default"
+          selected={isDefault}
+          disabled={control.disabled}
+          color="primary"
+          size="small"
+          aria-label={`make ${what} the default for all tracks`}
+          onChange={e => {
+            e.stopPropagation()
+            control.toggle()
+          }}
+        >
+          {isDefault ? (
+            <PushPinIcon fontSize="small" />
+          ) : (
+            <PushPinOutlinedIcon fontSize="small" />
+          )}
+        </ToggleButton>
+      </span>
     </Tooltip>
   )
 }

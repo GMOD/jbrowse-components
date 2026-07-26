@@ -190,11 +190,36 @@ export function readConfObject(
  * For JEXL callback slots, the raw "jexl:..." string is included so the
  * worker can evaluate it per-feature.
  *
+ * **Throws on a config carrying `promotable` slots.** Those resolve against the
+ * session at read time, so a raw snapshot of one ships the bare `undefined`
+ * inherit sentinel to a worker that has no session to resolve it against — the
+ * standing "flatten the cascade at every serialization boundary" rule, enforced
+ * here instead of remembered. Use `resolvePromotableConfigSnapshot(display)`,
+ * which needs the display state node rather than the bare config.
+ *
  * Note: only handles slots and direct sub-configuration models. Arrays or
  * maps of sub-schemas are silently dropped — no current consumer
  * (LinearBasicDisplay.rpcProps is the only caller) needs them.
  */
 export function getConfSnapshot(confObject: AnyConfigurationModel) {
+  assertNoPromotableSlots(confObject)
+  return rawConfSnapshot(confObject)
+}
+
+/**
+ * `getConfSnapshot` without the promotable-slot guard, for the one caller that
+ * legitimately snapshots a promotable config before overwriting each such slot
+ * with its resolved value: `resolvePromotableConfigSnapshot`. Deliberately NOT
+ * on the `@jbrowse/core/configuration` barrel — the guarded form is the public
+ * entry point.
+ *
+ * Sub-configs still recurse through the guarded `getConfSnapshot`, so a
+ * promotable slot declared inside a *nested* schema throws rather than shipping
+ * a sentinel: the resolver only ever walks a config's own top-level slot table
+ * (`promotableSlotNames` / `getSlotDefinition`), so a nested one would never
+ * resolve at all.
+ */
+export function rawConfSnapshot(confObject: AnyConfigurationModel) {
   const result: Record<string, unknown> = {}
   const table = getConfigurationSchemaDefinition(confObject)
   for (const [key, def] of Object.entries(table ?? {})) {
@@ -219,6 +244,20 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
     }
   }
   return result
+}
+
+// The promotable-slot guard behind `getConfSnapshot`. Inlined rather than
+// importing `promotableSlotNames` because that module imports this one.
+function assertNoPromotableSlots(confObject: AnyConfigurationModel) {
+  const table = getConfigurationSchemaDefinition(confObject)
+  const promotable = Object.entries(table ?? {})
+    .filter(([, def]) => isSlotDefinitionEntry(def) && def.promotable)
+    .map(([name]) => name)
+  if (promotable.length > 0) {
+    throw new Error(
+      `getConfSnapshot on a config with promotable slots (${promotable.join(', ')}): those resolve against the session at read time, so this would ship the bare inherit sentinel. Use resolvePromotableConfigSnapshot(display) instead.`,
+    )
+  }
 }
 
 /**

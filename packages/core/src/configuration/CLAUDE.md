@@ -3,21 +3,43 @@
 ## Promotable / display-type defaults (`promotableResolve.ts`)
 
 A `promotable` slot resolves through a live read-time CSS-cascade (track value →
-session-wide promoted default → base). **`getConf` reads it resolved** — it
-detects a promotable slot per-schema (`promotableSlotNames`) and routes it
-through `resolveSlot`, so an ordinary `getConf(self, 'x')` getter follows the
-display-type default and can never surface the inherit sentinel. No separate
-`getConfResolved` and no dev-guard — the failure mode (a raw read handing back a
-sentinel) can't happen through `getConf`. `readConfObject` is the intentional
-**raw** escape hatch (the resolver itself uses it — `getConf` there would
-recurse). Every promotable slot must declare `promotedBase` and spend its
-`defaultValue` on an inherit sentinel — `ConfigSlot` throws otherwise, so the
-resolver has exactly one path.
+session-wide promoted default → base). **`resolveConf(self, 'x')` is what walks
+it** — one named call, at the ~15 display getters that own a promotable slot.
+`getConf` does NOT: it stays exactly `readConfObject(model.configuration, path)`.
+
+That split is deliberate and was re-made after trying the other way. `getConf`
+briefly auto-detected promotable slots and cascaded them, so flipping
+`promotable: true` silently changed every existing read. It cost a `getType` on
+all ~1300 `getConf` calls in the repo (≈60% overhead over `readConfObject`,
+measured) to serve ~15, made resolution invisible at the call site, made `getConf`
+throw on a detached node for some slots and not others, and — decisively — broke
+the one thing every reader already knew about `getConf`. Resolution is not free
+and not universal, so it is named where it happens.
+
+The forgotten-resolution failure mode is caught by the **type system** instead of
+by magic: a promotable slot is always a `maybe*` type, so a raw `getConf` read is
+`T | undefined` while `resolveConf` is `T`. Hand the raw one to a consumer
+expecting a real value and tsc points at the call. (Don't paper over it with
+`?? someDefault` — that silently bypasses the cascade.)
+
+**The inherit sentinel is always `undefined`.** A promotable slot must be a
+`maybe*` type (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/
+`maybeFrozen`), must leave `defaultValue` undefined, and must declare
+`promotedBase` — `ConfigSlot` throws otherwise, so the resolver has exactly one
+path and `isUsableValue`'s first check is a bare `value !== undefined`. Enums do
+_not_ spend a spare `'inherit'` member on it: `maybeStringEnum` takes the plain
+vocabulary as its `model` and ConfigSlot adds the nullability, so no
+enumeration, menu, or config-editor dropdown ever shows the cascade's plumbing.
 
 The promoted default lives in a personal, un-shared store, so **every boundary
 that serializes a display's config for elsewhere must flatten** — the worker via
 `resolvePromotableConfigSnapshot`, a shared/exported session via
-`bakePromotedDefaultsIntoSnapshot`. A resolved value is handed out **by
+`getShareableSessionSnapshot`. Both are enforced rather than remembered:
+`getConfSnapshot` **throws** on a config with promotable slots (use
+`resolvePromotableConfigSnapshot(display)`; the unguarded `rawConfSnapshot` is
+off the barrel and exists only for the resolver itself), and
+`getShareableSessionSnapshot` fuses the snapshot and the bake so the pair can't
+be split. A resolved value is handed out **by
 reference** from that store, so it must stay structured-cloneable:
 `preferencesOverrides` is a `deep: false` `observable.map` because a MobX Proxy
 makes `worker.postMessage` throw `DataCloneError`
@@ -65,7 +87,8 @@ Two reader functions, intentionally distinct:
 
 - `getConf(model, path)` — when you hold a model that _has_ a `.configuration`
   member (a track state model, display state model, etc.). Internally:
-  `readConfObject(model.configuration, path)`.
+  `readConfObject(model.configuration, path)`, and nothing else. (A promotable
+  slot read this way is raw; `resolveConf` is the cascading reader — see above.)
 - `readConfObject(config, path)` — when you hold the configuration model
   directly (e.g. an entry from `session.tracks`, which is
   `AnyConfigurationModel[]`).

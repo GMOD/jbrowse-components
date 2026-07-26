@@ -13,7 +13,8 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 // Sashimi placement, owned by the compute layer (the display imports it via
 // constants.ts): 'up' draws every arc over the coverage band, 'down' in the
 // reserved strip below it, 'auto' splits each junction to minimize crossings.
-export type SashimiArcsMode = 'up' | 'down' | 'auto'
+export const SASHIMI_ARCS_MODES = ['up', 'down', 'auto'] as const
+export type SashimiArcsMode = (typeof SASHIMI_ARCS_MODES)[number]
 
 // Which sub-band an arc is drawn in: 'up' overlays the coverage histogram,
 // 'down' sits in the reserved strip below it. Each side's geometry is in its own

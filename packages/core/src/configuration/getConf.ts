@@ -1,4 +1,4 @@
-import { promotableSlotNames, resolveSlot } from './promotableResolve.ts'
+import { resolveSlot } from './promotableResolve.ts'
 import { readConfObject } from './util.ts'
 
 import type { PromotableDisplay } from './promotableResolve.ts'
@@ -7,6 +7,7 @@ import type {
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotValue,
+  ConfigurationSlotValueResolved,
 } from './types.ts'
 
 /**
@@ -15,13 +16,16 @@ import type {
  * member (a track or display state model). For a raw configuration model, use
  * `readConfObject` instead.
  *
- * A `promotable` slot is resolved through the display-type-default cascade
- * (track value -> session-wide promoted default -> base) rather than read raw,
- * so a display's own value getter can be a plain `getConf(self, 'slot')` and
- * still follow the cascade — and can never surface a slot's inherit sentinel.
- * That resolution is main-thread only (it consults the session); the worker
- * reads plain config snapshots through `readConfObject`, which stays raw. See
- * `promotableResolve.ts`.
+ * **This is exactly `readConfObject(model.configuration, path)`** — sugar for
+ * the `.configuration` hop, plus a stricter slot-name check (see ./CLAUDE.md).
+ * It does not consult the session and has no per-slot behavior; what you read is
+ * what the track stores.
+ *
+ * A `promotable` slot read this way therefore yields the raw stored value,
+ * `undefined` included — that `undefined` is the cascade's inherit sentinel, and
+ * `resolveConf` is what turns it into a real value. The read type keeps the
+ * `undefined` on purpose, so reaching for the wrong reader is a compile error
+ * rather than a silent one.
  *
  * @param model - object containing a 'configuration' member
  * @param slotPaths - array of paths to read
@@ -40,24 +44,55 @@ export function getConf<
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
   : any {
-  if (
-    typeof slotPath === 'string' &&
-    promotableSlotNames(model.configuration).has(slotPath)
-  ) {
-    // a promotable slot resolves through the cascade. `model` is the display
-    // state node the resolver needs (type + session + ignorePromotedDefaults);
-    // only display state models carry a schema with promotable slots, so this
-    // branch is reached for exactly those. `args` are forwarded so a promotable
-    // slot holding a jexl callback evaluates with the caller's context, exactly
-    // as a plain slot read would. The cast matches the declared return (this is
-    // the `SLOT extends string` case); `resolveSlot(...).value` is `unknown`,
-    // which the conditional return type can't infer on its own.
-    return resolveSlot(model as unknown as PromotableDisplay, slotPath, args)
-      .value as SLOT extends string
-      ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
-      : any
-  }
   return readConfObject(model.configuration, slotPath, args)
+}
+
+/**
+ * #api core/configuration
+ * Reads a `promotable` slot through the display-type-default cascade — the
+ * track's own value, else the session-wide promoted default for this display
+ * type, else the slot's `promotedBase`. Always yields a real value, never the
+ * `undefined` inherit sentinel, so a display's value getter is
+ * `get displayMode(): DisplayMode { return resolveConf(self, 'displayMode') }`
+ * with no post-guard and no cast.
+ *
+ * Separate from `getConf` rather than folded into it, deliberately. Resolution
+ * is not free and not universal: it consults the session (so it's main-thread
+ * only, and throws on a detached node) and it means something only for the ~15
+ * promotable slots out of 1300-odd config reads in the repo. Hiding it inside
+ * `getConf` made every one of those reads a maybe-cascade whose behavior you
+ * couldn't see at the call site and which turned on a `promotable: true` flag in
+ * another file. Naming it at the call site costs one word and restores
+ * `getConf` to being what everyone already believed it was.
+ *
+ * Throws if `slot` isn't promotable — the cascade has nothing to say about a
+ * plain slot, and `getConf` is what you want there.
+ *
+ * @param model - the display state model (needs the session + display type)
+ * @param slot - the promotable slot to resolve
+ * @param args - extra arguments, e.g. `{ feature }` for a jexl callback slot
+ */
+export function resolveConf<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(
+  model: { configuration: CONFMODEL },
+  slot: SLOT,
+  args: Record<string, unknown> = {},
+): ConfigurationSlotValueResolved<ConfigurationSchemaForModel<CONFMODEL>, SLOT> {
+  // `model` is the display state node the resolver needs (type + session +
+  // ignorePromotedDefaults); only display state models carry promotable slots.
+  // `resolveSlot(...).value` is `unknown`, which the declared return type can't
+  // infer on its own.
+  return resolveSlot(
+    model as unknown as PromotableDisplay,
+    slot,
+    args,
+  ).value as ConfigurationSlotValueResolved<
+    ConfigurationSchemaForModel<CONFMODEL>,
+    SLOT
+  >
 }
 
 /**

@@ -54,20 +54,30 @@ export function resolveThemeColor(value: string, fallback: string) {
   return value === THEME_DERIVED_COLOR ? fallback : value
 }
 
-// The height presets plus `collapsed`. `normal` is the slot default: when left
-// unchanged it inherits the session-wide type default (see getConf /
-// promotable slots); compact/superCompact pin an explicit height. `collapsed`
-// packs every feature onto a single row and suppresses all labels (name,
-// description, and subfeature) for a dense one-line overview.
-export type DisplayMode = 'normal' | 'compact' | 'superCompact' | 'collapsed'
+// The height presets plus `collapsed`. An unset slot inherits the session-wide
+// type default (see getConf / promotable slots), which resolves to `normal`;
+// every preset here pins an explicit height. `collapsed` packs every feature
+// onto a single row and suppresses all labels (name, description, and
+// subfeature) for a dense one-line overview.
+//
+// Also the `displayMode` config enumeration — one source so the schema and the
+// resolved type can't drift. The unset inherit state is not a member (the slot
+// is a promotable `maybeStringEnum`).
+// The `subfeatureLabels` config enumeration + the resolved DisplayConfig field
+// type, one source. The unset inherit state (resolving to 'none') is not a
+// member — the slot is a promotable `maybeStringEnum`.
+export const SUBFEATURE_LABELS = ['none', 'below', 'overlay'] as const
+
+export const DISPLAY_MODES = [
+  'normal',
+  'compact',
+  'superCompact',
+  'collapsed',
+] as const
+export type DisplayMode = (typeof DISPLAY_MODES)[number]
 
 export function isDisplayMode(value: unknown): value is DisplayMode {
-  return (
-    value === 'normal' ||
-    value === 'compact' ||
-    value === 'superCompact' ||
-    value === 'collapsed'
-  )
+  return (DISPLAY_MODES as readonly string[]).includes(value as string)
 }
 
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
@@ -78,7 +88,7 @@ export interface DisplayConfig {
   // displayMode is NOT sent to the worker — compact/superCompact height scaling
   // is applied on the main thread so switching modes skips an RPC round-trip.
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
-  subfeatureLabels: 'none' | 'below' | 'overlay'
+  subfeatureLabels: (typeof SUBFEATURE_LABELS)[number]
   transcriptTypes: string[]
   containerTypes: string[]
   subParts: string

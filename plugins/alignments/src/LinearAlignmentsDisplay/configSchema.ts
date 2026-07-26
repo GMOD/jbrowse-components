@@ -7,6 +7,11 @@ import {
 
 import { isRegisteredColorScheme } from '../shared/colorSchemes.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
+import {
+  LINKED_READS_MODES,
+  READ_CONNECTIONS_MODES,
+  SASHIMI_ARCS_MODES,
+} from './constants.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -96,15 +101,15 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       heightMode: {
-        type: 'stringEnum',
+        type: 'maybeStringEnum',
         model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
-          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
-        // `inherit` is the CSS-style sentinel default (the inherit state);
-        // `promotedBase` ('fixed') is what it resolves to when nothing is
-        // promoted. Being a sentinel lets a track customize `fixed` back over a
-        // session-wide `fit`/`grow` default. See promotableDefaults.ts.
-        defaultValue: 'inherit',
+          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
+        // Unset is the CSS-style sentinel (the inherit state); `promotedBase`
+        // ('fixed') is what it resolves to when nothing is promoted. Being a
+        // sentinel lets a track customize `fixed` back over a session-wide
+        // `fit`/`grow` default. See promotableDefaults.ts.
+        defaultValue: undefined,
         promotedBase: 'fixed',
         promotable: true,
       },
@@ -152,18 +157,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       colorBy: {
-        type: 'frozen',
-        // Sentinel promotable slot (see promotableDefaults.ts / displayMode):
-        // `{ type: 'inherit' }` is the inherit/stripped state, `promotedBase`
-        // (`{ type: 'normal' }`) is what it resolves to when nothing is promoted
-        // — so every real scheme, `normal` included, is customizable over an opposite
-        // session-wide default (picking "Normal" customizes to normal, exactly as picking
-        // "Fixed" customizes the heightMode base). `inherit` is not a registered scheme
-        // and never reaches a COLOR_SCHEMES lookup: isConcreteValue drops it
-        // before `validate`, and every read goes through the resolved
-        // `colorBy` getter (getConf). Legacy stored schemes stay valid
-        // members (customized values), so no snapshot migration is needed.
-        defaultValue: { type: 'inherit' },
+        type: 'maybeFrozen',
+        // Promotable sentinel slot (see promotableDefaults.ts / displayMode):
+        // unset is the inherit state, `promotedBase` (`{ type: 'normal' }`) is
+        // what it resolves to when nothing is promoted — so every real scheme,
+        // `normal` included, is customizable over an opposite session-wide
+        // default (picking "Normal" customizes to normal, exactly as picking
+        // "Fixed" customizes the heightMode base). Nothing has to invent a
+        // non-scheme `.type` for the inherit state, so `validate` only ever sees
+        // a real candidate and every read goes through the resolved `colorBy`
+        // getter (getConf). Legacy stored schemes stay valid values (customized),
+        // so no snapshot migration is needed.
+        defaultValue: undefined,
         promotedBase: { type: 'normal' },
         promotable: true,
         // Reject a `.type` that isn't (or no longer is) a registered scheme —
@@ -330,18 +335,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       linkedReads: {
-        type: 'stringEnum',
-        model: types.enumeration('LinkedReadsMode', [
-          'inherit',
-          'off',
-          'normal',
-        ]),
-        // Sentinel promotable slot (like heightMode): `inherit` is the inherit
+        type: 'maybeStringEnum',
+        model: types.enumeration('LinkedReadsMode', [...LINKED_READS_MODES]),
+        // Promotable sentinel slot (like heightMode): unset is the inherit
         // state, resolving to the session-wide default for this display type,
         // falling back to `promotedBase` ('off'). Being a sentinel lets a track
         // customize `off` back over a session-wide `normal` (view-as-pairs) default.
         // See promotableDefaults.ts.
-        defaultValue: 'inherit',
+        defaultValue: undefined,
         promotedBase: 'off',
         promotable: true,
         description: 'Linked-read (barcode-chain) layout mode',
@@ -470,17 +471,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       readConnections: {
-        type: 'stringEnum',
+        type: 'maybeStringEnum',
         model: types.enumeration('ReadConnectionsMode', [
-          'inherit',
-          'off',
-          'arc',
-          'cloud',
+          ...READ_CONNECTIONS_MODES,
         ]),
-        // Sentinel promotable slot: `inherit` follows the session-wide default
+        // Promotable sentinel slot: unset follows the session-wide default
         // (else `promotedBase` 'off'), and a track can pin `off` back over a
         // session-wide `arc` default. See promotableDefaults.ts.
-        defaultValue: 'inherit',
+        defaultValue: undefined,
         promotedBase: 'off',
         promotable: true,
         description:
@@ -515,17 +513,12 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       sashimiArcsMode: {
-        type: 'stringEnum',
-        model: types.enumeration('SashimiArcsMode', [
-          'inherit',
-          'up',
-          'down',
-          'auto',
-        ]),
-        // Sentinel promotable slot (like linkedReads/readConnections): `inherit`
+        type: 'maybeStringEnum',
+        model: types.enumeration('SashimiArcsMode', [...SASHIMI_ARCS_MODES]),
+        // Promotable sentinel slot (like linkedReads/readConnections): unset
         // follows the session-wide default (else `promotedBase` 'up'), and a
         // track can pin 'up' back over a session-wide 'down'/'auto' default.
-        defaultValue: 'inherit',
+        defaultValue: undefined,
         promotedBase: 'up',
         promotable: true,
         description: 'Sashimi junction-arc placement',

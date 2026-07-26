@@ -5,11 +5,11 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
-  bakePromotedDefaultsIntoSnapshot,
+  getShareableSessionSnapshot,
   openConnectionMenuItem,
   openTrackMenuItem,
   preferencesMenuItem,
@@ -164,10 +164,7 @@ export default function RootModel({
                               // have this browser's promoted display-type
                               // defaults, so flatten the cascade into it (same
                               // rule as jbrowse-web's ShareDialog)
-                              session: bakePromotedDefaultsIntoSnapshot(
-                                session,
-                                getSnapshot(session),
-                              ),
+                              session: getShareableSessionSnapshot(session),
                             },
                             null,
                             2,

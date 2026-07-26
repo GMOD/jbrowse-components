@@ -55,7 +55,10 @@ export type {
   SessionWithSessionTracks,
   SessionWithSessionTracksType,
 } from './SessionTracks.ts'
-export { bakePromotedDefaultsIntoSnapshot } from './shareableSnapshot.ts'
+export {
+  bakePromotedDefaultsIntoSnapshot,
+  getShareableSessionSnapshot,
+} from './shareableSnapshot.ts'
 export {
   TrackMenuItemsSessionMixin,
   aboutTrackMenuItem,

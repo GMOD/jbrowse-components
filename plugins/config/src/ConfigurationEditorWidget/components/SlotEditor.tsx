@@ -69,27 +69,42 @@ const TextEditor = observer(function TextEditor({
   )
 })
 
+// Sentinel for "leave the slot unset" in the maybe-enum dropdown. MUI needs a
+// concrete option value, and '' can't collide with an enum member (an empty
+// enumeration member would be unnameable in a menu anyway).
+const UNSET_CHOICE = ''
+
 const StringEnumEditor = observer(function StringEnumEditor({
   slot,
 }: {
   slot: {
     name: string
-    value: string
+    // a `maybeStringEnum` slot is undefined when unset — the inherit state of a
+    // promotable slot, which the extra leading choice below both shows and sets
+    value: string | undefined
+    type: string
     description: string
     choices?: string[]
-    set: (arg: string) => void
+    set: (arg: string | undefined) => void
   }
 }) {
+  const nullable = slot.type === 'maybeStringEnum'
   return (
     <ConfigurationTextField
-      value={slot.value}
+      value={slot.value ?? UNSET_CHOICE}
       label={slot.name}
       select
       helperText={slot.description}
       onChange={evt => {
-        slot.set(evt.target.value)
+        const { value } = evt.target
+        slot.set(value === UNSET_CHOICE ? undefined : value)
       }}
     >
+      {nullable ? (
+        <MenuItem value={UNSET_CHOICE}>
+          <em>default</em>
+        </MenuItem>
+      ) : null}
       {(slot.choices ?? []).map(str => (
         <MenuItem key={str} value={str}>
           {str}
@@ -141,9 +156,11 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   color: ColorEditor,
   maybeColor: ColorEditor,
   stringEnum: StringEnumEditor,
+  maybeStringEnum: StringEnumEditor,
   boolean: BooleanEditor,
   maybeBoolean: BooleanEditor,
   frozen: JsonEditor,
+  maybeFrozen: JsonEditor,
 }
 
 const SlotEditor = observer(function SlotEditor({

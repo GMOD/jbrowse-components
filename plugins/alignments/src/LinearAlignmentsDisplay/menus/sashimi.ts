@@ -12,26 +12,14 @@ import type { SashimiArcsMode } from '../constants.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// 'up' is the base (inherit) value (mirrors readConnections's 'off'), so it
-// carries no session-default control — only 'down' and 'auto' are promotable.
-const SASHIMI_MODE_OPTIONS: {
-  value: SashimiArcsMode
-  label: string
-  displayTypeDefaultKey?:
-    | 'sashimiDownDisplayTypeDefault'
-    | 'sashimiAutoDisplayTypeDefault'
-}[] = [
-  {
-    value: 'auto',
-    label: 'Auto (minimize overlap)',
-    displayTypeDefaultKey: 'sashimiAutoDisplayTypeDefault',
-  },
+// Every option carries a pin, the base value 'up' included — once a non-base
+// mode is promoted, pinning the base back is the only per-value way to undo it
+// from its own row, and a radio group where one row is silently missing its
+// trailing control reads as a bug. Matches the heightMode group.
+const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
+  { value: 'auto', label: 'Auto (minimize overlap)' },
   { value: 'up', label: 'Above coverage' },
-  {
-    value: 'down',
-    label: 'Below coverage',
-    displayTypeDefaultKey: 'sashimiDownDisplayTypeDefault',
-  },
+  { value: 'down', label: 'Below coverage' },
 ]
 
 interface SashimiModel {
@@ -42,8 +30,9 @@ interface SashimiModel {
   showSashimiLabelsDisplayTypeDefault: DisplayTypeDefaultControl
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
-  sashimiDownDisplayTypeDefault: DisplayTypeDefaultControl
-  sashimiAutoDisplayTypeDefault: DisplayTypeDefaultControl
+  sashimiArcsModeDisplayTypeDefault: (
+    mode: SashimiArcsMode,
+  ) => DisplayTypeDefaultControl
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
 }
@@ -78,9 +67,9 @@ export function getSashimiMenuItem(model: SashimiModel) {
                 onClick: () => {
                   model.setSashimiArcsMode(option.value)
                 },
-                displayTypeDefault: option.displayTypeDefaultKey
-                  ? model[option.displayTypeDefaultKey]
-                  : undefined,
+                displayTypeDefault: model.sashimiArcsModeDisplayTypeDefault(
+                  option.value,
+                ),
               }),
             ),
           },

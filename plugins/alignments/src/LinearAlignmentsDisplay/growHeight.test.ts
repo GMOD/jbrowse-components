@@ -177,10 +177,10 @@ describe('alignments grow-mode reactive height', () => {
     expect(display.height).toBe(grown)
     expect(readConfObject(display.configuration, 'height')).toBe(250)
 
-    // Reset the slot to its 'inherit' sentinel default, exactly as clearing a
+    // Reset the slot to its unset sentinel default, exactly as clearing a
     // customized value does. Resolved heightMode falls to 'fixed' with no
     // setHeightMode call, so only the reaction can bake here.
-    display.configuration.setSlot('heightMode', 'inherit')
+    display.configuration.setSlot('heightMode', undefined)
     expect(display.autoHeight).toBe(false)
     expect(readConfObject(display.configuration, 'height')).toBe(grown)
     expect(display.height).toBe(grown)

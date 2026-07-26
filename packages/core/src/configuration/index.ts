@@ -26,7 +26,7 @@ export {
   readConfObject,
   readConfigValue,
 } from './util.ts'
-export { getConf, setConf } from './getConf.ts'
+export { getConf, resolveConf, setConf } from './getConf.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
 export {

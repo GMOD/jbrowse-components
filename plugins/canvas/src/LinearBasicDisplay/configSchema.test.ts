@@ -27,9 +27,9 @@ describe('LinearBasicDisplay configSchema', () => {
     expect(readConfObject(config, 'utrColor')).toBeUndefined()
     expect(readConfObject(config, 'connectorColor')).toBeUndefined()
     expect(readConfObject(config, 'featureHeight')).toBe(10)
-    // raw slot default is the promotable `inherit` sentinel; the resolved
-    // display getter turns it into `normal` (see promotableDefaults.ts)
-    expect(readConfObject(config, 'displayMode')).toBe('inherit')
+    // raw slot default is the promotable unset sentinel; the resolved display
+    // getter turns it into `normal` (see promotableDefaults.ts)
+    expect(readConfObject(config, 'displayMode')).toBeUndefined()
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
     expect(readConfObject(config, 'transcriptTypes')).toEqual([
       'mRNA',

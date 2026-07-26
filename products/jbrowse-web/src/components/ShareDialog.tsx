@@ -5,8 +5,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { bakePromotedDefaultsIntoSnapshot } from '@jbrowse/product-core'
+import { getShareableSessionSnapshot } from '@jbrowse/product-core'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -54,9 +53,7 @@ const ShareDialog = observer(function ShareDialog({
   // time the session mutates while the dialog is open. Bake the live
   // promotable-default cascade into concrete track values so the recipient sees
   // what the sender saw without inheriting their personal (un-shared) defaults.
-  const [snap] = useState(() =>
-    bakePromotedDefaultsIntoSnapshot(session, getSnapshot(session)),
-  )
+  const [snap] = useState(() => getShareableSessionSnapshot(session))
 
   const {
     data,

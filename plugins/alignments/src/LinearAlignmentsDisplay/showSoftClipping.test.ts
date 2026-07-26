@@ -475,17 +475,28 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Compact')?.control.active).toBe(true)
   })
 
-  it("clicking a preset's pin applies it to the clicked track at once", () => {
-    // a track customized to a taller height: clicking Compact's pin makes it
-    // Compact immediately, without the user having to also click the snackbar
+  it("clicking a preset's pin leaves the clicked track's own height alone", () => {
+    // a track customized to a taller height: the pin edits the session default
+    // only, so this track keeps 12 until the user takes the explicit "apply to
+    // open tracks" action. It used to be reset here, which silently discarded
+    // the 12 — unpinning then stranded the track on the base height.
     const { display } = createDisplay({ featureHeight: 12 })
     expect(display.featureHeight).toBe(12)
 
     pinProps(display, 'Compact')?.control.toggle()
 
-    // the clicked track now resolves to the promoted Compact height at once — the
-    // size pin promotes only featureHeight, leaving the track-sizing mode alone
-    expect(display.configuredFeatureHeight).toBe(3)
+    expect(display.configuredFeatureHeight).toBe(12)
+    expect(display.featureHeight).toBe(12)
+  })
+
+  it('a track following the default does move when a preset is pinned', () => {
+    // the other half of the same rule: nothing is written to any track, so a
+    // track with no value of its own picks the new default up by resolution
+    const { display } = createDisplay()
+    expect(display.featureHeight).toBe(7)
+
+    pinProps(display, 'Compact')?.control.toggle()
+
     expect(display.featureHeight).toBe(3)
   })
 

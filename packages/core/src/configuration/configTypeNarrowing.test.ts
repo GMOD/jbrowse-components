@@ -5,7 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
-import { getConf, setConf } from './index.ts'
+import { getConf, resolveConf, setConf } from './index.ts'
 
 import type { IConfigurationReference } from './configurationSchema.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
@@ -51,9 +51,9 @@ const Container = types.model('ConfigNarrowingContainer', {
 // `promotedBase` slots (see ./CLAUDE.md and DISPLAY_TYPE_DEFAULTS.md).
 const promotableSchema = ConfigurationSchema('ConfigNarrowingPromotable', {
   mode: {
-    type: 'stringEnum',
-    model: types.enumeration('PromMode', ['inherit', 'a', 'b']),
-    defaultValue: 'inherit',
+    type: 'maybeStringEnum',
+    model: types.enumeration('PromMode', ['a', 'b']),
+    defaultValue: undefined,
     promotedBase: 'a',
     promotable: true,
   },
@@ -104,24 +104,33 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof thickness, number>>()
   })
 
-  // A promotable sentinel slot's read type excludes the inherit sentinel that
-  // `getConf` resolves away — so the display's own getter keeps a clean
-  // annotation with no cast. Type-only: `getConf` on a promotable slot resolves
-  // against a session at runtime, so this exercises the return TYPE (computed
-  // from the schema alone) without invoking it.
-  test('a promotable sentinel slot excludes the inherit sentinel from the read type', () => {
+  // The two readers differ in exactly one way on a promotable slot, and that
+  // difference IS the guard: `resolveConf` runs the cascade and can only yield a
+  // real value, while `getConf` stays raw and surfaces the `undefined` inherit
+  // sentinel — so handing a raw read to a consumer expecting a real mode is a
+  // compile error pointing at the call that should have resolved. Type-only:
+  // resolution consults a session at runtime, so this exercises the return TYPE
+  // (computed from the schema alone) without invoking it.
+  test('resolveConf drops the inherit sentinel, getConf keeps it', () => {
     const check = (model: Instance<typeof PromotableContainer>) => {
-      const mode = getConf(model, 'mode')
-      const chevrons = getConf(model, 'chevrons')
-      const size = getConf(model, 'size')
-      const plainSize = getConf(model, 'plainSize')
-
-      // sentinel dropped: not `'inherit' | 'a' | 'b'`, not `boolean | undefined`,
-      // not `number | undefined`
+      // resolved: never the sentinel, so a display getter needs no cast
+      const mode = resolveConf(model, 'mode')
+      const chevrons = resolveConf(model, 'chevrons')
+      const size = resolveConf(model, 'size')
       assertType<Equal<typeof mode, 'a' | 'b'>>()
       assertType<Equal<typeof chevrons, boolean>>()
       assertType<Equal<typeof size, number>>()
-      // plain `maybe` slot (no `promotedBase`) is unaffected — still optional
+
+      // raw: the sentinel is still there to be handled
+      const rawMode = getConf(model, 'mode')
+      const rawChevrons = getConf(model, 'chevrons')
+      const rawSize = getConf(model, 'size')
+      assertType<Equal<typeof rawMode, 'a' | 'b' | undefined>>()
+      assertType<Equal<typeof rawChevrons, boolean | undefined>>()
+      assertType<Equal<typeof rawSize, number | undefined>>()
+
+      // a plain `maybe` slot (no `promotedBase`) reads the same either way
+      const plainSize = getConf(model, 'plainSize')
       assertType<Equal<typeof plainSize, number | undefined>>()
     }
     void check

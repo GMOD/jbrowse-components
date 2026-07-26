@@ -52,19 +52,29 @@ export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 // grouping mates/supplementary alignments onto shared rows with connecting
 // lines. Bezier connection curves are orthogonal to layout (see the
 // `showBezierConnections` flag) and draw over either mode.
-export type LinkedReadsMode = 'off' | 'normal'
+//
+// The list is also the `linkedReads` config enumeration (a promotable
+// `maybeStringEnum`, so the unset inherit state is NOT a member — see
+// promotableResolve.ts). One source so the schema and the resolved type can't
+// drift; likewise for the two below.
+export const LINKED_READS_MODES = ['off', 'normal'] as const
+export type LinkedReadsMode = (typeof LINKED_READS_MODES)[number]
 
 // How read connections (mate pairs + split/chimeric reads) are rendered.
 // Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;
 // 'cloud' (read cloud) draws flat lines at Y=|tlen|, discordant pairs only.
 // Both color by arcColorByType (red/green/teal/navy by insert size + orientation).
-export type ReadConnectionsMode = 'off' | 'arc' | 'cloud'
+export const READ_CONNECTIONS_MODES = ['off', 'arc', 'cloud'] as const
+export type ReadConnectionsMode = (typeof READ_CONNECTIONS_MODES)[number]
 
 // Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
 // paired-end `readConnectionsDown`). Defined in the compute layer (it drives the
 // arc-assignment algorithm) and re-exported here for the display-layer model and
 // menus. 'auto' is the default.
-export type { SashimiArcsMode } from '../features/sashimi/computeOverlay.ts'
+export {
+  SASHIMI_ARCS_MODES,
+  type SashimiArcsMode,
+} from '../features/sashimi/computeOverlay.ts'
 
 // Default supporting-read floor for a sashimi junction: hide single-read
 // junctions, which are dominated by alignment noise and unreadable at the 1px

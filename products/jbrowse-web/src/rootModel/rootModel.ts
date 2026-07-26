@@ -14,7 +14,7 @@ import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
-  bakePromotedDefaultsIntoSnapshot,
+  getShareableSessionSnapshot,
   openConnectionMenuItem,
   openTrackMenuItem,
   pluginStoreMenuItem,
@@ -357,9 +357,8 @@ export default function RootModel({
                                 // doesn't have this browser's promoted
                                 // display-type defaults, so flatten the cascade
                                 // into it (same rule as ShareDialog)
-                                session: bakePromotedDefaultsIntoSnapshot(
+                                session: getShareableSessionSnapshot(
                                   self.session,
-                                  getSnapshot(self.session),
                                 ),
                               },
                               null,

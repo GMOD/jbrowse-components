@@ -34,6 +34,7 @@ function displayTypeDefault(model: Model) {
     const key = JSON.stringify(colorBy)
     return {
       active: model.pinned.has(key),
+      disabled: false,
       toggle() {
         if (model.pinned.has(key)) {
           model.pinned.delete(key)

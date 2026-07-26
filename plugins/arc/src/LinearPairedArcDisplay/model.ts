@@ -1,7 +1,7 @@
 import {
   ConfigurationReference,
-  getConf,
   readConfObject,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -94,7 +94,7 @@ export function stateModelFactory(
        * slider writes it); flat across all arcs
        */
       get lineWidth(): number {
-        return getConf(self, 'lineWidth')
+        return resolveConf(self, 'lineWidth')
       },
     }))
     .views(self => ({

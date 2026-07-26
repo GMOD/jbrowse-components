@@ -5,6 +5,10 @@ import {
   baseLinearDisplayConfigSchema,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import {
+  DISPLAY_MODES,
+  SUBFEATURE_LABELS,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
@@ -43,16 +47,16 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       heightMode: {
-        type: 'stringEnum',
+        type: 'maybeStringEnum',
         model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
-          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
-        // Sentinel promotable slot (see promotableDefaults.ts / displayMode):
-        // `inherit` is the inherit state, `promotedBase` ('fixed') is what it
+          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
+        // Promotable sentinel slot (see promotableDefaults.ts / displayMode):
+        // unset is the inherit state, `promotedBase` ('fixed') is what it
         // resolves to when nothing is promoted — so every real mode, `fixed`
         // included, is customizable back over a session default. Read through the
         // resolved `heightMode` getter (getConf), never raw.
-        defaultValue: 'inherit',
+        defaultValue: undefined,
         promotedBase: 'fixed',
         promotable: true,
       },
@@ -149,23 +153,17 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       displayMode: {
-        type: 'stringEnum',
-        model: types.enumeration('displayMode', [
-          'inherit',
-          'normal',
-          'compact',
-          'superCompact',
-          'collapsed',
-        ]),
+        type: 'maybeStringEnum',
+        model: types.enumeration('displayMode', [...DISPLAY_MODES]),
         description:
-          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden',
-        // Sentinel promotable slot (see promotableDefaults.ts / subfeatureLabels):
-        // `inherit` is the inherit state, `promotedBase` ('normal') is what it
+          'Feature height preset. Unset (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden',
+        // Promotable sentinel slot (see promotableDefaults.ts / subfeatureLabels):
+        // unset is the inherit state, `promotedBase` ('normal') is what it
         // resolves to when nothing is promoted — so every real preset, `normal`
         // included, is customizable. Legacy stored normal/compact/superCompact are
         // still valid members (customized values), so no snapshot migration is needed. Read
         // through the resolved `displayMode` getter (getConf), never raw.
-        defaultValue: 'inherit',
+        defaultValue: undefined,
         promotedBase: 'normal',
         promotable: true,
       },
@@ -183,22 +181,17 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       subfeatureLabels: {
-        type: 'stringEnum',
-        model: types.enumeration('subfeatureLabels', [
-          'inherit',
-          'none',
-          'below',
-          'overlay',
-        ]),
+        type: 'maybeStringEnum',
+        model: types.enumeration('subfeatureLabels', [...SUBFEATURE_LABELS]),
         description:
-          'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` customize the track explicitly',
+          'subfeature label display mode. Unset (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` customize the track explicitly',
         // Promotable sentinel enum (see promotableDefaults.ts / displayMode):
-        // `inherit` is the inherit state, `promotedBase` ('none') is what it
+        // unset is the inherit state, `promotedBase` ('none') is what it
         // resolves to when nothing is promoted. Legacy stored none/below/overlay
         // are still valid members (customized values), so no snapshot migration is needed.
         // Read through the resolved `subfeatureLabels` getter (getConf),
         // never raw.
-        defaultValue: 'inherit',
+        defaultValue: undefined,
         promotedBase: 'none',
         promotable: true,
       },

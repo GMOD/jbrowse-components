@@ -10,6 +10,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function control(): DisplayTypeDefaultControl {
   return {
     active: false,
+    disabled: false,
     toggle() {
       this.active = !this.active
     },
@@ -29,8 +30,7 @@ function makeModel() {
     setSashimiArcsMode(mode: SashimiArcsMode) {
       this.sashimiArcsMode = mode
     },
-    sashimiDownDisplayTypeDefault: control(),
-    sashimiAutoDisplayTypeDefault: control(),
+    sashimiArcsModeDisplayTypeDefault: () => control(),
     minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
   }
@@ -82,7 +82,7 @@ describe('sashimi menu', () => {
     expect(model.sashimiArcsMode).toBe('down')
   })
 
-  test('"Below coverage" and "Auto" carry a default-for-all pin, "Above coverage" does not', () => {
+  test('every arc-placement option carries a default-for-all pin', () => {
     const model = makeModel()
     model.showSashimiArcs = true
     const placement = getSashimiMenuItem(model).subMenu.find(
@@ -95,7 +95,7 @@ describe('sashimi menu', () => {
       placement.subMenu.find(i => 'label' in i && i.label === label)
     expect(endAdornmentOf(byLabel('Below coverage'))).toBeDefined()
     expect(endAdornmentOf(byLabel('Auto (minimize overlap)'))).toBeDefined()
-    expect(endAdornmentOf(byLabel('Above coverage'))).toBeUndefined()
+    expect(endAdornmentOf(byLabel('Above coverage'))).toBeDefined()
   })
 
   test('"Show labels" carries a default-for-all pin', () => {

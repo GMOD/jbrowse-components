@@ -1,4 +1,4 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
@@ -94,13 +94,13 @@ export function WiggleScoreConfigMixin() {
        * #getter
        */
       get scatterPointSize(): number {
-        return getConf(confNode(self), 'scatterPointSize')
+        return resolveConf(confNode(self), 'scatterPointSize')
       },
       /**
        * #getter
        */
       get lineWidth(): number {
-        return getConf(confNode(self), 'lineWidth')
+        return resolveConf(confNode(self), 'lineWidth')
       },
       /**
        * #getter
