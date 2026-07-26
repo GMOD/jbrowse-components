@@ -660,11 +660,7 @@ tabix -p bed ecoli_pggb.maf.bed.gz
   "adapter": {
     "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "bedGzLocation": { "uri": "ecoli_pggb.maf.bed.gz" },
-    "index": {
-      "indexType": "TBI",
-      "location": { "uri": "ecoli_pggb.maf.bed.gz.tbi" }
-    }
+    "uri": "ecoli_pggb.maf.bed.gz"
   }
 }
 ```

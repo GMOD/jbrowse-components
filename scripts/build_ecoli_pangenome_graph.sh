@@ -305,11 +305,7 @@ cat > maf_track.json <<'JSON'
   "adapter": {
     "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86"],
-    "bedGzLocation": { "uri": "ecoli_pggb.maf.bed.gz" },
-    "index": {
-      "indexType": "TBI",
-      "location": { "uri": "ecoli_pggb.maf.bed.gz.tbi" }
-    }
+    "uri": "ecoli_pggb.maf.bed.gz"
   }
 }
 JSON
