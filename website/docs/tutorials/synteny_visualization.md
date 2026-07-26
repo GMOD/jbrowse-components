@@ -242,6 +242,8 @@ dotplot figure above shows.
 - [Linear synteny view](/docs/user_guides/linear_synteny_view)
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny), the same
+  views on UCSC's hosted liftOver chains with nothing to download
 
 ## References
 

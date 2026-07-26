@@ -318,6 +318,8 @@ and `tabix`, `wget`, and node (for the JBrowse CLI).
 
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
+- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) for hosted
+  pairwise alignments with no setup
 - [Linear synteny view](/docs/user_guides/linear_synteny_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter)

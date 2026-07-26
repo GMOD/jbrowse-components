@@ -102,6 +102,9 @@ exist.
 
 - [Synteny visualization](/docs/tutorials/synteny_visualization) for loading
   your own alignments and configuring the views
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) and
+  [All-vs-all synteny](/docs/tutorials/allvsall_synteny) for stacking more than
+  two genomes in one view
 - [Linear synteny view](/docs/user_guides/linear_synteny_view)
 - [Dotplot view](/docs/user_guides/dotplot_view)
 - [The T2T human variation paper](https://www.science.org/doi/10.1126/science.abl3533),

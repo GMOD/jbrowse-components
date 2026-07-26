@@ -472,3 +472,14 @@ answer the carriage question instead, at the cost of re-mapping every haplotype.
 fetches the per-haplotype PCLAI BEDs, keeps the columns the painting needs, and
 concatenates them into one bgzipped, tabixed file. All three need htslib
 (`bgzip`, `tabix`) on your `PATH`.
+
+## See also
+
+- [Pangenome graphs (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus), which
+  builds a graph of this kind from five _E. coli_ strains, small enough to run
+  end to end yourself
+- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli) for what each
+  linear projection of a graph means
+- [Multi-sample variant track](/docs/user_guides/multivariant_track) for the
+  callset display used here
+- [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)

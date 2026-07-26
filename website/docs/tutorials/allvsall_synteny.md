@@ -458,6 +458,10 @@ and switch to `AllVsAllIndexedPAFAdapter`, as above.
 
 ## See also
 
+- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli) and
+  [Pangenome graphs (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus), which
+  collapse these same five strains into a graph instead of aligning them
+  pairwise, then project it back onto the K12 axis this tutorial uses
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
 - [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter)

@@ -374,6 +374,8 @@ session. It needs the same tools listed under [What you need](#what-you-need).
 ## See also
 
 - [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli)
+- [HPRC pangenome](/docs/tutorials/pangenome_hprc), a Minigraph-Cactus graph of
+  464 human haplotypes, opened from hosted files rather than built here
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [MAF track](/docs/user_guides/maf_track)
 - [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
