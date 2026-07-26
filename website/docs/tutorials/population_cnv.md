@@ -180,12 +180,13 @@ the converter.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Every population is present, so the classes the 104-sample figure hints at are filled in." src="/img/cnv1000g/zarr_cohort.png" />
 
-Filling that window, from one machine against the hosted files:
+Filling that window for all 2504 individuals:
 
-- **104 samples, one BigWig each: 625 requests, about 3 seconds.** 1.4 s if the
-  client runs 32 requests at once rather than the six a browser allows per host.
-- **2504 samples, one Zarr store: 3 requests.** The group metadata, the array
-  metadata, and one chunk, so three round trips at the 210 ms above.
+- **One BigWig each: roughly 15,000 requests, a minute or so.** Scaled up from
+  the 104-sample track, which took 625 requests and 3 seconds against the same
+  host.
+- **One Zarr store: 3 requests, under a second.** The group metadata, the array
+  metadata, and one chunk, at the 210 ms round trip above.
 
 The three do not change with the cohort, because the sample axis is inside the
 chunk.
