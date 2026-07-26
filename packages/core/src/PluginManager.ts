@@ -347,8 +347,28 @@ export default class PluginManager {
         ? [load.plugin, load.metadata ?? {}]
         : [load, {} as PluginMetadata]
 
-    if (this.plugins.includes(plugin)) {
-      throw new Error('plugin already installed')
+    // Refuse a second copy of the same plugin, matched by name rather than by
+    // object identity: the two copies of a plugin a product bundles AND a
+    // config names are different classes from different bundles, so an
+    // identity check never sees them.
+    //
+    // The pluggable-element registry has its own first-wins guard, but a
+    // plugin's install()/configure() side effects have none — appendToMenu is a
+    // plain push, so a second copy silently doubles that plugin's menu items.
+    // Enforcing it here means a product does not have to remember to drop the
+    // config entry for everything it vendors.
+    //
+    // Warn and skip rather than throw. A config naming a plugin some product
+    // bundles is a legitimate config — jbrowse.org's hub configs do exactly
+    // that, so Web (which bundles less than Desktop) still gets the plugin —
+    // and failing the whole session over it would be worse than the duplicate
+    // this prevents. First registration wins, which is the core copy, since
+    // core plugins are added before a config's.
+    if (this.plugins.some(p => p.name === plugin.name)) {
+      console.warn(
+        `plugin ${plugin.name} is already installed, ignoring the second copy`,
+      )
+      return this
     }
 
     this.pluginMetadata[plugin.name] = metadata

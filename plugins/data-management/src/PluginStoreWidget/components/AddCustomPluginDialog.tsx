@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Collapse, DialogContentText, TextField } from '@mui/material'
@@ -40,19 +40,33 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
   const [esmPluginUrl, setESMPluginUrl] = useState('')
   const [cjsPluginUrl, setCJSPluginUrl] = useState('')
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false)
-  const { jbrowse } = getSession(model)
+  const session = getSession(model)
+  const { jbrowse } = session
+  const { pluginManager } = getEnv(model)
   const ready = Boolean(
     (umdPluginName && umdPluginUrl) || esmPluginUrl || cjsPluginUrl,
   )
 
+  // Only the UMD form requires a name up front, so it is the only case that
+  // can be checked before the plugin loads. ESM/CJS entries resolve their name
+  // from the fetched module, so a same-name collision there only surfaces
+  // later as PluginManager's silent skip-on-reload.
   function handleSubmit() {
     if (umdPluginName && umdPluginUrl) {
+      if (pluginManager.hasPlugin(umdPluginName)) {
+        session.notify(
+          `A plugin named "${umdPluginName}" is already installed`,
+          'error',
+        )
+        return false
+      }
       jbrowse.addPlugin({ name: umdPluginName, umdUrl: umdPluginUrl })
     } else if (esmPluginUrl) {
       jbrowse.addPlugin({ esmUrl: esmPluginUrl })
     } else if (cjsPluginUrl) {
       jbrowse.addPlugin({ cjsUrl: cjsPluginUrl })
     }
+    return true
   }
 
   return (
@@ -64,8 +78,9 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
       submitDisabled={!ready}
       onCancel={onClose}
       onSubmit={() => {
-        handleSubmit()
-        onClose()
+        if (handleSubmit()) {
+          onClose()
+        }
       }}
     >
       <div className={classes.dialogContent}>
