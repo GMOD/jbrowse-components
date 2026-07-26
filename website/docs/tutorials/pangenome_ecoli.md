@@ -595,32 +595,27 @@ stable sequence, so one backbone segment covers it.
 ### From a node to the strains that carry it
 
 Every rGFA segment carries the sequence it came from (`SN`) and its offset there
-(`SO`). With one assembly loaded that only gets you back to the reference; with
-all five loaded it gets you to any of them, so this is where the bacterial case
-does something the
-[HPRC one cannot](/docs/tutorials/pangenome_hprc#from-a-node-back-to-a-coordinate).
+(`SO`). With only K12 loaded that gets you back to the reference; with all five
+loaded as assemblies, the same five the
+[all-vs-all projection](#all-vs-all-synteny-projection) uses, the graph's
+**Launch view** menu gains two ways out:
 
-Load the strains as assemblies alongside K12 — the same five the
-[all-vs-all projection](#all-vs-all-synteny-projection) already uses — and the
-graph gains two ways out, both under its **Launch view** menu:
+- **one linear view per contributing strain**, framed on that strain's own
+  coordinates for this locus. Right-clicking a single allele does it for that
+  segment alone: a CFT073 allele opens CFT073 at the offset its `SO` states, not
+  a projection onto K12.
+- **a synteny view of all of them**, one panel per strain, each already at its
+  own locus. Those panel coordinates come from the graph, so nothing is looked
+  up in the PAF first; the alignment track only draws the ribbons between
+  panels.
 
-- **one linear view per contributing strain**, each framed on that strain's own
-  coordinates for this locus. Right-clicking a single allele does the same for
-  just that segment: a CFT073 allele opens CFT073, at the offset its `SO`
-  states, not at a projection onto K12.
-- **a synteny view of all of them at once**, one panel per strain, each already
-  navigated to its own locus. The panel coordinates come from the graph itself,
-  so nothing has to be looked up in the PAF first — the alignment track is only
-  there to draw the ribbons between panels.
+Only loaded strains are offered, so the menu never lists a view that cannot
+open, and a location goes into the linear view already beside the graph rather
+than stacking a pane.
 
-Only strains the session has actually loaded are offered, so the menu never
-lists a view that cannot open. A location goes into the linear view already
-beside the graph if there is one, rather than stacking another pane.
-
-That closes the loop these two tutorials keep walking around: the
-[all-vs-all view](#all-vs-all-synteny-projection) shows five genomes and where
-they align, the graph shows what the sequence actually does at one locus, and
-this menu moves between them without retyping a coordinate.
+The [all-vs-all view](#all-vs-all-synteny-projection) shows five genomes and
+where they align, the graph shows what the sequence does at one locus, and this
+menu moves between the two without retyping a coordinate.
 
 ### Which strain takes which path
 

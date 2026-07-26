@@ -1,0 +1,256 @@
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "K12",
+      "displayName": "E. coli K12",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "K12-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sakai",
+      "displayName": "E. coli Sakai",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sakai-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/Sakai.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/Sakai.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/Sakai.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "CFT073",
+      "displayName": "E. coli CFT073",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "CFT073-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/CFT073.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/CFT073.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/CFT073.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "NCTC86",
+      "displayName": "E. coli NCTC86",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "NCTC86-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/NCTC86.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/NCTC86.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/NCTC86.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "IAI39",
+      "displayName": "E. coli IAI39",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IAI39-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/IAI39.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/IAI39.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/IAI39.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "K12_genes",
+      "name": "K12 genes",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sakai_genes",
+      "name": "Sakai genes",
+      "assemblyNames": ["Sakai"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/ecoli_pangenome/Sakai.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/Sakai.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "CFT073_genes",
+      "name": "CFT073 genes",
+      "assemblyNames": ["CFT073"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/ecoli_pangenome/CFT073.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/CFT073.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "NCTC86_genes",
+      "name": "NCTC86 genes",
+      "assemblyNames": ["NCTC86"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/ecoli_pangenome/NCTC86.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/NCTC86.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "ecoli_pggb_ava",
+      "name": "pggb graph: all-vs-all synteny (wfmash)",
+      "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+      "category": ["Pangenome graph"],
+      "adapter": {
+        "type": "AllVsAllIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_ava.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_ava.pif.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IAI39_genes",
+      "name": "IAI39 genes",
+      "assemblyNames": ["IAI39"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/ecoli_pangenome/IAI39.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/ecoli_pangenome/IAI39.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ecoli_minigraph_segments",
+      "name": "minigraph graph segments (rGFA)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph"
+      },
+      "displayDefaults": {
+        "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+      }
+    }
+  ]
+}

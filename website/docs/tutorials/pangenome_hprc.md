@@ -220,39 +220,36 @@ Both directions are pictured in the
 ### From a node back to a coordinate
 
 Hovering says where a node is while the cursor is on it. **Right-click a node**
-to go there: the menu names the assembly the segment came from and opens it in
-the linear view beside the graph, which scrolls rather than opening another
-pane. The graph's own **Launch view** menu does the same for the whole window it
-was cut from.
+to go there: the linear view beside the graph scrolls to it rather than another
+pane opening. The graph's own **Launch view** menu does the same for the whole
+window it was cut from.
 
-Both come from the tags rGFA puts on every segment — `SN` names the sequence the
-segment came from, `SO` its offset there — so what the menu offers depends on
-which segment you clicked:
+What you are offered depends on which segment you clicked, because rGFA states
+each segment's source sequence (`SN`) and offset (`SO`):
 
-- a **backbone (rank 0) segment** is on GRCh38, so its own coordinates are the
-  ones you get, exactly.
-- an **allele (rank>0) segment** is on some haplotype's own sequence, e.g.
-  `HG02717#1#chr6` at its own offset. That coordinate is exact too, but no HPRC
-  session loads 464 haplotypes as assemblies, so there is nothing to open it in.
-  What the menu offers instead is the interval on GRCh38 between the two
-  backbone segments the allele detaches from and rejoins — the same span the
-  hover highlights.
+- a **backbone (rank 0) segment** sits on GRCh38, so you get its exact
+  coordinates there.
+- an **allele (rank>0) segment** sits on one haplotype's own sequence, e.g.
+  `HG02717#1#chr6`. That coordinate is exact too, but no session loads 464
+  haplotypes as assemblies, so there is nothing to open it in. What you get
+  instead is the GRCh38 interval between the two backbone segments the allele
+  detaches from and rejoins, the same span the hover highlights.
 
-The node's contributing haplotype is named either way: in the tooltip, and in
-the details panel a left-click opens.
+Either way the node's haplotype is named, in the tooltip and in the details
+panel a left-click opens.
 
-That makes a round trip out of the four lanes above. Rubberband a locus into a
-graph, find the loop worth asking about, right-click it to put the linear view
-on its GRCh38 interval, and read what the reference-anchored tracks say about
-that interval: which bubble it belongs to ([bubble track](#the-bubble-track)),
-how long the allele is and which haplotype it was first seen in
+That closes a loop over the lanes above: rubberband a locus into a graph, find
+the loop worth asking about, right-click it to put the linear view on its GRCh38
+interval, then read that interval off the tracks that are anchored there. Which
+bubble it belongs to ([bubble track](#the-bubble-track)), how long the allele is
+and which haplotype it was first seen in
 ([allele inventory](#the-allele-inventory)), and whether the callset genotypes
 anything there ([variant callset](#the-variant-callset)). The graph says what
 sequence exists and where it attaches; those three say how common it is.
 
-Where the contributing assemblies _are_ loaded — a bacterial pangenome, a
-handful of genomes rather than hundreds — the same menu offers one linear view
-per contributing assembly and a synteny view of all of them at once. See the
+Where the contributing assemblies _are_ loaded, a handful of genomes rather than
+hundreds, the same menu opens any of them, or all at once as a synteny view. See
+the
 [E. coli tutorial](/docs/tutorials/pangenome_ecoli#from-a-node-to-the-strains-that-carry-it).
 
 ## The bubble track
