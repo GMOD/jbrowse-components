@@ -295,11 +295,16 @@ export async function openVolvoxGenome(
   await driver.executeScript('arguments[0].click();', submitBtn)
   await delay(3000)
 
+  // A submit that took closes the dialog. One still open means handleOpen threw
+  // and OpenSequenceDialog is showing its ErrorMessage, so read that text out —
+  // dismissing it blind (the ESCAPE this used to send, which hung chromedriver
+  // outright) only buried the cause under a later "no view launched" failure.
   const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
   console.log(`    DEBUG: ${dialogs.length} dialogs open after submit`)
   if (dialogs.length > 0) {
-    await driver.actions().sendKeys(Key.ESCAPE).perform()
-    await delay(1000)
+    throw new Error(
+      `Open genome dialog stayed open after submit: ${await dialogs[0]!.getText()}`,
+    )
   }
 
   // Opening a new genome creates a session with no view; the empty session

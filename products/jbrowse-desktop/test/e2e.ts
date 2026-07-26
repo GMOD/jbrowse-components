@@ -36,6 +36,31 @@ interface TestResult {
 
 const results: TestResult[] = []
 
+// A chromedriver call can block forever rather than erroring — `driver.actions()`
+// did exactly that on Windows against a dialog that would not dismiss, and with
+// nothing bounding the await the job ran to GitHub's 6-hour limit instead of
+// reporting. Every test gets a ceiling so a hang fails one test, not the run.
+const TEST_TIMEOUT_MS = 300_000
+// The post-failure diagnostics and the final quit talk to the same driver that
+// just hung, so they get a short ceiling of their own.
+const CLEANUP_TIMEOUT_MS = 30_000
+
+function withTimeout<T>(
+  promise: Promise<T>,
+  name: string,
+  ms = TEST_TIMEOUT_MS,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const ceiling = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`${name} timed out after ${ms} ms`))
+    }, ms)
+  })
+  return Promise.race([promise, ceiling]).finally(() => {
+    clearTimeout(timer)
+  })
+}
+
 async function runTest(
   name: string,
   fn: (driver: WebDriver) => Promise<void>,
@@ -45,9 +70,14 @@ async function runTest(
   process.stdout.write(`  ⏳ ${name}...`)
 
   try {
-    await cleanupUI(d) // Cleanup before each test
-    await delay(500) // Wait for any backdrop animations to complete (MUI uses 225ms transitions)
-    await fn(d)
+    await withTimeout(
+      (async () => {
+        await cleanupUI(d) // Cleanup before each test
+        await delay(500) // Wait for any backdrop animations to complete (MUI uses 225ms transitions)
+        await fn(d)
+      })(),
+      name,
+    )
     const duration = Date.now() - start
     results.push({ name, passed: true, duration })
     console.log(`\r  ✓ ${name} (${duration}ms)`)
@@ -59,19 +89,26 @@ async function runTest(
     console.log(`\r  ✗ ${name}`)
     console.log(`    Error: ${error}`)
 
-    // Flush browser logs on failure for debugging
-    await flushBrowserLogs(d)
-
-    // Capture debug info on failure
+    // Flush browser logs and capture debug info on failure. Both bounded: the
+    // driver may be the thing that failed.
     try {
-      const title = await d.getTitle()
-      const url = await d.getCurrentUrl()
-      console.log(`    DEBUG: Page title: ${title}`)
-      console.log(`    DEBUG: Page URL: ${url}`)
+      await withTimeout(
+        (async () => {
+          await flushBrowserLogs(d)
+          const title = await d.getTitle()
+          const url = await d.getCurrentUrl()
+          console.log(`    DEBUG: Page title: ${title}`)
+          console.log(`    DEBUG: Page URL: ${url}`)
 
-      // Try to find any visible dialogs
-      const dialogs = await d.findElements(By.css('.MuiDialog-root'))
-      console.log(`    DEBUG: Number of open dialogs: ${dialogs.length}`)
+          const dialogs = await d.findElements(By.css('.MuiDialog-root'))
+          console.log(`    DEBUG: Number of open dialogs: ${dialogs.length}`)
+          for (const dialog of dialogs) {
+            console.log(`    DEBUG: dialog text: ${await dialog.getText()}`)
+          }
+        })(),
+        `${name} diagnostics`,
+        CLEANUP_TIMEOUT_MS,
+      )
     } catch {
       console.log('    DEBUG: Could not capture additional debug info')
     }
@@ -313,7 +350,7 @@ async function main(): Promise<void> {
   console.log('\nCleaning up...')
   if (driver) {
     try {
-      await driver.quit()
+      await withTimeout(driver.quit(), 'driver.quit', CLEANUP_TIMEOUT_MS)
     } catch (e) {
       console.warn('WARN: driver.quit() failed during cleanup:', e)
     }
@@ -331,7 +368,7 @@ main().catch(async e => {
   console.error('Fatal error:', e)
   if (driver) {
     try {
-      await driver.quit()
+      await withTimeout(driver.quit(), 'driver.quit', CLEANUP_TIMEOUT_MS)
     } catch (err) {
       console.warn('WARN: driver.quit() failed after fatal error:', err)
     }
