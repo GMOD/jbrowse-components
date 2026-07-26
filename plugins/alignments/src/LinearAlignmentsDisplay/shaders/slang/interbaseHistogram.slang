@@ -8,8 +8,6 @@ import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
-// SYNC(@jbrowse/alignments-core labelConstants.ts) — must match indicator.slang
-static const float TRIANGLE_H = 4.5;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
@@ -28,7 +26,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float barW = 2.0 / u.canvasW;
 
   // Hang from the coverage-area top, starting just below the indicator
-  // triangle row (same clip offset as indicator.slang's triangle height).
+  // triangle row (TRIANGLE_H is the same const indicator.slang draws with).
   float indOff = TRIANGLE_H * 2.0 / u.canvasH;
   float sTop = covAreaTop(u) - indOff - (inst.yOffset * u.interbaseHeight / u.canvasH) * 2.0;
   float sBot = sTop - (inst.segHeight * u.interbaseHeight / u.canvasH) * 2.0;

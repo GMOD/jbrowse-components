@@ -4,6 +4,8 @@
 // writes one uniform buffer per frame regardless of which pass draws.
 module ldUniforms;
 
+import diagonalGrid;
+
 public struct Uniforms {
   public float2 canvasSize;
   public float  yScalar;
@@ -13,21 +15,13 @@ public struct Uniforms {
   public float  uniformW;
 };
 
-static const float ROT_45 = 0.7071067811865476;
-
 // Genome-space cell corner -> clip space. Both variants lay cells out as
 // 45°-rotated squares above the x-axis, so the rotation + view transform is
-// identical; only how `pos` is derived differs (per-instance attribute vs.
-// decoded grid index).
+// identical (and shared with the Hi-C contact map via diagonalGrid); only how
+// `pos` is derived differs (per-instance attribute vs. decoded grid index).
 public float4 ldCellToClip(float2 pos, Uniforms u) {
-  float rx = (pos.x + pos.y) * ROT_45;
-  float ry = (-pos.x + pos.y) * ROT_45;
-  float sx = rx * u.viewScale + u.viewOffsetX;
-  float sy = ry * u.viewScale * u.yScalar;
-  return float4(
-    (sx / u.canvasSize.x) * 2.0 - 1.0,
-    1.0 - (sy / u.canvasSize.y) * 2.0,
-    0.0, 1.0);
+  return diagonalCellToClip(
+    pos, u.canvasSize, u.viewScale, u.viewOffsetX, u.yScalar);
 }
 
 // Sample the color ramp by `ldValue`, remapping signed [-1,1] -> [0,1] when
@@ -52,6 +46,25 @@ public uint2 decodeTriangular(uint idx) {
   while ((i + 1u) * i / 2u <= idx) { i += 1u; }
   uint j = idx - i * (i - 1u) / 2u;
   return uint2(i, j);
+}
+
+// Map a compute thread to its lower-triangular cell, returning false for the
+// threads past the last cell (which must just exit). Cells are addressed as a
+// 2D grid because a 1D dispatch caps at maxComputeWorkgroupsPerDimension
+// (65535) workgroups = ~4.19M cells, which a mere ~2896 SNPs exceeds. Both
+// kernels decode through here so the grid addressing can't diverge between
+// them — or from the render path, which lays cells out via decodeTriangular.
+public bool triangularCell(
+  uint3 gid, uint dispatchRowStride, uint numSnps, out uint k, out uint2 ij
+) {
+  k = gid.y * dispatchRowStride + gid.x;
+  uint numCells = numSnps * (numSnps - 1u) / 2u;
+  if (k >= numCells) {
+    ij = uint2(0u, 0u);
+    return false;
+  }
+  ij = decodeTriangular(k);
+  return true;
 }
 
 // Final LD value from the per-cell statistics, shared by both compute kernels

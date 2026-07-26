@@ -20,6 +20,9 @@ shader imports it and gets access to:
   and modCoverage.
 - `pileupY`, `pileupRowTopPx`, `pileupRowCenterPx`, `flipX`, `expandMinWidthX`,
   `hueRampHalfSat`, `normalizeDepth`, `clipKindColor`, etc.
+- `TRIANGLE_HW` / `TRIANGLE_H` — the coverage-strip clip indicator triangle.
+  `indicator` draws it and `interbaseHistogram` hangs its bars directly below
+  one, so the height has to be one constant, not a copy per pass.
 
 ## Import discipline
 

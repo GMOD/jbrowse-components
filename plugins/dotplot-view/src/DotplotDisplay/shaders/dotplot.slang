@@ -1,6 +1,3 @@
-
-
-public static const uint VERTS_PER_INSTANCE = 6u;
 // Dotplot line segment renderer. Each instance is a line from (x1,y1) to
 // (x2,y2) in WINDOW-RELATIVE bp — cumBp minus a per-axis fetch-time base
 // (`baseH`/`baseV` = the viewport-start cumBp captured when the geometry was
@@ -30,6 +27,8 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 
 import colorPack;
 import hpmath;
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 
 struct DotplotInstance {
   float x1 : ATTR0;

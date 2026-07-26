@@ -1,68 +1,26 @@
 // Multi-row feature painter ("chromosome painting"). One instance per feature:
 // a colored rectangle spanning [startBp,endBp) in absolute genomic coords, on
-// the row given by rowIndex. Mirrors maf.slang's primitive — genomic->pixel via
-// the shared hp-math transform, rows from rowIndex*rowHeight, per-instance ABGR
-// color — but features are already intervals (no per-base run-merging upstream).
-// rowProportion shrinks the rect within its row to leave inter-row gaps.
+// the row given by rowIndex, with `rowProportion` shrinking the rect within its
+// row to leave inter-row gaps.
+//
+// That is exactly the MAF renderer's primitive, so both draw from the shared
+// `rowRect` module (render-core) and this file is just the multi-row entry
+// points over it. The only difference upstream: features here are already
+// intervals (no per-base run-merging).
 //! targets: wgsl, glsl
 
-import hpmath;
-import colorPack;
+import rowRect;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
-struct RowInstance {
-  uint startBp  : ATTR0;
-  uint endBp    : ATTR1;
-  uint rowIndex : ATTR2;
-  uint color    : ATTR3;  // packed ABGR
-};
-
-struct Uniforms {
-  float3 bpRangeX;      // [bpStartHi, bpStartLo, ±clippedLengthBp]
-  float  canvasHeight;  // CSS px
-  float  viewportWidth;
-  float  zero;          // always 0.0 — prevents hp-split collapse
-  float  rowHeight;     // CSS px per row
-  float  rowProportion; // rect height = rowHeight * rowProportion
-};
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
-
-float bpToClipX(uint bp, Uniforms u) {
-  return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
-}
-
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
+[[vk::binding(1, 0)]] ConstantBuffer<RowRectUniforms> u;
 
 [shader("vertex")]
-VsOut vs_main(RowInstance inst, uint vid : SV_VertexID) {
-  float2 local = quadLocal(vid);
-
-  // Rect Y from row index + display settings (no refetch on resize).
-  float h      = u.rowHeight * u.rowProportion;
-  float offset = (u.rowHeight - h) * 0.5;
-  float rowY   = offset + u.rowHeight * float(inst.rowIndex);
-
-  float sx1 = bpToClipX(inst.startBp, u);
-  float sx2 = bpToClipX(inst.endBp, u);
-
-  sx2 = extendToMinWidthX(sx1, sx2, 1.0, u.viewportWidth);
-
-  float clipX = lerp(sx1, sx2, local.x);
-
-  float yPx  = lerp(rowY, rowY + h, local.y);
-  float clipY = yPxToClipY(yPx, u.canvasHeight);
-
-  VsOut o;
-  o.position = float4(clipX, clipY, 0.0, 1.0);
-  o.color    = unpackRGBA(inst.color);
-  return o;
+RowRectVsOut vs_main(RowRectInstance inst, uint vid : SV_VertexID) {
+  return rowRectVertex(inst, vid, u);
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut v) : SV_Target {
+float4 fs_main(RowRectVsOut v) : SV_Target {
   return v.color;
 }

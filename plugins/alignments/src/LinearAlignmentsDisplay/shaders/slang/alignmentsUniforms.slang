@@ -6,6 +6,8 @@
 // shaders read them with `unpackRGBA(u.colorX).xyz` (see colorPack.slang).
 // See hic/canvas/multi-synteny for the same pattern on the CPU side
 // (cssColorToABGR).
+//! export-consts: TRIANGLE_HW, TRIANGLE_H
+//! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
 module alignmentsUniforms;
 
 import colorPack;
@@ -153,6 +155,15 @@ public struct Uniforms {
   // offset stability.
   public float arcBandH;
 };
+
+// Coverage-strip clip indicator triangle, in CSS px: half-width and height.
+// Four consumers depend on this one number: indicator.slang draws the triangle,
+// interbaseHistogram.slang hangs its bars directly below one, and the Canvas2D
+// painter + hit test read it from `@jbrowse/alignments-core` — which the
+// `consts-out` directive above generates from these declarations, so the
+// cross-package copy can't drift either.
+public static const float TRIANGLE_HW = 3.5;
+public static const float TRIANGLE_H  = 4.5;
 
 // ---- Helper functions ---------------------------------------------------
 //

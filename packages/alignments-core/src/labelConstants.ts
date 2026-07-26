@@ -1,3 +1,9 @@
+import {
+  TRIANGLE_H as INDICATOR_TRIANGLE_H,
+  TRIANGLE_HW as INDICATOR_TRIANGLE_HW,
+} from './indicatorTriangle.generated.ts'
+import { LABEL_CHAR_W, LABEL_PAD } from './insertionLabel.generated.ts'
+
 export const LONG_INSERTION_MIN_LENGTH = 10
 export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
 export const MIN_HEIGHT_FOR_TEXT = 5
@@ -71,11 +77,12 @@ export function labelFadeOpacity(availPx: number, neededPx: number) {
   return smoothstep(neededPx, neededPx * LABEL_FADE_HI_RATIO, availPx)
 }
 
-// SYNC: mirrors textWidthForNumber() in GLSL/WGSL cigarShaders.ts
-// charWidth=6px per digit + padding=10px
+// Canvas2D twin of `textWidth()` in insertion.slang, which sizes the GPU
+// count-label box this text is drawn into. The two constants come from the
+// shader (`pnpm gen:shaders`), so only the digit-count branching is mirrored.
 export function textWidthForNumber(num: number) {
-  const charWidth = 6
-  const padding = 10
+  const charWidth = LABEL_CHAR_W
+  const padding = LABEL_PAD
   if (num < 10) {
     return charWidth + padding
   }
@@ -318,8 +325,11 @@ export function extractIndelsFromCs(
   }
 }
 
-export const INDICATOR_TRIANGLE_HW = 3.5
-export const INDICATOR_TRIANGLE_H = 4.5
+// Generated from `alignmentsUniforms.slang`'s TRIANGLE_HW / TRIANGLE_H by
+// `pnpm gen:shaders` (its `//! consts-out` directive), so the Canvas2D triangle
+// below, the hit test, and the two GPU passes that draw and hang off it are all
+// one number.
+export { INDICATOR_TRIANGLE_HW, INDICATOR_TRIANGLE_H }
 
 /**
  * Draw a single downward-pointing indicator triangle on a Canvas2D context.

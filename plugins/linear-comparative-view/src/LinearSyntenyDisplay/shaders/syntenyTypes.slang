@@ -18,6 +18,11 @@
 // dispatches the appropriate pass per track. This module is mode-agnostic.
 module syntenyTypes;
 
+// Re-exported so every synteny pass gets `screenToClip` (and the rest of
+// hpmath) from its single `import syntenyTypes;` — the transform is shared
+// with the dotplot / hic renderers, so it must not be re-spelled here.
+__exported import hpmath;
+
 public struct Instance {
   public float bp1               : ATTR0;
   public float bp2               : ATTR1;
@@ -117,13 +122,6 @@ public float sBlend(float t)      { return t * t * (3.0 - 2.0 * t); }
 public float sBlendDeriv(float t) { return 6.0 * t * (1.0 - t); }
 public float yCurve(float t)      { return 1.5 * t * (1.0 - t) + t * t * t; }
 public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
-
-// Screen-space (CSS px, top-left origin) → clip space, with the Y flip every
-// synteny pass needs.
-public float4 screenToClip(float2 screen, float2 resolution) {
-  float2 clip = screen / resolution * 2.0 - 1.0;
-  return float4(clip.x, -clip.y, 0.0, 1.0);
-}
 
 // Perpendicular coverage cx for a fill fragment. `edge0`/`edge1` are the two
 // ribbon edges at this y (screen X); `pf0`/`pf1` are EACH edge's own slope

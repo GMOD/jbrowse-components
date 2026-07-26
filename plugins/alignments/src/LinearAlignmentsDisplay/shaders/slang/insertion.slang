@@ -1,6 +1,8 @@
 // Insertion pass: renders up to 3 rects per instance — the insertion bar
 // (or numeric label box when long + zoomed), plus top/bottom serifs.
 //! targets: wgsl, glsl
+//! export-consts: LABEL_CHAR_W, LABEL_PAD
+//! consts-out: packages/alignments-core/src/insertionLabel.generated.ts
 
 import alignmentsUniforms;
 import colorPack;
@@ -23,15 +25,20 @@ struct Instance {
   float frequency : ATTR3;
 };
 
-// SYNC(labelConstants.ts:textWidthForNumber)
+// Width of the count-label box: one char per digit plus padding. The two
+// numbers are exported to @jbrowse/alignments-core (see the consts-out
+// directive above) and read by textWidthForNumber(), the Canvas2D twin that
+// actually measures the text, so the GPU box can't size differently from the
+// label drawn into it.
+static const float LABEL_CHAR_W = 6.0;
+static const float LABEL_PAD = 10.0;
+
 float textWidth(uint num) {
-  float cw = 6.0;
-  float pad = 10.0;
-  if (num < 10u)    { return cw + pad; }
-  if (num < 100u)   { return cw * 2.0 + pad; }
-  if (num < 1000u)  { return cw * 3.0 + pad; }
-  if (num < 10000u) { return cw * 4.0 + pad; }
-  return cw * 5.0 + pad;
+  if (num < 10u)    { return LABEL_CHAR_W + LABEL_PAD; }
+  if (num < 100u)   { return LABEL_CHAR_W * 2.0 + LABEL_PAD; }
+  if (num < 1000u)  { return LABEL_CHAR_W * 3.0 + LABEL_PAD; }
+  if (num < 10000u) { return LABEL_CHAR_W * 4.0 + LABEL_PAD; }
+  return LABEL_CHAR_W * 5.0 + LABEL_PAD;
 }
 
 [shader("vertex")]

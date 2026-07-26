@@ -66,7 +66,7 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     // it never interacts with canvasHeight. Device px here gives a 1-device-px
     // minimum cell width (0.5 CSS px at dpr 2).
     //
-    // NOTE: GpuMultiRowRenderer runs the identical shader but feeds CSS px
+    // NOTE: GpuMultiRowRenderer draws the same shared `rowRect` module but feeds CSS px
     // (scissorW) for a 1-CSS-px floor — it moved off pxW in e1c2585e4d to match
     // its Canvas2D `Math.max(1, ...)`. maf has no such Canvas2D floor
     // (drawMafBlocks draws cells at natural sub-pixel width), so the two are not

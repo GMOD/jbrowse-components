@@ -110,6 +110,15 @@ The precedent argues against it, not for it.
   `bpRangeX`) and alignments (downstream, `flipX`) is untouched and remains
   correct as-is. See the flip-model memory and the appendix below. Do not naively
   share alignments' `flippedQuadPos` into canvas (double-flip bug).
+- **This rejects a _generic skeleton_ and a _single-consumer composition_ — not
+  every shared shape module.** A whole shader that exists twice byte-for-byte is
+  the `pointGlyph` case, not this one, and extracting it is still right:
+  `rowRect.slang` (MAF + multi-row painter, previously identical copies joined
+  only by a "probably belongs there too" comment) and `diagonalGrid.slang` (the
+  45°-rotated cell transform + `ROT_45`, Hi-C + LD) were extracted on exactly
+  that bar. Both keep a concrete flat instance struct, so none of the appendix's
+  generic-reflection unknowns apply — the regenerated `.iface.generated.ts` files
+  were byte-identical, which is the check to repeat for any future one.
 - This decision would be revisited only on a real **multi-consumer pull** — the
   third-party-plugin ergonomics case becoming concrete (a different argument,
   weighed on its own merits), or 3–4 genuinely new quad-based display types
@@ -201,7 +210,8 @@ rejected the composition helper as single-consumer.
 - Codegen: `packages/shader-tools/src/shader-codegen/codegen.ts`
   (`findVertexStruct`, `emitInterface`, `packInstances` emit); driver
   `build-shaders.ts`; GLSL post-proc `vulkanGlslToWebgl2.ts`.
-- Shared Slang modules: `packages/render-core/src/shaders/{hpmath,colorPack}.slang`.
+- Shared Slang modules:
+  `packages/render-core/src/shaders/{hpmath,colorPack,pointGlyph,diagonalGrid,rowRect}.slang`.
 - Canonical concrete shader + generated output:
   `plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.slang` and its
   `rect.generated.ts` / `rect.iface.generated.ts`.

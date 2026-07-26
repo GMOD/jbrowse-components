@@ -1,15 +1,12 @@
-
-
-public static const uint VERTS_PER_INSTANCE = 6u;
 // Hi-C contact map renderer. One instance = one binned contact (square)
 // rendered at 45° into a triangle above the axis. Color comes from sampling
 // a 256×1 palette texture with `t = normalized count (optionally log)`.
 //! targets: wgsl, glsl
 
+import diagonalGrid;
 import hpmath;
 
-// cos(45°) = sin(45°) — shared rotation factor for the 45° projection.
-static const float ROT_45 = 0.7071067811865476;
+public static const uint VERTS_PER_INSTANCE = 6u;
 
 struct HicInstance {
   float2 position : ATTR0;
@@ -48,15 +45,11 @@ struct VsOut {
 VsOut vs_main(HicInstance inst, uint vid : SV_VertexID) {
   float2 pos = inst.position + quadLocal(vid) * u.binWidth;
 
-  // 45° rotation + Y-axis projection into the triangular Hi-C view.
-  float rx = (pos.x + pos.y) * ROT_45;
-  float ry = (-pos.x + pos.y) * ROT_45;
-
-  float sx = rx * u.viewScale + u.viewOffsetX;
-  float sy = ry * u.viewScale * u.yScalar;
-
   VsOut o;
-  o.position = screenToClip(float2(sx, sy), u.canvasSize);
+  // 45° rotation + Y-axis projection into the triangular Hi-C view — the same
+  // transform the LD heatmap uses (diagonalGrid).
+  o.position = diagonalCellToClip(
+    pos, u.canvasSize, u.viewScale, u.viewOffsetX, u.yScalar);
   o.count = inst.count;
   return o;
 }

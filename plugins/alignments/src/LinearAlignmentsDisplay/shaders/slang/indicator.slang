@@ -8,9 +8,8 @@ import alignmentsUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 3u;
-// SYNC(@jbrowse/alignments-core labelConstants.ts)
-static const float TRIANGLE_HW = 3.5;
-static const float TRIANGLE_H  = 4.5;
+// TRIANGLE_HW / TRIANGLE_H come from alignmentsUniforms — interbaseHistogram
+// hangs its bars below this triangle and must use the same height.
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -47,7 +46,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // 7x4.5 triangle altitude ~3.7px -> smoothstep along diagonal edges.
+  // Barycentric -> approximate px distance from each diagonal edge, for the
+  // smoothstep fade. NOT the triangle's altitude despite the round number: for
+  // the 7x4.5 triangle that is 7*4.5/hypot(3.5, 4.5) = 5.53px, so this scale
+  // spreads the fade over ~1.5px rather than 1px. Left as-is — it is a
+  // softness knob, and tightening it visibly sharpens every indicator.
   float altPx = 3.7;
   float dLeft = fragIn.bary.y * altPx;
   float dRight = fragIn.bary.x * altPx;

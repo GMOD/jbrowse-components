@@ -30,13 +30,11 @@ uint getWord(uint snp, uint arr, uint word) {
 [shader("compute")]
 [numthreads(64, 1, 1)]
 void computeLDPhased(uint3 gid: SV_DispatchThreadID) {
-  uint k = gid.y * u.dispatchRowStride + gid.x;
-  uint numCells = u.numSnps * (u.numSnps - 1u) / 2u;
-  if (k >= numCells) {
+  uint k;
+  uint2 ij;
+  if (!triangularCell(gid, u.dispatchRowStride, u.numSnps, k, ij)) {
     return;
   }
-
-  uint2 ij = decodeTriangular(k);
   uint i = ij.x;
   uint j = ij.y;
 

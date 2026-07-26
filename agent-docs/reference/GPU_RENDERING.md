@@ -708,8 +708,14 @@ runs `pnpm gen:shaders && git diff --exit-code` to catch stale outputs.
 
 Layout: display-specific shaders in
 `plugins/<plugin>/src/<display>/shaders/<name>.slang`; per-plugin shared in
-`plugins/<plugin>/src/shared/shaders/`; cross-plugin modules (`hpmath.slang`,
-`colorPack.slang`, `pointGlyph.slang`) in `packages/render-core/src/shaders/`.
+`plugins/<plugin>/src/shared/shaders/`; cross-plugin modules in
+`packages/render-core/src/shaders/` — the atoms (`hpmath.slang`,
+`colorPack.slang`) plus the shared *shapes* two or more plugins draw
+identically (`pointGlyph.slang` disc/square markers, `diagonalGrid.slang` the
+45°-rotated Hi-C / LD cell transform, `rowRect.slang` the MAF / multi-row
+colored-row rectangle). A shape module earns its place on the `pointGlyph` bar —
+two real consumers with a live drift hazard — not on surface similarity; see
+[ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md).
 `slangPass()` turns a generated module into a `PassDescriptor`, with overrides for
 `topology`, `blendState`, `textures`, and buffer sharing. Authoring conventions
 and gotchas: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).

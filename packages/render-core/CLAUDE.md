@@ -21,9 +21,10 @@ and shader codegen are intentionally out of the barrel. This is the only import
 path — the old `@jbrowse/core/gpu/*` re-export shims were removed once every
 in-tree import migrated here (ADR-030 shim-retirement follow-up). Shader codegen
 
-- the shared `.slang` modules (`hpmath`/`colorPack`) live here in `src/shaders`
-  and the feature-glyph passes live in the canvas plugin; the codegen emits
-  `@jbrowse/render-core/hal` imports into every `.generated.ts`.
+- the shared `.slang` modules live here in `src/shaders` (the math atoms
+  `hpmath`/`colorPack`, plus the shape modules `pointGlyph`/`diagonalGrid`/
+  `rowRect`) and the feature-glyph passes live in the canvas plugin; the codegen
+  emits `@jbrowse/render-core/hal` imports into every `.generated.ts`.
 
 `Gpu` prefix = WebGL/WebGPU-specific (`GpuHal`, `gpuDevice`, the `Gpu*Backend`
 bases). Anything driving **both** GPU and Canvas2D is backend-agnostic with a
@@ -183,6 +184,12 @@ documents only what bites when editing _this package_.
   unambiguous.
 - **Never hand-edit `*.generated.ts`.** Edit the `.slang` source and run
   `pnpm gen:shaders` (see root `CLAUDE.md` and ADR-005). The shared `.slang`
-  modules (`hpmath`/`colorPack`) live here in `src/shaders` — the codegen's
-  `SHARED_INCLUDE` — so any shader repo-wide can `import hpmath;`. The build
-  script itself lives in `@jbrowse/shader-tools`.
+  modules live here in `src/shaders` — the codegen's `SHARED_INCLUDE` — so any
+  shader repo-wide can `import hpmath;`. Two kinds: **atoms**
+  (`hpmath`/`colorPack`) that take primitives, never a `Uniforms` struct, and
+  **shape** modules (`pointGlyph`, `diagonalGrid`, `rowRect`) that own a whole
+  glyph two-plus plugins draw identically. A new shape module needs the
+  `pointGlyph` justification — two real consumers, non-obvious or drift-prone
+  math — not surface similarity; ADR-040 rejected the generic quad skeleton and
+  the single-consumer composition helper on exactly that test. The build script
+  itself lives in `@jbrowse/shader-tools`.

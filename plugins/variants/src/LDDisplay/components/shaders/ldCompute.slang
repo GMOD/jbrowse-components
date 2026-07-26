@@ -15,10 +15,8 @@ struct LDComputeUniforms {
   uint numSamplesPacked;
   uint ldMetric;
   uint signedLD;
-  // Threads per dispatch row (workgroupsX * WORKGROUP_SIZE_X). Cells are
-  // addressed as a 2D grid: a 1D dispatch caps at
-  // maxComputeWorkgroupsPerDimension (65535) workgroups = ~4.19M cells, which
-  // a mere ~2896 SNPs exceeds.
+  // Threads per dispatch row (workgroupsX * WORKGROUP_SIZE_X); see
+  // triangularCell in ldUniforms for why the grid is 2D.
   uint dispatchRowStride;
 };
 
@@ -37,13 +35,11 @@ int getGeno(uint snp, uint sample) {
 [shader("compute")]
 [numthreads(64, 1, 1)]
 void computeLD(uint3 gid: SV_DispatchThreadID) {
-  uint k = gid.y * u.dispatchRowStride + gid.x;
-  uint numCells = u.numSnps * (u.numSnps - 1u) / 2u;
-  if (k >= numCells) {
+  uint k;
+  uint2 ij;
+  if (!triangularCell(gid, u.dispatchRowStride, u.numSnps, k, ij)) {
     return;
   }
-
-  uint2 ij = decodeTriangular(k);
   uint i = ij.x;
   uint j = ij.y;
 
