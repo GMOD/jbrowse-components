@@ -7,7 +7,6 @@ import { buildSearchCategoryMap } from '../lib/docs-sidebar.ts'
 import page from '../styles/page.module.css'
 import styles from '../styles/search.module.css'
 
-const q = Astro.url.searchParams.get('q') ?? ''
 const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
 ---
 
@@ -21,7 +20,6 @@ const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
       <input
         id="search-input"
         type="search"
-        value={q}
         placeholder="Search docs..."
         autocomplete="off"
         autofocus
@@ -163,8 +161,11 @@ const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
     debounce = setTimeout(() => runSearch(input.value), 200)
   })
 
-  if (input.value) {
-    runSearch(input.value)
+  // the page is statically prerendered, so ?q= can only be read at runtime
+  const initialQuery = new URL(location.href).searchParams.get('q') ?? ''
+  if (initialQuery) {
+    input.value = initialQuery
+    runSearch(initialQuery)
   }
 </script>
 

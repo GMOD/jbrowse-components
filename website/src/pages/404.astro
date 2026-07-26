@@ -6,10 +6,32 @@ import { baseUrl } from '../lib/base-url.ts'
 <BaseLayout title="Page not found | JBrowse">
   <div class="not-found">
     <h1>404</h1>
-    <p>Page not found.</p>
-    <a href={`${baseUrl}/`}>Go to homepage</a>
-    <span> or </span>
-    <a href={`${baseUrl}/docs/`}>Browse the docs</a>
+    <p>
+      That page does not exist. Docs pages move between releases, so search is
+      the quickest way to find where this one went.
+    </p>
+    <form
+      class="nf-search"
+      role="search"
+      action={`${baseUrl}/search/`}
+      method="get"
+    >
+      <input
+        name="q"
+        type="search"
+        placeholder="Search docs..."
+        autocomplete="off"
+        autofocus
+        aria-label="Search documentation"
+      />
+      <button type="submit">Search</button>
+    </form>
+    <p class="nf-links">
+      <a href={`${baseUrl}/`}>Home</a>
+      <a href={`${baseUrl}/docs/`}>Docs</a>
+      <a href={`${baseUrl}/gallery/`}>Gallery</a>
+      <a href={`${baseUrl}/download/`}>Download</a>
+    </p>
   </div>
 </BaseLayout>
 
@@ -35,5 +57,35 @@ import { baseUrl } from '../lib/base-url.ts'
     font-size: 1.25rem;
     color: var(--color-text-muted);
     margin: 0;
+    max-width: 34rem;
+  }
+  .nf-search {
+    display: flex;
+    gap: 8px;
+    width: min(28rem, 100%);
+  }
+  .nf-search input {
+    flex: 1;
+    font-size: 1rem;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+  }
+  .nf-search button {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background: var(--color-navy);
+    color: white;
+    cursor: pointer;
+  }
+  .nf-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem;
+    font-size: 1rem;
   }
 </style>
