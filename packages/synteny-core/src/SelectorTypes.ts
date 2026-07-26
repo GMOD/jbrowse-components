@@ -58,7 +58,8 @@ export interface SyntenyFileFormatOption {
 // share one option shape — ImportSyntenyOpenCustomTrack takes the name as a prop
 // and fires whichever one it was handed, so both are declared together here.
 export type SyntenyFileFormatsExtensionPoint =
-  'DotplotView-SyntenyFileFormats' | 'LinearSyntenyView-SyntenyFileFormats'
+  | 'DotplotView-SyntenyFileFormats'
+  | 'LinearSyntenyView-SyntenyFileFormats'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {

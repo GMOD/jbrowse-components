@@ -186,7 +186,11 @@ function crossCuttingBuckets(
   palette: ColorPalette,
   colorBy: ColorBy | undefined,
 ): LegendItem[] {
-  return bucketItems(presentCategories, palette, categoryLabelOverrides(colorBy))
+  return bucketItems(
+    presentCategories,
+    palette,
+    categoryLabelOverrides(colorBy),
+  )
 }
 
 /**

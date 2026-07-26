@@ -6,6 +6,7 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 9u;
@@ -273,8 +274,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float ef = 0.0;
 
   if (v < 6u) {
-    lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-    ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
+    float2 q = quadLocal(v);
+    lx = q.x;
+    ly = q.y;
     sx = lerp(sx1, sx2, lx);
     sy = lerp(syBot, syTop, ly);
     bool isLast = (inst.edgeFlags & 2u) != 0u;

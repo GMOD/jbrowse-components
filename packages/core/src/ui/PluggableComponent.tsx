@@ -29,7 +29,8 @@ const PluggableComponent = observer(function PluggableComponent<
   pluginManager: PluginManager
   name: N
   component:
-    React.ComponentType<P> | React.LazyExoticComponent<React.ComponentType<P>>
+    | React.ComponentType<P>
+    | React.LazyExoticComponent<React.ComponentType<P>>
   props: P & ExtensionPointProps<N>
 }) {
   // the result is the point's declared component type; TS can't narrow that

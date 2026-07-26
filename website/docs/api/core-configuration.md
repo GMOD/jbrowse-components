@@ -131,6 +131,26 @@ promote-current wrappers below delegate to.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+## openPromotableDisplays
+
+Every display on an open track, across all open views — the reach of anything
+that acts on "the tracks the user is looking at": the cascade's own "apply to
+open tracks", and the share/export bake. One walk so those can't drift apart.
+
+Views that don't show tracks (e.g. dotplot) drop out via the structural guard,
+as does a display nested inside a composite view (breakpoint-split,
+SV-inspector, synteny read-vs-ref) — an accepted limitation of the subsystem,
+not a per-caller gap. In practice a track has one display (`replaceDisplay`
+swaps in place, `activeDisplay` is `displays[0]`), so the inner flatMap just
+collects each track's display without relying on multiple-per-track.
+
+```js
+// type signature
+(session: AbstractSessionModel) => PromotableDisplay[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ## readConfObject
 
 Given a configuration model (an instance of a ConfigurationSchema), read the

@@ -1,6 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -9,6 +8,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,

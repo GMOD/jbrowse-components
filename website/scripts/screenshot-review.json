@@ -921,10 +921,10 @@
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T23:02:33.637Z",
-    "hash": "08d2ac083cc777c3ba38edbd28508a1e3c7a8aee"
+    "status": "bad",
+    "note": "put red box around the Tag radio item also",
+    "reviewedAt": "2026-07-26T00:52:46.369Z",
+    "hash": "9e83ab235bc381cd426d5d18225a38a46b716d73"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -2004,5 +2004,12 @@
     "note": "RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background.",
     "reviewedAt": "2026-07-25T21:50:41.615Z",
     "hash": "8fa9e7330e005ef87839943851a1235543a264fd"
+  },
+  "multiway_synteny/ecoli_launch_from_selection": {
+    "name": "multiway_synteny/ecoli_launch_from_selection",
+    "status": "bad",
+    "note": "may benefit from  (1) making three part figure, including rubberband (2) reducing height of items in dialog (3) reducing height of the per-row synteny displays adaptive to number of rows, optionally with slider for this in the dialog",
+    "reviewedAt": "2026-07-26T00:54:24.455Z",
+    "hash": "dbc0588d95545a7d73690fddf3277507b109e391"
   }
 }

@@ -196,24 +196,136 @@ emits:
   under each endpoint, and carries *both* endpoints in full with their own
   stable coordinates and ranks, so an off-reference neighbour of a rank-0
   segment is an allele of known length attached at a known reference position.
-- **Deletions** are links that skip a backbone segment, `s_i -> s_i+2`.
+- **Deletions** are backbone-to-backbone links with a coordinate *gap*
+  (`tgtStart > srcEnd`, both ranks 0). Not `s_i -> s_i+2`: a skip can span more
+  than one segment, so test the gap, not the id arithmetic.
 - The **summary** layer is `MinigraphBubbleAdapter` (`gfatools bubble`), which
   already reports each bubble's reference span with its shortest and longest
   allele, so "how much variation sits here" needs no new file.
 
-What is genuinely missing is **which haplotype carries what**: rGFA `SR` is
-build order, not sample, so segs + links cannot fill a per-haplotype row. That
-needs the graph's W-lines projected into a third BED (`haplotype`, ref span,
-allele segment ids), which the builder does not emit today. Two sizes follow:
+### Measured against the hosted HPRC indexes
 
-- **Without new data**: one row per rank or per bubble, reference-anchored,
-  insertion I-beams sized by allele length and gaps where backbone is skipped.
-  Derivable now, and it reads beside the graph in the same rank colors.
-- **With the walk projection**: one row per haplotype, a real pileup, which is
-  the version the request is really describing.
+`tabix` on `hprc-v2.0-mc-grch38.links.bed.gz`, two windows from the tutorial's
+own loci: C4 (`GRCh38#0#chr6:31,980,000-32,050,000`, 70 kb) and MHC class II
+(`32,450,000-32,650,000`, 200 kb). Four things the note above got wrong.
 
-Note the VCF route already covers part of this ground:
-`LinearMultiSampleVariantDisplay` on a decomposed callset (`wave.vcf.gz`,
-`ecoli_pggb_variants`) gives one row per sample. What the graph adds is exact
-allele *length* and structure, which is what the alignment glyphs express and a
-symbolic ALT does not.
+**Haplotype identity is already there.** `SR` is build order, but `SN` on a
+rank>0 segment is the PanSN contig of the haplotype that introduced it
+(`HG01433.2#2#CM086511.1`), and rank maps 1:1 to donor (MHC window: 16 ranks, 16
+donors, no rank shared). links.bed.gz labels every off-reference allele with a
+haplotype, so the W-line projection is not needed for haplotype-labelled rows.
+The catch that decides the layout: minigraph collapses, so the label is the
+*first* haplotype to contribute the allele, never everyone carrying it. 464
+haplotypes in the graph, 15 donors in the MHC window, about one allele per row.
+Rows keyed on it are a discovery attribution, not a pileup, and must not be
+labelled as one.
+
+**Clean deletions are anonymous.** A backbone-to-backbone skip has GRCh38 on
+both ends, so no `SN`, so no donor. A deletion only gets one when it carries
+novel sequence, i.e. a small alt segment bridging a large reference skip
+(`s462766`, 1 bp, HG01952.1, bridges 31,984,683 to 31,991,051, a 6.3 kb
+deletion). MHC window: 8 anonymous deletions against 78 attributed alleles. So a
+per-haplotype row layout can place insertions but not deletions, which is the
+argument for one summary lane over 464 rows.
+
+**Chain walking is mostly unnecessary.** An alternate path can be several
+segments and its interior links are indexed under the *donor* contig, so a
+reference query never returns them. But 72 of 78 alt segments in the MHC window
+appear in both an off-backbone and an on-backbone link, so one segment id gives
+the whole allele: `refStart` = entry's srcEnd, `refEnd` = exit's tgtStart,
+`altLen` = that segment's own length. The remaining chains resolve without the
+interior too, because entry and exit share `SN` and donor coordinates are
+contiguous across the allele (`s526659` 31,891,267-31,923,687 then `s526660`
+31,923,687-31,924,005, so altLen 32,738). Pair those by `SN` *then* donor offset;
+`SN` alone is ambiguous, HG01433.2 contributes 41 entries in that one window.
+
+**Volume is trivial.** MHC 200 kb: 320 unique links, of which 155 are
+backbone-adjacent, 8 deletions (mean 605 bp), 78 off the backbone, 79 back onto
+it, 0 alt-to-alt. C4 70 kb: 36 unique links, 1 deletion, 10 out, 11 back. Tens of
+records per window, no density gate needed. That 0 is a property of the
+reference-keyed index, not of the graph: the interior links of a multi-segment
+allele are indexed under the donor contig, so a GRCh38 query never returns them.
+
+### The VCF is not symbolic, so allele length is not what the graph adds
+
+`wave.vcf.gz` at `chr6:32,010,000-32,020,000`: 126 records, **zero** symbolic
+ALTs, explicit ALT strings up to 65,481 bp, genotypes per haplotype. So
+`LinearMultiSampleVariantDisplay` already gives exact allele lengths with real
+carriage across 464 phased haplotypes, plus the SNPs minigraph collapsed. The
+linearized graph does not beat it on length or on carriage. What it adds:
+segment-level correspondence with the Bandage panel (same segment ids, same rank
+colors), the chaining and nesting of an alternate path, and working on any
+minigraph rGFA with no `deconstruct` step, which is the E. coli tutorial's graph
+and anyone's own minigraph run.
+
+### Build order
+
+The derived record is a CIGAR in all but name: `refConsumed = refEnd - refStart`
+against `altLen`, so `altLen > refConsumed` is an insertion, `<` a deletion, and
+either end falling outside the window is a clip (6 of 78 in MHC).
+
+- **Cheapest first, no display work**: have `build_rgfa_tabix.sh` emit a third
+  BED of derived alleles (chrom, ref span, altLen, donor sample, hap, rank,
+  segment ids). It already holds the whole segment table in memory while joining
+  L-lines, so the derivation is offline awk and the browser needs no pairing
+  heuristic, no chain logic, no new RPC. Render it with
+  `LinearMultiRowFeatureDisplay` partitioned on the donor, which the HPRC
+  tutorial already uses for the PCLAI painting. Boxes rather than I-beams, but it
+  is the picture for a few dozen lines of awk.
+- **The glyph vocabulary is a separate, later step with a packaging problem**:
+  `RgfaTabixAdapter` lives in the external `jbrowse-plugin-graphgenomeviewer`,
+  while `plugins/alignments` exports only `src/index.ts`, so `insertion.slang`,
+  `gap.slang` and `clip.slang` are not importable from there. Reusing them means
+  exporting them, moving the adapter in-repo, or redrawing in canvas 2D inside
+  the plugin.
+
+### It is a display gap, not a data gap
+
+The section above concludes the VCF already beats the graph on length and
+carriage, which is true of the *data* and misses where the request actually
+bites. `computeVariantCells.ts:50` draws every insertion as a full-height
+barcode line at its locus, identical to a SNP, and records that a distinct glyph
+was tried and reverted because it collapsed to an unreadable locus-centered dot
+when zoomed out. So a 65,481 bp ALT in `wave.vcf.gz` currently draws exactly as
+wide as a SNP. `getAlleleLength` (`shared/alleleLength.ts`) already exists and
+its own comment states the problem. The picture the request wants does not exist
+for *either* source, and the display that has the 464 rows is in-repo, beside
+the shaders it wants to borrow. Three moves, best value first.
+
+**A. Length-aware glyph on `LinearMultiSampleVariantDisplay`.** Data already
+hosted, already in the HPRC tutorial, rows already 464 phased haplotypes,
+`AF`/`AC`/`AN` on 125 of 126 records in the C4 window so frequency needs no
+computing. The earlier attempt failed because the glyph was drawn *at* the locus
+with no extent; give it the extent `getAlleleLength` already computes and fall
+back to the barcode line only when that is sub-pixel. Deletions already consume
+reference, so they need only a distinct treatment, not a new geometry. Fixes a
+real defect on the way (65 kb insertion indistinguishable from a SNP) and lands
+in `plugins/variants`, which makes the shader-reuse packaging problem moot.
+
+**B. `minigraph --call` is the third BED, and it is a documented one-liner.**
+Not W-lines out of the 63 GB GFA or the 5.4 GB GBZ:
+`minigraph -cxasm --call graph.gfa sample.fa` emits one line per `gfatools
+bubble` line, carrying the path through the bubble, its length in the graph, the
+strand, and the sample contig with its span; `mgutils.js merge` joins the
+per-sample calls into one file. We already host `bubbles.bed.gz` built by
+`gfatools bubble` on the same graph, so the calls join to it line for line. For
+E. coli (5 strains, our own `build_ecoli_pangenome_graph.sh`) that is seconds of
+compute and it is the true per-haplotype pileup with real carriage, from the
+graph alone. For HPRC it needs the 464 haplotype assemblies re-mapped, so HPRC
+stays on the VCF. This supersedes the W-line third-BED work item entirely.
+
+**C. The rGFA lane is one lane, not rows.** Donor rows are not merely sparse,
+they are misleading, and the numbers say so: in the MHC window rank 1
+(HG01433.2#2) accounts for 41 of 78 alleles, rank 2 is that sample's sibling
+haplotype with **0**, and ranks 230 and 345 have 1 each. Monotone decay in build
+order, because the earliest haplotype absorbs every allele later ones share. A
+donor-row plot reads "HG01433.2 is the most structurally variable haplotype
+here", which is an artifact of being added first. So: one lane, backbone as the
+body, insertion ticks at the attachment points sized by allele length, gaps at
+the skips, clip at the window edges. It works on any rGFA with no VCF and no
+re-mapping, and it is the panel that shares segment ids and rank colors with the
+Bandage view.
+
+Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
+nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
+graph rather than HPRC.

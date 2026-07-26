@@ -206,8 +206,8 @@ mechanisms build one content-stable stacked PNG instead:
   view props, applied via `applyInitSettings`), then a
   `{ mode: 'compose', parts: [...] }` spec stacks their committed PNGs
   `convert -append`. No menu-driving, so nothing can drift, and each part is
-  independently openable live. See `genomes_synteny/ribbons_default` +
-  `_curved` → `genomes_synteny/ribbon_settings`.
+  independently openable live. See `genomes_synteny/ribbons_default` + `_curved`
+  → `genomes_synteny/ribbon_settings`.
 - **Use `stages`** only when a state is genuinely reachable _only_ through the
   UI (a hover, a transient popover). Each stage's frame is captured and stacked;
   to toggle a menu setting, note the synteny "CIGAR display mode" control is on
@@ -222,7 +222,8 @@ _both_ states from one combined figure, `<Figure>` takes
 the compose spec (which has no session of its own).
 
 **A compose part is an ingredient, not a figure.** Nothing writes
-`/img/<part>.png` into a doc, so the part is only ever seen as half of the stack:
+`/img/<part>.png` into a doc, so the part is only ever seen as half of the
+stack:
 
 - The generator recomposes the parent whenever a `--filter` selects one of its
   parts, so `--filter <part>` can't leave the published stack showing the old

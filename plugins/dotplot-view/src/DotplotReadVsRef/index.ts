@@ -35,9 +35,14 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
                       label: 'Dotplot of read vs ref',
                       icon: AddIcon,
                       onClick: () => {
-                        withContextMenuFeature(self, featureId, feature, feat => {
-                          onClick(feat, self)
-                        })
+                        withContextMenuFeature(
+                          self,
+                          featureId,
+                          feature,
+                          feat => {
+                            onClick(feat, self)
+                          },
+                        )
                       },
                     })
                   }

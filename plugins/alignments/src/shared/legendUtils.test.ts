@@ -1,8 +1,5 @@
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import {
-  getArcLegendItems,
-  getReadDisplayLegendItems,
-} from './legendUtils.ts'
+import { getArcLegendItems, getReadDisplayLegendItems } from './legendUtils.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
