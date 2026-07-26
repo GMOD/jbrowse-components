@@ -15,6 +15,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
 
 import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
 import { BaseLinearDisplayComponent } from '../index.ts'
@@ -2383,5 +2384,39 @@ describe('showsWholeChromosome', () => {
 
   test('false for multiple regions', () => {
     expect(makeView(volvoxDisplayedRegions).showsWholeChromosome).toBe(false)
+  })
+})
+
+describe('coarse dynamic blocks', () => {
+  function makeView() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions(volvoxDisplayedRegions)
+    return model
+  }
+
+  // the location box reads coarseVisibleLocStrings, so a jump that leaves it to
+  // the 500ms autorun shows the previous locus while the view is already there
+  test('a navigation lands on them without waiting for the debounce', async () => {
+    const model = makeView()
+    await model.navToLocString('ctgA:1000-2000')
+    expect(model.coarseVisibleLocStrings).toBe(model.visibleLocStrings)
+  })
+
+  test('an equivalent update does not invalidate consumers', async () => {
+    const model = makeView()
+    await model.navToLocString('ctgA:1000-2000')
+    let runs = 0
+    const dispose = autorun(() => {
+      void model.coarseDynamicBlocks
+      runs++
+    })
+    expect(runs).toBe(1)
+    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
+    expect(runs).toBe(1)
+    dispose()
   })
 })

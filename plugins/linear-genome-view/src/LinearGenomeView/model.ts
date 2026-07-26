@@ -1909,9 +1909,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setCoarseDynamicBlocks(blocks: BlockSet, bpPerPx: number) {
-        self.coarseDynamicBlocks = blocks.contentBlocks
-        self.coarseTotalBp = blocks.totalBp
-        self.coarseBpPerPx = bpPerPx
+        // Consumers diff the coarse blocks by reference (the alignments and
+        // wiggle fetch autoruns), so assigning an equivalent array would make
+        // them refetch. moveTo flushes these on a discrete jump and the
+        // debounced autorun then fires once more with the same blocks — that
+        // follow-up has to cost nothing. A block's key encodes its
+        // assembly/refName/start/end, so keys are enough to compare.
+        const next = blocks.contentBlocks
+        const same =
+          bpPerPx === self.coarseBpPerPx &&
+          next.length === self.coarseDynamicBlocks.length &&
+          next.every((b, i) => b.key === self.coarseDynamicBlocks[i]!.key)
+        if (!same) {
+          self.coarseDynamicBlocks = next
+          self.coarseTotalBp = blocks.totalBp
+          self.coarseBpPerPx = bpPerPx
+        }
       },
     }))
     .actions(self => ({
@@ -1925,6 +1938,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       moveTo(start?: BpOffset, end?: BpOffset) {
         moveTo(self, start, end)
+        // A jump to a location is discrete, so there is nothing to coalesce.
+        // Leaving it to the debounced coarse autorun leaves the location box —
+        // and every other coarse consumer — on the previous locus for up to
+        // 500ms after the view has already moved, which reads as a navigation
+        // that didn't happen. Continuous pan and zoom don't come through here,
+        // so this adds no per-frame work; the flush is idempotent, so the
+        // autorun's own follow-up run is a no-op.
+        if (self.initialized) {
+          self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
+        }
       },
 
       /**
