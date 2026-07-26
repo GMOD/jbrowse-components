@@ -530,7 +530,7 @@ diagonal.
 
 <Figure caption="The same plot for haplotype 2. chr13_hap2 carries a single clean diagonal against chr13, the untranslocated counterpart to hap1's fused scaffold." src="/img/sv_cgiab/dotplot_hap2.png" />
 
-Use **Open linear synteny view** from the drag selection, then enter
+Use **Linear synteny view of selection** from the drag selection, then enter
 `chr3 chr13` in the GRCh38 search box to focus on those chromosomes. Raising the
 **minimum alignment length** (in the synteny view's menu) drops short, noisy
 anchors so the large syntenic blocks read clearly.

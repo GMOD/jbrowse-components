@@ -122,8 +122,8 @@ _H. pylori_ strains in a single multiway view.
 
 You can launch a linear synteny view in two ways:
 
-- From the dotplot, select a region and choose **Open linear synteny view** (as
-  shown above).
+- From the dotplot, select a region and choose **Linear synteny view of
+  selection** (as shown above).
 - From the start screen, click **Linear synteny view**, then pick an assembly
   for each row and the synteny track to display between adjacent rows. Use **Add
   row** to stack a third (or more) genome for a multiway comparison.

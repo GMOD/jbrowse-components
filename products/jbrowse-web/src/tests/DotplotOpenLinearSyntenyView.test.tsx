@@ -18,7 +18,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(grapePeachGetFile)
 
-test('Open linear synteny view from dotplot view', async () => {
+test('Linear synteny view of selection from dotplot view', async () => {
   const { rootModel } = getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
@@ -49,7 +49,7 @@ test('Open linear synteny view from dotplot view', async () => {
   const mousedown: [number, number] = [100, 100]
   const mouseup: [number, number] = [300, 300]
 
-  // Call the action that "Open linear synteny view" triggers
+  // Call the action that "Linear synteny view of selection" triggers
   // This is the fix we're testing - it should not throw
   // "Cannot add an object to a state tree if it is already part of the same or another state tree"
   dotplotView.onDotplotView(mousedown, mouseup)
@@ -69,7 +69,7 @@ test('Open linear synteny view from dotplot view', async () => {
   expect(syntenyView.levels[0]?.tracks.length).toBe(1)
 }, 50000)
 
-test('Open linear synteny view from dotplot preserves track configuration', async () => {
+test('Linear synteny view of selection from dotplot preserves track configuration', async () => {
   const { rootModel } = getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
