@@ -31,6 +31,10 @@ interface ScaleModel {
   rowHeightTooSmallForScalebar: boolean
   numSources: number
   numRows: number
+  posColor: string
+  negColor: string
+  bicolorPivot: number
+  id: string
 }
 
 export default observer(function MultiWiggleSvgScales({
@@ -57,7 +61,19 @@ export default observer(function MultiWiggleSvgScales({
     rowHeightTooSmallForScalebar,
     numSources,
     numRows,
+    posColor,
+    negColor,
+    bicolorPivot,
+    id,
   } = model
+
+  // Only density spends color on the score, and only when every row shares the
+  // one ramp: a source with its own color is drawn on its own pos side (see
+  // buildSourceRenderData), so a single bar would describe none of them.
+  const ramp =
+    isDensityMode && sources.every(s => !s.color)
+      ? { posColor, negColor, pivot: bicolorPivot }
+      : undefined
 
   const labels =
     numSources > 1 && !isOverlay ? (
@@ -81,6 +97,8 @@ export default observer(function MultiWiggleSvgScales({
       domain={domain}
       scaleType={scaleType}
       canvasWidth={legendRight}
+      ramp={ramp}
+      gradientId={`score-ramp-${id}`}
     />
   ) : (
     <g transform={`translate(${scalebarLeft})`}>

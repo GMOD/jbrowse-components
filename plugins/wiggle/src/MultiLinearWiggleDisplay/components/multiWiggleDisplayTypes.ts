@@ -8,6 +8,7 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 export interface MultiWiggleDisplayModel
   extends WiggleGpuDisplayModel, WiggleGpuProps {
+  id: string
   rpcDataMap: Map<number, WiggleDataResult>
   sources: { name: string; color?: string; labelColor?: string }[]
   sourcesWithoutLayout: { name: string }[]
