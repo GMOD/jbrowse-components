@@ -390,6 +390,27 @@ range query instead:
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. The white gaps in the lanes are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12 so its band is the K-12/IAI39 comparison: the blue stretches in its lane and the blue crossings in the band under them are the same inversions, once as a strand flip and once as a ribbon." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
+### From a lane to a stack, for one locus
+
+The lanes say where a strain breaks from the backbone. The stacked view says
+what the break looks like on both sides of it. To go from one to the other,
+drag-select a region and pick **Linear synteny view of selection**: JBrowse
+reads that region back out of the same PAF, finds every assembly aligning to it,
+and opens a row for each with a ribbon band in between. Selecting the paa operon
+window above gives the five-strain stack for that locus alone.
+
+The dialog lists the assemblies it found, top to bottom, and lets you reorder
+them before launching. That order is not cosmetic: ribbons are drawn between
+neighbouring rows only, so the pairs you put next to each other are the
+comparisons the view can show. It is the same reason IAI39 sits directly below
+K-12 in the figure above.
+
+Clicking a single alignment instead of selecting a region still offers **Launch
+synteny view for this position**, which opens the one pair that alignment
+describes rather than every assembly at the locus.
+
+<Figure caption="Selecting an 8 kb window of the shared backbone and launching from it. The dialog lists the four strains that align there, all checked, in the order their rows will stack; the launched view is those five rows with a band between each neighbouring pair. Ribbons exist only between adjacent rows, which is what the up/down arrows are for." src="/img/multiway_synteny/ecoli_launch_from_selection.png" />
+
 ## Reproduce it end to end
 
 Every command above is wrapped in one script,
