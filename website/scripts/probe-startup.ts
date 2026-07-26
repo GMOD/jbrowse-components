@@ -301,7 +301,7 @@ async function main() {
       }
     })
     process.stderr.write(
-      [
+      `${[
         `defer-shader-status: ${deferStatus}`,
         `nav -> view visible ${toView} ms, nav -> settled ${Date.now() - t0} ms`,
         `GPU: ${gpu.renderer}`,
@@ -319,7 +319,7 @@ async function main() {
         `synchronous XHRs on main thread: ${probe.syncXhr} (${probe.syncXhrMs.toFixed(0)} ms)`,
         `workers: ${probe.workers.length}`,
         ...probe.workers.map(w => `  ${w.slice(0, 120)}`),
-      ].join('\n') + '\n',
+      ].join('\n')}\n`,
     )
   } finally {
     await browser.close()

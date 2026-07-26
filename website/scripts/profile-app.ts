@@ -283,7 +283,7 @@ async function runPhase(
   }
   for (const { label: l, profile } of profiles) {
     fs.writeFileSync(
-      path.join(outDir, `${label}.${l.replace(/[^\w.-]/g, '_')}.cpuprofile`),
+      path.join(outDir, `${label}.${l.replaceAll(/[^\w.-]/g, '_')}.cpuprofile`),
       JSON.stringify(profile),
     )
   }

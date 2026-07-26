@@ -148,7 +148,7 @@ painted = await page.evaluate(
 )
 
 process.stderr.write(
-  [
+  `${[
     `COOP/COEP served: ${coi}`,
     `crossOriginIsolated: ${main.crossOriginIsolated}  SharedArrayBuffer: ${main.hasSAB}`,
     `blob URLs created on main (fallback tokens): ${main.blobUrls}`,
@@ -156,7 +156,7 @@ process.stderr.write(
     `blob: fetches inside workers (sync XHR probes): ${blobFetches}`,
     `displays painted: ${painted}   settled: ${settled} ms`,
     `page errors: ${errors.length}${errors.length ? ` -> ${errors.slice(0, 3).join(' | ')}` : ''}`,
-  ].join('\n') + '\n',
+  ].join('\n')}\n`,
 )
 await browser.close()
 server.close()

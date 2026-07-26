@@ -180,10 +180,10 @@ try {
   server.close()
 }
 process.stderr.write(
-  [
+  `${[
     `COOP/COEP: ${coi}  crossOriginIsolated: ${out[0]!.isolated}`,
     `stop tokens: ${out[0]!.blobUrls} blob URLs, ${out[0]!.sabs} SharedArrayBuffers`,
     `settle after last of ${hops} hops: median ${median(out.map(r => r.settleAfterLastNav))} ms  ${out.map(r => r.settleAfterLastNav).join(' ')}`,
     `whole burst:              median ${median(out.map(r => r.total))} ms  ${out.map(r => r.total).join(' ')}`,
-  ].join('\n') + '\n',
+  ].join('\n')}\n`,
 )

@@ -71,7 +71,7 @@ function cleanSource(source: string) {
   const stripped = source
     .replace(/^webpack:\/\//, '')
     .replace(/^[^/]*\//, '')
-    .replace(/(\.\.\/)+/g, '')
+    .replaceAll(/(\.\.\/)+/g, '')
   return stripped.startsWith('node_modules')
     ? stripped
     : stripped.replace(/^\.\//, '')

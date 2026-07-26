@@ -378,6 +378,8 @@ export default defineConfig(
     rules: {
       'react-compiler/react-compiler': 'off',
       'react-refresh/only-export-components': 'off',
+      // reads a WebGL `gl.useProgram` override as a misnamed hook
+      '@eslint-react/no-unnecessary-use-prefix': 'off',
     },
   },
   // Each product's examples-site is demonstrative, so `console.log` (e.g.
