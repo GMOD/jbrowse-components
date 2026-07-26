@@ -45,18 +45,40 @@ function pslMilliBad({
       )
 }
 
-function pslRowToFeature(
-  row: (string | number)[],
-  col: Record<string, number>,
-  featureIndex: number,
-): SimpleFeatureSerialized {
+/**
+ * One PSL hit, with the column-name indirection resolved and the derived
+ * kent numbers (score, identity, coverage) computed once. Both consumers read
+ * this: the hit-list features, and the SAM conversion that turns the blocks into
+ * a CIGAR alignment.
+ */
+export interface PslRow {
+  matches: number
+  misMatches: number
+  repMatches: number
+  qNumInsert: number
+  qBaseInsert: number
+  tNumInsert: number
+  tBaseInsert: number
+  strand: 1 | -1
+  qName: string
+  qSize: number
+  qStart: number
+  qEnd: number
+  tName: string
+  tSize: number
+  tStart: number
+  tEnd: number
+  blockSizes: number[]
+  qStarts: number[]
+  tStarts: number[]
+  score: number
+  identity: number
+  coverage: number
+}
+
+function pslRow(row: (string | number)[], col: Record<string, number>): PslRow {
   const str = (name: string) => String(row[col[name]!] ?? '')
   const num = (name: string) => Number(row[col[name]!] ?? 0)
-  const refName = str('tName')
-  const start = num('tStart')
-  const end = num('tEnd')
-  const strand = str('strand').startsWith('-') ? -1 : 1
-  const qName = str('qName')
   const matches = num('matches')
   const misMatches = num('misMatches')
   const repMatches = num('repMatches')
@@ -65,69 +87,95 @@ function pslRowToFeature(
   const qStart = num('qStart')
   const qEnd = num('qEnd')
   const qSize = num('qSize')
-  const blockSizes = parseCommaList(str('blockSizes'))
-  const tStarts = parseCommaList(str('tStarts'))
-
-  // kent's pslScore, which ranks the hit table: repeat matches count half
-  const score =
-    matches + (repMatches >> 1) - misMatches - qNumInsert - tNumInsert
-  const identity =
-    100 -
-    pslMilliBad({
-      matches,
-      misMatches,
-      repMatches,
-      qNumInsert,
-      qAliSize: qEnd - qStart,
-      tAliSize: end - start,
-    }) /
-      10
-  // how much of the submitted sequence this hit accounts for — the other half of
-  // "did my sequence map here", since a high-identity hit over 10% of the query
-  // is not the locus you were looking for
-  const coverage = qSize > 0 ? (100 * (qEnd - qStart)) / qSize : 0
-
-  const uniqueId = `blat-${featureIndex}`
-  const subfeatures = blockSizes.map((size, i) => ({
-    uniqueId: `${uniqueId}-block-${i}`,
-    refName,
-    start: tStarts[i]!,
-    end: tStarts[i]! + size,
-    strand,
-    type: 'match_part',
-  }))
+  const tStart = num('tStart')
+  const tEnd = num('tEnd')
 
   return {
-    uniqueId,
-    refName,
-    start,
-    end,
-    strand,
-    type: 'match',
-    name: `${qName} ${identity.toFixed(1)}%`,
-    score,
-    identity: Number(identity.toFixed(1)),
-    coverage: Number(coverage.toFixed(1)),
     matches,
     misMatches,
-    queryName: qName,
-    queryStart: qStart,
-    queryEnd: qEnd,
-    querySize: qSize,
-    blockCount: blockSizes.length,
-    subfeatures,
+    repMatches,
+    qNumInsert,
+    qBaseInsert: num('qBaseInsert'),
+    tNumInsert,
+    tBaseInsert: num('tBaseInsert'),
+    strand: str('strand').startsWith('-') ? -1 : 1,
+    qName: str('qName'),
+    qSize,
+    qStart,
+    qEnd,
+    tName: str('tName'),
+    tSize: num('tSize'),
+    tStart,
+    tEnd,
+    blockSizes: parseCommaList(str('blockSizes')),
+    qStarts: parseCommaList(str('qStarts')),
+    tStarts: parseCommaList(str('tStarts')),
+    // kent's pslScore, which ranks the hit table: repeat matches count half
+    score: matches + (repMatches >> 1) - misMatches - qNumInsert - tNumInsert,
+    identity:
+      100 -
+      pslMilliBad({
+        matches,
+        misMatches,
+        repMatches,
+        qNumInsert,
+        qAliSize: qEnd - qStart,
+        tAliSize: tEnd - tStart,
+      }) /
+        10,
+    // how much of the submitted sequence this hit accounts for — the other half
+    // of "did my sequence map here", since a high-identity hit over 10% of the
+    // query is not the locus you were looking for
+    coverage: qSize > 0 ? (100 * (qEnd - qStart)) / qSize : 0,
   }
 }
 
 // Sorted by score descending, matching the order hgBlat lists its hit table in,
-// so consumers can treat the first feature as the best placement of the query.
-export function pslToFeatures(
-  data: BlatJsonResponse,
-): SimpleFeatureSerialized[] {
+// so consumers can treat the first row as the best placement of the query.
+export function parsePslRows(data: BlatJsonResponse): PslRow[] {
   const col = Object.fromEntries(data.fields.map((f, i) => [f, i]))
   return data.blat
-    .map((row, i) => pslRowToFeature(row, col, i))
-    .sort((a, b) => Number(b.score) - Number(a.score))
+    .map(row => pslRow(row, col))
+    .sort((a, b) => b.score - a.score)
+}
+
+function pslRowToFeature(
+  row: PslRow,
+  featureIndex: number,
+): SimpleFeatureSerialized {
+  const { tName: refName, strand, identity, blockSizes, tStarts } = row
+  const uniqueId = `blat-${featureIndex}`
+  return {
+    uniqueId,
+    refName,
+    start: row.tStart,
+    end: row.tEnd,
+    strand,
+    type: 'match',
+    name: `${row.qName} ${identity.toFixed(1)}%`,
+    score: row.score,
+    identity: Number(identity.toFixed(1)),
+    coverage: Number(row.coverage.toFixed(1)),
+    matches: row.matches,
+    misMatches: row.misMatches,
+    queryName: row.qName,
+    queryStart: row.qStart,
+    queryEnd: row.qEnd,
+    querySize: row.qSize,
+    blockCount: blockSizes.length,
+    subfeatures: blockSizes.map((size, i) => ({
+      uniqueId: `${uniqueId}-block-${i}`,
+      refName,
+      start: tStarts[i]!,
+      end: tStarts[i]! + size,
+      strand,
+      type: 'match_part',
+    })),
+  }
+}
+
+export function pslToFeatures(rows: PslRow[]): SimpleFeatureSerialized[] {
+  return rows.map((row, i) => pslRowToFeature(row, i))
 }
 
 export const MINIMUM_BLAT_LENGTH = 20
@@ -235,7 +283,7 @@ function htmlErrorMessage(text: string) {
 // hgBlat returns text/html content-type with a JSON body, and both non-match
 // errors and the Cloudflare Turnstile challenge come back as HTML pages, so we
 // parse the text ourselves and give a readable error if it isn't JSON
-export function parseBlatResponse(text: string): SimpleFeatureSerialized[] {
+export function parseBlatResponse(text: string): PslRow[] {
   if (text.trimStart().startsWith('<')) {
     if (isChallengePage(text)) {
       throw challengeError()
@@ -248,7 +296,7 @@ export function parseBlatResponse(text: string): SimpleFeatureSerialized[] {
     )
   }
   const data = JSON.parse(text) as BlatJsonResponse
-  return pslToFeatures(data)
+  return parsePslRows(data)
 }
 
 export const DEFAULT_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'

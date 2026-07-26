@@ -68,6 +68,14 @@ const formats: { regex: RegExp; spec: AdapterSpec }[] = [
     },
   },
   {
+    regex: /\.sam(\.gz)?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'SamAdapter',
+      locField: 'samLocation',
+    },
+  },
+  {
     regex: /\.gff3?\.b?gz$/i,
     spec: {
       kind: 'indexed',
@@ -441,6 +449,7 @@ export function guessTrack({
 export const adapterTypesToTrackTypeMap: Record<string, string> = {
   BamAdapter: 'AlignmentsTrack',
   CramAdapter: 'AlignmentsTrack',
+  SamAdapter: 'AlignmentsTrack',
   BgzipFastaAdapter: 'ReferenceSequenceTrack',
   BigWigAdapter: 'QuantitativeTrack',
   IndexedFastaAdapter: 'ReferenceSequenceTrack',

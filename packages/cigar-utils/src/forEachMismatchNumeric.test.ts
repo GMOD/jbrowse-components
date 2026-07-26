@@ -1,3 +1,4 @@
+import { encodeSeqNumeric as encodeSeq } from './bamSeqEncoder.ts'
 import { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
 import {
   DELETION_TYPE,
@@ -9,36 +10,6 @@ import {
 } from './mismatchCallback.ts'
 
 import type { MismatchCallback } from './mismatchCallback.ts'
-
-// Helper to encode a sequence string into BAM's packed 4-bit format
-function encodeSeq(seq: string): Uint8Array {
-  const SEQ_ENCODE: Record<string, number> = {
-    '=': 0,
-    A: 1,
-    C: 2,
-    M: 3,
-    G: 4,
-    R: 5,
-    S: 6,
-    V: 7,
-    T: 8,
-    W: 9,
-    Y: 10,
-    H: 11,
-    K: 12,
-    D: 13,
-    B: 14,
-    N: 15,
-  }
-  const result = new Uint8Array(Math.ceil(seq.length / 2))
-  for (let i = 0; i < seq.length; i += 2) {
-    const high = SEQ_ENCODE[seq[i]!.toUpperCase()] ?? 15
-    const low =
-      i + 1 < seq.length ? (SEQ_ENCODE[seq[i + 1]!.toUpperCase()] ?? 15) : 0
-    result[i >> 1] = (high << 4) | low
-  }
-  return result
-}
 
 // Helper to encode CIGAR string to packed Uint32Array format
 function encodeCigar(cigar: string): Uint32Array {

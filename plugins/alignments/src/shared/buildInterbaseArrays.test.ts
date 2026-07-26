@@ -1,5 +1,5 @@
-import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 import { buildGapArrays } from '../features/gap/buildArrays.ts'
+import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 
 // An insertion's length is bounded by the query, not by the reference span the
 // read covers, so it is not bounded at all in an assembly-to-reference BAM

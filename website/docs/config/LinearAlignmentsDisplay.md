@@ -70,6 +70,7 @@ _See the **Config slots** section below for all available configuration fields._
 - **Adapter:** [BamAdapter](../bamadapter)
 - **Adapter:** [CramAdapter](../cramadapter)
 - **Adapter:** [HtsgetBamAdapter](../htsgetbamadapter)
+- **Adapter:** [SamAdapter](../samadapter)
 - **State model:** [runtime API](../../models/linearalignmentsdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 

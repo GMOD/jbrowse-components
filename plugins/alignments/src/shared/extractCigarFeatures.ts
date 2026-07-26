@@ -69,60 +69,60 @@ function makeCigarEmitter(
   showSoftClipping: boolean,
 ): MismatchCallback {
   return (type, start, length, base, qual, _altbase, cliplen) => {
-      if (type === MISMATCH_TYPE) {
-        emitMismatch(
-          start,
-          base,
-          qual,
-          readIndex,
-          featureStart,
-          strand,
-          output.mismatches,
-        )
-      } else if (type === INSERTION_TYPE) {
-        emitInsertion(
-          start,
-          cliplen!,
-          base,
-          readIndex,
-          featureStart,
-          output.insertions,
-        )
-      } else if (type === SOFTCLIP_TYPE) {
-        emitSoftclip(
-          start,
-          cliplen!,
-          readIndex,
-          featureStart,
-          feature,
-          output.softclips,
-          showSoftClipping,
-        )
-      } else if (type === DELETION_TYPE) {
-        emitGap(
-          'deletion',
-          start,
-          length,
-          readIndex,
-          featureStart,
-          strand,
-          feature,
-          output.gaps,
-        )
-      } else if (type === SKIP_TYPE) {
-        emitGap(
-          'skip',
-          start,
-          length,
-          readIndex,
-          featureStart,
-          strand,
-          feature,
-          output.gaps,
-        )
-      } else if (type === HARDCLIP_TYPE) {
-        emitHardclip(start, cliplen!, readIndex, featureStart, output.hardclips)
-      }
+    if (type === MISMATCH_TYPE) {
+      emitMismatch(
+        start,
+        base,
+        qual,
+        readIndex,
+        featureStart,
+        strand,
+        output.mismatches,
+      )
+    } else if (type === INSERTION_TYPE) {
+      emitInsertion(
+        start,
+        cliplen!,
+        base,
+        readIndex,
+        featureStart,
+        output.insertions,
+      )
+    } else if (type === SOFTCLIP_TYPE) {
+      emitSoftclip(
+        start,
+        cliplen!,
+        readIndex,
+        featureStart,
+        feature,
+        output.softclips,
+        showSoftClipping,
+      )
+    } else if (type === DELETION_TYPE) {
+      emitGap(
+        'deletion',
+        start,
+        length,
+        readIndex,
+        featureStart,
+        strand,
+        feature,
+        output.gaps,
+      )
+    } else if (type === SKIP_TYPE) {
+      emitGap(
+        'skip',
+        start,
+        length,
+        readIndex,
+        featureStart,
+        strand,
+        feature,
+        output.gaps,
+      )
+    } else if (type === HARDCLIP_TYPE) {
+      emitHardclip(start, cliplen!, readIndex, featureStart, output.hardclips)
+    }
   }
 }
 

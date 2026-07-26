@@ -1,4 +1,4 @@
-import { parseBlatResponse } from '../blatQuery.ts'
+import { parseBlatResponse, pslToFeatures } from '../blatQuery.ts'
 import { parseIsPcrResponse } from '../ispcrQuery.ts'
 import { hitSummary } from './hitSummary.ts'
 
@@ -37,7 +37,7 @@ const ISPCR_HTML =
   '<PRE>\n&gt;chr9:132576352+132576623 272bp GTGACGTCG CCTAGGTTG\nACGT\n</PRE>'
 
 test('a BLAT hit summarizes as identity and query coverage', () => {
-  expect(hitSummary(parseBlatResponse(BLAT_JSON)[0]!)).toBe(
+  expect(hitSummary(pslToFeatures(parseBlatResponse(BLAT_JSON))[0]!)).toBe(
     'YourSeq, 98.7% identity, 100% of query',
   )
 })

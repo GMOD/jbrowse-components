@@ -57,6 +57,7 @@ has very little config; most config and state logic is on the display
 - **Adapter:** [BamAdapter](../bamadapter)
 - **Adapter:** [CramAdapter](../cramadapter)
 - **Adapter:** [HtsgetBamAdapter](../htsgetbamadapter)
+- **Adapter:** [SamAdapter](../samadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Inherited config slots

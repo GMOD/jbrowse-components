@@ -54,8 +54,8 @@ const IsPcrDialog = observer(function IsPcrDialog({
     // type rather than guarding a reachable state
     if (maxProductSize !== undefined) {
       await query.runQuery({
-        fetchFeatures: () =>
-          runUcscFetch({
+        fetchResult: async () => ({
+          features: await runUcscFetch({
             urlBase,
             body: buildIsPcrBody({
               db,
@@ -66,6 +66,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
             }),
             parse: parseIsPcrResponse,
           }),
+        }),
         trackIdPrefix: 'ispcr',
         trackName: `PCR ${fwd.slice(0, 10)}…/${rev.slice(0, 10)}…`,
         emptyMessage: `No PCR products found in ${db}`,

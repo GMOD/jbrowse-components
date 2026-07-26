@@ -85,40 +85,50 @@ export async function navToFeature(
   }
 }
 
-// Turns a UCSC query result into an on-the-fly FromConfigAdapter FeatureTrack,
-// shows it, navigates to the leading hit, and opens the hit list in the drawer.
-// Answering "where is this sequence" is the point of the query, so landing on
-// the coordinates is part of the result rather than a follow-up the user has to
-// perform — and the widget keeps the rest of the hits readable after the dialog
-// closes, which a snackbar naming only the best one could not. Callers pass
-// `features` best-first (pslToFeatures sorts by score; hgPcr returns its
-// products in order).
+// How a result set is displayed. Defaults to an on-the-fly FromConfigAdapter
+// FeatureTrack, which is all an hgPcr product needs; a BLAT hit overrides it
+// with a SAM alignment so its blocks, indels and per-base mismatches are drawn.
+export interface ResultTrackConf {
+  type: string
+  adapter: Record<string, unknown>
+}
+
+// Turns a UCSC query result into an on-the-fly track, shows it, navigates to the
+// leading hit, and opens the hit list in the drawer. Answering "where is this
+// sequence" is the point of the query, so landing on the coordinates is part of
+// the result rather than a follow-up the user has to perform — and the widget
+// keeps the rest of the hits readable after the dialog closes, which a snackbar
+// naming only the best one could not. Callers pass `features` best-first
+// (pslToFeatures sorts by score; hgPcr returns its products in order).
 export async function addResultTrack({
   session,
   assembly,
   features,
   trackIdPrefix,
   trackName,
+  trackConf,
 }: {
   session: AbstractSessionModel
   assembly: string
   features: SimpleFeatureSerialized[]
   trackIdPrefix: string
   trackName: string
+  trackConf?: ResultTrackConf
 }) {
   if (!isSessionWithAddTracks(session)) {
     throw new Error("Can't add tracks to this session")
   }
   const trackId = `${trackIdPrefix}-${Date.now()}`
-  session.addTrackConf({
+  const { type, adapter } = trackConf ?? {
     type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features },
+  }
+  session.addTrackConf({
+    type,
     trackId,
     name: trackName,
     assemblyNames: [assembly],
-    adapter: {
-      type: 'FromConfigAdapter',
-      features,
-    },
+    adapter,
   })
   const view = findNavigableView(session, assembly)
   if (view) {

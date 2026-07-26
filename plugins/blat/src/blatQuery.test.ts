@@ -2,6 +2,7 @@ import {
   buildBlatBody,
   fastaRecordCount,
   parseBlatResponse,
+  parsePslRows,
   pslToFeatures,
   queryLabel,
   stripFasta,
@@ -84,8 +85,10 @@ const response = {
   ],
 }
 
+const features = () => pslToFeatures(parsePslRows(response))
+
 const byRefName = (refName: string) =>
-  pslToFeatures(response).find(f => f.refName === refName)!
+  features().find(f => f.refName === refName)!
 
 test('parses a single-block PSL hit', () => {
   const f = byRefName('chr6')
@@ -114,9 +117,8 @@ test('parses a multi-block hit with trailing-comma block lists', () => {
 // the leading feature is the one the view navigates to, so the order is part of
 // the contract, not a presentational detail
 test('orders hits best-first by kent pslScore', () => {
-  const features = pslToFeatures(response)
   // chr17: 140 + 0 - 5 - 1 - 2 = 132 beats chr6: 133 - 13 = 120
-  expect(features.map(f => [f.refName, f.score])).toEqual([
+  expect(features().map(f => [f.refName, f.score])).toEqual([
     ['chr17', 132],
     ['chr6', 120],
   ])

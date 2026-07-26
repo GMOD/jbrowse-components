@@ -1,30 +1,23 @@
-import {
-  BaseFeatureDataAdapter,
-  cachedSetup,
-  isSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 
+import { BaseAlignmentsAdapter } from './BaseAlignmentsAdapter.ts'
 import { parseSamHeader } from './util.ts'
 
 import type { ParsedSamHeader, SamHeaderLine } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  BaseOptions,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * The spine BamAdapter and CramAdapter share: download the header + index
  * exactly once (label gated to the first download, byte progress threaded to
- * the index reader), expose the parsed SAM header, and memoize the optional
- * reference-sequence sub-adapter.
+ * the index reader) and expose the parsed SAM header. The reference-sequence
+ * sub-adapter comes from {@link BaseAlignmentsAdapter}, which SamAdapter — which
+ * has no index to download — shares without inheriting the download spine.
  */
 export abstract class BaseSamAdapter<
   CONF extends AnyConfigurationModel,
-> extends BaseFeatureDataAdapter<CONF> {
+> extends BaseAlignmentsAdapter<CONF> {
   public samHeader?: ParsedSamHeader
-
-  private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
   /**
    * Download the index and read the raw header lines, passing `onProgress` to
@@ -61,26 +54,5 @@ export abstract class BaseSamAdapter<
 
   refNameToId(refName: string) {
     return this.samHeader?.nameToId[refName]
-  }
-
-  /**
-   * The assembly's sequence adapter, when one is configured and actually serves
-   * sequence — a ChromSizesAdapter is a legitimate assembly adapter with no
-   * getSequence, and reading through it would throw rather than degrade to "no
-   * reference available".
-   */
-  async getSequenceAdapter() {
-    const config = this.sequenceAdapterConfig
-    if (config && this.getSubAdapter) {
-      this.sequenceAdapterP ??= this.getSubAdapter(config)
-        .then(({ dataAdapter }) =>
-          isSequenceAdapter(dataAdapter) ? dataAdapter : undefined,
-        )
-        .catch((e: unknown) => {
-          this.sequenceAdapterP = undefined
-          throw e
-        })
-    }
-    return this.sequenceAdapterP
   }
 }

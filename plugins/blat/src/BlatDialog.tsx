@@ -16,9 +16,11 @@ import {
   buildBlatBody,
   fastaRecordCount,
   parseBlatResponse,
+  pslToFeatures,
   queryLabel,
   stripFasta,
 } from './blatQuery.ts'
+import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -54,12 +56,28 @@ const BlatDialog = observer(function BlatDialog({
   async function handleSubmit() {
     const label = queryLabel(seq)
     await query.runQuery({
-      fetchFeatures: () =>
-        runUcscFetch({
+      // PSL states each hit as aligned blocks in query and target coordinates,
+      // which is a CIGAR alignment: converting to SAM and showing it in an
+      // alignments track draws the hit's exon-like blocks, its indels, the
+      // unaligned ends of the query as soft clips, and — since the submitted
+      // sequence is right here — its mismatches against the reference.
+      fetchResult: async () => {
+        const rows = await runUcscFetch({
           urlBase,
           body: buildBlatBody({ db, seq: seq.trim(), apiKey }),
           parse: parseBlatResponse,
-        }),
+        })
+        return {
+          features: pslToFeatures(rows),
+          trackConf: {
+            type: 'AlignmentsTrack',
+            adapter: {
+              type: 'SamAdapter',
+              samText: pslToSam(rows, parseQuerySequences(seq)),
+            },
+          },
+        }
+      },
       trackIdPrefix: 'blat',
       trackName:
         queryCount > 1 ? `BLAT ${label} +${queryCount - 1}` : `BLAT ${label}`,

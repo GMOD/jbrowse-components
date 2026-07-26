@@ -14,6 +14,7 @@ import {
 import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
 import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
 
+import type { ResultTrackConf } from './ucscShared.ts'
 import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
@@ -47,14 +48,14 @@ async function browserUcscFetch(urlBase: string, body: string) {
 // renderer's CORS restriction and reuse a solved-challenge cookie) or a direct
 // browser fetch that expects a CORS-enabled proxy. The mode-specific pieces are
 // just the POST body and the response parser.
-export async function runUcscFetch({
+export async function runUcscFetch<T>({
   urlBase,
   body,
   parse,
 }: {
   urlBase: string
   body: string
-  parse: (text: string) => SimpleFeatureSerialized[]
+  parse: (text: string) => T
 }) {
   const { ok, status, text } = isElectron
     ? await desktopBlatFetch({ url: urlBase, body })
@@ -109,13 +110,19 @@ export function useUcscQuery({
     setDb(resolveUcscDb(session, name))
   }
 
+  // `fetchResult` returns the hit list (which drives navigation and the results
+  // widget) and, optionally, how to display it — a BLAT query returns a SAM
+  // alignments track rather than the default feature track.
   async function runQuery({
-    fetchFeatures,
+    fetchResult,
     trackIdPrefix,
     trackName,
     emptyMessage,
   }: {
-    fetchFeatures: () => Promise<SimpleFeatureSerialized[]>
+    fetchResult: () => Promise<{
+      features: SimpleFeatureSerialized[]
+      trackConf?: ResultTrackConf
+    }>
     trackIdPrefix: string
     trackName: string
     emptyMessage: string
@@ -125,7 +132,7 @@ export function useUcscQuery({
     setChallenged(false)
     setNotFound('')
     try {
-      const features = await fetchFeatures()
+      const { features, trackConf } = await fetchResult()
       if (features.length) {
         await addResultTrack({
           session,
@@ -133,6 +140,7 @@ export function useUcscQuery({
           features,
           trackIdPrefix,
           trackName,
+          trackConf,
         })
         handleClose()
       } else {

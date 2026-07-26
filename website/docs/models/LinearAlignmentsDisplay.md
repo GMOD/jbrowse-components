@@ -176,6 +176,8 @@ State model factory for LinearAlignmentsDisplay
 | [colorLegendCategories](#getter-colorlegendcategories)                                 | Getters    | LinearAlignmentsDisplay                               | Read-color buckets actually present across the rendered reads, the single input that lets the legend list only relevant swatches (see legendUtils).                                                                                                                                                                             |
 | [colorPalette](#getter-colorpalette)                                                   | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
 | [arcLegendCategories](#getter-arclegendcategories)                                     | Getters    | LinearAlignmentsDisplay                               | The arc color slots actually plotted, mapped to legend buckets — curved paired-end arcs and the read cloud's flat lines and endpoint squares alike, since both paint from `arcColorByType`.                                                                                                                                     |
+| [arcColorsMatchReads](#getter-arccolorsmatchreads)                                     | Getters    | LinearAlignmentsDisplay                               | Whether the overlay speaks the reads' own color vocabulary — arc mode against its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME).                                                                                                                                                                                       |
+| [arcLegendTitle](#getter-arclegendtitle)                                               | Getters    | LinearAlignmentsDisplay                               | Heading for the overlay's own color key, named after the overlay the reader is looking at: flat read-cloud lines are not arcs.                                                                                                                                                                                                  |
 | [arcBandInput](#getter-arcbandinput)                                                   | Getters    | LinearAlignmentsDisplay                               | The fields `computeArcBand` reads.                                                                                                                                                                                                                                                                                              |
 | [belowCoverageBandsInput](#getter-belowcoveragebandsinput)                             | Getters    | LinearAlignmentsDisplay                               | Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus whether any sashimi junction is present.                                                                                                                                                                                                         |
 | [laidOutByGroup](#getter-laidoutbygroup)                                               | Getters    | LinearAlignmentsDisplay                               | Per-group laid-out data: group key → (region index → laid-out data).                                                                                                                                                                                                                                                            |
@@ -701,13 +703,35 @@ type colorLegendCategories = Set<ReadColorCategory>
 
 The arc color slots actually plotted, mapped to legend buckets — curved
 paired-end arcs and the read cloud's flat lines and endpoint squares alike,
-since both paint from `arcColorByType`. This is a separate vocabulary from the
-read fills (a track colored by strand still draws insert-size-colored arcs), so
-it keys its own legend section. Empty unless an overlay is on with the legend
-shown.
+since both paint from `arcColorByType`. Its own vocabulary when the fills use a
+different scheme (a track colored by strand still draws insert-size-colored
+arcs), so it keys its own legend section then and folds into the read key
+otherwise — see `arcColorsMatchReads`. Empty unless an overlay is on with the
+legend shown.
 
 ```ts
 type arcLegendCategories = Set<ReadColorCategory>
+```
+
+#### getter: arcColorsMatchReads
+
+Whether the overlay speaks the reads' own color vocabulary — arc mode against
+its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME). The swatches are
+then identical categories in identical palette colors, so keying both sections
+lists the same colors twice under two headings; the arc buckets fold into the
+read key instead.
+
+```ts
+type arcColorsMatchReads = boolean
+```
+
+#### getter: arcLegendTitle
+
+Heading for the overlay's own color key, named after the overlay the reader is
+looking at: flat read-cloud lines are not arcs.
+
+```ts
+type arcLegendTitle = 'Read cloud colors' | 'Arc colors'
 ```
 
 #### getter: arcBandInput
@@ -1227,7 +1251,8 @@ type hasGroupHeightOverride = (key: string) => boolean
 #### method: arcLegendItems
 
 Key for the paired-end arc / read-cloud colors. Empty when no overlay is drawn,
-which is what keeps its legend section out of the box.
+or when it shares the reads' scheme and merged into their key — either way its
+legend section drops out of the box.
 
 ```ts
 type arcLegendItems = () => LegendItem[]

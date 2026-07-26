@@ -31,12 +31,21 @@ export default function GuessAlignmentsTypesF(pluginManager: PluginManager) {
         cramLocation: file,
         craiLocation: index ?? makeIndex(file, '.crai'),
       }
+    } else if (
+      testAdapter(fileName, /\.sam(\.gz)?$/i, adapterHint, 'SamAdapter')
+    ) {
+      return {
+        type: 'SamAdapter',
+        samLocation: file,
+      }
     } else {
       return undefined
     }
   })
   addTrackTypeGuesser(pluginManager, adapterName =>
-    adapterName === 'BamAdapter' || adapterName === 'CramAdapter'
+    adapterName === 'BamAdapter' ||
+    adapterName === 'CramAdapter' ||
+    adapterName === 'SamAdapter'
       ? 'AlignmentsTrack'
       : undefined,
   )

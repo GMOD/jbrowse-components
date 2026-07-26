@@ -90,6 +90,7 @@ coverage/pileup display options.
 | BAM | [BamAdapter](/docs/config/bamadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) |  |
 | CRAM | [CramAdapter](/docs/config/cramadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) |  |
 | Htsget BAM | [HtsgetBamAdapter](/docs/config/htsgetbamadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) | Less exercised than plain BAM/CRAM; prefer an indexed file where possible |
+| SAM | [SamAdapter](/docs/config/samadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) | Unindexed, so the whole file is loaded into memory; prefer BAM or CRAM for sequencing-scale data |
 
 <!-- FILE_TYPES alignments END -->
 
