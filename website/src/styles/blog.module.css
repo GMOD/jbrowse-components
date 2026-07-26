@@ -43,3 +43,27 @@
   padding: 0.5rem 1rem;
   color: var(--color-text-muted);
 }
+
+/* rehype-heading-links appends a "#" permalink inside every h2/h3/h4 it renders,
+   including blog posts. DocsLayout hides it until hover, but that rule is scoped
+   to .docs-content, so on the blog the glyph showed permanently ("Downloads#").
+   Both blog surfaces share .prose, so hide it here for both. */
+.prose :global(h2),
+.prose :global(h3),
+.prose :global(h4) {
+  position: relative;
+}
+.prose :global(.heading-anchor) {
+  opacity: 0;
+  margin-left: 0.4rem;
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.prose :global(h2:hover .heading-anchor),
+.prose :global(h3:hover .heading-anchor),
+.prose :global(h4:hover .heading-anchor) {
+  opacity: 1;
+}
