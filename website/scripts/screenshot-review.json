@@ -1807,9 +1807,9 @@
   "desktop-blat-search": {
     "name": "desktop-blat-search",
     "status": "good",
-    "note": "regenerated: Cancel is now contained/secondary beside the primary Submit, per house style. No other change.",
-    "reviewedAt": "2026-07-26T08:05:00.000Z",
-    "hash": "b0b7d041761aaf4ad61eeb0206c52d081d118aed"
+    "note": "regenerated: the sample query is now the 147bp sequence the mock BLAT response claims to have placed, so the textarea shows two wrapped lines instead of one. Dialog layout unchanged.",
+    "reviewedAt": "2026-07-26T12:36:38.000Z",
+    "hash": "b8622f543a2b3de35ad87e4cb6a5b2f5951f5365"
   },
   "desktop-ispcr": {
     "name": "desktop-ispcr",
@@ -1995,9 +1995,9 @@
   "desktop-blat-results": {
     "name": "desktop-blat-results",
     "status": "good",
-    "note": "resolved: the RefSeq lane is collapsed to the longest coding transcript before capture (collapseGeneGlyph in products/jbrowse-desktop/test/screenshots.ts), so the hit is compared against one labeled TP53 model plus the \"Longest isoform\" chip instead of a stack of near-identical transcripts. Captured at the intended 1400x763 on a freshly packaged app.",
-    "reviewedAt": "2026-07-26T08:05:00.000Z",
-    "hash": "cf3f6b14c1bd919cc8bac3477d2b9a727d090864"
+    "note": "regenerated: BLAT results are now an AlignmentsTrack (pslToSam), so the hit is a pileup read rather than a feature glyph. The mock query was an arbitrary 52bp string against a PSL claiming qSize 147, which the pileup exposed as a wall of per-base mismatches under a hit labelled 98.7% identity; it is now the real hg19 chr17:7,579,839-7,579,985 with two substitutions, so the read shows exactly the two mismatch ticks the mock reports. RefSeq stays collapsed to the longest coding transcript (collapseGeneGlyph). Capture now waits for the view span to stop moving, since the drawer and the taller track each reflow it; byte-identical across two runs at 1400x763.",
+    "reviewedAt": "2026-07-26T12:36:38.000Z",
+    "hash": "b384c748700e39ddbbc64e5b09f4e527e56c762a"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",

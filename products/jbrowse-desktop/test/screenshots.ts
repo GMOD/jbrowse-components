@@ -25,6 +25,7 @@ import {
   startStaticServer,
   waitForAppReady,
   waitForSession,
+  waitForStableSession,
   waitForStartScreen,
 } from './harness.ts'
 
@@ -165,7 +166,16 @@ async function freezeAnimations(driver: WebDriver): Promise<void> {
   `)
 }
 
-const SAMPLE_SEQ = 'CACGTGACTGAGGCTTGATCCGGATTACAGTGCCATTGACCTGAAGTTCAGG'
+// The query the BLAT dialog submits, which MOCK_BLAT_RESPONSE then claims to
+// have placed — so it has to be the sequence that claim describes, not an
+// arbitrary string. It is hg19 chr17:7,579,839-7,579,985 (the mock's own primary
+// hit) with two substitutions, giving the 147 bases and 145/2 match/mismatch
+// split the mock reports. The results track carries this text as its SAM SEQ and
+// the pileup compares it against the real reference base by base, so a query of
+// the wrong length or the wrong bases renders as a wall of mismatches under a
+// hit labelled "98.7% identity".
+const SAMPLE_SEQ =
+  'AGTTTCCATAGGTCTGAAAATGTTTCCTGACTCAGAGTGGGCTCGACGCTAGGATCTGACTGCGGCTCCTCCATGGCAGTGACCCGGAAGGCAGTCTGGCTGCTACAAGAGGAAAAGTGGGGATCCAGCATGAGACACTTCCAACCC'
 
 // Track menu of the first track in the view (hg19's RefSeq lane) -> Gene glyph
 // -> Longest coding transcript. At the 205 bp the BLAT hit frames, "All
@@ -245,7 +255,10 @@ async function submitUcscQuery(driver: WebDriver): Promise<void> {
 // pointing the dialog's "BLAT server URL" field here instead exercises the real
 // request → parse → on-the-fly track → navigate path with only UCSC's server
 // substituted. The body is a genuine hgBlat output=json response shape: a
-// strong 147bp hit over hg19 TP53 and a weaker partial hit on chr6.
+// strong 147bp hit over hg19 TP53 and a weaker partial hit on chr6. Both rows'
+// qSize is SAMPLE_SEQ's length, and their block coordinates have to add up to it
+// — the results track turns these into SAM, where a CIGAR that spans a different
+// number of query bases than SEQ carries is malformed.
 const MOCK_BLAT_RESPONSE = JSON.stringify({
   track: 'blat',
   genome: 'hg19',
@@ -378,42 +391,30 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
       s.trackIds.some(id => id.startsWith('blat-')) &&
       s.widgetTypes.includes('UcscResultsWidget'),
   )
-  if (probe) {
-    console.log(`    DEBUG: session ${JSON.stringify(probe)}`)
-    if (!probe.locStrings.some(loc => loc.includes('chr17'))) {
-      throw new Error(
-        `BLAT left the view at ${probe.locStrings.join('; ')}, wanted chr17`,
-      )
-    }
-    if (!probe.trackIds.some(id => id.startsWith('blat-'))) {
-      throw new Error(`BLAT added no track: ${probe.trackIds.join(', ')}`)
-    }
-    if (!probe.widgetTypes.includes('UcscResultsWidget')) {
-      throw new Error(`BLAT opened no results widget: ${probe.widgetTypes}`)
-    }
-  } else {
-    // The binary is a build artifact, so it can predate the global that the
-    // desktop JBrowse component publishes. Say so rather than failing the run,
-    // and check what the DOM can still answer — the location box, which shows
-    // the debounced locstring and knows nothing about the track or the widget.
-    console.warn(
-      '    WARN: no window.JBrowseSession (binary predates it?) — falling back to the location box',
+  if (!probe) {
+    throw new Error(
+      'no window.JBrowseSession — is the binary built from source?',
     )
-    const searchBox = await driver.findElement(
-      By.css('input[placeholder="Search for location"]'),
+  }
+  console.log(`    DEBUG: session ${JSON.stringify(probe)}`)
+  if (!probe.locStrings.some(loc => loc.includes('chr17'))) {
+    throw new Error(
+      `BLAT left the view at ${probe.locStrings.join('; ')}, wanted chr17`,
     )
-    let locstring: string | null = null
-    const deadline = Date.now() + 30000
-    while (Date.now() < deadline && !locstring?.includes('chr17')) {
-      locstring = await searchBox.getAttribute('value')
-      await delay(300)
-    }
-    if (!locstring?.includes('chr17')) {
-      throw new Error(`BLAT left the view at "${locstring}", wanted chr17`)
-    }
+  }
+  if (!probe.trackIds.some(id => id.startsWith('blat-'))) {
+    throw new Error(`BLAT added no track: ${probe.trackIds.join(', ')}`)
+  }
+  if (!probe.widgetTypes.includes('UcscResultsWidget')) {
+    throw new Error(`BLAT opened no results widget: ${probe.widgetTypes}`)
   }
   await waitForAppReady(driver) // the new track fetches and paints
   await collapseGeneGlyph(driver)
+  // last, because collapsing the glyph is itself a height change: the span has
+  // to be done moving at the moment the frame is taken, not before the edits
+  // that move it
+  const settled = await waitForStableSession(driver)
+  console.log(`    DEBUG: settled at ${settled?.locStrings.join('; ')}`)
   await capture(driver, 'desktop-blat-results.png')
   // the query's own console output (runQuery logs its failures) is otherwise
   // only flushed by the fatal handler, so a run that captured a wrong-looking

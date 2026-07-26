@@ -242,6 +242,33 @@ export async function waitForSession(
   return last
 }
 
+// Blocks until the view's span stops moving. A locstring is a function of the
+// view's width, so it keeps changing after the content is "there": opening the
+// results drawer narrows the view, and a track growing tall enough to raise a
+// vertical scrollbar narrows it again — each reflow re-spans at the same
+// bpPerPx. Capturing between those two reflows and after them yields figures
+// that differ across the whole ruler, which is what makes an otherwise
+// deterministic figure churn. Settling on repeated identical reads costs one
+// extra interval and removes the race for every caller.
+export async function waitForStableSession(
+  driver: WebDriver,
+  { interval = 500, reads = 3, timeout = 30000 } = {},
+): Promise<SessionProbe | undefined> {
+  const deadline = Date.now() + timeout
+  let recent: string[] = []
+  let last: SessionProbe | undefined
+  while (Date.now() < deadline) {
+    last = await readSession(driver)
+    recent = [...recent, JSON.stringify(last?.locStrings)].slice(-reads)
+    if (recent.length === reads && new Set(recent).size === 1) {
+      return last
+    }
+    await delay(interval)
+  }
+  console.warn(`    WARN: view span still moving: ${recent.join(' -> ')}`)
+  return last
+}
+
 // "Is this gone yet?" asked through the DOM rather than findElements, which
 // waits out the 30s implicit timeout every time the answer is "yes, none left" —
 // the dominant cost of a screenshot run, since every cleanup step ends that way.

@@ -19,20 +19,26 @@ absent there.
 Choose **Tools → BLAT search…**, paste a DNA sequence or FASTA, pick the
 assembly, and submit.
 
-What comes back is a new track named after the query, holding one feature per
-hit, and a **Search results** panel listing those hits. Hits are ranked by
-UCSC's `pslScore` and the view navigates to the top-scoring one, so a single
-sequence lands you on its coordinates without any further clicks; the panel
-keeps the rest of them in view, each location a link that navigates there.
+What comes back is a new track named after the query, holding the hits, and a
+**Search results** panel listing them. Hits are ranked by UCSC's `pslScore` and
+the view navigates to the top-scoring one, so a single sequence lands you on its
+coordinates without any further clicks. The panel keeps the rest of them in
+view, each location a link that navigates there, labelled with the percent
+identity and the fraction of the query the hit covers.
 
-Each hit feature carries the numbers you need to judge whether it is _the_
-placement or an incidental one. The feature name is the query name plus percent
-identity; clicking the feature opens details with the score, identity, query
-coverage, the aligned span of the query, and the block count. Gapped alignments
-keep their PSL blocks as subfeatures, so introns and indels are drawn rather
-than smoothed over.
+The track is an alignments track. A PSL hit is a list of aligned blocks in query
+and target coordinates, which is what a CIGAR encodes, so each hit is drawn the
+way a read is: blocks as aligned runs, a target gap as a deletion, a query gap
+as an insertion, and the unaligned ends of the query as soft clips. Because the
+sequence you submitted is known, the hit also carries it, and the pileup marks
+every base that disagrees with the reference. That is the difference between a
+hit that is your sequence and one that merely scores well.
 
-<Figure src="/img/desktop-blat-results.png" caption="The result of a BLAT search on hg19: the hits became a track named after the query, the view jumped to the best one, and the Search results panel lists every hit with its identity, query coverage and score. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
+BLAT returns every placement of a query. The best-scoring one is primary and the
+rest are marked secondary, so competing mappings of one sequence stay off the
+best hit's row instead of stacking under it.
+
+<Figure src="/img/desktop-blat-results.png" caption="A BLAT search on hg19, its two hits drawn as alignments against TP53. The best hit is a single ungapped block with two mismatch ticks, matching the 98.7% identity the Search results panel reports for it. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
 
 Pasting FASTA searches each record separately, up to 25 records and 25 kb of
 sequence in total. Records keep their own names, so hits from different queries
@@ -71,9 +77,10 @@ forward and reverse primer and an optional maximum product size. This uses
 UCSC's `hgPcr` service and follows the same database-selection and apiKey/proxy
 options as BLAT search.
 
-Predicted amplicons arrive the same way BLAT hits do, as a track with the view
-navigated to the first product and the same **Search results** panel listing
-every product with its size and primer pair. Each amplicon feature spans the
+Predicted amplicons arrive as a feature track with the view navigated to the
+first product, and the same **Search results** panel listing every product with
+its size and primer pair. There is no query sequence to align here, so this
+stays a feature track rather than a pileup. Each amplicon feature spans the
 whole product and is named by its size, with the forward and reverse primer
 footprints as labelled subfeatures at either end, so you can see which primer
 sits where on both strands.
@@ -91,4 +98,3 @@ track selector.
 
 - [Sequence search](/docs/user_guides/sequence_search)
 - [Sequence track](/docs/user_guides/sequence_track)
-</content>
