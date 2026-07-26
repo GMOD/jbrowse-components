@@ -28,6 +28,7 @@ function makeEmptyMafResult() {
   return {
     samples: [],
     treeNewick: undefined,
+    samplesCanonical: false,
     regionData: {
       blocks: [],
       coverage: {

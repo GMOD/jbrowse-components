@@ -150,6 +150,7 @@ function setup(nSamples: number, rowHeight: number) {
       label: `s${i}`,
     })),
     treeNewick: undefined,
+    samplesCanonical: true,
   })
   display.setRowHeight(rowHeight)
   return display

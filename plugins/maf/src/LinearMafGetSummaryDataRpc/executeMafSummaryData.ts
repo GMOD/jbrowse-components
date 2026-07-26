@@ -9,6 +9,14 @@ export type LinearMafGetSummaryDataArgs = BaseMafRpcArgs
 export interface LinearMafGetSummaryDataResult {
   samples: Sample[]
   treeNewick: string | undefined
+  /**
+   * Whether `samples` is the authoritative row set (see the alignment RPC's
+   * result). This path never discovers: samples are config/tree-derived, so an
+   * empty list means a sample-discovery track, whose rows only the alignment
+   * path can name. Reporting it as non-canonical keeps the client from
+   * replacing its discovered rows with nothing on zoom-out.
+   */
+  samplesCanonical: boolean
   records: MafSummaryRecord[]
 }
 
@@ -48,5 +56,10 @@ export async function executeMafSummaryData({
       records.push(record)
     })
   }
-  return { samples, treeNewick, records }
+  return {
+    samples,
+    treeNewick,
+    samplesCanonical: samples.length > 0,
+    records,
+  }
 }

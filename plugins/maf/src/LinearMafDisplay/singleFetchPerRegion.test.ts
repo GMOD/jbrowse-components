@@ -23,10 +23,16 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // A LinearMafGetAlignmentData result with no blocks; `samples` is what each test
 // varies, since that (not the block content) is what drives the cache key here.
-function makeMafResult(samples: { id: string; label: string }[]) {
+// `samplesCanonical` false makes it a sample-discovery result, which the display
+// unions rather than replaces.
+function makeMafResult(
+  samples: { id: string; label: string }[],
+  samplesCanonical = true,
+) {
   return {
     samples,
     treeNewick: undefined,
+    samplesCanonical,
     regionData: {
       blocks: [],
       coverage: {
@@ -165,7 +171,11 @@ function createTestEnvironment() {
       queueDialog() {},
     }))
 
-  function createDisplay() {
+  function createDisplay(
+    regions = [
+      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
+    ],
+  ) {
     const session = Session.create({ configuration: {} }, { pluginManager })
     const view = session.setView(
       LinearGenomeModel.create({
@@ -180,9 +190,7 @@ function createTestEnvironment() {
       }),
     )
     view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-    ])
+    view.setDisplayedRegions(regions)
 
     const track = view.tracks[0]!
     const display = track.displays[0]!
@@ -200,11 +208,14 @@ const HG38_MM10 = [
 // Run the fetch autorun to quiescence: each pass advances past the 600 ms
 // FetchVisibleRegions debounce and drains the RPC promises, so any refetch
 // SettingsInvalidate schedules gets a chance to run and be counted.
-async function settle(display: { loadedRegions: { size: number } }) {
+async function settle(
+  display: { loadedRegions: { size: number } },
+  nRegions = 1,
+) {
   for (let i = 0; i < 6; i++) {
     jest.advanceTimersByTime(700)
     await waitFor(() => {
-      expect(display.loadedRegions.size).toBe(1)
+      expect(display.loadedRegions.size).toBe(nRegions)
     })
   }
 }
@@ -269,5 +280,41 @@ describe('LinearMafDisplay alignment fetch count', () => {
     expect(display.orderedSampleIds).toEqual(['hg38', 'mm10', 'rn6'])
     // the reload's fetch, plus the one the changed set invalidated it into
     expect(alignmentCalls(mockRpcCall)).toHaveLength(3)
+  })
+
+  // Regression: a sample-discovery track's regions can align different genomes.
+  // One region's set used to stand for the whole batch, and the worker drops
+  // samples missing from the client's order — so rn6, discovered only in the
+  // second region, rendered nothing. The union covers both regions, and since
+  // it's additive the set is right on the first pass: no `sampleSetGeneration`
+  // bump, no refetch.
+  it('unions genomes discovered in different regions', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation((_id, method, args) =>
+      Promise.resolve(
+        method === 'LinearMafGetAlignmentData'
+          ? makeMafResult(
+              args.regions[0].start === 0
+                ? HG38_MM10
+                : [
+                    { id: 'hg38', label: 'hg38' },
+                    { id: 'rn6', label: 'rn6' },
+                  ],
+              false,
+            )
+          : makeMafResult([], false),
+      ),
+    )
+    // both narrow enough to sit in the 800px viewport at the default bpPerPx, so
+    // one batch buffers the pair
+    const { display } = createDisplay([
+      { assemblyName: 'volvox', start: 0, end: 400, refName: 'ctgA' },
+      { assemblyName: 'volvox', start: 1000, end: 1400, refName: 'ctgA' },
+    ])
+    await settle(display, 2)
+
+    expect(display.orderedSampleIds).toEqual(['hg38', 'mm10', 'rn6'])
+    expect(display.sampleSetGeneration).toBe(0)
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(2)
   })
 })

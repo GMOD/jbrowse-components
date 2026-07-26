@@ -103,6 +103,23 @@ export interface MafSource {
   color?: string
 }
 
+/**
+ * Merge a newly discovered row set into the known one, keeping first-seen order
+ * and letting the newer entry supply label/color. Used for sample-discovery
+ * tracks, where each region names only the genomes its own blocks contain — see
+ * `setSamples`.
+ */
+export function unionSources(
+  known: readonly MafSource[],
+  incoming: readonly MafSource[],
+): MafSource[] {
+  const byName = new Map(known.map(s => [s.name, s]))
+  for (const source of incoming) {
+    byName.set(source.name, source)
+  }
+  return [...byName.values()]
+}
+
 // Floor a coverage/conservation band can be dragged to before its Y axis and
 // filled histogram stop reading as anything.
 const MIN_BAND_HEIGHT = 20
@@ -372,13 +389,25 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Receive worker-authoritative `samples` + serialized Newick tree.
-         * Samples + tree are config-derived and identical on every region fetch,
-         * so the deepEqual guard makes this fire once and skips the redundant
-         * frozen-array reassignment (and downstream `sources`/instance-buffer
-         * recompute) on later scroll/zoom. The active `clusterTree` is set from
-         * the worker tree only when there's no custom arrangement — a reorder has
-         * cleared it and must keep it cleared until the user clears the layout.
+         * Receive the worker's `samples` + serialized Newick tree.
+         *
+         * `samplesCanonical` says whether that set is authoritative. Config- and
+         * tree-derived sets are: they're complete and identical on every region
+         * fetch, so they replace, and a species dropped from the config stops
+         * being a row. A sample-discovery set is not: it names only the genomes
+         * the fetched region's blocks contained, so it is unioned into the rows
+         * already known (`unionSources`). Replacing there dropped rows — the
+         * worker indexes blocks by the client's order and discards samples
+         * missing from it, so a genome only one region aligns rendered nothing,
+         * and a region with no blocks at all (or the summary path, which never
+         * discovers) blanked every row.
+         *
+         * With either resolution the deepEqual guard makes this fire once and
+         * skips the redundant frozen-array reassignment (and downstream
+         * `sources`/instance-buffer recompute) on later scroll/zoom. The active
+         * `clusterTree` is set from the worker tree only when there's no custom
+         * arrangement — a reorder has cleared it and must keep it cleared until
+         * the user clears the layout.
          *
          * The guard covers the sample set only: a tree can change while the set
          * doesn't (an edited `.nh`), and folding it in left `treeNewickVolatile`
@@ -389,7 +418,9 @@ export default function stateModelFactory(
          * `sampleSetGeneration`, which invalidates the fetched rows through
          * `rpcProps()`: they carry `rowIndex`es assigned against the old set. That
          * only happens on a sample-discovery track whose regions align different
-         * genomes. The first fetch populating an empty set does NOT bump — that
+         * genomes — where the union means it happens once per newly seen genome,
+         * not once per region whose set differs from the last one's. The first
+         * fetch populating an empty set does NOT bump — that
          * transition is not a change of anything, and treating it as one is what
          * made every MAF track fetch its alignment twice.
          *
@@ -401,15 +432,20 @@ export default function stateModelFactory(
         setSamples({
           samples,
           treeNewick,
+          samplesCanonical,
         }: {
           samples: Sample[]
           treeNewick: string | undefined
+          samplesCanonical: boolean
         }) {
-          const next = samples.map(s => ({
+          const incoming = samples.map(s => ({
             name: s.id,
             label: s.label,
             color: s.color,
           }))
+          const next = samplesCanonical
+            ? incoming
+            : unionSources(self.sourcesVolatile, incoming)
           if (!deepEqual(next, self.sourcesVolatile)) {
             if (self.sourcesVolatile.length > 0) {
               self.sampleSetGeneration += 1

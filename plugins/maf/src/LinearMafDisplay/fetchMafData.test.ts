@@ -1,7 +1,7 @@
 import {
   fetchMafAlignmentData,
   fetchMafSummaryData,
-  pickSamplesResult,
+  unionSampleSets,
 } from './fetchMafData.ts'
 
 import type { Sample } from '../types.ts'
@@ -21,31 +21,45 @@ function sample(id: string): Sample {
 }
 
 function result(...ids: string[]) {
-  return { result: { samples: ids.map(sample), treeNewick: undefined } }
+  return {
+    result: {
+      samples: ids.map(sample),
+      treeNewick: undefined,
+      samplesCanonical: false,
+    },
+  }
 }
 
-describe('pickSamplesResult', () => {
-  test('prefers a region that discovered samples over an earlier empty one', () => {
+describe('unionSampleSets', () => {
+  test('skips a region that discovered nothing', () => {
     // A sample-discovery track over a viewport whose first buffered region is a
     // MAF gap (no blocks → no samples) but a later region has alignments.
-    const picked = pickSamplesResult([result(), result('hg38', 'mm10')])
-    expect(picked?.samples.map(s => s.id)).toEqual(['hg38', 'mm10'])
+    const set = unionSampleSets([result(), result('hg38', 'mm10')])
+    expect(set?.samples.map(s => s.id)).toEqual(['hg38', 'mm10'])
   })
 
-  test('returns the first result when it already has samples', () => {
-    // Configured-samples tracks return the same non-empty set for every region.
-    const picked = pickSamplesResult([result('hg38'), result('hg38')])
-    expect(picked?.samples.map(s => s.id)).toEqual(['hg38'])
+  test('unions regions that discovered different genomes, first-seen order', () => {
+    // Neither region's set can stand for the batch: the worker drops samples
+    // missing from the client's order, so picking one hides the other's rows.
+    const set = unionSampleSets([result('hg38', 'mm10'), result('hg38', 'rn6')])
+    expect(set?.samples.map(s => s.id)).toEqual(['hg38', 'mm10', 'rn6'])
   })
 
-  test('falls back to the first result when every region is empty', () => {
-    // All-gap viewport: an empty sample set is the correct outcome (blank rows).
-    const picked = pickSamplesResult([result(), result()])
-    expect(picked?.samples).toEqual([])
+  test('collapses to the one set when every region reports it', () => {
+    // Configured-samples tracks return the same complete set for every region.
+    const set = unionSampleSets([result('hg38'), result('hg38')])
+    expect(set?.samples.map(s => s.id)).toEqual(['hg38'])
+  })
+
+  test('is empty when every region is empty', () => {
+    // All-gap viewport; `setSamples` unions this into the known rows, so an
+    // empty batch leaves them alone rather than blanking them.
+    const set = unionSampleSets([result(), result()])
+    expect(set?.samples).toEqual([])
   })
 
   test('returns undefined when there are no results', () => {
-    expect(pickSamplesResult([])).toBeUndefined()
+    expect(unionSampleSets([])).toBeUndefined()
   })
 })
 
@@ -98,6 +112,7 @@ beforeEach(() => {
   mockRpcCall.mockResolvedValue({
     samples: [],
     treeNewick: undefined,
+    samplesCanonical: false,
     regionData: { blocks: [] },
     records: [],
   })

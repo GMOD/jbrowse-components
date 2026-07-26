@@ -23,32 +23,53 @@ interface MafFetchSelf extends IAnyStateTreeNode {
   setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
   setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void
   clearAlignmentData: () => void
-  setSamples: (arg: {
-    samples: Sample[]
-    treeNewick: string | undefined
-  }) => void
+  setSamples: (arg: SampleSet) => void
 }
 
 type Needed = { region: Region; displayedRegionIndex: number }[]
 
+interface SampleSet {
+  samples: Sample[]
+  treeNewick: string | undefined
+  samplesCanonical: boolean
+}
+
 /**
- * Choose which per-region result defines the display's sample set. A
- * sample-discovery track (no configured `samples`) derives its rows from the
- * genomes present in each region's blocks, so a region with no alignment blocks
- * yields zero samples — letting that empty region define the set would blank the
- * rows and churn the set itself, which `sampleSetGeneration` then reads as a real
- * change and refetches for. Prefer the first region that actually discovered
- * samples; fall back to the first result only when every buffered region is empty
- * (an all-gap viewport, where an empty set is correct).
- * Configured-samples tracks return the same non-empty set for every region, so
- * this resolves to the first result for them.
+ * Resolve the sample set this batch of per-region results reports, as the union
+ * of their samples in first-seen (region) order.
+ *
+ * A sample-discovery track (no configured `samples`) derives its rows from the
+ * genomes present in each region's blocks, so two regions can name different
+ * sets and a region with no alignment blocks names none. Picking one region's
+ * set to stand for the batch dropped the others' rows: the worker keys block
+ * `rowIndex` off the client's order and drops samples missing from it, so a
+ * genome only region B aligns rendered nothing. Unioning keeps every discovered
+ * row, and being order-stable and additive it settles in one round instead of
+ * flip-flopping the set (and `sampleSetGeneration` with it) as regions land in
+ * different batches.
+ *
+ * `treeNewick` and `samplesCanonical` are config-derived, hence identical across
+ * a batch — read from the first result. Configured-samples tracks return that
+ * same complete set for every region, so the union is that set.
  */
-export function pickSamplesResult<R extends { samples: Sample[] }>(
-  results: readonly { result: R }[],
-): R | undefined {
-  return (
-    results.find(r => r.result.samples.length > 0)?.result ?? results[0]?.result
-  )
+export function unionSampleSets(
+  results: readonly { result: SampleSet }[],
+): SampleSet | undefined {
+  const first = results[0]?.result
+  // Map preserves first-insertion order while later fields (label/color) win.
+  const byId = new Map<string, Sample>()
+  for (const { result } of results) {
+    for (const sample of result.samples) {
+      byId.set(sample.id, sample)
+    }
+  }
+  return first
+    ? {
+        samples: [...byId.values()],
+        treeNewick: first.treeNewick,
+        samplesCanonical: first.samplesCanonical,
+      }
+    : undefined
 }
 
 /**
@@ -66,9 +87,7 @@ export function pickSamplesResult<R extends { samples: Sample[] }>(
  * `statusCallback` off it — the parallel per-region fetches then aggregate into
  * one progress bar instead of clobbering each other.
  */
-async function fetchMafRegions<
-  R extends { samples: Sample[]; treeNewick: string | undefined },
->(
+async function fetchMafRegions<R extends SampleSet>(
   self: MafFetchSelf,
   needed: Needed,
   call: (
@@ -92,12 +111,9 @@ async function fetchMafRegions<
     if (ctx.isStale()) {
       return
     }
-    const first = pickSamplesResult(results)
-    if (first) {
-      self.setSamples({
-        samples: first.samples,
-        treeNewick: first.treeNewick,
-      })
+    const sampleSet = unionSampleSets(results)
+    if (sampleSet) {
+      self.setSamples(sampleSet)
     }
     commit(results)
   })

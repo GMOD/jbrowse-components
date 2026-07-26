@@ -27,6 +27,14 @@ export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
 export interface LinearMafGetAlignmentDataResult {
   samples: Sample[]
   treeNewick: string | undefined
+  /**
+   * True when `samples` came from config or the guide tree: the same complete
+   * set for every region, so the client replaces its row set with it. False on
+   * a sample-discovery track, where `samples` is only the genomes this region's
+   * blocks happened to contain and the client unions it into what it already
+   * has (see `setSamples`).
+   */
+  samplesCanonical: boolean
   regionData: MafRegionData
 }
 
@@ -180,5 +188,10 @@ export async function executeMafAlignmentData({
     refRowIndex,
   )
 
-  return { samples, treeNewick, regionData: { blocks, coverage } }
+  return {
+    samples,
+    treeNewick,
+    samplesCanonical: hasConfiguredSamples,
+    regionData: { blocks, coverage },
+  }
 }
