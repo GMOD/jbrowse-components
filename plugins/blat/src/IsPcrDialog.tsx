@@ -17,6 +17,7 @@ import {
   parseIsPcrProducts,
   pcrProductsToFeatures,
 } from './ispcrQuery.ts'
+import { canRenderAlignments } from './ucscShared.ts'
 import { ispcrToSam } from './ispcrToSam.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
@@ -80,16 +81,23 @@ const IsPcrDialog = observer(function IsPcrDialog({
           })
           return {
             features: pcrProductsToFeatures(products),
-            trackConf: {
-              type: 'AlignmentsTrack',
-              adapter: {
-                type: 'SamAdapter',
-                samText: ispcrToSam(products),
-              },
-              // a handful of products has no depth to read, and the pair glyph is
-              // the whole point, so it is on rather than a menu step away
-              displayDefaults: { showCoverage: false, linkedReads: 'normal' },
-            },
+            // an older host has no SamAdapter; the products then draw as plain
+            // features rather than as the read pairs this configures
+            trackConf: canRenderAlignments(session)
+              ? {
+                  type: 'AlignmentsTrack',
+                  adapter: {
+                    type: 'SamAdapter',
+                    samText: ispcrToSam(products),
+                  },
+                  // a handful of products has no depth to read, and the pair glyph is
+                  // the whole point, so it is on rather than a menu step away
+                  displayDefaults: {
+                    showCoverage: false,
+                    linkedReads: 'normal',
+                  },
+                }
+              : undefined,
           }
         },
         trackIdPrefix: 'ispcr',

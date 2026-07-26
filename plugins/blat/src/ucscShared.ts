@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import {
+  getEnv,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
@@ -50,6 +51,25 @@ export function resolveUcscDb(session: AbstractSessionModel, name: string) {
 
 // Builds a locstring from a feature. Feature coordinates are interbase, so the
 // start needs +1 to become the 1-based coordinate a locstring names.
+/**
+ * Whether this host can draw a hit as an alignment rather than as plain blocks.
+ *
+ * Results are added as an AlignmentsTrack over a SamAdapter, which is what draws
+ * the blocks, the indels, the soft-clipped query ends and the per-base
+ * mismatches. SamAdapter arrived in JBrowse after v4.3.0, and an external plugin
+ * is loaded by whatever host a config points it at — including releases older
+ * than the plugin itself. Asking the host is the difference between quietly
+ * falling back to the block-structure track BLAT results always used to be, and
+ * adding a track whose adapter cannot resolve.
+ */
+export function canRenderAlignments(session: AbstractSessionModel) {
+  const { pluginManager } = getEnv(session)
+  return (
+    pluginManager.adapterTypes.has('SamAdapter') &&
+    pluginManager.trackTypes.has('AlignmentsTrack')
+  )
+}
+
 export function featureLocString(feature: SimpleFeatureSerialized) {
   return `${feature.refName}:${feature.start + 1}-${feature.end}`
 }
