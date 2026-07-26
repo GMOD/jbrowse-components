@@ -58,19 +58,26 @@ const LADDER_TRACK = {
   },
 }
 
-// Copy number is not a signal that autoscales well: nearly every bin of nearly
-// every sample sits at the diploid baseline, so localpercentile pins the top of
-// the scale just above 2 and clamps the amplifications the figure is about, and
-// `local` re-scales on every navigation so a block means a different number in
-// each window. Pinning 0..6 with the bicolor pivot at the diploid 2 makes the
-// color mean a copy number: white is two copies, red is a gain, blue is a loss,
-// and the same block means the same thing wherever you navigate.
+// Copy number is an absolute quantity, so its scale is pinned rather than
+// autoscaled: nearly every bin of nearly every sample sits at the diploid
+// baseline, so localpercentile pins the top just above 2 and clamps the
+// amplifications the figure is about, and `local` re-scales on every navigation
+// so a block means a different number in each window. Pinned, the color means a
+// copy number: white is two copies, red a gain, blue a loss, the same in every
+// window.
+//
+// 0..4 and not 0..6, which looks like it would show more: the density ramp
+// divides both sides by the LONGER one, so with the pivot at 2 a 0..6 domain
+// caps a homozygous deletion at half saturation, exactly the intensity of a
+// single extra copy pair. Symmetric around the pivot is the only way a
+// diverging scale reads as diverging. The cost is that gains past 4 clamp,
+// which the legend's own bar shows.
 const CN_HEATMAP_SETTINGS = {
   type: 'MultiLinearWiggleDisplay',
   defaultRendering: 'multirowdensity',
   bicolorPivot: 2,
   minScore: 0,
-  maxScore: 6,
+  maxScore: 4,
   posColor: '#b2182b',
   negColor: '#2166ac',
 }
@@ -125,13 +132,16 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     viewportHeight: 900,
     settleMs: 15000,
-    // One label, on the block the figure is about. The callset's side of the
-    // contrast is in the caption rather than a second pill: the VCF track is
-    // three rows tall here and a pill over it hides the records it describes.
+    // One label, naming the block the figure is about and nothing more. The
+    // count it spans belongs in the caption: the heatmap's scale caps at four,
+    // so a "0 to 10 copies" pill over it would claim something the colors under
+    // it cannot show. The callset's side of the contrast is in the caption too,
+    // because the VCF track is three rows tall here and a pill over it hides
+    // the records it describes.
     annotations: [
       {
         type: 'text',
-        text: 'CCL3L1/CCL4L1: 0 to 10 copies',
+        text: 'CCL3L1/CCL4L1',
         anchor: {
           track: 'pur_copynumber_1000g',
           locus: '17:36,195,000',

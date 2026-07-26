@@ -13,7 +13,7 @@ baseline of 2, and every individual becomes one row whose color _is_ a copy
 number. Past a few hundred samples the format becomes the bottleneck, so the
 second half packs the same values into one Zarr store.
 
-<Figure caption="chr17:36.08-36.27Mb in 104 PUR individuals, one row each, clustered on this window. Red is a gain over the diploid baseline, blue a loss, white two copies. The 1000 Genomes integrated SV map above holds a single multiallelic CNV record, which ends before the block where depth resolves zero to ten copies." src="/img/cnv1000g/ccl3l1_depth.png" />
+<Figure caption="chr17:36.08-36.27Mb in 104 PUR individuals, one row each, clustered on this window. Red is a gain over the diploid baseline, blue a loss, white two copies, and the bar top right is the scale. The 1000 Genomes integrated SV map above holds a single multiallelic CNV record, which ends before the block where copy number runs from zero to ten across the panel." src="/img/cnv1000g/ccl3l1_depth.png" />
 
 ## What you need
 
@@ -55,7 +55,7 @@ Add hg38, then one track holding every sample:
     "defaultRendering": "multirowdensity",
     "bicolorPivot": 2,
     "minScore": 0,
-    "maxScore": 6,
+    "maxScore": 4,
     "posColor": "#b2182b",
     "negColor": "#2166ac"
   }
@@ -76,11 +76,17 @@ display settings turn that into a copy-number heatmap:
   signal".
 - [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore) and
   [`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore) pin the
-  scale. This is the setting that matters most and the one it is most tempting
-  to skip: nearly every bin of nearly every sample sits at 2, so the default
-  autoscale tracks the noise around the baseline and clips the amplifications,
-  and any autoscale rescales per window, which makes the same color mean a
-  different copy number after every navigation.
+  scale, and copy number is the kind of quantity that wants pinning: 2 means the
+  same thing in every window, so the color should too. Nearly every bin of
+  nearly every sample sits at the baseline, so the default autoscale tracks the
+  noise around it and clips the amplifications, and any autoscale rescales per
+  window, which makes one color mean a different copy number after every
+  navigation.
+
+  Pick the bounds **symmetric around the pivot**. The ramp divides both sides by
+  the longer one, so 0 to 6 around a pivot of 2 would cap a homozygous deletion
+  at half saturation, the same intensity as a single extra copy pair. 0 to 4
+  lets both extremes saturate. Gains past 4 clamp, which the legend shows.
 
 Then run **Clustering → Cluster rows by score** in the track menu. Rows are in
 file order until you do, and copy-number classes only read as blocks once
@@ -165,7 +171,7 @@ unchanged.
         "defaultRendering": "multirowdensity",
         "bicolorPivot": 2,
         "minScore": 0,
-        "maxScore": 6,
+        "maxScore": 4,
         "posColor": "#b2182b",
         "negColor": "#2166ac"
       }

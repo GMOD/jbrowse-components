@@ -46,7 +46,7 @@
         "defaultRendering": "multirowdensity",
         "bicolorPivot": 2,
         "minScore": 0,
-        "maxScore": 6,
+        "maxScore": 4,
         "posColor": "#b2182b",
         "negColor": "#2166ac",
         "height": 500
