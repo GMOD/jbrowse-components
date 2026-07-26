@@ -428,20 +428,23 @@ capture pattern, mirroring `renderProps`.
 | `renderState` | `backend.render(state)` per frame | Render callback reads it — re-fires when deps shift |
 
 `rpcProps()` returns **user-controlled settings only**. Structural args
-(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `sessionId`,
-`stopToken`) are spread in at the RPC call site, keeping `rpcProps()` focused on
-its purpose: cache keys for `SettingsInvalidate`. Every display follows the same
-call shape:
+(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `stopToken`) are
+spread in at the RPC call site, keeping `rpcProps()` focused on its purpose:
+cache keys for `SettingsInvalidate`. Every display follows the same call shape:
 
 ```ts
 rpcManager.call(sessionId, 'RenderXxxData', {
-  sessionId,
   adapterConfig: self.adapterConfig,  // inherited from BaseDisplayModel
   regions, bpPerPx,                    // per-call values
   ...self.rpcProps(),                  // user settings (cache keys)
   stopToken, statusCallback,
 })
 ```
+
+`sessionId` belongs in the **first** argument only — `RpcManager.call` injects
+it into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
+reason. Passing it again in the object is redundant (several older call sites
+still do).
 
 `adapterConfig` is provided by `BaseDisplayModel` (via
 `getConf(this.parentTrack, 'adapter')`) — no display redefines it.
