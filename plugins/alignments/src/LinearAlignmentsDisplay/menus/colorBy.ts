@@ -416,20 +416,32 @@ function schemeRadios(
   )
 }
 
-function tagSection(model: AnyColorByModel, include: boolean): MenuItem[] {
+// Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
+// the only scheme whose choice has a parameter, and it was previously invisible
+// without reopening the dialog. Carries the same session-default pin as the
+// plain radios, pinning the tag actually in use.
+function tagSection(
+  model: AnyColorByModel,
+  include: boolean,
+  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
+): MenuItem[] {
+  const { colorBy } = model
+  const active = colorBy.type === 'tag' && colorBy.tag !== undefined
   return include
     ? [
-        {
-          label: 'Tag...',
-          type: 'radio',
-          checked: model.colorBy.type === 'tag',
+        promotableRadioItem({
+          label: active ? `Tag (${colorBy.tag})...` : 'Tag...',
+          checked: colorBy.type === 'tag',
           onClick: () => {
             getSession(model).queueDialog((onClose: () => void) => [
               ColorByTagDialog,
               { model, handleClose: onClose },
             ])
           },
-        },
+          displayTypeDefault: active
+            ? displayTypeDefault?.({ type: 'tag', tag: colorBy.tag })
+            : undefined,
+        }),
       ]
     : []
 }
@@ -459,21 +471,21 @@ function modificationsSection(
   model: ModificationsModel | undefined,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
-  const loading = model && !model.modificationsReady && !model.regionTooLarge
-  const hasTypes = !!model?.detectedModificationTypes.length
   return model
     ? [
-        ...(model.modificationsReady && hasTypes
-          ? [modificationsMenu(model, displayTypeDefault)]
-          : loading
-            ? [
+        ...(model.modificationsReady
+          ? model.detectedModificationTypes.length
+            ? [modificationsMenu(model, displayTypeDefault)]
+            : []
+          : model.regionTooLarge
+            ? []
+            : [
                 {
                   label: 'Loading modifications...',
                   disabled: true,
                   onClick() {},
                 },
-              ]
-            : []),
+              ]),
         bisulfiteItem(model),
       ]
     : []
@@ -536,7 +548,11 @@ export function getColorByMenuItem(
     icon: Palette,
     subMenu: [
       schemeRadios(model, options.colorOptions, options.displayTypeDefault),
-      tagSection(model, options.includeTagOption ?? false),
+      tagSection(
+        model,
+        options.includeTagOption ?? false,
+        options.displayTypeDefault,
+      ),
       pairedEndSection(
         options.includePairedEnd ? mods : undefined,
         options.displayTypeDefault,

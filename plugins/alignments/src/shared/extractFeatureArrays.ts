@@ -199,9 +199,14 @@ export function extractFeatureArrays<T extends FeatureData>(
   // groups by an explicit key, so array order is never observed. Sorting it —
   // localeCompare over a per-base nanopore array of 100k+ entries — was pure
   // overhead; don't reintroduce it.
-  const uniqueTagValues = isTagColorMode
-    ? [...new Set(tagColorValues)].filter(v => v !== '')
-    : undefined
+  // Discovered values for whichever CPU-baked scheme is active — tag values, or
+  // mate refNames under chromosome painting. The main thread turns these into
+  // colorTagMap, which is both the paint source (buildReadTagColors) and the
+  // legend's swatch list, so a scheme that skipped this had no legend at all.
+  const uniqueTagValues =
+    isTagColorMode || isMateRefNameMode
+      ? [...new Set(tagColorValues)].filter(v => v !== '')
+      : undefined
 
   return {
     features,

@@ -126,6 +126,38 @@ describe('color by menu', () => {
       strand && 'endAdornment' in strand && strand.endAdornment,
     ).toBeFalsy()
   })
+
+  // The tag radio is the only scheme whose choice carries a parameter, and it
+  // was invisible without reopening the dialog.
+  test('the tag radio names the tag in use', () => {
+    const model = makeModel()
+    const labels = (m: Model) =>
+      allItems(m, { includeTagOption: true })
+        .map(i => ('label' in i ? String(i.label) : ''))
+        .filter(l => l.startsWith('Tag'))
+    expect(labels(model)).toEqual(['Tag...'])
+    model.colorBy = { type: 'tag', tag: 'HP' }
+    expect(labels(model)).toEqual(['Tag (HP)...'])
+  })
+
+  test('the tag pin promotes the tag actually in use', () => {
+    const model = makeModel()
+    model.colorBy = { type: 'tag', tag: 'HP' }
+    const item = byLabel(model, 'Tag (HP)...', {
+      includeTagOption: true,
+      displayTypeDefault: displayTypeDefault(model),
+    })
+    const adornment =
+      item && 'endAdornment' in item ? item.endAdornment : undefined
+    if (!isValidElement(adornment)) {
+      throw new Error('no pin on the tag radio')
+    }
+    const { control } = adornment.props as { control: { toggle: () => void } }
+    control.toggle()
+    expect(model.pinned.has(JSON.stringify({ type: 'tag', tag: 'HP' }))).toBe(
+      true,
+    )
+  })
 })
 
 // A ready display carrying the given modification types, so the "Color by

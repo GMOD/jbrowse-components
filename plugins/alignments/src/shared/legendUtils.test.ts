@@ -2,32 +2,39 @@ import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { getReadDisplayLegendItems } from './legendUtils.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ColorSchemeType } from './types.ts'
+import type { ColorBy, ColorSchemeType } from './types.ts'
+
+function legendFor(
+  colorBy: ColorBy,
+  categories: ReadColorCategory[],
+  rest?: {
+    detectedModifications?: Map<string, string>
+    colorTagMap?: Record<string, string>
+  },
+) {
+  return getReadDisplayLegendItems({
+    colorBy,
+    presentCategories: new Set(categories),
+    palette: makeTestPalette(),
+    ...rest,
+  })
+}
 
 function labels(
   type: ColorSchemeType,
   categories: ReadColorCategory[],
   detectedModifications?: Map<string, string>,
 ) {
-  return getReadDisplayLegendItems(
-    { type },
-    new Set(categories),
-    makeTestPalette(),
-    detectedModifications,
-  ).map(i => i.label)
+  return legendFor({ type }, categories, { detectedModifications }).map(
+    i => i.label,
+  )
 }
 
 function tagLabels(
   colorBy: { type: 'tag'; tag: string },
   colorTagMap?: Record<string, string>,
 ) {
-  return getReadDisplayLegendItems(
-    colorBy,
-    new Set<ReadColorCategory>(['tag']),
-    makeTestPalette(),
-    undefined,
-    colorTagMap,
-  ).map(i => i.label)
+  return legendFor(colorBy, ['tag'], { colorTagMap }).map(i => i.label)
 }
 
 describe('getReadDisplayLegendItems', () => {
@@ -159,13 +166,9 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('value tag swatch colors come straight from colorTagMap', () => {
-    const items = getReadDisplayLegendItems(
-      { type: 'tag', tag: 'HP' },
-      new Set<ReadColorCategory>(['tag']),
-      makeTestPalette(),
-      undefined,
-      { '1': 'red', '2': 'blue' },
-    )
+    const items = legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
+      colorTagMap: { '1': 'red', '2': 'blue' },
+    })
     expect(items).toEqual([
       { color: 'red', label: '1' },
       { color: 'blue', label: '2' },
@@ -182,6 +185,31 @@ describe('getReadDisplayLegendItems', () => {
     expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
       'Forward strand',
       'Reverse strand',
+    ])
+  })
+
+  test('a strand tag still keys the cross-cutting buckets it paints', () => {
+    // The strand pair is the tag's own key, so it must not be repeated as a
+    // split-read swatch — but supplementary reads still get theirs.
+    expect(
+      legendFor({ type: 'tag', tag: 'XS' }, [
+        'fwdStrand',
+        'revStrand',
+        'supplementary',
+      ]).map(i => i.label),
+    ).toEqual(['Forward strand', 'Reverse strand', 'Supplementary/split'])
+  })
+
+  // Chromosome painting rides the same CPU-baked color path as tag coloring, so
+  // it keys the discovered mate refNames. It listed nothing at all before.
+  test('chromosome painting keys each discovered mate refName', () => {
+    expect(
+      legendFor({ type: 'mateRefName' }, ['tag'], {
+        colorTagMap: { ctgB: 'blue', ctgA: 'red' },
+      }),
+    ).toEqual([
+      { color: 'red', label: 'ctgA' },
+      { color: 'blue', label: 'ctgB' },
     ])
   })
 
@@ -213,14 +241,13 @@ describe('getReadDisplayLegendItems', () => {
       ['a', 'purple'],
     ])
     expect(
-      getReadDisplayLegendItems(
+      legendFor(
         {
           type: 'modifications',
           modifications: { hiddenModifications: ['m', 'h'] },
         },
-        new Set(),
-        makeTestPalette(),
-        mods,
+        [],
+        { detectedModifications: mods },
       ).map(i => i.label),
     ).toEqual(['6mA'])
   })
@@ -232,14 +259,10 @@ describe('getReadDisplayLegendItems', () => {
       ['a', 'purple'],
     ])
     expect(
-      getReadDisplayLegendItems(
-        {
-          type: 'modifications',
-          modifications: { shownModifications: ['a'] },
-        },
-        new Set(),
-        makeTestPalette(),
-        mods,
+      legendFor(
+        { type: 'modifications', modifications: { shownModifications: ['a'] } },
+        [],
+        { detectedModifications: mods },
       ).map(i => i.label),
     ).toEqual(['6mA'])
   })
@@ -249,11 +272,10 @@ describe('getReadDisplayLegendItems', () => {
       ['m', 'red'],
       ['h', 'magenta'],
     ])
-    const items = getReadDisplayLegendItems(
+    const items = legendFor(
       { type: 'modifications', modifications: { fillUnmarked: true } },
-      new Set(),
-      makeTestPalette(),
-      mods,
+      [],
+      { detectedModifications: mods },
     )
     expect(items).toEqual([
       { color: '#ff0000', label: '5mC methylated' },
@@ -274,12 +296,9 @@ describe('getReadDisplayLegendItems', () => {
 
   test('bisulfite keys the unmethylated swatch once twoColor paints it', () => {
     expect(
-      getReadDisplayLegendItems(
-        { type: 'bisulfite', modifications: { twoColor: true } },
-        new Set(),
-        makeTestPalette(),
-        new Map(),
-      ).map(i => i.label),
+      legendFor({ type: 'bisulfite', modifications: { twoColor: true } }, [], {
+        detectedModifications: new Map(),
+      }).map(i => i.label),
     ).toEqual(['5mC methylated', 'Unmethylated'])
   })
 
@@ -289,11 +308,10 @@ describe('getReadDisplayLegendItems', () => {
   test('two-color over a non-cytosine mod keys its blue unmodified swatch', () => {
     const mods = new Map([['a', 'purple']])
     expect(
-      getReadDisplayLegendItems(
+      legendFor(
         { type: 'modifications', modifications: { twoColor: true } },
-        new Set(),
-        makeTestPalette(),
-        mods,
+        [],
+        { detectedModifications: mods },
       ).map(i => i.label),
     ).toEqual(['6mA', 'Unmodified'])
   })
@@ -301,11 +319,10 @@ describe('getReadDisplayLegendItems', () => {
   test('fill-unmarked view omits the 5hmC swatch when only 5mC was detected', () => {
     const mods = new Map([['m', 'red']])
     expect(
-      getReadDisplayLegendItems(
+      legendFor(
         { type: 'modifications', modifications: { fillUnmarked: true } },
-        new Set(),
-        makeTestPalette(),
-        mods,
+        [],
+        { detectedModifications: mods },
       ).map(i => i.label),
     ).toEqual(['5mC methylated', 'Unmethylated'])
   })
@@ -315,11 +332,14 @@ describe('getReadDisplayLegendItems', () => {
       colorFwdStrand: [0, 0, 1],
       colorSupplementary: [0, 1, 0],
     })
-    const items = getReadDisplayLegendItems(
-      { type: 'strand' },
-      new Set<ReadColorCategory>(['fwdStrand', 'supplementary']),
+    const items = getReadDisplayLegendItems({
+      colorBy: { type: 'strand' },
+      presentCategories: new Set<ReadColorCategory>([
+        'fwdStrand',
+        'supplementary',
+      ]),
       palette,
-    )
+    })
     expect(items).toEqual([
       { color: 'rgb(0,0,255)', label: 'Forward strand' },
       { color: 'rgb(0,255,0)', label: 'Supplementary/split' },

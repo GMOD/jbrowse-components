@@ -60,7 +60,10 @@ import {
   normalizeFilterBy,
 } from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
-import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
+import {
+  updateColorTagMap as updateColorTagMapPure,
+  updateQueryNameColorMap,
+} from './colorTagUtils.ts'
 import { readColorCategory } from './colorUtils.ts'
 import {
   buildColorPaletteFromTheme,
@@ -1212,16 +1215,16 @@ export default function stateModelFactory(
          * #method
          */
         legendItems() {
-          return getReadDisplayLegendItems(
-            this.colorBy,
-            new Set([
+          return getReadDisplayLegendItems({
+            colorBy: this.colorBy,
+            presentCategories: new Set([
               ...this.colorLegendCategories,
               ...this.readCloudLegendCategories,
             ]),
-            this.colorPalette,
-            self.detectedModifications,
-            self.colorTagMap,
-          )
+            palette: this.colorPalette,
+            detectedModifications: self.detectedModifications,
+            colorTagMap: self.colorTagMap,
+          })
         },
 
         /**
@@ -2445,7 +2448,16 @@ export default function stateModelFactory(
            */
           setColorScheme(colorBy: ColorBy) {
             const current = self.colorBy
-            if (colorBy.type !== 'tag' || colorBy.tag !== current.tag) {
+            // colorTagMap holds discovered values for whichever CPU-baked
+            // scheme is active, so it only goes stale when that scheme (or the
+            // tag it reads) changes. Re-picking the scheme already showing must
+            // not clear it: setConf writes the same value, so nothing refetches
+            // and the emptied map would leave the legend blank until the next
+            // pan.
+            const sameValues =
+              colorBy.type === current.type &&
+              (colorBy.type !== 'tag' || colorBy.tag === current.tag)
+            if (!sameValues) {
               self.colorTagMap = {}
             }
             setConf(self, 'colorBy', colorBy)
@@ -2455,10 +2467,10 @@ export default function stateModelFactory(
            * #action
            */
           updateColorTagMap(uniqueTag: string[]) {
-            const { map, added } = updateColorTagMapPure(
-              self.colorTagMap,
-              uniqueTag,
-            )
+            const { map, added } =
+              self.colorBy.type === 'mateRefName'
+                ? updateQueryNameColorMap(self.colorTagMap, uniqueTag)
+                : updateColorTagMapPure(self.colorTagMap, uniqueTag)
             // Only assign when a value was actually added: colorTagMap is read
             // by laidOutPileupMap, so a no-op assignment would needlessly
             // re-bake readTagColors.

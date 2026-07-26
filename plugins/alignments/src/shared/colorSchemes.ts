@@ -1,3 +1,5 @@
+import { LEGACY_COLOR_SCHEME_TYPES } from './types.ts'
+
 import type {
   ColorBy,
   ColorSchemeType,
@@ -12,8 +14,7 @@ export type ColorGroup = 'basic' | 'pairedEnd' | 'synteny'
 
 // Menu placement for a color scheme. Discriminated so a scheme is either a plain
 // radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
-// 'special' — driven by its own dialog/submenu (tag, modifications, methylation,
-// bisulfite) or a legacy alias never shown on its own ('stranded').
+// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
 export type ColorSchemeMenu =
   | { kind: 'radio'; label: string; group: ColorGroup }
   | { kind: 'special'; label: string }
@@ -116,13 +117,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     mateAware: true,
     pairedOnly: true,
   },
-  // legacy alias for firstOfPairStrand; never shown as its own radio
-  stranded: {
-    type: 'stranded',
-    shaderScheme: 'firstOfPairStrand',
-    menu: { kind: 'special', label: 'First of pair strand' },
-    pairedOnly: true,
-  },
   tag: {
     type: 'tag',
     shaderScheme: 'tag',
@@ -171,28 +165,34 @@ export function isModificationScheme(type: ColorSchemeType) {
   return COLOR_SCHEMES[type].shaderScheme === 'modifications'
 }
 
-// Upgrade a persisted colorBy to canonical form: the deprecated standalone
+// Upgrade a persisted colorBy to canonical form: the retired standalone
 // `methylation` scheme becomes `modifications` with `fillUnmarked` set (its
-// cytosine context preserved). Applied in the model's `colorBy` getter so no
-// live code — extraction, menu, legend, shader dispatch — ever sees the removed
-// type. Idempotent on already-canonical values.
+// cytosine context preserved), and the retired `stranded` alias becomes the
+// `firstOfPairStrand` it always meant. Applied in the model's `colorBy` getter
+// so no live code — extraction, menu, legend, shader dispatch — ever sees a
+// removed type. Idempotent on already-canonical values.
 export function normalizeColorBy(colorBy: PersistedColorBy): ColorBy {
   return colorBy.type === 'methylation'
     ? {
         type: 'modifications',
         modifications: { ...colorBy.modifications, fillUnmarked: true },
       }
-    : colorBy
+    : colorBy.type === 'stranded'
+      ? { type: 'firstOfPairStrand' }
+      : colorBy
 }
+
+// widened for the `includes` check below, which takes an arbitrary string
+const legacyTypes: readonly string[] = LEGACY_COLOR_SCHEME_TYPES
 
 // A persisted `colorBy` value is only usable once its `.type` still names a
 // registered scheme: the lookups above (colorSchemeLabel, isModificationScheme,
 // the model's colorSchemeIndexFor) are total over ColorSchemeType by design and
 // throw on anything else, so a stale/renamed name from a saved session or
-// session-wide default must be rejected before it reaches them. The deprecated
-// `methylation` scheme is accepted here (normalizeColorBy upgrades it at read
-// time) so legacy sessions keep resolving. Wired as the `colorBy` slot's
-// promotable `validate` hook (see promotableDefaults.ts).
+// session-wide default must be rejected before it reaches them. The retired
+// names are accepted here (normalizeColorBy upgrades them at read time) so
+// legacy sessions keep resolving. Wired as the `colorBy` slot's promotable
+// `validate` hook (see promotableDefaults.ts).
 export function isRegisteredColorScheme(
   value: unknown,
 ): value is PersistedColorBy {
@@ -201,7 +201,7 @@ export function isRegisteredColorScheme(
     value !== null &&
     'type' in value &&
     typeof value.type === 'string' &&
-    (value.type in COLOR_SCHEMES || value.type === 'methylation')
+    (value.type in COLOR_SCHEMES || legacyTypes.includes(value.type))
   )
 }
 

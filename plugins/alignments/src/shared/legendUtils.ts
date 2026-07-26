@@ -88,7 +88,7 @@ const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
 // wording; every other scheme reframes fwd/rev as either the fragment strand or
 // a split read (see the two maps above).
 function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
-  return colorType === 'firstOfPairStrand' || colorType === 'stranded'
+  return colorType === 'firstOfPairStrand'
     ? FIRST_OF_PAIR_LABELS
     : colorType === 'strand'
       ? undefined
@@ -164,116 +164,152 @@ function crossCuttingBuckets(
   }))
 }
 
-/**
- * Legend items for the alignments display. `presentCategories` is the set of
- * read buckets actually seen in the rendered reads (from readColorCategory), so
- * only relevant swatches are listed, and `palette` is the live render palette so
- * swatch colors match the painted reads exactly. Modification swatches come from
- * `detectedModifications` (type code -> painted color); mapping/per-base quality
- * are fixed hue ramps.
- */
-export function getReadDisplayLegendItems(
-  colorBy: ColorBy | undefined,
-  presentCategories: ReadonlySet<ReadColorCategory>,
-  palette: ColorPalette,
-  detectedModifications?: ReadonlyMap<string, string>,
-  colorTagMap?: Record<string, string>,
+// The modification family's own key: the methylation views (fill-unmarked and
+// bisulfite) key the 5mC/5hmC states, not the per-type MM palette; every other
+// modification view keys each detected type in the color the reads use. Both
+// append the blue "not modified" swatch whenever the mode paints that state, so
+// two-color over a non-cytosine mod (blue low-probability 6mA calls) is keyed
+// too — it previously showed only the 6mA swatch, leaving its blue marks
+// unexplained.
+function modificationLegend(
+  colorBy: ColorBy,
+  detectedModifications: ReadonlyMap<string, string>,
 ): LegendItem[] {
-  const colorType = colorBy?.type
-  const buckets = crossCuttingBuckets(presentCategories, palette, colorType)
+  const isMethylation = usesMethylationLegend(colorBy)
+  const items = isMethylation
+    ? methylationLegend(colorBy, detectedModifications)
+    : [...detectedModifications]
+        .filter(([type]) =>
+          isModificationTypeVisible(colorBy.modifications, type),
+        )
+        .map(([type, color]) => ({ color, label: getModificationName(type) }))
+  return [
+    ...items,
+    ...(paintsUnmodifiedState(colorBy)
+      ? [
+          {
+            color: unmethylated5mC,
+            label: isMethylation ? 'Unmethylated' : 'Unmodified',
+          },
+        ]
+      : []),
+  ]
+}
 
-  if (colorType === 'tag') {
-    const tag = colorBy?.tag
-    if (tag && STRAND_TAGS.has(tag)) {
-      // Just the two strand keys; reads with no resolvable XS/TS/ts value fall
-      // back to the neutral color (see buildReadTagColors), which needs no
-      // legend entry of its own.
-      return [
-        { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
-        { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
-      ]
-    }
-    // One swatch per discovered tag value, colored exactly as painted
-    // (colorTagMap holds the palette color baked into readTagColors). Sorted by
-    // value so the legend order stays stable as reads stream in rather than
-    // reordering by discovery. Empty until reads with the tag load.
-    const values = Object.entries(colorTagMap ?? {})
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([value, color]) => ({ color, label: value }))
-    return [...values, ...buckets]
-  }
+// One swatch per discovered value of a CPU-baked scheme (tag values, or mate
+// refNames under chromosome painting), colored exactly as painted — colorTagMap
+// holds the same color buildReadTagColors bakes into readTagColors. Sorted by
+// value so the legend order stays stable as reads stream in rather than
+// reordering by discovery. Empty until reads carrying a value load.
+function bakedValueLegend(colorTagMap: Record<string, string>): LegendItem[] {
+  return Object.entries(colorTagMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([value, color]) => ({ color, label: value }))
+}
 
-  if (colorType === 'mappingQuality') {
-    return [
-      ...hslRamp(50, [
-        { hue: 0, label: 'MAPQ 0' },
-        { hue: 30, label: 'MAPQ 30' },
-        { hue: 60, label: 'MAPQ ≥60' },
-      ]),
-      ...buckets,
-    ]
-  }
-  if (colorType === 'perBaseQuality') {
-    return [
-      ...hslRamp(55, [
-        { hue: 0, label: 'BQ 0' },
-        { hue: 15, label: 'BQ 10' },
-        { hue: 30, label: 'BQ 20' },
-        { hue: 45, label: 'BQ 30' },
-        { hue: 60, label: 'BQ 40' },
-      ]),
-      ...buckets,
-    ]
-  }
-  if (colorType === 'perBaseLetter') {
-    return [
-      ...BASE_LEGEND.map(({ key, label }) => ({
-        color: rgb255(palette[key]),
-        label,
-      })),
-      ...buckets,
-    ]
-  }
-  if (colorType && isModificationScheme(colorType) && detectedModifications) {
-    // The methylation views (fill-unmarked and bisulfite) key the 5mC/5hmC
-    // states, not the per-type MM palette; every other modification view keys
-    // each detected type in the color the reads use.
-    const isMethylation = usesMethylationLegend(colorBy)
-    const items = isMethylation
-      ? methylationLegend(colorBy, detectedModifications)
-      : [...detectedModifications]
-          .filter(([type]) =>
-            isModificationTypeVisible(colorBy.modifications, type),
-          )
-          .map(([type, color]) => ({ color, label: getModificationName(type) }))
-    // Both keys append the blue "not modified" swatch whenever the mode paints
-    // that state, so two-color over a non-cytosine mod (blue low-probability 6mA
-    // calls) is keyed too — it previously showed only the 6mA swatch, leaving
-    // its blue marks unexplained. Split reads (chain mode) and supplementary /
-    // unmapped-mate exceptions carry their own fixed swatches, last.
-    return [
-      ...items,
-      ...(paintsUnmodifiedState(colorBy)
-        ? [
-            {
-              color: unmethylated5mC,
-              label: isMethylation ? 'Unmethylated' : 'Unmodified',
-            },
-          ]
-        : []),
-      ...buckets,
-    ]
-  }
+// XS/TS/ts encode strand rather than a categorical value, so they are keyed by
+// the strand pair rather than by discovered values.
+function isStrandTag(colorBy: ColorBy | undefined) {
+  return (
+    colorBy?.type === 'tag' &&
+    colorBy.tag !== undefined &&
+    STRAND_TAGS.has(colorBy.tag)
+  )
+}
 
+// The scheme's own key, before the cross-cutting buckets are appended. Every
+// branch returns just its own swatches; nothing here reads presentCategories.
+function schemeLegend(
+  colorBy: ColorBy | undefined,
+  palette: ColorPalette,
+  detectedModifications: ReadonlyMap<string, string> | undefined,
+  colorTagMap: Record<string, string>,
+): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
-  // legend would be empty and "Show legend" would render nothing. Prepend a
-  // base-reads swatch so the toggle always shows something, keeping any
-  // cross-cutting buckets (unmapped mate, split reads in chain mode) after it.
-  if (colorType === undefined || colorType === 'normal') {
-    return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }, ...buckets]
+  // legend would be empty and "Show legend" would render nothing.
+  if (colorBy === undefined || colorBy.type === 'normal') {
+    return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }]
+  }
+  const colorType = colorBy.type
+  if (isStrandTag(colorBy)) {
+    // Just the two strand keys; reads with no resolvable XS/TS/ts value fall
+    // back to the neutral color (see buildReadTagColors), which needs no legend
+    // entry of its own.
+    return [
+      { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
+      { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
+    ]
+  }
+  if (colorType === 'tag' || colorType === 'mateRefName') {
+    return bakedValueLegend(colorTagMap)
+  }
+  if (colorType === 'mappingQuality') {
+    return hslRamp(50, [
+      { hue: 0, label: 'MAPQ 0' },
+      { hue: 30, label: 'MAPQ 30' },
+      { hue: 60, label: 'MAPQ ≥60' },
+    ])
+  }
+  if (colorType === 'perBaseQuality') {
+    return hslRamp(55, [
+      { hue: 0, label: 'BQ 0' },
+      { hue: 15, label: 'BQ 10' },
+      { hue: 30, label: 'BQ 20' },
+      { hue: 45, label: 'BQ 30' },
+      { hue: 60, label: 'BQ 40' },
+    ])
+  }
+  if (colorType === 'perBaseLetter') {
+    return BASE_LEGEND.map(({ key, label }) => ({
+      color: rgb255(palette[key]),
+      label,
+    }))
+  }
+  if (isModificationScheme(colorType) && detectedModifications) {
+    return modificationLegend(colorBy, detectedModifications)
   }
   // The strand / insert-size / orientation schemes are described entirely by
   // which fixed-swatch buckets occurred.
-  return buckets
+  return []
+}
+
+/**
+ * Legend items for the alignments display: the active scheme's own key followed
+ * by the cross-cutting buckets (unmapped mate, inter-chromosomal, supplementary,
+ * split reads in chain mode) that actually occurred. `presentCategories` is the
+ * set of read buckets seen in the rendered reads (from readColorCategory), so
+ * only relevant swatches are listed, and `palette` is the live render palette so
+ * swatch colors match the painted reads exactly. Modification swatches come from
+ * `detectedModifications` (type code -> painted color); tag / chromosome-painting
+ * swatches from `colorTagMap` (value -> painted color); mapping/per-base quality
+ * are fixed hue ramps.
+ */
+export function getReadDisplayLegendItems({
+  colorBy,
+  presentCategories,
+  palette,
+  detectedModifications,
+  colorTagMap = {},
+}: {
+  colorBy: ColorBy | undefined
+  presentCategories: ReadonlySet<ReadColorCategory>
+  palette: ColorPalette
+  detectedModifications?: ReadonlyMap<string, string>
+  colorTagMap?: Record<string, string>
+}): LegendItem[] {
+  // A strand tag keys fwd/rev itself, in those exact colors, so drop them from
+  // the cross-cutting tail rather than listing the same two swatches again
+  // under split-read wording.
+  const categories = isStrandTag(colorBy)
+    ? new Set(
+        [...presentCategories].filter(
+          c => c !== 'fwdStrand' && c !== 'revStrand',
+        ),
+      )
+    : presentCategories
+  return [
+    ...schemeLegend(colorBy, palette, detectedModifications, colorTagMap),
+    ...crossCuttingBuckets(categories, palette, colorBy?.type),
+  ]
 }

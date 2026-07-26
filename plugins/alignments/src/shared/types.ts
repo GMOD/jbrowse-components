@@ -73,7 +73,7 @@ export function isModificationTypeVisible(
 // Shader color-scheme dispatch paths — the distinct branches read.slang
 // actually implements. Several ColorSchemeTypes share one path: perBaseQuality/
 // perBaseLetter paint over the 'normal' body, methylation/bisulfite reuse
-// 'modifications' with different config, 'stranded' aliases 'firstOfPairStrand'.
+// 'modifications' with different config.
 // 'tag' is the generic per-read explicit-color path — the shader just unpacks a
 // baked ABGR u32, so any scheme that resolves to one color per read on the CPU
 // (tag values, mateRefName) rides it without a new shader branch.
@@ -105,7 +105,6 @@ export type ColorSchemeType =
   | 'insertSize'
   | 'insertSizeGradient'
   | 'firstOfPairStrand'
-  | 'stranded'
   | 'pairOrientation'
   | 'insertSizeAndOrientation'
   | 'perBaseQuality'
@@ -121,15 +120,23 @@ export interface ColorBy {
   modifications?: ModificationColorBy
 }
 
-// On-disk shape of a persisted `colorBy`: the live ColorBy plus the deprecated
-// standalone `methylation` scheme, now expressed as modifications+fillUnmarked.
-// `normalizeColorBy` (colorSchemes.ts) upgrades it at the read boundary so no
-// live code ever sees `type: 'methylation'`.
+// On-disk shape of a persisted `colorBy`: the live ColorBy plus the retired
+// scheme names — `methylation` (now modifications+fillUnmarked) and `stranded`
+// (an alias of firstOfPairStrand that no UI ever wrote). `normalizeColorBy`
+// (colorSchemes.ts) upgrades both at the read boundary, so no live code — menu,
+// legend, extraction, shader dispatch — ever sees them.
+export const LEGACY_COLOR_SCHEME_TYPES = ['methylation', 'stranded'] as const
 export interface LegacyMethylationColorBy {
   type: 'methylation'
   modifications?: ModificationColorBy
 }
-export type PersistedColorBy = ColorBy | LegacyMethylationColorBy
+export interface LegacyStrandedColorBy {
+  type: 'stranded'
+}
+export type PersistedColorBy =
+  | ColorBy
+  | LegacyMethylationColorBy
+  | LegacyStrandedColorBy
 
 // True when modification coloring should fill in unmarked canonical bases (the
 // implicit-unmethylated cytosine walk) — the modifications+fillUnmarked sub-mode
