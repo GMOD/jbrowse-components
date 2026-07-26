@@ -59,13 +59,14 @@ test('labels primer footprints by the primer that sits there on a minus product'
   })
 })
 
-// What hgPcr actually sends: the position is a link to the browser, so the
-// coordinates never follow the '>' directly. Parsing only the bare form returned
-// zero products for every real query.
+// What hgPcr actually sends, copied from a live response: the position is a link
+// to the browser, so the coordinates never follow the '>' directly, and the '>'
+// itself arrives unescaped even though the surrounding page is HTML. Parsing only
+// the bare form returned zero products for every real query.
 test('parses the anchored header the live server sends', () => {
   const live = `<HTML><BODY><PRE>
-&gt;<A HREF="../cgi-bin/hgTracks?hgsid=4123661403&db=hg38&position=chr17:7676521-7676667&hgPcrResult=pack">chr17:7676521+7676667</A> 147bp AGTTTCCATAGGTCTGAAAATG GGGTTGGAAGTGTCTCATGCTG
-AGTTTCCATAGGTCTGAAAATGtt
+><A HREF="../cgi-bin/hgTracks?hgsid=4123667185&db=hg38&position=chr17:7676521-7676667&hgPcrResult=pack">chr17:7676521+7676667</A> 147bp AGTTTCCATAGGTCTGAAAATG GGGTTGGAAGTGTCTCATGCTG
+AGTTTCCATAGGTCTGAAAATGtttcctgactcagagggggctcgacgct
 </PRE></BODY></HTML>`
   const [f] = parseIsPcrResponse(live)
   expect(f).toMatchObject({
