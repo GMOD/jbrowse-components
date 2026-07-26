@@ -114,6 +114,38 @@ test('DEL with missing END falls back to SVLEN', () => {
   expect(f.get('end')).toEqual(599)
 })
 
+test('symbolic END at or before POS falls through instead of inverting the span', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=50;SVTYPE=DEL',
+  )
+
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('end')).toEqual(100)
+})
+
+test('bogus END still falls back to SVLEN', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=50;SVLEN=500;SVTYPE=DEL',
+  )
+
+  expect(f.get('end')).toEqual(599)
+})
+
+test('zero SVLEN falls back to REF length', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tSVLEN=0;SVTYPE=DEL',
+  )
+
+  expect(f.get('end')).toEqual(100)
+})
+
+test('malformed breakend ALT does not throw', () => {
+  const f = createFeature('chr1\t100\trs123\tG\tG[\t29\tPASS\tSVTYPE=BND')
+
+  expect(f.get('type')).toEqual('breakend')
+  expect(f.get('start')).toEqual(99)
+})
+
 test('multiple SVs', () => {
   const f = createFeature(
     'chr1\t100\trs123\tR\t<INVDUP>,<INV>\t29\tPASS\tEND=1000;SVTYPE=DEL',
@@ -197,6 +229,33 @@ test('getSOTermAndDescription returns correct SO term for symbolic alleles', () 
   expect(soTerm('<INS:ME>')).toBe('insertion')
   expect(soTerm('<UNKNOWN>')).toBe('variant')
   expect(soTerm('<UNKNOWN:FOO>')).toBe('variant')
+})
+
+test('getSOTermAndDescription uses header-declared ALT ids', () => {
+  const parser = new VcfParser({
+    header: `##ALT=<ID=FOO,Description="custom class">\n${defaultHeader}`,
+  })
+
+  // ##ALT is keyed by the bare id, so the lookup has to strip the brackets
+  expect(getSOTermAndDescription('N', ['<FOO>'], parser)[0]).toBe(
+    'sequence_variant',
+  )
+  // a declared subtype still prefers the parent term over the vaguer fallback
+  expect(getSOTermAndDescription('N', ['<INS:ME>'], parser)[0]).toBe(
+    'insertion',
+  )
+})
+
+test('getSOTermAndDescription - spanning deletion allele is not an SNV', () => {
+  const parser = createParser()
+
+  expect(getSOTermAndDescription('A', ['*'], parser)).toEqual([
+    'sequence_variant',
+    'A -> *',
+  ])
+  expect(getSOTermAndDescription('A', ['T', '*'], parser)[0]).toBe(
+    'SNV,sequence_variant',
+  )
 })
 
 test('getSOTermAndDescription maps integer copy-number alleles', () => {

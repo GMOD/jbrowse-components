@@ -5,7 +5,8 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature, { getEnd } from '../VcfFeature/index.ts'
+import VcfFeature from '../VcfFeature/index.ts'
+import { getEnd } from '../VcfFeature/util.ts'
 import { getVcfSources } from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfAdapterConfig } from './configSchema.ts'

@@ -1,5 +1,7 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 
+import { isBreakend } from '../VcfFeature/util.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
 // The `featureColor` slot sentinel that selects SV-type cell coloring. Unlike
@@ -99,12 +101,7 @@ export function svTypeFromAlt(alt: string) {
   if (alt.startsWith('<') && alt.endsWith('>')) {
     return normalizeRawToken(alt.slice(1, -1))
   }
-  const isBreakend =
-    alt.includes('[') ||
-    alt.includes(']') ||
-    alt.startsWith('.') ||
-    alt.endsWith('.')
-  return isBreakend ? 'BND' : ''
+  return isBreakend(alt) ? 'BND' : ''
 }
 
 /**
