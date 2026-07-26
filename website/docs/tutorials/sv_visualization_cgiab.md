@@ -365,8 +365,8 @@ combined data table and circular overview of the SV calls.
 <Figure caption="The SV inspector showing the benchmark VCF as a circular overview alongside a table of calls." src="/img/sv_cgiab/translocation_sv_inspector_view.png" />
 
 Clicking the chord that connects chr3 and chr13 launches a breakpoint split
-view. Opening the tumor PacBio HiFi reads on each panel and switching to
-**compact** mode highlights the supporting split reads as black splines
+view. Opening the tumor PacBio HiFi reads on each panel and setting **Read
+height** > **Compact** highlights the supporting split reads as black splines
 connecting the two chromosomes.
 
 <Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
@@ -384,13 +384,13 @@ CUZD1 gene.
 
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The SVTYPE column reports a DEL. Clicking the row's location link opens it in the linear genome view below, drawn as the <DEL> ALT allele above the NCBI RefSeq gene track." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
-Opening the gene annotations and the tumor PacBio HiFi reads, switching the
-reads to **compact** mode and applying **Sort by base pair** (both from the
-track menu) with the deletion centered shows the deletion (enabling the **center
+Opening the gene annotations and the tumor PacBio HiFi reads, setting **Read
+height** > **Compact** and applying **Sort by base pair** (both from the track
+menu) with the deletion centered shows the deletion (enabling the **center
 line** from the view menu is helpful for aligning the breakpoint precisely under
 the center of the view).
 
-<Figure caption="After opening the gene annotations and tumor PacBio HiFi reads, displaying reads in compact mode, and sorting by base pair with the deletion in the center. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/deletion_linear_view.png" />
+<Figure caption="After opening the gene annotations and tumor PacBio HiFi reads, dropping to compact read height, and sorting by base pair with the deletion in the center. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/deletion_linear_view.png" />
 
 For background on SV signals in the alignments track, see the
 [SV visualization guide](/docs/user_guides/sv_visualization).
@@ -490,16 +490,16 @@ BAF track directly.
 #### KRAS and SMAD4
 
 The same reading covers the other two loci. `KRAS` on chr12 is a low-level gain
-(`SV_101`, CN 3, 2+1): depth is raised and the MAF shifts only modestly off 0.5,
+(`SV_101`, CN 3, 2+1): depth is raised and the BAF shifts only modestly off 0.5,
 the partial imbalance a 2+1 gain produces rather than the full drop of a
 complete haplotype loss.
 
-<Figure caption="KRAS on chr12: the HiFiCNV depth track over the MAF track over the CNV calls. The gain (SV_101, CN 3, 2+1) reads as raised depth and an MAF that shifts only modestly off 0.5, the partial imbalance of a 2+1 gain." src="/img/sv_cgiab/driver_kras_gain.png" />
+<Figure caption="KRAS on chr12: the HiFiCNV depth track over the BAF track over the CNV calls. The gain (SV_101, CN 3, 2+1) reads as raised depth and a BAF that shifts only modestly off 0.5, the partial imbalance of a 2+1 gain." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 `SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
 TP53 event, though more muted than the chr17 example.
 
-<Figure caption="Chromosome 18: the HiFiCNV depth track over the MAF track over the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) spans most of the chromosome but reads as only a modest depth dip and a sparse MAF shift off 0.5." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="Chromosome 18: the HiFiCNV depth track over the BAF track over the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) spans most of the chromosome but reads as only a modest depth dip and a sparse BAF shift off 0.5." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 See also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for

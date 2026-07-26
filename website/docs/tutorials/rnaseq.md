@@ -40,10 +40,10 @@ The more reads that stack up over a region, the more highly expressed it is. The
 coverage histogram along the top of the track is JBrowse's running per-position
 read count, so tall coverage flags a highly-transcribed gene.
 
-Turn on the **compact** display (in the track menu) to pack the full read stack
+Pick **Read height** > **Compact** in the track menu to pack the full read stack
 into view:
 
-<Figure caption="The compact display packing the full read stack over a gene. Coverage depth broadly tracks expression level." src="/img/rnaseq/compact_stacked.png" />
+<Figure caption="Compact read height packing the full read stack over a gene. Coverage depth broadly tracks expression level." src="/img/rnaseq/compact_stacked.png" />
 
 ## Spliced reads, CIGAR strings, and splice arcs
 
@@ -71,9 +71,9 @@ one as an arc. It also checks the splice signal (the GT/AG dinucleotides
 flanking the intron) to figure out the strand, so red arcs are forward-strand
 splice events and blue arcs are reverse-strand.
 
-If you zoom into the pileup with the compact display off, you can see each
-spliced read on its own: its two exon-aligned ends show up as grey boxes joined
-by a thin teal line across the skipped intron. That teal connector is a per-read
+If you zoom into the pileup back at Normal read height, you can see each spliced
+read on its own: its two exon-aligned ends show up as grey boxes joined by a
+thin teal line across the skipped intron. That teal connector is a per-read
 thing, separate from the red/blue strand-colored arcs above. Mouse over any read
 to inspect it.
 

@@ -60,6 +60,7 @@ K12     K12.fa
 Sakai   Sakai.fa
 CFT073  CFT073.fa
 NCTC86  NCTC86.fa
+IAI39   IAI39.fa
 EOF
 ```
 
@@ -139,11 +140,11 @@ record is how the adapter maps a record to its strain:
   "type": "SyntenyTrack",
   "trackId": "ecoli_cactus_ava",
   "name": "MC graph: all-vs-all synteny (halSynteny)",
-  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
     "type": "AllVsAllIndexedPAFAdapter",
     "uri": "ecoli_cactus_ava.pif.gz",
-    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
 }
 ```
@@ -287,7 +288,7 @@ the non-reference strains carry a trailing subpath tag (`Sakai#0#chr#0`), so
 filter on those.
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
-counts how many paths traverse the graph under each K12 base (near 4 where all
+counts how many paths traverse the graph under each K12 base (near 5 where all
 strains are present, toward 1 over K12-private accessory sequence):
 
 ```bash
@@ -314,7 +315,7 @@ bigWig and load the set as one
 
 ```bash
 in_cactus odgi pav -i /data/mc/ecoli.full.og -b /data/depth_windows.bed > pav.tsv
-for strain in Sakai CFT073 NCTC86; do
+for strain in Sakai CFT073 NCTC86 IAI39; do
   group=$(awk -F'\t' -v s="$strain" 'NR>1 && $5 ~ "^"s"#" {print $5; exit}' pav.tsv)
   awk -F'\t' -v OFS='\t' -v g="$group" '$5==g && $6+0==$6 {print "chr",$2,$3,$6}' \
     pav.tsv | sort -k1,1 -k2,2n > "ecoli_cactus_pav_$strain.bedgraph"
@@ -322,7 +323,7 @@ for strain in Sakai CFT073 NCTC86; do
 done
 ```
 
-<Figure caption="Both odgi projections over all 4.64 Mb of K12. On top, odgi depth: near 5 where every strain traverses the graph (core sequence), dropping toward 1 over accessory stretches. Below it, odgi pav, one row per non-K12 strain, each near 1 where that strain is present and 0 over its own accessory stretches — so every dip in the curve above resolves into which strain accounts for it." src="/img/pangenome_cactus/pav.png" />
+<Figure caption="Both odgi projections over all 4.64 Mb of K12. On top, odgi depth: near 5 where every strain traverses the graph (core sequence), dropping toward 1 over accessory stretches. Below it, odgi pav, one row per non-K12 strain, each near 1 where that strain is present and 0 over its own accessory stretches, so every dip in the curve above resolves into which strain accounts for it." src="/img/pangenome_cactus/pav.png" />
 
 ## Compared to `odgi viz`
 

@@ -296,12 +296,12 @@ window-for-window on a shared axis:
     "subadapters": [
       {
         "type": "BigWigAdapter",
-        "source": "π inverted",
+        "name": "π inverted",
         "uri": "https://jbrowse.org/demos/popgen/pi_INV.bw"
       },
       {
         "type": "BigWigAdapter",
-        "source": "π standard",
+        "name": "π standard",
         "uri": "https://jbrowse.org/demos/popgen/pi_STD.bw"
       }
     ]

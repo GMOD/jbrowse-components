@@ -297,7 +297,7 @@ independent rows instead of 232 diploid ones, which is what makes co-inherited
 blocks visible.
 
 The MHC class II region carries about **66 variants per kilobase** here, so a
-200 kb window holds over fourteen thousand records — and all but a couple of
+200 kb window holds over fourteen thousand records, and all but a couple of
 hundred are SNPs. The structural tier is the part a pangenome adds over a
 short-read callset, and it is already in this file: add the filter
 

@@ -100,16 +100,16 @@ otherwise changes nothing, so use whichever orientation you find easier to read.
 Switching to **Manual** keeps whatever Quick start had selected, and lets you
 change either axis or the track by hand.
 
-<Figure caption="The dotplot import form in Manual mode, where you choose each axis: a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
+<Figure caption="The dotplot import form in Manual mode, where you pick the X-axis and Y-axis assembly by hand, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
 <Figure caption="The dotplot Quick start opens for this track: H. pylori 26695 (X-axis, the target) vs J99 (Y-axis, the query). The long diagonal is the collinear backbone, and the off-diagonal segments are rearrangements between the two strains. Swap transposes it." src="/img/sv_synteny/dotplot.png" />
 
 ### Launching a linear synteny view from the dotplot
 
 To inspect a region, click and drag across the dotplot to rubber-band a
-selection, then right-click inside the selected box and choose **Open linear
-synteny view** from the context menu. This opens the selected region in a new
-linear synteny view, showing the alignment at base resolution.
+selection, then right-click inside the selected box and choose **Linear synteny
+view of selection** from the context menu. This opens the selected region in a
+new linear synteny view, showing the alignment at base resolution.
 
 ## Linear synteny view
 

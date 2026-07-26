@@ -375,7 +375,7 @@ group** to stack every lane instead, or expand one lane from its label.
 
 One of those lanes is the assembly you are viewing, and it can never hold a
 self-alignment: `minimap2 -X` skipped each genome's own diagonal, so all that
-draws there is K-12's internal paralogy — the IS-element copies that hit a dozen
+draws there is K-12's internal paralogy, the IS-element copies that hit a dozen
 loci apiece. It reads as missing data rather than as a result, so **Group
 by... > Hide self-alignment lane** drops it. The figures below have it ticked.
 

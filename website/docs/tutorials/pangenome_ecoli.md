@@ -223,7 +223,8 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done
 
 in_cactus bash -c "minigraph -cxggs -t 8 /data/K12.pansn.fa /data/Sakai.pansn.fa \
-  /data/CFT073.pansn.fa /data/NCTC86.pansn.fa" > ecoli_minigraph.rgfa
+  /data/CFT073.pansn.fa /data/NCTC86.pansn.fa /data/IAI39.pansn.fa" \
+  > ecoli_minigraph.rgfa
 
 in_cactus gfatools view -R "K12#1#chr:1000000-1300000" -r 1 \
   /data/ecoli_minigraph.rgfa > ecoli_rgfa_slice.gfa
@@ -238,7 +239,7 @@ own row. Pick **Stable rank (rGFA)** in the Color dropdown to color by rank.
 Rank is the `SR` tag minigraph writes on every segment, and it counts build
 order: 0 is the first assembly on the command line (K12 here, the reference
 backbone), 1 is sequence first added when Sakai was folded in, 2 when CFT073
-was, 3 when NCTC86 was. So a rank-3 segment is sequence none of the three
+was, and so on to 4 for IAI39. So a rank-4 segment is sequence none of the four
 assemblies before it had. Only rank 0 has reference coordinates, which is why it
 is the only rank a linear view of K12 can show. A minigraph graph is also far
 less fragmented than a pggb one, since it records structural variation rather
@@ -555,11 +556,11 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
   "type": "SyntenyTrack",
   "trackId": "ecoli_pggb_ava",
   "name": "pggb graph: all-vs-all synteny (wfmash)",
-  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
     "type": "AllVsAllIndexedPAFAdapter",
     "uri": "ecoli_pggb_ava.pif.gz",
-    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
 }
 ```
@@ -742,7 +743,7 @@ subtrack per strain:
 ```bash
 # cols: chrom start end name group pav
 in_pggb odgi pav -i "/data/$gfa" -b /data/depth_windows.bed > pav.tsv
-for strain in Sakai CFT073 NCTC86; do
+for strain in Sakai CFT073 NCTC86 IAI39; do
   awk -v OFS='\t' -v g="$strain#1#chr" '$5 == g && $6 + 0 == $6 { print "chr", $2, $3, $6 }' \
     pav.tsv | sort -k1,1 -k2,2n > "ecoli_pggb_pav_$strain.bedgraph"
   bedGraphToBigWig "ecoli_pggb_pav_$strain.bedgraph" chrom.sizes "ecoli_pggb_pav_$strain.bw"
@@ -772,6 +773,11 @@ done
         "type": "BigWigAdapter",
         "name": "NCTC86",
         "uri": "ecoli_pggb_pav_NCTC86.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "IAI39",
+        "uri": "ecoli_pggb_pav_IAI39.bw"
       }
     ]
   }

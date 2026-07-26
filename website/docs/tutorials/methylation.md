@@ -135,11 +135,11 @@ multirow mode by default so their scales are independent.
 
 Since each long read is a single DNA molecule, you can split reads by allele
 whenever they carry an `HP` haplotype tag (from WhatsHap, HiPhase, or ONT's
-`wf-somatic-variation` haplotagged `.ht` output). **Group by** the `HP` tag from
-the track menu, leave coloring on modifications (or methylation), and the pileup
-stacks into one profile per haplotype, computed live in the browser with no
-external tool. Allele-specific methylation then shows up as a difference between
-the two haplotype bands.
+`wf-human-variation` haplotagged BAM). **Group by** the `HP` tag from the track
+menu, leave coloring on modifications (or methylation), and the pileup stacks
+into one profile per haplotype, computed live in the browser with no external
+tool. Allele-specific methylation then shows up as a difference between the two
+haplotype bands.
 
 You can also compute that split ahead of time.
 `modkit pileup --partition-tag HP` writes an aggregate bedMethyl per haplotype

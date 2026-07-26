@@ -13,14 +13,14 @@ session spec or embedded view. When both are set, the per-session value wins.
 Track display settings (height, color scheme, display type, score range, and so
 on) live in two places:
 
-- Persistent defaults live in `config.json`, on the track's `displays` array.
-  These apply every time the track opens, in every session.
+- Persistent defaults live in `config.json`, in the track's `displayDefaults`
+  object. These apply every time the track opens, in every session.
 - Per-session settings live on a track entry in a session spec. These set the
   track's _initial_ state when a particular link or embedded view loads, and
   override the `config.json` defaults.
 
 Both use the same setting names. The per-session settings are a per-session
-override of the fields you can bake in as defaults with `displays`.
+override of the fields you can bake in as defaults.
 
 ## What you need
 
@@ -32,7 +32,7 @@ URL editing, so there is nothing else to install.
 ## Finding a setting's name
 
 The per-session setting keys match the display model's own settings (the same
-names you'd put in a config `displays` entry). Two ways to discover them:
+names you'd put in a config `displayDefaults`). Two ways to discover them:
 
 - Configure the track interactively (height, color scheme, etc.), then use the
   **Share** button to generate a session link. The shared session records each
@@ -47,29 +47,28 @@ Common keys include `type` (the display type), `height`, `minScore` /
 
 ## In config.json (persistent defaults)
 
-Nest a display entry in the track's `displays` array. It applies whenever the
-track is shown:
+Put the settings in the track's `displayDefaults` object and JBrowse routes each
+one to the display that uses it, so you don't have to name the display. It
+applies whenever the track is shown:
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "my_wiggle_track",
   "name": "My Wiggle Track",
   "assemblyNames": ["volvox"],
   "adapter": { "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" },
-  "displays": [
-    {
-      "type": "LinearWiggleDisplay",
-      "defaultRendering": "line",
-      "minScore": 0,
-      "maxScore": 100
-    }
-  ]
+  "displayDefaults": {
+    "defaultRendering": "line",
+    "minScore": 0,
+    "maxScore": 100
+  }
 }
 ```
 
-See [configuring tracks](/docs/config_guides/tracks) for more on the `displays`
-array.
+Spell out the full `displays` array instead when the example _selects_ a
+non-default display type (`LinearMultiSampleVariantDisplay`, `LDDisplay`, ...).
+See [configuring tracks](/docs/config_guides/tracks) for both forms.
 
 ## In a URL (session spec)
 
@@ -167,9 +166,9 @@ for the full embedded setup.
 ## Which wins?
 
 When both are present, the per-session settings override the `config.json`
-defaults for that session. Use `displays` for settings everyone should always
-get, and per-session settings for a link or embedded view that should open in a
-specific state.
+defaults for that session. Use `displayDefaults` for settings everyone should
+always get, and per-session settings for a link or embedded view that should
+open in a specific state.
 
 ## See also
 
