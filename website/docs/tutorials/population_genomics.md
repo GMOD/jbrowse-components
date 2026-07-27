@@ -14,6 +14,9 @@ axis, and read where the signals line up against genes. JBrowse draws the
 windowed statistic your tool produced; it runs no population-genetic inference
 of its own.
 
+**Setup:** a command-line pipeline (vcftools, bcftools, htslib,
+bedGraphToBigWig).
+
 Population-genetic scans are per-window statistics running along the genome: Fst
 (differentiation between groups), nucleotide diversity (π) within a group, dxy
 (divergence between groups). Each has the same shape as a wiggle track, so once

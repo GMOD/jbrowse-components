@@ -9,6 +9,9 @@ tutorial_category: Transcriptomics & proteins
 BAM/CRAM CIGAR `N` skips automatically, with no extra configuration, and can
 color reads by fragment strand for strand-specific libraries.
 
+**Setup:** nothing. Every figure has a live link that opens the same view on
+hosted data.
+
 Every screenshot has a live link, built from JBrowse's
 [session-spec URL format](/docs/urlparams#session-spec), so you can open the
 same view yourself.
@@ -16,11 +19,6 @@ same view yourself.
 The [Jupyter differential-expression example](/docs/jbrowse_jupyter) takes a DE
 table straight to a gene track colored by call, and is available as a Colab
 notebook.
-
-## What you need
-
-Nothing to install. Every figure has a live link that opens the same view on
-hosted data, so you can follow the whole tutorial in a browser.
 
 ## What RNA-seq looks like in the genome browser
 

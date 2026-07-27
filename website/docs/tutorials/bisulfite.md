@@ -11,6 +11,9 @@ tutorial_category: Epigenomics & single cell
 JBrowse colors per-read methylation straight from the C→T conversion, with CpG,
 CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
 
+**Setup:** a full read-alignment pipeline (Trim Galore, bwameth, samtools), run
+on SRA reads.
+
 Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation
 without any long-read basecaller. A chemical (sodium bisulfite) or enzymatic
 (APOBEC) step converts every unmethylated cytosine to uracil, which reads as T,

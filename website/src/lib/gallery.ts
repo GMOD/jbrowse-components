@@ -413,7 +413,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'pangenome/hprc_mhc_bandage',
         guide: 'tutorials/pangenome_hprc',
         description:
-          'The HLA class II region of the HPRC release 2 pangenome as a force-directed graph, above lanes of the same window on GRCh38. The blue blocks are the reference backbone, and the orange bar is the bubble the orange loops in the graph belong to.',
+          'The HLA class II region of the HPRC release 2 pangenome as a force-directed graph, above lanes of the same window on GRCh38. Both panels are colored by reference position, so the thread winding through the graph runs red to magenta with the segment blocks above it.',
       },
       {
         label: 'HPRC structural alleles by haplotype',

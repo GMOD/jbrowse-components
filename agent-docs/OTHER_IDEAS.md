@@ -2256,6 +2256,58 @@ Two tutorials were deliberately removed, so do not re-propose them as written:
   `methylation.md` is the pattern to copy: the enzyme-treated sample sits above
   the native no-enzyme control in the same figure.
 
+### Demand evidence (GitHub, pulled 2026-07-26)
+
+The topic list above came from what the code supports. This is what people
+actually ask: 382 discussions in Q&A / General / Ideas back to 2020, plus the
+600 most recent issues, back to 2023-06. Keyword tally over titles only, so read
+it as direction and not as a measurement. Counts are discussions plus issues.
+
+| Topic | Count | Note |
+| --- | --- | --- |
+| GFF/GTF loading and gene models | 18 + 19 | steady through 2024-2026 |
+| Embedding (React, Vue, UMD, iframe) | 26 + 17 | peaked 2023, falling since |
+| Assembly setup (FASTA, refNames, aliases) | 19 + 23 | steady |
+| Track catalogs, hubs, connections, faceted selector | 10 + 25 | peaked 2023 |
+| Text search and `text-index` / trix | 11 + 13 | rising, 2024 heaviest |
+| Hi-C | 7 + 7 | steady, low volume |
+| Figures and export | 4 + 17 | steady |
+| Hosting, CORS, range requests, deploy | 5 + 7 | see caveat below |
+| Auth and private data | 3 + 7 | |
+| Notebooks (Jupyter, R, anywidget) | 1 + 4 | |
+| Variant interpretation | 0 + 0 | |
+| Sequence tools (BLAT, PCR, CRISPR) | 1 + 0 | |
+| GWAS and LD | 1 + 0 | |
+| Conservation and MAF | 0 + 1 | |
+| Tandem repeats and STRs | 0 + 0 | |
+
+What this changes:
+
+- **Annotation loading and gene search is the top-demand topic and it is not on
+  the priority list.** GFF/GTF plus text-index plus "why can't I search for my
+  gene" is the single largest cluster, it is recent, and the answers live
+  scattered across `quickstart_web.md`, the FAQ, and `config_guides/`. The
+  "annotating and QC-ing a new assembly" idea below is that tutorial. Promote it.
+- **Variant interpretation has literally zero support demand.** That does not
+  make it wrong, it makes it a capability play rather than a support fix, and
+  AlphaGenome is what would make it one. Judge it on whether the figure is
+  compelling, not on whether it deflects questions.
+- **The notebook tutorial is a forward bet, not demand-driven** (one discussion
+  ever). Fine, since the demand cannot exist before the revitalized anywidget
+  and JBrowseR ship, but do not expect it to move support volume.
+- **Embedding demand is large but mostly answered**, by
+  `embed_linear_genome_view.md` plus the storybook, and it is trending down. The
+  gap there is currency (framework versions, React 19) rather than a new page.
+- **Low counts on hosting and CORS are not evidence of low value.** Those
+  questions have FAQ entries that rank in search, and someone who finds the
+  answer never files. The tutorial still stands on Colin's call.
+- Sequence tools, GWAS, and conservation score near zero, which for the sequence
+  tools is expected (the features are new). Do not read it as "nobody wants
+  this", read it as "no baseline yet".
+
+Re-run: `gh issue list --repo GMOD/jbrowse-components --state all --limit 600
+--json title,createdAt,labels` plus a `gh api graphql` discussions query.
+
 ### Priority per Colin, 2026-07-26
 
 **Serving your lab's data.** Explicitly called out as the boring-but-high-value
@@ -2330,6 +2382,16 @@ the missing narrative layer: a session to a committed PNG or SVG, batching a
 figure panel, and where SVG export fits versus the CLI tool. Our own website
 figure pipeline is the existence proof that it works at scale.
 
+Structure it UI first (Colin, 2026-07-26): automating figures from a URL is the
+interesting part, but the user interface workflow is what most readers came for,
+so lead with exporting from the app and demote URL and CLI automation to a later
+section for people repeating a figure across loci or samples. A UI-first page
+has to say where to click, and as of 30f997c706 the house convention is that
+menu paths are written out with the unicode arrow and checked against the menus
+that build them. Prefer the figure recipe dialog wherever a figure exists: it
+derives its click-path from the figure's own session link, so it cannot go
+stale, which a hand-written path can and repeatedly has.
+
 **BLAT, in-silico PCR, sequence search, CRISPR guides.** New functionality and
 valuable, with the caveat that this is the area Colin knows least, so the
 tutorial has to be written against the source rather than from memory and then
@@ -2373,7 +2435,9 @@ Pair with a StringTie or FLAIR GTF against Gencode to show novel isoform calls,
 sashimi quantification, and where `rnaseq.md` currently stops (its "Short reads
 vs long reads" section is one paragraph).
 
-**Annotating and QC-ing a new assembly.** `Tiberius gene predictions` sits in
+**Annotating and QC-ing a new assembly.** Highest-demand topic in the tally
+above, so treat it as priority tier despite where it sits here.
+`Tiberius gene predictions` sits in
 the demo config next to Gencode v47 and NCBI RefSeq with RNA-seq available as
 evidence. Ends with `jbrowse text-index` so the new gene names are searchable,
 which no tutorial except `cli_desktop.md` currently touches. This would open a
@@ -2406,6 +2470,47 @@ widespread LOH, so choose loci empirically rather than by reputation.
 **Circular view.** 46-line user guide, no tutorial. Whole-genome SV overview is
 the natural subject, probably as a section of an existing SV tutorial rather
 than a page of its own.
+
+### Changes to the tutorials page itself
+
+Cheaper than any new tutorial, and some of them raise the value of every
+tutorial already there.
+
+**A comparative-genomics chooser** (endorsed by Colin, 2026-07-26). Seven of the
+25 cards are synteny or pangenome and their thumbnails are all ribbon stacks, so
+a reader holding a PAF cannot tell which page is theirs. One decision page that
+routes on what you have (a pairwise alignment goes to dotplot plus linear
+synteny, one all-vs-all PAF goes to the stack, an ortholog table goes to MCScan,
+a graph pipeline goes to the three pangenome pages) would do more for that
+section than an eighth tutorial. There is no comparative overview page today,
+only `user_guides/dotplot_view.md` and `user_guides/linear_synteny_view.md`
+separately. It is nearly free, since it links pages and figures that exist.
+
+**Badge what a tutorial costs the reader.** Half these pages open a hosted link
+and half want pggb, Cactus, or minimap2 run first, and the cards say nothing
+either way. One optional frontmatter field in `website/src/content.config.ts`
+(`data: hosted | download | pipeline`) rendered on the card in
+`src/pages/docs/tutorials/index.astro`. Small change, and it makes the
+zero-setup entry points findable.
+
+**Index the tutorials by feature, generated.** Someone who wants to learn
+`LinearMultiRowFeatureDisplay` has to already know it lives in chromhmm,
+bxd_qtl, tcga_cohort_cnv, and analyze_trio. A generated table in the spirit of
+`<!-- doclist -->` avoids a hand-maintained list that drifts.
+
+**Promote the FAQ answers that are really workflows.** "How do I make an image
+for a publication", "How do I put my data behind a login", "Why do I get a CORS
+error when loading remote files", "How do I get (more) categories to filter on
+in the faceted track selector". Nobody finds a procedure in a Q&A list. The
+first two are tutorials above. The faceted-selector one pairs with the operator
+audience below, which the tally scores at 35.
+
+**The missing audience: the genome portal operator.** Organizing hundreds or
+thousands of tracks, categories and metadata for the faceted selector, hubs and
+connections. genomes.jbrowse.org and `~/src/jb2hubs` are existence proofs that
+we do this, the "Large track catalogs (100k+ tracks)" section of this file
+covers the engineering, and the docs teach none of it. Adjacent to the serving
+your lab's data tutorial, one tier up in scale.
 
 ### Parked
 

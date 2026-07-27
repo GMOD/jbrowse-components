@@ -13,6 +13,9 @@ baseline of 2, and every individual becomes one row whose color _is_ a copy
 number. Past a few hundred samples the format becomes the bottleneck, so the
 second half packs the same values into one Zarr store.
 
+**Setup:** a JBrowse instance and the CLI. Nothing to download, the per-sample
+BigWigs are hosted.
+
 <Figure caption="chr17:36.08-36.27Mb in 104 PUR individuals, one row each, clustered on this window. Red is a gain over the diploid baseline, blue a loss, white two copies, and the bar top right is the scale. The 1000 Genomes integrated SV map above holds a single multiallelic CNV record, which ends before the block where copy number runs from zero to ten across the panel." src="/img/cnv1000g/ccl3l1_depth.png" />
 
 ## What you need

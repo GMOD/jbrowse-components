@@ -10,6 +10,9 @@ AlphaFold and UniProt) and MSA views that launch from a gene and stay linked to
 the genome, so hovering a variant highlights the matching residue. Launching
 needs a gene feature carrying a recognizable protein or transcript ID.
 
+**Setup:** nothing to start. The next section opens an instance with both
+plugins already loaded.
+
 JBrowse 2 can link genomic data to protein-level views: interactive 3D
 structures from [AlphaFold DB](https://alphafold.ebi.ac.uk/) and
 [UniProt](https://www.uniprot.org/), and multiple sequence alignments (MSAs)

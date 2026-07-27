@@ -10,6 +10,9 @@ tutorial_category: Configuration & embedding
 persistent defaults in `config.json` and as per-session overrides in a URL
 session spec or embedded view. When both are set, the per-session value wins.
 
+**Setup:** a JBrowse instance with one track loaded. Everything here is config
+and URL editing.
+
 Track display settings (height, color scheme, display type, score range, and so
 on) live in two places:
 

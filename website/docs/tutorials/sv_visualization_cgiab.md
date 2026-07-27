@@ -7,11 +7,13 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-**TL;DR:** load HG008 cancer tumor/normal PacBio HiFi data and its benchmark
-SV/CNV calls into JBrowse, then inspect them with the SV inspector, the linear
-genome view, and dotplot/synteny views of the T2T tumor assembly. Read the
-HiFiCNV depth track alongside unfolded B-allele frequency, since only the BAF
-reveals copy-neutral loss-of-heterozygosity.
+**TL;DR:** load the Cancer Genome in a Bottle HG008 cancer tumor/normal PacBio
+HiFi data and its benchmark SV/CNV calls into JBrowse.
+
+**Setup:** nothing to read along, since every figure opens a hosted config that
+streams the reads from NCBI. Building the instance yourself from the raw reads
+is the heaviest pipeline here (about 1 TB of disk, 32 GB of RAM), but you don't
+have to follow every step to see the jbrowse outputs (each figure has links).
 
 This tutorial loads data from the
 [Cancer Genome in a Bottle (C-GIAB)](https://www.nist.gov/programs-projects/cancer-genome-bottle)
@@ -41,8 +43,10 @@ any platform.
 You will need:
 
 - A Linux machine with HTTP access (either a public URL or `http://localhost`)
-- Approximately 1 TB of free disk space for the interactive walkthrough, or ~1.5
-  TB to run the full reproduce pipeline below (the BAM/CRAM files are large)
+- Approximately 1 TB of free disk space to build the tracks from the raw reads,
+  or ~1.5 TB to run the full reproduce pipeline below (the BAM/CRAM files are
+  large). See [Loading less than all of it](#loading-less-than-all-of-it) to
+  avoid both.
 - At least 32 GB of RAM for the minimap2 alignment step (you can downsize the
   machine after data prep is done, and a 2 GB instance is sufficient to host the
   finished site)

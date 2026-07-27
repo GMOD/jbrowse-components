@@ -11,6 +11,9 @@ tutorial_category: Structural variation
 expression on the segment log2 ratio, so recurrent copy-number events read as
 vertical stripes down the stack.
 
+**Setup:** a JBrowse instance and the CLI. Nothing to download, both files are
+hosted.
+
 Most copy-number views show one tumor at a time. This tutorial builds the other
 kind: every primary tumor in a TCGA project stacked as its own row, so a
 copy-number change shared across the cohort reads as a vertical stripe running
@@ -276,7 +279,7 @@ splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
   display's own menus and options
 - [Quantitative tracks](/docs/user_guides/quantitative_track), for the
   recurrence track's scale and color controls
-- [BXD QTL mapping](/docs/tutorials/bxd_qtl), the same multi-row display for
+- [QTL visualization example](/docs/tutorials/bxd_qtl), the same multi-row display for
   strain genotypes
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm), the same display across
   cell types

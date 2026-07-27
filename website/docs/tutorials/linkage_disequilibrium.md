@@ -9,6 +9,9 @@ tutorial_category: Population genomics
 pairwise r² as a heatmap. The one thing to get right is scale: the triangle is a
 kb-scale local tool, not a way to see megabase structural variants.
 
+**Setup:** nothing. The triangle is computed in the browser from hosted 1000
+Genomes genotypes.
+
 Linkage disequilibrium (LD) is the tendency for nearby variants to be inherited
 together. JBrowse draws it as a triangular heatmap of pairwise r² between SNPs:
 **each red cell means two SNPs are almost always inherited together, white means
@@ -19,11 +22,6 @@ This tutorial reads a real example from the 1000 Genomes Project, computed live
 in the browser from phased genotypes (no precomputed LD file), covers the second
 way a block arises, and then covers the one thing people most often get wrong
 about LD: its scale.
-
-## What you need
-
-Nothing to install. The example is computed live in the browser from hosted 1000
-Genomes genotypes, and the figure below has a live link that opens the view.
 
 ## A selective sweep leaves a long haplotype
 

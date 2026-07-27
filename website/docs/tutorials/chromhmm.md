@@ -9,6 +9,9 @@ tutorial_category: Epigenomics & single cell
 with a `cellType` column, then a `LinearMultiRowFeatureDisplay` partitions it
 into one color-coded row per cell type from a single track, adapter, and fetch.
 
+**Setup:** downloads plus htslib and the JBrowse CLI. No aligner and no heavy
+compute.
+
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into chromatin
 states (active promoter, strong enhancer, heterochromatin, ...) from
 combinations of histone-mark ChIP-seq. A segmentation is produced _per cell
@@ -190,7 +193,7 @@ grouping you want depends on the locus rather than on a fixed publication order.
 
 - [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv), the same display
   colored from a numeric column instead of `itemRgb`
-- [BXD QTL mapping](/docs/tutorials/bxd_qtl), the same display for strain
+- [QTL visualization example](/docs/tutorials/bxd_qtl), the same display for strain
   genotypes, alongside a QTL scan
 - [Phased trio analysis](/docs/tutorials/analyze_trio), the same display for
   inheritance painting

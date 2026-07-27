@@ -160,8 +160,8 @@
     "name": "breakpoint_split_view",
     "status": "good",
     "note": "FIXED+regen: taller viewport + short (h90) variant lanes; both panels + splines captured.",
-    "reviewedAt": "2026-07-25T16:29:38.971Z",
-    "hash": "aaa18d73ac500e6a442baf9d2d4433dfa36298fd"
+    "reviewedAt": "2026-07-27T04:44:05.901Z",
+    "hash": "f12bcbcf0ab44795fb756ef8e855689ab22a298e"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -254,8 +254,8 @@
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:24:54.244Z",
-    "hash": "afb0601945a5d57ea9525a96f7cd1202b5a81d32"
+    "reviewedAt": "2026-07-27T04:44:03.279Z",
+    "hash": "0c00b1b795325166e6c36a4ae1991bb35c4b3501"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -915,9 +915,9 @@
   "maf_track": {
     "name": "maf_track",
     "status": "good",
-    "note": "FIXED: switched the maf display to the Compact preset (rowHeight 8, rowProportion 0.9) so all 26 nematode species fit without scrolling, and put the ce11 gene lane in 'grow' height mode so its transcript rows expand to fit. Dropped the dead heightOverride prop (no longer a slot). Regenerated + verified all rows + gene context visible in-frame.",
-    "reviewedAt": "2026-07-19T21:14:13.242Z",
-    "hash": "1f142e26cc710f8748baa4e6117c8e8e706f1836"
+    "note": "",
+    "reviewedAt": "2026-07-27T05:01:15.850Z",
+    "hash": "33441b870b40aa67ee36246fbc3a75a9399d4d2d"
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
@@ -983,15 +983,15 @@
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T13:10:22.836Z",
-    "hash": "8b763e1f700611c4b16dbe5162d221f6e886ba4a"
+    "reviewedAt": "2026-07-27T04:21:33.455Z",
+    "hash": "5c3de0546a7f1d4e84d1c6f14c94090dd187bbf0"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T21:12:13.032Z",
-    "hash": "862db68b082284f6dc5caf3a9de10851891f2d77"
+    "reviewedAt": "2026-07-27T04:21:44.518Z",
+    "hash": "cc7813547acbc846cbad7820d17f58f7bd7445a3"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
@@ -1004,8 +1004,8 @@
     "name": "jbrowse-img/methylation",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:13:14.673Z",
-    "hash": "02779fc89dadce0f9e5ed087bd5b87ebd48d6d02"
+    "reviewedAt": "2026-07-27T04:21:49.505Z",
+    "hash": "7d90fc1be96509ba0c446eaf8edc9125a978d938"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
@@ -1025,8 +1025,8 @@
     "name": "jbrowse-img/gene_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T02:00:32.412Z",
-    "hash": "d43f0ee7a6129d93e18f585ffecdd3f4908aff22"
+    "reviewedAt": "2026-07-27T04:21:46.375Z",
+    "hash": "a00cf77c8f047b2ba0acd63e74deff688f4e1acf"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1039,8 +1039,8 @@
     "name": "jbrowse-img/alignments_readgroup",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T17:46:16.751Z",
-    "hash": "71030b397102ab4edbdd6193634df874ba5ebb65"
+    "reviewedAt": "2026-07-27T04:21:42.068Z",
+    "hash": "5f5a5f17e9bba881c3825c8479d59d39cbff5e6d"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
@@ -1108,43 +1108,43 @@
     "name": "jbrowse-img/multisample_variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:06:06.626Z",
-    "hash": "4732c4c1fa448b64ed829a64e482a3472d7449a5"
+    "reviewedAt": "2026-07-27T04:21:50.923Z",
+    "hash": "dfc971736917fbce01e47009ddb478e18365fc67"
   },
   "chromhmm": {
     "name": "chromhmm",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:11:59.603Z",
-    "hash": "f1958def24a5fdebeb70d929a6693b3f8643eb07"
+    "reviewedAt": "2026-07-27T04:44:08.116Z",
+    "hash": "a73c58f4a0f1c758f73a704568b716b25cdef86f"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:06:02.113Z",
-    "hash": "e79dfb6a6ff76cc35e17c28a3cd15a0686131f3e"
+    "reviewedAt": "2026-07-27T04:21:48.173Z",
+    "hash": "c5566cdd31ec52e24880fc05729f1a9f53a8f156"
   },
   "maf_470way": {
     "name": "maf_470way",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:13:53.077Z",
-    "hash": "af5ffdb7da0449eb5a8449b8ed1ce72f78f1392c"
+    "status": "bad",
+    "note": "add showOnlyGenes:true",
+    "reviewedAt": "2026-07-27T05:02:12.368Z",
+    "hash": "06f60e97ea6edb28d0cbb8e852e7724db178a25b"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:13:56.062Z",
-    "hash": "0be5979cf08c747851de2e30e1a56160cac7d35c"
+    "status": "bad",
+    "note": "display more compact maf. reduce height of gene track.",
+    "reviewedAt": "2026-07-27T05:02:05.682Z",
+    "hash": "d06b09b76360f558dbbd71bc6efea67932837a95"
   },
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
     "status": "good",
-    "note": "FIXED: taller frame (viewportHeight 620), maf display in Compact preset (rowHeight 8, rowProportion 0.9) so all 26 species fit, and the ce11 gene lane in 'grow' mode. Dropped the dead heightOverride prop. Regenerated + verified: legend + orange/red 2nd/3rd-source rearrangement blocks all visible in-frame.",
-    "reviewedAt": "2026-07-19T21:14:09.722Z",
-    "hash": "c4b97a4b883ef0b7d19c2625239d76e96269c9be"
+    "note": "",
+    "reviewedAt": "2026-07-27T05:01:22.382Z",
+    "hash": "3b268172ac63b1d6c22298bb956c3680b1988458"
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
@@ -1169,10 +1169,10 @@
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:14:07.240Z",
-    "hash": "26f2a6a26cf573c6fa7e124605b619a6e2d9632c"
+    "status": "bad",
+    "note": "might consider deleting this, the tooltip is uninteresting users will find it",
+    "reviewedAt": "2026-07-27T05:01:33.283Z",
+    "hash": "8c26281197d3f9a9b2395bc305bd4b1fe9d6fd87"
   },
   "gc_content": {
     "name": "gc_content",
@@ -1329,8 +1329,8 @@
     "name": "methylation/chromatin_accessibility_6ma",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:14:57.858Z",
-    "hash": "5293c21f29c451b761d925864bc10df7ce9f0c98"
+    "reviewedAt": "2026-07-27T05:00:12.799Z",
+    "hash": "9a697d2e0e548e2b64b8641b85f74fc17ffda2bd"
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
@@ -1423,8 +1423,8 @@
     "name": "jbrowse-img/sashimi_junctions",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:13:16.871Z",
-    "hash": "c98145fb39f860e505871a2dda722c2c530896a8"
+    "reviewedAt": "2026-07-27T04:21:52.310Z",
+    "hash": "e801970eaae720b4c9e41651ac66d83bc8a598dd"
   },
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
@@ -1435,10 +1435,10 @@
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
-    "status": "good",
-    "note": "FIXED: the aggregate MethylDackel track is back above the three per-read pileups, at the boundary locus. At 2.4 kb each bar is one cytosine, so the CpG/CHG/CHH rows and the pileups under them are the same calls at two resolutions.",
-    "reviewedAt": "2026-07-26T07:20:00.000Z",
-    "hash": "42d2cc249c980be65b2900bccb7492787c5d949f"
+    "status": "bad",
+    "note": "might be able to delete, methylation/arabidopsis_wgbs_contexts  seems to cover visual interest, unless there is something i'm missing",
+    "reviewedAt": "2026-07-27T05:01:05.490Z",
+    "hash": "c2463316705f498fafc49feca195eb1ad0b38189"
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
@@ -1451,8 +1451,8 @@
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T23:23:14.790Z",
-    "hash": "f79ce1ec171ce3725456bb95f4e25dd56ea2011e"
+    "reviewedAt": "2026-07-27T05:00:23.842Z",
+    "hash": "7f32d1410912cce69e80e9d87245f52ef08a150d"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1532,10 +1532,10 @@
   },
   "qtl/bxd_sort_before_after": {
     "name": "qtl/bxd_sort_before_after",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T23:06:57.010Z",
-    "hash": "d66968de3bad9fc27d2426120c734ba025c1acbc"
+    "status": "bad",
+    "note": "this could potentially be a one-part image just with 'sort by genotype' open in the second figure, then delete first figure",
+    "reviewedAt": "2026-07-27T04:54:28.638Z",
+    "hash": "b7d48e1c73725f749331fa6ed2a0eea7b41fe15f"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1554,9 +1554,9 @@
   "trio-ancestry": {
     "name": "trio-ancestry",
     "status": "good",
-    "note": "KEEP, resolved. Accurate whole-genome (chr1) FLARE local-ancestry painting of an ASW trio (6 haplotype rows, AFR/EUR mosaics), anchoring the 'Painting by local ancestry' section of analyze_trio.md. The reviewer's 'two highly diverged parents' idea isn't achievable in 1000G — trios are within-population, so both parents are ASW-admixed; there is no pure-AFR x pure-EUR trio. Whole-genome is the correct scale to show local ancestry as a landscape, and the caption already explains block boundaries = meiotic crossovers. User deferred to judgment; kept the real result.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "9d40a30933a104ec1738e879dfa8c24d1ec44458"
+    "note": "",
+    "reviewedAt": "2026-07-27T04:54:07.633Z",
+    "hash": "5e3ea2c47f124dcf7efe0f9155eef8e2444f1a8f"
   },
   "methylation/arabidopsis_wgbs_cpg": {
     "name": "methylation/arabidopsis_wgbs_cpg",
@@ -1608,10 +1608,10 @@
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
-    "status": "good",
-    "note": "KEEP, resolved. Three 1000G samples (HG00551/3/4) as a multirowxy MultiQuantitativeTrack over the AMY1 amylase copy-number locus — enough to demonstrate the 'multiple signals, each its own color' recipe cleanly (each sample its own color, copy number varying across the locus). A ton of samples would be flashier but is orthogonal to the recipe being taught (see the multiquantitative_track / cluster figures for the many-sample story). Left as-is.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "7956a70e65074d8465264b3ac0c8806196942b6e"
+    "status": "bad",
+    "note": "this screenshot unfortunately is not very interesting. anything better? more 1000 genomes samples might be useful. KEEP, resolved. Three 1000G samples (HG00551/3/4) as a multirowxy MultiQuantitativeTrack over the AMY1 amylase copy-number locus — enough to demonstrate the 'multiple signals, each its own color' recipe cleanly (each sample its own color, copy number varying across the locus). A ton of samples would be flashier but is orthogonal to the recipe being taught (see the multiquantitative_track / cluster figures for the many-sample story). Left as-is.",
+    "reviewedAt": "2026-07-27T05:02:52.088Z",
+    "hash": "5d514720e26b19193c90e843e40ba6276113f824"
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
@@ -1645,8 +1645,8 @@
     "name": "methylation/hg002_snrpn_combined",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T23:25:01.523Z",
-    "hash": "da683511c60b2daf837e56c549721719cf01f76c"
+    "reviewedAt": "2026-07-27T05:00:14.550Z",
+    "hash": "a9da9e180e054d18d104671e6823542cc409484f"
   },
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",
@@ -1848,10 +1848,10 @@
   },
   "hprc2/local_ancestry_clustered": {
     "name": "hprc2/local_ancestry_clustered",
-    "status": "good",
-    "note": "resolved (flat bands): same rewindow as hprc2/local_ancestry. The three ancestry blocks still read, but now the mosaic haplotypes are visible inside them, so the clustered-vs-input-order pair actually contrasts. The earlier legend fix was cosmetic and did not touch this complaint.",
-    "reviewedAt": "2026-07-25T08:00:00.000Z",
-    "hash": "776714e2e865ac92d9e15e00c5005e6149419c28"
+    "status": "bad",
+    "note": "i am not sure i really understand this figure. do we need to zoom out even more to see interesting variety? ",
+    "reviewedAt": "2026-07-27T04:21:33.377Z",
+    "hash": "360e143d524fb519cb3437ff0a949c46d9594262"
   },
   "sv/read_connections": {
     "name": "sv/read_connections",
@@ -1966,24 +1966,24 @@
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
-    "status": "good",
-    "note": "FIXED (\"what should we do?\" answered with two lanes, not a recolor). The premise is right and it is structural: RgfaTabixAdapter serves segments by hg38 position and a rank>0 segment has none (it lives on another assembly's refName), so an hg38 lane of that track can only ever be the blue rank-0 backbone. What a reference axis CAN hold is where the orange attaches and how long it is, so the linear panel now has both: hprc_minigraph_bubbles painted in the graph's own rank-1 orange rgb(237,137,44) (set on the track in test_data/graphgenomeview/hprc.json, so every figure using it matches), which is the 64 kb bubble every orange loop in the graph hangs off; and the hprc_minigraph_alleles lane, where each allele is drawn at its anchor and widened to its own bp by the CIGAR in the BED (60,569 / 10,246 / 6,025 bp labelled in frame). Blue and orange now mean the same thing in both panels. readySelector ANDs the pileup's done signal with the graph toolbar's (spelled out, not composed with TOOLBAR_READY, which already opens on body:has). Tutorial gained a paragraph naming the asymmetry instead of leaving the reader to infer it. Deliberately NOT done: recoloring the allele markers to the rank ramp - insertion color comes from theme.palette.insertion, not a track slot, and repurposing it would repaint every alignments figure.",
-    "reviewedAt": "2026-07-26T11:30:00.000Z",
-    "hash": "3bc42a5f867dcc2945a9f30e29a156961bbb97de"
+    "status": "bad",
+    "note": "great work. look for further simplifications if possible. it is somewhat surprising that every node in the bandage graph is colored and not just the reference path? FIXED (\"what should we do?\" answered with two lanes, not a recolor). The premise is right and it is structural: RgfaTabixAdapter serves segments by hg38 position and a rank>0 segment has none (it lives on another assembly's refName), so an hg38 lane of that track can only ever be the blue rank-0 backbone. What a reference axis CAN hold is where the orange attaches and how long it is, so the linear panel now has both: hprc_minigraph_bubbles painted in the graph's own rank-1 orange rgb(237,137,44) (set on the track in test_data/graphgenomeview/hprc.json, so every figure using it matches), which is the 64 kb bubble every orange loop in the graph hangs off; and the hprc_minigraph_alleles lane, where each allele is drawn at its anchor and widened to its own bp by the CIGAR in the BED (60,569 / 10,246 / 6,025 bp labelled in frame). Blue and orange now mean the same thing in both panels. readySelector ANDs the pileup's done signal with the graph toolbar's (spelled out, not composed with TOOLBAR_READY, which already opens on body:has). Tutorial gained a paragraph naming the asymmetry instead of leaving the reader to infer it. Deliberately NOT done: recoloring the allele markers to the rank ramp - insertion color comes from theme.palette.insertion, not a track slot, and repurposing it would repaint every alignments figure. CHANGED (not in response to a note, in response to its siblings'): same reference-position ramp in both panels, and the allele-inventory lane dropped per the three 'just want to see graph' notes. The bubbles lane keeps the rank-1 orange, being one object rather than a ramp.",
+    "reviewedAt": "2026-07-27T04:58:46.407Z",
+    "hash": "9c150d0552a01987536817842e787b83a42469be"
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "good",
-    "note": "FIXED (the colors now come out of the graph itself). Depth is the only quantity both panels can paint (the plugin's schemes are uniform/random/rainbow/depth/node-length/stable-rank/grey, and a pggb GFA has no SR tags), and the hosted ecoli_pggb_depth.bw is 500 bp binned means, so at a 561 bp window it is one flat bar. Instead the subgraph's own nodes are projected onto K12 by walking its reference P line (whose name carries the span, K12#1#chr:1004500-1004961) and written as BED9 whose itemRgb IS the view's viridis Depth ramp, sampled over the subgraph's own min/max the way the view samples it (new scripts/gfa_nodes_to_bed.py, wired into scripts/build_ecoli_pangenome_graph.sh, hosted as ecoli_pggb_subgraph_nodes.bed.gz). The strip therefore carries no color config and cannot drift from the graph: green run = depth 4, yellow run = depth 5, 1 bp teal/blue ticks = pggb's per-allele SNP nodes. The MAF lane is gone, and that is the other half of the fix: pggb's own -M MAF has no CFT073 row anywhere in this window, so its coverage band read a flat 4 while the graph read 5. Checked against the FASTAs rather than assumed - CFT073:1,048,591-1,048,883 is 96.9% identical to K12:1,004,669-1,004,961 (the graph's placement) and 25% identical to where the MAF puts it, K12:1,006,388+. So the graph is right and the MAF block is not, and pairing them was showing the reader two disagreeing readouts of one graph. Gene lane kept and greyed (at goldenrod it read as more depth-5 nodes): green turns yellow at chr:1,004,667, which is the ycbF/pyrD boundary.",
-    "reviewedAt": "2026-07-26T11:30:00.000Z",
-    "hash": "5e41e20a248968676792efd6f9c09967c4215aa0"
+    "status": "bad",
+    "note": "the bezier curves for the connections to rank1 are weird. users also dont necessarily have perspective into the bp length of these features",
+    "reviewedAt": "2026-07-27T04:57:19.413Z",
+    "hash": "9dbc5acd88e096559ac184cc17b0124e9307c5b4"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "good",
-    "note": "can only see 'blue' in the hprc track. if the orange are 'nonreference' and cant be shown as segments in the linear genome, what should we do?  FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
-    "reviewedAt": "2026-07-25T14:19:44.982Z",
-    "hash": "438e4aa685101d9c58328bfe10883968c6e53600"
+    "status": "bad",
+    "note": "can only see 'blue' in the hprc track. may want to use rainbow coloring or alternatively consider deleting or showing the subgraph launch workflow?  FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
+    "reviewedAt": "2026-07-27T04:56:22.462Z",
+    "hash": "22a3ac76011910c32485264ce4abf5776fb4166d"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2058,44 +2058,44 @@
   "pangenome/hprc_allele_inventory": {
     "name": "pangenome/hprc_allele_inventory",
     "status": "bad",
-    "note": "the new 'allele inventory\" track looks very weird. not sure i like it",
+    "note": "the new 'allele inventory\" track looks very weird. not sure i like it RETIRED per the note ('the new allele inventory track looks very weird. not sure i like it'). The hosted track and its section in pangenome_hprc.md stay, without a figure; the lane is also gone from hprc_mhc_bandage and hprc_graph_vs_callset.",
     "reviewedAt": "2026-07-27T01:30:15.152Z",
     "hash": "526dc811900c0bd1bfa7dc935ff3a03ed2a30394"
   },
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
     "status": "bad",
-    "note": "If the nodes were rainbow colored in exact same way in lineargenomeview and bandage graph it might help show correspondance",
+    "note": "If the nodes were rainbow colored in exact same way in lineargenomeview and bandage graph it might help show correspondance FIXED, and it is the fix the note asked for. The graph view now has a Reference position colour scheme (new in the plugin, renderer/GeometryBuilder.ts): hue ramps over the region the subgraph was cut from, red at its start to magenta at its end, and a node with no reference coordinate of its own takes the hue of the backbone it branches from. It is a function of two stated numbers and a midpoint, which is what lets a linear track reproduce it exactly in a colour jexl, so the segments lane and the Bandage thread paint the same bp the same colour. Rainbow-by-node-index could not do this: a linear view has no way to know the graph's node order.",
     "reviewedAt": "2026-07-27T01:29:56.532Z",
     "hash": "189033670b3de369ab6a568e1b8ee432402f6735"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "bad",
-    "note": "the new 'allele inventory\" track looks very weird. not sure i like it",
-    "reviewedAt": "2026-07-27T01:30:15.227Z",
-    "hash": "a49016124fd7c6b8d19a78b47b4c5feec9653b5a"
+    "note": "sort of hard to see the way that the SV track relates to the graph. if that was more obvious it would be great. can consider using bandage graph instead or modifying coloring or whatever helps.",
+    "reviewedAt": "2026-07-27T05:00:01.807Z",
+    "hash": "8b5dcb6f48dae40b23bdc5d4a852eaac042a6e04"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
     "status": "bad",
-    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot",
-    "reviewedAt": "2026-07-27T01:31:50.192Z",
-    "hash": "259221439588cbe3fd44d9e9acb9c2d339dd8331"
+    "note": " it is somewhat surprising that every node in the bandage graph is colored and not just the reference path? . previous notes: similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot FIXED: reference-position colours in both panels. Sharing an x axis was not enough to be SEEN to share one; now the block above and the node below it are the same colour at the same bp, so the correspondence is checkable without measuring.",
+    "reviewedAt": "2026-07-27T04:59:21.291Z",
+    "hash": "4cbfa6686230e878743ea9e118149245cd413aa9"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
     "status": "bad",
-    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot",
-    "reviewedAt": "2026-07-27T01:31:52.265Z",
-    "hash": "0b0d19c08b77ba1414b96d33c14fd699bfa15316"
+    "note": " it is somewhat surprising that every node in the bandage graph is colored and not just the reference path?  previous notes: similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot FIXED, two changes. Reference-position colours tie the rows to the segments lane above. And the window went back from 600 kb to the 90 kb class II one: row spacing is 5% of the drawn width and the pane caps at 600 px, so past about a dozen rows the fit shrinks the drawing to the pane HEIGHT and centres it, and the backbone stops sitting under the linear view's axis at all. The wide window was denser and read worse.",
+    "reviewedAt": "2026-07-27T04:59:08.928Z",
+    "hash": "e6b873ad6a521215e028f9a986b2ee14a1b83882"
   },
   "pangenome/hprc_node_menu": {
     "name": "pangenome/hprc_node_menu",
     "status": "bad",
-    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. need tobe able to just highlight linaer genome view coords. the lineargenomeview menu item should say launch if that is what it does, and may want to be Launch->Linear genome view submenu",
-    "reviewedAt": "2026-07-27T01:32:43.229Z",
-    "hash": "9d3a9ac6bd999f2f0e60ae6799bd33d8576b8987"
+    "note": "the rainbow is good. look for further simplifications also. reduce height of each panel for density. make into a single screenshot instead of two screenshots potentially where highlight and right click menu is visible. previous notes: similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. need tobe able to just highlight linaer genome view coords. the lineargenomeview menu item should say launch if that is what it does, and may want to be Launch->Linear genome view submenu FIXED, both halves of the note. The plugin's node menu now offers 'Highlight this node in the hg38 view', which writes the node's reference interval into the linear view's own highlight list where it stays (a hover band lives only as long as the pointer). And the launch item is a verb: 'Open in linear view - around this node on hg38' rather than a bare 'Linear genome view'. It says Open rather than Launch because it scrolls the view beside the graph when there is one and only opens a pane when there is not. The figure is now two frames: the menu, then the band it leaves behind.",
+    "reviewedAt": "2026-07-27T04:58:23.784Z",
+    "hash": "b7c4df2e7c774eec8d2b5b819d083d8192f5dffa"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
@@ -2107,36 +2107,36 @@
   "pangenome/rgfa_allele_inventory": {
     "name": "pangenome/rgfa_allele_inventory",
     "status": "bad",
-    "note": "the allele inventory i not sure i like. just want to see graph. ",
+    "note": "the allele inventory i not sure i like. just want to see graph. RETIRED per the note ('just want to see graph'). Section and hosted track stay in pangenome_ecoli.md, figure gone.",
     "reviewedAt": "2026-07-27T01:34:07.947Z",
     "hash": "63b09168330b9cf494689089dd3479ed52592451"
   },
   "pangenome/rgfa_hover_correspondence": {
     "name": "pangenome/rgfa_hover_correspondence",
     "status": "bad",
-    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot",
+    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot NOT changed this pass. The E. coli figures keep the rank colours (that tutorial teaches rGFA ranks, and the rank-colour match was itself an earlier review fix); the reference-position ramp is demonstrated on the HPRC set instead. The persistent-highlight menu item added for hprc_node_menu is the other answer to 'hard to tell from a static screenshot' and works here too.",
     "reviewedAt": "2026-07-27T01:34:09.518Z",
     "hash": "3cfc3f382f2aa159d965f6a7c9861b311ca35eaf"
   },
   "pangenome/rgfa_hover_from_linear": {
     "name": "pangenome/rgfa_hover_from_linear",
     "status": "bad",
-    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. it is hard to see from this screenshot the hover (grey) is corresponding to a mouseover on graphgenomeview plugin",
+    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. it is hard to see from this screenshot the hover (grey) is corresponding to a mouseover on graphgenomeview plugin NOT changed this pass, same reasoning as rgfa_hover_correspondence.",
     "reviewedAt": "2026-07-27T01:34:52.987Z",
     "hash": "a9b4823ae0ae02d9c5684d109b29ef635d305c58"
   },
   "pangenome/rgfa_launch_menu": {
     "name": "pangenome/rgfa_launch_menu",
     "status": "bad",
-    "note": "what is the track type of this rgfa track? ",
+    "note": "what is the track type of this rgfa track? FIXED in the caption, which is where the question came from: reviewing the PNG alone there was nothing saying what the track was. The caption now names it - an ordinary FeatureTrack reading two tabix indexes through RgfaTabixAdapter. The prose above the figure already had the JSON.",
     "reviewedAt": "2026-07-27T01:35:34.803Z",
     "hash": "947cccb41eeb4ffe5a79efd7bdaaa31b3034a9b3"
   },
   "pangenome/rgfa_strain_paths": {
     "name": "pangenome/rgfa_strain_paths",
     "status": "bad",
-    "note": "this looks very odd.it is a large insertion, but it should just look, like a normal linearmafdisplay kind of instead of this weird custom thing.",
-    "reviewedAt": "2026-07-27T01:36:35.612Z",
-    "hash": "07543598b187022604407a97d49d117a18e91a04"
+    "note": "this looks very odd.it is a large insertion,try to align the look and feel of deletions with linearalignmentsdisplay/linearmafdisplay at a minimum. dont add legend items for things that are not displayed. could consider deleting FIXED by widening the window 12x, to 200 kb. At 16 kb the frame held ONE bubble, so five stacked full-width boxes with numbers printed in them read as a bar chart rather than as five haplotypes - which is what the note is describing. At 200 kb a row is mostly grey reference path punctuated where that strain diverges, which is the lane shape the note asks for, and the large insertions still carry their bp. Gene lane dropped: at this width it is 190 unlabelled boxes.",
+    "reviewedAt": "2026-07-27T04:55:39.730Z",
+    "hash": "760a6a4ea9c187ca78353bb3299fca106fa98cc5"
   }
 }

@@ -15,6 +15,9 @@ and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
 them.
 
+**Setup:** Docker and a pggb graph build, plus the NCBI `datasets` CLI and
+htslib. The graph is built here, not downloaded.
+
 Most of what JBrowse draws are the graph's **linear projections**: the same
 graph flattened onto one reference genome's coordinates, in four complementary
 views. Every builder can emit all four, so a graph built with any of these tools
@@ -36,8 +39,7 @@ graph additionally gives you.
 
 ## What you need
 
-- `docker`, for the pggb image (which also carries odgi), plus the cactus image
-  if you build the rGFA graph below (it carries minigraph and gfatools)
+- `docker`, for the pggb image, which also carries odgi
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -399,43 +401,98 @@ what you get for it. The
 measures that trade on the same five strains, marking one 100 kb window on both
 axes to show how much wider it is on the graph's.
 
-## The graph itself: a local subgraph
+## The graph itself
 
-:::info Requires the graph genome view plugin
+The four projections above flatten the graph onto K12. JBrowse can also draw it
+**as a graph**, beside a linear view of the same window, through the
+[graph genome view plugin](/docs/tutorials/pangenome_graph_view). That tutorial
+covers the view itself, its layouts, and moving between the two panels. This
+section covers the part specific to pggb: getting a base-level graph in.
 
-The **Graph genome view** is a separate plugin,
-[jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
-not bundled in JBrowse Web, because its force-directed layout uses the
-GPL-licensed [Bandage](https://github.com/rrwick/Bandage) engine (its
-[OGDF](https://ogdf.github.io/) FMMM layout). It is in **beta** and not in the
-[plugin store](/docs/user_guides/plugin_store) yet, but it is a native ES module
-and loads from any config today (see
-[configuring plugins](/docs/config_guides/plugins)):
+### Browsing the whole graph by locus
+
+Cutting a window per look is a property of the tooling, not of the format. A
+plain GFA records no coordinates on its segments, but its P lines record the
+same information in a different encoding: walking a path in step order gives
+every segment it visits an interval on that path's own sequence. Do that walk
+once, offline, and write the result as the two tabix-indexed BEDs
+`RgfaTabixAdapter` already reads, and the whole graph becomes queryable by
+locus:
+
+```bash
+bash scripts/build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
+```
+
+That takes about ten seconds on this graph and produces `ecoli_pggb.segs.bed.gz`
+and `ecoli_pggb.links.bed.gz` with their indexes, 25 MB in total for 606k
+segments and 814k links. The reference argument names the path to treat as rank
+0, and every other path contributes the segments no earlier path reached, on its
+own coordinates. The walk is checkable against the `odgi extract` route
+[below](#a-window-as-a-file), and is checked: at that window every interval it
+derives matches the ones `gfa_nodes_to_bed.py` derives from the extracted
+subgraph.
+
+Load it as one `FeatureTrack` pointed at the shared prefix, the same shape the
+[graph view tutorial](/docs/tutorials/pangenome_graph_view#route-1-a-graph-track-browsable-by-locus)
+uses for an rGFA:
 
 ```json
 {
-  "plugins": [
-    {
-      "name": "GraphGenomeView",
-      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
-    }
-  ]
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_segments",
+  "name": "pggb graph segments",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb"
+  }
 }
 ```
 
-Installing it gives you the **Add → Graph genome view** menu item, and
-`RgfaTabixAdapter` below ships in the same plugin. The projection tracks need
-none of this.
+Now the segments draw as an ordinary track on K12, and **Track menu → Launch
+view → Graph genome view (this region)** cuts a subgraph from the index with no
+`odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
+of selection** does the same for a window you drag.
 
-:::
+<Figure caption="A 1 kb window of the pggb graph, cut from the index rather than from a file prepared beforehand. Both panels are colored by reference position, so the segment lane above and the backbone below run through the same hues left to right, and each bubble in the graph sits under the stretch of reference it belongs to." src="/img/pangenome/pggb_locus_graph.png" />
 
-The four projections above flatten the graph onto K12. JBrowse can also draw the
-graph _as a graph_, a Bandage-style 2-D view of one locus. The whole-genome
-graph is far too large to lay out (606k nodes and 814k links here, millions for
-a vertebrate pangenome), so you cut a window out of it first and open that
-subgraph. Three odgi commands do it: `extract -E` takes every node between the
-first and last in the range, `sort -O` compacts the node ids, `view -g` writes
-GFA:
+Switching **Layout** to **Sample rows** gives each strain its own row, and on
+this graph a row means something it cannot mean on an rGFA. minigraph's `SR` is
+build order, so there a segment names the assembly that contributed it first.
+Here it names a path that actually walks it, so a row is carriage.
+
+<Figure caption="The same window in Sample rows. Each row is one strain and each mark is a segment that strain carries, colored by where on K12 it sits, so a bubble shows which strains take which route through it." src="/img/pangenome/pggb_locus_sample_rows.png" />
+
+#### Where this stops, and what to do instead
+
+This is browsing by locus, not seamless browsing of any graph, and the
+difference is worth stating plainly.
+
+- **The index is built once, offline.** Nothing reads the GFA live. Rebuild it
+  when the graph changes.
+- **It grows with total sequence, not with variation.** A pggb graph runs about
+  17 bp per segment, so a five-strain bacterial pangenome is 606k segments and a
+  human pangenome at base level is several orders of magnitude past that. There,
+  build the index for a chromosome at a time if at all, and prefer the
+  SV-resolution minigraph graph for whole-genome browsing.
+- **The window that draws is small.** Not because of the index but because of
+  the graph: at 17 bp per segment, 1 kb is around 150 nodes and 3 kb is a solid
+  braid. The view declines past its node budget rather than drawing something
+  unreadable.
+- **A segment carried by several assemblies draws on one row.** Sample rows put
+  it on the first path that walks it, and the others are listed in the node
+  popup.
+
+When the graph is too large to index, cut a window offline and open that file
+instead, [below](#a-window-as-a-file).
+
+### A window as a file
+
+With no index, **Add → Graph genome view** takes a GFA by file or URL. That is
+the route for a graph too large to index, and the one to know if someone hands
+you a window. Three odgi commands cut one: `extract -E` takes every node between
+the first and last in the range, `sort -O` compacts the node ids, `view -g`
+writes GFA:
 
 ```bash
 # resolve the graph on the host, since a /data/*.og glob can't expand in docker
@@ -445,32 +502,13 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - 
   | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
 ```
 
-(`vg chunk -x graph.xg -p K12#1#chr:1004500-1004900 -c 20` is the vg equivalent
-if your graph came from Minigraph-Cactus.)
+Nothing in a plain GFA marks one path as the reference, so pick which to anchor
+on under **Settings → Reference path**. `odgi extract` writes the window into
+the path name (`K12#1#chr:1004500-1004961`), which is where the offsets come
+from.
 
-Open **Add → Graph genome view** and load `ecoli_pggb_subgraph.gfa` by file or
-URL. For this demo the hosted copy is at
-`https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_subgraph.gfa`.
-
-No segment in a pggb GFA carries a coordinate, but its paths do: walking one in
-step order gives every node it visits an interval on that path's own sequence.
-Pick which path to walk under **Settings → Reference path** — nothing in a
-general GFA marks one of them as the reference, so the view cannot guess — and
-the **Anchored** and **Sample rows** layouts draw against it, x in K12 bp. A
-graph cut from a track skips the question, since it was cut against an assembly
-already. With neither, the view has no axis to offer and draws force-directed.
-
-Keep the window small, because a pggb graph is fragmented at base resolution:
-between five _E. coli_ strains a few hundred bp already carries a dozen bubbles.
-Node lengths are Bandage-scaled per graph, so a 1 bp SNP allele and a 164 bp
-backbone segment stay on one picture in proportion, the SNP alleles as specks. A
-few hundred bp is what makes that legible, not a limit on what the view loads.
-
-The same walk outside the browser puts the nodes on a linear track, so the
-segment under the cursor is the same segment in both panels. The reference
-path's name states its span (`K12#1#chr:1004500-1004961`, the requested window
-rounded out to whole nodes by `-E`), so walking it in order gives every node a
-K12 start and end:
+The same walk outside the browser puts those nodes on a linear track, so the
+segment under the cursor is the same segment in both panels:
 
 ```bash
 python3 scripts/gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
@@ -478,376 +516,12 @@ python3 scripts/gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
 tabix -p bed ecoli_pggb_subgraph_nodes.bed.gz
 ```
 
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "ecoli_pggb_subgraph_nodes",
-  "name": "pggb subgraph: nodes on K12, colored by depth",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "ecoli_pggb_subgraph_nodes.bed.gz",
-    "columnNames": [
-      "chrom",
-      "start",
-      "end",
-      "name",
-      "depth",
-      "strand",
-      "thickStart",
-      "thickEnd",
-      "itemRgb"
-    ]
-  }
-}
-```
-
-The BED's `itemRgb` is the view's own viridis Depth ramp sampled the same way,
-so the track needs no color configuration and cannot drift from the graph;
-`columnNames` only makes the tooltip say `depth` where it would otherwise say
-`score`. Nodes the reference path never visits are the alternate alleles: no K12
+The BED's `itemRgb` is the view's own viridis **Depth** ramp sampled the same
+way, so the track needs no color configuration and cannot drift from the graph.
+Nodes the reference path never visits are the alternate alleles: no K12
 position, so they are absent.
 
 <Figure caption="A slice of the five-strain graph anchored on its K12 path, under a linear view of the same locus. Both panels are on the same axis and in the same Depth colors: the backbone row below is the node strip above, and the step from green to yellow is where the fifth strain rejoins the shared sequence, in both. The alternate alleles hang off the row below the backbone, having no K12 coordinate of their own." src="/img/pangenome/local_subgraph.png" />
-
-### Build an rGFA with minigraph
-
-Cutting a window per look is the price of a GFA with no coordinates on its
-segments. [rGFA](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md), what
-minigraph emits, tags every segment with the stable sequence it sits on, its
-offset there, and its rank, so the graph states its own reference backbone and
-opens any locus directly (the
-[HPRC tutorial](/docs/tutorials/pangenome_hprc#regular-gfa-vs-rgfa) shows those
-tags on a real segment line).
-
-Build one from the same five strains. minigraph takes its stable names from the
-input FASTA headers, so give it the PanSN-named records rather than the
-per-strain files (whose contig is called `chr` in all five), otherwise every
-segment lands on an ambiguous `chr` that no later command can query by strain.
-minigraph and `gfatools` are not in the pggb image but are in the cactus one
-that the [Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus) uses, so
-wrap that and call it `in_cactus`:
-
-```bash
-in_cactus() {
-  docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
-    quay.io/comparative-genomics-toolkit/cactus:v3.2.1 "$@"
-}
-
-for strain in K12 Sakai CFT073 NCTC86 IAI39; do
-  in_cactus samtools faidx /data/all.fa.gz "$strain#1#chr" > "$strain.pansn.fa"
-done
-
-in_cactus bash -c "minigraph -cxggs -t 8 /data/K12.pansn.fa /data/Sakai.pansn.fa \
-  /data/CFT073.pansn.fa /data/NCTC86.pansn.fa /data/IAI39.pansn.fa" \
-  > ecoli_minigraph.rgfa
-
-in_cactus gfatools view -R "K12#1#chr:1000000-1300000" -r 1 \
-  /data/ecoli_minigraph.rgfa > ecoli_rgfa_slice.gfa
-```
-
-`gfatools view -R` takes a region in those stable coordinates, so unlike plain
-GFA no graph-specific extraction step is needed. Load the result in a **Graph
-genome view** and it lays out from the file rather than from a force simulation:
-rank-0 segments at the reference offset they declare, each higher rank on its
-own row. Pick **Stable rank (rGFA)** in the Color dropdown to color by rank.
-
-Rank is the `SR` tag minigraph writes on every segment, and it counts build
-order: 0 is the first assembly on the command line (K12 here, the reference
-backbone), 1 is sequence first added when Sakai was folded in, and so on to 4
-for IAI39. A rank-4 segment is sequence none of the four assemblies before it
-had, and only rank 0 has reference coordinates, which is why it is the only rank
-a linear view of K12 can show. A minigraph graph is also far less fragmented
-than a pggb one, since it records structural variation rather than every SNP, so
-a legible window is hundreds of kb rather than hundreds of bp.
-
-That rank ladder is the **Anchored** layout, so it lines up with a linear view
-of the same window (the
-[indexed figure below](#opening-any-locus-without-a-slice-per-locus) shows the
-pair). The toolbar's **Layout** dropdown offers two others, compared under
-[Three layouts](#three-layouts).
-
-### Opening any locus without a slice per locus
-
-Cutting a slice per window is fine for one look at one region. To browse the
-whole graph instead, index it once with
-[`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-(98 kb of index for this five-strain graph) and load the two files as one
-`FeatureTrack` on K12:
-
-```bash
-bash build_rgfa_tabix.sh ecoli_minigraph.rgfa ecoli_minigraph
-```
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "ecoli_minigraph_segments",
-  "name": "minigraph graph: rGFA segments",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "ecoli_minigraph"
-  }
-}
-```
-
-The `uri` is the shared prefix: the adapter resolves `.segs.bed.gz`,
-`.links.bed.gz` and both `.tbi` files from it. The graph's stable names are
-PanSN (`K12#1#chr`) and their sample prefix is already the assembly name, so
-this needs no `assemblyNameToPanSN` mapping (the
-[HPRC tutorial](/docs/tutorials/pangenome_hprc#load-the-graph) does, because its
-graph calls the reference `GRCh38` while the assembly is `hg38`).
-
-The segments now draw as features in a linear view, and the graph for whatever
-is on screen is one menu away. Past the size the view will draw, the item greys
-out and names its limit rather than disappearing:
-
-<Figure caption="Track menu → Launch view → Graph genome view (this region), on the rGFA segments track above (an ordinary FeatureTrack, reading the two tabix indexes through RgfaTabixAdapter). Offered only for a track whose adapter can cut a subgraph." src="/img/pangenome/rgfa_launch_menu.png" />
-
-Right-clicking one segment cuts the graph around that segment instead:
-
-<Figure caption="Right-click on backbone segment s1277 (glnA to yihN) → Launch view → Graph genome view (this segment). The launched window, chr:4,053,156-4,067,028, is the segment plus half its length on each side: blue rank-0 backbone, three short rank-1 alleles hanging off it, and one rank-2 allele in purple." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
-
-A `color` jexl on the segment's `rank` paints the track in the graph's own
-Stable rank colors, so a segment is the same color in both panels:
-
-```json
-"displayDefaults": {
-  "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
-}
-```
-
-<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes, so the blue blocks above are the blue rank-0 backbone below, same ids at the same offsets. The orange, red and purple alleles have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
-
-### Three layouts
-
-The **Layout** dropdown draws the same subgraph three ways, differing in what
-the axes mean:
-
-| Layout          | x              | y                       |
-| --------------- | -------------- | ----------------------- |
-| Anchored        | reference bp   | one row per stable rank |
-| **Sample rows** | reference bp   | one row per assembly    |
-| Force-directed  | nothing (FMMM) | nothing                 |
-
-Both reference-anchored modes need a backbone. rGFA states one in its tags; a
-plain GFA such as the pggb subgraph above gets one from its **Reference path**,
-and the rows then mean the same thing in both. Only a GFA with neither leaves
-them greyed out, and there force-directed is the honest picture: the classic
-Bandage one, where alternate alleles fall out as bubbles rather than as rows
-(the [MHC figure](/docs/tutorials/pangenome_hprc#open-a-locus-as-a-graph) shows
-it beside a linear view).
-
-Rank is a property of how the graph was built, not of any genome: at a dense
-locus one rank holds alleles from many different haplotypes, so a rank row means
-nothing biological. **Sample rows** rows by the assembly each allele came from
-instead, so reading across a row says what that strain does to the reference.
-
-What "came from" means depends on the format, and the difference matters when
-reading a row. On rGFA it is the strain that _first contributed_ the sequence,
-because `SR` is build order and nothing in the file records who else carries it.
-On a path GFA every path that visits a segment is stated outright, so a node's
-popup lists every strain that carries it — the row it draws on is the first of
-them.
-
-<Figure caption="The five-strain graph in the Sample rows layout, under the genes and the segments track it was launched from. Row K12 is the reference backbone and each row below it is one strain: a deletion leaves that strain's row empty across the span it removes, and an insertion is a mark where it attaches." src="/img/pangenome/rgfa_sample_rows.png" />
-
-Both anchored layouts draw an allele across **the reference it replaces, never
-its own sequence length**: an insertion consumes no reference, so it draws as a
-mark where it attaches, with its size in the tooltip. The next two tracks put
-the allele's own length on the glyph instead.
-
-### Hovering one panel highlights the other
-
-Hover a node in the graph and the reference interval it occupies is highlighted
-in every linear view beside it; hover the linear view and the segment under the
-cursor lights up in the graph. Nothing to configure, and it is what makes a
-rank>0 allele locatable at all, since those have no reference coordinates.
-
-<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins." src="/img/pangenome/rgfa_hover_correspondence.png" />
-
-The reverse works from any track, not just the graph's own segments. A gene
-gives only a coordinate, and that is enough: rGFA segments do not overlap on a
-stable sequence, so one backbone segment covers it.
-
-<Figure caption="Hovering the gene csgG in the linear view brightens the backbone segment covering it in the graph, and the graph reports that segment's span back as the band across the linear view. The tooltip names it: s406, 36,989 bp." src="/img/pangenome/rgfa_hover_from_linear.png" />
-
-### From a node to the strains that carry it
-
-Every rGFA segment carries the sequence it came from (`SN`) and its offset there
-(`SO`). With only K12 loaded that gets you back to the reference; with all five
-loaded as assemblies, the same five the
-[all-vs-all projection](#all-vs-all-synteny-projection) uses, the graph's
-**Launch view** menu gains two ways out:
-
-- **one linear view per contributing strain**, framed on that strain's own
-  coordinates for this locus. Right-clicking a single allele does it for that
-  segment alone: a CFT073 allele opens CFT073 at the offset its `SO` states, not
-  a projection onto K12.
-- **a synteny view of all of them**, one panel per strain, each already at its
-  own locus. Those panel coordinates come from the graph, so nothing is looked
-  up in the PAF first; the alignment track only draws the ribbons between
-  panels.
-
-Only loaded strains are offered, so the menu never lists a view that cannot
-open, and a location goes into the linear view already beside the graph rather
-than stacking a pane.
-
-<Figure caption="The graph's Launch view menu over a 50 kb K12 window in the sample-rows layout. Each strain's entry names the locus it contributes on its own coordinates, from CFT073's 46 kb to IAI39's 8 bp, and the synteny entry opens all four as panels against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
-
-The [all-vs-all view](#all-vs-all-synteny-projection) shows five genomes and
-where they align, the graph shows what the sequence does at one locus, and this
-menu moves between the two without retyping a coordinate.
-
-### Which strain takes which path
-
-The two indexes say what the graph contains, not who carries what: rGFA's `SR`
-tag is build order, not sample. minigraph can recompute the walks by aligning
-each assembly back to the graph (`minigraph -cxasm --call`), emitting one line
-per bubble per sample with the path that sample takes and its length.
-[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-runs that for every strain and projects the results into one tabix-indexed BED,
-a row per bubble per strain:
-
-```bash
-bash build_minigraph_paths.sh ecoli_minigraph.rgfa ecoli_minigraph_paths \
-  K12.pansn.fa Sakai.pansn.fa CFT073.pansn.fa NCTC86.pansn.fa IAI39.pansn.fa
-```
-
-The reference goes first, because its path through a bubble _is_ the reference
-allele the others are scored against. Load the result with one row per strain:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "ecoli_minigraph_paths",
-  "name": "minigraph graph: per-strain path through each bubble",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "ecoli_minigraph_paths.bed.gz"
-  },
-  "displays": [
-    {
-      "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "strain",
-      "lengthField": "delta",
-      "rowOrder": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
-    }
-  ]
-}
-```
-
-`partitionField` gives each strain its own row. `lengthField` is the length
-channel: without it a 113 kb insertion and a 1 bp one draw the same box. Pointed
-at the BED's signed `delta` column, it draws the insertion and deletion marks
-the [alignments track](/docs/user_guides/alignments_track) uses.
-
-<Figure caption="One 3.4 kb bubble at K12 chr:1,094,197-1,097,573, read three ways: genes above, the graph's segments in the middle, each strain's path through the bubble below. Sakai and CFT073 replace those 3.4 kb with 113 kb and 110 kb of their own, NCTC86 with 41 kb, and IAI39 deletes 3.2 kb. K12's row is the reference path, grey at all 601 bubbles." src="/img/pangenome/rgfa_strain_paths.png" />
-
-The BED keeps the segment ids each strain traverses in a `path` column, so the
-rows tie back to the graph panel: at that bubble Sakai and CFT073 differ only in
-their first segment, which is why their alleles are within 3 kb of each other,
-and IAI39's path opens with `<s2607`, a reverse traversal.
-
-### Finding the sites worth looking at
-
-601 bubbles is more than you want to scroll past, so each row also carries what
-that bubble looks like across all the strains. All three are jexl filters from
-**Edit filters** in the track menu:
-
-| Column    | What it is                                     | Use it for                                                                            |
-| --------- | ---------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `alleles` | distinct paths anyone actually takes here      | `jexl:get(feature,'alleles')>2` cuts to the multi-allelic sites                       |
-| `nonRef`  | how many strains leave the reference path      | `jexl:get(feature,'nonRef')==1` finds the singletons, `==4` the sites K12 alone lacks |
-| `strand`  | the orientation the strain's contig aligned in | `jexl:get(feature,'strand')==-1` selects inverted alleles                             |
-
-The graph splits 436 biallelic bubbles, 105 with three alleles, 37 with four,
-and **23 where all five strains carry something different**: an allele-frequency
-spectrum, whose tail is the hypervariable loci. `strand` picks out inversions,
-169 of IAI39's calls and none of any other strain's, in long contiguous runs
-(1,671,139-1,870,074 is one).
-
-`alleles` counts alleles someone carries, not the path count `gfatools bubble`
-reports (that one counts routes combinatorially and saturates at `2147483647`),
-and `nonRef` is a different question from the
-[depth and presence projections](#pangenome-depth-projection-core-vs-accessory)
-above, which say whether a haplotype is _present_ over a window, not whether it
-_differs_ there.
-
-**Clustering → Cluster rows by similarity** reorders the rows by which alleles
-each strain carries, so haplotypes with the same structural content sit together
-under a dendrogram. On five strains that is a sanity check; on a few hundred
-haplotypes it is the analysis.
-
-`gfatools bubble` reports **top-level** bubbles only, and on this graph they
-never overlap (0 of 601), which is what makes one flat lane per strain complete
-rather than lossy. Variation nested _inside_ a bubble is the cost: a 113 kb
-allele is one block, not the SNPs and small indels within it. The
-[variants projection](#pangenome-variants-projection) carries that nested tier
-instead, in `vg deconstruct`'s `LV`/`PS` snarl fields.
-
-### When all you have is the graph
-
-Someone else's rGFA usually arrives without the assemblies it was built from,
-which rules out the re-mapping above. The two indexes still state every allele
-the graph holds, because each L-line row carries both of its endpoints in full:
-a link between two backbone segments that leaves a coordinate _gap_ is a
-deletion, and a link from the backbone into a rank>0 segment enters an allele
-whose length is the segments it walks before rejoining.
-[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
-does that walk in awk and needs nothing but the two files:
-
-```bash
-bash build_rgfa_alleles.sh ecoli_minigraph   # -> ecoli_minigraph.alleles.bed.gz
-```
-
-Each row is an allele stated against the reference it replaces, which is an
-alignment, so the BED carries a `CIGAR` column (`2062M63348I`) and an
-[alignments track](/docs/user_guides/alignments_track) reads it directly:
-
-```json
-{
-  "type": "AlignmentsTrack",
-  "trackId": "ecoli_minigraph_alleles",
-  "name": "minigraph graph: allele inventory (from the rGFA alone)",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "ecoli_minigraph.alleles.bed.gz"
-  }
-}
-```
-
-`AlignmentsTrack` over a BED looks like a mistake and is the point: the display
-draws whatever carries a CIGAR, so the alleles pack into rows and each draws the
-same insertion marker and deletion bar a read does, at its real size. That
-matters more here than on the per-strain track, because these alleles overlap (a
-nested site has several routes sharing an anchor). Without the CIGAR a 63 kb
-allele is a 1 bp feature with the number hidden in its label.
-
-The five-strain graph yields 847 alleles: 395 insertions, 441 deletions, 11
-same-length substitutions. `altLen`, `discoveryRank` and the traversed
-`segments` are in the popup, and `class`/`delta` drive the same **Edit filters**
-jexl the per-strain track uses. Start from `jexl:get(feature,'delta')>10000` on
-a graph this size; it is the only filter that scales to the 208,545 alleles the
-464-haplotype HPRC graph yields.
-
-**What it costs against the per-strain route above.** `minigraph --call` reports
-842 alleles on this graph, and 747 of them come back here with the identical
-length change in the same bubble. The 95 that do not are compound routes at 69
-nested bubbles, where `--call` reports one strain's whole traversal and this
-reports the individual alleles it is built from. So nesting costs exact compound
-lengths, never a whole site, and the 55 alleles affected say so in a `nested`
-column.
-
-The real limit is whose allele it is. `discoveryRank` and `firstSeenIn` name the
-**first** assembly to contribute a segment, because minigraph collapses: an
-allele four strains share is credited to whichever was added first. That is
-build order, not carriage, which is why this is a lane of alleles rather than
-rows of haplotypes. Use the per-strain route when you have the assemblies, this
-one when you do not.
 
 ## Reproduce it end to end
 
@@ -876,6 +550,8 @@ build output. Export your own `TMPDIR` to override it.
 
 ## See also
 
+- [Pangenome graph view](/docs/tutorials/pangenome_graph_view), which draws this
+  graph as a graph and covers the view's layouts and menus
 - [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus)
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [MAF track](/docs/user_guides/maf_track)

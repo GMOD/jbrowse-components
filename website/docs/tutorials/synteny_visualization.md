@@ -12,6 +12,9 @@ tutorial_category: Synteny & comparative genomics
 PAF with `minimap2 -c --eqx`, and note `add-track -a` takes `query,target`, the
 reverse of the minimap2 argument order.
 
+**Setup:** a JBrowse instance, two assemblies, and an alignment between them
+(minimap2 makes one).
+
 For general background on synteny views and a worked example with tumor and
 normal genome comparison, see the
 [SV visualization guide](/docs/user_guides/sv_visualization).

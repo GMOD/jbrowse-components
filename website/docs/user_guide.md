@@ -61,6 +61,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli)
 - [Pangenome (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus)
 - [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc)
+- [Pangenome graph view](/docs/tutorials/pangenome_graph_view)
 - [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny)
 
 ### Structural variation
@@ -75,7 +76,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics)
 - [Phased trio analysis](/docs/tutorials/analyze_trio)
 - [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium)
-- [BXD QTL mapping](/docs/tutorials/bxd_qtl)
+- [QTL visualization example](/docs/tutorials/bxd_qtl)
 
 ### Epigenomics & single cell
 

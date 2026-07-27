@@ -11,6 +11,8 @@ multi-sample variant display, check inheritance against trio alignments, and
 read read-orientation evidence for a large chr19 inversion. Everything runs on a
 hosted demo, so no data download is needed.
 
+**Setup:** nothing. The dataset is hosted, and every figure has a live link.
+
 We cover three connected analyses of structural variants (SVs) from the 1000
 Genomes Project, using JBrowse's multi-sample visualization tools:
 
@@ -25,11 +27,6 @@ visualization) see the companion
 The [Jupyter multi-sample variants example](/docs/jbrowse_jupyter) shows the
 same per-sample band and genotype-matrix displays from a VCF, and is available
 as a Colab notebook.
-
-## What you need
-
-Nothing to install. The dataset is hosted, and every figure has a live link that
-opens the same view in JBrowse.
 
 ## Dataset
 

@@ -10,6 +10,9 @@ calls) into a BED9 with `itemRgb` and a category column, then point a
 `LinearMultiRowFeatureDisplay`'s `partitionField` at that column to paint one
 colored row per parental haplotype and read crossovers straight off the track.
 
+**Setup:** nothing to read along, since every figure opens live. Building the
+tracks yourself needs Java and a VCF pipeline.
+
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
 variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which
 copy of the genome it came from.
@@ -362,7 +365,7 @@ you load with the track JSON from the
 
 ## See also
 
-- [BXD QTL mapping (strain painting)](/docs/tutorials/bxd_qtl)
+- [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
 - [Multi-sample variant display](/docs/user_guides/multivariant_track)
 - [Variant track config](/docs/config_guides/variant_track)

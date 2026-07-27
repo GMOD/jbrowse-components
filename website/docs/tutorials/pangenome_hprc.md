@@ -18,6 +18,8 @@ JBrowse reads the slice you are looking at straight off HPRC's S3; the other two
 we have prebuilt and host, with the build scripts in
 [Reproduce it end to end](#reproduce-it-end-to-end).
 
+**Setup:** nothing to build. Every track is a URL you can paste.
+
 ## What release 2 publishes
 
 `pangenomes/freeze/release2/minigraph-cactus/` holds these per reference (a
@@ -46,7 +48,7 @@ graph emit) records no coordinates on its segments. The only reference positions
 in the file live inside the P/W path lines, so you cannot look up a locus
 without walking every path, and to draw a subgraph you first cut a window out of
 the graph offline with `odgi extract`. That is the route the
-[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#the-graph-itself-a-local-subgraph)
+[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#a-window-as-a-file)
 takes.
 
 An **rGFA** (what minigraph emits) tags every segment with three fields, the
@@ -104,8 +106,8 @@ downloads nothing but the region in view; the adapter resolves
 ```
 
 The `color` jexl is what makes the graph and the linear view read as one
-picture: it paints each segment in the graph view's own **Stable rank (rGFA)**
-colors, so a segment is the same color in both panels.
+picture: it paints each segment in the graph view's own **Stable rank** colors,
+so a segment is the same color in both panels.
 
 Each segment draws where its tags say it sits, so the GRCh38 backbone tiles the
 reference and the graph becomes queryable by locus. Those hosted files are ours,
@@ -117,27 +119,11 @@ and put the output on `jbrowse.org`.
 
 :::info Requires the graph genome view plugin
 
-The graph genome view is a separate plugin,
-[jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
-not bundled in JBrowse Web (its force-directed layout uses the GPL-licensed
-[Bandage](https://github.com/rrwick/Bandage) engine). It is in **beta** and not
-in the [plugin store](/docs/user_guides/plugin_store) yet, but it is a native ES
-module and loads from any config today (see
-[configuring plugins](/docs/config_guides/plugins)):
-
-```json
-{
-  "plugins": [
-    {
-      "name": "GraphGenomeView",
-      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
-    }
-  ]
-}
-```
-
-The tracks above need it too: `RgfaTabixAdapter` and `MinigraphBubbleAdapter`
-ship in the same plugin.
+The graph genome view is a separate beta plugin, and so are the two adapters
+these tracks use. The
+[pangenome graph view tutorial](/docs/tutorials/pangenome_graph_view) has the
+one-line config that loads it, and covers the view's layouts, colors and menus
+on a smaller graph than this one.
 
 :::
 
@@ -237,14 +223,16 @@ cursor brightens in the graph. Nothing to configure, and it is the third thing a
 reference axis can hold for a rank>0 allele: not the allele's own sequence, but
 the interval between the two backbone segments it detaches from and rejoins.
 Both directions are pictured in the
-[E. coli tutorial](/docs/tutorials/pangenome_ecoli#hovering-one-panel-highlights-the-other).
+[E. coli tutorial](/docs/tutorials/pangenome_graph_view#hovering-one-panel-highlights-the-other).
 
 ### From a node back to a coordinate
 
 Hovering says where a node is while the cursor is on it. **Right-click a node**
-to go there: the linear view beside the graph scrolls to it rather than another
-pane opening. The graph's own **Launch view** menu does the same for the whole
-window it was cut from.
+for the two answers that outlast the pointer: **Highlight this node in the hg38
+view** marks its reference interval in the linear view beside the graph and
+leaves it there, and **Open in linear view** scrolls that view to it rather than
+opening another pane. The graph's own **Launch view** menu does the same for the
+whole window it was cut from.
 
 What you are offered depends on which segment you clicked, because rGFA states
 each segment's source sequence (`SN`) and offset (`SO`):
@@ -260,7 +248,7 @@ each segment's source sequence (`SN`) and offset (`SO`):
 Either way the node's haplotype is named, in the tooltip and in the details
 panel a left-click opens.
 
-<Figure caption="Right-clicking HG00738.2's allele in the sample-rows layout, under the RefSeq genes and rGFA segments for the same window. The menu offers the GRCh38 interval the allele attaches to, not HG00738.2's own coordinates: that assembly is not loaded, and no session loads all 464." src="/img/pangenome/hprc_node_menu.png" />
+<Figure caption="Right-clicking one haplotype's allele in the sample-rows layout, then the result of Highlight this node in the hg38 view. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
 
 That closes a loop over the lanes above: rubberband a locus into a graph, find
 the loop worth asking about, right-click it to put the linear view on its GRCh38
@@ -274,7 +262,7 @@ sequence exists and where it attaches; those three say how common it is.
 Where the contributing assemblies _are_ loaded, a handful of genomes rather than
 hundreds, the same menu opens any of them, or all at once as a synteny view. See
 the
-[E. coli tutorial](/docs/tutorials/pangenome_ecoli#from-a-node-to-the-strains-that-carry-it).
+[E. coli tutorial](/docs/tutorials/pangenome_graph_view#from-a-node-back-to-a-genome).
 
 ## The bubble track
 
@@ -325,7 +313,7 @@ An `AlignmentsTrack` over a BED is the point, not a mistake. Each row carries a
 `CIGAR` against the reference span it replaces (`2062M63348I`), and the
 alignments display draws whatever has one, so the alleles pack into rows and
 each insertion draws at its real magnitude instead of as a 1 bp box. The
-[E. coli tutorial](/docs/tutorials/pangenome_ecoli#when-all-you-have-is-the-graph)
+[E. coli tutorial](/docs/tutorials/pangenome_graph_view#when-all-you-have-is-the-graph)
 walks through the columns and how the walk derives them.
 
 Whole graph: 208,545 alleles, 112,995 of them insertions, 661 of those longer
@@ -487,7 +475,7 @@ reads only those two indexes, never the graph, and writes the allele inventory:
 23 seconds off the 41 MB pair, against the 842 MB download they came from. That
 is what makes it the route that survives having no assemblies, the normal
 situation with someone else's graph. The E. coli tutorial's
-[per-strain paths](/docs/tutorials/pangenome_ecoli#which-strain-takes-which-path)
+[per-strain paths](/docs/tutorials/pangenome_graph_view#which-strain-takes-which-path)
 answer the carriage question instead, at the cost of re-mapping every haplotype.
 
 [`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)

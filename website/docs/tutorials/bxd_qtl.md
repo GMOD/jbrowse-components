@@ -1,5 +1,5 @@
 ---
-title: BXD QTL mapping
+title: QTL visualization example
 description:
   Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 guide_category: Tutorials
@@ -10,6 +10,9 @@ tutorial_category: Population genomics
 chromosome-painting `LinearMultiRowFeatureDisplay` and a QTL Manhattan
 `GWASTrack`, then stack them so a trait peak sits directly over the B/D
 haplotype blocks that drive it.
+
+**Setup:** a short Python and htslib pipeline, plus a JBrowse instance to load
+the two tracks into.
 
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)

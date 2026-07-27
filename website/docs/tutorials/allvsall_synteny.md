@@ -10,6 +10,9 @@ tutorial_category: Synteny & comparative genomics
 all-vs-all PAF, using `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for
 large files).
 
+**Setup:** a command-line pipeline. The NCBI `datasets` CLI, minimap2, and
+htslib build the all-vs-all PAF before anything loads.
+
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
 related (strains or accessions of one species), the most convenient source is a

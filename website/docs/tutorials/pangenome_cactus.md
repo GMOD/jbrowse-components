@@ -15,6 +15,9 @@ graph, but it works reference-first:
 chosen reference, every other sample is aligned onto it, and Cactus normalizes
 the result into a graph.
 
+**Setup:** Docker and a `cactus-pangenome` graph build, plus the NCBI `datasets`
+CLI and htslib. The graph is built here, not downloaded.
+
 This tutorial builds a graph from the **same five _E. coli_ strains** as the
 [pggb tutorial](/docs/tutorials/pangenome_ecoli) and loads the same four linear
 projections onto the K12 reference, so the two are a side-by-side comparison of
@@ -104,9 +107,8 @@ The cactus image also carries [odgi](https://github.com/pangenome/odgi),
 reference position and the graph genome view has no backbone to anchor to. The
 projections below are unaffected, being already flattened onto K12; for the
 graph itself take one of the routes the
-[pggb tutorial](/docs/tutorials/pangenome_ecoli#the-graph-itself-a-local-subgraph)
-covers, either `odgi extract` on one window or a minigraph rGFA of the same
-assemblies.
+[pggb tutorial](/docs/tutorials/pangenome_graph_view) covers, either
+`odgi extract` on one window or a minigraph rGFA of the same assemblies.
 
 ## All-vs-all synteny projection
 

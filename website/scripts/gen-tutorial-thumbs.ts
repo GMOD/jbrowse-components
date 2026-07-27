@@ -181,6 +181,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // The 464-haplotype clustered genotype matrix with its dendrogram: the
   // population-scale figure that best reads as "pangenome" on a card. Skip the
   // app header; keep the left edge so the dendrogram stays in frame.
+  // The graph itself, which is what that tutorial is for: the sample-rows
+  // braid over the segment lane, both in the reference-position ramp. Framed
+  // past the app chrome and the gene lane so the card is graph rather than
+  // toolbar.
+  pangenome_graph_view: {
+    src: 'pangenome/pggb_locus_sample_rows.png',
+    band: [0.55, 1],
+  },
   pangenome_hprc: {
     src: 'hprc2/mhc_clustered.png',
     band: [0.24, 1],

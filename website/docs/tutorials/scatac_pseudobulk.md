@@ -9,6 +9,9 @@ tutorial_category: Epigenomics & single cell
 outside JBrowse, then load them all as a single MultiWiggle track that stacks
 one row per file.
 
+**Setup:** nothing to read along. Your own data needs cells already clustered,
+and one BigWig per cell type.
+
 JBrowse doesn't process single-cell data itself. To get the look of the
 gallery's "Single-cell ATAC by cell type (CATlas)" card (one coverage row per
 cell type), you first pseudobulk the data outside JBrowse: group cells by

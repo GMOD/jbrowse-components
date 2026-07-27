@@ -206,6 +206,15 @@ python3 "$SCRIPT_DIR/gfa_nodes_to_bed.py" ecoli_pggb_subgraph.gfa "${REF}#1#chr"
   | sort -k1,1 -k2,2n | bgzip > ecoli_pggb_subgraph_nodes.bed.gz
 tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
 
+# The same walk over the WHOLE pggb graph, which is what makes it browsable by
+# locus instead of one cut window at a time. rGFA states each segment's position
+# in tags and a plain GFA states it in path order, so this emits the two BEDs
+# RgfaTabixAdapter already reads and nothing downstream has to know the
+# difference: region query, the subgraph cut, both anchored layouts, the launch
+# menus and hover sync all work off these. Runs on the host (python3 only, no
+# docker) in about ten seconds on this graph.
+bash "$SCRIPT_DIR/build_pggb_tabix.sh" "$GFA" ecoli_pggb "$REF"
+
 # The rGFA counterpart. minigraph tags every segment with the stable sequence it
 # sits on, its offset there and its rank, so gfatools cuts a window by reference
 # coordinate with no graph-specific extraction step, and the view draws the
@@ -445,6 +454,26 @@ cat > subgraph_nodes_track.json <<'JSON'
 }
 JSON
 jb add-track-json subgraph_nodes_track.json --update --out "$APP"
+
+# The whole pggb graph as a track, off the two BEDs built above: the same
+# adapter and the same shape as the minigraph segments track, so the graph view
+# launches from any locus rather than from a prepared window.
+cp ecoli_pggb.segs.bed.gz ecoli_pggb.segs.bed.gz.tbi \
+   ecoli_pggb.links.bed.gz ecoli_pggb.links.bed.gz.tbi "$APP/"
+cat > pggb_segments_track.json <<'JSON'
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_segments",
+  "name": "pggb graph segments (whole graph, by locus)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_pggb"
+  },
+  "displays": [{ "type": "LinearBasicDisplay", "showLabels": false }]
+}
+JSON
+jb add-track-json pggb_segments_track.json --update --out "$APP"
 
 # The adapter and the view both come from the graph genome view plugin, which is
 # not bundled in JBrowse Web and has no CLI command, so declare it directly. It
