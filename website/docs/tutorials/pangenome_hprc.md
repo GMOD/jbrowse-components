@@ -396,7 +396,7 @@ the samples. Put both in sample rows and the two row stacks answer different
 questions about the same bp: the graph names the haplotype an allele came
 **from**, the callset names every haplotype that **carries** it.
 
-<Figure caption="One window, both products, one row per haplotype in each. The callset is filtered to the same 50 bp tier the graph holds and clustered, so carriers of a shared allele form a block; the graph below gives each donor haplotype a row, colored by where on the reference its alleles attach. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products, restricted to the same 10 donors so the rows line up: the callset (top) is filtered to the same 50 bp tier the graph holds, both haplotypes of each donor labeled by name; the graph (bottom) gives each donor haplotype a row, colored by where on the reference its alleles attach. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Local ancestry (PCLAI)
 

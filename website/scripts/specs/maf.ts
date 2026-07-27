@@ -232,11 +232,15 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             // NCBI RefSeq gene track on top (longest-coding transcript only):
             // the exon/CDS structure of GAPDH lines up with the conserved
-            // (blue) coding bands in the heatmap below
+            // (blue) coding bands in the heatmap below. showOnlyGenes drops
+            // the individual transcript features (each drawn under its own
+            // UUID id, since GAPDH has several isoforms here) down to one
+            // gene-level glyph per locus (reviewer).
             {
               trackId: 'ncbi_genes_hg38_ucsc',
               type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
+              showOnlyGenes: true,
             },
             {
               trackId: 'hg38.multiz470way',
@@ -260,7 +264,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     // tall enough that the whole 600px fit-to-height display + the view header
     // sit inside the frame with no scroll-off
-    viewportHeight: 800,
+    viewportHeight: 940,
     // all ~470 species over remote UCSC data — long settle so the heatmap is
     // fully painted and the loading indicator has cleared before capture
     settleMs: 35000,
@@ -306,14 +310,23 @@ export const mafSpecs: ScreenshotSpec[] = [
           loc: '12:6,536,485-6,536,590',
           tracks: [
             // MANE gene track: confirms the window sits inside a GAPDH coding
-            // exon and lines the CDS up with the per-codon translation below
-            'mane_hg38',
+            // exon and lines the CDS up with the per-codon translation below.
+            // Compact + a pinned height: one MANE transcript needs one row,
+            // not the default display's reserved multi-row space (reviewer:
+            // reduce height of gene track).
+            {
+              trackId: 'mane_hg38',
+              type: 'LinearBasicDisplay',
+              displayMode: 'compact',
+              height: 40,
+            },
             {
               trackId: 'hg38.multiz470way',
-              // fit-to-display-height: the ~30 filtered rows fill the track tall
-              // enough to read the per-codon amino acids
+              // fit-to-display-height, shrunk from 560: the ~30 filtered rows
+              // still fill the track tall enough to read the per-codon amino
+              // acids at a more compact per-row height (reviewer).
               type: 'LinearMafDisplay',
-              heightOverride: 560,
+              heightOverride: 460,
               showTranslation: true,
               showConservation: true,
               conservationMode: 'codon',
@@ -326,8 +339,9 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: '6,536,5',
     readyTimeout: 120000,
     viewportWidth: 1000,
-    // tall enough to show all ~30 fitted rows + the pruned guide tree
-    viewportHeight: 820,
+    // gene lane(40) + coverage/conservation bands + ~30 fitted rows at the
+    // shrunk display height
+    viewportHeight: 830,
     settleMs: 18000,
     hideTooltip: true,
     actions: [

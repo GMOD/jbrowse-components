@@ -146,8 +146,8 @@
     "name": "insertion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-16T20:41:36.053Z",
-    "hash": "87f68fa95c29a1c318a6c3491a6f87267c9a7283"
+    "reviewedAt": "2026-07-27T12:49:07.357Z",
+    "hash": "2aa1c5c07b381b821222841bccf50212fc9d148c"
   },
   "multisv": {
     "name": "multisv",
@@ -178,10 +178,10 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T18:34:26.941Z",
-    "hash": "f2cc0075b37f1c65e7d9c84685c4c929d1d59382"
+    "status": "bad",
+    "note": "increase  linezoneheight and height of browser to match as a result",
+    "reviewedAt": "2026-07-27T12:49:44.676Z",
+    "hash": "645f3499bb4c22bf1660407d763c3b49e6840c30"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -201,15 +201,15 @@
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:47:04.291Z",
-    "hash": "632e3b8c85bf82b15ff702354ad935f890cff050"
+    "reviewedAt": "2026-07-27T12:51:20.643Z",
+    "hash": "719488e4c8f966e4fc8a51ab218b0fc4b07e67fc"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:47:02.318Z",
-    "hash": "8f5f366135b3c4b6378ace702fd8ea26939ba345"
+    "reviewedAt": "2026-07-27T12:51:18.848Z",
+    "hash": "89c97a7d4faa432f55d84f6381b13009a337d02f"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -554,8 +554,8 @@
     "name": "share_button",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:19:49.187Z",
-    "hash": "a753587dcc82fff883185e25cc1024f16cae7fe8"
+    "reviewedAt": "2026-07-27T12:50:58.336Z",
+    "hash": "c528935dd8225f15599843d97cf7fc777cd62814"
   },
   "sv_inspector_importform": {
     "name": "sv_inspector_importform",
@@ -584,9 +584,9 @@
   "track_menu": {
     "name": "track_menu",
     "status": "good",
-    "note": "FIXED: dropped the ambiguous arrows; kept the two icon rings + boxed menu. Force-regenerated (arrow removal was 0.4% diff, under content-stable threshold).",
-    "reviewedAt": "2026-07-20T13:40:32.909Z",
-    "hash": "b5c2f4ea630991ae5bbe3961cb3430254601a149"
+    "note": "",
+    "reviewedAt": "2026-07-27T12:52:41.214Z",
+    "hash": "18f38ec7036f18052570bf5362608f7ba9f4b5b2"
   },
   "tracklabels": {
     "name": "tracklabels",
@@ -610,8 +610,8 @@
     "name": "trio-matrix-phased",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:14:22.120Z",
-    "hash": "25ced8e691eab9c205854a14a142b7226fcab6f0"
+    "reviewedAt": "2026-07-27T12:52:41.324Z",
+    "hash": "9493833df1577f0fcd04dc7e584d1f0a2428cecc"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
@@ -855,8 +855,8 @@
     "name": "gene_track_collapse_introns",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:12:21.566Z",
-    "hash": "673dccf948e87336e96b5f8748555cb98515b1a6"
+    "reviewedAt": "2026-07-27T12:48:55.592Z",
+    "hash": "e71f4664d72f17f1fd4de004273004b738204fb5"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -889,8 +889,8 @@
     "name": "sv_cgiab/translocation_breakpoint_split",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:49:28.410Z",
-    "hash": "d3a9bfbab6015999252d8a20e642524e61100252"
+    "reviewedAt": "2026-07-27T12:52:29.274Z",
+    "hash": "73b62edf00b6a068ab134997da8c4ecaaa5c5a5c"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -909,8 +909,8 @@
     "name": "trio-crossover-maternal",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:18:42.354Z",
-    "hash": "224cfd6fffc562c4080148026f08e2f550340498"
+    "reviewedAt": "2026-07-27T12:52:34.875Z",
+    "hash": "8be02323488c89ee7eb0505a2bf5680a52b25d12"
   },
   "maf_track": {
     "name": "maf_track",
@@ -1127,17 +1127,17 @@
   },
   "maf_470way": {
     "name": "maf_470way",
-    "status": "bad",
-    "note": "add showOnlyGenes:true",
-    "reviewedAt": "2026-07-27T05:02:12.368Z",
-    "hash": "06f60e97ea6edb28d0cbb8e852e7724db178a25b"
+    "status": "good",
+    "note": "add showOnlyGenes:true FIXED: added showOnlyGenes:true to the NCBI RefSeq gene track. It was drawing GAPDH's overlapping transcript isoforms as separate UUID-labeled features (with a stray 'Longest isoform' chip), not just the one gene glyph; showOnlyGenes collapses that to one gene-level feature. Regenerated (viewportHeight 800->940 to clear the resulting layout).",
+    "reviewedAt": "2026-07-27T06:30:00.000Z",
+    "hash": "9aa38dc68cc9e55ea42c83a5c19d96f97fb0a63f"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
-    "status": "bad",
-    "note": "display more compact maf. reduce height of gene track.",
-    "reviewedAt": "2026-07-27T05:02:05.682Z",
-    "hash": "d06b09b76360f558dbbd71bc6efea67932837a95"
+    "status": "good",
+    "note": "display more compact maf. reduce height of gene track. FIXED: gene track (MANE Select) switched from the default display to displayMode:'compact', height:40 (one MANE transcript needs one row, not the default reserved multi-row space); MAF display heightOverride 560->460 for a tighter per-row height. Regenerated (viewportHeight 700->830 to clear the resulting layout).",
+    "reviewedAt": "2026-07-27T06:30:00.000Z",
+    "hash": "090ceecea78112c5d712887c3a2f6e13f3f477ba"
   },
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
@@ -1163,15 +1163,15 @@
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
-    "note": "super-compact reads (featureHeight 1, fixed), longestCoding gene track, depth switched scatter->xyplot at resolution 10; linkedReads dropped because its connectors merged into a solid block across the deletion at 1px rows",
-    "reviewedAt": "2026-07-22T21:29:41.719Z",
-    "hash": "2c26253a4fdcfeda5a64ba73db5c66153e061d0e"
+    "note": "",
+    "reviewedAt": "2026-07-27T12:51:48.854Z",
+    "hash": "498ebb4bf77bea3cc57ffa1e850fb45dd43da3ea"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
-    "status": "bad",
-    "note": "might consider deleting this, the tooltip is uninteresting users will find it",
-    "reviewedAt": "2026-07-27T05:01:33.283Z",
+    "status": "good",
+    "note": "might consider deleting this, the tooltip is uninteresting users will find it KEPT: this is the only figure illustrating the '## Tooltips' section of maf_track.md, the concrete readout (species codon/AA vs reference, nonsynonymous label, CDS frame/gene) the prose promises. maf_470way_codon shows colored codon cells with no readout, so nothing else demonstrates what hovering surfaces. No image change.",
+    "reviewedAt": "2026-07-27T06:00:00.000Z",
     "hash": "8c26281197d3f9a9b2395bc305bd4b1fe9d6fd87"
   },
   "gc_content": {
@@ -1184,9 +1184,9 @@
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
-    "note": "featureHighlights end coord was 7bp past the RefSeq gene span, so the +-1bp matcher never hit; fixed to 25250929 and the KRAS box now draws. Hand-tuned arrow annotation removed as redundant",
-    "reviewedAt": "2026-07-22T21:29:41.719Z",
-    "hash": "6713ffc86412fbf3f14eeeecce285e2c0ebd3c40"
+    "note": "",
+    "reviewedAt": "2026-07-27T12:52:25.804Z",
+    "hash": "5d20835a3c5f7b7e516f87048162f24eccc9381e"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1199,8 +1199,8 @@
     "name": "sv_cgiab/driver_smad4_loh",
     "status": "good",
     "note": "unclear kind of what is being shown here. if it helps make annotations or highlights that show what is happening",
-    "reviewedAt": "2026-07-22T20:49:21.567Z",
-    "hash": "fd028345da3554c75004fe8a553536a2cb3fd811"
+    "reviewedAt": "2026-07-27T12:52:27.195Z",
+    "hash": "193a722a4efae6eb68fe30e6984272fce560e1f6"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
@@ -1220,15 +1220,15 @@
     "name": "search_feature_highlight",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:20:08.004Z",
-    "hash": "1d8589cf46d51e715ae5105dc0b68bb0fbca53d3"
+    "reviewedAt": "2026-07-27T12:50:56.699Z",
+    "hash": "0531a967b5c826eaac964deca537c97ef53b3cf2"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:09:58.722Z",
-    "hash": "ebb0f5181e3ecba5e0d9c6c200d50e9e7e8018aa"
+    "reviewedAt": "2026-07-27T12:47:45.297Z",
+    "hash": "b6fc01d41836cc1e4557ab5affa15ec3bc4b464b"
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
@@ -1240,15 +1240,15 @@
     "name": "gallery/copynumber_clustered",
     "status": "good",
     "note": "FIXED: set autoscale:'local' on the density track (gallery + multiwig/cluster_dialog specs). Copy number sits at the diploid baseline (~2), so the default localpercentile pinned the max at the 99th percentile (~2.2) and clamped the amplifications. `local` restores the true region max ([0,3] in the legend) so gains render at full contrast and nothing is clipped. Regenerated + verified. NOTE: whether the localpercentile DEFAULT should change (it silently clips baseline-relative signal like copy number) is an open design question raised with the user separately.",
-    "reviewedAt": "2026-07-20T21:18:45.000Z",
-    "hash": "7fdb4dcc77b9011565d3fa45bbe2b9e8487b43db"
+    "reviewedAt": "2026-07-27T12:48:05.660Z",
+    "hash": "d9274ef6f6a1486f22ac67221ecbfe842029ad60"
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T21:12:04.289Z",
-    "hash": "725e322eaa018d4a485afcb58ac0c6765a523b7a"
+    "reviewedAt": "2026-07-27T12:48:03.822Z",
+    "hash": "fb944700b86540e9ecd6fe1ec282f8236751d0ed"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
@@ -1281,22 +1281,22 @@
     "name": "gallery/nanopore_methylation",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T21:48:49.139Z",
-    "hash": "4b6c71a3cf64924c6ac5721a725805077c7c95d1"
+    "reviewedAt": "2026-07-27T12:48:49.640Z",
+    "hash": "5880f72b4e03a4f2e6005ab772847f0286c5f95a"
   },
   "gallery/sarscov2_polyprotein": {
     "name": "gallery/sarscov2_polyprotein",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:11:03.700Z",
-    "hash": "8da8e7199598dd6f7412037acc8f65b588c3e871"
+    "reviewedAt": "2026-07-27T12:48:52.151Z",
+    "hash": "c879f76cdff93a84959c5a6d51348d78108a0e61"
   },
   "gallery/scatac_catlas": {
     "name": "gallery/scatac_catlas",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T21:12:06.222Z",
-    "hash": "6229697353f70d3369ed95bc36e91eea52bdbcab"
+    "reviewedAt": "2026-07-27T12:48:57.542Z",
+    "hash": "58b887d6257c46004d473286bcacaf7b8393f921"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1435,9 +1435,9 @@
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
-    "status": "bad",
-    "note": "might be able to delete, methylation/arabidopsis_wgbs_contexts  seems to cover visual interest, unless there is something i'm missing",
-    "reviewedAt": "2026-07-27T05:01:05.490Z",
+    "status": "good",
+    "note": "might be able to delete, methylation/arabidopsis_wgbs_contexts  seems to cover visual interest, unless there is something i'm missing KEPT: contexts is the wide genic view (14kb); boundary zooms to the AT1G12930/AT1G12935 boundary (2.4kb) where individual reads are tall enough to follow one cytosine at a time, showing the per-read transition from unmarked to marked as a read crosses into the silenced element. That per-molecule onset is not visible at the contexts figure's zoom level. No image change.",
+    "reviewedAt": "2026-07-27T06:00:00.000Z",
     "hash": "c2463316705f498fafc49feca195eb1ad0b38189"
   },
   "jbrowse-img/sv_read_arcs": {
@@ -1516,26 +1516,12 @@
     "reviewedAt": "2026-07-27T01:36:49.816Z",
     "hash": "cb719d02d24f6f746d4e44b000898e86e955f4b9"
   },
-  "qtl/bxd_painting_input_order": {
-    "name": "qtl/bxd_painting_input_order",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:22:25.927Z",
-    "hash": "83b772c0e7c4a2ca72165debf822aeb6f4c8e97b"
-  },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T23:06:53.484Z",
-    "hash": "dddd6708b648b13a8cfa0a2f6bb36bd010e7b8bc"
-  },
-  "qtl/bxd_sort_before_after": {
-    "name": "qtl/bxd_sort_before_after",
-    "status": "bad",
-    "note": "this could potentially be a one-part image just with 'sort by genotype' open in the second figure, then delete first figure",
-    "reviewedAt": "2026-07-27T04:54:28.638Z",
-    "hash": "b7d48e1c73725f749331fa6ed2a0eea7b41fe15f"
+    "note": "FIXED (folded qtl/bxd_sort_before_after into this single figure per reviewer): dropped the compose before/after stack and the separate 'input order' figure. This spec now opens the 'Sort rows by color here' context menu over the already-sorted painting, so the mechanism and the result are both in one image instead of two stacked ones. bxd_qtl.md's Figure updated to reference this image directly (no more links= two-state dialog); qtl/bxd_painting_input_order and qtl/bxd_sort_before_after specs, PNGs and review entries removed as no longer referenced.",
+    "reviewedAt": "2026-07-27T06:30:00.000Z",
+    "hash": "4bb37e70ca3e4b0cdc792866f423dce2f5bda1de"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1582,8 +1568,8 @@
     "name": "sv_cgiab/cnv_chr17_loh",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:46:46.782Z",
-    "hash": "0c035537bb1f143241dbd41fd79966cfb43abb24"
+    "reviewedAt": "2026-07-27T12:51:13.830Z",
+    "hash": "8404ca903dc7902a922107a52a2c920e9224392c"
   },
   "feature_height_default": {
     "name": "feature_height_default",
@@ -1705,15 +1691,15 @@
     "name": "pangenome_cactus/maf",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:06:16.120Z",
-    "hash": "4af8d46b12271b95abafba52030045ddbe098387"
+    "reviewedAt": "2026-07-27T12:50:01.462Z",
+    "hash": "7aebdf86b29fb12e66ff54409747f8aa6c40bf18"
   },
   "pangenome_cactus/pav": {
     "name": "pangenome_cactus/pav",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T21:52:52.379Z",
-    "hash": "835bd1a48fc7a27611d58a245cbe5a6bec521683"
+    "reviewedAt": "2026-07-27T12:50:03.657Z",
+    "hash": "781b3a1049a01ac40539f50e4f0eba0301cd0936"
   },
   "pangenome_cactus/synteny": {
     "name": "pangenome_cactus/synteny",
@@ -1731,17 +1717,17 @@
   },
   "sv_cgiab/cdkn2a_tumor_normal_coverage": {
     "name": "sv_cgiab/cdkn2a_tumor_normal_coverage",
-    "status": "good",
-    "note": "crosshatches off, longestCoding gene track, viewportHeight 780->900 so the CNV-call lane is visible",
-    "reviewedAt": "2026-07-22T21:29:41.719Z",
-    "hash": "496dde302ad04341bb30fbab5e20057a97cb100d"
+    "status": "bad",
+    "note": "this largely duplicates sv_cgiab/driver_cdkn2a_deletion can consider deleting, maybe adding tumor/normal coverage as multiwiggle to sv_cgiab/driver_cdkn2a_deletion ",
+    "reviewedAt": "2026-07-27T12:52:16.197Z",
+    "hash": "1d15943a5546ca6de9d7505e93d77d9dd6ffd2bf"
   },
   "sv_cgiab/cnv_depth_baf": {
     "name": "sv_cgiab/cnv_depth_baf",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:46:50.632Z",
-    "hash": "92a67dee1cd39af44b939a1a30f7e6420333b7cd"
+    "reviewedAt": "2026-07-27T12:51:17.210Z",
+    "hash": "48e894f0914a6245d9c059bfb85a7c8a4ac6e762"
   },
   "tcga/cohort_cnv_erbb2": {
     "name": "tcga/cohort_cnv_erbb2",
@@ -1782,8 +1768,8 @@
     "name": "pangenome_cactus/graph_correspondence",
     "status": "good",
     "note": "FIXED: the partner track is now the odgi pav rows, not the aggregate depth wiggle. odgi viz IS per-path presence rows, so the JBrowse panel is built to be the same picture: the same four non-reference strains, in the raster's row order, each in the color sampled out of graph.png itself (CFT073 163,68,151 / IAI39 114,190,79 / NCTC86 200,132,51 / Sakai 164,163,56), rendered multirowdensity over a pinned 0-1 domain so presence is a filled band and absence is white. Row, color and white gap now match; the only thing left different between the two figures is the x axis, which is what the pair is about. K12 has no row because it is the axis, and the caption says so.",
-    "reviewedAt": "2026-07-26T07:20:00.000Z",
-    "hash": "36de43ac81549bc7c3fc90907414661cf578e821"
+    "reviewedAt": "2026-07-27T12:49:59.800Z",
+    "hash": "425699d340dcefaf261b66bc381a4c2fc8b5d57a"
   },
   "alignments/height_mode_fit": {
     "name": "alignments/height_mode_fit",
@@ -1820,10 +1806,10 @@
   },
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
-    "status": "good",
-    "note": "gallery variant of inverted_duplication: no feature-details drawer, no callouts, Compact reads (featureHeight 3) + heightMode grow. Turns a 3000x3700 portrait whose signal was the bottom sixth into a 3000x1800 landscape with the whole LL/RR/split cluster visible. Super-compact (1) deliberately not used - it erases the minority color signal.",
-    "reviewedAt": "2026-07-25T00:00:00.000Z",
-    "hash": "b5d5423429d8ccc7e3fb274def68a4c5f2e625f9"
+    "status": "bad",
+    "note": "increase  linezoneheight and height of browser to match as a result",
+    "reviewedAt": "2026-07-27T12:49:32.182Z",
+    "hash": "3b27d160c05c3d11b914aea9ed3d5da55e44de30"
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
@@ -1848,9 +1834,9 @@
   },
   "hprc2/local_ancestry_clustered": {
     "name": "hprc2/local_ancestry_clustered",
-    "status": "bad",
-    "note": "i am not sure i really understand this figure. do we need to zoom out even more to see interesting variety? ",
-    "reviewedAt": "2026-07-27T04:21:33.377Z",
+    "status": "good",
+    "note": "i am not sure i really understand this figure. do we need to zoom out even more to see interesting variety?  KEPT at the current window: tested the same clustered painting at whole chr1. The clustered blocks do show more between-cluster variety at that scale (the Iberian-ancestry cluster in particular reads visibly admixed), but this figure's whole point (per its own caption, paired with local_ancestry) is the same window before and after clustering, and that sibling figure already rewindowed away from whole chr1 for a documented reason: at ~226kb/px the median 0.24Mb ancestry tract falls under a pixel and most rows read as one solid colour, which is a real loss of resolution, not just a look. Changing only the clustered half would break the pairing and reintroduce the resolution problem the sibling was already fixed to avoid. No image change.",
+    "reviewedAt": "2026-07-27T06:15:00.000Z",
     "hash": "360e143d524fb519cb3437ff0a949c46d9594262"
   },
   "sv/read_connections": {
@@ -1863,9 +1849,9 @@
   "hprc2/mhc_clustered": {
     "name": "hprc2/mhc_clustered",
     "status": "good",
-    "note": "FIXED (real bug, not lineZoneHeight on this display): showTrackGeneric picked the FIRST view-supported display config regardless of the display type actually being opened, so this session-spec-requested LinearMultiSampleVariantDisplay was created wearing the matrix displays config node (hprc2_wave_grch38_matrix, which declares displays first). Every slot it read came from the matrix schema, including that schemas 20px connector-line zone, and TreeSidebar offsets the tree by lineZoneHeight -> the 20px gap above the tree. Now pickDisplayForView (packages/core/src/util/tracks.ts) resolves the display type first and then the config entry of that type; unit-tested there plus a session-level regression test (products/jbrowse-web/src/tests/RequestedDisplayType.test.tsx). Verified in the browser: tree top now equals the genotype canvas top. Regenerated.",
-    "reviewedAt": "2026-07-26T06:12:17.113Z",
-    "hash": "ca554bbd32b9845e4aec3963247b2612204b793d"
+    "note": "",
+    "reviewedAt": "2026-07-27T12:49:07.309Z",
+    "hash": "234ce3ac52ebeaf392f6483476531524194e2925"
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
@@ -1981,8 +1967,8 @@
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
     "status": "bad",
-    "note": "can only see 'blue' in the hprc track. may want to use rainbow coloring or alternatively consider deleting or showing the subgraph launch workflow?  FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
-    "reviewedAt": "2026-07-27T04:56:22.462Z",
+    "note": "can only see 'blue' in the hprc track. may want to use rainbow coloring or alternatively consider deleting or showing the subgraph launch workflow? other graph visuals have now added the rainbow coloring for graph nodes it may be good here. FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
+    "reviewedAt": "2026-07-27T12:59:55.036Z",
     "hash": "22a3ac76011910c32485264ce4abf5776fb4166d"
   },
   "genomes_synteny/launch_sequence": {
@@ -2066,15 +2052,15 @@
     "name": "pangenome/hprc_c4_subgraph",
     "status": "bad",
     "note": "If the nodes were rainbow colored in exact same way in lineargenomeview and bandage graph it might help show correspondance FIXED, and it is the fix the note asked for. The graph view now has a Reference position colour scheme (new in the plugin, renderer/GeometryBuilder.ts): hue ramps over the region the subgraph was cut from, red at its start to magenta at its end, and a node with no reference coordinate of its own takes the hue of the backbone it branches from. It is a function of two stated numbers and a midpoint, which is what lets a linear track reproduce it exactly in a colour jexl, so the segments lane and the Bandage thread paint the same bp the same colour. Rainbow-by-node-index could not do this: a linear view has no way to know the graph's node order.",
-    "reviewedAt": "2026-07-27T01:29:56.532Z",
-    "hash": "189033670b3de369ab6a568e1b8ee432402f6735"
+    "reviewedAt": "2026-07-27T12:50:38.843Z",
+    "hash": "408d87afbd3566a971c1a74cacca99d90b67071f"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
-    "status": "bad",
-    "note": "sort of hard to see the way that the SV track relates to the graph. if that was more obvious it would be great. can consider using bandage graph instead or modifying coloring or whatever helps.",
-    "reviewedAt": "2026-07-27T05:00:01.807Z",
-    "hash": "8b5dcb6f48dae40b23bdc5d4a852eaac042a6e04"
+    "status": "good",
+    "note": "sort of hard to see the way that the SV track relates to the graph. if that was more obvious it would be great. can consider using bandage graph instead or modifying coloring or whatever helps. FIXED: root cause wasn't color, the segments lane already carried the reference-position ramp. It was scale: the callset held all 464 haplotypes while the graph's sample-rows layout draws only the ~12 that actually walk a non-reference path here, so 452 callset rows had nothing to compare against and the 12 that mattered were lost in the stack. Replaced runClustering with a fixed layout of the same 10 donors the graph shows (both haplotypes each, derived from the segments/links tabix over the same window), dropping the callset to 20 labeled rows that line up by name with the graph's rows below. Regenerated.",
+    "reviewedAt": "2026-07-27T07:00:00.000Z",
+    "hash": "a57fc22cff2e8419813b7840a773387560801a31"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",

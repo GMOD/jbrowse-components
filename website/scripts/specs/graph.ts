@@ -304,6 +304,26 @@ const MHC_CLASSII_REGION = {
   end: 32600000,
 }
 
+// The 10 donors with a non-reference path through the minigraph subgraph over
+// MHC_CLASSII_REGION (`tabix hprc-v2.0-mc-grch38.links.bed.gz
+// 'GRCh38#0#chr6:32510000-32600000'`, every non-GRCh38 column), in the same
+// alphabetical order GraphGenomeView's sample-rows layout sorts by. Passed as
+// the callset display's `layout` (not `runClustering`) so the row SET matches
+// the graph's: both haplotypes of each donor, so a carrier row sits next to
+// its non-carrier sibling rather than the sibling being silently absent.
+const MHC_CALLSET_LAYOUT = [
+  'HG00642',
+  'HG00738',
+  'HG01433',
+  'HG01978',
+  'HG01993',
+  'HG04157',
+  'HG04160',
+  'NA18940',
+  'NA18959',
+  'NA20809',
+].map(name => ({ name }))
+
 // The linear half of the graph view's 'Reference position' color scheme, which
 // is the answer to "if the nodes were rainbow colored in exact same way in
 // lineargenomeview and bandage graph it might help show correspondance".
@@ -1088,8 +1108,23 @@ export const graphSpecs: ScreenshotSpec[] = [
   // The regular multi-sample display, not the matrix: these columns have to
   // land under the graph rows above them, and matrix mode spreads columns
   // evenly across the width, which would break exactly the correspondence this
-  // figure is for. Clustered so carriers of a shared allele form a block rather
-  // than scattering, via the declarative `runClustering` trigger.
+  // figure is for.
+  //
+  // Review: "hard to see the way the SV track relates to the graph". Root
+  // cause wasn't color (the segments lane above the callset already carries
+  // hprcSegmentsLane's reference-position ramp) but SCALE: the callset held
+  // all 464 haplotypes while the graph's sample-rows layout draws only the
+  // donors that actually walk a non-reference path here, ~12 of them, so nine
+  // in ten callset rows had nothing to compare against and the 12 that
+  // mattered were lost in the stack. `MHC_CALLSET_LAYOUT` restricts the
+  // callset to that same 10-donor set (both haplotypes each, so a reference-
+  // only sibling row is visible next to a carrier row rather than silently
+  // dropped), pulled from the segments/links tabix over the identical
+  // MHC_CLASSII_REGION window (`tabix hprc-v2.0-mc-grch38.links.bed.gz
+  // 'GRCh38#0#chr6:32510000-32600000'`, every non-reference column). Fixed
+  // list rather than `runClustering`: a preset `layout` is what makes the row
+  // SET match the graph's, which clustering (free to reorder/include any of
+  // the 464) can't guarantee.
   {
     mode: 'url',
     name: 'pangenome/hprc_graph_vs_callset',
@@ -1111,9 +1146,9 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc2_wave_grch38',
               type: 'LinearMultiSampleVariantDisplay',
-              height: 400,
+              height: 260,
               jexlFilters: SV_FILTER,
-              runClustering: true,
+              layout: MHC_CALLSET_LAYOUT,
             },
           ],
         },
@@ -1126,17 +1161,17 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // three signals, ANDed: the graph's rows drawn, the callset's own fetch
-    // finished (not just first paint), and the post-clustering frame. A bare
-    // comma list would be a CSS OR and fire on whichever landed first.
+    // two signals, ANDed: the graph's rows drawn, and the callset's own fetch
+    // finished (not just first paint). A bare comma list would be a CSS OR and
+    // fire on whichever landed first.
     readySelector:
-      'body:has([data-testid="graph-row-label"]):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
+      'body:has([data-testid="graph-row-label"]):has([data-testid="graph-layout-select"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
     readyTimeout: 360000,
     settleMs: 5000,
     viewportWidth: 1000,
-    // the gene lane, the segments lane, the clustered callset, and the graph's
+    // the gene lane, the segments lane, the 20-row callset, and the graph's
     // rows under them
-    viewportHeight: 1515,
+    viewportHeight: 1330,
     hideTooltip: true,
   },
   // The linearization: x is reference bp and each row is one contributing

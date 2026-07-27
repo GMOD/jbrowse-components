@@ -222,7 +222,7 @@ option (a saved session can bake the same sort in through the display's
 the clean B/D split directly beneath it is exactly the contrast the scan scores,
 and it breaks up into mixed B/D blocks away from the locus.
 
-<Figure src="/img/qtl/bxd_sort_before_after.png" links="Input order=qtl/bxd_painting_input_order,Sorted at peak=qtl/bxd_painting_sorted" caption="The same whole-chr4 view with the painting's row sort toggled. Top: strains in default (alphabetical) order, salt-and-pepper under the peak. Bottom: sorted by genotype at the peak, resolving into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
+<Figure src="/img/qtl/bxd_painting_sorted.png" caption="The context menu that triggers the sort, over the painting it produces: sorted by genotype at the peak, the strains resolve into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a peak at ~80 Mb over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean D (red) over B (blue) split at the gene."/>
 

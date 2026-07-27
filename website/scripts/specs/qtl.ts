@@ -19,13 +19,10 @@ const TYRP1_PEAK = { refName: 'chr4', pos: 80_975_000 }
 // Data + config: test_data/config_bxd.json (hosted at jbrowse.org/demos/bxd/).
 // ──────────────────────────────────────────────────────────────────────────
 
-// Before/after control for the sorted overview: the SAME whole-chr4 view with
-// only the painting's `sortRowsBy` toggled. Default row order is alphabetical by
-// strain (unrelated to genotype at the peak, so salt-and-pepper); sorted groups
-// D strains over B, and the split is clean/wide because neighbours share long
-// flanking haplotypes (linkage). Proves the split is real structure aligned with
-// the peak, not an artifact of sorting.
-const paintingSortPanel = (sorted: boolean) =>
+// Sorted-overview panel below: the painting's declarative `sortRowsBy` groups
+// D strains over B at the peak, and the split is clean/wide because
+// neighbours share long flanking haplotypes (linkage).
+const paintingSortPanel = () =>
   lgvSession('test_data/config_bxd.json', {
     assembly: 'mm10',
     loc: 'chr4',
@@ -39,7 +36,7 @@ const paintingSortPanel = (sorted: boolean) =>
         trackId: 'bxd_chromosome_painting_mm10',
         type: 'LinearMultiRowFeatureDisplay',
         height: 420,
-        sortRowsBy: sorted ? TYRP1_PEAK : undefined,
+        sortRowsBy: TYRP1_PEAK,
         // whole-chr4 painting: lift the byte gate so the multi-row track loads
         // headless (density gating no longer applies to multi-row). Session-
         // scoped force-load, not baked into the demo config.
@@ -132,16 +129,17 @@ export const qtlSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // "Before" panel of the sort proof: painting in default alphabetical order,
-  // with the painting's right-click context menu open over it to show HOW the
-  // sort is triggered — "Sort rows by color here" is the interactive twin of the
-  // declarative sortRowsBy the "after" panel bakes in (reviewer: show the
-  // context menu in the first screenshot). We only OPEN the menu (rightclick +
-  // wait); we never click the item, so the painting stays in input order.
+  // One panel, not a before/after stack (reviewer: the alphabetical "before"
+  // state adds nothing the caption doesn't already say in prose). Painting
+  // already sorted by genotype at the peak, with the right-click context menu
+  // open over it so the mechanism ("Sort rows by color here") and the result
+  // (the clean B/D split) are both readable in one image. We only OPEN the
+  // menu (rightclick + wait); we never click the item, so the already-sorted
+  // painting stays sorted underneath it.
   {
     mode: 'url',
-    name: 'qtl/bxd_painting_input_order',
-    url: paintingSortPanel(false),
+    name: 'qtl/bxd_painting_sorted',
+    url: paintingSortPanel(),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 90000,
     // chrome + manhattan(140) + painting(420) clears the bottom crop
@@ -162,37 +160,9 @@ export const qtlSpecs: ScreenshotSpec[] = [
         y: 60,
         maxWidth: 440,
         fontSize: 15,
-        text: 'Default (alphabetical) order — right-click the painting to sort rows by genotype at that column',
+        text: 'Right-click the painting to sort rows by genotype at that column',
       },
       { type: 'box', anchor: { text: 'Sort rows by color here' } },
     ],
-  },
-
-  // "After" panel: identical view, painting sorted by genotype at the peak.
-  {
-    mode: 'url',
-    name: 'qtl/bxd_painting_sorted',
-    url: paintingSortPanel(true),
-    readySelector: '[data-testid="manhattan-display-done"]',
-    readyTimeout: 90000,
-    viewportHeight: 840,
-    settleMs: 16000,
-    annotations: [
-      {
-        type: 'text',
-        x: 520,
-        y: 60,
-        maxWidth: 400,
-        fontSize: 15,
-        text: 'Same strains sorted by genotype at the peak — a clean B/D split appears under it',
-      },
-    ],
-  },
-
-  // Stack the two panels (input order over sorted) into one before/after figure.
-  {
-    mode: 'compose',
-    name: 'qtl/bxd_sort_before_after',
-    parts: ['qtl/bxd_painting_input_order', 'qtl/bxd_painting_sorted'],
   },
 ]
