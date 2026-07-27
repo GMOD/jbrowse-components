@@ -92,9 +92,13 @@ trusting the gate.
 
 Distinguishing a real pending change from jitter, on a spec whose threshold is
 raised for jitter: run the regen twice and compare the reported percentages. A
-real change reproduces the same diff, jitter does not. The three FMMM graph
-figures report 1.5-1.8% on one run and 1.7-1.8% on the next, which is how you
-tell them from something you actually moved.
+real change reproduces the same diff, jitter does not.
+
+**No spec sets `diffThreshold` any more.** The graph figures were the last
+holdouts, at 1.5-2% per regen, and that was not jitter that had to be tolerated:
+the plugin's FMMM layout seeded itself from `clock()`. Seeding it fixed put them
+under 0.1%. Treat a request for a raised threshold as a bug in whatever is
+producing the nondeterminism.
 
 **`--filter` is repeatable and unions.** `--filter a --filter b` renders both,
 as does `--filter a,b`. It was a single-valued flag, where node's `parseArgs`

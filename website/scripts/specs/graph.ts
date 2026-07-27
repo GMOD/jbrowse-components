@@ -9,12 +9,17 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // GFA slice is the same four-strain E. coli minigraph data the pangenome_ecoli
 // tutorial builds its rGFA graph figures from.
 //
-// The anchored (rGFA) layout is computed locally from the SR:i:0 rank tags and
-// is deterministic. The force-directed (Bandage FMMM) layout renders through the
-// same pipeline — the worker resolves its WASM engine from the plugin's own
-// bundle url — but is nondeterministic (~3% run-to-run drift from the OGDF force
-// simulation), so its spec carries a raised diffThreshold: the committed PNG is
-// only rewritten when a regen drifts past that, not on every ordinary jitter.
+// The anchored (rGFA) layout is computed locally from the SR:i:0 rank tags. The
+// force-directed (Bandage FMMM) layout renders through the same pipeline — the
+// worker resolves its WASM engine from the plugin's own bundle url. Both are
+// deterministic, so no graph spec needs a raised diffThreshold: FMMM seeded its
+// initial placement from clock() until the plugin fixed the seed, and the ~2%
+// of pixels that moved on every regen was enough to hide a real change (an
+// orange recolour shipped as goldenrod in three figures under that threshold).
+//
+// Every fixture pins `esmUrl` to a content-addressed bundle
+// (test_data/graphgenomeview/README.md), so the plugin cannot change these
+// figures without a diff in this repo.
 
 // Ready when the layout has landed (graph-perf-stats) AND the toolbar has
 // painted. Waiting on the stats alone raced: a slow subgraph fetch could leave
@@ -32,7 +37,7 @@ const ECOLI_PANGENOME_CONFIG = 'test_data/graphgenomeview/ecoli_pangenome.json'
 const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
 const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
-// Paint the linear segments track in the graph view's own 'Stable rank (rGFA)'
+// Paint the linear segments track in the graph view's own 'Stable rank'
 // colors, so the blocks above and the nodes below are the same color for the same
 // segment instead of gold-vs-blue. RgfaTabixAdapter puts the SR tag on the
 // feature as `rank`, and the plugin's scheme is rank 0 -> rgb(52,152,219), then a
@@ -96,6 +101,47 @@ const PGGB_NODES_SESSION_TRACK = {
     ],
   },
 }
+
+// The pggb graph itself, browsable by locus — the whole 606k-segment base-level
+// graph rather than a window someone cut out of it beforehand.
+//
+// This is the same `RgfaTabixAdapter` the minigraph tracks use, on the same two
+// BEDs, and that is the point: a plain GFA carries no SN/SO/SR tags, but
+// walking its P lines assigns every segment it visits an interval, which is the
+// same information in a different encoding. scripts/build_pggb_tabix.sh does
+// that walk offline and emits the exact files the adapter already reads
+// (verified against the independent `odgi extract` route: at the local_subgraph
+// window every interval matches). So region query, the subgraph cut, both
+// anchored layouts, the launch menus and hover sync all work here with nothing
+// added to the app.
+//
+// A base-level graph runs ~17 bp per segment, so the window that fits is small:
+// this 3 kb one cuts ~340 segments, where the same 3 kb of the SV-resolution
+// minigraph graph is a handful.
+const PGGB_SEGMENTS_TRACK = 'ecoli_pggb_segments'
+const PGGB_SEGMENTS_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: PGGB_SEGMENTS_TRACK,
+  name: 'pggb graph segments (whole graph, by locus)',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'RgfaTabixAdapter',
+    uri: `${DATA}/ecoli_pggb`,
+  },
+}
+
+// The colanic-acid cluster, the same locus pangenome/pangenome_variants reads
+// through the graph's VCF, so the two figures are one place seen two ways. It
+// is where the graph is busiest in this stretch: `tabix ecoli_pggb.links.bed.gz
+// 'K12#1#chr:2120000-2123000'` returns 175 link endpoints on a non-K12 stable
+// sequence, against 24 at the ycbF/pyrD window the local_subgraph figure uses.
+const PGGB_LOCUS = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 2121000,
+  end: 2122000,
+}
+const PGGB_LOCUS_WINDOW = 'chr:2,121,000-2,122,000'
 
 // The same graph read per strain instead of per segment: one row per strain,
 // each block that strain's allele at one bubble, from the BED
@@ -168,7 +214,8 @@ const PATHS_WINDOW_WIDE = 'chr:1,000,000-1,200,000'
 // ~172px and left this pointing below the pane.
 const HOVERED_ALLELE = { x: 295, y: 555 }
 
-// HG01433.2's leftmost allele on the HPRC sample-rows graph, whose context menu
+// One of HG01433.2's alleles, mid-window so its highlight lands inside the
+// linear view's frame rather than on its edge on the HPRC sample-rows graph, whose context menu
 // pangenome/hprc_node_menu is about. Measured on the spec's own capture rather
 // than on a model probe at a different viewport, which is the trap here: the graph auto-fits as its layout and canvas
 // dimensions settle, so a coordinate taken from a finished PNG can point
@@ -176,7 +223,7 @@ const HOVERED_ALLELE = { x: 295, y: 555 }
 // while writing this spec — hence the settle delay before the right-click).
 // It restales on any layout change above the graph: the segments lane losing
 // its label rows lifted every row by about that much.
-const HPRC_ALLELE = { x: 185, y: 622 }
+const HPRC_ALLELE = { x: 305, y: 622 }
 
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
@@ -314,7 +361,123 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
 // keep only deletions. Same filter the hprc2 matrix figures use.
 const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
 
+// The session three figures share: the genes and the graph's own segments over
+// the bubble window, with the subgraph launched from that same track in sample
+// rows. Written once because two of the three assert against coordinates
+// measured in this exact layout — a stray difference between the copies would
+// move the hover target without failing anything.
+function ecoliSampleRowsSession() {
+  return sessionSpec(CONFIG, {
+    sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'K12',
+        loc: PATHS_WINDOW,
+        tracks: [
+          { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+          {
+            trackId: ECOLI_SEGMENTS_TRACK,
+            type: 'LinearBasicDisplay',
+            height: 80,
+          },
+        ],
+      },
+      {
+        type: 'GraphGenomeView',
+        loadedTrackId: ECOLI_SEGMENTS_TRACK,
+        loadedRegion: {
+          refName: 'chr',
+          assemblyName: 'K12',
+          start: 1088000,
+          end: 1104000,
+        },
+        layoutMode: 'samplerows',
+        colorScheme: 'stable-rank',
+      },
+    ],
+  })
+}
+
+// The pggb pair: same locus, same colors, one in each anchored layout.
+function pggbLocusSession(layoutMode?: 'samplerows') {
+  return sessionSpec(CONFIG, {
+    sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_SEGMENTS_SESSION_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'K12',
+        loc: PGGB_LOCUS_WINDOW,
+        tracks: [
+          { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+          {
+            trackId: PGGB_SEGMENTS_TRACK,
+            type: 'LinearBasicDisplay',
+            // labels off: at this density they are hundreds of overlapping
+            // integer ids, and the lane is here for the color sweep
+            showLabels: 'off',
+            height: 50,
+            color: referencePositionColor(PGGB_LOCUS),
+          },
+        ],
+      },
+      {
+        type: 'GraphGenomeView',
+        loadedTrackId: PGGB_SEGMENTS_TRACK,
+        loadedRegion: PGGB_LOCUS,
+        ...(layoutMode ? { layoutMode } : {}),
+        colorScheme: 'reference-position',
+      },
+    ],
+  })
+}
+
 export const graphSpecs: ScreenshotSpec[] = [
+  // A pggb graph opened at a locus, with no window cut beforehand. Until this
+  // existed the pggb tutorial had to send the reader to `odgi extract` for
+  // every look, which is why its one graph figure (local_subgraph) is a
+  // hand-extracted 561 bp file: base-level graphs state their coordinates in
+  // path order, and nothing indexed that. Now the same walk runs offline once
+  // (scripts/build_pggb_tabix.sh) and the whole graph is queryable.
+  //
+  // Both panels in the reference-position ramp, which does more here than on a
+  // minigraph graph: at ~17 bp per segment the backbone is hundreds of tiny
+  // blocks rather than a few long ones, and a solid left-to-right hue sweep is
+  // what says they are consecutive rather than scattered.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_locus_graph',
+    url: pggbLocusSession(),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    settleMs: 5000,
+    viewportWidth: 1000,
+    // the two lanes plus the graph pane, which sizes itself to two rows here
+    viewportHeight: 634,
+    hideTooltip: true,
+  },
+  // The same locus per strain, which is where a path GFA says something an rGFA
+  // cannot. Sample rows put each segment on the row of the assembly its stable
+  // name gives it; on an rGFA that name is whichever assembly minigraph
+  // *contributed* it first (SR is build order), so both tutorials have to warn
+  // that a row is first-seen attribution. Here the name comes from a path that
+  // actually walks the segment, so a row is carriage.
+  //
+  // Same window and same colors as the figure above, so the pair reads as one
+  // graph seen two ways rather than as two loci.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_locus_sample_rows',
+    url: pggbLocusSession('samplerows'),
+    readySelector:
+      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
+    readyTimeout: 120000,
+    settleMs: 5000,
+    viewportWidth: 1000,
+    // the two lanes plus the graph's five rows, and nothing under them
+    viewportHeight: 733,
+    hideTooltip: true,
+  },
   // The pggb subgraph, over the linear view of the same locus, in the SAME colors
   // (reviewer: "it would be great if we could get coloring on the linear genome
   // view that matches up to the graphgenomeview viewer").
@@ -456,26 +619,15 @@ export const graphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/rgfa_strain_paths',
     url: sessionSpec(CONFIG, {
-      sessionTracks: [
-        K12_GENES_SESSION_TRACK,
-        ECOLI_SEGMENTS_SESSION_TRACK,
-        ECOLI_PATHS_SESSION_TRACK,
-      ],
+      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK, ECOLI_PATHS_SESSION_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: PATHS_WINDOW_WIDE,
           tracks: [
-            {
-              trackId: 'K12_genes',
-              type: 'LinearBasicDisplay',
-              // 200 kb of K12 is ~190 genes, which the default glyph mode
-              // stacks several rows deep
-              displayMode: 'compact',
-              showLabels: 'off',
-              height: 40,
-            },
+            // No gene lane: at 200 kb it is ~190 unlabelled boxes, a gold band
+            // that says nothing this figure is about
             {
               trackId: ECOLI_SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',
@@ -500,8 +652,8 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    // the three pinned tracks plus both headers, and nothing under them
-    viewportHeight: 530,
+    // the two pinned tracks plus both headers, and nothing under them
+    viewportHeight: 465,
     hideTooltip: true,
   },
   // The same window in the force layout, the Bandage picture the graph is really
@@ -512,7 +664,8 @@ export const graphSpecs: ScreenshotSpec[] = [
   // the node budget 20,000; this window cuts 108 nodes, 0.5% of it. A wider one
   // makes this figure worse, measured rather than guessed — the plugin's own
   // Bandage WASM run offline over the real subgraphs (agent-docs
-  // GENERAL_GFA_HANDOFF.md has the harness) gives, fitted to this pane:
+  // agent-docs/reference/PANGENOME_GRAPHS.md records them) gives, fitted to this
+  // pane:
   //
   //   60 kb    108 nodes   mean node 62-77 px   ~2% of the canvas inked
   //   1 Mb     449 nodes   mean node 15 px      ~2%
@@ -579,7 +732,6 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     allowUnsettled: true,
     settleMs: 8000,
-    diffThreshold: 0.1,
     viewportWidth: 1000,
     // 1345 with the allele lane still on it
     viewportHeight: 1225,
@@ -718,7 +870,7 @@ export const graphSpecs: ScreenshotSpec[] = [
           },
           { type: 'waitForSelector', selector: TOOLBAR_READY },
           { type: 'click', text: 'Uniform' },
-          { type: 'click', text: 'Stable rank (rGFA)' },
+          { type: 'click', text: 'Stable rank' },
           { type: 'delay', ms: 2000 },
           // close the linear view it was launched from, so this frame is the
           // subgraph rather than mostly its source. The window it cut stays
@@ -908,16 +1060,11 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     allowUnsettled: true,
     settleMs: 8000,
-    // FMMM drifts a few percent between runs, so only a real change rewrites the
-    // committed PNG. Note the trade this makes on a sparse figure: a graph canvas
-    // is mostly white with thin strokes, so switching this spec from the anchored
-    // layout to this one moved only 2.7% of pixels and was *kept* rather than
-    // written. A real change to a force-layout figure needs `--force`; the
-    // threshold cannot tell 3% of jitter from 3% of different-layout.
-    diffThreshold: 0.1,
     viewportWidth: 1000,
-    // 1215 before the gene lane went compact
-    viewportHeight: 1155,
+    // 1215 before the gene lane went compact, 1155 before the layout was
+    // seeded: the pane is sized to the drawing, so a different arrangement of
+    // the same 30 nodes is a different pane height
+    viewportHeight: 1166,
     hideTooltip: true,
   },
 
@@ -1003,36 +1150,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/rgfa_sample_rows',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PATHS_WINDOW,
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-            {
-              trackId: ECOLI_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 80,
-            },
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: ECOLI_SEGMENTS_TRACK,
-          loadedRegion: {
-            refName: 'chr',
-            assemblyName: 'K12',
-            start: 1088000,
-            end: 1104000,
-          },
-          layoutMode: 'samplerows',
-          colorScheme: 'stable-rank',
-        },
-      ],
-    }),
+    url: ecoliSampleRowsSession(),
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     settleMs: 4000,
@@ -1059,36 +1177,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/rgfa_hover_correspondence',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PATHS_WINDOW,
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-            {
-              trackId: ECOLI_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 80,
-            },
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: ECOLI_SEGMENTS_TRACK,
-          loadedRegion: {
-            refName: 'chr',
-            assemblyName: 'K12',
-            start: 1088000,
-            end: 1104000,
-          },
-          layoutMode: 'samplerows',
-          colorScheme: 'stable-rank',
-        },
-      ],
-    }),
+    url: ecoliSampleRowsSession(),
     // Readiness is the layout having drawn; the highlight cannot exist yet,
     // because it is the hover below that creates it. Asserting it as an action
     // instead is what makes a missed hover fail the spec rather than quietly
@@ -1136,36 +1225,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/rgfa_hover_from_linear',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PATHS_WINDOW,
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-            {
-              trackId: ECOLI_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 80,
-            },
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: ECOLI_SEGMENTS_TRACK,
-          loadedRegion: {
-            refName: 'chr',
-            assemblyName: 'K12',
-            start: 1088000,
-            end: 1104000,
-          },
-          layoutMode: 'samplerows',
-          colorScheme: 'stable-rank',
-        },
-      ],
-    }),
+    url: ecoliSampleRowsSession(),
     readySelector: '[data-testid="graph-row-label"]',
     readyTimeout: 90000,
     viewportWidth: 1000,
@@ -1252,19 +1312,27 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    viewportHeight: 900,
+    viewportHeight: 830,
     actions: [
       // the auto-fit has to have finished before a coordinate means anything
       { type: 'delay', ms: 2000 },
-      { type: 'rightclick', from: HPRC_ALLELE },
-      { type: 'waitForText', text: 'Node details' },
-      { type: 'delay', ms: 500 },
     ],
     stages: [
+      // A `stages` capture stacks the stage frames and nothing else, so the
+      // right-click lives here rather than in `actions` above — which is setup
+      // for stage one, not a frame of its own.
+      {
+        actions: [
+          { type: 'rightclick', from: HPRC_ALLELE },
+          { type: 'waitForText', text: 'Node details' },
+          { type: 'delay', ms: 500 },
+        ],
+      },
       {
         // the linear view alone, so the band is the subject rather than a strip
-        // above a graph pane that no longer has anything to say
-        viewportHeight: 330,
+        // above a graph pane that no longer has anything to say. Deep enough to
+        // hold the whole segments lane, since the band crosses both lanes
+        viewportHeight: 405,
         actions: [
           { type: 'click', text: 'Highlight this node' },
           { type: 'delay', ms: 1500 },

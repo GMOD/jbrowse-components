@@ -40,11 +40,20 @@ The plugin is a native ES module, loaded via `esmUrl`. Two things it depends on:
 
 The entry loads its code-split chunks (including the Bandage WASM layout engine)
 relative to its own url via `import.meta.url`, so the whole `dist/` tree must be
-uploaded together, preserving the `chunks/` subdirectory:
+uploaded together, preserving the `chunks/` subdirectory. Publish with the
+plugin's own `pnpm betabuild`, never by hand: it gates on lint, typecheck and
+tests, sets Cache-Control, invalidates the edge, and then verifies what the CDN
+actually serves.
 
-```
-aws s3 cp --recursive dist/ s3://jbrowse.org/demos/graphgenomeviewer/
-```
+**These three configs pin `esmUrl` to a content-addressed prefix**
+(`demos/graphgenomeviewer/<hash>/`), which every betabuild writes alongside the
+unversioned entry point and prints at the end. The plugin lives in another repo,
+so an unpinned url means a deploy changes every graph figure with no commit here
+to attribute it to — that is how a renamed Color dropdown label broke
+`pangenome/rgfa_segment_neighbourhood`, whose spec clicked the old text, and the
+failure read as a spec bug. Bumping the pin is a one-line reviewable diff;
+regenerate the graph figures in the same commit.
 
-Re-upload after rebuilding the plugin; once it is published to npm, point
-`esmUrl` at a pinned version there instead.
+The unversioned url stays current and is what the published figures' live links
+point at. Once the plugin is on npm, point `esmUrl` at a pinned version there
+instead.
