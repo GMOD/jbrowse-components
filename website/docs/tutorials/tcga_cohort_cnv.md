@@ -279,8 +279,8 @@ splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
   display's own menus and options
 - [Quantitative tracks](/docs/user_guides/quantitative_track), for the
   recurrence track's scale and color controls
-- [QTL visualization example](/docs/tutorials/bxd_qtl), the same multi-row display for
-  strain genotypes
+- [QTL visualization example](/docs/tutorials/bxd_qtl), the same multi-row
+  display for strain genotypes
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm), the same display across
   cell types
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab), single-tumor

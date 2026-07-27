@@ -9,8 +9,8 @@ import {
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
-import type { LegendItem } from '@jbrowse/core/ui'
 import type { ColorBy, ColorSchemeType } from './types.ts'
+import type { LegendItem } from '@jbrowse/core/ui'
 
 function legendFor(
   colorBy: ColorBy,

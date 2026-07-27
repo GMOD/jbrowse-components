@@ -387,7 +387,7 @@ const MHC_CALLSET_LAYOUT = [
 
 // The linear half of the graph view's 'Reference position' color scheme, which
 // is the answer to "if the nodes were rainbow colored in exact same way in
-// lineargenomeview and bandage graph it might help show correspondance".
+// lineargenomeview and bandage graph it might help show correspondence".
 //
 // That scheme is a hue ramp over the region the subgraph was cut from: hue 0
 // (red) at its start to 300 (magenta) at its end, at saturation 70% and
@@ -853,7 +853,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   //
   // Reference-position colors here too, for a reason this figure has and its
   // force sibling does not: sharing an axis is not the same as being seen to
-  // share one. Review: "just hard to figure out correspondance between linear
+  // share one. Review: "just hard to figure out correspondence between linear
   // and graph". A reader can now check the claim without measuring — the
   // segment under the x they are looking at and the node below it are the same
   // color, and the ramp runs the same way in both panels.

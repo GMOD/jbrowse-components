@@ -230,8 +230,9 @@ Both directions are pictured in the
 Hovering says where a node is while the cursor is on it. **Right-click a node**
 for the two answers that outlast the pointer: **Highlight in hg38** marks its
 reference interval in the linear view beside the graph and leaves it there, and
-**Open in hg38** scrolls that view to it rather than opening another pane. The graph's own **Launch view** menu does the same for the
-whole window it was cut from.
+**Open in hg38** scrolls that view to it rather than opening another pane. The
+graph's own **Launch view** menu does the same for the whole window it was cut
+from.
 
 What you are offered depends on which segment you clicked, because rGFA states
 each segment's source sequence (`SN`) and offset (`SO`):

@@ -153,8 +153,8 @@ Each of these builds the input file and the track config end to end:
   one merged BED, colored by `itemRgb`
 - [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv) - a thousand
   tumors, colored by a jexl expression over a numeric column
-- [QTL visualization example](/docs/tutorials/bxd_qtl) - strain genotype painting beside a
-  QTL Manhattan plot, sorted at the peak
+- [QTL visualization example](/docs/tutorials/bxd_qtl) - strain genotype
+  painting beside a QTL Manhattan plot, sorted at the peak
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - IBD blocks and local
   ancestry per haplotype
 - [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc) - per-haplotype ancestry

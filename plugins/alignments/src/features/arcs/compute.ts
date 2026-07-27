@@ -595,7 +595,15 @@ function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
   const p1Ref = e1.refName
   const p2Ref = e2.refName
   return isSplit
-    ? { p1Ref, p1Bp: bp1, p1Strand: s1, p2Ref, p2Bp: bp2, p2Strand: s2, isSplit }
+    ? {
+        p1Ref,
+        p1Bp: bp1,
+        p1Strand: s1,
+        p2Ref,
+        p2Bp: bp2,
+        p2Strand: s2,
+        isSplit,
+      }
     : {
         p1Ref,
         p1Bp: pairOuterBp(e1),

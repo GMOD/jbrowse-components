@@ -60,7 +60,9 @@ const sections = gallerySections
       const file = itemImg(i)
       // Sized from the thumbnail, which is what the card paints; the full-size
       // original is only ever handed to the lightbox.
-      return file ? [{ item: i, file, thumb: thumbOf(file), size: thumbSize(file) }] : []
+      return file
+        ? [{ item: i, file, thumb: thumbOf(file), size: thumbSize(file) }]
+        : []
     }),
     links: s.items.filter(i => !itemImg(i)),
   }))

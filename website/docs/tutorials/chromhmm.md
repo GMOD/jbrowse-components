@@ -193,8 +193,8 @@ grouping you want depends on the locus rather than on a fixed publication order.
 
 - [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv), the same display
   colored from a numeric column instead of `itemRgb`
-- [QTL visualization example](/docs/tutorials/bxd_qtl), the same display for strain
-  genotypes, alongside a QTL scan
+- [QTL visualization example](/docs/tutorials/bxd_qtl), the same display for
+  strain genotypes, alongside a QTL scan
 - [Phased trio analysis](/docs/tutorials/analyze_trio), the same display for
   inheritance painting
 - [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk)
