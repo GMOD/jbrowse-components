@@ -393,4 +393,33 @@ describe('getArcLegendItems', () => {
       ).map(i => i.label),
     ).toEqual(['Forward strand', 'Reverse strand'])
   })
+
+  // The overlapping case, which is the default one: reads by orientation under
+  // insert-size-and-orientation arcs share every orientation bucket. Those are
+  // the same category in the same palette color, so keying them twice asks the
+  // reader to look twice to learn one thing.
+  test('drops buckets the read key already carries', () => {
+    expect(
+      getArcLegendItems(
+        new Set<ReadColorCategory>([
+          'pairLL',
+          'pairRR',
+          'longInsert',
+          'interchrom',
+        ]),
+        makeTestPalette(),
+        new Set<ReadColorCategory>(['pairLL', 'pairRR', 'interchrom']),
+      ).map(i => i.label),
+    ).toEqual(['Long insert'])
+  })
+
+  test('is empty when the read key already carries every bucket it draws', () => {
+    expect(
+      getArcLegendItems(
+        new Set<ReadColorCategory>(['pairLL', 'pairRR']),
+        makeTestPalette(),
+        new Set<ReadColorCategory>(['pairLL', 'pairRR', 'pairLR']),
+      ),
+    ).toEqual([])
+  })
 })

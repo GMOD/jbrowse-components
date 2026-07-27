@@ -687,8 +687,7 @@ export default function stateModelFactory(
            * one. `undefined` when not hovering coverage.
            */
           hoverCoverageBand: undefined as
-            | { topOffset: number; coverageHeight: number }
-            | undefined,
+            { topOffset: number; coverageHeight: number } | undefined,
         }
       })
       // Named getters for frequently-tested conditions so the inline boolean
@@ -1243,14 +1242,21 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Key for the paired-end arc / read-cloud colors. Empty when no overlay
-         * is drawn, or when it shares the reads' scheme and merged into their
-         * key — either way its legend section drops out of the box.
+         * Key for the paired-end arc / read-cloud colors, carrying only what the
+         * read key above does not already say: the two vocabularies overlap
+         * whenever both classify pairs, and a bucket they share is the same
+         * swatch in the same color under both headings. Empty when no overlay is
+         * drawn, when it shares the reads' scheme outright, or when every bucket
+         * it draws is already keyed — the section then drops out of the box.
          */
         arcLegendItems() {
           return this.arcColorsMatchReads
             ? []
-            : getArcLegendItems(this.arcLegendCategories, this.colorPalette)
+            : getArcLegendItems(
+                this.arcLegendCategories,
+                this.colorPalette,
+                this.colorLegendCategories,
+              )
         },
 
         /**

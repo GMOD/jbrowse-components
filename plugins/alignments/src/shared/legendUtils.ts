@@ -232,12 +232,25 @@ function crossCuttingBuckets(
  * read key instead (`arcColorsMatchReads`), since the two lists would be the
  * same swatches under two headings. No per-scheme rewording either way: an arc
  * never produces a strand bucket.
+ *
+ * Two vocabularies can also *partly* overlap, which is the common case: reads
+ * by orientation under the default insert-size-and-orientation arcs share every
+ * orientation bucket and differ only in the insert-size ones. A category's
+ * swatch is a pure function of the category and the palette, so a shared bucket
+ * is the identical color under both headings — the reader is asked to look
+ * twice to learn one thing. `keyedByReads` drops those, leaving this section to
+ * say only what the read key does not.
  */
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
+  keyedByReads: ReadonlySet<ReadColorCategory> = new Set(),
 ): LegendItem[] {
-  return bucketItems(presentCategories, palette, {})
+  return bucketItems(
+    new Set([...presentCategories].filter(c => !keyedByReads.has(c))),
+    palette,
+    {},
+  )
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and
