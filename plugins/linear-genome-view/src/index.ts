@@ -75,7 +75,6 @@ export type {
   LayoutRecord,
   LegendItem,
   LegendSection,
-  LinearDisplayModel,
 } from './BaseLinearDisplay/index.ts'
 
 export {
@@ -94,7 +93,6 @@ export {
   HeightModeMixin,
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
-  RegionTooLargeMixin,
   StaleViewportRescaleMixin,
   TooLargeMessage,
   TrackHeightIndicator,
@@ -104,11 +102,9 @@ export {
   callEachRegion,
   computeRenderTransform,
   computeTriangleYScalar,
-  drawCanvasImageData,
   fetchAllRegions,
   fetchEachRegion,
   getHeightModeOptions,
-  getTrackSizingMenuItem,
   heightModeMenuItems,
   installGlobalFetchAutorun,
   installGrowExitBake,
@@ -117,13 +113,8 @@ export {
 } from './BaseLinearDisplay/index.ts'
 export type {
   FetchContext,
-  GlobalDataDisplayMixinType,
   HeightMode,
   HeightModeMenuModel,
-  MultiRegionDisplayMixinType,
-  RenderTransform,
-  RenderTransformInputs,
-  StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
 // re-exported so LGV plugins that host their own (non-GPU) chrome can share the
 // single terminal-state precedence instead of re-encoding it (arc's SVG chrome)
@@ -133,7 +124,6 @@ export type {
   DisplayPhaseInputs,
 } from '@jbrowse/render-core/displayPhase'
 export {
-  AUTO_FORCE_LOAD_BP,
   HighlightBand,
   HighlightChip,
   type LinearGenomeViewModel,
@@ -141,14 +131,10 @@ export {
   OverviewHighlightBand,
   SVGHighlightBand,
   SearchBox,
-  type SyncableViewAction,
   installLinkedViewSync,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
-export {
-  MultiLevelRubberband,
-  type MultiLevelRubberbandModel,
-} from './MultiLevelRubberband/index.ts'
+export { MultiLevelRubberband } from './MultiLevelRubberband/index.ts'
 export { fetchResults } from './searchUtils.ts'
 export { normalizeTrackInit } from './LinearGenomeView/normalizeTrackInit.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
@@ -157,14 +143,10 @@ export type {
   ExportSvgOptions,
   HighlightType,
   InitState,
-  NavLocation,
   TrackInit,
   TrackLabelMode,
-  VolatileGuide,
 } from './LinearGenomeView/types.ts'
 export {
-  SVGGridlines,
-  SVGRuler,
   SVGTracks,
   SVGView,
   renderToSvg,

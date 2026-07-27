@@ -212,9 +212,9 @@ Two things fall out of that for free:
   rather than re-approving each locus. The declarative equivalent is the
   `forceLoad` config slot.
 
-Regions under 20 kb (`AUTO_FORCE_LOAD_BP`) never gate, and adapters that
-summarize at screen resolution (BigWig, HiC, sequence) report `alwaysRender` and
-are exempt.
+Regions under 20 kb never gate, and adapters that summarize at screen resolution
+(BigWig, HiC, sequence) are exempt for free: they report no byte estimate, and
+no estimate means no byte axis in the verdict.
 
 A display that fetches outside `fetchRegions` calls the same gate itself:
 

@@ -15,7 +15,6 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  AUTO_FORCE_LOAD_BP,
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -1308,13 +1307,17 @@ export default function stateModelFactory(
          * configured and the view is zoomed out past the force-load threshold —
          * exactly where the full alignment fetch would be blocked by the byte
          * gate. Tracks without a summary never enter this path.
+         *
+         * `aboveForceLoadFloor` is the gate's own comparison against that
+         * threshold (`RegionTooLargeMixin`), read rather than restated so the swap
+         * and the gate can't end up disagreeing about where the floor is. It
+         * deliberately excludes the opt-in terms, which is what keeps this from
+         * being a cycle — `byteGateEnabled` below is false while we summarize.
          */
         get showSummary() {
-          const view = self.lgv
           return (
             !!readConfObject(self.adapterConfig, 'summaryAdapter') &&
-            view.initialized &&
-            view.visibleBp >= AUTO_FORCE_LOAD_BP
+            self.aboveForceLoadFloor
           )
         },
       }))

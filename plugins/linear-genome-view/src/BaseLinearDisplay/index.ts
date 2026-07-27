@@ -1,9 +1,5 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema.ts'
-export type {
-  ExportSvgDisplayOptions,
-  LayoutRecord,
-  LinearDisplayModel,
-} from './types.ts'
+export type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 
 export {
   BlockMsg,
@@ -28,16 +24,11 @@ export {
   getHeightModeOptions,
 } from './models/heightMode.ts'
 export type { HeightMode } from './models/heightMode.ts'
-export {
-  getTrackSizingMenuItem,
-  heightModeMenuItems,
-} from './models/heightModeMenu.ts'
+export { heightModeMenuItems } from './models/heightModeMenu.ts'
 export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
 
-export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.ts'
 export {
   type FetchContext,
-  type MultiRegionDisplayMixinType,
   autorunOnReadyView,
   callEachRegion,
   default as MultiRegionDisplayMixin,
@@ -46,7 +37,6 @@ export {
   onDisplayedRegionsChange,
 } from './models/MultiRegionDisplayMixin.ts'
 export {
-  type GlobalDataDisplayMixinType,
   GlobalFetchMixin,
   type GlobalFetchMixinType,
   default as GlobalDataDisplayMixin,
@@ -56,18 +46,12 @@ export {
   type FetchMixinType,
   default as FetchMixin,
 } from './models/FetchMixin.ts'
+export { default as StaleViewportRescaleMixin } from './models/StaleViewportRescaleMixin.ts'
 export {
-  type StaleViewportRescaleMixinType,
-  default as StaleViewportRescaleMixin,
-} from './models/StaleViewportRescaleMixin.ts'
-export {
-  type RenderTransform,
-  type RenderTransformInputs,
   computeRenderTransform,
   computeTriangleYScalar,
   viewportMatchesLastDrawn,
 } from './models/renderTransform.ts'
-export { drawCanvasImageData } from './util.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'

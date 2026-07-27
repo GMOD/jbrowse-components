@@ -100,6 +100,7 @@ function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
     initialized: true,
     regions: [
       { refName: 'ctgA', start: 0, end: 10_000_000, assemblyName: 'volvox' },
+      { refName: 'ctgB', start: 0, end: 10_000_000, assemblyName: 'volvox' },
     ],
     getCanonicalRefName: (refName: string) => refName,
     configuration: { sequence: undefined },
@@ -135,7 +136,7 @@ function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
       queueDialog() {},
     }))
 
-  function createDisplay() {
+  function createDisplay(displayedRegions = asm.regions.slice(0, 1)) {
     const session = Session.create({ configuration: {} }, { pluginManager })
     const view = session.setView(
       LinearGenomeModel.create({
@@ -150,9 +151,7 @@ function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
       }),
     )
     view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgA' },
-    ])
+    view.setDisplayedRegions(displayedRegions)
     const display = view.tracks[0]!.displays[0]!
     return { session, view, display, mockRpcCall }
   }
@@ -320,6 +319,77 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     display.clearGateMeasurements()
     expect(display.forceLoadTrack).toBe(true)
     expect(display.regionTooLarge).toBe(false)
+  })
+})
+
+// The in-fetch (canvas) path commits ONE estimate for a region set: the
+// per-region byte **max**, anchored to the **total** visibleBp across the visible
+// regions. Those are different denominators, and this test pins the consequence
+// rather than fixing it, because both routes out are worse:
+//
+//   - Anchoring to the fetched region's own span would understate the estimate at
+//     capture time — canvas fetches `bufferedVisibleRegions` (a half-screen of
+//     buffer each side), so the bytes cover roughly twice the span on screen. The
+//     banner would clear a region the worker's per-region gate still rejects,
+//     which is the wedge the anchoring rules exist to prevent.
+//   - Keeping a per-region rate would give canvas a different estimate semantic
+//     from the pre-flight path, which genuinely measures a region *set* in one
+//     adapter call and has no per-region number to keep.
+//
+// What the mismatch costs: in a multi-region (whole-genome) view, zooming into one
+// chromosome shrinks the total span faster than that chromosome's own bytes
+// shrink, so the banner releases early. The download stays protected — the worker
+// re-gates each region on the next fetch and the banner comes back — so the
+// symptom is one extra round trip and a banner flicker, not an unguarded fetch.
+describe('multi-region rescale denominator (accepted behavior)', () => {
+  it('releases early when the visible region set shrinks, and the worker budget still gates', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgA' },
+      { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgB' },
+    ])
+
+    // whole-genome view: both 10 Mb regions on screen, 20 Mb total
+    view.moveTo({ index: 0, offset: 0 }, { index: 1, offset: 10_000_000 })
+    expect(view.visibleBp).toBe(20_000_000)
+
+    // ctgA's fetch reports 4 Mb of index, ctgB's a tenth of that. The gate keeps
+    // the max (each region is gated against the same per-region budget) with the
+    // total span as its anchor.
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000_000 },
+          result: { bytes: 4_000_000 },
+        },
+        {
+          displayedRegionIndex: 1,
+          region: { start: 0, end: 10_000_000 },
+          result: { bytes: 400_000 },
+        },
+      ],
+      view.visibleBp,
+    )
+    expect(display.byteEstimate).toEqual({
+      bytes: 4_000_000,
+      measuredSpanBp: 20_000_000,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    // zoom into 4 Mb of ctgA alone: the total span fell 5x, so the estimate
+    // rescales to 0.8 Mb and clears the 1 Mb budget...
+    view.moveTo({ index: 0, offset: 0 }, { index: 0, offset: 4_000_000 })
+    expect(view.visibleBp).toBe(4_000_000)
+    expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(800_000)
+    expect(display.regionTooLarge).toBe(false)
+
+    // ...where ctgA's own span fell only 2.5x: a per-region denominator would
+    // read 1.6 Mb and keep the banner up. That is the accepted gap. What still
+    // holds is the worker budget the next fetch enforces per region, so the
+    // release costs a round trip rather than an unguarded download.
+    expect(display.resolvedByteLimit()).toBe(1_000_000)
   })
 })
 

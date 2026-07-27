@@ -25,7 +25,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // and a minimal session/assemblyManager so the real state model's derived
 // regionTooLarge can be exercised across zoom/pan/navigation without a worker.
 // Modeled on LD's derivedRegionTooLarge.test.ts + maf's emptyRegionLoading.test.
-function createTestEnvironment() {
+function createTestEnvironment(opts?: { summaryAdapter?: unknown }) {
   console.warn = jest.fn()
   console.error = jest.fn()
   // MAF's configSchema reads baseLinearDisplayConfigSchema off the installed
@@ -38,7 +38,7 @@ function createTestEnvironment() {
         name: 'MafTabixAdapter',
         configSchema: ConfigurationSchema(
           'MafTabixAdapter',
-          {},
+          { summaryAdapter: { type: 'frozen', defaultValue: null } },
           { explicitlyTyped: true },
         ),
         getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
@@ -91,7 +91,10 @@ function createTestEnvironment() {
       type: 'MafTrack',
       trackId: 'test_track',
       assemblyNames: ['volvox'],
-      adapter: { type: 'MafTabixAdapter' },
+      adapter: {
+        type: 'MafTabixAdapter',
+        summaryAdapter: opts?.summaryAdapter ?? null,
+      },
     },
     { pluginManager },
   )
@@ -135,7 +138,7 @@ function createTestEnvironment() {
       queueDialog() {},
     }))
 
-  function createDisplay() {
+  function createDisplay(displayOpts?: { skipWidth?: boolean }) {
     const session = Session.create({ configuration: {} }, { pluginManager })
     const view = session.setView(
       LinearGenomeModel.create({
@@ -149,10 +152,15 @@ function createTestEnvironment() {
         ],
       }),
     )
-    view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgA' },
-    ])
+    // skipWidth leaves the view unmeasured (`initialized` false), which is the
+    // state every gate getter has to survive without throwing on `view.width`.
+    // setDisplayedRegions zooms, which reads the width, so it waits for one too.
+    if (!displayOpts?.skipWidth) {
+      view.setWidth(800)
+      view.setDisplayedRegions([
+        { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgA' },
+      ])
+    }
     const display = view.tracks[0]!.displays[0]!
     return { session, view, display, mockRpcCall }
   }
@@ -172,6 +180,49 @@ test('the reactive method hooks are views, not actions', () => {
   const { actions } = getMembers(display)
   expect(actions).not.toContain('isCacheValid')
   expect(actions).not.toContain('rpcProps')
+})
+
+// The summary swap and the gate ask the same "how zoomed out am I" question, so
+// `showSummary` reads the gate's own `aboveForceLoadFloor` rather than restating
+// the threshold. These pin both directions of that read, and the mutual
+// exclusion it creates: `byteGateEnabled` is `!showSummary`, so a getter chain
+// that let the floor read the opt-in would be a cycle.
+describe('MAF summary swap vs the force-load floor', () => {
+  it('never summarizes without a summary adapter, however wide the view', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
+    expect(display.aboveForceLoadFloor).toBe(true)
+    expect(display.showSummary).toBe(false)
+    // so the detail path is what gates
+    expect(display.byteGateEnabled).toBe(true)
+  })
+
+  it('summarizes above the floor and swaps back to the gated detail path below it', () => {
+    const { display, view } = createTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    view.zoomTo(100)
+    expect(display.showSummary).toBe(true)
+    // the cheap zoom-reduced read must never be blocked by the byte gate
+    expect(display.byteGateEnabled).toBe(false)
+    expect(display.gateActive).toBe(false)
+
+    view.zoomTo(20)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.aboveForceLoadFloor).toBe(false)
+    expect(display.showSummary).toBe(false)
+    expect(display.byteGateEnabled).toBe(true)
+  })
+
+  it('summarizes nothing before the view is measured', () => {
+    const { display } = createTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay(/* unmeasured */ { skipWidth: true })
+    expect(display.aboveForceLoadFloor).toBe(false)
+    expect(display.showSummary).toBe(false)
+  })
 })
 
 describe('MAF derived regionTooLarge', () => {

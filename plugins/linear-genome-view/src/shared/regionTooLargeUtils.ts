@@ -1,3 +1,13 @@
+/**
+ * The span below which nothing gates: at this zoom a fetch is small enough that
+ * a banner asking permission costs the user more than the download does. Lives
+ * with the gate rather than on the view because the view never reads it — it is
+ * a property of the gate, and `aboveForceLoadFloor` on `RegionTooLargeMixin` is
+ * the only comparison against it (MAF's summary swap reads that getter, so the
+ * threshold has one spelling).
+ */
+export const AUTO_FORCE_LOAD_BP = 20_000
+
 // Round to 3 significant digits, dropping trailing zeros ("1.00" -> "1").
 function round3(n: number) {
   return Number.parseFloat(n.toPrecision(3))

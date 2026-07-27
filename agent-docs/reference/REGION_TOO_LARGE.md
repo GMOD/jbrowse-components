@@ -68,6 +68,16 @@ survives regardless of mixin composition order" pin in
 `plugins/canvas/src/LinearBasicDisplay/fetchAutorun.test.ts` and
 `plugins/canvas/src/LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
+Everything here is plugin-internal: the mixin, the floor and the verdict helpers
+are not exported from `@jbrowse/plugin-linear-genome-view`, and
+[ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)
+is why they live in a plugin rather than a foundation package.
+
+The pre-flight RPC takes no stop token: `getRegionByteSize` bottoms out in a
+tabix index lookup (`bytesForRegions`), so there is nothing meaningful to cancel,
+and the unused `stopToken` / `headers` / `statusCallback` fields on
+`CoreGetRegionByteEstimate`'s arg type are RPC-base boilerplate.
+
 For the wider picture and the five fetch autoruns that consult the verdict, see
 [ARCHITECTURE.md § Data fetching pipeline](../ARCHITECTURE.md#data-fetching-pipeline).
 `DisplayChrome` turns this one signal into the banner UI; see
@@ -126,17 +136,22 @@ per-locus re-prompting it exists to avoid. See § Force-load.
 One smaller wire: `onRegionTooLarge()` fires on the false→true transition
 (alignments overrides it to clear its hover).
 
-**The `AUTO_FORCE_LOAD_BP` floor lives in `gateActive`, and only there.** The
-verdict, the pre-flight (no estimate RPC below it) and the two worker budgets
-(`resolvedByteLimit()` on this mixin, `maxFeatureDensity` on the canvas gate,
-which go undefined together) all read that one getter. It used to be spelled out separately in `evaluateRegionTooLarge`,
-`checkByteEstimate` and a canvas-local `gateInactive` — three layers that had to
-agree by hand. `evaluateRegionTooLarge` now only compares (bytes vs limit, then
-density), and knows nothing about the floor or force-load.
+**The `AUTO_FORCE_LOAD_BP` comparison lives in `aboveForceLoadFloor`, and only
+there.** `gateActive` adds the opt-in and exemption terms on top of it, and the
+verdict, the pre-flight (no estimate RPC below the floor) and the two worker
+budgets (`resolvedByteLimit()` on this mixin, `maxFeatureDensity` on the canvas
+gate, which go undefined together) all read `gateActive`. It used to be spelled
+out separately in `evaluateRegionTooLarge`, `checkByteEstimate` and a
+canvas-local `gateInactive` — three layers that had to agree by hand.
+`evaluateRegionTooLarge` now only compares (bytes vs limit, then density), and
+knows nothing about the floor or force-load. The constant itself sits with the
+gate (`shared/regionTooLargeUtils.ts`), not on the view, which never reads it.
 
-MAF's `showSummary` is the one other reader of the constant, flipping to the cheap
-summary adapter exactly where the detail fetch would be blocked. That is a
-different question (how zoomed out am I), not a second copy of the gate.
+MAF's `showSummary` asks the same "how zoomed out am I" question — it flips to the
+cheap summary adapter exactly where the detail fetch would be blocked — so it
+reads `aboveForceLoadFloor` rather than the constant. That getter deliberately
+excludes the opt-in terms, which is what keeps the read from being a cycle: MAF's
+`byteGateEnabled` is *itself* a function of `showSummary`.
 
 **Live vs debounced.** The byte axis reads live `view.visibleBp`, so the banner
 releases the instant you zoom past the threshold — that responsiveness is the
@@ -198,19 +213,26 @@ short-circuits inside the RPC and returns `{ regionTooLarge, featureCount }`.
 The payoff shows on a whole-genome fan-out: one cheap index read per chromosome
 instead of downloading every chromosome's features.
 
-**Known limitation: the multi-region rescale mixes denominators.**
+**Accepted behavior: the multi-region rescale mixes denominators.**
 `commitGateMeasurements` stores the per-region *max* bytes but anchors to the
 *total* `visibleBp` across all visible regions. At capture time that is right —
 it reproduces the worker's per-region verdict. On a later zoom it isn't: in a
 whole-genome view, zooming into one chromosome shrinks the total span far faster
 than that chromosome's own bytes shrink, so the banner releases earlier than it
-should. Deliberately left alone: the download is still protected (the worker
-re-gates per region on the next fetch, and the banner comes back), and fixing it
-properly means giving the canvas path a different estimate semantic — bytes-per-bp
-against the widest current region — from the pre-flight path, which genuinely
-measures a region *set* in one call. One shared `estimatedBytesForVisibleSpan`
-beats two subtly different ones for a banner that self-corrects within a fetch
-cycle.
+should. The download is still protected (the worker re-gates per region on the
+next fetch, and the banner comes back), so the symptom is one extra round trip
+and a flicker.
+
+The behavior is pinned by "releases early when the visible region set shrinks" in
+`LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`, so a per-region
+denominator is a deliberate change rather than a silent one. If you make it: the
+denominator has to be that region's *visible* span captured before the fetch, not
+the span it fetched. Canvas fetches `bufferedVisibleRegions` (half a screen of
+buffer each side), so a fetched-span rate quotes about half the bytes the worker's
+per-region gate just rejected — the banner clears a region the worker still
+refuses, which is the wedge the anchoring rules exist to prevent. It also gives
+canvas a different estimate semantic from the pre-flight path, which measures a
+region *set* in one adapter call and has no per-region number to keep.
 
 `commitGateMeasurements` records the maximum per-region byte count, not the sum,
 because every region is gated against the same per-region budget — a
@@ -322,6 +344,10 @@ The derived gate and canvas's in-RPC short-circuit differ only in how they
 measure. The verdict, the threshold, and the banner text live here so the two
 paths can't drift apart.
 
+- `AUTO_FORCE_LOAD_BP` is the floor below which nothing gates. It lives here
+  rather than on the LGV model — the view never read it — and
+  `aboveForceLoadFloor` is its only comparison. It is not exported from the
+  plugin: MAF, the one out-of-plugin reader, reads that getter instead.
 - `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one
   place a byte budget gets resolved: the adapter's limit, else the display config.
   Those two arguments are the only byte-budget *inputs* in the system — force-load
@@ -374,3 +400,4 @@ the same call the unreachable multi-row density gate got.
 BigMaf deliberately *does* implement it, since it returns full alignment rows
 rather than a screen-reduced summary, and a whole-chromosome view can pull enough
 packed MAF stanzas to hang the tab.
+

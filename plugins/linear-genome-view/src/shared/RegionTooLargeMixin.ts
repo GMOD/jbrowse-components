@@ -7,8 +7,8 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/model.ts'
 import {
+  AUTO_FORCE_LOAD_BP,
   NOT_TOO_LARGE,
   evaluateRegionTooLarge,
   rescaleByteEstimateToVisibleSpan,
@@ -212,6 +212,24 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
+       * Whether the span on screen is wide enough for the gate to have an
+       * opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and
+       * nowhere else. False before the view is measured.
+       *
+       * Deliberately independent of the opt-in and of force-load, so a display
+       * whose *own* opt-in depends on the floor can read it without a cycle:
+       * MAF's `showSummary` swaps to the cheap summary adapter exactly where the
+       * detail fetch would be gated, and `byteGateEnabled` is off while it does.
+       * `gateActive` adds the opt-in and exemption terms on top.
+       */
+      get aboveForceLoadFloor(): boolean {
+        const { gateVisibleBp } = self
+        return (
+          gateVisibleBp !== undefined && gateVisibleBp >= AUTO_FORCE_LOAD_BP
+        )
+      },
+      /**
+       * #getter
        * True when nothing may gate, on either axis and in both the worker and the
        * banner: the declarative `forceLoad` slot, or the force-load button. One
        * boolean is the whole force-load mechanism — there is no per-region ceiling
@@ -258,8 +276,7 @@ export default function RegionTooLargeMixin() {
       /**
        * #getter
        * Whether anything may gate at this moment: the display opted in, nothing
-       * exempts it, and the view is measured and wider than the
-       * `AUTO_FORCE_LOAD_BP` force-load floor.
+       * exempts it, and the view is measured and above the force-load floor.
        *
        * The single home of that question. Everything downstream reads it instead
        * of restating it: the verdict, the pre-flight (no estimate RPC when
@@ -272,13 +289,9 @@ export default function RegionTooLargeMixin() {
         // The view is consulted only past the two cheap terms, so a display that
         // never gates — including a non-LGV consumer of this mixin — never
         // touches `getContainingView`.
-        if (!self.derivedRegionTooLargeEnabled || self.byteGateExempt) {
-          return false
-        }
-        const { gateVisibleBp } = self
-        return (
-          gateVisibleBp !== undefined && gateVisibleBp >= AUTO_FORCE_LOAD_BP
-        )
+        return self.derivedRegionTooLargeEnabled && !self.byteGateExempt
+          ? self.aboveForceLoadFloor
+          : false
       },
     }))
     .views(self => ({

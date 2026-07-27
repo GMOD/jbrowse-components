@@ -123,8 +123,6 @@ function resolveCanonicalRefName(
   return asm?.getCanonicalRefName(region.refName) ?? region.refName
 }
 
-export const AUTO_FORCE_LOAD_BP = 20_000
-
 // most zoomed-in level: 50px per bp
 const MIN_BP_PER_PX = 1 / 50
 

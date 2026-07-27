@@ -45,7 +45,7 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
   })
 }
 
-export { AUTO_FORCE_LOAD_BP, stateModelFactory } from './model.ts'
+export { stateModelFactory } from './model.ts'
 export type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,

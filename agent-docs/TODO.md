@@ -428,3 +428,17 @@ are shipped and the Zarr plugin is published (see
   `website/scripts/specs/graph.ts`, and budget for its `readyTimeout: 120000` /
   `diffThreshold: 0.1`). It has to be a config track: 104 BigWig URLs do not fit
   in a session-spec URL.
+
+## `pnpm autogen` owes a commit for the byte-gate renames
+
+The 2026-07 region-too-large passes renamed and added state-model members
+(`byteGateEnabled` / `byteGateBlocksFetch` / `gateActive` /
+`aboveForceLoadFloor`, and the removal of `getByteEstimateConfig` /
+`checkByteEstimate` / `alwaysRender`), which changes `website/docs/models/*.md`
+for every display composing `RegionTooLargeMixin`. That output is **not**
+committed: `pnpm gendocs` resolves sources through `@jbrowse/*` workspace links,
+so in the shared worktree it emits `f(everyone's dirty tree)` and fails the CI
+check, which regenerates from committed source. A temp worktree does not escape
+it — symlinking the real `node_modules` in makes pnpm's workspace entries resolve
+back to the dirty main checkout. Run `pnpm autogen` on a clean tree and commit it
+by itself.
