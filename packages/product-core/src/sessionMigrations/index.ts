@@ -3,7 +3,8 @@
  * display type registrations. Handles display types that were removed or
  * renamed in the v4 rendering rearchitecture.
  *
- * Remapped display types:
+ * Remapped display types (see `displayTypeMap` for the band settings each one
+ * carries over):
  *   LinearPileupDisplay → LinearAlignmentsDisplay
  *   LinearSNPCoverageDisplay → LinearAlignmentsDisplay
  *   LinearReadArcsDisplay → LinearAlignmentsDisplay
@@ -19,12 +20,42 @@
  * `extractInstanceHeight`.
  */
 
-const displayTypeMap: Record<string, string> = {
-  LinearPileupDisplay: 'LinearAlignmentsDisplay',
-  LinearSNPCoverageDisplay: 'LinearAlignmentsDisplay',
-  LinearReadArcsDisplay: 'LinearAlignmentsDisplay',
-  LinearReadCloudDisplay: 'LinearAlignmentsDisplay',
-  LinearFeatureDisplay: 'LinearBasicDisplay',
+// Each old display drew one band; the unified LinearAlignmentsDisplay draws all
+// of them, so a bare type rename turns a coverage-only track into coverage +
+// pileup and an arcs track into a plain pileup. `settings` restores the old
+// intent through the config slots that now express it, and is applied only where
+// the snapshot doesn't already carry the key, so an explicit author value wins.
+const displayTypeMap: Record<
+  string,
+  { type: string; settings?: Record<string, unknown> }
+> = {
+  LinearPileupDisplay: {
+    type: 'LinearAlignmentsDisplay',
+    settings: { showCoverage: false },
+  },
+  LinearSNPCoverageDisplay: {
+    type: 'LinearAlignmentsDisplay',
+    // coverageHeight + height together, else the band keeps its 45px default
+    // under the 250px display height and leaves 200px blank.
+    settings: { showPileup: false, coverageHeight: 100, height: 100 },
+  },
+  LinearReadArcsDisplay: {
+    type: 'LinearAlignmentsDisplay',
+    settings: {
+      showPileup: false,
+      showCoverage: false,
+      readConnections: 'arc',
+    },
+  },
+  LinearReadCloudDisplay: {
+    type: 'LinearAlignmentsDisplay',
+    settings: {
+      showPileup: false,
+      showCoverage: false,
+      readConnections: 'cloud',
+    },
+  },
+  LinearFeatureDisplay: { type: 'LinearBasicDisplay' },
 }
 
 // The pre-4.x LinearAlignmentsDisplay was a container whose per-instance
@@ -59,9 +90,14 @@ function isObject(v: unknown): v is Record<string, unknown> {
 // session-wide promoted default, and config-file display default — so session
 // migration deliberately leaves a `methylation` colorBy untouched.
 function migrateDisplayType(display: Record<string, unknown>) {
-  const oldType = display.type as string
-  const newType = displayTypeMap[oldType]
-  return newType ? { ...display, type: newType } : display
+  const entry = displayTypeMap[display.type as string]
+  if (!entry) {
+    return display
+  }
+  const missing = Object.entries(entry.settings ?? {}).filter(
+    ([k]) => display[k] === undefined,
+  )
+  return { ...display, ...Object.fromEntries(missing), type: entry.type }
 }
 
 /**

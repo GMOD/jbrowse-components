@@ -547,6 +547,8 @@ describe('migrateConfigSnapshot', () => {
     expect(display.type).toBe('LinearAlignmentsDisplay')
     expect(display.displayId).toBe('track1-pileup')
     expect(display.height).toBe(400)
+    // pileup-only display had no coverage band
+    expect(display.showCoverage).toBe(false)
   })
 
   test('migrates LinearSNPCoverageDisplay in track config displays', () => {
@@ -562,9 +564,55 @@ describe('migrateConfigSnapshot', () => {
       ],
     }
     const result = migrateConfigSnapshot(config)
-    expect((result.tracks as any)[0].displays[0].type).toBe(
-      'LinearAlignmentsDisplay',
-    )
+    const display = (result.tracks as any)[0].displays[0]
+    expect(display.type).toBe('LinearAlignmentsDisplay')
+    expect(display.showPileup).toBe(false)
+    expect(display.coverageHeight).toBe(100)
+    expect(display.height).toBe(100)
+  })
+
+  test('carries arcs/cloud intent onto readConnections', () => {
+    const config = {
+      tracks: [
+        {
+          trackId: 'track1',
+          displays: [
+            { type: 'LinearReadArcsDisplay', displayId: 'd1' },
+            { type: 'LinearReadCloudDisplay', displayId: 'd2' },
+          ],
+        },
+      ],
+    }
+    const [arcs, cloud] = (migrateConfigSnapshot(config).tracks as any)[0]
+      .displays
+    expect(arcs.readConnections).toBe('arc')
+    expect(cloud.readConnections).toBe('cloud')
+    for (const d of [arcs, cloud]) {
+      expect(d.showPileup).toBe(false)
+      expect(d.showCoverage).toBe(false)
+    }
+  })
+
+  test('an explicit author value wins over the carried-over setting', () => {
+    const config = {
+      tracks: [
+        {
+          trackId: 'track1',
+          displays: [
+            {
+              type: 'LinearSNPCoverageDisplay',
+              displayId: 'd1',
+              showPileup: true,
+              height: 400,
+            },
+          ],
+        },
+      ],
+    }
+    const display = (migrateConfigSnapshot(config).tracks as any)[0].displays[0]
+    expect(display.showPileup).toBe(true)
+    expect(display.height).toBe(400)
+    expect(display.coverageHeight).toBe(100)
   })
 
   test('handles multiple tracks with mixed display types', () => {

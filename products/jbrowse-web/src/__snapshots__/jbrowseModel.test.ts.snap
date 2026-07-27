@@ -690,6 +690,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           },
           "displayId": "volvox_cram_pileup_pileup",
           "height": 400,
+          "showCoverage": false,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -725,7 +726,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "coverageHeight": 100,
           "displayId": "volvox_cram_snpcoverage_snpcoverage",
+          "height": 100,
+          "showPileup": false,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -776,6 +780,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_cram_pileup_ctga_pileup",
+          "showCoverage": false,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -803,7 +808,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "coverageHeight": 100,
           "displayId": "volvox_cram_pileup_ctga_snpcoverage",
+          "height": 100,
+          "showPileup": false,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -893,7 +901,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "coverageHeight": 100,
           "displayId": "volvox_bam_snpcoverage_snpcoverage",
+          "height": 100,
+          "showPileup": false,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -924,6 +935,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_bam_pileup_pileup",
+          "showCoverage": false,
           "type": "LinearAlignmentsDisplay",
         },
       ],
