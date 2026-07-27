@@ -287,9 +287,11 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readyText: 'COLO829',
     readyTimeout: 60000,
     settleMs: 15000,
-    // tall enough to capture the full open View → Show... submenu in stage 1
-    // (the menu was cut off at the old 420px height)
-    crop: { x: 0, y: 0, width: 1500, height: 560 },
+    // tall enough for the whole open View → Show... submenu in stage 1, which a
+    // 560px frame cut off two items short. Per-frame heights rather than one
+    // `crop`: the menu needs twice the height the resulting view does, and a
+    // shared crop left the bottom third of stage 2 as page background.
+    viewportHeight: 680,
     stages: [
       {
         // top frame: single chromosome, View → Show... submenu open with
@@ -298,6 +300,12 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
           ...menuCascade(['Show...', 'Show all regions in assembly']),
+          // The menu's popover layers land on top of an already-painted view,
+          // and a previous run captured this frame with the whole view body
+          // white behind them. The DOM was all there (assertViewsRendered
+          // passed after the shot), so it was raster, not render. Give the
+          // compositor a beat past waitForRasterize's two frames.
+          { type: 'delay', ms: 1000 },
         ],
         annotations: [
           // ring the view (hamburger) menu icon that opens this menu
@@ -325,6 +333,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           },
           { type: 'delay', ms: 2000 },
         ],
+        // the resulting view is half the height the open menu above needed
+        viewportHeight: 340,
       },
     ],
   },

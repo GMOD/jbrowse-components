@@ -65,8 +65,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.06, 0.56],
   },
   analyze_trio: {
+    // the haplotype rows and their labels, starting at the connector zone,
+    // past the gene track the figure gained for genomic scale
     src: 'trio-matrix-phased-clean.png',
-    band: [0.42, 0.93],
+    band: [0.51, 0.94],
     position: 'left',
   },
   rnaseq: {
@@ -111,8 +113,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   population_genomics: {
+    // the Fst plot only, left half of the genome: a centered crop lands on
+    // 2R/3L and drops the 2L plateau that is the whole point of the figure
     src: 'popgen/fst_in2lt_2L.png',
-    band: [0.25, 1],
+    band: [0.36, 0.95],
+    xband: [0, 0.5],
+    position: 'left',
   },
   sv_multisamples: {
     src: 'multisv.png',

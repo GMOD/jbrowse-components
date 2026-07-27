@@ -323,7 +323,7 @@ sits at low background Fst. Seeing all the arms at once is what makes the signal
 read as genuinely elevated, rather than a baseline with nothing to compare it
 to.
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms, each track auto-scaled. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t and standard-arrangement lines, a tall block across the whole left arm of chromosome 2 against low background on every other arm. Bottom: whole-panel nucleotide diversity (π)."/>
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block across the whole left arm of chromosome 2 against low background on every other arm."/>
 
 Then we use the search box to jump to `Cyp6g1` (on `2R`) and add the Tajima's D
 track from the pipeline alongside π. Both statistics dip together in the same

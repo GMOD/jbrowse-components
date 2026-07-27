@@ -95,11 +95,25 @@ export const trioSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'trio-matrix-phased-clean',
     // sized to the content: the rest of the viewport was page background
-    viewportHeight: 497,
+    viewportHeight: 597,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:62,174,000-65,097,304',
       tracks: [
+        // genes above the matrix for scale (reviewer). The matrix spaces one
+        // column per variant, so its own x axis carries no genomic distance.
+        // The connector zone under this track is what ties a column back to a
+        // position, and the gene lane is what that position then means. Genes
+        // only, no descriptions: over 2.9 Mb the second RefSeq text line is a
+        // wall of prose, and the point here is landmarks, not annotation detail.
+        {
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          type: 'LinearBasicDisplay',
+          displayMode: 'compact',
+          showOnlyGenes: true,
+          showDescriptions: false,
+          height: 80,
+        },
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
           type: 'LinearMultiSampleVariantMatrixDisplay',

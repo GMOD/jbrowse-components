@@ -113,9 +113,9 @@
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-15T02:36:57.740Z",
-    "hash": "8f80f17e019970c5562e823cc43cce2cc34a9795"
+    "note": "FIXED: the blank first panel was a raster race, not a render failure - the DOM was all present (assertViewsRendered passes after the stage shot), the compositor just had not repainted the view body under the newly-layered menu popovers when the frame was taken. Stage 1 now settles a second past waitForRasterize's two frames. Same pass reframed it: the spec-level 560px crop cut the Show... submenu two items short and left a third of stage 2 as page background, so it is per-stage viewportHeight now (680 for the menu frame, 340 for the resulting whole-genome view). --check reports 0.000% across two runs.",
+    "reviewedAt": "2026-07-27T03:10:00.000Z",
+    "hash": "905e52d79a2a43f8d7c923dad61f7d40bb8ef81f"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -616,9 +616,9 @@
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T17:14:23.817Z",
-    "hash": "6b388b3a91dcf1f3e224ecbf2bcbfdef42b9bddf"
+    "note": "FIXED: added NCBI RefSeq above the matrix (compact, genes only, no descriptions). The matrix spaces one column per variant so its own x axis carries no genomic distance; the connector zone under the gene track is what maps a column back to a position, and the gene lane is what that position then means. Tutorial + user-guide captions and the analyze_trio card band updated to match.",
+    "reviewedAt": "2026-07-27T03:10:00.000Z",
+    "hash": "70ed0472b0d022aaeb7b47a1c322777308f011d5"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -1377,9 +1377,9 @@
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-20T21:12:16.790Z",
-    "hash": "f2da69022475b08745e7c3381f12a241190118e1"
+    "note": "FIXED: dropped the pi row. It carried a strong broad arm-scale profile of its own that has nothing to do with the inversion, and no surrounding prose read it, so it competed with the one thing the figure exists to show. pi keeps its own figure at Cyp6g1, where the dip alongside Tajima's D IS the point. Fst grew 280->340, viewport 840->660, caption/gallery description/tutorial card band updated.",
+    "reviewedAt": "2026-07-27T03:10:00.000Z",
+    "hash": "a42f4d765112ceb96add998b85b9aa9ee44cc844"
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",

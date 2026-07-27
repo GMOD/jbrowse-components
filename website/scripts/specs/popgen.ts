@@ -151,13 +151,18 @@ export const popgenSpecs: ScreenshotSpec[] = [
   // just 2L in isolation) is what makes the elevation read AS elevated: the
   // reader sees the 2L signal is genuinely anomalous, not a baseline the eye has
   // nothing to compare against (reviewer). The In(2L)t inversion-extent track
-  // marks the 2L segment; whole-panel π below stays near-uniform across arms, the
-  // expected contrast to the localized Fst spike.
+  // marks the 2L segment.
+  //
+  // No π row here, deliberately (reviewer: unclear how it matters). π carries a
+  // strong broad arm-scale profile of its own that has nothing to do with the
+  // inversion, and the surrounding prose never reads it, so it competed with the
+  // one thing this figure exists to show. π has its own figure below, at Cyp6g1,
+  // where its dip alongside Tajima's D IS the point.
   {
     mode: 'url',
     name: 'popgen/fst_in2lt_2L',
     url: `${DM6_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK, PI_TRACK],
+      sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -182,24 +187,17 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'fst_in2lt',
               type: 'LinearWiggleDisplay',
-              height: 280,
-            },
-            {
-              trackId: 'pi_all',
-              type: 'LinearWiggleDisplay',
-              height: 200,
+              height: 340,
             },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
     readySelector: '[data-testid="wiggle-display-done"]',
-    readyText: 'π (whole panel)',
+    readyText: 'Fst',
     readyTimeout: 90000,
-    // inversion(40) + fst(280) + pi(200) + 3 track headers + ruler/overview +
-    // app bar. At 780 the π track was cut off flush at its own 0 baseline and
-    // the app frame's bottom border was gone.
-    viewportHeight: 840,
+    // inversion(40) + fst(340) + 2 track headers + ruler/overview + app bar
+    viewportHeight: 660,
     settleMs: 14000,
   },
 

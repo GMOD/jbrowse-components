@@ -303,11 +303,11 @@ export const gallerySections: readonly GallerySection[] = [
           'A BXD mouse coat-color QTL scan with the strain haplotype painting below it. Sorting the rows by genotype at the peak over Tyrp1 separates the mixed block into B (red) above D (blue), directly under the Manhattan peak.',
       },
       {
-        label: 'Population genomics (Fst, π)',
+        label: 'Population genomics (Fst)',
         spec: 'popgen/fst_in2lt_2L',
         guide: 'tutorials/population_genomics',
         description:
-          'Every Drosophila dm6 chromosome arm at once: the In(2L)t inversion extent on top, Fst between inverted and standard lines in the middle, and whole-panel nucleotide diversity (π) below. Fst is elevated across the whole inverted arm and low elsewhere.',
+          'Every Drosophila dm6 chromosome arm at once, with the In(2L)t inversion extent on top and Fst between inverted and standard lines below it. Fst is elevated across the whole inverted arm and low elsewhere.',
       },
     ],
   },

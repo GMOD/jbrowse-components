@@ -71,7 +71,7 @@ jump out: the child's two haplotypes match the mother's in some blocks and the
 father's in others. The rest of this tutorial turns that by-eye pattern into a
 painted track.
 
-<Figure caption="The phased mode with no markup added. Rows are child hap1/hap2, mother hap1/hap2, father hap1/hap2, top to bottom. Several stretches where rows match each other are visible by eye." src="/img/trio-matrix-phased-clean.png"/>
+<Figure caption="The phased mode with no markup added. Rows are child hap1/hap2, mother hap1/hap2, father hap1/hap2, top to bottom. Several stretches where rows match each other are visible by eye. The RefSeq genes above give the window its genomic scale, and the connector lines under them tie each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
 ## Finding the matching blocks programmatically
 
