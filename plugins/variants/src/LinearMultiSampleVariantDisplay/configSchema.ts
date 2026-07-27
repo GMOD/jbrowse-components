@@ -99,6 +99,31 @@ export default function configSchemaFactory() {
         type: 'number',
         defaultValue: 200,
       },
+      /**
+       * #slot
+       * Widen each alt-carrying cell of an insertion to a marker sized by the
+       * inserted bp, the same one `plugins/alignments` and `plugins/maf` draw,
+       * with the bp count when the row is tall enough.
+       *
+       * A cell is drawn across the reference the record covers, with a 2px floor.
+       * That is right for a SNP and right for a deletion, but an insertion
+       * consumes almost no reference, so a 65 kb insertion and a SNP both land on
+       * that floor and the structural tier of a pangenome callset becomes
+       * unreadable. Only cells whose genotype carries the allele widen, and each
+       * keeps its genotype color, so the marker adds length without displacing
+       * what the color already says.
+       *
+       * This display only: it draws every cell at its genomic position, so a
+       * width there is a claim about length.
+       * `LinearMultiSampleVariantMatrixDisplay` lays its columns out by feature
+       * index at a uniform width, so it has no such width to correct.
+       */
+      showInsertionGlyphs: {
+        type: 'boolean',
+        defaultValue: true,
+        description:
+          'widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP',
+      },
     },
     {
       /**
@@ -109,3 +134,7 @@ export default function configSchemaFactory() {
     },
   )
 }
+
+export type LinearMultiSampleVariantDisplayConfigModel = ReturnType<
+  typeof configSchemaFactory
+>

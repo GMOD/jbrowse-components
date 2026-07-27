@@ -365,7 +365,7 @@ insertion consumes no reference.)
 That same asymmetry is why an insertion would not draw at its true width, so the
 display widens each insertion cell to a marker sized by the inserted bp, in that
 haplotype's own genotype color
-([`showInsertionGlyphs`](/docs/config/sharedvariantdisplay/#slot-showinsertionglyphs)).
+([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)).
 Only haplotypes carrying the allele widen, so the marker never implies a sample
 has sequence it does not.
 

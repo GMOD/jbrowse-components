@@ -110,9 +110,10 @@ _See the **Config slots** section below for all available configuration fields._
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                   | Type     | Description |
-| ---------------------- | -------- | ----------- |
-| [height](#slot-height) | `number` |             |
+| Slot                                             | Type      | Description                                                                                                                                                                                 |
+| ------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)                           | `number`  |                                                                                                                                                                                             |
+| [showInsertionGlyphs](#slot-showinsertionglyphs) | `boolean` | Widen each alt-carrying cell of an insertion to a marker sized by the inserted bp, the same one `plugins/alignments` and `plugins/maf` draw, with the bp count when the row is tall enough. |
 
 <details>
 <summary>LinearMultiSampleVariantDisplay - Slots</summary>
@@ -120,6 +121,27 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 #### slot: height
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `200`
+
+#### slot: showInsertionGlyphs
+
+Widen each alt-carrying cell of an insertion to a marker sized by the inserted
+bp, the same one `plugins/alignments` and `plugins/maf` draw, with the bp count
+when the row is tall enough.
+
+A cell is drawn across the reference the record covers, with a 2px floor. That
+is right for a SNP and right for a deletion, but an insertion consumes almost no
+reference, so a 65 kb insertion and a SNP both land on that floor and the
+structural tier of a pangenome callset becomes unreadable. Only cells whose
+genotype carries the allele widen, and each keeps its genotype color, so the
+marker adds length without displacing what the color already says.
+
+This display only: it draws every cell at its genomic position, so a width there
+is a claim about length. `LinearMultiSampleVariantMatrixDisplay` lays its
+columns out by feature index at a uniform width, so it has no such width to
+correct.
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>
 
@@ -226,27 +248,6 @@ group's rows are contiguous and a group-restricted genotype pattern reads as one
 band; empty means the rows keep their existing order
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: showInsertionGlyphs
-
-Widen each alt-carrying cell of an insertion to a marker sized by the inserted
-bp, the same one `plugins/alignments` and `plugins/maf` draw, with the bp count
-when the row is tall enough.
-
-A cell is drawn across the reference the record covers, with a 2px floor. That
-is right for a SNP and right for a deletion, but an insertion consumes almost no
-reference, so a 65 kb insertion and a SNP both land on that floor and the
-structural tier of a pangenome callset becomes unreadable. Only cells whose
-genotype carries the allele widen, and each keeps its genotype color, so the
-marker adds length without displacing what the color already says.
-
-Applies to `LinearMultiSampleVariantDisplay`, which draws every cell at its
-genomic position. `LinearMultiSampleVariantMatrixDisplay` lays its columns out
-by feature index at a uniform width, so there is no genomic width for a marker
-to correct and it ignores this.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
 
 #### slot: referenceDrawingMode
 

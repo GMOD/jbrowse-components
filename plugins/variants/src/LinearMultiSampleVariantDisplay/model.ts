@@ -1,4 +1,7 @@
-import { getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+} from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -7,7 +10,7 @@ import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
-import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
+import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type {
   VariantRenderingBackend,
   VariantUploadData,
@@ -23,7 +26,9 @@ import type {
  * Multi-sample variant display drawing one genotype row per sample, with a
  * per-cell feature widget on click.
  */
-export function stateModelFactory(configSchema: SharedVariantConfigModel) {
+export function stateModelFactory(
+  configSchema: LinearMultiSampleVariantDisplayConfigModel,
+) {
   return (
     types
       .compose(
@@ -31,6 +36,14 @@ export function stateModelFactory(configSchema: SharedVariantConfigModel) {
         MultiSampleVariantBaseModelF(configSchema, 'regular'),
         types.model({
           type: types.literal('LinearMultiSampleVariantDisplay'),
+          // Same node the base already holds — the base declares
+          // `configuration` off a param typed to the *shared* schema, so a slot
+          // this display owns alone (showInsertionGlyphs) would be invisible to
+          // `getConf`. Redeclaring here overrides the prop's type with the
+          // concrete schema (`types.compose` overrides props, it does not
+          // intersect them), so own-slot reads narrow. Runtime value is
+          // identical: `configSchema` is this display's schema either way.
+          configuration: ConfigurationReference(configSchema),
         }),
       )
       // Remap the old type literal on active (view-level) display instances. The

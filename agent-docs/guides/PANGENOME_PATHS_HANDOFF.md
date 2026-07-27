@@ -27,7 +27,7 @@ a shader:
 - `LinearMultiRowFeatureDisplay`: `lengthField` slot +
   `rendering/drawMultiRowIndelGlyphs.ts`
 - `LinearMultiSampleVariantDisplay` (the regular, non-matrix one):
-  `showInsertionGlyphs` slot (shared schema, default on) +
+  `showInsertionGlyphs` slot (its own schema, default on) +
   `components/drawVariantInsertionGlyphs.ts`
 
 Both borrow `drawInsertionMarker` from `@jbrowse/alignments-core`, which is now on
@@ -189,7 +189,59 @@ the synteny figure set here changed 13 PNGs, and the one inspected differed by a
 "Longest isoform" chip from another agent's uncommitted config work, not by
 indel glyphs. All were reverted. Regenerate figures only from a clean tree.
 
+## A subclass display can own a config slot (shipped)
+
+`showInsertionGlyphs` used to sit in the **shared** variant schema, so the matrix
+display inherited a slot it ignores. It now lives on
+`LinearMultiSampleVariantDisplay`'s own schema.
+
+The fix is not the one this file previously proposed. *Widening* the factory's
+config type would have worked by giving up narrowing — `ConfigurationSlotName<any>`
+is `any`, so every read in that model becomes untyped, which
+`packages/core/src/configuration/CLAUDE.md` argues against at length (a slot-name
+typo through `getConf` is otherwise a compile error, and through `setSlot` it
+fails completely silently). Generic threading is separately ruled out there:
+"Don't retry it in any form."
+
+What works instead is one line in the subclass. `MultiSampleVariantBaseModel`
+declares `configuration` off a param typed to `SharedVariantConfigModel`, and
+that type is what a composed subclass inherits — so the subclass redeclares the
+prop:
+
+```ts
+types.compose(
+  'LinearMultiSampleVariantDisplay',
+  MultiSampleVariantBaseModelF(configSchema, 'regular'),
+  types.model({
+    type: types.literal('LinearMultiSampleVariantDisplay'),
+    configuration: ConfigurationReference(configSchema),
+  }),
+)
+```
+
+Load-bearing detail: `types.compose` **overrides** props rather than
+intersecting them (`_OverrideProps` in the MST typings), so this genuinely
+replaces the prop's type instead of producing
+`ConfigRef<Shared> & ConfigRef<Subclass>`, which `ConfigurationSchemaForModel`
+would resolve arbitrarily. At runtime it is a no-op — `configSchema` is already
+this display's own schema; only the *declared type* was widened. And because
+`ConfigurationSlotName` recurses through `GetBase`, pinning to the subclass
+schema keeps every shared slot narrowing too.
+
+This is the general recipe for "a slot only one of two displays sharing a base
+should have", so prefer it over parking the slot in the shared schema.
+
+`showInsertionGlyphsSlot.test.ts` guards both halves. The compile-time half uses
+`assertType`/`Equal` inside a never-called function (instantiating either display
+needs a whole session) and is checked by `pnpm typecheck`, **not** jest — a plain
+typecheck can't catch a read widening to `any`, since `any` satisfies every
+assertion. When editing it, break one assertion on purpose first to confirm the
+probe still has teeth; that is how the override above was verified rather than
+assumed. `PORTABLE_CONFIG_KEYS` never listed this slot, so the display-type
+switch needed no change.
+
 ## Open
+
 - **HPRC has no per-haplotype path track.** `--call` needs the 464 assemblies
   re-mapped, so HPRC stays on `wave.vcf.gz`, which now draws its insertions
   properly. Nothing to do unless someone wants that compute.
@@ -200,10 +252,6 @@ indel glyphs. All were reverted. Regenerate figures only from a clean tree.
   obvious affordance is launching the graph view for one allele's segments, which
   lives in the external `jbrowse-plugin-graphgenomeviewer` where
   `RgfaTabixAdapter` is.
-- `showInsertionGlyphs` sits in the **shared** variant schema because
-  `stateModelFactory` is typed to `SharedVariantConfigModel`, so a subclass slot
-  is invisible to `getConf`. The matrix display therefore inherits a slot it
-  ignores. Widening that factory's config type is the real fix.
 
 ## Cross-references worth keeping
 
