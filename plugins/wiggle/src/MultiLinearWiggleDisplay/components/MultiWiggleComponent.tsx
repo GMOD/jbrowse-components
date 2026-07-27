@@ -137,7 +137,9 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
         <MultiWiggleSvgScales
           model={model}
           legendRight={legendWidth}
-          scalebarLeft={ONSCREEN_AXIS_LEFT_PX}
+          // past the dendrogram, which paints an opaque panel over the left of
+          // the plot and would otherwise swallow the axis
+          scalebarLeft={labelOffset + ONSCREEN_AXIS_LEFT_PX}
           labelOffset={labelOffset}
         />
 
