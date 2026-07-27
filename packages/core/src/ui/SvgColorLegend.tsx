@@ -101,7 +101,7 @@ export default function SvgColorLegend({
             y={0}
             width={totalWidth}
             height={LEGEND_ROW_HEIGHT}
-            fill="rgba(255,255,255,0.8)"
+            fill="rgba(255,255,255,0.95)"
           />
           {entry.marker ??
             (entry.color === undefined ? null : (
@@ -131,7 +131,7 @@ export default function SvgColorLegend({
             y={0}
             width={totalWidth}
             height={LEGEND_ROW_HEIGHT}
-            fill="rgba(255,255,255,0.8)"
+            fill="rgba(255,255,255,0.95)"
           />
           <text x={TEXT_LEFT} y={11} fontSize={FONT_SIZE} fill="#555">
             {overflowLabel}

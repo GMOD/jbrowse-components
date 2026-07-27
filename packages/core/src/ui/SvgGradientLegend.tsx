@@ -79,7 +79,7 @@ export default function SvgGradientLegend({
         y={0}
         width={width}
         height={height + titleGap}
-        fill="rgba(255,255,255,0.9)"
+        fill="rgba(255,255,255,0.95)"
         stroke="#ccc"
         strokeWidth={1}
         rx={4}
