@@ -7,12 +7,19 @@ import { addRelativeUris } from './util.ts'
 import type { Snap } from './types.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
+/**
+ * Loads the plugin definitions a config or session named, returning the ones
+ * that loaded alongside the ones that didn't. A plugin that fails no longer
+ * fails the whole app — the session opens without whatever that plugin provided,
+ * and the caller reports the failure once there is a session to report it on.
+ */
 export async function loadPluginRecords(defs: PluginDefinition[]) {
   const loader = new PluginLoader(dropVendoredPlugins(defs), {
     fetchESM: url => import(/* webpackIgnore:true */ url),
   })
   loader.installGlobalReExports(window)
-  return [...(await loader.load(window.location.href))]
+  const { records, failures } = await loader.loadSettled(window.location.href)
+  return { records: [...records], failures }
 }
 
 export function readSessionFromStorage(query: string) {

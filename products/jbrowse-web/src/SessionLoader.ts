@@ -20,7 +20,11 @@ import { arePluginsRemembered } from './trustedPlugins.ts'
 import { checkPlugins, fromUrlSafeB64, readConf } from './util.ts'
 
 import type { SessionSource, SessionTriagedInfo, Snap } from './types.ts'
-import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
+import type {
+  PluginDefinition,
+  PluginLoadFailure,
+  PluginRecord,
+} from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -122,6 +126,7 @@ const SessionLoader = types
     sessionTriaged: SessionTriagedInfo | undefined
     runtimePlugins: PluginRecord[] | undefined
     sessionPlugins: PluginRecord[] | undefined
+    pluginLoadFailures: PluginLoadFailure[]
     configError: unknown
     pluginManager: PluginManager | undefined
     pluginManagerError: unknown
@@ -141,6 +146,13 @@ const SessionLoader = types
      * #volatile
      */
     sessionPlugins: undefined,
+    /**
+     * #volatile
+     * Plugins a config or session named that could not be loaded. Collected
+     * rather than thrown so the session still opens; reported to the user once
+     * it exists (createPluginManager).
+     */
+    pluginLoadFailures: [],
     /**
      * #volatile
      */
@@ -284,6 +296,14 @@ const SessionLoader = types
     },
     /**
      * #action
+     * Records plugins that failed to load. Appends, because a session's plugins
+     * and its config's plugins are loaded by separate passes and both can fail.
+     */
+    addPluginLoadFailures(failures: PluginLoadFailure[]) {
+      self.pluginLoadFailures = [...self.pluginLoadFailures, ...failures]
+    },
+    /**
+     * #action
      * Commits config + plugins in a single action so reactions never observe
      * runtimePlugins set while configSnapshot is still undefined (which would
      * build the rootModel with `jbrowse: undefined`).
@@ -362,8 +382,11 @@ const SessionLoader = types
      */
     async loadConfigAndPlugins(snap: Snap & { plugins?: PluginDefinition[] }) {
       try {
-        const plugins = await loadPluginRecords(snap.plugins ?? [])
-        self.setConfigAndPlugins(snap, plugins)
+        const { records, failures } = await loadPluginRecords(
+          snap.plugins ?? [],
+        )
+        self.addPluginLoadFailures(failures)
+        self.setConfigAndPlugins(snap, records)
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -389,7 +412,9 @@ const SessionLoader = types
           arePluginsRemembered(sessionPlugins) ||
           (await checkPlugins(sessionPlugins))
         ) {
-          self.setSessionPlugins(await loadPluginRecords(sessionPlugins))
+          const { records, failures } = await loadPluginRecords(sessionPlugins)
+          self.addPluginLoadFailures(failures)
+          self.setSessionPlugins(records)
           self.setSessionSource({
             type: 'snapshot',
             snapshot: snap,

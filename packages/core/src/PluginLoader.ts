@@ -45,8 +45,7 @@ export interface ESMUrlPluginDefinition {
 }
 
 export type ESMPluginDefinition =
-  | ESMLocPluginDefinition
-  | ESMUrlPluginDefinition
+  ESMLocPluginDefinition | ESMUrlPluginDefinition
 
 export function isESMPluginDefinition(
   def: PluginDefinition,
@@ -152,6 +151,12 @@ export interface PluginRecord {
 
 export interface LoadedPlugin {
   default: PluginConstructor
+}
+
+/** A definition that could not be loaded, kept with the reason it failed */
+export interface PluginLoadFailure {
+  definition: PluginDefinition
+  error: unknown
 }
 
 // The two functions below describe a definition by picking the one url it will
@@ -292,8 +297,7 @@ export default class PluginLoader {
     )
 
     const plugin = (globalThis as Record<string, unknown>)[umdName] as
-      | { default: PluginConstructor }
-      | undefined
+      { default: PluginConstructor } | undefined
     if (!plugin) {
       throw new Error(
         `Failed to load UMD bundle for ${moduleName}, ${umdName} is undefined`,
@@ -337,12 +341,51 @@ export default class PluginLoader {
     return this
   }
 
-  async load(baseUri?: string) {
-    return Promise.all(
+  /**
+   * Loads every definition and separates the ones that worked from the ones
+   * that didn't, instead of failing the batch on the first error.
+   *
+   * A remote config names its plugins at urls nobody re-checks — a store path
+   * that stops being republished, a bundle that needs a newer host than the one
+   * reading the config — and `load`'s all-or-nothing contract turns any of that
+   * into a dead app rather than a missing feature. That is the widest blast
+   * radius left in config loading: an unknown track/adapter/display type is
+   * already tolerated (the track is simply not usable), so the plugin url was
+   * the only field in a config that could still take a whole session down.
+   *
+   * Callers that can degrade (the apps) use this and report the failures;
+   * callers that cannot (the RPC worker, where a half-loaded plugin set would
+   * fail renders with a much worse message) keep using `load`.
+   */
+  async loadSettled(baseUri?: string) {
+    const results = await Promise.allSettled(
       this.definitions.map(async definition => ({
         plugin: await this.loadPlugin(definition, baseUri),
         definition,
       })),
     )
+    const records: PluginRecord[] = []
+    const failures: PluginLoadFailure[] = []
+    for (const [i, result] of results.entries()) {
+      if (result.status === 'fulfilled') {
+        records.push(result.value)
+      } else {
+        failures.push({
+          definition: this.definitions[i]!,
+          error: result.reason,
+        })
+      }
+    }
+    return { records, failures }
+  }
+
+  async load(baseUri?: string) {
+    const { records, failures } = await this.loadSettled(baseUri)
+    // rethrown by definition order rather than by which rejected first, so the
+    // error a strict caller sees doesn't depend on network timing
+    if (failures[0]) {
+      throw failures[0].error
+    }
+    return records
   }
 }

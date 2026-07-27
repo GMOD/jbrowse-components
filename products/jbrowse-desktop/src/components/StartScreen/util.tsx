@@ -1,4 +1,8 @@
-import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
+import PluginLoader, {
+  dropVendoredPlugins,
+  pluginDescriptionString,
+  pluginUrl,
+} from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
@@ -78,7 +82,12 @@ export async function createPluginManager(
     },
   )
   pluginLoader.installGlobalReExports(window)
-  const runtimePlugins = await pluginLoader.load(window.location.href)
+  // Settled, not all-or-nothing: Desktop opens remote hub configs whose plugin
+  // urls it has no control over, and one that 404s or needs a newer host than
+  // this install used to leave the user with a dead app instead of a session
+  // missing one feature. Reported below, once there is a session to report on.
+  const { records: runtimePlugins, failures: pluginLoadFailures } =
+    await pluginLoader.loadSettled(window.location.href)
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({
       plugin: new P(),
@@ -158,6 +167,14 @@ export async function createPluginManager(
     ...defaultSession,
     name: resolveSessionName(defaultSession),
   })
+
+  for (const { definition, error } of pluginLoadFailures) {
+    console.error(error)
+    rootModel.session?.notifyError(
+      `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
+      error,
+    )
+  }
 
   return pluginManager
 }

@@ -7,7 +7,10 @@ import {
   reloadSessionLoader,
   stripConsumedSessionParams,
 } from './createSessionLoader.ts'
-import { readSessionFromStorage } from './sessionLoaderHelpers.ts'
+import {
+  loadPluginRecords,
+  readSessionFromStorage,
+} from './sessionLoaderHelpers.ts'
 
 import type { SessionSource } from './types.ts'
 
@@ -36,7 +39,7 @@ jest.mock('idb', () => ({
 // keep the rest of the helpers real; only stub the network plugin fetch
 jest.mock('./sessionLoaderHelpers', () => ({
   ...jest.requireActual('./sessionLoaderHelpers'),
-  loadPluginRecords: jest.fn().mockResolvedValue([]),
+  loadPluginRecords: jest.fn().mockResolvedValue({ records: [], failures: [] }),
 }))
 
 jest.mock('./createPluginManager', () => ({
@@ -261,6 +264,29 @@ describe('SessionLoader', () => {
       const err = new Error('config error')
       loader.setConfigError(err)
       expect(loader.configError).toBe(err)
+    })
+
+    // A plugin url in a remote config can 404, be blocked, or need a newer host
+    // than this one; none of that should cost the user their session, so the
+    // config still commits and the failure is recorded for reporting instead of
+    // becoming a configError (which is what renders the app's error page).
+    it('a plugin that fails to load does not fail the config load', async () => {
+      const error = new Error('404 not found')
+      const definition = { name: 'Gone', url: 'https://example.com/gone.js' }
+      jest
+        .mocked(loadPluginRecords)
+        .mockResolvedValueOnce({
+          records: [],
+          failures: [{ definition, error }],
+        })
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      await loader.loadConfigAndPlugins({
+        assemblies: [],
+        plugins: [definition],
+      })
+      expect(loader.configError).toBeUndefined()
+      expect(loader.configSnapshot).toBeDefined()
+      expect(loader.pluginLoadFailures).toEqual([{ definition, error }])
     })
   })
 

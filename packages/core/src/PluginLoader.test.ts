@@ -70,3 +70,41 @@ test('drops a per-product vendored plugin only when that product asks', () => {
   expect(dropVendoredPlugins(defs)).toEqual(defs)
   expect(dropVendoredPlugins(defs, ['Blat'])).toEqual([defs[1]])
 })
+
+// A config names its plugin urls, and nothing revalidates them: a store path
+// that stops being republished, or a bundle needing a newer host than the one
+// reading the config, both surface here. loadSettled keeps the plugins that did
+// load so the app can open without the ones that didn't.
+test('loadSettled separates loaded plugins from failures', async () => {
+  const good = { esmUrl: 'https://example.com/good.esm.js' }
+  const bad = { esmUrl: 'https://example.com/bad.esm.js' }
+  const loader = new PluginLoader([good, bad], {
+    fetchESM: url =>
+      url.includes('good')
+        ? Promise.resolve({ default: class Good {} as never })
+        : Promise.reject(new Error('404 not found')),
+  })
+  const { records, failures } = await loader.loadSettled()
+  expect(records.map(r => r.definition)).toEqual([good])
+  expect(failures.map(f => f.definition)).toEqual([bad])
+  expect(`${failures[0]!.error}`).toMatch(/404 not found/)
+})
+
+// load() stays all-or-nothing for callers that cannot degrade (the RPC worker),
+// and rethrows by definition order so which error surfaces doesn't depend on
+// which request happened to fail first.
+test('load rethrows the first failure by definition order', async () => {
+  const loader = new PluginLoader(
+    [
+      { esmUrl: 'https://example.com/first.esm.js' },
+      { esmUrl: 'https://example.com/second.esm.js' },
+    ],
+    {
+      fetchESM: url =>
+        Promise.reject(
+          new Error(url.includes('first') ? 'first failed' : 'second failed'),
+        ),
+    },
+  )
+  await expect(loader.load()).rejects.toThrow(/first failed/)
+})

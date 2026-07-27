@@ -1,5 +1,5 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import { pluginDescriptionString, pluginUrl } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
@@ -11,7 +11,10 @@ import sessionModelFactory from './sessionModel/index.ts'
 
 import type { WebRootModel } from './rootModel/rootModel.ts'
 import type { SessionSource } from './types.ts'
-import type { PluginRecord } from '@jbrowse/core/PluginLoader'
+import type {
+  PluginLoadFailure,
+  PluginRecord,
+} from '@jbrowse/core/PluginLoader'
 
 // Structural read-only view of SessionLoader. Kept narrow so it can be
 // satisfied both by an Instance<SessionLoader> and by `self` inside an MST
@@ -19,6 +22,7 @@ import type { PluginRecord } from '@jbrowse/core/PluginLoader'
 export interface PluginManagerSource {
   readonly runtimePlugins?: readonly PluginRecord[]
   readonly sessionPlugins?: readonly PluginRecord[]
+  readonly pluginLoadFailures?: readonly PluginLoadFailure[]
   readonly configSnapshot?: Record<string, unknown>
   readonly configPath?: string
   readonly adminKey?: string
@@ -84,7 +88,27 @@ export function createPluginManager(
   pluginManager.setRootModel(rootModel).configure()
   doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
   initSession(rootModel, pluginManager, model)
+  notifyPluginLoadFailures(rootModel, model)
   return pluginManager
+}
+
+// A plugin a config named but that couldn't be loaded no longer fails the app
+// (PluginLoader.loadSettled), so it has to be said out loud here instead: the
+// session is open and usable, but anything that plugin provided — a view type, a
+// track type, an adapter — is missing, and a track that needed it will fail on
+// its own with a much less obvious message. Reported after initSession, since
+// there is no session to notify on before it.
+function notifyPluginLoadFailures(
+  rootModel: WebRootModel,
+  model: PluginManagerSource,
+) {
+  for (const { definition, error } of model.pluginLoadFailures ?? []) {
+    console.error(error)
+    rootModel.session?.notifyError(
+      `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
+      error,
+    )
+  }
 }
 
 // Applies the single session the loader resolved. The loader already
