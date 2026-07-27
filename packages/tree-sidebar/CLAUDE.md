@@ -93,7 +93,7 @@ tree draws, so they can't disagree.
 A display whose sidebar draws more than a label box passes its own renderer as
 the `labels` prop instead of falling back to `SvgRowLabels` — it lands at the
 same tree-aware offset, so the gate still can't be bypassed. Variants does this
-with `MultiSampleVariantRowColors`, the component its on-screen overlay renders:
+with `SvgSampleRowLabelGutter`, the component its on-screen overlay renders:
 `SvgRowLabels` knows only `labelColor`, so a "Color by → population" track
 exported without the `color` swatch column its rows are read through. Reach for
 `labels` rather than teaching `SvgRowLabels` a second drawing — a swatch column

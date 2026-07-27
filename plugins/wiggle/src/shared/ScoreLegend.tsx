@@ -1,6 +1,8 @@
+import { measureLegendText } from '@jbrowse/core/ui'
+import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+
 import { formatScore } from '../util.ts'
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
-import { measureLegendText } from './measureLegendText.ts'
 
 // Density mode spends color on the score, so `[min, max]` alone says which
 // numbers are in play but not which end is which color, nor where the pivot
@@ -11,15 +13,24 @@ export interface ScoreRamp {
   posColor: string
   negColor: string
   pivot: number
+  // unique per display, so two density tracks in one view don't share a def.
+  // Bundled with the colors rather than passed alongside them, so a caller
+  // can't supply half a ramp.
+  gradientId: string
 }
 
-const BAR_WIDTH = 110
+// the bar's minimum width; it grows if the end labels need more room
+const MIN_BAR_WIDTH = 110
 const BAR_HEIGHT = 8
 const LABEL_SIZE = 10
+const PAPER = 'rgba(255,255,255,0.8)'
+const TEXT_LEGEND_HEIGHT = 16
+const RAMP_LEGEND_HEIGHT = BAR_HEIGHT + LABEL_SIZE + 8
 
-function hexToRgb(hex: string) {
-  const n = Number.parseInt(hex.replace('#', ''), 16)
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const
+// Vertical space the legend needs, for the on-screen path, whose <svg> wrapper
+// clips to its own height — the ramp is taller than the one-line text.
+export function scoreLegendHeight(ramp: ScoreRamp | undefined) {
+  return ramp ? RAMP_LEGEND_HEIGHT : TEXT_LEGEND_HEIGHT
 }
 
 // Sampled rather than a three-stop gradient. The painted color is
@@ -30,8 +41,8 @@ function hexToRgb(hex: string) {
 // and so overstate the short side.
 function rampStops(domain: [number, number], ramp: ScoreRamp, isLog: boolean) {
   const [min, max] = domain
-  const [pr, pg, pb] = hexToRgb(ramp.posColor)
-  const [nr, ng, nb] = hexToRgb(ramp.negColor)
+  const [pr, pg, pb] = cssColorToRgb(ramp.posColor)
+  const [nr, ng, nb] = cssColorToRgb(ramp.negColor)
   const pos = makeDensityRgbStringFn(min, max, isLog, pr, pg, pb, ramp.pivot)
   const neg = makeDensityRgbStringFn(min, max, isLog, nr, ng, nb, ramp.pivot)
   const steps = 16
@@ -42,56 +53,79 @@ function rampStops(domain: [number, number], ramp: ScoreRamp, isLog: boolean) {
   })
 }
 
-export default function ScoreLegend({
+// The plain domain text, for every mode that encodes score as height.
+function ScoreTextLegend({
   domain,
-  scaleType,
+  suffix,
   canvasWidth,
-  ramp,
-  gradientId,
 }: {
   domain: [number, number]
-  scaleType: string
+  suffix: string
   canvasWidth: number
-  // omitted outside density mode, and when rows carry their own colors (there
-  // is then no single ramp to draw)
-  ramp?: ScoreRamp
-  // unique per display, so two density tracks in one view don't share a def
-  gradientId?: string
 }) {
-  const isLog = scaleType === 'log'
-  const suffix = isLog ? ' (log)' : ''
-  if (!ramp || !gradientId) {
-    const legend = `[${formatScore(domain[0])}, ${formatScore(domain[1])}]${suffix}`
-    const len = measureLegendText(legend, 12)
-    const xpos = Math.max(0, canvasWidth - len - 10)
-    return (
-      <g>
-        <rect
-          x={xpos - 3}
-          y={0}
-          width={len + 6}
-          height={16}
-          fill="rgba(255,255,255,0.8)"
-        />
-        <text y={12} x={xpos} fontSize={12}>
-          {legend}
-        </text>
-      </g>
-    )
-  }
+  const legend = `[${formatScore(domain[0])}, ${formatScore(domain[1])}]${suffix}`
+  const len = measureLegendText(legend, 12)
+  const xpos = Math.max(0, canvasWidth - len - 10)
+  return (
+    <g>
+      <rect
+        x={xpos - 3}
+        y={0}
+        width={len + 6}
+        height={TEXT_LEGEND_HEIGHT}
+        fill={PAPER}
+      />
+      <text y={12} x={xpos} fontSize={12}>
+        {legend}
+      </text>
+    </g>
+  )
+}
 
+function ScoreRampLegend({
+  domain,
+  suffix,
+  canvasWidth,
+  ramp,
+  isLog,
+}: {
+  domain: [number, number]
+  suffix: string
+  canvasWidth: number
+  ramp: ScoreRamp
+  isLog: boolean
+}) {
   const [min, max] = domain
-  const labels = [min, ramp.pivot, max].map(v => formatScore(v))
-  const widest = Math.max(...labels.map(l => measureLegendText(l, LABEL_SIZE)))
-  const boxWidth = BAR_WIDTH + widest
-  const xpos = Math.max(0, canvasWidth - boxWidth - 10)
-  // where the pivot sits along the bar, so the white point is labeled where it
-  // actually falls rather than at the middle
-  const pivotFrac = (ramp.pivot - min) / (max - min)
+  const minLabel = formatScore(min)
+  const maxLabel = `${formatScore(max)}${suffix}`
+  const pivotLabel = formatScore(ramp.pivot)
+  const wMin = measureLegendText(minLabel, LABEL_SIZE)
+  const wMax = measureLegendText(maxLabel, LABEL_SIZE)
+  const wPivot = measureLegendText(pivotLabel, LABEL_SIZE)
+  // grow past the minimum only when the two end labels would otherwise collide
+  const barWidth = Math.max(MIN_BAR_WIDTH, wMin + wMax + 6)
+  const xpos = Math.max(0, canvasWidth - barWidth - 10)
+
+  // Where the pivot sits along the bar, so the white point is marked where it
+  // actually falls rather than at the middle. Undefined when it isn't on the bar
+  // at all: a degenerate domain has no bar to place it on, and all-positive data
+  // pivoted at 0 (the default) puts it exactly on the min end, where a second
+  // label would just overprint the first.
+  const pivotX =
+    max > min && ramp.pivot > min && ramp.pivot < max
+      ? (barWidth * (ramp.pivot - min)) / (max - min)
+      : undefined
+  // The tick alone carries the position when the number can't fit between the
+  // end labels — squeezed that tightly it is within rounding of one of them.
+  const labelPivot =
+    pivotX !== undefined &&
+    pivotX - wPivot / 2 > wMin &&
+    pivotX + wPivot / 2 < barWidth - wMax
+  const labelY = BAR_HEIGHT + LABEL_SIZE + 4
   return (
     <g>
       <defs>
-        <linearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
+        <linearGradient id={ramp.gradientId} x1="0" x2="1" y1="0" y2="0">
           {rampStops(domain, ramp, isLog).map(s => (
             <stop key={s.offset} offset={s.offset} stopColor={s.color} />
           ))}
@@ -100,38 +134,82 @@ export default function ScoreLegend({
       <rect
         x={xpos - 3}
         y={0}
-        width={boxWidth + 6}
-        height={BAR_HEIGHT + LABEL_SIZE + 8}
-        fill="rgba(255,255,255,0.8)"
+        width={barWidth + 6}
+        height={RAMP_LEGEND_HEIGHT}
+        fill={PAPER}
       />
       <rect
         x={xpos}
         y={3}
-        width={BAR_WIDTH}
+        width={barWidth}
         height={BAR_HEIGHT}
-        fill={`url(#${gradientId})`}
+        fill={`url(#${ramp.gradientId})`}
         stroke="rgba(0,0,0,0.25)"
         strokeWidth={0.5}
       />
-      <text x={xpos} y={BAR_HEIGHT + LABEL_SIZE + 4} fontSize={LABEL_SIZE}>
-        {labels[0]}
+      {pivotX === undefined ? null : (
+        <line
+          x1={xpos + pivotX}
+          x2={xpos + pivotX}
+          y1={3}
+          y2={3 + BAR_HEIGHT}
+          stroke="rgba(0,0,0,0.4)"
+          strokeWidth={0.5}
+        />
+      )}
+      <text x={xpos} y={labelY} fontSize={LABEL_SIZE}>
+        {minLabel}
       </text>
+      {labelPivot ? (
+        <text
+          x={xpos + pivotX}
+          y={labelY}
+          fontSize={LABEL_SIZE}
+          textAnchor="middle"
+        >
+          {pivotLabel}
+        </text>
+      ) : null}
       <text
-        x={xpos + BAR_WIDTH * pivotFrac}
-        y={BAR_HEIGHT + LABEL_SIZE + 4}
-        fontSize={LABEL_SIZE}
-        textAnchor="middle"
-      >
-        {labels[1]}
-      </text>
-      <text
-        x={xpos + BAR_WIDTH}
-        y={BAR_HEIGHT + LABEL_SIZE + 4}
+        x={xpos + barWidth}
+        y={labelY}
         fontSize={LABEL_SIZE}
         textAnchor="end"
       >
-        {`${labels[2]}${suffix}`}
+        {maxLabel}
       </text>
     </g>
+  )
+}
+
+export default function ScoreLegend({
+  domain,
+  scaleType,
+  canvasWidth,
+  ramp,
+}: {
+  domain: [number, number]
+  scaleType: string
+  canvasWidth: number
+  // omitted outside density mode, and when rows carry their own colors (there
+  // is then no single ramp to draw)
+  ramp?: ScoreRamp
+}) {
+  const isLog = scaleType === 'log'
+  const suffix = isLog ? ' (log)' : ''
+  return ramp ? (
+    <ScoreRampLegend
+      domain={domain}
+      suffix={suffix}
+      canvasWidth={canvasWidth}
+      ramp={ramp}
+      isLog={isLog}
+    />
+  ) : (
+    <ScoreTextLegend
+      domain={domain}
+      suffix={suffix}
+      canvasWidth={canvasWidth}
+    />
   )
 }

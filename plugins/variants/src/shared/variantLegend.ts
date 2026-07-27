@@ -1,5 +1,3 @@
-import { measureText } from '@jbrowse/core/util'
-
 import {
   NO_CALL_COLOR,
   OTHER_ALT_COLOR,
@@ -19,34 +17,6 @@ import type {
   LegendItem,
   LegendSection,
 } from '@jbrowse/plugin-linear-genome-view'
-
-const LABEL_PADDING_PX = 10
-const SWATCH_ONLY_WIDTH_PX = 20
-
-// Width of the legend label column: the widest sample label at the given font
-// size plus padding, or a fixed swatch width when labels are hidden.
-export function getMaxLabelWidth({
-  sources,
-  fontSize,
-  canDisplayLabels,
-}: {
-  sources: Source[] | undefined
-  fontSize: number
-  canDisplayLabels: boolean
-}) {
-  let maxWidth = 0
-  if (sources) {
-    for (const s of sources) {
-      const width = canDisplayLabels
-        ? measureText(s.label ?? s.name, fontSize) + LABEL_PADDING_PX
-        : SWATCH_ONLY_WIDTH_PX
-      if (width > maxWidth) {
-        maxWidth = width
-      }
-    }
-  }
-  return maxWidth
-}
 
 // Pure legend builders, split out of MultiSampleVariantBaseModel so they can be
 // unit-tested without instantiating the display model. The model's

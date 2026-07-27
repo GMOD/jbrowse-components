@@ -1,7 +1,6 @@
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import {
   getGenotypeLegendItems,
-  getMaxLabelWidth,
   getSampleGroupLegendItems,
   getVariantLegendSections,
 } from './variantLegend.ts'
@@ -190,38 +189,6 @@ describe('getVariantLegendSections', () => {
       sources,
     })
     expect(sections.map(s => s.id)).toEqual(['group'])
-  })
-})
-
-describe('getMaxLabelWidth', () => {
-  const sources: Source[] = [
-    { name: 'a', color: '#a' },
-    { name: 'bb', color: '#b' },
-  ]
-
-  it('is 0 when there are no sources', () => {
-    expect(
-      getMaxLabelWidth({
-        sources: undefined,
-        fontSize: 12,
-        canDisplayLabels: true,
-      }),
-    ).toBe(0)
-    expect(
-      getMaxLabelWidth({ sources: [], fontSize: 12, canDisplayLabels: true }),
-    ).toBe(0)
-  })
-
-  it('uses the fixed swatch width when labels are hidden', () => {
-    expect(
-      getMaxLabelWidth({ sources, fontSize: 12, canDisplayLabels: false }),
-    ).toBe(20)
-  })
-
-  it('measures labels (plus padding) when labels are shown', () => {
-    expect(
-      getMaxLabelWidth({ sources, fontSize: 12, canDisplayLabels: true }),
-    ).toBeGreaterThanOrEqual(10)
   })
 })
 

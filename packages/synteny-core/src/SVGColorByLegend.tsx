@@ -1,9 +1,5 @@
-import {
-  getFillProps,
-  getStrokeProps,
-  measureText,
-  stripAlpha,
-} from '@jbrowse/core/util'
+import { measureLegendText } from '@jbrowse/core/ui'
+import { getFillProps, getStrokeProps, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
@@ -24,6 +20,11 @@ const perSequenceNote = 'Distinct color per sequence'
 // SVG counterpart of the on-screen ColorByLegend: a bordered, translucent box
 // floated at the top-right of the plot. Reads the same swatch spec the HTML
 // legend and the renderer use, so colors and labels can't drift.
+//
+// Widths come from measureLegendText, not measureText: these <text> nodes set no
+// font-family and so render in the wider app font, and the raw Helvetica
+// estimate under-measured them enough that a long chip label ran out past the
+// box border.
 export function SVGColorByLegend({
   colorBy,
   viewWidth,
@@ -49,25 +50,25 @@ export function SVGColorByLegend({
 
   const rampRow =
     swatch?.kind === 'ramp'
-      ? measureText(swatch.minLabel, rowSize) +
+      ? measureLegendText(swatch.minLabel, rowSize) +
         gap +
         barW +
         gap +
-        measureText(swatch.maxLabel, rowSize)
+        measureLegendText(swatch.maxLabel, rowSize)
       : 0
   const chipRows =
     swatch?.kind === 'chips'
       ? Math.max(
           ...swatch.chips.map(
-            c => swatchBox + gap + measureText(c.label, rowSize),
+            c => swatchBox + gap + measureLegendText(c.label, rowSize),
           ),
         )
       : 0
-  const noteRow = swatch ? 0 : measureText(perSequenceNote, rowSize)
+  const noteRow = swatch ? 0 : measureLegendText(perSequenceNote, rowSize)
   const bodyRows = swatch?.kind === 'chips' ? swatch.chips.length : 1
 
   const contentW = Math.max(
-    measureText(title, titleSize),
+    measureLegendText(title, titleSize),
     rampRow,
     chipRows,
     noteRow,
@@ -116,7 +117,7 @@ export function SVGColorByLegend({
             {swatch.minLabel}
           </text>
           <rect
-            x={pad + measureText(swatch.minLabel, rowSize) + gap}
+            x={pad + measureLegendText(swatch.minLabel, rowSize) + gap}
             y={bodyTop + (rowH - swatchBox) / 2}
             width={barW}
             height={swatchBox}
@@ -125,7 +126,13 @@ export function SVGColorByLegend({
             {...getStrokeProps(theme.palette.divider)}
           />
           <text
-            x={pad + measureText(swatch.minLabel, rowSize) + gap + barW + gap}
+            x={
+              pad +
+              measureLegendText(swatch.minLabel, rowSize) +
+              gap +
+              barW +
+              gap
+            }
             y={bodyTop + rowH / 2}
             fontSize={rowSize}
             dominantBaseline="middle"

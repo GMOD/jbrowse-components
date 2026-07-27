@@ -12,6 +12,7 @@ function legendTransform(positionOutside: boolean) {
       <LDSVGColorLegend
         ldMetric="r2"
         width={500}
+        idSuffix="test-display"
         positionOutside={positionOutside}
       />
     </svg>,

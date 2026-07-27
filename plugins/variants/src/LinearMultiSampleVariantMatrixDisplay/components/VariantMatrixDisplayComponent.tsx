@@ -7,7 +7,7 @@ import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import LegendOverlay from '../../shared/components/MultiSampleVariantLegendOverlay.tsx'
+import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody from './VariantMatrixComponent.tsx'
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
@@ -51,7 +51,7 @@ const VariantMatrixDisplayComponent = observer(
                 canvas={canvas}
               />
             </div>
-            <LegendOverlay model={model} top={lineZoneHeight} />
+            <VariantOverlay model={model} top={lineZoneHeight} />
             <TreeSidebar model={model} />
             {inMatrix ? (
               <Crosshair mouseState={mouseState} model={model} />

@@ -6,7 +6,7 @@ import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import LegendOverlay from '../../shared/components/MultiSampleVariantLegendOverlay.tsx'
+import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import VariantBody from './VariantComponent.tsx'
 import { VariantRenderer } from './VariantRenderer.ts'
 
@@ -34,7 +34,7 @@ const VariantDisplayComponent = observer(
         {({ canvasRef, canvas }) => (
           <>
             <VariantBody model={model} canvasRef={canvasRef} canvas={canvas} />
-            <LegendOverlay model={model} />
+            <VariantOverlay model={model} />
             <TreeSidebar model={model} />
             {mouseState ? (
               <Crosshair mouseState={mouseState} model={model} />

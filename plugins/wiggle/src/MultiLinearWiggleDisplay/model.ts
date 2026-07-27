@@ -191,6 +191,25 @@ export default function stateModelFactory(
         return self.rowHeight < 70
       },
 
+      /**
+       * #getter
+       * The color ramp the density legend draws, or undefined when there is no
+       * single ramp to describe. Only density spends color on the score, and
+       * only when every row shares the one ramp: a source with its own color is
+       * drawn on its own pos side (see buildSourceRenderData), so a single bar
+       * would describe none of them.
+       */
+      get scoreRamp() {
+        return self.isDensityMode && self.sources.every(s => !s.color)
+          ? {
+              posColor: self.posColor,
+              negColor: self.negColor,
+              pivot: self.bicolorPivot,
+              gradientId: `score-ramp-${self.id}`,
+            }
+          : undefined
+      },
+
       get ticks() {
         return computeYTicks({
           height: self.rowHeight,
@@ -264,19 +283,6 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether the overlay color key actually draws. The on-screen overlay and
-       * the SVG export both read this, so a dismissed legend can't linger in
-       * the export. Reads the slot rather than the sibling `showLegend` getter,
-       * which isn't on `self`'s type until the next `.views` layer.
-       */
-      get hasOverlayLegend(): boolean {
-        return (
-          self.isOverlay && self.numSources > 1 && getConf(self, 'showLegend')
-        )
-      },
-
-      /**
-       * #getter
        * Offset the track label above the visualization so the stacked
        * per-source rows aren't hidden behind an overlapping label.
        */
@@ -285,6 +291,16 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Whether the overlay color key actually draws. The on-screen overlay and
+       * the SVG export both read this, so a dismissed legend can't linger in
+       * the export.
+       */
+      get hasOverlayLegend(): boolean {
+        return self.overlayLegendApplies && self.showLegend
+      },
+
       /**
        * #getter
        * The positioned dendrogram, or undefined in an overlay mode: overlay

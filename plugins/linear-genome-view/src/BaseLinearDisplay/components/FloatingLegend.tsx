@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { nonEmptyLegendSections } from '@jbrowse/core/ui'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
@@ -7,6 +8,8 @@ import Link from '@mui/material/Link'
 import { observer } from 'mobx-react'
 
 import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
+
+import type { LegendItem, LegendSection } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
   legend: {
@@ -86,16 +89,10 @@ const useStyles = makeStyles()(theme => ({
 
 const DEFAULT_MAX_ITEMS = 12
 
-export interface LegendItem {
-  color?: string
-  label: string
-}
-
-export interface LegendSection {
-  id: string
-  title?: string
-  items: LegendItem[]
-}
+// The spec itself lives in core beside SvgColorLegend, so the export legends can
+// flatten the very value this component renders (see legendEntries). Re-exported
+// here because every display already imports it from this plugin.
+export type { LegendItem, LegendSection, LegendSpec } from '@jbrowse/core/ui'
 
 // One list of swatches with its own independent collapse state, so each section
 // in a multi-section legend expands/collapses on its own.
@@ -162,8 +159,7 @@ const FloatingLegend = observer(function FloatingLegend({
 }) {
   const { classes } = useStyles()
 
-  const allSections = sections ?? (items ? [{ id: '', items }] : [])
-  const nonEmpty = allSections.filter(s => s.items.length > 0)
+  const nonEmpty = nonEmptyLegendSections({ items, sections })
   if (nonEmpty.length === 0) {
     return null
   }

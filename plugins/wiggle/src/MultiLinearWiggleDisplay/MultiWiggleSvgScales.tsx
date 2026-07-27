@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
+import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 // Row labels (non-overlay mode) plus the Y-scale legend, shared by the live
@@ -31,10 +32,7 @@ interface ScaleModel {
   rowHeightTooSmallForScalebar: boolean
   numSources: number
   numRows: number
-  posColor: string
-  negColor: string
-  bicolorPivot: number
-  id: string
+  scoreRamp: ScoreRamp | undefined
 }
 
 export default observer(function MultiWiggleSvgScales({
@@ -61,19 +59,8 @@ export default observer(function MultiWiggleSvgScales({
     rowHeightTooSmallForScalebar,
     numSources,
     numRows,
-    posColor,
-    negColor,
-    bicolorPivot,
-    id,
+    scoreRamp,
   } = model
-
-  // Only density spends color on the score, and only when every row shares the
-  // one ramp: a source with its own color is drawn on its own pos side (see
-  // buildSourceRenderData), so a single bar would describe none of them.
-  const ramp =
-    isDensityMode && sources.every(s => !s.color)
-      ? { posColor, negColor, pivot: bicolorPivot }
-      : undefined
 
   const labels =
     numSources > 1 && !isOverlay ? (
@@ -97,8 +84,7 @@ export default observer(function MultiWiggleSvgScales({
       domain={domain}
       scaleType={scaleType}
       canvasWidth={legendRight}
-      ramp={ramp}
-      gradientId={`score-ramp-${id}`}
+      ramp={scoreRamp}
     />
   ) : (
     <g transform={`translate(${scalebarLeft})`}>

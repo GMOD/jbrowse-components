@@ -164,6 +164,27 @@ export default function stateModelFactory(
 
       /**
        * #getter
+       * The color ramp the density legend draws, or undefined when there is no
+       * single ramp to describe. Lives on the model so the on-screen legend and
+       * the SVG export can't disagree about whether density has a ramp.
+       *
+       * Single-wiggle density always draws from posColor (the config doc for
+       * `color` says so), so with bicolor off there is only one side to describe
+       * and the plain [min, max] text stays the honest legend.
+       */
+      get scoreRamp() {
+        return self.isDensityMode && self.useBicolor
+          ? {
+              posColor: self.posColor,
+              negColor: self.negColor,
+              pivot: self.bicolorPivot,
+              gradientId: `score-ramp-${self.id}`,
+            }
+          : undefined
+      },
+
+      /**
+       * #getter
        */
       get renderState() {
         const view = getContainingView(self) as LGV

@@ -2,7 +2,10 @@ import { render } from '@testing-library/react'
 
 import configFactory from '../../LinearMultiSampleVariantDisplay/configSchema.ts'
 import stateModelFactory from '../../LinearMultiSampleVariantDisplay/model.ts'
-import MultiSampleVariantRowColors from './MultiSampleVariantRowColors.tsx'
+import SvgSampleRowLabelGutter from './SvgSampleRowLabelGutter.tsx'
+import { getMaxLabelWidth } from './SvgSampleRowLabels.tsx'
+
+import type { Source } from '../types.ts'
 
 // Regression guard for the fit-mode sidebar labels. In the default
 // fit-to-display-height mode (rowHeight 0) the row-color/label overlay used to
@@ -35,10 +38,42 @@ test('sidebar sample labels render in fit mode', () => {
   // in the right namespace
   const { getByText } = render(
     <svg>
-      <MultiSampleVariantRowColors model={m} />
+      <SvgSampleRowLabelGutter model={m} />
     </svg>,
   )
   getByText('HG001')
   getByText('HG002')
   getByText('HG003')
+})
+
+describe('getMaxLabelWidth', () => {
+  const sources: Source[] = [
+    { name: 'a', color: '#a' },
+    { name: 'bb', color: '#b' },
+  ]
+
+  it('is 0 when there are no sources', () => {
+    expect(
+      getMaxLabelWidth({
+        sources: undefined,
+        fontSize: 12,
+        canDisplayLabels: true,
+      }),
+    ).toBe(0)
+    expect(
+      getMaxLabelWidth({ sources: [], fontSize: 12, canDisplayLabels: true }),
+    ).toBe(0)
+  })
+
+  it('uses the fixed swatch width when labels are hidden', () => {
+    expect(
+      getMaxLabelWidth({ sources, fontSize: 12, canDisplayLabels: false }),
+    ).toBe(20)
+  })
+
+  it('measures labels (plus padding) when labels are shown', () => {
+    expect(
+      getMaxLabelWidth({ sources, fontSize: 12, canDisplayLabels: true }),
+    ).toBeGreaterThanOrEqual(10)
+  })
 })

@@ -50,6 +50,7 @@ with optional clustering and a tree sidebar.
 | [numRows](#getter-numrows)                                           | Getters    | MultiLinearWiggleDisplay                              | Rows actually drawn: overlay collapses every source onto one shared plot.                                                                                                                                                                         |
 | [effectiveRowHeight](#getter-effectiverowheight)                     | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
 | [rowHeightTooSmallForScalebar](#getter-rowheighttoosmallforscalebar) | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
+| [scoreRamp](#getter-scoreramp)                                       | Getters    | MultiLinearWiggleDisplay                              | The color ramp the density legend draws, or undefined when there is no single ramp to describe.                                                                                                                                                   |
 | [ticks](#getter-ticks)                                               | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
 | [renderState](#getter-renderstate)                                   | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
 | [showTree](#getter-showtree)                                         | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
@@ -57,8 +58,8 @@ with optional clustering and a tree sidebar.
 | [showRowSeparators](#getter-showrowseparators)                       | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
 | [showLegend](#getter-showlegend)                                     | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
 | [overlayLegendApplies](#getter-overlaylegendapplies)                 | Getters    | MultiLinearWiggleDisplay                              | Whether the overlay color key applies at all: one source needs no key, and multi-row mode identifies sources by their sidebar row label instead.                                                                                                  |
-| [hasOverlayLegend](#getter-hasoverlaylegend)                         | Getters    | MultiLinearWiggleDisplay                              | Whether the overlay color key actually draws.                                                                                                                                                                                                     |
 | [prefersOffset](#getter-prefersoffset)                               | Getters    | MultiLinearWiggleDisplay                              | Offset the track label above the visualization so the stacked per-source rows aren't hidden behind an overlapping label.                                                                                                                          |
+| [hasOverlayLegend](#getter-hasoverlaylegend)                         | Getters    | MultiLinearWiggleDisplay                              | Whether the overlay color key actually draws.                                                                                                                                                                                                     |
 | [hierarchy](#getter-hierarchy)                                       | Getters    | MultiLinearWiggleDisplay                              | The positioned dendrogram, or undefined in an overlay mode: overlay collapses every source onto one row, so a tree spreading its leaves over the full height would align to nothing.                                                              |
 | [spatialIndex](#getter-spatialindex)                                 | Getters    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
 | [rpcProps](#method-rpcprops)                                         | Methods    | MultiLinearWiggleDisplay                              |                                                                                                                                                                                                                                                   |
@@ -264,6 +265,19 @@ cross hatches), so they can't disagree about how many rows exist.
 type numRows = number
 ```
 
+#### getter: scoreRamp
+
+The color ramp the density legend draws, or undefined when there is no single
+ramp to describe. Only density spends color on the score, and only when every
+row shares the one ramp: a source with its own color is drawn on its own pos
+side (see buildSourceRenderData), so a single bar would describe none of them.
+
+```ts
+type scoreRamp =
+  | { posColor: string; negColor: string; pivot: number; gradientId: string }
+  | undefined
+```
+
 #### getter: overlayLegendApplies
 
 Whether the overlay color key applies at all: one source needs no key, and
@@ -274,17 +288,6 @@ menu checkbox, which has to stay visible while the legend is toggled off.
 type overlayLegendApplies = boolean
 ```
 
-#### getter: hasOverlayLegend
-
-Whether the overlay color key actually draws. The on-screen overlay and the SVG
-export both read this, so a dismissed legend can't linger in the export. Reads
-the slot rather than the sibling `showLegend` getter, which isn't on `self`'s
-type until the next `.views` layer.
-
-```ts
-type hasOverlayLegend = boolean
-```
-
 #### getter: prefersOffset
 
 Offset the track label above the visualization so the stacked per-source rows
@@ -292,6 +295,15 @@ aren't hidden behind an overlapping label.
 
 ```ts
 type prefersOffset = boolean
+```
+
+#### getter: hasOverlayLegend
+
+Whether the overlay color key actually draws. The on-screen overlay and the SVG
+export both read this, so a dismissed legend can't linger in the export.
+
+```ts
+type hasOverlayLegend = boolean
 ```
 
 #### getter: hierarchy

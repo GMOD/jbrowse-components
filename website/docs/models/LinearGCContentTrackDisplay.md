@@ -63,6 +63,7 @@ ReferenceSequenceTrack
 | [isDensityMode](#getter-isdensitymode)                               | Getters    | [LinearWiggleDisplay](../linearwiggledisplay)         |                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [ticks](#getter-ticks)                                               | Getters    | [LinearWiggleDisplay](../linearwiggledisplay)         |                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [prefersOffset](#getter-prefersoffset)                               | Getters    | [LinearWiggleDisplay](../linearwiggledisplay)         | Offset the track label above the plot so the left y-axis stays pinned to the content edge instead of dodging right of the label.                                                                                                                                                                                                                                                                        |
+| [scoreRamp](#getter-scoreramp)                                       | Getters    | [LinearWiggleDisplay](../linearwiggledisplay)         | The color ramp the density legend draws, or undefined when there is no single ramp to describe.                                                                                                                                                                                                                                                                                                         |
 | [renderState](#getter-renderstate)                                   | Getters    | [LinearWiggleDisplay](../linearwiggledisplay)         |                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [rpcProps](#method-rpcprops)                                         | Methods    | [LinearWiggleDisplay](../linearwiggledisplay)         |                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [gpuProps](#method-gpuprops)                                         | Methods    | [LinearWiggleDisplay](../linearwiggledisplay)         | single-source gpuProps mapped onto the multi-source build path: - bicolor: no source color override; build emits pos+neg with their respective colors - solid: worker put all features in pos arrays (useBicolor=false); non-density modes use the user's color; density uses posColor (multi default, so leave source.color undefined) Solid mode overrides `negColor` too, not just the source color. |
@@ -296,6 +297,22 @@ axis (just a top score legend), so let the label overlap.
 
 ```ts
 type prefersOffset = boolean
+```
+
+#### getter: scoreRamp
+
+The color ramp the density legend draws, or undefined when there is no single
+ramp to describe. Lives on the model so the on-screen legend and the SVG export
+can't disagree about whether density has a ramp.
+
+Single-wiggle density always draws from posColor (the config doc for `color`
+says so), so with bicolor off there is only one side to describe and the plain
+[min, max] text stays the honest legend.
+
+```ts
+type scoreRamp =
+  | { posColor: string; negColor: string; pivot: number; gradientId: string }
+  | undefined
 ```
 
 | Member                                                                   | Type                                                                           |

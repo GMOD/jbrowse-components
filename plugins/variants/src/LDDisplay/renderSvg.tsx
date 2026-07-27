@@ -153,6 +153,7 @@ function LdSvgBody({
           ldMetric={ldMetric}
           width={visibleWidth}
           signedLD={signedLD}
+          idSuffix={self.id}
           // >0 means the container reserved a legend area to the right (it
           // maxes svgLegendWidth() across tracks). Absent/0 — a container that
           // reserves nothing — floats the legend over the plot instead.

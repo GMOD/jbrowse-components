@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- geometry constants belong with this leaf SVG primitive; no component state to fast-refresh */
-import { measureText } from '../util/index.ts'
+import { measureLegendText } from './measureLegendText.ts'
 
 import type { ReactNode } from 'react'
 
@@ -17,10 +17,6 @@ export interface ColorLegendEntry {
   marker?: ReactNode
 }
 
-// measureText uses a Helvetica width table, but these <text> nodes have no
-// font-family and render in the wider app font (Roboto), so pad the estimate
-// before sizing the paper behind a label or it clips.
-const APP_FONT_WIDTH_RATIO = 1.1
 const FONT_SIZE = 10
 const TEXT_LEFT = 16
 
@@ -84,7 +80,7 @@ export default function SvgColorLegend({
   for (const label of overflowLabel === undefined
     ? shown.map(e => e.label)
     : [...shown.map(e => e.label), overflowLabel]) {
-    const w = measureText(label, FONT_SIZE) * APP_FONT_WIDTH_RATIO
+    const w = measureLegendText(label, FONT_SIZE)
     if (w > maxLabelWidth) {
       maxLabelWidth = w
     }

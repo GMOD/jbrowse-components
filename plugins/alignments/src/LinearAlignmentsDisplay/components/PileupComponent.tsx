@@ -9,6 +9,7 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
+import { getAlignmentsLegendSections } from '../../shared/legendUtils.ts'
 import {
   AXIS_SVG_WIDTH,
   COMPACT_AXIS_HEIGHT,
@@ -613,30 +614,12 @@ const LegendHost = observer(function LegendHost({
   if (!model.showLegend) {
     return null
   }
-  // Three distinct color vocabularies, each keyed on its own: the read fills,
-  // the paired-end arc / read-cloud colors (insert size and orientation, when
-  // that differs from what the fills use — else the arc buckets merge into the
-  // read key rather than repeating the same swatches), and the linked-read
-  // connection curves. Empty sections are dropped and titles only appear once
-  // more than one survives, so a plain track still shows a single untitled list.
   const onDismiss = () => {
     model.setShowLegend(false)
   }
   return (
     <FloatingLegend
-      sections={[
-        { id: 'reads', title: 'Read colors', items: model.legendItems() },
-        {
-          id: 'arcs',
-          title: model.arcLegendTitle,
-          items: model.arcLegendItems(),
-        },
-        {
-          id: 'connections',
-          title: 'Read connections',
-          items: model.bezierLegendItems(),
-        },
-      ]}
+      sections={getAlignmentsLegendSections(model)}
       onDismiss={onDismiss}
     />
   )

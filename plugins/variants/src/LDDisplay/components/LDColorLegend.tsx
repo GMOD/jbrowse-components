@@ -5,9 +5,11 @@ import LDColorLegendContent from './LDColorLegendContent.tsx'
 export default function LDColorLegend({
   ldMetric,
   signedLD = false,
+  idSuffix,
 }: {
   ldMetric: string
   signedLD?: boolean
+  idSuffix: string
 }) {
   return (
     <svg
@@ -21,7 +23,11 @@ export default function LDColorLegend({
         overflow: 'visible',
       }}
     >
-      <LDColorLegendContent ldMetric={ldMetric} signedLD={signedLD} />
+      <LDColorLegendContent
+        ldMetric={ldMetric}
+        signedLD={signedLD}
+        idSuffix={idSuffix}
+      />
     </svg>
   )
 }

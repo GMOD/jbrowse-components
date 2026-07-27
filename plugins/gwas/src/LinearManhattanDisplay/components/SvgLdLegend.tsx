@@ -1,4 +1,4 @@
-import { SvgColorLegend } from '@jbrowse/core/ui'
+import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 
 import { LD_LEGEND, LD_LEGEND_TITLE } from '../ldBins.ts'
 
@@ -31,20 +31,24 @@ export default function SvgLdLegend({
       canvasWidth={canvasWidth}
       maxHeight={maxHeight}
       testid="manhattan-ld-legend"
-      entries={[
-        { key: 'title', label: LD_LEGEND_TITLE },
-        ...LD_LEGEND.map(({ label, color }) => ({ key: label, label, color })),
-        ...(indexSnpMissing
-          ? [
-              {
-                key: 'index-missing',
-                label: indexSnpOffscreen
-                  ? 'Index SNP off-screen: all grey'
-                  : 'Index SNP not in LD data: all grey',
-              },
-            ]
-          : []),
-      ]}
+      // LD_LEGEND_TITLE is the box title, not a section title, so it shows even
+      // though this is the only section — the same way the live legend passes it
+      // to FloatingLegend's `title`.
+      entries={legendEntries({
+        title: LD_LEGEND_TITLE,
+        items: [
+          ...LD_LEGEND,
+          ...(indexSnpMissing
+            ? [
+                {
+                  label: indexSnpOffscreen
+                    ? 'Index SNP off-screen: all grey'
+                    : 'Index SNP not in LD data: all grey',
+                },
+              ]
+            : []),
+        ],
+      })}
     />
   )
 }

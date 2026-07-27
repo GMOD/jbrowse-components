@@ -1,5 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import { SvgColorLegend, createJBrowseTheme } from '@jbrowse/core/ui'
+import {
+  SvgColorLegend,
+  createJBrowseTheme,
+  legendEntries,
+} from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -10,6 +14,7 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
+import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
@@ -195,10 +200,9 @@ function AlignmentsSvgBody({
 // floated over the right edge of the plot so it lands where the on-screen legend
 // does. No `onDismiss`: an exported legend can't be clicked.
 //
-// On screen each color vocabulary gets its own titled section. Here that
-// becomes one flat list with color-less heading rows, emitted only for the
-// sections that survive alongside the read fills — the same condition
-// `LegendHost` relies on to decide whether titles appear at all.
+// Both paths read the same section list and flatten it the same way — titled
+// sections become color-less heading rows — so a heading the live legend shows
+// can't go missing here.
 function ColorKey({
   model,
   canvasWidth,
@@ -208,24 +212,9 @@ function ColorKey({
   canvasWidth: number
   maxHeight: number
 }) {
-  const sections = [
-    { id: 'arcs', title: model.arcLegendTitle, items: model.arcLegendItems() },
-    {
-      id: 'connections',
-      title: 'Read connections',
-      items: model.bezierLegendItems(),
-    },
-  ].filter(s => s.items.length > 0)
-  const entries = [
-    ...model.legendItems().map((item, i) => ({ key: `read-${i}`, ...item })),
-    ...sections.flatMap(s => [
-      { key: `${s.id}-heading`, label: s.title },
-      ...s.items.map((item, i) => ({ key: `${s.id}-${i}`, ...item })),
-    ]),
-  ]
   return (
     <SvgColorLegend
-      entries={entries}
+      entries={legendEntries({ sections: getAlignmentsLegendSections(model) })}
       canvasWidth={canvasWidth}
       maxHeight={maxHeight}
       testid="alignments-color-legend"

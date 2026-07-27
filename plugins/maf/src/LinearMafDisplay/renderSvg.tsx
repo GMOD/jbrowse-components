@@ -1,7 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
-import { SvgColorLegend, createJBrowseTheme } from '@jbrowse/core/ui'
+import {
+  SvgColorLegend,
+  createJBrowseTheme,
+  legendEntries,
+} from '@jbrowse/core/ui'
 import { colorLongreadInv } from '@jbrowse/core/ui/theme'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -235,10 +239,7 @@ function MafSvgBody({
           swatches are the only decoder. No `onDismiss`: an exported legend
           can't be clicked. */}
       <SvgColorLegend
-        entries={model.legendItems.map((item, i) => ({
-          key: `maf-legend-${i}`,
-          ...item,
-        }))}
+        entries={legendEntries({ items: model.legendItems })}
         canvasWidth={width}
         maxHeight={height}
         testid="maf-color-legend"

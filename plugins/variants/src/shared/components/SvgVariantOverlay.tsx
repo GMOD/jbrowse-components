@@ -1,7 +1,7 @@
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
-import MultiSampleVariantRowColors from './MultiSampleVariantRowColors.tsx'
+import SvgSampleRowLabelGutter from './SvgSampleRowLabelGutter.tsx'
 import SvgVariantLegend from './SvgVariantLegend.tsx'
 
 import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
@@ -15,7 +15,7 @@ import type React from 'react'
 // draws in that top strip (the matrix display's connector lines); the legend
 // floats over the whole band, as it does on screen.
 //
-// The sidebar labels are `MultiSampleVariantRowColors`, the very component the
+// The sidebar labels are `SvgSampleRowLabelGutter`, the very component the
 // on-screen overlay renders, rather than `SvgTreeSidebar`'s default
 // `SvgRowLabels` — which knows only `labelColor` and so dropped the `color`
 // swatch column a "Color by → population" track is read through. Passing it as
@@ -62,7 +62,7 @@ const SvgVariantOverlay = ({
           rowHeight={rowHeight}
           treeAreaWidth={treeAreaWidth}
           scrollTop={scrollTop}
-          labels={<MultiSampleVariantRowColors model={model} />}
+          labels={<SvgSampleRowLabelGutter model={model} />}
         />
       </g>
       {showLegend ? (

@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import ScoreLegend from '../../shared/ScoreLegend.tsx'
+import ScoreLegend, { scoreLegendHeight } from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
@@ -123,7 +123,9 @@ const WiggleBody = observer(function WiggleBody({
             top: 0,
             left: 0,
             pointerEvents: 'none',
-            height: 16,
+            // an <svg> clips to its own box, so it has to be as tall as the
+            // legend the ramp/text choice produces
+            height: scoreLegendHeight(model.scoreRamp),
             width,
           }}
         >
@@ -131,6 +133,7 @@ const WiggleBody = observer(function WiggleBody({
             domain={model.domain}
             scaleType={model.scaleType}
             canvasWidth={legendWidth}
+            ramp={model.scoreRamp}
           />
         </svg>
       ) : model.ticks ? (

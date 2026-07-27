@@ -22,9 +22,40 @@ import type {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette } from '../LinearAlignmentsDisplay/shaders/colors.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type { LegendItem, LegendSection } from '@jbrowse/core/ui'
 
-export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+export type { LegendItem } from '@jbrowse/core/ui'
+
+/**
+ * The display's three color vocabularies, each keyed on its own: the read fills,
+ * the paired-end arc / read-cloud colors (insert size and orientation, when that
+ * differs from what the fills use — else the arc buckets merge into the read key
+ * rather than repeating the same swatches), and the linked-read connection
+ * curves. The on-screen `FloatingLegend` and the SVG export both build from this
+ * one list, so a heading can't appear in one and not the other. Empty sections
+ * drop out and titles only appear once more than one survives, so a plain track
+ * still shows a single untitled list.
+ */
+export function getAlignmentsLegendSections(model: {
+  legendItems: () => LegendItem[]
+  arcLegendTitle: string
+  arcLegendItems: () => LegendItem[]
+  bezierLegendItems: () => LegendItem[]
+}): LegendSection[] {
+  return [
+    { id: 'reads', title: 'Read colors', items: model.legendItems() },
+    {
+      id: 'arcs',
+      title: model.arcLegendTitle,
+      items: model.arcLegendItems(),
+    },
+    {
+      id: 'connections',
+      title: 'Read connections',
+      items: model.bezierLegendItems(),
+    },
+  ]
+}
 
 function hslRamp(
   saturation: number,

@@ -1,3 +1,4 @@
+import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../../util.ts'
 import type {
@@ -26,6 +27,7 @@ export interface MultiWiggleDisplayModel
   showTree: boolean
   showRowSeparators: boolean
   hasOverlayLegend: boolean
+  scoreRamp: ScoreRamp | undefined
   setShowLegend: (arg: boolean) => void
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode

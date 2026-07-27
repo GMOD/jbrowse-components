@@ -72,8 +72,10 @@ export type ColorBySwatchSpec =
       kind: 'ramp'
       background: string
       stops: GradientStop[]
-      minLabel?: string
-      maxLabel?: string
+      // required: `ramp()` is the only producer and always names both ends, so a
+      // labelless ramp is not a state either legend has to render
+      minLabel: string
+      maxLabel: string
     }
   | { kind: 'chips'; chips: ColorChip[] }
 
