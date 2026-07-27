@@ -356,7 +356,14 @@ export const svSpecs: ScreenshotSpec[] = [
               readConnections: 'arc',
               // arcs drawn below the coverage band (reviewer)
               readConnectionsDown: true,
-              height: 1300,
+              // An arc's apex height in px is its genomic span in px (the band
+              // maps availH px to availH/pxPerBp bp), clamped to the band. At
+              // 3600bp over ~1030px the concordant pairs alone want ~115px, so
+              // the 40px default clipped every arc to the ceiling and the band
+              // was one solid mass. 200 lets the concordant domes resolve below
+              // the discordant pairs spanning the 1.3kb duplication.
+              readConnectionsHeight: 200,
+              height: 1460,
               coverageHeight: 120,
               // taller reads so the minority green (same-orientation /
               // inverted) pairs are legible instead of 3px slivers
@@ -374,7 +381,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // taller window so the enlarged pileup + the feature-details sidebar fit,
     // plus headroom for the annotation callouts pushed down off the pileup
-    viewportHeight: 1850,
+    viewportHeight: 2010,
     settleMs: 30000,
     // suppress the hover tooltip the click leaves over the variant track
     // (reviewer: a stray mouseover tooltip was captured on the variant lane)
@@ -413,19 +420,32 @@ export const svSpecs: ScreenshotSpec[] = [
         from: { x: 1015, y: 850 },
         anchor: { text: 'CPX_TYPE' },
       },
+      // Both evidence callouts anchor to the pileup track's own top edge
+      // (fracY 0 + dy), so they sit a fixed distance below the arc band however
+      // tall it is, instead of encoding the whole layout in a viewport y. The
+      // locus is the view's left edge, which puts each pill at the track's left
+      // margin.
       {
-        // inversion evidence
+        // inversion evidence, just below the arc band (coverage 120 + arcs 200)
         type: 'text',
-        x: 60,
-        y: 520,
+        anchor: {
+          track: 'HG02768.final',
+          locus: '1:39,658,200',
+          fracY: 0,
+          dy: 360,
+        },
         text: 'Green (LL), navy (RR), and magenta split reads flag the inverted segment.',
         maxWidth: 470,
       },
       {
         // duplication evidence, stacked below with a gap
         type: 'text',
-        x: 60,
-        y: 690,
+        anchor: {
+          track: 'HG02768.final',
+          locus: '1:39,658,200',
+          fracY: 0,
+          dy: 530,
+        },
         text: 'Elevated coverage and arcs mark the duplicated copy.',
         maxWidth: 470,
       },
@@ -436,7 +456,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // beside prose — normal read height so the minority LL/RR pairs are legible,
   // the variant's INFO fields open, callouts naming each line of evidence. All
   // three work against a gallery card: the drawer is ~26% of the width and
-  // overflows below the app frame, and the result is a 3000x3700 portrait PNG
+  // overflows below the app frame, and the result is a 3000x4000 portrait PNG
   // where the informative discordant cluster is the bottom sixth.
   //
   // So: no drawer, no callouts, and the Compact read preset (featureHeight 3,
@@ -449,7 +469,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // heightMode 'grow' rather than a guessed `height`: the discordant reads land
   // at the BOTTOM of the pileup layout, so a track too short by any amount
   // scrolls away exactly the thing being shown. Grow fits every row (~126 rows
-  // x 3px + coverage, well under GROW_MAX_HEIGHT 800).
+  // x 3px + coverage + the 200px arc band, still under GROW_MAX_HEIGHT 800).
   {
     mode: 'url',
     name: 'gallery/inverted_duplication',
@@ -467,6 +487,11 @@ export const svSpecs: ScreenshotSpec[] = [
               linkedReads: 'normal',
               readConnections: 'arc',
               readConnectionsDown: true,
+              // same reasoning as the doc spec above: at the 40px default every
+              // arc clips to the ceiling. The card is wider (no drawer), so
+              // 0.41 px/bp — a concordant ~400bp pair domes to ~165px and the
+              // band has to clear that for the arcs to separate at all.
+              readConnectionsHeight: 200,
               heightMode: 'grow',
               coverageHeight: 120,
               featureHeight: 3,
@@ -480,10 +505,12 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    // must clear the grown track (~610px here), else the capture crops exactly
-    // the discordant cluster at the bottom of the layout — measured against the
-    // rendered app rather than guessed, so there is no trailing whitespace
-    viewportHeight: 900,
+    // must clear the grown track (~770px here: the 610px stack plus the 160px
+    // the arc band gained, still under GROW_MAX_HEIGHT's 800), else the capture
+    // crops exactly the discordant cluster at the bottom of the layout —
+    // measured against the rendered app rather than guessed, so there is no
+    // trailing whitespace
+    viewportHeight: 1060,
     settleMs: 30000,
   },
 
@@ -1091,25 +1118,64 @@ export const svSpecs: ScreenshotSpec[] = [
   // loss. A homozygous deletion reads differently from a heterozygous (single-
   // copy) loss: depth drops to the floor (both parental copies gone), whereas
   // a het loss only halves depth. The deletion is punched into a larger
-  // single-copy-loss arm (CN=1), so it shows as a deeper focal dip. True
-  // per-base tumor coverage (mosdepth on a targeted BAM slice, not the 500bp-
-  // binned log2 ratio) resolves the ~20kb event's boundaries almost exactly:
-  // depth drops from ~65x to precisely 0 at chr9:21,952,497-21,972,343. Shown
-  // over NCBI RefSeq genes (the config's hg38_ncbiRefSeq_ucsc, compact for
-  // CDKN2A context), the raw HG008-T long-read pileup with supplementary
-  // alignments linked (the deletion is a clean drop-out in the reads
-  // themselves), and the CN-labeled benchmark CNV track (the config's
-  // hg008_cnv_calls) whose label reads out the called copy number (CN 0). The
-  // coarse log2 ratio was dropped (it duplicates the per-base
-  // coverage without adding scale context at this zoom).
+  // single-copy-loss arm (CN=1), so it shows as a deeper focal dip. Shown over
+  // NCBI RefSeq genes (the config's hg38_ncbiRefSeq_ucsc, compact for CDKN2A
+  // context), tumor-vs-normal per-base coverage, the raw HG008-T long-read
+  // pileup with supplementary alignments linked (the deletion is a clean
+  // drop-out in the reads themselves), and the CN-labeled benchmark CNV track
+  // (the config's hg008_cnv_calls) whose label reads out the called copy
+  // number (CN 0). The coarse log2 ratio was dropped (it duplicates the
+  // per-base coverage without adding scale context at this zoom).
+  //
+  // The coverage lane is a MultiQuantitativeTrack over the two hosted per-base
+  // bigWigs rather than HiFiCNV's binned depth, which folds in what used to be
+  // a second near-identical figure (sv_cgiab/cdkn2a_tumor_normal_coverage: same
+  // window, same gene lane, same CNV lane, tumor-vs-normal coverage as two
+  // separate wiggle tracks). One row per sample in one track is what gives the
+  // two a shared axis by construction: multirowxy with an explicit 0..80
+  // minScore/maxScore, since independent autoscaling rescales each row to its
+  // own data and the rows stop being comparable. Over chr9:21,953,000-21,971,000
+  // the tumor mean is 0.0 (56.8x and 69.2x in the flanks) against the normal's
+  // 41.9x. Per-base (mosdepth on a targeted BAM slice), not the 500bp-binned
+  // log2 ratio, so the ~20kb event's boundaries resolve almost exactly: depth
+  // drops from ~65x to 0 at chr9:21,952,497-21,972,343.
   {
     mode: 'url',
     name: 'sv_cgiab/driver_cdkn2a_deletion',
     url: cgiabUrl({
       sessionTracks: [
-        // HiFiCNV depth for copy-number context; the exact deletion boundaries
-        // are read off the read pileup below (depth is binned)
-        HG008_DEPTH_TRACK,
+        {
+          // tumor over normal, one row each on a shared fixed scale
+          type: 'MultiQuantitativeTrack',
+          trackId: 'hg008_tn_perbase',
+          name: 'HG008 tumor vs matched normal coverage (per-base)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                type: 'BigWigAdapter',
+                name: 'HG008-T (tumor)',
+                // tumor red / normal blue, the same set1 pair the COLO829
+                // tumor-normal figure above pins
+                color: '#e41a1c',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_coverage_perbase.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                type: 'BigWigAdapter',
+                name: 'HG008-N (normal)',
+                color: '#377eb8',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
+          },
+        },
         {
           // Tumor PacBio-HiFi reads, re-declared inline so fetchSizeLimit can be
           // raised — the default 5 MB limit blocks the ~116x pileup at this scale
@@ -1159,17 +1225,19 @@ export const svSpecs: ScreenshotSpec[] = [
               geneGlyphMode: 'longestCoding',
             },
             {
-              // xyplot, not scatter: HiFiCNV is binned at 1kb, so across a 60kb
-              // window scatter drew a handful of isolated dots that read as
-              // noise. Filled bars at resolution:10 (bigwig bins ~10x finer than
-              // screen px) make the copy-number floor through the deletion an
-              // actual shape.
-              trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
-              defaultRendering: 'xyplot',
+              // multirowxy: one filled profile per sample, stacked on the fixed
+              // 0..80 range set above rather than each row's own autoscale.
+              trackId: 'hg008_tn_perbase',
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multirowxy',
               summaryScoreMode: 'avg',
+              minScore: 0,
+              maxScore: 80,
               resolution: 10,
-              height: 120,
+              // no cross hatches: the read is one filled profile against the
+              // other, and the gridlines only add texture across both
+              displayCrossHatches: false,
+              height: 280,
             },
             {
               // raw long-read pileup: the homozygous deletion is a
@@ -1210,70 +1278,10 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr9',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 800,
+    // 800 framed the 120px HiFiCNV depth lane this replaced; the two-row
+    // coverage track is 280
+    viewportHeight: 960,
     settleMs: 30000,
-  },
-
-  // The same CDKN2A deletion, but as the tumor/normal contrast that makes it
-  // somatic rather than inherited: tumor coverage floors at 0 through the
-  // event while the matched normal holds its baseline straight across. Both
-  // wiggles are pinned to the SAME 0..80 scale, because the whole read of this
-  // figure is one track's height against the other's; autoscaling them
-  // independently would rescale the normal to fill its row and quietly destroy
-  // the comparison. Measured over chr9:21,953,000-21,971,000 the tumor mean is
-  // 0.0 (56.8x and 69.2x in the flanks) against the normal's 41.9x.
-  //
-  // This is also what the hosted per-base coverage bigWigs are FOR. They were
-  // sitting on jbrowse.org/demos/cgiab unreferenced by any figure, which is how
-  // hosted data quietly becomes dead weight nobody can justify keeping.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/cdkn2a_tumor_normal_coverage',
-    url: cgiabUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'GRCh38_GIABv3',
-          loc: 'chr9:21,930,000-21,990,000',
-          tracks: [
-            {
-              // one transcript per gene: the full RefSeq isoform stack crowded
-              // the lane and none of it is what this figure is about
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              height: 90,
-            },
-            {
-              trackId: 'HG008-T_coverage_perbase',
-              type: 'LinearWiggleDisplay',
-              minScore: 0,
-              maxScore: 80,
-              height: 160,
-              // no cross hatches: the read is one filled profile against the
-              // other, and the gridlines only add texture across both
-              displayCrossHatches: false,
-            },
-            {
-              trackId:
-                'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all',
-              type: 'LinearWiggleDisplay',
-              minScore: 0,
-              maxScore: 80,
-              height: 160,
-              displayCrossHatches: false,
-            },
-            'hg008_cnv_calls',
-          ],
-        },
-      ],
-    }),
-    readyText: 'CDKN2A',
-    readyTimeout: 120000,
-    viewportWidth: 1500,
-    // 780 clipped the CNV-call lane that names the copy number
-    viewportHeight: 900,
-    settleMs: 20000,
   },
 
   // KRAS, the central PDAC oncogene: a low-level allelic gain (CN 3, 2+1) on

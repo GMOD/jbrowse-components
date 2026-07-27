@@ -179,7 +179,7 @@
   "inverted_duplication": {
     "name": "inverted_duplication",
     "status": "bad",
-    "note": "increase  linezoneheight and height of browser to match as a result",
+    "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). readConnectionsHeight 40 -> 200, track height and viewportHeight raised by the same 160 so no pileup row is lost. An arc apex is drawn at its genomic span in px, clamped to the band, so at this zoom every pair (concordant ~400bp upward) was clipped to the 40px ceiling and the band was one flat mass; at 200 the concordant domes resolve below the discordant pairs spanning the duplication. The two evidence callouts moved from raw viewport x/y to an anchor on the pileup track (fracY 0 + dy), so they now sit a fixed distance below the arc band whatever its height, per the rule in website/CLAUDE.md.",
     "reviewedAt": "2026-07-27T12:49:44.676Z",
     "hash": "645f3499bb4c22bf1660407d763c3b49e6840c30"
   },
@@ -1718,7 +1718,7 @@
   "sv_cgiab/cdkn2a_tumor_normal_coverage": {
     "name": "sv_cgiab/cdkn2a_tumor_normal_coverage",
     "status": "bad",
-    "note": "this largely duplicates sv_cgiab/driver_cdkn2a_deletion can consider deleting, maybe adding tumor/normal coverage as multiwiggle to sv_cgiab/driver_cdkn2a_deletion ",
+    "note": "this largely duplicates sv_cgiab/driver_cdkn2a_deletion can consider deleting, maybe adding tumor/normal coverage as multiwiggle to sv_cgiab/driver_cdkn2a_deletion  RETIRED, merged into sv_cgiab/driver_cdkn2a_deletion per the note. That figure now carries the tumor and normal per-base bigWigs as one MultiQuantitativeTrack (multirowxy, explicit 0..80 so the rows share a scale) in place of the HiFiCNV depth lane, and keeps the read pileup and CNV calls. Spec, PNG, and the second <Figure> in sv_visualization_cgiab.md are gone; gallery links and figure manifest regenerated.",
     "reviewedAt": "2026-07-27T12:52:16.197Z",
     "hash": "1d15943a5546ca6de9d7505e93d77d9dd6ffd2bf"
   },
@@ -1807,7 +1807,7 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "bad",
-    "note": "increase  linezoneheight and height of browser to match as a result",
+    "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). Same readConnectionsHeight 200 and viewportHeight +160 as the doc figure. This one is heightMode grow, so the track follows the taller band on its own; the grown stack lands near 770px, still under GROW_MAX_HEIGHT 800, past which grow would stop following the content and crop the discordant cluster the card is for.",
     "reviewedAt": "2026-07-27T12:49:32.182Z",
     "hash": "3b27d160c05c3d11b914aea9ed3d5da55e44de30"
   },
@@ -1960,7 +1960,7 @@
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
     "status": "bad",
-    "note": "the bezier curves for the connections to rank1 are weird. users also dont necessarily have perspective into the bp length of these features",
+    "note": "the bezier curves for the connections to rank1 are weird. users also dont necessarily have perspective into the bp length of these features PART DONE, in the plugin, unpublished. First half root-caused and fixed: computeEdgeCurves ran each control point along its own node direction by dist*0.5, and on an anchored layout that distance is mostly the row drop, so an edge to a rank-1 node swung sideways past both endpoints and came back. The two edges meeting at one node then crossed, which is the bowtie the note describes. The extension is now the separation projected onto that tangent, clamped at 0, so a backwards edge gets a straight leader. Proved with a test that tessellates each bubble pair and does a real segment-intersection check: 12 crossing bubbles before, 0 after. Measured against the force-directed layout through the real WASM engine, it is a no-op there (0/144 control points move >1 unit on the pggb subgraph, 7/436 worst 2.1 on the rGFA slice), so the Bandage figures should not change. NEEDS: pnpm betabuild in jbrowse-plugin-graphgenomeview, the esmUrl pin bumped in the three test_data/graphgenomeview configs, then a regen. Second half (bp length) not built: the caption now states that an off-reference node is drawn at a visibility floor and not to scale, and points at the tooltip. A drawn-length channel in the graph view is a feature, not a spec fix. Separately found and NOT fixed: on the rGFA slice projectAlleles splits a multi-rank run into separate alleles, so a rank-2 segment can be placed megabases from the rank-1 segments it attaches to; that is the one long X in pangenome/rgfa_subgraph_launch.",
     "reviewedAt": "2026-07-27T04:57:19.413Z",
     "hash": "9dbc5acd88e096559ac184cc17b0124e9307c5b4"
   },

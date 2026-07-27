@@ -444,20 +444,15 @@ drops to 0; a single-copy loss only halves depth. This deletion sits within a
 larger single-copy-loss arm (`CNA_14`, 0+1), so it reads as a deeper notch in an
 already-reduced baseline.
 
-HiFiCNV's depth is binned, so for the exact breakpoints open the PacBio HiFi
-read pileup: both depth and the pileup drop to zero right at the deletion's
-edges, matching the benchmark call.
+We can load the tumor and matched normal per-base coverage as one
+[multi-quantitative track](/docs/user_guides/multiquantitative_track), one row
+per sample. Set an explicit score range from the track menu rather than
+autoscaling, so both rows are drawn on the same scale.
 
-<Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (longest coding transcript), the HiFiCNV depth track, the PacBio HiFi read pileup at super-compact read height, and the benchmark CNV calls. Depth and the pileup both drop to 0 at the deletion's edges; the few thin lines crossing the gap are single reads carrying the deletion as one long gap in their alignment." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+HiFiCNV's depth is binned, so these coverage tracks are per-base. For the exact
+breakpoints, open the PacBio HiFi read pileup below them.
 
-Nothing above proves the deletion is _somatic_. A homozygous drop-out looks the
-same whether it was acquired by the tumor or inherited, and the answer is in the
-matched normal: load the tumor and normal coverage tracks together over the same
-locus. Pin both to the same score range, since the whole point is one track's
-height read against the other's, and independent autoscaling would rescale the
-normal to fill its row and destroy the comparison.
-
-<Figure caption="The same CDKN2A locus with the matched normal underneath: NCBI RefSeq genes, HG008-T per-base coverage, HG008-N coverage, and the benchmark CNV calls. Both coverage tracks share a fixed 0 to 80 range. The tumor floors at 0 across the deletion while the normal runs flat through it, which is what makes the event somatic rather than inherited." src="/img/sv_cgiab/cdkn2a_tumor_normal_coverage.png" />
+<Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes, tumor and normal per-base coverage as two rows of one track on a shared fixed range, the PacBio HiFi read pileup, and the benchmark CNV calls. Coverage drops out in the tumor row and not in the normal row; the thin lines crossing the gap in the pileup are single reads carrying the deletion as one gap in their alignment." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 
