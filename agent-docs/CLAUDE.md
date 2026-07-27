@@ -77,6 +77,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [REGION_VIEW_LAUNCH.md](guides/REGION_VIEW_LAUNCH.md) — "open view X for this region" entry points (synteny stack, graph subgraph)
 - [PANGENOME_PATHS_HANDOFF.md](guides/PANGENOME_PATHS_HANDOFF.md) — per-haplotype graph paths as a linear track, the indel-glyph passes, `--call` traps
 - [TAFFY_INDEX_GAPS_HANDOFF.md](guides/TAFFY_INDEX_GAPS_HANDOFF.md), a MAF block is indexed on row 0 alone, so a repeat-collapsed block hides its other reference copies. Why the pggb demo moved off taffy to `MafTabixAdapter`
+- [GENERAL_GFA_HANDOFF.md](guides/GENERAL_GFA_HANDOFF.md) — anchoring a plain (pggb/odgi) GFA from its P/W lines instead of rGFA tags, which also makes sample rows real carriage rather than build order
 
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is
