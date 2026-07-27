@@ -7,18 +7,19 @@ the source instead.
 
 ## Auto-generated — do not hand-edit
 
-| Path(s)                                                    | Regenerate with              | Source of truth                                                                                                      |
-| ---------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `config/*.md` (config schema API)                          | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`website/scripts/api-docs/generateConfigDocs.ts`)                    |
-| `models/*.md` (state model API)                            | `pnpm autogen` (repo root)   | MST model definitions in source (`website/scripts/api-docs/generateStateModelDocs.ts`)                               |
-| `api/*.md` (plugin-export API)                             | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`website/scripts/api-docs/generateApiDocs.ts`)                                  |
-| color swatch tables between `<!-- COLOR_TABLE … -->`       | `pnpm autogen` (repo root)   | `#color`-tagged color constants in `packages/core/src/ui/theme.ts` (`website/scripts/api-docs/generateColorDocs.ts`) |
-| file-type tables between `<!-- FILE_TYPES … -->`           | `pnpm autogen` (repo root)   | `#fileFormat`-tagged adapter configSchemas (`website/scripts/api-docs/generateFileTypeDocs.ts`)                      |
-| the track/display table between `<!-- DISPLAY_TYPES … -->` | `pnpm autogen` (repo root)   | `new DisplayType({name, trackType})` registrations (`website/scripts/api-docs/generateFileTypeDocs.ts`)              |
-| gotcha callouts between `<!-- GOTCHA … -->`                | `pnpm autogen` (repo root)   | `#gotcha`-tagged `#config` blocks in source (`website/scripts/api-docs/generateFileTypeDocs.ts`)                     |
-| `user_guide.md`, `config_guide.md`, `developer_guide.md`   | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                                                  |
-| `jbrowse-img.md` (@jbrowse/img static-export tool)         | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                                             |
-| `cli.md` (@jbrowse/cli command reference)                  | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                                             |
+| Path(s)                                                           | Regenerate with              | Source of truth                                                                                                                              |
+| ----------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config/*.md` (config schema API)                                 | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`website/scripts/api-docs/generateConfigDocs.ts`)                                            |
+| `models/*.md` (state model API)                                   | `pnpm autogen` (repo root)   | MST model definitions in source (`website/scripts/api-docs/generateStateModelDocs.ts`)                                                       |
+| `api/*.md` (plugin-export API)                                    | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`website/scripts/api-docs/generateApiDocs.ts`)                                                          |
+| color swatch tables between `<!-- COLOR_TABLE … -->`              | `pnpm autogen` (repo root)   | `#color`-tagged color constants in `packages/core/src/ui/theme.ts` (`website/scripts/api-docs/generateColorDocs.ts`)                         |
+| file-type tables between `<!-- FILE_TYPES … -->`                  | `pnpm autogen` (repo root)   | `#fileFormat`-tagged adapter configSchemas (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                              |
+| the track/display table between `<!-- DISPLAY_TYPES … -->`        | `pnpm autogen` (repo root)   | `new DisplayType({name, trackType})` registrations (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                      |
+| gotcha callouts between `<!-- GOTCHA … -->`                       | `pnpm autogen` (repo root)   | `#gotcha`-tagged `#config` blocks in source (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                             |
+| the pinnable-settings table between `<!-- PROMOTABLE_SLOTS … -->` | `pnpm autogen` (repo root)   | `promotable: true` config slots, per registered display type (`writePromotableSlotDocs` in `website/scripts/api-docs/generateConfigDocs.ts`) |
+| `user_guide.md`, `config_guide.md`, `developer_guide.md`          | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                                                                          |
+| `jbrowse-img.md` (@jbrowse/img static-export tool)                | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                                                                     |
+| `cli.md` (@jbrowse/cli command reference)                         | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                                                                     |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`
@@ -54,6 +55,25 @@ the source instead.
   than restating it. The text runs to the next tag or the next blank comment
   line, so leave a blank `*` line before the description that follows it. Prefer
   this over writing the warning into a guide, where it goes stale silently.
+
+- **`PROMOTABLE_SLOTS`**: the "settings you can make the default for all tracks"
+  table in `user_guides/display_defaults.md`, one row per display type that has
+  a `new DisplayType(...)` registration and at least one `promotable: true` slot
+  (declared, spread in, or inherited — resolved the same way a config page's
+  "Inherited config slots" section resolves it). A display that adopts a
+  promotable slot joins the table with no doc edit, which is the point: the list
+  was hand-written first and was already missing two display families. Adopting
+  a slot therefore also means its `description` is now user-facing prose.
+
+- **Spread-in slots.** A schema that pulls slots in by spreading a shared table
+  (`...wiggleConfigSchemaFields`) gets them documented too: the spread name is
+  resolved against the constant index in `api-docs/enumConstants.ts` and each
+  property becomes a slot of that schema. Those properties carry no `#slot`
+  JSDoc, and tagging them in the shared file would bucket them under no config
+  at all, which is why 20 wiggle slots (`autoscale`, `minScore`/`maxScore`, ...)
+  were absent from the pages entirely. The shared table needs no tagging, only a
+  `description` per slot; a slot the schema redeclares itself wins over the
+  table's version.
 
 - **Guide indexes** (`user_guide.md` / `config_guide.md` / `developer_guide.md`)
   are built from each guide's `title`, `description`, and `guide_category`

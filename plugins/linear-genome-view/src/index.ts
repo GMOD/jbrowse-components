@@ -105,6 +105,7 @@ export {
   fetchAllRegions,
   fetchEachRegion,
   getHeightModeOptions,
+  heightModeLabel,
   heightModeMenuItems,
   installGlobalFetchAutorun,
   installGrowExitBake,

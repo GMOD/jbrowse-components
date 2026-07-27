@@ -50,6 +50,16 @@ export default function HeightModeMixin<
       get fitTargetHeight(): number {
         return getConf(self as unknown as TConf, 'height') as number
       },
+      /**
+       * #getter
+       * Ceiling `grow` mode sizes the track to, in px (content past it scrolls).
+       * Lives here rather than as a constant so a track whose whole point is a
+       * deep pileup can raise it; both displays that own a `grownHeight` read
+       * this, so the two can't diverge.
+       */
+      get growMaxHeight(): number {
+        return getConf(self as unknown as TConf, 'growMaxHeight') as number
+      },
     }))
     .views(self => ({
       /**

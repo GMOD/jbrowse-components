@@ -1,3 +1,4 @@
+import { heightModeLabel } from '../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
 import {
   DEMO_CONFIG,
   HG002_NANOPORE_HP_TRACK,
@@ -11,6 +12,10 @@ import {
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// The menu label for `fit`, straight from the shared option table, so the click
+// path and the boxed annotation below can't drift from the menu.
+const FIT_LABEL = heightModeLabel('fit', 'read')
 
 export const alignmentsSpecs: ScreenshotSpec[] = [
   {
@@ -786,11 +791,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Read height', 'Fit read height to display'], 800),
+      ...menuCascade(['Read height', FIT_LABEL], 800),
     ],
     annotations: [
       { type: 'box', anchor: { text: 'Read height' } },
-      { type: 'box', anchor: { text: 'Fit read height to display' } },
+      { type: 'box', anchor: { text: FIT_LABEL } },
     ],
   },
 

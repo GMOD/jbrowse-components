@@ -48,9 +48,9 @@ describe('Feature height submenu', () => {
       'Compact',
       'Super-compact',
       'Collapsed',
-      'Fixed feature height',
+      'Fixed feature height + fixed track height',
       'Fixed feature height + autogrow track height',
-      'Fit feature height to display',
+      'Fit feature height to track height',
     ])
     // one "Track sizing" subheader separates the two radio groups
     expect(
@@ -121,15 +121,19 @@ describe('Feature height submenu', () => {
     const sizing = featureHeightSubMenu(display)
 
     expect(sizing.some(i => i.type === 'checkbox')).toBe(false)
-    expect(radio(sizing, 'Fixed feature height').checked).toBe(true)
+    expect(
+      radio(sizing, 'Fixed feature height + fixed track height').checked,
+    ).toBe(true)
     // each mode carries a "make default" pin, like the size presets
-    expect(radio(sizing, 'Fixed feature height').endAdornment).toBeDefined()
+    expect(
+      radio(sizing, 'Fixed feature height + fixed track height').endAdornment,
+    ).toBeDefined()
     expect(
       radio(sizing, 'Fixed feature height + autogrow track height')
         .endAdornment,
     ).toBeDefined()
     expect(
-      radio(sizing, 'Fit feature height to display').endAdornment,
+      radio(sizing, 'Fit feature height to track height').endAdornment,
     ).toBeDefined()
 
     display.setHeightMode('grow')
@@ -137,7 +141,9 @@ describe('Feature height submenu', () => {
     expect(
       radio(sizing2, 'Fixed feature height + autogrow track height').checked,
     ).toBe(true)
-    expect(radio(sizing2, 'Fixed feature height').checked).toBe(false)
+    expect(
+      radio(sizing2, 'Fixed feature height + fixed track height').checked,
+    ).toBe(false)
     // density is orthogonal — still Compact while the track grows
     expect(display.displayMode).toBe('compact')
     // and the size presets still read as Compact in the same menu

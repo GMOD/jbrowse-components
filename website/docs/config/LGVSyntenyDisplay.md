@@ -201,6 +201,15 @@ Maximum pixel height of the pileup layout; reads beyond this are not stacked
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `6000` · _advanced_
 
+#### slot: growMaxHeight
+
+Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper
+than this grows to the ceiling and scrolls the rest. Does not apply to the fixed
+or fit modes, and does not limit how much is laid out (see maxHeight)
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `800`
+· _advanced_
+
 #### slot: height
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`

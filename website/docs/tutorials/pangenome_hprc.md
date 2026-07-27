@@ -151,18 +151,40 @@ you read rather than remember.
 
 The subgraph is cut from the same two files the track reads.
 
-<Figure caption="The HLA class II region as a graph, in force-directed layout, under four lanes of the same window. The blue segment blocks are the GRCh38 backbone; the orange bar is the bubble every orange loop in the graph hangs off, labelled with its shortest and longest allele. The alleles are in the bottom lane, each drawn at the point it attaches and widened to its own bp, since a rank>0 segment has no GRCh38 coordinate to be drawn across." src="/img/pangenome/hprc_mhc_bandage.png" />
+<Figure caption="The HLA class II region as a graph, in force-directed layout, under three lanes of the same window. Both panels use the graph's Reference position colors: the segment blocks run red to magenta left to right and the thread in the graph runs with them, so a loop's color says where above it attaches. The orange bar is the bubble those loops hang off." src="/img/pangenome/hprc_mhc_bandage.png" />
 
-The asymmetry between the panels is structural. A rank-0 segment sits on GRCh38
-and has a coordinate; a rank>0 segment sits on some other assembly's refName and
-has none, so no coloring will put the orange loops on a GRCh38 axis as segments.
-What a reference axis can hold is where each one attaches and how long it is,
-which is the bubble lane and the [allele inventory](#the-allele-inventory) lane.
+A force layout has no x axis to share with the linear view, so color is the only
+thing that can carry the correspondence. **Reference position** in the **Color**
+dropdown is built for that: it ramps hue over the window the subgraph was cut
+from, red at its start to magenta at its end, and a segment with no reference
+coordinate of its own takes the hue of the backbone it branches from.
+
+The ramp is two numbers and a midpoint, so a linear track can paint the same
+colors. Set this on the segments track for the same window and a block above and
+its node below are the same color:
+
+```json
+{
+  "displayDefaults": {
+    "color": "jexl:'hsl(' + min(300, max(0, ((get(feature,'start')+get(feature,'end'))/2 - 32500000) / 60000 * 300)) + ',70%,50%)'"
+  }
+}
+```
+
+The two constants are the window's start and its length, so this belongs on the
+view rather than in a hosted config.
+
+The asymmetry between the panels is still structural. A rank-0 segment sits on
+GRCh38 and has a coordinate; a rank>0 segment sits on some other assembly's
+refName and has none, so no coloring will put those loops on a GRCh38 axis as
+segments. What the ramp shows is where each one attaches. How long each one is
+stays the job of the bubble lane and the
+[allele inventory](#the-allele-inventory).
 
 The **Layout** dropdown trades that picture for an **anchored** layout, which
 puts the x axis back on GRCh38:
 
-<Figure caption="The same subgraph in the anchored layout. Every x is now a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs directly below the position it attaches to, stacked by rank. The trade against the force layout above: position instead of shape, so a bubble reads as a pair of stalks rather than a loop." src="/img/pangenome/hprc_mhc_anchored.png" />
+<Figure caption="The same subgraph in the anchored layout. Every x is now a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs directly below the position it attaches to, stacked by rank. Sharing an axis is not the same as being seen to share one, so the reference-position colors stay on: the block above and the node below it are the same color at the same bp." src="/img/pangenome/hprc_mhc_anchored.png" />
 
 Each locus below is named with a window small enough to draw. The counts are
 what the [allele inventory](#the-allele-inventory) holds in each:
@@ -188,7 +210,7 @@ and found nothing.
 
 C4, from the table:
 
-<Figure caption="The C4 locus, small enough that the whole subgraph fits in one picture. The bubbles track above reports a single bubble spanning the locus; the graph below is what that one bubble contains." src="/img/pangenome/hprc_c4_subgraph.png" />
+<Figure caption="The C4 locus, small enough that the whole subgraph fits in one picture. The bubbles track reports a single bubble spanning the locus and the graph below is what that one bubble contains: the red end of the thread is the left end of the window in the segments lane, the magenta end the right." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 ### Which haplotype an allele came from
 
@@ -198,7 +220,7 @@ because rank is build order: at a locus this dense one rank holds alleles from a
 dozen different haplotypes, so an anchored rank row means nothing biological,
 while a sample row is one haplotype.
 
-<Figure caption="MHC class II in the Sample rows layout, under the RefSeq genes and rGFA segments for the same window. The top row is the GRCh38 backbone; each of the 12 rows below it is one haplotype that donated sequence here, labelled with its HPRC id, and its orange bars are the alleles it donated." src="/img/pangenome/hprc_mhc_sample_rows.png" />
+<Figure caption="MHC class II in the Sample rows layout, under the RefSeq genes and rGFA segments for the same window. The top row is the GRCh38 backbone; each row below it is one haplotype that donated sequence here, labelled with its HPRC id, and its marks are the alleles it donated, colored by where on the reference they attach." src="/img/pangenome/hprc_mhc_sample_rows.png" />
 
 The four windows above draw 8 to 15 such rows each, out of 464 haplotypes, and
 that ratio is the thing to read carefully. A row is the haplotype minigraph took
@@ -306,8 +328,6 @@ each insertion draws at its real magnitude instead of as a 1 bp box. The
 [E. coli tutorial](/docs/tutorials/pangenome_ecoli#when-all-you-have-is-the-graph)
 walks through the columns and how the walk derives them.
 
-<Figure caption="RefSeq genes, the rGFA segments track, and the allele inventory over the same MHC class II window. Grey bars are deletions at their true width; magenta markers are insertions, each drawn and labelled at its inserted bp rather than at the reference it does not cover." src="/img/pangenome/hprc_allele_inventory.png" />
-
 Whole graph: 208,545 alleles, 112,995 of them insertions, 661 of those longer
 than 50 kb. At that scale start from a size filter in **Edit filters**, e.g.
 `jexl:get(feature,'delta')>10000`.
@@ -383,10 +403,12 @@ records structural variation (roughly >50 bp) and collapses everything smaller,
 so SNPs are absent from the graph even though every one is in the VCF. Filter
 the callset to that same tier and the two describe the same events from opposite
 ends: the graph states an allele and its length but cannot say whose it is,
-because collapsing is what let it be found at all; the callset never lost the
-samples, so it can. Stack them, pick an allele in the inventory, read down.
+because collapsing is what let it be found at all, while the callset never lost
+the samples. Put both in sample rows and the two row stacks answer different
+questions about the same bp: the graph names the haplotype an allele came
+**from**, the callset names every haplotype that **carries** it.
 
-<Figure caption="One window, both routes. Above, the graph's allele inventory: each deletion at its width, each insertion at its inserted bp. Below, the same window's callset filtered to the same 50 bp tier, one row per haplotype, clustered. The block boundaries in the matrix line up with the alleles drawn above them." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products, one row per haplotype in each. The callset is filtered to the same 50 bp tier the graph holds and clustered, so carriers of a shared allele form a block; the graph below gives each donor haplotype a row, colored by where on the reference its alleles attach. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Local ancestry (PCLAI)
 

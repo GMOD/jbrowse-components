@@ -139,14 +139,23 @@ const ECOLI_PATHS_SESSION_TRACK = {
   ],
 }
 
-// The bubble the paths figure is about: K12 chr:1,094,197-1,097,573, where
-// Sakai and CFT073 carry ~110-113 kb alleles, NCTC86 a 41 kb one, and IAI39
-// deletes 3.2 kb. Picked off the BED, not by eye:
+// The bubble the hover and sample-rows figures are about: K12
+// chr:1,094,197-1,097,573, where Sakai and CFT073 carry ~110-113 kb alleles,
+// NCTC86 a 41 kb one, and IAI39 deletes 3.2 kb. Picked off the BED, not by eye:
 // `tabix ecoli_minigraph_paths.bed.gz chr:1094000-1098000`. The window is ~5x
 // the bubble so the flanking reference-path blocks show it is a local event.
 const PATHS_WINDOW = 'chr:1,088,000-1,104,000'
+const PATHS_WINDOW_WIDE = 'chr:1,000,000-1,200,000'
 
-const ECOLI_ALLELES_TRACK = 'ecoli_minigraph_alleles'
+// The per-strain track's own window, and 12x wider than the one above on
+// purpose. Review of the old figure: "this looks very odd. it is a large
+// insertion, but it should just look like a normal linearmafdisplay kind of
+// instead of this weird custom thing." At 16 kb the frame held ONE bubble, so
+// five stacked full-width boxes with numbers printed in them read as a bar
+// chart of one event rather than as five haplotypes. 200 kb holds 20 bubbles
+// (`tabix ecoli_minigraph_paths.bed.gz chr:1000000-1200000 | wc -l` is 100 rows
+// over 5 strains), which is what makes a row read as a lane: mostly grey
+// reference path, punctuated where that strain diverges.
 
 // Viewport coordinate of CFT073's allele at PATHS_WINDOW's bubble, in the sample
 // rows layout. A bare coordinate because the graph is canvas — there is no DOM
@@ -159,13 +168,15 @@ const ECOLI_ALLELES_TRACK = 'ecoli_minigraph_alleles'
 // ~172px and left this pointing below the pane.
 const HOVERED_ALLELE = { x: 295, y: 555 }
 
-// HG00738.2's allele on the HPRC sample-rows graph, whose context menu
-// pangenome/hprc_node_menu is about. Read off the live model rather than
-// measured on a capture: the graph auto-fits as its layout and canvas
+// HG01433.2's leftmost allele on the HPRC sample-rows graph, whose context menu
+// pangenome/hprc_node_menu is about. Measured on the spec's own capture rather
+// than on a model probe at a different viewport, which is the trap here: the graph auto-fits as its layout and canvas
 // dimensions settle, so a coordinate taken from a finished PNG can point
 // somewhere the click-time layout had nothing (which is exactly what happened
 // while writing this spec — hence the settle delay before the right-click).
-const HPRC_ALLELE = { x: 429, y: 612 }
+// It restales on any layout change above the graph: the segments lane losing
+// its label rows lifted every row by about that much.
+const HPRC_ALLELE = { x: 185, y: 622 }
 
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
@@ -207,26 +218,94 @@ const MHC_REGION = {
   end: 32560000,
 }
 
-// The tutorial's own MHC class II window, used only by the sample-rows figure so
-// its donor-row count is the one that table would predict. Wider than MHC_REGION
-// because rows are what that layout draws: the 60 kb above contributes 6, this
-// 90 kb contributes 12.
-const MHC_SAMPLE_ROWS_REGION = {
+// Sample rows has a row-count ceiling, and it is not the data's. Row spacing is
+// 5% of the drawn width (ROW_SPACING_SPAN_FRACTION) and the graph pane caps at
+// 600 px, so a drawing taller than it is wide gets fitted to the pane's HEIGHT
+// and centered — the backbone then spans a fraction of the pane and no longer
+// sits under the linear view's x axis, which is the one thing this layout is
+// for. The crossover is around a dozen rows at these widths.
+//
+// So this figure takes the 90 kb MHC class II window (MHC_CLASSII_REGION,
+// below) rather than the 600 kb one that would draw 28 donor rows: measured on
+// both, the wide one is denser and reads worse, because the fit shrinks it off
+// the axis. Density in this view is bounded either way — see hprc_mhc_bandage
+// for the force layout's version of the same ceiling.
+
+// C4, for the launch figure, from the tutorial's own table of loci worth a look.
+// `tabix hprc-v2.0-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
+// gives 13 rank-0 backbone segments and 21 links out to non-reference segments
+// with ranks up to 165, which is C4A/C4B copy number and the HERV insertion as
+// the graph records them.
+//
+// 70 kb is a readability choice, not a cap: the region cap is 5 Mb and the node
+// budget 20,000, and this cuts 30 nodes. See hprc_mhc_bandage for why a force
+// layout does not get better by being given more of them.
+const C4_WINDOW = 'chr6:31,980,000-32,050,000'
+const C4_REGION = {
+  refName: 'chr6',
+  assemblyName: 'hg38',
+  start: 31980000,
+  end: 32050000,
+}
+
+// MHC class II, the densest window in the tutorial's locus table, and the one
+// where the graph and the callset are worth putting in one frame.
+const MHC_CLASSII_REGION = {
   refName: 'chr6',
   assemblyName: 'hg38',
   start: 32510000,
   end: 32600000,
 }
 
-// C4, for the launch figure, from the tutorial's own table of loci worth a look.
-// 70 kb fits under the view's 100 kb cap, so the visible region is launchable
-// without zooming first, and the window is dense in the way the picture needs:
-// `tabix hprc-v2.0-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
-// gives 13 rank-0 backbone segments and 21 links out to non-reference segments
-// with ranks up to 165, which is C4A/C4B copy number and the HERV insertion as
-// the graph records them. AMY1, the other headline CNV locus, is 190 kb and past
-// the cap.
-const C4_WINDOW = 'chr6:31,980,000-32,050,000'
+// The linear half of the graph view's 'Reference position' color scheme, which
+// is the answer to "if the nodes were rainbow colored in exact same way in
+// lineargenomeview and bandage graph it might help show correspondance".
+//
+// That scheme is a hue ramp over the region the subgraph was cut from: hue 0
+// (red) at its start to 300 (magenta) at its end, at saturation 70% and
+// lightness 50%, and a node with no reference coordinate of its own takes the
+// hue of the backbone interval it branches from
+// (jbrowse-plugin-graphgenomeview renderer/GeometryBuilder.ts,
+// REFERENCE_RAMP_MAX_HUE). It is a function of two stated numbers and a
+// midpoint, which is the whole reason it exists: a linear track can reproduce
+// it exactly, so a block above and a node below are the same color for the same
+// bp. Every scheme before it could not — depth and rank are graph quantities,
+// and the old rainbow ramped over node index, which a linear view cannot know.
+//
+// The domain has to be the graph's loadedRegion, not the linear view's window,
+// when the two differ.
+function referencePositionColor({
+  start,
+  end,
+}: {
+  start: number
+  end: number
+}) {
+  const mid = "(get(feature,'start')+get(feature,'end'))/2"
+  return `jexl:'hsl(' + min(300, max(0, (${mid} - ${start}) / ${end - start} * 300)) + ',70%,50%)'`
+}
+
+// The HPRC segments lane, shared by every figure that carries it so they read
+// the same. Labels off: the ids are the graph's own `s101124` counters, which
+// name nothing a reader can look up, and at these widths the display spends
+// three or four rows of text on them — in the 90 kb allele-inventory frame they
+// covered more area than the blocks did. What the lane is for is the blue rank-0
+// backbone tiling the reference, which one row of blocks says as well as four,
+// so the height is that one row.
+//
+// Colored by the graph's own reference-position ramp over the window the
+// subgraph beside it was cut from, so the lane is the graph's backbone twice:
+// once as blocks on the reference, once as a thread in the graph, in the same
+// colors left to right.
+function hprcSegmentsLane(domain: { start: number; end: number }) {
+  return {
+    trackId: SEGMENTS_TRACK,
+    type: 'LinearBasicDisplay',
+    showLabels: 'off',
+    height: 45,
+    color: referencePositionColor(domain),
+  }
+}
 
 // The structural tier of the wave VCF, which is what makes it comparable to the
 // graph: minigraph collapses everything under ~50 bp, so an unfiltered callset
@@ -367,10 +446,12 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportHeight: 615,
     hideTooltip: true,
   },
-  // The graph read as an alignment: five haplotype rows over the bubble where
-  // three strains carry a large insertion and one a deletion. The segments track
-  // above is the same graph per-segment, so the two lanes are the two ways of
-  // reading one file.
+  // The graph read as an alignment: five haplotype rows over 200 kb of K12, one
+  // block per bubble per strain. The segments track above is the same graph
+  // per-segment, so the two lanes are the two ways of reading one file.
+  //
+  // Window is PATHS_WINDOW_WIDE, for the reason stated there: a row has to hold
+  // enough bubbles to read as a haplotype's path rather than as one bar.
   {
     mode: 'url',
     name: 'pangenome/rgfa_strain_paths',
@@ -384,13 +465,22 @@ export const graphSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: PATHS_WINDOW,
+          loc: PATHS_WINDOW_WIDE,
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 90 },
+            {
+              trackId: 'K12_genes',
+              type: 'LinearBasicDisplay',
+              // 200 kb of K12 is ~190 genes, which the default glyph mode
+              // stacks several rows deep
+              displayMode: 'compact',
+              showLabels: 'off',
+              height: 40,
+            },
             {
               trackId: ECOLI_SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',
-              height: 100,
+              showLabels: 'off',
+              height: 60,
             },
             {
               trackId: ECOLI_PATHS_TRACK,
@@ -410,94 +500,49 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    // the three pinned tracks plus both headers; at 400 the paths track, which
-    // is the whole point of the figure, fell below the fold, and at 620 its last
-    // row sat on the frame edge
-    viewportHeight: 660,
-    hideTooltip: true,
-  },
-  // The same window derived from the graph ALONE — no assemblies re-mapped, so
-  // no haplotype rows. Same locus as the paths figure above on purpose: the two
-  // are the with-assemblies and without-assemblies readings of one graph, and
-  // the insertion sizes agree.
-  //
-  // An AlignmentsTrack over a BED is the point, not a mistake. Each allele
-  // carries a CIGAR against the reference span it replaces (`2062M63348I`), and
-  // the alignments display draws whatever has a CIGAR — so the alleles pack into
-  // rows and each insertion draws at its real magnitude. As a plain feature
-  // track the 63 kb allele would be a 1 bp box, which is the defect this whole
-  // projection exists to avoid.
-  {
-    mode: 'url',
-    name: 'pangenome/rgfa_allele_inventory',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [
-        ECOLI_SEGMENTS_SESSION_TRACK,
-        {
-          type: 'AlignmentsTrack',
-          trackId: ECOLI_ALLELES_TRACK,
-          name: 'minigraph graph: allele inventory (from the rGFA alone)',
-          assemblyNames: ['K12'],
-          adapter: {
-            type: 'BedTabixAdapter',
-            uri: `${DATA}/ecoli_minigraph.alleles.bed.gz`,
-          },
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PATHS_WINDOW,
-          tracks: [
-            {
-              trackId: ECOLI_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 100,
-            },
-            {
-              trackId: ECOLI_ALLELES_TRACK,
-              type: 'LinearAlignmentsDisplay',
-              // tall enough that the packed rows keep the bp labels on their
-              // insertion markers, which is what carries the magnitude
-              height: 150,
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: '[data-testid="pileup-display-done"]',
-    readyTimeout: 90000,
-    settleMs: 3000,
-    viewportWidth: 1000,
-    // the two tracks plus both headers, no more: the alleles pack into four
-    // rows here, so anything taller is whitespace
-    viewportHeight: 430,
+    // the three pinned tracks plus both headers, and nothing under them
+    viewportHeight: 530,
     hideTooltip: true,
   },
   // The same window in the force layout, the Bandage picture the graph is really
   // about: the backbone winds through the frame and every loop off it is an
   // alternate allele from the 464 haplotypes. FMMM again, hence diffThreshold.
   //
-  // The four linear lanes are the answer to "can only see blue in the hprc
-  // track — if the orange are nonreference and cant be shown as segments in the
-  // linear genome, what should we do?". Blue and orange both appear, in the
-  // graph's own Stable rank colors, but on different objects, because only rank 0
-  // has an hg38 coordinate at all:
+  // 60 kb, and NOT because the view cannot take more. The region cap is 5 Mb and
+  // the node budget 20,000; this window cuts 108 nodes, 0.5% of it. A wider one
+  // makes this figure worse, measured rather than guessed — the plugin's own
+  // Bandage WASM run offline over the real subgraphs (agent-docs
+  // GENERAL_GFA_HANDOFF.md has the harness) gives, fitted to this pane:
   //
-  //   blue segments = the rank-0 backbone, the same blue the graph draws
-  //   orange bubble = where the orange loops attach (rank-1 orange, set on the
-  //                   track in hprc.json so every figure using it matches)
-  //   alleles       = the non-reference sequence itself, drawn the only way a
-  //                   reference axis can hold it: an insertion marker at its
-  //                   anchor, widened to the allele's own bp by the CIGAR in the
-  //                   BED. Its span cannot be drawn — a rank>0 segment lives on
-  //                   another assembly's refName — so its length is.
+  //   60 kb    108 nodes   mean node 62-77 px   ~2% of the canvas inked
+  //   1 Mb     449 nodes   mean node 15 px      ~2%
+  //   3.5 Mb  1041 nodes   mean node  5 px      ~2%
   //
-  // Heights pinned: left to themselves the lanes take half the frame, and the
-  // segments track spends it on rows of `s101124` labels that carry nothing here.
-  // What it is here for is the blue backbone, which one row of blocks shows as
-  // well as four.
+  // The inked fraction is flat because bandageAutoScale targets a mean drawn
+  // node length of 40 FMMM units whatever the node count, so FMMM lays a
+  // near-path pangenome graph out as one thread whose length grows with N and
+  // whose 2-D coverage does not. Zoom-to-fit then shrinks every bubble by the
+  // same factor. So more nodes buys no density, only smaller features: at 3.5 Mb
+  // the loops that carry this figure are 5 px specks. Density in this view comes
+  // from the row layouts instead (hprc_mhc_sample_rows), whose height grows with
+  // the data.
+  //
+  // Colored by reference position rather than by rank, which is what makes the
+  // two panels one picture: the segments lane runs red to magenta left to
+  // right, and the thread winding through the graph runs red to magenta with
+  // it, so a loop's color says where on the reference above it attaches. Rank
+  // said which build step contributed a segment, which is a fact about
+  // minigraph rather than about this locus, and it left the linear lane a
+  // single blue (only rank 0 has an hg38 coordinate at all).
+  //
+  // The bubbles lane stays in the graph's rank-1 orange, set on the track in
+  // hprc.json: it is one object, marking where the loops attach, so it has
+  // nothing to ramp over.
+  //
+  // No allele lane. Review, three figures over: "the allele inventory i not
+  // sure i like. just want to see graph."
+  //
+  // Heights pinned: left to themselves the lanes take half the frame.
   {
     mode: 'url',
     name: 'pangenome/hprc_mhc_bandage',
@@ -518,19 +563,7 @@ export const graphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 90,
             },
-            {
-              trackId: SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 70,
-            },
-            {
-              trackId: 'hprc_minigraph_alleles',
-              type: 'LinearAlignmentsDisplay',
-              // tall enough to keep the bp label on each insertion marker, which
-              // is the whole point of the lane, and no taller: the alleles pack
-              // into three rows over this window
-              height: 110,
-            },
+            hprcSegmentsLane(MHC_REGION),
           ],
         },
         {
@@ -538,22 +571,18 @@ export const graphSpecs: ScreenshotSpec[] = [
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: MHC_REGION,
           layoutMode: 'force',
-          colorScheme: 'stable-rank',
+          colorScheme: 'reference-position',
         },
       ],
     }),
-    // TOOLBAR_READY ANDed with the allele lane's own fetch, so the capture can't
-    // land with the graph laid out and the fourth lane still blank. Spelled out
-    // rather than composed with TOOLBAR_READY: that already opens on `body:has`,
-    // and prefixing a second one asks for a body inside a body.
-    readySelector:
-      'body:has([data-testid="pileup-display-done"]):has([data-testid="graph-perf-stats"]) [data-testid="graph-layout-select"]',
+    readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
     allowUnsettled: true,
     settleMs: 8000,
     diffThreshold: 0.1,
     viewportWidth: 1000,
-    viewportHeight: 1370,
+    // 1345 with the allele lane still on it
+    viewportHeight: 1225,
     hideTooltip: true,
   },
 
@@ -708,6 +737,13 @@ export const graphSpecs: ScreenshotSpec[] = [
   // above it, the force one does not and shows the graph's shape instead.
   // layoutMode is left at its 'auto' default, which is this layout whenever the
   // graph declares a rank-0 backbone.
+  //
+  // Reference-position colors here too, for a reason this figure has and its
+  // force sibling does not: sharing an axis is not the same as being seen to
+  // share one. Review: "just hard to figure out correspondance between linear
+  // and graph". A reader can now check the claim without measuring — the
+  // segment under the x they are looking at and the node below it are the same
+  // color, and the ramp runs the same way in both panels.
   {
     mode: 'url',
     name: 'pangenome/hprc_mhc_anchored',
@@ -731,18 +767,14 @@ export const graphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 110,
             },
-            {
-              trackId: SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 130,
-            },
+            hprcSegmentsLane(MHC_REGION),
           ],
         },
         {
           type: 'GraphGenomeView',
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: MHC_REGION,
-          colorScheme: 'stable-rank',
+          colorScheme: 'reference-position',
         },
       ],
     }),
@@ -752,23 +784,24 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the compacted linear stack plus the graph canvas in full: at 1000 the rank
     // rows ran off the bottom edge, which reads as a broken layout
-    viewportHeight: 1180,
+    viewportHeight: 995,
     hideTooltip: true,
   },
 
   // Sample rows on the human graph, which says something the E. coli figure of
   // the same layout cannot. There, five strains fill five rows and a row is
-  // simply "what this strain does to K12". Here 12 haplotypes out of 464 draw a
-  // row, and the gap between those numbers is the point the tutorial makes: a
-  // row is the haplotype minigraph took the sequence FROM, the same attribution
-  // firstSeenIn carries, not the set carrying it.
+  // simply "what this strain does to K12". Here a dozen haplotypes out of 464
+  // draw a row, and the gap between those numbers is the point the tutorial
+  // makes: a row is the haplotype minigraph took the sequence FROM, the same
+  // attribution firstSeenIn carries, not the set carrying it.
   //
-  // The window is the tutorial's own MHC class II row (MHC_SAMPLE_ROWS_REGION)
-  // rather than the 60 kb MHC_REGION the force/anchored pair uses, so the row
-  // count in the caption is the one its table would predict. Counted off the
-  // index, not by eye:
-  // `tabix hprc-v2.0-mc-grch38.links.bed.gz 'GRCh38#0#chr6:32510000-32600000'`
-  // has 12 distinct non-GRCh38 sample prefixes.
+  // Window is MHC_CLASSII_REGION, for the row-count ceiling stated there rather
+  // than for what the data offers: a wider one adds rows and then shrinks the
+  // drawing off the linear view's axis.
+  //
+  // The gene lane is compact and longest-isoform: the class II region has
+  // enough RefSeq entries that the default glyph mode stacks them several rows
+  // deep and pushes the graph down the frame.
   {
     mode: 'url',
     name: 'pangenome/hprc_mhc_sample_rows',
@@ -782,34 +815,33 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
               type: 'LinearBasicDisplay',
-              height: 100,
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
             },
-            {
-              trackId: SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 90,
-            },
+            hprcSegmentsLane(MHC_CLASSII_REGION),
           ],
         },
         {
           type: 'GraphGenomeView',
           loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: MHC_SAMPLE_ROWS_REGION,
+          loadedRegion: MHC_CLASSII_REGION,
           layoutMode: 'samplerows',
-          colorScheme: 'stable-rank',
+          colorScheme: 'reference-position',
         },
       ],
     }),
-    // the row labels, not just the toolbar: this layout's whole content is its
-    // rows, and a frame captured before they paint is a figure of an empty axis
-    readySelector: '[data-testid="graph-row-label"]',
+    // Both: the rows, because they are this layout's whole content and a frame
+    // captured before they paint is a figure of an empty axis, and the toolbar,
+    // because the rows land first and a capture between the two has the graph
+    // drawn under a header with no Layout/Color dropdowns in it.
+    readySelector:
+      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
-    // the two linear lanes plus 13 graph rows (backbone + 12 donors); the graph
-    // pane sizes itself to its drawing, so this is the two views and nothing
-    // under them
-    viewportHeight: 1120,
+    // the two linear lanes plus the graph's rows, and nothing under them
+    viewportHeight: 1090,
     hideTooltip: true,
   },
 
@@ -844,34 +876,31 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
               type: 'LinearBasicDisplay',
-              height: 100,
+              // compact/longest-isoform, as everywhere else in this set: at the
+              // default glyph mode the C4A/C4B duplication stacks deep enough
+              // that the lane's last row is clipped by the one below it
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
             },
             {
               trackId: 'hprc_minigraph_bubbles',
               type: 'LinearBasicDisplay',
               height: 90,
             },
-            {
-              trackId: SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 120,
-            },
+            hprcSegmentsLane(C4_REGION),
           ],
         },
         {
           type: 'GraphGenomeView',
           loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: {
-            refName: 'chr6',
-            assemblyName: 'hg38',
-            start: 31980000,
-            end: 32050000,
-          },
-          // The Bandage picture, not the rank ladder: correspondence with the
-          // linear view above is carried by the shared rank colors, which is what
-          // a reader actually reads, rather than by a shared x axis.
+          loadedRegion: C4_REGION,
+          // The Bandage picture, not the rank ladder: a force layout has no x
+          // axis to share with the linear view, so color is the only thing that
+          // can carry the correspondence, and the reference-position ramp is the
+          // one coloring both panels can compute (referencePositionColor).
           layoutMode: 'force',
-          colorScheme: 'stable-rank',
+          colorScheme: 'reference-position',
         },
       ],
     }),
@@ -887,80 +916,33 @@ export const graphSpecs: ScreenshotSpec[] = [
     // threshold cannot tell 3% of jitter from 3% of different-layout.
     diffThreshold: 0.1,
     viewportWidth: 1000,
-    viewportHeight: 1290,
-    hideTooltip: true,
-  },
-
-  // The HPRC counterpart to rgfa_allele_inventory. The E. coli figure proves the
-  // AlignmentsTrack-over-a-BED idea on 845 alleles; this one is the reason it
-  // matters, at 208k. MHC class II, the densest window in the tutorial's locus
-  // table (56 alleles, longest 94 kb), with the segments track above so the same
-  // rank colors tie the two: the blue backbone up top is what these alleles are
-  // stated against.
-  //
-  // No GraphGenomeView here, so the readiness gate is the pileup's, not
-  // TOOLBAR_READY. The graph plugin is still loaded by hprc.json, which is
-  // harmless and keeps the figure openable in the same config as its neighbours.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_allele_inventory',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:32,510,000-32,600,000',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 60,
-            },
-            {
-              trackId: SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 100,
-            },
-            {
-              // tall enough that the packed alleles keep the bp label on their
-              // insertion markers, which is what carries the magnitude, and no
-              // taller: they pack into three rows here
-              trackId: 'hprc_minigraph_alleles',
-              type: 'LinearAlignmentsDisplay',
-              height: 150,
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: '[data-testid="pileup-display-done"]',
-    readyTimeout: 120000,
-    settleMs: 4000,
-    viewportWidth: 1000,
-    viewportHeight: 545,
+    // 1215 before the gene lane went compact
+    viewportHeight: 1155,
     hideTooltip: true,
   },
 
   // The two products at one locus, which is the argument the HPRC tutorial
-  // closes on ("the matrix for base-level variation across haplotypes, the graph
-  // for how the sequence rearranges") and had no picture of. The graph route
-  // above says an allele exists and how long it is but not whose it is;
-  // minigraph collapses, so it cannot. The callset below is the same window's
-  // structural tier, one row per haplotype, and answers exactly the question the
-  // inventory cannot.
+  // closes on ("the matrix for base-level variation across haplotypes, the
+  // graph for how the sequence rearranges") and had no picture of.
   //
-  // Both panes are filtered to the structural tier so they are comparable: the
-  // graph holds only SVs by construction, and `alleleLength(feature) >= 50`
-  // takes the VCF to the same tier (a span filter would keep deletions only,
-  // since an insertion consumes no reference).
+  // Both panels are one row per haplotype, which is what makes them comparable
+  // at a glance and is the whole reason the graph pane is in sample-rows
+  // layout: above, the haplotypes minigraph took each allele FROM, below, the
+  // haplotypes the callset says CARRY each allele. The graph cannot answer the
+  // second question at all — it collapses identical sequence, so an allele
+  // records one donor however many samples walk it — and that gap is the point
+  // the tutorial makes.
   //
-  // The regular multi-sample display, not the matrix: these columns have to land
-  // under the allele that produced them, and matrix mode spreads columns evenly
-  // across the width, which would break exactly the correspondence this figure
-  // is for. Clustered so carriers of a shared allele form a block rather than
-  // scattering, via the declarative `runClustering` trigger.
+  // The callset is filtered to the structural tier so the two hold the same
+  // class of event: minigraph collapses everything under ~50 bp, and
+  // `alleleLength(feature) >= 50` takes the VCF to the same tier (a span filter
+  // would keep deletions only, since an insertion consumes no reference).
+  //
+  // The regular multi-sample display, not the matrix: these columns have to
+  // land under the graph rows above them, and matrix mode spreads columns
+  // evenly across the width, which would break exactly the correspondence this
+  // figure is for. Clustered so carriers of a shared allele form a block rather
+  // than scattering, via the declarative `runClustering` trigger.
   {
     mode: 'url',
     name: 'pangenome/hprc_graph_vs_callset',
@@ -978,31 +960,36 @@ export const graphSpecs: ScreenshotSpec[] = [
               displayMode: 'compact',
               height: 60,
             },
-            {
-              trackId: 'hprc_minigraph_alleles',
-              type: 'LinearAlignmentsDisplay',
-              height: 110,
-            },
+            hprcSegmentsLane(MHC_CLASSII_REGION),
             {
               trackId: 'hprc2_wave_grch38',
               type: 'LinearMultiSampleVariantDisplay',
-              height: 420,
+              height: 400,
               jexlFilters: SV_FILTER,
               runClustering: true,
             },
           ],
         },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: MHC_CLASSII_REGION,
+          layoutMode: 'samplerows',
+          colorScheme: 'reference-position',
+        },
       ],
     }),
-    // three signals, ANDed: the alleles painted, the callset's own fetch
+    // three signals, ANDed: the graph's rows drawn, the callset's own fetch
     // finished (not just first paint), and the post-clustering frame. A bare
     // comma list would be a CSS OR and fire on whichever landed first.
     readySelector:
-      'body:has([data-testid="pileup-display-done"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
+      'body:has([data-testid="graph-row-label"]):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
     readyTimeout: 360000,
     settleMs: 5000,
     viewportWidth: 1000,
-    viewportHeight: 865,
+    // the gene lane, the segments lane, the clustered callset, and the graph's
+    // rows under them
+    viewportHeight: 1515,
     hideTooltip: true,
   },
   // The linearization: x is reference bp and each row is one contributing
@@ -1194,6 +1181,24 @@ export const graphSpecs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 1000 },
     ],
+    // Review: "it is hard to see from this screenshot the hover is
+    // corresponding to a mouseover on graphgenomeview". A hover figure has no
+    // cursor in it, and this one had no marker either, so the reader saw two
+    // highlights appear with nothing saying which one the mouse caused. Its
+    // sibling rgfa_hover_correspondence has had a ring since it was written;
+    // this direction never got one.
+    //
+    // Anchored to the element the hover action targets rather than drawn at a
+    // measured x/y, so the mark and the input cannot end up in different places.
+    // No arrow across to the graph: what responds there is a node on the canvas,
+    // which has no element to anchor a head to, and the row label is at the
+    // opposite end of the row from the node that lit up.
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { selector: '[data-testid="feature-name-csgG"]' },
+      },
+    ],
   },
 
   // The other half of the way out, on the graph where the contributing
@@ -1201,6 +1206,15 @@ export const graphSpecs: ScreenshotSpec[] = [
   // coordinate is exact and unopenable (no session loads 464 haplotypes as
   // assemblies), so what the menu offers is the GRCh38 interval the allele
   // attaches to, which is the answer the HPRC tutorial's round trip needs.
+  //
+  // Two frames, because the menu's first item is new and its result is the
+  // thing worth showing. Review: "need to be able to just highlight
+  // lineargenomeview coords". Hovering a node already draws a band in the
+  // linear view, but a hover band lives as long as the pointer does and cannot
+  // be pointed at afterwards; **Highlight this node in the hg38 view** writes
+  // the same interval into the view's own highlight list, where it stays. The
+  // second frame is that highlight, cropped to the linear view so the band is
+  // the subject.
   //
   // The right-click is a bare viewport coordinate for the same reason
   // HOVERED_ALLELE is: the graph is canvas, and this layout is deterministic. A
@@ -1221,11 +1235,7 @@ export const graphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 80,
             },
-            {
-              trackId: SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 80,
-            },
+            hprcSegmentsLane(MHC_REGION),
           ],
         },
         {
@@ -1233,11 +1243,12 @@ export const graphSpecs: ScreenshotSpec[] = [
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: MHC_REGION,
           layoutMode: 'samplerows',
-          colorScheme: 'stable-rank',
+          colorScheme: 'reference-position',
         },
       ],
     }),
-    readySelector: '[data-testid="graph-row-label"]',
+    readySelector:
+      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
@@ -1248,6 +1259,17 @@ export const graphSpecs: ScreenshotSpec[] = [
       { type: 'rightclick', from: HPRC_ALLELE },
       { type: 'waitForText', text: 'Node details' },
       { type: 'delay', ms: 500 },
+    ],
+    stages: [
+      {
+        // the linear view alone, so the band is the subject rather than a strip
+        // above a graph pane that no longer has anything to say
+        viewportHeight: 330,
+        actions: [
+          { type: 'click', text: 'Highlight this node' },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
     ],
   },
 

@@ -25,12 +25,13 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearCanvasBaseDisplay',
     {
-      // NOT a cap on the layout. It bounds how tall autogrow ("grow") mode will
-      // size the track (naturalContentHeight); in fixed and fit modes the height
-      // comes from the `height` slot and content taller than the track scrolls,
-      // unbounded by this. The packer has its own, separate ceiling —
+      // NOT a cap on the layout, and NOT the autogrow ceiling (that is
+      // `growMaxHeight` below). It clamps `naturalContentHeight`, the settled
+      // content height the grow ceiling is then applied to, so it only binds when
+      // set below that ceiling. The packer has its own, separate limit —
       // GranularRectLayout's row limit — past which features are dropped entirely
-      // (surfaced as truncatedFeatureCount). Two different limits; don't conflate.
+      // (surfaced as truncatedFeatureCount). Three different limits, don't
+      // conflate them.
       /**
        * #slot
        */
@@ -38,7 +39,23 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 1200,
         description:
-          'Maximum height in pixels that autogrow mode will size this display to (does not limit fixed or fit mode, where taller content scrolls)',
+          'Clamp in pixels on the content height this display reports (does not limit fixed or fit mode, where taller content scrolls). The autogrow ceiling is growMaxHeight',
+        advanced: true,
+      },
+      /**
+       * #slot
+       */
+      // `maxHeight` clamps `naturalContentHeight` first, so the effective grow
+      // ceiling here is min(maxHeight, growMaxHeight) — raising this past
+      // maxHeight alone changes nothing.
+      growMaxHeight: {
+        type: 'number',
+        // literal so the generated config doc shows the number; pinned to the
+        // shared GROW_MAX_HEIGHT default by a test, so it can't drift from the
+        // alignments display's copy
+        defaultValue: 800,
+        description:
+          'Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes. Raising it past maxHeight has no effect, since that clamps the content height first',
         advanced: true,
       },
       // maxFeatureScreenDensity is inherited from baseLinearDisplayConfigSchema

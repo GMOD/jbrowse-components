@@ -28,7 +28,6 @@ import {
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  GROW_MAX_HEIGHT,
   HeightModeMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -1321,10 +1320,10 @@ export default function stateModelFactory(
           return layoutGroupsToViewport(this.groupLayoutContext, {
             rowHeight: this.rowHeight,
             // Grow fits rows to the grow ceiling (content grows the track up to
-            // it, then scrolls); fixed/fit fit to the drag-resizable slot. Reads
-            // the slot (fitTargetHeight), never the reactive `height` getter, so
-            // grow's `height`→grownHeight→layout chain can't cycle.
-            height: self.autoHeight ? GROW_MAX_HEIGHT : self.fitTargetHeight,
+            // it, then scrolls); fixed/fit fit to the drag-resizable slot. Both
+            // read config slots, never the reactive `height` getter, so grow's
+            // `height`→grownHeight→layout chain can't cycle.
+            height: self.autoHeight ? self.growMaxHeight : self.fitTargetHeight,
             maxHeight: this.maxHeight,
             overhead: belowCoverageBandsGeometry(this.belowCoverageBandsInput)
               .bottom,
@@ -1898,15 +1897,15 @@ export default function stateModelFactory(
         /**
          * #getter
          * Target track height for `grow` mode: the full laid-out content height
-         * (coverage + pileup + arcs), capped at `GROW_MAX_HEIGHT` so a deep
-         * pileup doesn't grow the track to thousands of px (a taller pileup fits
-         * to the cap and scrolls the remainder). Independent of `self.height` (in
-         * grow mode reads use the configured `featureHeight`, not the fitted
-         * pitch), so the grow autorun that writes it back can't feed back on
-         * itself. `setHeight` floors it to MIN_DISPLAY_HEIGHT.
+         * (coverage + pileup + arcs), capped at the `growMaxHeight` slot so a
+         * deep pileup doesn't grow the track to thousands of px (a taller pileup
+         * fits to the cap and scrolls the remainder). Independent of
+         * `self.height` (in grow mode reads use the configured `featureHeight`,
+         * not the fitted pitch), so the grow autorun that writes it back can't
+         * feed back on itself. `setHeight` floors it to MIN_DISPLAY_HEIGHT.
          */
         get grownHeight() {
-          return Math.min(this.sections.contentHeight, GROW_MAX_HEIGHT)
+          return Math.min(this.sections.contentHeight, self.growMaxHeight)
         },
 
         /**
@@ -1917,7 +1916,7 @@ export default function stateModelFactory(
         // so a settled relayout never churns the persisted session nor bakes a
         // momentary height. Fixed/fit read the slot (fit shrinks features to fill
         // it via the fittedHeightPx autorun). `grownHeight` is height-independent
-        // in grow mode because `laidOutByGroup` fits to GROW_MAX_HEIGHT there (not
+        // in grow mode because `laidOutByGroup` fits to `growMaxHeight` there (not
         // the reactive `height`) and featureHeight is the configured value (not the
         // fitted pitch), so returning it here can't cycle. Guarded on
         // `view.initialized`: grownHeight transitively reads view-geometry getters

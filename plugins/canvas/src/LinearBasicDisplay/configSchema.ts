@@ -89,6 +89,9 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       },
     },
     {
+      /**
+       * #baseConfiguration
+       */
       baseConfiguration: baseConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },

@@ -149,6 +149,22 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      // NOT the layout cap above. This bounds only how tall `grow` mode sizes
+      // the track; content past it scrolls, exactly as in `fixed`. Two different
+      // limits, don't conflate them.
+      growMaxHeight: {
+        type: 'number',
+        // literal so the generated config doc shows the number; pinned to the
+        // shared GROW_MAX_HEIGHT default by a test, so it can't drift from the
+        // canvas display's copy
+        defaultValue: 800,
+        description:
+          'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight)',
+        advanced: true,
+      },
+      /**
+       * #slot
+       */
       height: {
         type: 'number',
         defaultValue: 250,

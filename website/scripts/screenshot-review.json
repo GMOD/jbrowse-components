@@ -28,8 +28,8 @@
     "name": "bigwig_line",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:08:28.896Z",
-    "hash": "2192a8690d73a56a5d28e57f6a2c5ed660fbbbec"
+    "reviewedAt": "2026-07-27T01:24:49.505Z",
+    "hash": "56bd1ab3f60ec83291f2f6e5ec35b08c0293f791"
   },
   "sequence_track": {
     "name": "sequence_track",
@@ -94,8 +94,8 @@
     "name": "sv_synteny/dotplot_import",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:49:33.076Z",
-    "hash": "fd24e7e707670a379c9ce826b8e350fe4f0cc606"
+    "reviewedAt": "2026-07-27T01:36:52.353Z",
+    "hash": "6037db4425ff43e04d7060ddb55894810f504b0a"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -107,8 +107,8 @@
     "name": "sv_synteny/linear_synteny_genes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-11T19:40:34.310Z",
-    "hash": "1aadbe814cc250a50ce8cc90c0aea6c5f75c5e5e"
+    "reviewedAt": "2026-07-27T01:36:54.852Z",
+    "hash": "1c9b4fcfad5ac7cc7b92da9e244aeb48c889e298"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
@@ -167,8 +167,8 @@
     "name": "alignment_clipping_indicators",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:11:44.723Z",
-    "hash": "b88b647af4509669690896152206c8fba4d82f09"
+    "reviewedAt": "2026-07-27T01:38:55.483Z",
+    "hash": "87abfee734a4569aea9039aaad359913fbfa0041"
   },
   "insertion_indicators": {
     "name": "insertion_indicators",
@@ -254,8 +254,8 @@
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T21:47:45.992Z",
-    "hash": "0eb99f1bf37fb4f26cec4e66c4cbab5f4cdddf49"
+    "reviewedAt": "2026-07-27T01:24:54.244Z",
+    "hash": "afb0601945a5d57ea9525a96f7cd1202b5a81d32"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -355,15 +355,15 @@
     "name": "lgv_usage_guide",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:13:51.336Z",
-    "hash": "f7315f40d558f92a8376005b3e75182d29d6baf8"
+    "reviewedAt": "2026-07-27T01:28:06.158Z",
+    "hash": "fab27b863a336ccded2e3e6bc65d17b935e6991a"
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T18:29:33.852Z",
-    "hash": "8ba0d7b40bb00d24c2d9a90bbb6d96835bd70899"
+    "reviewedAt": "2026-07-27T01:28:08.272Z",
+    "hash": "ec9cf10a2148f6e586253bf5b54484316bfae60c"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -408,8 +408,8 @@
     "name": "alignments/compact",
     "status": "good",
     "note": "FIXED: the \"Read height\" box was already in the spec but the committed PNG predated it AND the content-stable diff gate kept discarding the regen (the box is only 0.197% of the frame, under the 0.5% threshold). Force-regenerated: Read height and Compact are now both boxed.",
-    "reviewedAt": "2026-07-25T16:29:23.319Z",
-    "hash": "c95ef004ce903b7fd434bfb0fcbb33480ade489b"
+    "reviewedAt": "2026-07-27T01:24:51.931Z",
+    "hash": "e30e32d3863a5f10fff8e7e8e3a81ff3d903733e"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -828,8 +828,8 @@
     "name": "linear_synteny_gallery",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T05:00:23.865Z",
-    "hash": "9ce13ca5cebb9f376ba74ebb06385e75d8a6efc0"
+    "reviewedAt": "2026-07-27T01:28:10.289Z",
+    "hash": "a14c3a239dbcf8a325a49788129071108d9b989f"
   },
   "scroll_zoom_toggle": {
     "name": "scroll_zoom_toggle",
@@ -862,15 +862,15 @@
     "name": "gene_track_color_by_cds",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:11:29.071Z",
-    "hash": "8f554acd299d52db531313c88c45c7bb5ff3b9c5"
+    "reviewedAt": "2026-07-27T01:27:59.759Z",
+    "hash": "31e99de27e4695411fe7674131451ea07a6bbe96"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:11:37.822Z",
-    "hash": "558abcfdbfcf6636a259d6b7d11bf0f5a5a60f65"
+    "reviewedAt": "2026-07-27T01:28:01.676Z",
+    "hash": "245e38d4d99704e68cd5b2e868e5374b9433a5f3"
   },
   "rnaseq/single_read": {
     "name": "rnaseq/single_read",
@@ -948,8 +948,8 @@
     "name": "config_not_found",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-06T22:47:10.573Z",
-    "hash": "46cedd96ab3dbc7934684fb23ba7dff9039215ce"
+    "reviewedAt": "2026-07-27T01:27:43.921Z",
+    "hash": "bd986c1b8e8137930bd8cb40e9c8ce51a796bc8c"
   },
   "default_session_form": {
     "name": "default_session_form",
@@ -1178,8 +1178,8 @@
     "name": "gc_content",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T21:01:12.932Z",
-    "hash": "3da0b4e8a6936226885451e189781510a4cc4217"
+    "reviewedAt": "2026-07-27T01:27:57.467Z",
+    "hash": "eeed3ee4858183d9824787d4b7f8848e523f2e7a"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1350,22 +1350,22 @@
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
     "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow — normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
-    "reviewedAt": "2026-07-12T04:54:20.294Z",
-    "hash": "a2f27829557f1af80456465a8f9b80a9092411e9"
+    "reviewedAt": "2026-07-27T01:36:59.480Z",
+    "hash": "dcf5af3276ce03f366a974bc5ab1779d502bd06e"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
     "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
-    "reviewedAt": "2026-07-12T04:54:35.473Z",
-    "hash": "32c40c06c60e0248dc0bcb5355c78481525ea530"
+    "reviewedAt": "2026-07-27T01:37:05.667Z",
+    "hash": "893243aeadc65f44357c1ddc5eca217c93c301a7"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
     "note": "FIXED: RepeatMasker heightMode grow — normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
-    "reviewedAt": "2026-07-12T04:54:33.334Z",
-    "hash": "57e79553bb51d117c0459082fd588c1778aeabd8"
+    "reviewedAt": "2026-07-27T01:37:02.644Z",
+    "hash": "d83bfa176ca90aeda7ef59b2af3edf4048922233"
   },
   "cookbook_color_by_strand": {
     "name": "cookbook_color_by_strand",
@@ -1513,8 +1513,8 @@
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-21T18:11:41.599Z",
-    "hash": "eeb122fd66562e60f569cecd7fba611f92e76f54"
+    "reviewedAt": "2026-07-27T01:36:49.816Z",
+    "hash": "cb719d02d24f6f746d4e44b000898e86e955f4b9"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
@@ -1575,8 +1575,8 @@
     "name": "multiway_synteny/grape_peach_cacao_gene_orthologs",
     "status": "good",
     "note": "FIXED: showDescriptions:false on all three gene tracks so only the gene ids show, not the blue description lines. Regenerated.",
-    "reviewedAt": "2026-07-19T21:16:10.389Z",
-    "hash": "8cd9be274297996cd1e77e5a33c21a92f277a4e3"
+    "reviewedAt": "2026-07-27T01:28:17.721Z",
+    "hash": "d67dd64f606c75b62dc623e1f4942d9be86c1ce0"
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
@@ -1629,10 +1629,10 @@
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
-    "status": "good",
-    "note": "FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
-    "reviewedAt": "2026-07-26T06:12:17.113Z",
-    "hash": "7591524c7ace2b13dd919bcd0ce1631cdc223742"
+    "status": "bad",
+    "note": "still dont understand this marker 5593, it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
+    "reviewedAt": "2026-07-27T01:33:10.090Z",
+    "hash": "89fc74a40378a1c6a48387230004e8e238a81815"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1726,8 +1726,8 @@
     "name": "pangenome_cactus/variant_matrix",
     "status": "good",
     "note": "KEEP, verified interesting: at chr:2,200,000-2,220,000 all four strains carry dense alt, and over the last 6 kb IAI39 goes no-call while its MAF row -- only its -- drops out. One strain leaving the graph's alignment, seen twice in one frame. Checked against the PNG rather than taken from the earlier note.",
-    "reviewedAt": "2026-07-26T07:20:00.000Z",
-    "hash": "ce1ebba2ebbca71ee9d20136edfa5ada31cc8b6d"
+    "reviewedAt": "2026-07-27T01:28:21.337Z",
+    "hash": "7c6011aa4c141b9b491969bb8a307afa5dc5a812"
   },
   "sv_cgiab/cdkn2a_tumor_normal_coverage": {
     "name": "sv_cgiab/cdkn2a_tumor_normal_coverage",
@@ -1815,8 +1815,8 @@
     "name": "desktop-ispcr",
     "status": "good",
     "note": "regenerated: in-silico PCR now gets its own hg19 visit in the harness, so the pristine dialog no longer shares a session with a result. Only difference from the previous capture is that the \"Max product size\" field is no longer focused, which is the cleaner default state.",
-    "reviewedAt": "2026-07-26T14:14:21.000Z",
-    "hash": "79f08293d959db4314adc8bba983e43c3d9835a6"
+    "reviewedAt": "2026-07-27T01:27:52.299Z",
+    "hash": "7d2fff484722c7b98f0114141a9abdffac7702b3"
   },
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
@@ -1905,15 +1905,15 @@
     "name": "popgen/in2lt_per_sample",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T05:05:22.432Z",
-    "hash": "ba9822df7191edb0620e99e1fb7b780dd6507660"
+    "reviewedAt": "2026-07-27T01:36:47.942Z",
+    "hash": "f7183e7f59e38388d81a1f5fbc113f9f75d0b72c"
   },
   "synteny_hg38_hs1_tnnt3": {
     "name": "synteny_hg38_hs1_tnnt3",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T05:05:44.782Z",
-    "hash": "f40bbb4894c5ab97a357141b07041983e0338e47"
+    "reviewedAt": "2026-07-27T01:36:56.981Z",
+    "hash": "073c8dbf8b237d43bd68c32d19b090ee69503a65"
   },
   "variants/potato_missingness_before": {
     "name": "variants/potato_missingness_before",
@@ -1988,36 +1988,155 @@
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
     "status": "good",
-    "reviewedAt": "2026-07-26T02:10:00.000Z",
-    "hash": "e12ec5f6956bca2e28737fda38c43bfbe5e76538",
-    "note": "FIXED all three asks. (1) Cross-species: hg38 vs mouse mm39 around SHH, not hg38 vs hs1. (2) 'Small segment' was not a refactor — the launch frames on the block under the cursor and the old coordinate landed on a short fragment; aimed at a long chain block, the launched view is now 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to. (3) 'Launch synteny view for this position' is now hovered (so it carries the menu's own highlight) and boxed in red; viewportHeight 540 so the whole menu fits. Coordinate note for next time: the hit-testable pileup row is y 331 at this viewport, the band a few px above it is not."
+    "note": "FIXED all three asks. (1) Cross-species: hg38 vs mouse mm39 around SHH, not hg38 vs hs1. (2) 'Small segment' was not a refactor — the launch frames on the block under the cursor and the old coordinate landed on a short fragment; aimed at a long chain block, the launched view is now 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to. (3) 'Launch synteny view for this position' is now hovered (so it carries the menu's own highlight) and boxed in red; viewportHeight 540 so the whole menu fits. Coordinate note for next time: the hit-testable pileup row is y 331 at this viewport, the band a few px above it is not.",
+    "reviewedAt": "2026-07-27T01:28:03.953Z",
+    "hash": "5259fbfbce90fc4cb86dffecc1e8e319a7bb1e10"
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
     "status": "good",
     "note": "regenerated: a query no longer navigates on its own, so the figure now opens the best hit from the results panel, which is the flow a reader follows. That also removed a real nondeterminism: the old auto-navigation ran inside addResultTrack while the drawer and the new track were still laying out, so bpPerPx was computed against a transient view width and the span alternated between 202bp and 205bp across runs. Byte-identical across two runs now. Coverage band still off; the read shows the two mismatch ticks the mock reports.",
-    "reviewedAt": "2026-07-26T14:14:21.000Z",
-    "hash": "1d241f71b299c47c826e2aea600a83e635555a3b"
+    "reviewedAt": "2026-07-27T01:27:46.394Z",
+    "hash": "12f15da2c0f0cca80558b6065f012def32139bb2"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",
-    "status": "good",
-    "note": "RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background.",
-    "reviewedAt": "2026-07-25T21:50:41.615Z",
-    "hash": "8fa9e7330e005ef87839943851a1235543a264fd"
+    "status": "bad",
+    "note": "kind of boring screenshot but ok. previous notes RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background.",
+    "reviewedAt": "2026-07-27T01:33:24.108Z",
+    "hash": "ec9ebd6e2cec845647ab80a28c5bd352d0865744"
   },
   "multiway_synteny/ecoli_launch_from_selection": {
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "FIXED: we do have them. all_vs_all.paf is built with `minimap2 -c` and the launched view's cigarMode already defaults to 'full', so the wedges inside those ribbons ARE the insertions and deletions -- they were just unlabeled. The result frame now turns on the view's own color legend (palette button -> Show color legend), which lists only the ops actually painted, so they are named as insertion/deletion; the tutorial text points at CIGAR display mode too. NOTE: the launch dialog frame predates commit 4c96431 (anchor as a movable row, select all/none, shared window-size field) and needs a jbrowse-web rebuild + regen to match.",
-    "reviewedAt": "2026-07-26T07:20:00.000Z",
-    "hash": "00745f2ecb327879f7d0a1b2216d09567dff219b"
+    "reviewedAt": "2026-07-27T01:28:12.550Z",
+    "hash": "bf14ca5c792f80e9f12cac3f6573793a47c1f068"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
     "status": "good",
     "note": "new: a real primer pair flanking TP53 exon 8 (the codon 273/282 hotspot), which is what you would order to Sanger-sequence the hotspot in a tumour. Products are drawn as read pairs, so the two primer footprints face inward across the 217bp they bracket with the amplicon as the connecting line, which is how a primer pair is drawn in every primer tool. The green tick near the forward primer's 5' end is a base that does not match the template: UCSC tolerates that and still reports the product, whereas the same substitution at the 3' end returns nothing (verified against the live server). The mock body is the response genome.ucsc.edu actually returned for this pair. Byte-identical across two runs at 1400x763.",
-    "reviewedAt": "2026-07-26T14:14:21.000Z",
-    "hash": "d7f53172ddb83bd8ae39104de3a8ed2d2b61387c"
+    "reviewedAt": "2026-07-27T01:27:55.029Z",
+    "hash": "f72c03c2b2d1c6db855cf2bd9730464975e5b210"
+  },
+  "cnv1000g/ccl3l1_depth": {
+    "name": "cnv1000g/ccl3l1_depth",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-27T01:25:22.391Z",
+    "hash": "516d89a0e94e4c3b0a35c890e8b3d9ef9423e53e"
+  },
+  "cnv1000g/ccl3l1_ladder": {
+    "name": "cnv1000g/ccl3l1_ladder",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-27T01:25:50.913Z",
+    "hash": "9dfad0a9e0a854af9a51b2b1c344180d91c5a2b3"
+  },
+  "cnv1000g/ugt2b17_biallelic": {
+    "name": "cnv1000g/ugt2b17_biallelic",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-27T01:27:33.258Z",
+    "hash": "30205136970f73874fbb83a15253200c2382b1ae"
+  },
+  "cnv1000g/zarr_cohort": {
+    "name": "cnv1000g/zarr_cohort",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-27T01:27:41.359Z",
+    "hash": "7e566586209d53869c2ce8063cd394ea2478214b"
+  },
+  "desktop-cli-config": {
+    "name": "desktop-cli-config",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-27T01:27:49.440Z",
+    "hash": "3ca7950ad26134706fe4328334c477df9a803692"
+  },
+  "pangenome/hprc_allele_inventory": {
+    "name": "pangenome/hprc_allele_inventory",
+    "status": "bad",
+    "note": "the new 'allele inventory\" track looks very weird. not sure i like it",
+    "reviewedAt": "2026-07-27T01:30:15.152Z",
+    "hash": "526dc811900c0bd1bfa7dc935ff3a03ed2a30394"
+  },
+  "pangenome/hprc_c4_subgraph": {
+    "name": "pangenome/hprc_c4_subgraph",
+    "status": "bad",
+    "note": "If the nodes were rainbow colored in exact same way in lineargenomeview and bandage graph it might help show correspondance",
+    "reviewedAt": "2026-07-27T01:29:56.532Z",
+    "hash": "189033670b3de369ab6a568e1b8ee432402f6735"
+  },
+  "pangenome/hprc_graph_vs_callset": {
+    "name": "pangenome/hprc_graph_vs_callset",
+    "status": "bad",
+    "note": "the new 'allele inventory\" track looks very weird. not sure i like it",
+    "reviewedAt": "2026-07-27T01:30:15.227Z",
+    "hash": "a49016124fd7c6b8d19a78b47b4c5feec9653b5a"
+  },
+  "pangenome/hprc_mhc_anchored": {
+    "name": "pangenome/hprc_mhc_anchored",
+    "status": "bad",
+    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot",
+    "reviewedAt": "2026-07-27T01:31:50.192Z",
+    "hash": "259221439588cbe3fd44d9e9acb9c2d339dd8331"
+  },
+  "pangenome/hprc_mhc_sample_rows": {
+    "name": "pangenome/hprc_mhc_sample_rows",
+    "status": "bad",
+    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot",
+    "reviewedAt": "2026-07-27T01:31:52.265Z",
+    "hash": "0b0d19c08b77ba1414b96d33c14fd699bfa15316"
+  },
+  "pangenome/hprc_node_menu": {
+    "name": "pangenome/hprc_node_menu",
+    "status": "bad",
+    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. need tobe able to just highlight linaer genome view coords. the lineargenomeview menu item should say launch if that is what it does, and may want to be Launch->Linear genome view submenu",
+    "reviewedAt": "2026-07-27T01:32:43.229Z",
+    "hash": "9d3a9ac6bd999f2f0e60ae6799bd33d8576b8987"
+  },
+  "pangenome/pggb_synteny": {
+    "name": "pangenome/pggb_synteny",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-27T01:33:27.280Z",
+    "hash": "f315fd3d986010415a4ffed41f1a7e9a3f4ed7b6"
+  },
+  "pangenome/rgfa_allele_inventory": {
+    "name": "pangenome/rgfa_allele_inventory",
+    "status": "bad",
+    "note": "the allele inventory i not sure i like. just want to see graph. ",
+    "reviewedAt": "2026-07-27T01:34:07.947Z",
+    "hash": "63b09168330b9cf494689089dd3479ed52592451"
+  },
+  "pangenome/rgfa_hover_correspondence": {
+    "name": "pangenome/rgfa_hover_correspondence",
+    "status": "bad",
+    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot",
+    "reviewedAt": "2026-07-27T01:34:09.518Z",
+    "hash": "3cfc3f382f2aa159d965f6a7c9861b311ca35eaf"
+  },
+  "pangenome/rgfa_hover_from_linear": {
+    "name": "pangenome/rgfa_hover_from_linear",
+    "status": "bad",
+    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. it is hard to see from this screenshot the hover (grey) is corresponding to a mouseover on graphgenomeview plugin",
+    "reviewedAt": "2026-07-27T01:34:52.987Z",
+    "hash": "a9b4823ae0ae02d9c5684d109b29ef635d305c58"
+  },
+  "pangenome/rgfa_launch_menu": {
+    "name": "pangenome/rgfa_launch_menu",
+    "status": "bad",
+    "note": "what is the track type of this rgfa track? ",
+    "reviewedAt": "2026-07-27T01:35:34.803Z",
+    "hash": "947cccb41eeb4ffe5a79efd7bdaaa31b3034a9b3"
+  },
+  "pangenome/rgfa_strain_paths": {
+    "name": "pangenome/rgfa_strain_paths",
+    "status": "bad",
+    "note": "this looks very odd.it is a large insertion, but it should just look, like a normal linearmafdisplay kind of instead of this weird custom thing.",
+    "reviewedAt": "2026-07-27T01:36:35.612Z",
+    "hash": "07543598b187022604407a97d49d117a18e91a04"
   }
 }

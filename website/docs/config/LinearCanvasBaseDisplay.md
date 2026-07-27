@@ -44,12 +44,13 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [labels.description](#slot-labelsdescription)                  | `string`                                                     | the text description to show                                                                                                                                              |
 
 <details>
-<summary>Advanced slots (2)</summary>
+<summary>Advanced slots (3)</summary>
 
-| Slot                                                   | Type     | Description                                                                                                                            |
-| ------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| [maxHeight](#slot-maxheight)                           | `number` | Maximum height in pixels that autogrow mode will size this display to (does not limit fixed or fit mode, where taller content scrolls) |
-| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity) | `number` | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value                                |
+| Slot                                                   | Type     | Description                                                                                                                                   |
+| ------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [maxHeight](#slot-maxheight)                           | `number` | Clamp in pixels on the content height this display reports (does not limit fixed or fit mode, where taller content scrolls).                  |
+| [growMaxHeight](#slot-growmaxheight)                   | `number` | Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. |
+| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity) | `number` | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value                                       |
 
 </details>
 
@@ -58,11 +59,22 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: maxHeight
 
-Maximum height in pixels that autogrow mode will size this display to (does not
-limit fixed or fit mode, where taller content scrolls)
+Clamp in pixels on the content height this display reports (does not limit fixed
+or fit mode, where taller content scrolls). The autogrow ceiling is
+growMaxHeight
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `1200` · _advanced_
+
+#### slot: growMaxHeight
+
+Ceiling in pixels for the "autogrow track height" sizing mode; a track with more
+content than this grows to the ceiling and scrolls the rest. Does not apply to
+the fixed or fit modes. Raising it past maxHeight has no effect, since that
+clamps the content height first
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `800`
+· _advanced_
 
 #### slot: heightMode
 

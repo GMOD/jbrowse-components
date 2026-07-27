@@ -12,11 +12,13 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
+  GROW_MAX_HEIGHT,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
+import { makeEmptyPileupData } from './testUtils.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -123,6 +125,46 @@ function createEnv() {
   return { view, display: view.tracks[0]!.displays[0]! }
 }
 
+// A measured view with `depth` reads all covering the same interval, so the
+// pileup packs to exactly `depth` rows and the content height is predictable.
+function createEnvWithPileup(depth: number) {
+  const { view, display } = createEnv()
+  view.setWidth(800)
+  view.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
+  ])
+  const readPositions = new Uint32Array(depth * 2)
+  for (let i = 0; i < depth; i++) {
+    readPositions[i * 2] = 1000
+    readPositions[i * 2 + 1] = 5000
+  }
+  display.setRpcData(0, {
+    groups: [
+      {
+        key: '',
+        label: '',
+        data: {
+          ...makeEmptyPileupData(),
+          readIds: Array.from({ length: depth }, (_, i) => `r${i}`),
+          readNames: Array.from({ length: depth }, (_, i) => `r${i}`),
+          readPositions,
+          readYs: new Uint16Array(depth),
+          readFlags: new Uint16Array(depth),
+          readMapqs: new Uint8Array(depth),
+          readStrands: new Int8Array(depth),
+        },
+      },
+    ],
+  })
+  display.setLoadedRegion(0, {
+    refName: 'ctgA',
+    start: 0,
+    end: 10_000,
+    assemblyName: 'volvox',
+  })
+  return { view, display }
+}
+
 // Mirrors the canvas display's grow-mode contract: `height` follows the laid-out
 // content reactively via the getter (no autorun writes the height config slot),
 // and leaving grow bakes the height the user was seeing into the slot.
@@ -204,5 +246,45 @@ describe('alignments grow-mode reactive height', () => {
     expect(display.autoHeight).toBe(false)
     expect(display.heightMode).toBe('fixed')
     expect(display.height).toBe(grown + 40)
+  })
+})
+
+// The grow ceiling is the `growMaxHeight` config slot, not a hardcoded constant.
+// A pileup deeper than the ceiling is what makes "autogrow" read as inert: the
+// track pins to the ceiling and scrolls the rest, which is indistinguishable
+// from a fixed track of that height. Raising the slot has to actually raise it.
+describe('the grow ceiling', () => {
+  // The slot default is written as a literal so the generated config doc shows a
+  // number rather than an identifier; this is what keeps it equal to the shared
+  // default the canvas display's own slot uses.
+  it('defaults to the shared GROW_MAX_HEIGHT', () => {
+    const { display } = createEnv()
+    expect(display.growMaxHeight).toBe(GROW_MAX_HEIGHT)
+  })
+
+  it('pins the track at the ceiling once the pileup outgrows it', () => {
+    const { display } = createEnvWithPileup(300)
+    display.setHeightMode('grow')
+    expect(display.sections.contentHeight).toBeGreaterThan(
+      display.growMaxHeight,
+    )
+    expect(display.height).toBe(display.growMaxHeight)
+    expect(display.scrollableHeight).toBeGreaterThan(0)
+  })
+
+  it('grows past the default ceiling when the slot is raised', () => {
+    const { display } = createEnvWithPileup(300)
+    display.setHeightMode('grow')
+    const contentHeight = display.sections.contentHeight
+    display.configuration.setSlot('growMaxHeight', contentHeight + 100)
+    expect(display.height).toBe(contentHeight)
+    expect(display.scrollableHeight).toBe(0)
+  })
+
+  it('leaves a pileup that already fits under the ceiling alone', () => {
+    const { display } = createEnvWithPileup(20)
+    display.setHeightMode('grow')
+    expect(display.height).toBe(display.sections.contentHeight)
+    expect(display.height).toBeLessThan(display.growMaxHeight)
   })
 })

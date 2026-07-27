@@ -39,6 +39,44 @@ const index = new Map<string, string[] | null>()
 // identifier rather than documenting the wrong default.
 const scalarIndex = new Map<string, string | null>()
 
+// And the same idea one level up: a constant holding a whole *group* of slots,
+// spread into a schema's slot table:
+//
+//   const wiggleConfigSchemaFields = { minScore: { type: 'number', ... }, ... }
+//   ConfigurationSchema('LinearWiggleDisplay', { ..., ...wiggleConfigSchemaFields })
+//
+// Those slots are real slots of every schema that spreads them, but they carry no
+// `#slot` JSDoc of their own (they aren't in a `#config` file), so without this
+// they were absent from the config pages entirely — 20 wiggle slots, autoscale
+// and minScore/maxScore among them, documented nowhere. Same conflict rule as
+// above: a name defined twice is dropped rather than guessed at.
+//
+// name -> ordered `slotName: { ... }` source pairs, or null on a conflict
+const slotFieldsIndex = new Map<string, [string, string][] | null>()
+
+// Slot-shaped object literal: every property is `name: { ... }` with a `type`
+// slot property. Required so an ordinary constant that happens to be spread
+// somewhere isn't mistaken for a slot table.
+function slotFieldPairs(node: ts.Expression): [string, string][] | undefined {
+  if (!ts.isObjectLiteralExpression(node) || !node.properties.length) {
+    return undefined
+  }
+  const pairs = node.properties.map(p =>
+    ts.isPropertyAssignment(p) &&
+    ts.isIdentifier(p.name) &&
+    ts.isObjectLiteralExpression(p.initializer) &&
+    p.initializer.properties.some(
+      s =>
+        ts.isPropertyAssignment(s) &&
+        ts.isIdentifier(s.name) &&
+        s.name.text === 'type',
+    )
+      ? ([p.name.text, p.initializer.getText()] as [string, string])
+      : undefined,
+  )
+  return pairs.every(pair => pair !== undefined) ? pairs : undefined
+}
+
 function stringsOf(node: ts.Expression): string[] | undefined {
   if (!ts.isArrayLiteralExpression(node)) {
     return undefined
@@ -116,6 +154,10 @@ function recordScalar(name: string, value: string) {
   }
 }
 
+function recordSlotFields(name: string, pairs: [string, string][]) {
+  slotFieldsIndex.set(name, slotFieldsIndex.has(name) ? null : pairs)
+}
+
 /**
  * Scan `files` for top-level string-array constants. Cheap enough to run over
  * the whole repo: only files whose text mentions a candidate declaration are
@@ -139,6 +181,10 @@ export function buildEnumConstantIndex(files: string[]) {
             // `as const` wraps the literal in an assertion expression
             const value = ts.isAsExpression(init) ? init.expression : init
             const direct = stringsOf(value)
+            const slotFields = slotFieldPairs(value)
+            if (slotFields) {
+              recordSlotFields(name, slotFields)
+            }
             if (ts.isStringLiteralLike(value)) {
               recordScalar(name, value.text)
             } else if (direct) {
@@ -179,4 +225,12 @@ export function enumConstantValues(name: string) {
 /** Value of a named string constant, or undefined if unknown/ambiguous. */
 export function scalarConstantValue(name: string) {
   return scalarIndex.get(name) ?? undefined
+}
+
+/**
+ * `slotName: { ... }` source pairs of a named slot-table constant a schema
+ * spreads, or undefined if the name is unknown, ambiguous, or not slot-shaped.
+ */
+export function slotFieldConstantPairs(name: string) {
+  return slotFieldsIndex.get(name) ?? undefined
 }

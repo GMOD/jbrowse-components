@@ -443,9 +443,9 @@ describe('feature-height menu per-preset pins', () => {
   it('gives every track-sizing mode its own pin', () => {
     const { display } = createDisplay()
     for (const label of [
-      'Fixed read height',
+      'Fixed read height + fixed track height',
       'Fixed read height + autogrow track height',
-      'Fit read height to display',
+      'Fit read height to track height',
     ]) {
       expect(heightModePinProps(display, label)).toBeDefined()
     }
@@ -458,7 +458,8 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Normal')?.control.active).toBe(false)
     expect(pinProps(display, 'Super-compact')?.control.active).toBe(false)
     expect(
-      heightModePinProps(display, 'Fit read height to display')?.control.active,
+      heightModePinProps(display, 'Fit read height to track height')?.control
+        .active,
     ).toBe(false)
     expect(
       heightModePinProps(display, 'Fixed read height + autogrow track height')
@@ -561,7 +562,10 @@ describe('feature-height menu per-preset pins', () => {
 
   it("the fit pin promotes heightMode='fit'", () => {
     const { session, display } = createDisplay()
-    heightModePinProps(display, 'Fit read height to display')?.control.toggle()
+    heightModePinProps(
+      display,
+      'Fit read height to track height',
+    )?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('fit')

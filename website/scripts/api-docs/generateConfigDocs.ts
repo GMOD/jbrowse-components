@@ -3,7 +3,11 @@ import fs from 'fs'
 import slugify from 'slugify'
 import * as ts from 'typescript'
 
-import { enumConstantValues, scalarConstantValue } from './enumConstants.ts'
+import {
+  enumConstantValues,
+  scalarConstantValue,
+  slotFieldConstantPairs,
+} from './enumConstants.ts'
 import { writeFormatted } from './format.ts'
 import {
   assertSingleHeader,
@@ -20,6 +24,7 @@ import {
   overviewSection,
   parseNode,
   repoRelative,
+  rewriteMarkerBlock,
   section,
   stripPropertyName,
   suffixCategory,
@@ -66,12 +71,57 @@ export interface Config {
   identifier?: Item
   preProcess?: Item
   slots: Item[]
+  // slots pulled in by spreading a shared slot table, folded into `slots` by
+  // mergeSpreadSlots once accumulation is done (see spreadSlots)
+  spreadSlots?: Item[]
   filename: string
 }
 type ConfigWithHeader = Config & { header: ConfigHeader }
 interface ConfigIndex {
   byDeclId: Map<string, ConfigWithHeader>
   byName: Map<string, ConfigWithHeader>
+}
+
+// Slots a schema pulls in by spreading a shared slot table
+// (`...wiggleConfigSchemaFields`). They are real slots of this schema but carry
+// no `#slot` JSDoc of their own — the table lives in a file with no `#config`, so
+// tagging them there would bucket them under no config at all — which is why they
+// were missing from the generated pages entirely. Recovered from the `#config`
+// node's own source: every spread of a name the slot-table index knows (see
+// enumConstants.ts) contributes its properties, in declaration order.
+function spreadSlots(configNode: string): Item[] {
+  const sf = ts.createSourceFile(
+    'config.ts',
+    configNode,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const slots: Item[] = []
+  const visit = (node: ts.Node) => {
+    if (ts.isSpreadAssignment(node) && ts.isIdentifier(node.expression)) {
+      const pairs = slotFieldConstantPairs(node.expression.text)
+      for (const [name, value] of pairs ?? []) {
+        slots.push({ name, docs: '', examples: [], code: `${name}: ${value}` })
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  ts.forEachChild(sf, visit)
+  return slots
+}
+
+// Fold each config's spread-in slots into its slot list, after accumulation so a
+// `#slot` the schema declares itself always wins over the shared table's version
+// of the same name. Idempotent, so both writers below can call it.
+function mergeSpreadSlots(byFile: Record<string, Config>) {
+  for (const config of Object.values(byFile)) {
+    const declared = new Set(config.slots.map(s => s.name))
+    config.slots = [
+      ...config.slots,
+      ...(config.spreadSlots ?? []).filter(s => !declared.has(s.name)),
+    ]
+    config.spreadSlots = undefined
+  }
 }
 
 // Route one extracted node into its file's config bucket. Called from the shared
@@ -102,6 +152,10 @@ export function accumulateConfig(
       category: item.category,
       trackType: item.trackType,
     }
+    // assigned, not appended: extractWithComment can emit one declaration twice
+    // (the variable statement and its inner declaration), and appending would
+    // then document every spread slot twice
+    file.spreadSlots = spreadSlots(obj.node)
   } else if (obj.type === 'baseConfiguration') {
     file.derives = item
     file.baseDeclId = obj.baseDeclId
@@ -863,6 +917,54 @@ function adaptersByTrackType(configs: ConfigWithHeader[]) {
   return map
 }
 
+// The "which settings can be made the default for all tracks" table in
+// user_guides/display_defaults.md, from the `promotable: true` slots themselves —
+// the user guide used to list them by hand, which drifts the moment a display
+// promotes a slot. Rows are the display types users actually meet (those with a
+// `new DisplayType(...)` registration), each with its effective promotable slots:
+// declared on the display or inherited from a base, shadowing resolved the same
+// way the config page's "Inherited config slots" section resolves it, so a
+// non-promotable override (LGVSyntenyDisplay-style) doesn't count its base's
+// promotable definition.
+export function writePromotableSlotDocs(
+  byFile: Record<string, Config>,
+  displayToTrackType: Map<string, string>,
+  { check = false } = {},
+) {
+  mergeSpreadSlots(byFile)
+  const withHeader = withHeaders(byFile)
+  const index: ConfigIndex = {
+    byDeclId: mapByKey(withHeader, c => c.header.declId),
+    byName: mapByKey(withHeader, c => c.header.name),
+  }
+  const rows = withHeader
+    .filter(cfg => displayToTrackType.has(cfg.header.name))
+    .map(cfg => {
+      const seen = new Set<string>()
+      const slots = [cfg, ...collectBaseConfigs(cfg, index)]
+        .flatMap(c => filterUnseenByName(seen, c.slots))
+        .filter(slot => slotMetaFor(slot).meta.promotable)
+        .map(slot => slot.name)
+        .sort((a, b) => a.localeCompare(b))
+      return { cfg, slots }
+    })
+    .filter(({ slots }) => slots.length > 0)
+    .sort((a, b) => a.cfg.header.name.localeCompare(b.cfg.header.name))
+    .map(({ cfg, slots }) => {
+      const page = `/docs/config/${cfg.header.id}`
+      const trackType = displayToTrackType.get(cfg.header.name)!
+      const links = slots.map(
+        slot => `[\`${slot}\`](${page}/#slot-${slot.toLowerCase()})`,
+      )
+      return `| ${trackType} | [${cfg.header.name}](${page}) | ${links.join(', ')} |`
+    })
+  return rewriteMarkerBlock(
+    'PROMOTABLE_SLOTS',
+    `<!-- prettier-ignore -->\n${markdownTable(['Track type', 'Display', 'Settings with a pin'], rows)}`,
+    { check },
+  )
+}
+
 export async function writeConfigDocs(
   byFile: Record<string, Config>,
   displayTypesByTrack: Map<string, string[]>,
@@ -871,6 +973,7 @@ export async function writeConfigDocs(
 ) {
   const dir = 'website/docs/config'
   fs.mkdirSync(dir, { recursive: true })
+  mergeSpreadSlots(byFile)
   const withHeader = withHeaders(byFile)
   const byDeclId = mapByKey(withHeader, c => c.header.declId)
   const byName = mapByKey(withHeader, c => c.header.name)

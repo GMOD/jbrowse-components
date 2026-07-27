@@ -165,8 +165,22 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
           selector: '[data-testid="synteny_canvas_done"]',
         },
         { type: 'delay', ms: 4000 },
-        // close the linear view it was launched from, so the frame is the result
-        // rather than mostly the source
+        // Close the linear view it was launched from, so the frame is the
+        // result rather than mostly the source.
+        //
+        // This click is where the run's `[mobx-state-tree] ... no longer part of
+        // a state tree` warns come from (plus `[findParentThat] node has no
+        // parent`), and they are benign. `session.removeView` destroys the LGV
+        // subtree while its observer components are still mounted — React
+        // unmounts in the commit after the action — so MobX's staleness check
+        // re-evaluates their dependencies across the dead nodes: `view.height`
+        // walks tracks → displays. MST's livelinessChecking defaults to 'warn',
+        // so nothing throws and the reads feed a render that never commits. They
+        // carry `Action: '/session.removeView()'` because MST leaves that action
+        // context set while MobX flushes reactions at the end of the action, and
+        // they print interleaved under other specs' [n/total] lines because the
+        // generator runs four browsers at once — the `[name] browser[warn]:`
+        // prefix is the attribution, not the counter above them.
         { type: 'click', selector: '[data-testid="close_view"]' },
         { type: 'delay', ms: 3000 },
         // Turn the color legend on. The launched view already draws the PAF's

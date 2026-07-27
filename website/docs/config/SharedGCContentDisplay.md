@@ -175,4 +175,92 @@ Draw only the min/max Y-axis ticks
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `false` · _advanced_
 
+#### slot: posColor
+
+Fill color for positive scores, used when useBicolor is true (the default)
+
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'#0068d1'`
+
+#### slot: negColor
+
+Fill color for negative scores, used when useBicolor is true (the default)
+
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'#e01e26'`
+
+#### slot: bicolorPivot
+
+Pivot value for bicolor mode
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
+_advanced_
+
+#### slot: minScore
+
+Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning
+"unset, use autoscale"
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`Number.MIN_VALUE` · _advanced_
+
+#### slot: maxScore
+
+Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning
+"unset, use autoscale"
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`Number.MAX_VALUE` · _advanced_
+
+#### slot: scaleType
+
+Scale type (linear or log)
+
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`linear`, `log`) · **Default:** `'linear'`
+
+#### slot: autoscale
+
+Autoscale type: "local" uses the min/max in the visible region, "localsd" uses
+mean ± numStdDev standard deviations, "localpercentile" uses the numQuantile-th
+percentile score as the max (robust to skewed/peaky data)
+
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`local`, `localsd`, `localpercentile`) · **Default:** `'localpercentile'`
+
+#### slot: numStdDev
+
+Number of standard deviations to use for the localsd autoscale type
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `3` ·
+_advanced_
+
+#### slot: numQuantile
+
+Percentile used to clip outliers for the localpercentile autoscale type (e.g.
+0.99 clips the outermost 1% of each sign). Positive and negative extents are
+computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP
+acceleration) stays visible; all-positive data pins the min at 0
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`0.99` · _advanced_
+
+#### slot: scatterPointSize
+
+Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Unset
+(the default) follows the session-wide default for this display type, falling
+back to 2
+
+**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:** `2` ·
+_advanced, promotable_
+
+#### slot: lineWidth
+
+Line thickness in px for line ("line"/"multiline") rendering. Unset (the
+default) follows the session-wide default for this display type, falling back to
+1
+
+**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:** `1` ·
+_advanced, promotable_
+
 </details>

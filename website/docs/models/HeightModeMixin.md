@@ -32,6 +32,7 @@ computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
 | ------------------------------------------------ | ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | [heightMode](#getter-heightmode)                 | Getters | HeightModeMixin | The resolved track-height strategy (`fixed`/`grow`/`fit`).                                                                      |
 | [fitTargetHeight](#getter-fittargetheight)       | Getters | HeightModeMixin | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. |
+| [growMaxHeight](#getter-growmaxheight)           | Getters | HeightModeMixin | Ceiling `grow` mode sizes the track to, in px (content past it scrolls).                                                        |
 | [autoHeight](#getter-autoheight)                 | Getters | HeightModeMixin | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                           |
 | [fitHeightToDisplay](#getter-fitheighttodisplay) | Getters | HeightModeMixin | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                            |
 
@@ -57,6 +58,17 @@ reactive `height` getter to break the grow-mode cycle
 
 ```ts
 type fitTargetHeight = number
+```
+
+#### getter: growMaxHeight
+
+Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives
+here rather than as a constant so a track whose whole point is a deep pileup can
+raise it; both displays that own a `grownHeight` read this, so the two can't
+diverge.
+
+```ts
+type growMaxHeight = number
 ```
 
 #### getter: autoHeight

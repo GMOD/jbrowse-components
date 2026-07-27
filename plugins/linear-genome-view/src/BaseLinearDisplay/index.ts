@@ -22,6 +22,7 @@ export {
   GROW_MAX_HEIGHT,
   HEIGHT_MODE_VALUES,
   getHeightModeOptions,
+  heightModeLabel,
 } from './models/heightMode.ts'
 export type { HeightMode } from './models/heightMode.ts'
 export { heightModeMenuItems } from './models/heightModeMenu.ts'

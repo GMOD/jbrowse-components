@@ -13,30 +13,52 @@ export const HEIGHT_MODE_VALUES = ['fixed', 'grow', 'fit'] as const
 // current height.
 export type HeightMode = (typeof HEIGHT_MODE_VALUES)[number]
 
-// Display-height ceiling for `grow` mode, in px, so a deep pileup / dense track
-// doesn't grow the track to thousands of px. Content past this scrolls, the same
-// as `fixed`. Distinct from the per-display `maxHeight` slot, which caps layout
-// stacking (how much content is laid out), not the on-screen track height.
+// Default for the `growMaxHeight` config slot: the display-height ceiling for
+// `grow` mode, in px, so a deep pileup / dense track doesn't grow the track to
+// thousands of px. Content past this scrolls, the same as `fixed`. It is a slot
+// rather than a constant because 800px is a guess about screen real estate, not
+// a property of the data — at real Illumina depth a pileup passes it in the
+// first hundred rows, and from there "autogrow" is indistinguishable from a
+// fixed 800px track. Distinct from each display's own `maxHeight` slot, which
+// bounds how much content is laid out / clamped, not the grow ceiling.
 export const GROW_MAX_HEIGHT = 800
 
 // Single source for the "Track sizing" radio options, shared by every display
 // that exposes the `heightMode` slot (canvas feature display, alignments
-// display). Each label names the two axes it touches — the per-feature height
-// and the track height — so the three modes read as one coherent choice:
-// `fixed` keeps the feature height and scrolls; `grow` keeps the same feature
-// height but autogrows the track to hold it; `fit` derives the feature height
-// to fill the display. The shared "Fixed <noun> height" prefix on the first two
-// makes explicit that `grow` differs from `fixed` only in the track axis, and
-// naming "height" is honest here — `fit` genuinely drives the per-feature size,
-// so the two axes aren't fully orthogonal. `noun` is the SINGULAR of what the
-// track holds ('feature', 'read'); everything else stays identical across
-// plugins.
+// display). The three modes are three cells of a 2x2 over the per-feature
+// height axis and the track height axis (both-derived is incoherent, so there
+// is no fourth), and every label names BOTH cells rather than leaving one to be
+// inferred. That makes each row read as `read axis + track axis`:
+//
+//   fixed  Fixed <noun> height + fixed track height      (overflow scrolls)
+//   grow   Fixed <noun> height + autogrow track height   (track follows content)
+//   fit    Fit <noun> height to track height             (size is derived)
+//
+// The first two share the "Fixed <noun> height" prefix verbatim, so they read as
+// the same answer on the feature axis differing in exactly one word. `fit`
+// breaks the prefix at the word that matters, and collapses to one clause
+// because "fit A to B" already says B is the fixed one. Naming "height" on both
+// sides is honest: `fit` genuinely drives the per-feature size, so the two axes
+// aren't fully orthogonal. `noun` is the SINGULAR of what the track holds
+// ('feature', 'read'); everything else stays identical across plugins.
+const HEIGHT_MODE_LABELS: Record<HeightMode, (noun: string) => string> = {
+  fixed: noun => `Fixed ${noun} height + fixed track height`,
+  grow: noun => `Fixed ${noun} height + autogrow track height`,
+  fit: noun => `Fit ${noun} height to track height`,
+}
+
+// One mode's label. A total lookup over the mode union, so callers that already
+// know which mode they mean (a docs figure boxing the `fit` row) don't have to
+// search the option list and handle a miss that can't happen.
+export function heightModeLabel(mode: HeightMode, noun: string) {
+  return HEIGHT_MODE_LABELS[mode](noun)
+}
+
 export function getHeightModeOptions(
   noun: string,
 ): { value: HeightMode; label: string }[] {
-  return [
-    { value: 'fixed', label: `Fixed ${noun} height` },
-    { value: 'grow', label: `Fixed ${noun} height + autogrow track height` },
-    { value: 'fit', label: `Fit ${noun} height to display` },
-  ]
+  return HEIGHT_MODE_VALUES.map(value => ({
+    value,
+    label: heightModeLabel(value, noun),
+  }))
 }

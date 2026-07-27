@@ -2,10 +2,13 @@ import {
   DEMO_CONFIG,
   VOLVOX,
   cascadeBoxes,
+  dismissMenus,
   kgUrl,
   lgvSession,
   menuCascade,
+  openFeatureHeightSubmenu,
   sessionSpec,
+  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -1488,6 +1491,87 @@ export const uiSpecs: ScreenshotSpec[] = [
       ...menuCascade(['Collapse...', 'Collapse subcategories'], 300),
       { type: 'click', text: 'Collapse subcategories' },
       { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // The track-selector badge a session-wide default raises, and the dialog it
+  // opens (display_defaults.md). A promoted default lives in this browser's
+  // preferences, never in a session spec, so the state has to be driven through
+  // the UI: pin Compact in the alignments "Read height" submenu, then open the
+  // track selector. The track holds no height of its own, so the badge reads
+  // "Affected by a session-wide default" (data-testid track_session_default_badge)
+  // rather than the "Edited" pencil, and the dialog names the default as its
+  // source with a "Clear session default" action. One open following track means
+  // no track differs from the new default, so the snackbar carries no "Apply to
+  // N open tracks" action here — wait on its title instead.
+  {
+    mode: 'url',
+    name: 'display_type_default_badge',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1..8,000',
+      tracks: ['volvox_alignments_pileup_coverage'],
+    }),
+    readyText: 'ctgA',
+    viewportWidth: 1100,
+    // enough for the tracklist and the dialog; the compacted pileup leaves the
+    // rest of the track band empty, so a taller frame is just whitespace
+    viewportHeight: 560,
+    // the pileup keeps re-laying-out while reads stream in; let the menu
+    // geometry settle before the click sequence
+    settleMs: 8000,
+    hideTooltip: true,
+    hideSelectors: ['.MuiTooltip-popper'],
+    stages: [
+      {
+        // top frame: the badge in the track selector, circled
+        actions: [
+          trackMenuIcon('volvox_alignments_pileup_coverage'),
+          ...openFeatureHeightSubmenu(),
+          {
+            type: 'click',
+            selector: '[aria-label="make Compact the default for all tracks"]',
+          },
+          { type: 'waitForText', text: 'Set as the default' },
+          ...dismissMenus(),
+          {
+            type: 'click',
+            selector: 'button[title="Open track selector"]',
+          },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="hierarchical_track_selector"]',
+          },
+          // the tracklist is virtualized, so filter it down until the open
+          // track's row (and its badge) is actually rendered
+          { type: 'type', text: 'Filter tracks', value: 'volvox-sorted.bam' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="track_session_default_badge"]',
+          },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: {
+              selector: '[data-testid="track_session_default_badge"]',
+            },
+          },
+        ],
+      },
+      {
+        // bottom frame: the dialog it opens, listing the setting the default
+        // imposed and offering to clear it
+        actions: [
+          {
+            type: 'click',
+            selector: '[data-testid="track_session_default_badge"]',
+          },
+          { type: 'waitForText', text: 'Session-wide default' },
+          { type: 'delay', ms: 500 },
+        ],
+      },
     ],
   },
 

@@ -6,7 +6,11 @@ import {
   writeApiReadmes,
 } from './generateApiDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
-import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
+import {
+  accumulateConfig,
+  writeConfigDocs,
+  writePromotableSlotDocs,
+} from './generateConfigDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import {
@@ -82,6 +86,7 @@ async function main() {
     displayToTrackType,
     modelNames,
   )
+  writePromotableSlotDocs(configs, displayToTrackType)
   await writeModelDocs(models, configNames)
   await writeApiDocs(api)
   await writeApiReadmes(api)

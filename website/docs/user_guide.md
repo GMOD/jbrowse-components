@@ -14,6 +14,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [Basic usage](/docs/user_guides/basic_usage)
 - [Connections](/docs/user_guides/connections)
+- [Defaults for all tracks](/docs/user_guides/display_defaults)
 - [Opening track hubs by URL](/docs/user_guides/hub_url)
 
 ## Track types

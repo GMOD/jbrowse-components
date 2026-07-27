@@ -2229,3 +2229,192 @@ just import from one source of truth.
 
 Motivation: avoid CLI depending directly on `packages/core`, and eliminate the duplication
 that causes drift bugs.
+
+## Tutorial ideas (2026-07 audit)
+
+Audit of `website/src/pages/docs/tutorials/index.astro` plus the 25 tutorials on
+`main`, cross-referenced against the shipped display/adapter tables
+(`config_guides/file_types.md`), the gallery, and the hosted tracks in
+`test_data/config_demo.json`.
+
+Coverage today: synteny and comparative 7 (three of them pangenome), structural
+variation 4, population genomics 4, epigenomics and single cell 4,
+transcriptomics and proteins 2, configuration and embedding 3 plus the storybook
+card and the cookbook. Comparative genomics is saturated. There is no genes and
+annotation section at all, and no tutorial for a whole shipped view type
+(Hi-C, circular) or for the newest sequence tooling.
+
+Two tutorials were deliberately removed, so do not re-propose them as written:
+
+- `readpair_heatmap.md` (16250c4b58) - the Cue-style read-pair contact heatmap,
+  dropped with its figures, specs, gallery card, and build scripts. A real Hi-C
+  tutorial is a different thing and is still open (below).
+- `introgression.md` (3be9f8f745) - "screenshot review flagged the three human
+  archaic-introgression figures for data-accuracy distrust and a lack of
+  negative controls", plus direction to drop the human archaic framing. Nothing
+  ships a figure whose claim a reviewer cannot check. The fiber-seq section of
+  `methylation.md` is the pattern to copy: the enzyme-treated sample sits above
+  the native no-enzyme control in the same figure.
+
+### Priority per Colin, 2026-07-26
+
+**Serving your lab's data.** Explicitly called out as the boring-but-high-value
+one. Static hosting (S3, GitHub Pages, plain nginx), CORS and range requests,
+where `jbrowse create` output goes, and putting data behind a login. All of this
+exists today only as scattered FAQ entries ("How can I setup JBrowse 2 on my web
+server", "Should I configure gzip on my web server", "BAM (or other indexed
+binary files) do not work on my server", "How do I put my data behind a login",
+"Why do I get a CORS error when loading remote files") plus
+`config_guides/deploying.md` and `config_guides/authentication.md`. The tutorial
+is the walkthrough that turns those into one path, ending at a URL a
+collaborator can open. Reuses `quickstart_web.md` for file prep rather than
+restating bgzip/tabix.
+
+**Variant interpretation.** High value if the example is good, which is the hard
+part rather than the JBrowse part. Everything needed is already hosted in
+`config_demo.json`: ClinVar variants and CNVs (both UCSC and NCBI), gnomAD
+missense constraint and pLI, gnomAD v2.1 SVs, MANE 1.4, ENCODE cCREs, GDC cancer
+variants, UCSC Mastermind, ClinGen gene-disease and haplo/triplosensitivity,
+dbSUPER enhancers. Consequence-impact coloring already has specs
+(`variants/consequence_impact_1000g`) and clustering has a user guide. Also
+consider genomes.jbrowse.org, which is bulk-loaded from UCSC and carries a large
+track catalog, so an interpretation walkthrough there needs no new hosting at
+all. The open question is the example: pick one variant whose interpretation is
+uncontroversial and readable off the tracks, with a negative control (a benign
+neighbor, or the same variant in a constrained versus unconstrained gene).
+
+**AlphaGenome, as a plugin rather than a standalone page.** `~/src/dont_care/
+alphagenome_browser` (repo name `alphagenome-jbrowse`, last touched Oct 2025) is
+the strongest candidate for the variant-interpretation example, because it
+predicts the functional consequence rather than looking it up: the reader picks
+a variant and gets REF, ALT, and a **delta** track. The delta is a built-in
+negative control, since a variant with no predicted regulatory effect draws a
+flat one, which is exactly what the removed introgression figures lacked.
+
+Most of the JBrowse side already exists as a plugin. `frontend/src/
+AlphaGenomePlugin/` is a real `Plugin` subclass with two pluggable elements:
+`LaunchAlphaGenome.ts` extends `LinearVariantDisplay`'s `contextMenuItems` with
+"Add variant to AlphaGenome", and `Float32EndpointAdapter` reads the returned
+prediction arrays. What makes it a standalone page today is only the shell: a
+Vite React app with its own `makeViewState`, header, and help dialog. Extracting
+it to a published plugin loadable in Web and Desktop from the plugin store is
+the revitalization, and it drops the shell rather than rewriting the plugin.
+
+Backend is `backend/main.py`, FastAPI behind Mangum on a container Lambda (the
+`alphagenome` Python dependency is too large for a zip lambda), results cached
+in S3 with a DynamoDB token and a one-week expiry. It started as Flask on EC2,
+see tag v0.0.1. Known limits to fix or state: one variant per request, outputs
+wired for RNA_SEQ and DNASE (the UI also exposes a chip_seq checkbox), ontology
+terms passed as a comma-separated string, and the API endpoint hardcoded in
+`handlers/runAlphaGenomeHandler.ts`.
+
+Open questions before this is a shippable plugin: the `ALPHAGENOME_API_KEY`
+cannot live in a client plugin, so the Lambda proxy stays and becomes
+infrastructure we run (same shape as the UCSC BLAT proxy), which brings rate
+limits, cost, and the AlphaGenome terms of use into scope. Decide whether the
+proxy URL is a config slot so an institution can point at its own deployment.
+
+**Notebooks, Python and R.** `jbrowse-anywidget` (`~/src/jbrowse-anywidget`) and
+JBrowseR (`~/src/JBrowseR`) are both being revitalized, so the tutorial should
+cover both rather than only the Python side. Today `docs/jbrowse_jupyter.md`
+describes the anywidget and six tutorials embed copy-paste snippets, but nothing
+teaches the loop: set `view.location`, read it back after the user pans, drive a
+synteny view or dotplot through `JBrowseApp`. Note `docs/jbrowse_jupyter.md`
+already calls the anywidget the modern replacement for the Dash-based
+`jbrowse-jupyter`, so the tutorial should not send readers to the old package.
+
+**jbrowse-img.** No tutorial mentions it. The FAQ has both "How do I make an
+image for a publication" and "How do I automatically create screenshots", and
+`docs/jbrowse-img.md` is generated from the product README, so the tutorial is
+the missing narrative layer: a session to a committed PNG or SVG, batching a
+figure panel, and where SVG export fits versus the CLI tool. Our own website
+figure pipeline is the existence proof that it works at scale.
+
+**BLAT, in-silico PCR, sequence search, CRISPR guides.** New functionality and
+valuable, with the caveat that this is the area Colin knows least, so the
+tutorial has to be written against the source rather than from memory and then
+verified by driving the real UI. On `main` today: `plugins/blat` with
+`BlatDialog` and `IsPcrDialog` (two Tools menu items, Desktop only, Web does not
+bundle the plugin), `plugins/sequence/src/CrisprGuideAdapter` with slots for
+`pam`, `guideLength`, `pamLocation` (3prime for Cas9, 5prime for Cas12a) and
+`cutOffset`, its canvas glyph (`plugins/canvas/src/RenderFeatureDataRPC/glyphs/
+crisprGuide.ts`), `CrisprGuidePanel` in the LGV, and `SequenceSearchAdapter`.
+Documented today only in `user_guides/blat.md`, `user_guides/sequence_search.md`,
+and the autogenerated `config/CrisprGuideAdapter.md`. Two honest constraints to
+state up front: the UCSC-backed tools are Desktop-first for CORS and Turnstile
+reasons, and the guide adapter emits sequence-property triage metrics
+(`gcPercent`, `hasPolyT`) and not an off-target specificity score.
+
+### Feature gaps with hosted data and no tutorial
+
+**Hi-C.** `HicTrack` appears in zero tutorials. A 59-line user guide, one
+gallery card, and a demo track exist. Content: reading a contact matrix, how
+JBrowse picks binning resolution from zoom and how the track menu steps it, the
+color ramp, and loop calls loaded as BEDPE (which the file-types table already
+labels "Paired/breakend records, e.g. SV calls or Hi-C loops") drawn as arcs
+under the matrix.
+
+**GWAS to a fine-mapped locus.** `GWASTrack` plus `PlinkLDAdapter` /
+`PlinkLDTabixAdapter` ship with LocusZoom-style r-squared coloring and
+right-click re-anchoring of the index SNP. The gallery card
+(`gallery/gwas_bmi_fto`) points at a user guide because no tutorial exists.
+Distinct from `linkage_disequilibrium.md`, which teaches the triangle and
+deliberately argues the triangle is a kb-scale tool.
+
+**Conservation and multiple alignments.** phyloP 100-way (hg19 and hg38, line
+and density variants) is hosted, and the MAF stack (bigMaf, MafTabix, taffy,
+codon frames, percent identity) carries a lot of engineering. MAF only ever
+appears inside pangenome tutorials, so a conservation-at-a-coding-locus
+walkthrough would be the first one where the alignment itself is the subject.
+
+**Long-read transcriptome and isoforms.** Would double the thinnest category.
+Hosted: `NA12878-DirectRNA...minimap2.sorted` (whole genome and a chr1 subset).
+Pair with a StringTie or FLAIR GTF against Gencode to show novel isoform calls,
+sashimi quantification, and where `rnaseq.md` currently stops (its "Short reads
+vs long reads" section is one paragraph).
+
+**Annotating and QC-ing a new assembly.** `Tiberius gene predictions` sits in
+the demo config next to Gencode v47 and NCBI RefSeq with RNA-seq available as
+evidence. Ends with `jbrowse text-index` so the new gene names are searchable,
+which no tutorial except `cli_desktop.md` currently touches. This would open a
+genes and annotation section on the landing page.
+
+**Non-model organism with no config.** `&hubURL=` against a UCSC GenArk hub is
+the fastest path from nothing to a browser for a plant or animal lab, and today
+it is a gallery card plus a 46-line user guide. Overlaps with
+genomes.jbrowse.org, so decide whether the walkthrough teaches the hub parameter
+or the hosted instance, and cross-link the other.
+
+**Mobile element insertions.** `NA12878_ALU` / `_LINE1` / `_SVA` plus
+`MEI_Callset_GRCh38.ALL.20241211` and the T2T callset are hosted and unused. Has
+the same non-reference caveat as tandem repeats below, but the callsets are at
+least reference-anchored point annotations.
+
+### Workflow and admin
+
+**Session sharing and bookmark-driven review.** The grid-bookmark plugin, share
+links, and URL params as one curation workflow rather than a data type. The FAQ
+covers the mechanics ("Why can't I copy and paste my URL bar", "How does session
+sharing with shortened URLs work", "Are my share links reproducible") with no
+walkthrough tying them to a review task.
+
+**Somatic SNV and indel review, tumor versus normal.** COLO829 MinION tumor and
+normal plus their coverage tracks and `truthset_somaticSVs_COLO829` are hosted.
+`sv_visualization_cgiab.md` covers SVs only. Caveat from prior work: COLO829 has
+widespread LOH, so choose loci empirically rather than by reputation.
+
+**Circular view.** 46-line user guide, no tutorial. Whole-genome SV overview is
+the natural subject, probably as a section of an existing SV tutorial rather
+than a page of its own.
+
+### Parked
+
+**Tandem repeats and expansions.** `vamos.VNTR`, `sgdp_memstrs`, and
+`chm13v2.0_rmsk` are hosted, and the biology is interesting, but per Colin this
+is not our strength: the interesting alleles are non-reference and an expansion
+is hard to read in a linear genome view. Revisit only if there is a rendering
+answer first (a pangenome or graph projection, or a per-allele length encoding),
+not as a data-loading walkthrough.
+
+**Fiber-seq.** Already covered as a section of `methylation.md`, including the
+no-enzyme control figure. Not a separate tutorial.

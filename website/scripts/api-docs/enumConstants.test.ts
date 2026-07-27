@@ -6,6 +6,7 @@ import {
   buildEnumConstantIndex,
   enumConstantValues,
   scalarConstantValue,
+  slotFieldConstantPairs,
 } from './enumConstants.ts'
 
 // The index is module-level and additive, so every constant used here carries a
@@ -66,5 +67,50 @@ describe('scalarConstantValue', () => {
     ])
     expect(scalarConstantValue('SCHEMES_T5')).toBeUndefined()
     expect(enumConstantValues('SCHEMES_T5')).toEqual(['a', 'b'])
+  })
+})
+
+describe('slotFieldConstantPairs', () => {
+  test('a shared slot table resolves to its slots, in declaration order', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'slot-fields.ts',
+        `export const WIGGLE_FIELDS_T6 = {
+           minScore: { type: 'number', defaultValue: 0 },
+           lineWidth: { type: 'maybeNumber', promotable: true, promotedBase: 1 },
+         } as const`,
+      ),
+    ])
+    const pairs = slotFieldConstantPairs('WIGGLE_FIELDS_T6')
+    expect(pairs?.map(([name]) => name)).toEqual(['minScore', 'lineWidth'])
+    expect(pairs?.[1]?.[1]).toContain('promotable: true')
+  })
+
+  test('an object of anything other than slots is not a slot table', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'not-slots.ts',
+        `const RENDER_OPTS_T7 = { mode: { fast: true }, label: 'x' }
+         const NO_SLOT_TYPE_T7 = { color: { defaultValue: 'red' } }`,
+      ),
+    ])
+    expect(slotFieldConstantPairs('RENDER_OPTS_T7')).toBeUndefined()
+    // every property must look like a slot (have a `type`), or the whole
+    // constant is left alone rather than half-documented
+    expect(slotFieldConstantPairs('NO_SLOT_TYPE_T7')).toBeUndefined()
+  })
+
+  test('a name defined twice is dropped rather than guessed at', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'fields-a.ts',
+        `const AMBIG_FIELDS_T8 = { a: { type: 'number' } }`,
+      ),
+      sourceFile(
+        'fields-b.ts',
+        `const AMBIG_FIELDS_T8 = { b: { type: 'string' } }`,
+      ),
+    ])
+    expect(slotFieldConstantPairs('AMBIG_FIELDS_T8')).toBeUndefined()
   })
 })

@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { GROW_MAX_HEIGHT } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   makeFeatureData,
@@ -303,6 +304,32 @@ describe('canvas display fit-to-display-height', () => {
     const small = display.height
     display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
     expect(display.height).toBeGreaterThan(small)
+  })
+
+  // The grow ceiling is the `growMaxHeight` slot, not a hardcoded constant: a
+  // track pinned at the ceiling reads as inert autogrow, so raising the slot has
+  // to actually raise it. Shared slot name and semantics with alignments.
+  // The slot default is written as a literal so the generated config doc shows a
+  // number rather than an identifier; this is what keeps it equal to the shared
+  // default the alignments display's own slot uses.
+  it('growMaxHeight defaults to the shared GROW_MAX_HEIGHT', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    expect(display.growMaxHeight).toBe(GROW_MAX_HEIGHT)
+  })
+
+  it('grow pins at growMaxHeight, and follows content when it is raised', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setHeightMode('grow')
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    const content = display.naturalContentHeight
+
+    display.configuration.setSlot('growMaxHeight', content - 30)
+    expect(display.height).toBe(content - 30)
+
+    display.configuration.setSlot('growMaxHeight', content + 30)
+    expect(display.height).toBe(content)
   })
 
   // Leaving grow bakes the height the user was seeing into the slot — one

@@ -117,11 +117,12 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [showSoftClipping](#slot-showsoftclipping)                 | `maybeBoolean`                                                   | Draw soft-clipped read portions.                                                                                                                                           |
 
 <details>
-<summary>Advanced slots (10)</summary>
+<summary>Advanced slots (11)</summary>
 
 | Slot                                                 | Type          | Description                                                                                                                                                 |
 | ---------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [maxHeight](#slot-maxheight)                         | `number`      | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)                                           |
+| [growMaxHeight](#slot-growmaxheight)                 | `number`      | Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest.                         |
 | [colorBy](#slot-colorby)                             | `maybeFrozen` | Color scheme for reads                                                                                                                                      |
 | [filterBy](#slot-filterby)                           | `frozen`      | default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)         |
 | [groupBy](#slot-groupby)                             | `frozen`      | In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)                                                        |
@@ -180,6 +181,15 @@ Maximum pixel height of the pileup layout; reads beyond this are not stacked
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `6000` · _advanced_
+
+#### slot: growMaxHeight
+
+Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper
+than this grows to the ceiling and scrolls the rest. Does not apply to the fixed
+or fit modes, and does not limit how much is laid out (see maxHeight)
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `800`
+· _advanced_
 
 #### slot: height
 

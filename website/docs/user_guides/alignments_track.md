@@ -146,27 +146,36 @@ The track menu's **Read height** submenu holds two independent choices: how tall
 each read is drawn, and how the track absorbs more reads than fit.
 
 The size presets at the top are Normal, Compact, and Super-compact, plus
-**Custom...** for an exact pixel height. Each preset's trailing ⋯ control opens
-a dialog to make that height the session-wide default for alignments tracks,
-applied to future tracks and, optionally, to the ones already open.
+**Custom...** for an exact pixel height. Each preset's trailing pin makes that
+height the default for every alignments track, in one click. It writes only the
+default, so tracks you have not given a height of their own follow it
+immediately and tracks you have customized keep theirs. A snackbar then offers
+to apply it to the customized tracks that are open. Every setting with a pin
+works this way, see
+[defaults for all tracks](/docs/user_guides/display_defaults).
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
 
-<Figure caption="Making Compact the default feature height. Top: the ⋯ control on the Compact preset (circled). Bottom: it opens this dialog; ticking both boxes sets Compact as the default for new alignments tracks and applies it to the two tracks already open." src="/img/feature_height_default.png" />
+<Figure caption="Making Compact the default read height. Top: the pin on the Compact preset (circled). Bottom: clicking it compacts the track that was following the default, and the snackbar offers to apply it to the one open track with a height of its own." src="/img/feature_height_default.png" />
 
-Under the **Track sizing** subheading in the same submenu are three modes:
+Under the **Track sizing** subheading in the same submenu are three modes. Each
+label names both halves of what it does: what happens to the read height, then
+what happens to the track height.
 
-- Fixed read height - reads keep their configured height and the pileup scrolls
-  when it overflows.
+- Fixed read height + fixed track height - reads keep their configured height,
+  the track keeps the height you gave it, and the pileup scrolls when it
+  overflows.
 - Fixed read height + autogrow track height - reads keep their height and the
-  track grows to hold them instead of scrolling, up to a ceiling past which it
-  scrolls again.
-- Fit read height to display - the read height is derived from the track height
-  so the whole pileup fits on screen at once, shrinking as coverage deepens and
-  growing back as it thins. Because the size is computed, no size preset reads
-  as selected while fitting; picking one drops back to fixed.
+  track grows to hold them instead of scrolling, up to the
+  [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight)
+  ceiling, past which it scrolls again. At real sequencing depth a pileup passes
+  that ceiling quickly, so raise the slot if you want the track to keep growing.
+- Fit read height to track height - the read height is derived from the track
+  height so the whole pileup fits on screen at once, shrinking as coverage
+  deepens and growing back as it thins. Because the size is computed, no size
+  preset reads as selected while fitting; picking one drops back to fixed.
 
-<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to display selected on a 260px HG002 Illumina track. Because the size is computed while fitting, none of the Normal / Compact / Super-compact presets above it read as selected." />
+<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected on a 260px HG002 Illumina track. Because the size is computed while fitting, none of the Normal / Compact / Super-compact presets above it read as selected." />
 
 Fit mode is the one to reach for when you care about the shape of a pileup
 rather than individual bases: drag the track taller or shorter and the reads

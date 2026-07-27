@@ -127,10 +127,11 @@ with optional clustering and a tree sidebar.
 | [configForceLoad](#getter-configforceload)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                 |
 | [gateVisibleBp](#getter-gatevisiblebp)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The span on screen, or undefined before the view is measured.                                                                                                                                                                                     |
 | [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`).                     |
+| [aboveForceLoadFloor](#getter-aboveforceloadfloor)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the span on screen is wide enough for the gate to have an opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else.                                                                                                |
 | [byteGateExempt](#getter-bytegateexempt)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button.                                                                                                     |
 | [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers.                                                                                              |
 | [gateByteLimit](#getter-gatebytelimit)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                  |
-| [gateActive](#getter-gateactive)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and wider than the `AUTO_FORCE_LOAD_BP` force-load floor.                                                                            |
+| [gateActive](#getter-gateactive)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and above the force-load floor.                                                                                                      |
 | [tooLargeStatus](#getter-toolargestatus)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text). |
 | [regionTooLarge](#getter-regiontoolarge)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                   |
 | [regionTooLargeReason](#getter-regiontoolargereason)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                          |
@@ -909,6 +910,22 @@ getters.
 type derivedRegionTooLargeEnabled = boolean
 ```
 
+#### getter: aboveForceLoadFloor
+
+Whether the span on screen is wide enough for the gate to have an opinion at all
+— the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else. False before
+the view is measured.
+
+Deliberately independent of the opt-in and of force-load, so a display whose
+_own_ opt-in depends on the floor can read it without a cycle: MAF's
+`showSummary` swaps to the cheap summary adapter exactly where the detail fetch
+would be gated, and `byteGateEnabled` is off while it does. `gateActive` adds
+the opt-in and exemption terms on top.
+
+```ts
+type aboveForceLoadFloor = boolean
+```
+
 #### getter: byteGateExempt
 
 True when nothing may gate, on either axis and in both the worker and the
@@ -949,8 +966,7 @@ type gateByteLimit = number
 #### getter: gateActive
 
 Whether anything may gate at this moment: the display opted in, nothing exempts
-it, and the view is measured and wider than the `AUTO_FORCE_LOAD_BP` force-load
-floor.
+it, and the view is measured and above the force-load floor.
 
 The single home of that question. Everything downstream reads it instead of
 restating it: the verdict, the pre-flight (no estimate RPC when nothing could

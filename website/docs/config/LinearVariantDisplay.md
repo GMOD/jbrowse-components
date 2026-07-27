@@ -72,11 +72,22 @@ shown once, at its most specific definition.
 
 #### slot: maxHeight
 
-Maximum height in pixels that autogrow mode will size this display to (does not
-limit fixed or fit mode, where taller content scrolls)
+Clamp in pixels on the content height this display reports (does not limit fixed
+or fit mode, where taller content scrolls). The autogrow ceiling is
+growMaxHeight
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `1200` · _advanced_
+
+#### slot: growMaxHeight
+
+Ceiling in pixels for the "autogrow track height" sizing mode; a track with more
+content than this grows to the ceiling and scrolls the rest. Does not apply to
+the fixed or fit modes. Raising it past maxHeight has no effect, since that
+clamps the content height first
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `800`
+· _advanced_
 
 #### slot: heightMode
 

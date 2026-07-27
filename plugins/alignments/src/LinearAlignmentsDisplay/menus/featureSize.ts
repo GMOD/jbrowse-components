@@ -95,8 +95,8 @@ export function getFeatureHeightMenuItem(
       { type: 'subHeader' as const, label: 'Track sizing' },
       // The fixed/grow/fit modes as an explicit radio group, mirroring the
       // sidebar TrackHeightIndicator (labels from the shared getHeightModeOptions
-      // so they can't drift). 'Fixed read height' is its own row — not folded
-      // into the size presets — so this group stays a plain, complete "pick one".
+      // so they can't drift). The `fixed` mode is its own row — not folded into
+      // the size presets — so this group stays a plain, complete "pick one".
       ...getHeightModeOptions(noun).map(option =>
         promotableRadioItem({
           label: option.label,

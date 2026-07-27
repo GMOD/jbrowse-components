@@ -199,15 +199,16 @@ jobs:
         run:
           node website/scripts/api-docs/generateDisplayFoundationDocs.ts --check
       - name: Check config/model/api docs are up to date
-        # config_guides is included because gendocs also rewrites the marker
-        # blocks embedded in the hand-written guides (DISPLAY_TYPES, which needs
-        # the whole-repo DisplayType scan generate.ts does, and FILE_TYPES).
+        # config_guides and user_guides are included because gendocs also
+        # rewrites the marker blocks embedded in the hand-written guides
+        # (DISPLAY_TYPES, which needs the whole-repo DisplayType scan generate.ts
+        # does, FILE_TYPES, and PROMOTABLE_SLOTS in display_defaults.md).
         run: |
           pnpm gendocs
-          if ! git diff --quiet website/docs/config website/docs/models website/docs/api website/docs/config_guides; then
+          if ! git diff --quiet website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides; then
             echo "Error: generated docs are out of date!"
             echo "Run 'pnpm autogen' and commit the changes."
-            git diff --stat website/docs/config website/docs/models website/docs/api website/docs/config_guides
+            git diff --stat website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides
             exit 1
           fi
       - name: Check generated shaders are up to date

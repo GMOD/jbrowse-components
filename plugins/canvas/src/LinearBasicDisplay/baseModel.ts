@@ -21,7 +21,6 @@ import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  GROW_MAX_HEIGHT,
   HeightModeMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -1385,13 +1384,14 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Target track height for the persistent `grow` mode: `naturalContentHeight`
-        // capped at GROW_MAX_HEIGHT so a dense track doesn't grow to thousands of px
-        // (content past the cap scrolls). Shared cap + `grownHeight` getter name
-        // with the alignments display. Height-independent (naturalContentHeight reads
-        // the config-slot `fitTargetHeight`, not the reactive `height` getter), so the
-        // `height` getter below can return it in grow mode without cycling.
+        // capped at the `growMaxHeight` slot so a dense track doesn't grow to
+        // thousands of px (content past the cap scrolls). Shared slot + `grownHeight`
+        // getter name with the alignments display. Height-independent
+        // (naturalContentHeight reads the config-slot `fitTargetHeight`, not the
+        // reactive `height` getter), so the `height` getter below can return it in
+        // grow mode without cycling.
         get grownHeight() {
-          return Math.min(this.naturalContentHeight, GROW_MAX_HEIGHT)
+          return Math.min(this.naturalContentHeight, self.growMaxHeight)
         },
 
         /**

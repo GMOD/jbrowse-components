@@ -17,16 +17,20 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 export const featuresSpecs: ScreenshotSpec[] = [
   {
     // The session-wide feature-height default on alignments tracks.
-    // featureHeight/featureSpacing are promotable slots (getConfResolved: track
-    // value → session default → schema default). Each height row in the "Read
-    // height" submenu carries a trailing pin (DefaultForAllAdornment, aria-label
-    // "make <preset> the default for all tracks") that toggles that preset as
-    // the session default on click — and, applied to the track the pin was
-    // clicked from, turns it compact in place at once. Two stages mirror the
-    // how-to: stage 1 opens the submenu with the Compact row's pin circled;
-    // stage 2 clicks it (the active track goes compact) and boxes the snackbar's
-    // "Apply to N open tracks" action that reaches the remaining open track,
-    // which the stage then makes compact too so the frame shows the end state.
+    // featureHeight is a promotable slot (track value → session default →
+    // promotedBase 7; spacing is derived from it, never stored). Each height row
+    // in the "Read height" submenu carries a trailing pin
+    // (DefaultForAllAdornment, aria-label "make <preset> the default for all
+    // tracks") that toggles that preset as the session default on click. The pin
+    // writes *only* the default — it never rewrites a track's own value — so the
+    // two open tracks are seeded differently to show both halves of that: the
+    // pileup track has no featureHeight (it follows the default, so pinning
+    // Compact turns it compact at once) and the CRAM track is customized to 12
+    // (it keeps its own value, and is the "1 open track" the snackbar offers to
+    // reach). Two stages mirror the how-to: stage 1 opens the submenu with the
+    // Compact row's pin circled; stage 2 clicks it and boxes the snackbar
+    // action, then makes the customized track compact so the frame shows the end
+    // state.
     mode: 'url',
     name: 'feature_height_default',
     url: lgvSession(VOLVOX, {
@@ -36,14 +40,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
         {
           trackId: 'volvox_alignments_pileup_coverage',
           type: 'LinearAlignmentsDisplay',
-          featureHeight: 12,
-          featureSpacing: 4,
         },
         {
           trackId: 'volvox_cram_alignments_ctga',
           type: 'LinearAlignmentsDisplay',
           featureHeight: 12,
-          featureSpacing: 4,
         },
       ],
     }),
@@ -90,13 +91,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // bottom frame: clicking the pin sets Compact as the default AND
-        // applies it to the clicked track at once (it turns compact in place);
-        // the resulting snackbar's action (boxed, not clicked, so it stays on
-        // screen) reaches the one *other* open track that still differs. To show
-        // the end state — both tracks compact — the second track is then made
-        // compact through its own "Read height" > Compact row (not the snackbar,
-        // which would dismiss). Each menu is dismissed with a neutral title-bar
+        // bottom frame: clicking the pin sets Compact as the session default,
+        // which the uncustomized pileup track picks up at once (it turns compact
+        // in place without the pin touching it); the resulting snackbar's action
+        // (boxed, not clicked, so it stays on screen) reaches the one open track
+        // still holding its own height. To show the end state — both tracks
+        // compact — that track is then made compact through its own "Read height"
+        // > Compact row (not the snackbar, which would dismiss the snackbar the
+        // frame is meant to show). Each menu is dismissed with a neutral title-bar
         // click, not Escape, which would pop the snackbar. The snackbar ignores
         // clickaway and no longer auto-hides (actionable ones persist, see
         // SnackbarModel), so the click chain can't race a 5s timeout.
@@ -130,7 +132,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 560,
             fontSize: 15,
-            text: 'Clicking the pin sets Compact as the default and makes the active track compact at once. The snackbar then offers to apply it to the other open track.',
+            text: 'Clicking the pin sets Compact as the default: tracks following the default go compact at once, and the snackbar offers to apply it to the one customized track.',
           },
         ],
       },

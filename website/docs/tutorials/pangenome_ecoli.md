@@ -603,7 +603,7 @@ The segments now draw as features in a linear view, and the graph for whatever
 is on screen is one menu away. Past the size the view will draw, the item greys
 out and names its limit rather than disappearing:
 
-<Figure caption="Track menu → Launch view → Graph genome view (this region), on the rGFA segments track. Offered only for a track whose adapter can cut a subgraph." src="/img/pangenome/rgfa_launch_menu.png" />
+<Figure caption="Track menu → Launch view → Graph genome view (this region), on the rGFA segments track above (an ordinary FeatureTrack, reading the two tabix indexes through RgfaTabixAdapter). Offered only for a track whose adapter can cut a subgraph." src="/img/pangenome/rgfa_launch_menu.png" />
 
 Right-clicking one segment cuts the graph around that segment instead:
 
@@ -826,8 +826,6 @@ same insertion marker and deletion bar a read does, at its real size. That
 matters more here than on the per-strain track, because these alleles overlap (a
 nested site has several routes sharing an anchor). Without the CIGAR a 63 kb
 allele is a 1 bp feature with the number hidden in its label.
-
-<Figure caption="The same bubble as the per-strain figure above, derived from the graph alone with no assemblies re-mapped. The segments track carries the alt segments (s399, s401, s403, s405); below, each allele is one packed row, its insertions drawn and labelled at real size (63,348 bp, 49,838, 46,983) and the 3,217 bp deletion as a grey bar. No sample names on them, which is the trade for not needing the assemblies." src="/img/pangenome/rgfa_allele_inventory.png" />
 
 The five-strain graph yields 847 alleles: 395 insertions, 441 deletions, 11
 same-length substitutions. `altLen`, `discoveryRank` and the traversed
