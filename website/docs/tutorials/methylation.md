@@ -6,10 +6,12 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** JBrowse renders long-read methylation straight from BAM/CRAM MM/ML
-tags with no extra processing: per-read modification coloring, aggregate
-bedMethyl as a MultiQuantitativeTrack, and allele-specific methylation by
-grouping reads on their HP haplotype tag.
+**TL;DR:** JBrowse renders methylation and other base modifications straight
+from the MM/ML tags that nanopore and PacBio basecallers commonly output. This
+tutorial walks through the different ways to view it.
+
+**Setup:** nothing to read along. Your own data needs long reads carrying
+`MM`/`ML` tags, which modern basecallers write by default.
 
 You can read DNA methylation (5mC at CpG sites, plus other base modifications)
 straight off long reads. ONT and PacBio basecallers write per-base modification
