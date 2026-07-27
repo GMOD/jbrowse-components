@@ -320,19 +320,25 @@ jb add-track ecoli_pggb_depth.bw --trackId ecoli_pggb_depth \
 
 # projection 4b: per-strain presence (one bigWig per strain -> MultiQuantitativeTrack).
 # add-track-json doesn't copy files, so drop the per-strain bigWigs beside config.json.
-cp ecoli_pggb_pav_Sakai.bw ecoli_pggb_pav_CFT073.bw ecoli_pggb_pav_NCTC86.bw "$APP/"
-cat > pav_track.json <<'JSON'
+# Derived from $STRAINS rather than listed: a hardcoded list silently drops any
+# strain added later, which is how IAI39 went missing from this track.
+subadapters=""
+for strain in $STRAINS; do
+  [ "$strain" = "$REF" ] && continue
+  cp "ecoli_pggb_pav_${strain}.bw" "$APP/"
+  [ -n "$subadapters" ] && subadapters="$subadapters,"
+  subadapters="$subadapters
+      { \"type\": \"BigWigAdapter\", \"name\": \"$strain\", \"bigWigLocation\": { \"uri\": \"ecoli_pggb_pav_${strain}.bw\" } }"
+done
+cat > pav_track.json <<JSON
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "ecoli_pggb_pav",
-  "name": "pggb graph: per-strain presence (odgi pav, vs K12)",
-  "assemblyNames": ["K12"],
+  "name": "pggb graph: per-strain presence (odgi pav, vs $REF)",
+  "assemblyNames": ["$REF"],
   "adapter": {
     "type": "MultiWiggleAdapter",
-    "subadapters": [
-      { "type": "BigWigAdapter", "name": "Sakai",  "bigWigLocation": { "uri": "ecoli_pggb_pav_Sakai.bw" } },
-      { "type": "BigWigAdapter", "name": "CFT073", "bigWigLocation": { "uri": "ecoli_pggb_pav_CFT073.bw" } },
-      { "type": "BigWigAdapter", "name": "NCTC86", "bigWigLocation": { "uri": "ecoli_pggb_pav_NCTC86.bw" } }
+    "subadapters": [$subadapters
     ]
   }
 }
