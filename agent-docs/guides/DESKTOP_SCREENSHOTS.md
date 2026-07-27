@@ -52,8 +52,8 @@ where a text match resolves first.
 `desktop-cli-config.png` (the `cli_desktop` tutorial) runs the real
 `@jbrowse/cli` (`add-assembly`, two `add-track`s, `set-default-session`) into a
 temp dir against the bundled volvox files, then opens that `config.json`. It
-needs `products/jbrowse-cli/dist` built (`pnpm --filter @jbrowse/cli build`) and
-fails with that instruction if it isn't. Track ids are read back out of the
+needs `products/jbrowse-cli`'s `dist/` built (`pnpm --filter @jbrowse/cli build`)
+and fails with that instruction if it isn't. Track ids are read back out of the
 config the CLI wrote rather than assumed.
 
 - **It launches through a wrapper script, not `chromeOptions.args`.**
