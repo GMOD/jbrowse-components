@@ -5,15 +5,10 @@ description: Action items to build or fix, the current backlog. Read when pickin
 
 ## Fold the non-LGV fetches onto `FetchMixin`
 
-Multi-LGV synteny and dotplot hand-roll the fetch state machine in ~480 lines of
-`afterAttach.ts` plus per-model volatiles, sharing only `createStopTokenRotation`
-(token mechanics) with each other. Freshness and export readiness are now shared
-(`dataCurrent` / `computeSvgReady`), and the progress throttle is shared
-(`createStatusThrottle`), so what remains genuinely duplicated is the state
-machine: a raw token volatile each, their own `loading`/`refetching` derivations,
-no `fetchCanceled`/`cancelFetchByUser`, no `reload()`. (Both now leading-edge
-debounce via `leadingEdgeDebounce`, and both diff their shared-backend uploads
-through `createKeyedUploadSync`.)
+`LinearSyntenyDisplay` and `DotplotDisplay` hand-roll the fetch state machine in
+~490 lines of `afterAttach.ts` plus per-model volatiles: a raw token volatile
+each (only `createStopTokenRotation` is shared), their own `loading`/`refetching`
+derivations, no `fetchCanceled`/`cancelFetchByUser`, no `reload()`.
 
 The shape: a `SignatureFetchMixin` = `FetchMixin` + `loadedFetchKey` volatile +
 overridable `currentFetchKey` + `dataCurrent`, plus an
@@ -22,10 +17,9 @@ That makes the display-stacks table in
 [ARCHITECTURE.md](ARCHITECTURE.md#display-stacks) three rows that all compose
 `FetchMixin`, instead of two rows and a footnote.
 
-**Read `@jbrowse/synteny-core`'s `SyntenyFetchStateMixin` first** — it landed
-2026-07 and already shares `fetching` / `loadedFetchKey` / `assembliesSwapped`
-between the two displays. Decide whether this is that mixin growing into
-`FetchMixin` or a separate move before starting.
+**Read `@jbrowse/synteny-core`'s `SyntenyFetchStateMixin` first** — both displays
+compose it for `fetching` / `loadedFetchKey` / `assembliesSwapped`, so decide
+whether this is that mixin growing into `FetchMixin` or a separate move.
 
 ## Alignments / canvas
 
@@ -53,11 +47,10 @@ geometry channel plus an object spread per `flatbushItems` entry, per
 `subfeatureInfos` entry and per `floatingLabelsData` entry, all so
 `computeLaidOutData` can add each feature's row offset into the copy in place.
 
-The fit solve's height probes already skip it — `createContentHeightProbe` packs
-straight from the raw worker data and never clones, which is what took the
-`decimated` rung's solve from 6.1 layouts to 1.4. Every *committed* layout still
-pays it: each settled zoom, each pan into new data, each label or display-mode
-toggle.
+`createContentHeightProbe` packs straight from the raw worker data and never
+clones, so the fit solve's height probes escape the cost. Every *committed*
+layout pays it: each settled zoom, each pan into new data, each label or
+display-mode toggle.
 
 The shape of the fix is to not rewrite the arrays at all — keep the per-feature row
 offset in its own `Float32Array` beside the raw result and add it where Y is
@@ -73,25 +66,25 @@ they can share one "resolve Y" accessor, or whether enough of them need the offs
 folded in that the clone comes straight back — that answer decides whether the
 spike is worth it at all.
 
-Cheaper fallback if it is too invasive: `flatbushItems` and `subfeatureInfos` are
-arrays of objects cloned by spread, and parallel typed arrays would remove most of
-the allocation without touching the render contract.
-
-Smaller and already unblocked: `rectDensityFade` is worker-allocated but
-layout-valued, and `applyLayoutToRegion` writes every element, so the
-`computeLaidOutData` path could allocate it rather than copy it. Note
-`cloneMutableFields` is shared with `scaleLaidOutData`, which does NOT rewrite the
-array and so still needs the copy. Splitting that means a per-caller flag or two
-clone helpers, which is why it was left alone.
+Two cheaper fallbacks if that is too invasive. `flatbushItems` and
+`subfeatureInfos` are arrays of objects cloned by spread, so parallel typed
+arrays would remove most of the allocation without touching the render contract.
+And `rectDensityFade` is worker-allocated but layout-valued, with
+`applyLayoutToRegion` writing every element, so `computeLaidOutData` could
+allocate it rather than copy it — the catch being that `cloneMutableFields` is
+shared with `scaleLaidOutData`, which does not rewrite the array and still needs
+the copy, so that split costs a per-caller flag or a second clone helper.
 
 ## Stop uploading every rect twice for the continuation pass
 
 `GpuCanvasFeatureRenderer.uploadRegion` packs `numRects` continuation instances
 alongside `numRects` rect instances, so the densest tracks pay double the rect
-upload and VRAM to draw at most a handful of screen-edge markers. The two instance
-structs are already byte-identical (`uint2 startEnd; float y; float height; uint
-color;` plus a differing 4-byte `ATTR4`: `uint densityFade` on rect, `float strand`
-on continuation).
+upload and VRAM to draw at most a handful of screen-edge markers. Upload and
+VRAM only — `drawRegion` skips the pass on any block touching neither canvas
+edge, where every instance would self-cull. The two instance structs are already
+byte-identical (`uint2 startEnd; float y; float height; uint color;` plus a
+differing 4-byte `ATTR4`: `uint densityFade` on rect, `float strand` on
+continuation).
 
 `makeChevronPass` is the worked precedent for the fix: chevron owns no buffer and
 draws off line's via `drawPass(chevron, region, bufferPassId=line)`, wired by
@@ -104,9 +97,6 @@ wrong attribute offset shows up as garbled geometry that no unit test catches.
 Verify headed on a real GPU against both backends, since WebGL2 binds attributes
 through `vertexAttribPointer`/`vertexAttribIPointer` (int vs float matters) while
 WebGPU goes through `vertex.buffers`.
-
-The cheap half is already done: `drawRegion` skips the continuation pass entirely
-on a block touching neither canvas edge, where every instance would self-cull.
 
 ## `featureItemMap` is an O(N) build serving a handful of point queries
 
@@ -143,14 +133,12 @@ tracks, `WebGL2Hal` logs `init (live=N/total)` and `context LOST` under
 them. Walk N up, record where an **unforced** `context LOST` first appears and
 whether recovery settles or cascades.
 
-Report a diagnostic number first. Only then consider a regression assertion, well
+Report a diagnostic number first; a regression assertion only after, and well
 under the observed threshold (a "12 tracks lose no context" floor) so it doesn't
-flake.
-
-**The number from CI is a floor, not the answer.** Headless always falls back to
-SwiftShader ([guides/TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)), whose
-context cap need not match a real driver's, so the run that characterizes the
-limit is headed on a real GPU. Worth capturing both and noting which is which.
+flake. **The CI number is a floor, not the answer** — headless always falls back
+to SwiftShader ([guides/TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)),
+whose context cap need not match a real driver's, so the run that characterizes
+the limit is headed on a real GPU. Capture both, and say which is which.
 
 ## Extra large text SVG mode for pub-ready figures
 
@@ -165,32 +153,29 @@ labels will overflow the boxes laid out for them.
 No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
 per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
 
-## Genomic w/ full introns is still rendering cds in copy sequence dialog
+## Grey out the genomic-coordinate option instead of hiding it
 
-grey out the genomic coord option instead of hide
-tooltip on verticalguide
+`SequenceFeatureDetails/dialogs/SequenceFeatureMenu.tsx` drops the "Coordinates
+relative to genome" radio entirely when `showGenomicCoordsOption(mode)` is
+false, so the option disappears rather than explaining itself. Render it
+disabled, with the reason the label already carries.
 
 ## Linearize the pangenome: draw graph variation as alignment-style glyphs
 
 Requested framing: the graph in a *linear* view drawn the way
-`plugins/alignments` draws reads, insertions and deletions included, rather than
-only as the 2-D Bandage picture. The Bandage view is the preferred picture of
-the graph itself; this is the other half, and correspondence between the two
-panels is meant to be **visual** (matching colors, matching features) rather
-than a shared pixel axis. Do not chase pixel-exact alignment: the anchored
-layout's `zoomToFit` pads by 40 px and centers, so its reference axis runs ~7%
-narrower than the linear view above it (measured on
-`pangenome/hprc_mhc_anchored`: backbone at CSS x 44-955 against the segments
-track's 7-991), and that is accepted.
+`plugins/alignments` draws reads, insertions and deletions included, as the
+other half of the 2-D Bandage picture rather than a replacement for it.
+Correspondence between the two panels is **visual** — matching colors, matching
+features — not a shared pixel axis. Do not chase pixel-exact alignment: the
+anchored layout's `zoomToFit` pads by 40 px and centers, so its reference axis
+runs ~7% narrower than the linear view above it (`pangenome/hprc_mhc_anchored`:
+backbone at CSS x 44-955 against the segments track's 7-991), and that is
+accepted.
 
-The glyph vocabulary already exists: `insertion.slang`, `gap.slang` and
-`clip.slang` under
-`plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/`. The closest
-existing per-sample linearized display is `plugins/maf/src/LinearMafDisplay`
-(including its `coverageInsertion.ts`).
+The closest existing per-sample linearized display is
+`plugins/maf/src/LinearMafDisplay` (including its `coverageInsertion.ts`).
 
-The data is mostly there today, in the two BEDs `scripts/build_rgfa_tabix.sh`
-emits:
+The data is mostly there, in the two BEDs `scripts/build_rgfa_tabix.sh` emits:
 
 - **Insertions** fall out of `links.bed.gz`. Each L-line is written twice, once
   under each endpoint, and carries *both* endpoints in full with their own
@@ -199,129 +184,37 @@ emits:
 - **Deletions** are backbone-to-backbone links with a coordinate *gap*
   (`tgtStart > srcEnd`, both ranks 0). Not `s_i -> s_i+2`: a skip can span more
   than one segment, so test the gap, not the id arithmetic.
-- The **summary** layer is `MinigraphBubbleAdapter` (`gfatools bubble`), which
+- The **summary** layer is `MinigraphBubbleAdapter` (`gfatools bubble`, and it
+  lives in the external GraphGenomeView plugin bundle, not in this repo), which
   already reports each bubble's reference span with its shortest and longest
   allele, so "how much variation sits here" needs no new file.
 
-### Measured against the hosted HPRC indexes
+Two windows of `links.bed.gz` are measured out in
+[reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md#measured-on-the-hosted-hprc-link-index)
+— read it before designing the lane, because four of its findings constrain the
+layout: the haplotype label is a discovery attribution rather than carriage,
+clean deletions carry no donor at all, one segment id resolves 72 of 78 alleles
+without walking the chain, and the volume is tens of records per window.
 
-`tabix` on `hprc-v2.0-mc-grch38.links.bed.gz`, two windows from the tutorial's
-own loci: C4 (`GRCh38#0#chr6:31,980,000-32,050,000`, 70 kb) and MHC class II
-(`32,450,000-32,650,000`, 200 kb). Four things the note above got wrong.
+### The record is a CIGAR
 
-**Haplotype identity is already there.** `SR` is build order, but `SN` on a
-rank>0 segment is the PanSN contig of the haplotype that introduced it
-(`HG01433.2#2#CM086511.1`), and rank maps 1:1 to donor (MHC window: 16 ranks, 16
-donors, no rank shared). links.bed.gz labels every off-reference allele with a
-haplotype, so the W-line projection is not needed for haplotype-labelled rows.
-The catch that decides the layout: minigraph collapses, so the label is the
-*first* haplotype to contribute the allele, never everyone carrying it. 464
-haplotypes in the graph, 15 donors in the MHC window, about one allele per row.
-Rows keyed on it are a discovery attribution, not a pileup, and must not be
-labelled as one.
+`refConsumed = refEnd - refStart` against `altLen`, so `altLen > refConsumed` is
+an insertion, `<` a deletion, and either end falling outside the window is a
+clip (6 of 78 in MHC). `scripts/build_rgfa_alleles.sh` emits exactly that record
+— offline awk over the two BEDs, 845 alleles on the five-strain E. coli graph
+and 208,308 on HPRC in 23 s from the hosted indexes alone, columns named
+`firstSeenIn`/`discoveryRank` so the name carries the caveat above.
 
-**Clean deletions are anonymous.** A backbone-to-backbone skip has GRCh38 on
-both ends, so no `SN`, so no donor. A deletion only gets one when it carries
-novel sequence, i.e. a small alt segment bridging a large reference skip
-(`s462766`, 1 bp, HG01952.1, bridges 31,984,683 to 31,991,051, a 6.3 kb
-deletion). MHC window: 8 anonymous deletions against 78 attributed alleles. So a
-per-haplotype row layout can place insertions but not deletions, which is the
-argument for one summary lane over 464 rows.
+Build the lane on `drawInsertionMarker` (`@jbrowse/alignments-core`) through an
+`OverlayCanvas` pass plus a second `PaintLayer` call on the SVG export, the seam
+two other displays already draw indels through — rules and counter-example in
+[reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md#indel-glyphs-shipped).
+Not a new display type, not a shader.
 
-**Chain walking is mostly unnecessary.** An alternate path can be several
-segments and its interior links are indexed under the *donor* contig, so a
-reference query never returns them. But 72 of 78 alt segments in the MHC window
-appear in both an off-backbone and an on-backbone link, so one segment id gives
-the whole allele: `refStart` = entry's srcEnd, `refEnd` = exit's tgtStart,
-`altLen` = that segment's own length. The remaining chains resolve without the
-interior too, because entry and exit share `SN` and donor coordinates are
-contiguous across the allele (`s526659` 31,891,267-31,923,687 then `s526660`
-31,923,687-31,924,005, so altLen 32,738). Pair those by `SN` *then* donor offset;
-`SN` alone is ambiguous, HG01433.2 contributes 41 entries in that one window.
+### One lane, not rows
 
-**Volume is trivial.** MHC 200 kb: 320 unique links, of which 155 are
-backbone-adjacent, 8 deletions (mean 605 bp), 78 off the backbone, 79 back onto
-it, 0 alt-to-alt. C4 70 kb: 36 unique links, 1 deletion, 10 out, 11 back. Tens of
-records per window, no density gate needed. That 0 is a property of the
-reference-keyed index, not of the graph: the interior links of a multi-segment
-allele are indexed under the donor contig, so a GRCh38 query never returns them.
-
-### The VCF is not symbolic, so allele length is not what the graph adds
-
-`wave.vcf.gz` at `chr6:32,010,000-32,020,000`: 126 records, **zero** symbolic
-ALTs, explicit ALT strings up to 65,481 bp, genotypes per haplotype. So
-`LinearMultiSampleVariantDisplay` already gives exact allele lengths with real
-carriage across 464 phased haplotypes, plus the SNPs minigraph collapsed. The
-linearized graph does not beat it on length or on carriage. What it adds:
-segment-level correspondence with the Bandage panel (same segment ids, same rank
-colors), the chaining and nesting of an alternate path, and working on any
-minigraph rGFA with no `deconstruct` step, which is the E. coli tutorial's graph
-and anyone's own minigraph run.
-
-### Build order
-
-The derived record is a CIGAR in all but name: `refConsumed = refEnd - refStart`
-against `altLen`, so `altLen > refConsumed` is an insertion, `<` a deletion, and
-either end falling outside the window is a clip (6 of 78 in MHC).
-
-- **The rGFA-only allele inventory shipped** as `scripts/build_rgfa_alleles.sh`,
-  offline awk over the two BEDs. 845 alleles on the five-strain E. coli graph,
-  208,308 on HPRC in 23 s from the hosted indexes alone. It reproduces 747 of
-  `minigraph --call`'s 842 alleles with the identical delta in the same bubble;
-  the 95 residuals are compound routes at 69 nested bubbles, every one at a
-  bubble the file does describe. Still **one lane, not haplotype rows** (the
-  columns are named `firstSeenIn`/`discoveryRank` so the name carries that), but
-  the lane packs into rows via the alignments display, because each allele
-  carries a CIGAR — see the handoff.
-- **`minigraph --call` superseded the rest of this list, and shipped.** See
-  below.
-
-### It is a display gap, not a data gap
-
-The section above concludes the VCF already beats the graph on length and
-carriage, which is true of the *data* and misses where the request actually
-bites. `computeVariantCells.ts:50` draws every insertion as a full-height
-barcode line at its locus, identical to a SNP, and records that a distinct glyph
-was tried and reverted because it collapsed to an unreadable locus-centered dot
-when zoomed out. So a 65,481 bp ALT in `wave.vcf.gz` currently draws exactly as
-wide as a SNP. `getAlleleLength` (`shared/alleleLength.ts`) already exists and
-its own comment states the problem. The picture the request wants does not exist
-for *either* source, and the display that has the 464 rows is in-repo, beside
-the shaders it wants to borrow. Three moves, best value first.
-
-**A. Length-aware glyph on `LinearMultiSampleVariantDisplay`. DONE — see
-"Shipped" below.** Data already hosted, already in the HPRC
-tutorial, rows already 464 phased haplotypes, `AF`/`AC`/`AN` on 125 of 126
-records in the C4 window so frequency needs no computing. The earlier attempt
-failed because the glyph was drawn *at* the locus with no extent; give it the
-extent `getAlleleLength` already computes and fall back to the barcode line only
-when that is sub-pixel. Deletions already consume reference, so they need only a
-distinct treatment, not a new geometry.
-
-The route is now proven rather than speculative: `LinearMultiRowFeatureDisplay`
-got exactly this treatment (`lengthField` + `drawMultiRowIndelGlyphs`, see
-"Shipped" below), so the pattern to copy is an `OverlayCanvas` pass over
-whichever backend drew the cells, calling `drawInsertionMarker` from
-`@jbrowse/alignments-core`. That sidesteps `variant.slang` entirely, which is
-what made the original estimate look expensive. Note the multi-row lesson too:
-draw the bar only where it is *wider* than the cell, because a same-colored bar
-inside a wide cell is invisible overdraw and the label is what actually carries
-the magnitude.
-
-**B. `minigraph --call` is the third BED, and it is a documented one-liner.**
-Not W-lines out of the 63 GB GFA or the 5.4 GB GBZ:
-`minigraph -cxasm --call graph.gfa sample.fa` emits one line per `gfatools
-bubble` line, carrying the path through the bubble, its length in the graph, the
-strand, and the sample contig with its span; `mgutils.js merge` joins the
-per-sample calls into one file. We already host `bubbles.bed.gz` built by
-`gfatools bubble` on the same graph, so the calls join to it line for line. For
-E. coli (5 strains, our own `build_ecoli_pangenome_graph.sh`) that is seconds of
-compute and it is the true per-haplotype pileup with real carriage, from the
-graph alone. For HPRC it needs the 464 haplotype assemblies re-mapped, so HPRC
-stays on the VCF. This supersedes the W-line third-BED work item entirely.
-
-**C. The rGFA lane is one lane, not rows.** Donor rows are not merely sparse,
-they are misleading, and the numbers say so: in the MHC window rank 1
+Donor rows are not merely sparse, they are misleading,
+and the numbers say so: in the MHC window rank 1
 (HG01433.2#2) accounts for 41 of 78 alleles, rank 2 is that sample's sibling
 haplotype with **0**, and ranks 230 and 345 have 1 each. Monotone decay in build
 order, because the earliest haplotype absorbs every allele later ones share. A
@@ -336,112 +229,17 @@ Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
 nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
 graph rather than HPRC.
 
-### Shipped (B, plus the glyph vocabulary on the multi-row display)
-
-- `scripts/build_minigraph_paths.sh` runs `minigraph -cxasm --call` per assembly
-  and projects the calls into one tabix-indexed BED, a row per bubble per sample,
-  with the class, the signed delta, both lengths, and the traversed segment ids.
-  Its header is the **contract**, so a graph carrying W/P lines or an rGFA with no
-  assemblies can fill the same schema from a different producer; the script header
-  lists those. Wired into `build_ecoli_pangenome_graph.sh`, and hosted at
-  `jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph_paths.bed.gz`. Five-strain
-  E. coli: 601 bubbles, 3,006 rows, 37 KB. **K12 comes out `ref` at all 601
-  bubbles, which is the pipeline's own end-to-end check** — if the reference row
-  ever shows an indel, suspect the join before the biology.
-- Two traps that pipeline hides. A bare `.` in the call's last field is *missing
-  data*, but read as colon-separated it yields pathLen 0 and scores as a deletion
-  of the whole reference span. And `*` is an *empty path*, which is a deletion
-  only where the bubble has reference span: 72 of the 601 bubbles have none (pure
-  insertion sites) and there `*` is the reference allele. Classifying on `delta`
-  handles the second without a special case; the first needs the explicit check.
-- `LinearMultiRowFeatureDisplay` gained a `lengthField` slot plus
-  `rendering/drawMultiRowIndelGlyphs.ts`, drawn by an `OverlayCanvas` over
-  whichever backend painted the blocks and by a second `PaintLayer` call on the
-  SVG export. No new display type, no new adapter, no shader — the reasons are in
-  the "display gap" section above, and the git history is the argument:
-  `884a126861` deleted `MultiLGVSyntenyDisplay`, ~4,000 lines over 25 files with
-  three bespoke `.slang` shaders.
-- Tutorial section + figure: `pangenome_ecoli.md` "Which strain takes which
-  path", `pangenome/rgfa_strain_paths`.
-- Then A, the same treatment on the **regular (non-matrix)**
-  `LinearMultiSampleVariantDisplay`, which is the one that draws every cell at its
-  true genomic position and width and so is the display to reach for on SV
-  figures. `showInsertionGlyphs` (shared schema, default on) +
-  `components/drawVariantInsertionGlyphs.ts`, again an `OverlayCanvas` plus a
-  second call on the SVG export, no touch to `variant.slang`. Two rules the
-  multi-row pass taught: widen only where the bar exceeds the cell (a
-  same-colored bar inside a wide cell is invisible overdraw), and keep the
-  **cell's genotype color** rather than the alignments purple, since the color is
-  what says which allele the haplotype carries. Plus one this pass needed on its
-  own: only cells whose genotype actually carries the allele widen
-  (`cellCarriesAlt`), or the marker claims every reference haplotype has the
-  sequence.
-- The slot lives on `LinearMultiSampleVariantDisplay`'s own schema, where it
-  applies. Getting it there needed one thing: the subclass redeclares
-  `configuration: ConfigurationReference(configSchema)` in its `types.compose`,
-  because the base model factory declares that prop off a param typed to
-  `SharedVariantConfigModel` and `types.compose` **overrides** props rather than
-  intersecting them (`_OverrideProps` in the MST typings). So the redeclaration
-  costs nothing at runtime — same node either way — and buys own-slot narrowing.
-  `showInsertionGlyphsSlot.test.ts` guards both halves.
-- Only one committed figure moved: `hprc2/mhc_clustered` (1.09%), where the 220
-  structural alleles now read at up to 5px instead of the 2px SNP floor. Every
-  other spec touching this display came back 0.000% — `multisv` uses symbolic
-  ALTs, which carry no measurable length, and the matrix specs ignore the slot.
-
 ## Gallery cards hide their live links behind the guide link
 
-`website/src/pages/gallery.astro:120-140` renders the guide link **or** the live
-link, never both. 16 of the 44 items set `guide:`, so those cards only show
-"Read the guide", and "Open in JBrowse" is reachable only by clicking the image
-into the lightbox. That is most of why the gallery reads as pointing at
+`website/src/pages/gallery.astro:117-140` renders the guide link **or** the live
+link, never both. 38 of the 39 cards set `guide:`, so all but one show only
+"Read the guide", and "Open in JBrowse" is reachable there only by clicking the
+image into the lightbox. That is most of why the gallery reads as pointing at
 reference pages rather than at a browser you can drive. Showing both is a few
 lines and needs no new docs.
 
-While in there, two duplicate-capability pairs are still standing, left alone
-pending a decision to cut one of each:
-
-- `Clustered copy-number heatmap` (1000 Genomes) against `TCGA-BRCA cohort copy
-  number`. The 1000G card also still points its `guide:` at
-  `user_guides/multiquantitative_track`, written before
-  `tutorials/population_cnv` existed, which is now the better destination.
-- `Variants called from a pangenome graph` against `Presence/absence by strain
-  (PAV)`, the same five-strain E. coli data, adjacent in one section.
-
-## 1000 Genomes CNV tutorial, follow-ups
-
-`website/docs/tutorials/population_cnv.md` and `website/scripts/specs/cnv1000g.ts`
-are shipped and the Zarr plugin is published (see
-`key_pattern_signal_matrix_zarr_format`). What was scoped but not built:
-
-- `scripts/build_signal_zarr.ts --whole-genome` holds the full base matrix in
-  memory. Fine for the two-window repo fixture, not for a genome-wide store.
-- A QuicK-mer2 how-to section, wanted for reader confidence rather than as a
-  requirement. Honest scope is one sample against the published k-mer index,
-  since building the index is a heavyweight prerequisite. Worth offering the
-  long-read depth callers that emit per-base depth BigWigs as the modern path
-  for a reader's own data (HiFiCNV or sawfish for PacBio, Spectre for ONT),
-  because their output drops into the same track and the same clustering.
-  Verify every command against upstream rather than writing from memory.
-- The combined depth-plus-bubbles figure. `test_data/graphgenomeview/hprc.json`
-  is already hg38 and already holds `hprc_minigraph_bubbles`, so adding the
-  QuicK-mer2 track there gives one config that shows depth, nested bubbles and
-  the SV VCF at one locus, plus a `GraphGenomeView` panel for the
-  force-directed picture (copy `pangenome/hprc_mhc_bandage` in
-  `website/scripts/specs/graph.ts`, and budget for its `readyTimeout: 120000` /
-  `diffThreshold: 0.1`). It has to be a config track: 104 BigWig URLs do not fit
-  in a session-spec URL.
-
-## `pnpm autogen` owes a commit for the byte-gate renames
-
-The 2026-07 region-too-large passes renamed and added state-model members
-(`byteGateEnabled` / `byteGateBlocksFetch` / `gateActive` /
-`aboveForceLoadFloor`, and the removal of `getByteEstimateConfig` /
-`checkByteEstimate` / `alwaysRender`), which changes `website/docs/models/*.md`
-for every display composing `RegionTooLargeMixin`. That output is **not**
-committed: `pnpm gendocs` resolves sources through `@jbrowse/*` workspace links,
-so in the shared worktree it emits `f(everyone's dirty tree)` and fails the CI
-check, which regenerates from committed source. A temp worktree does not escape
-it — symlinking the real `node_modules` in makes pnpm's workspace entries resolve
-back to the dirty main checkout. Run `pnpm autogen` on a clean tree and commit it
-by itself.
+While in there, one duplicate-capability pair is still standing, left alone
+pending a decision to cut one: `Clustered copy-number heatmap` (1000 Genomes)
+against `TCGA-BRCA cohort copy number`. The 1000G card also still points its
+`guide:` at `user_guides/multiquantitative_track`, written before
+`tutorials/population_cnv` existed, which is now the better destination.

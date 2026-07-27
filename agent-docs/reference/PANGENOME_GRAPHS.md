@@ -140,6 +140,48 @@ about this, and the two workarounds are:
   `~/ecoli_graph5/`. Do **not** use `~/depth_build/`, the pre-IAI39 four-strain
   run.
 
+## Measured on the hosted HPRC link index
+
+`tabix` on `hprc-v2.0-mc-grch38.links.bed.gz`, two windows from the tutorial's
+own loci: C4 (`GRCh38#0#chr6:31,980,000-32,050,000`, 70 kb) and MHC class II
+(`32,450,000-32,650,000`, 200 kb).
+
+- **Haplotype identity is already in the file.** `SN` on a rank>0 segment is the
+  PanSN contig of the haplotype that introduced it (`HG01433.2#2#CM086511.1`),
+  and rank maps 1:1 to donor (MHC: 16 ranks, 16 donors, none shared), so
+  labelling an off-reference allele needs no W-line projection. But minigraph
+  collapses, so the label is the **first** haplotype to contribute the allele,
+  never everyone carrying it: 464 haplotypes in the graph, 15 donors in the MHC
+  window, about one allele each. Discovery attribution, not a pileup, and it
+  must not be drawn as one.
+- **Clean deletions are anonymous.** A backbone-to-backbone skip has GRCh38 at
+  both ends, so no `SN` and no donor. One gets a donor only when it carries
+  novel sequence (`s462766`, 1 bp, HG01952.1, bridging 31,984,683 to 31,991,051
+  — a 6.3 kb deletion). MHC: 8 anonymous deletions against 78 attributed
+  alleles, which is why a per-haplotype row layout can place insertions but not
+  deletions.
+- **Chain walking is mostly unnecessary.** An alternate path's interior links are
+  indexed under the donor contig, so a reference query never returns them — but
+  72 of 78 MHC alt segments appear in both an off-backbone and an on-backbone
+  link, so one segment id gives the whole allele (`refStart` = entry's srcEnd,
+  `refEnd` = exit's tgtStart, `altLen` = the segment's own length). The rest
+  resolve without the interior too, because entry and exit share `SN` and donor
+  coordinates run contiguous across the allele (`s526659` 31,891,267-31,923,687
+  then `s526660` 31,923,687-31,924,005, so altLen 32,738). Pair by `SN` **then**
+  donor offset; `SN` alone is ambiguous, HG01433.2 contributes 41 entries in
+  that one window.
+- **Volume is trivial.** MHC 200 kb: 320 unique links, 155 backbone-adjacent, 8
+  deletions (mean 605 bp), 78 off the backbone, 79 back onto it, 0 alt-to-alt.
+  C4 70 kb: 36 links, 1 deletion, 10 out, 11 back. Tens of records per window,
+  so no density gate. That 0 is a property of the reference-keyed index, not of
+  the graph.
+- **The VCF is not symbolic**, so allele length is not what the graph adds.
+  `wave.vcf.gz` at `chr6:32,010,000-32,020,000`: 126 records, **zero** symbolic
+  ALTs, explicit ALT strings up to 65,481 bp, genotypes per haplotype. What a
+  linearized graph adds over it is segment-level correspondence with the graph
+  panel (same ids, same rank colors), the chaining and nesting of an alternate
+  path, and working on a bare minigraph rGFA with no `deconstruct` step.
+
 ## Indel glyphs (shipped)
 
 Two length-aware passes, both an `OverlayCanvas` over whichever backend painted

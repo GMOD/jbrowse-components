@@ -270,6 +270,14 @@ Authoritative docs (with named canary tests) live alongside the code at
   `as SCHEMATYPE` narrows `SnapshotIn` to just the object branch and breaks
   string-id callers; the inferred union `SnapshotIn` is
   `string | SnapshotIn<schema>`.
+- **A subclass that adds its own config slots must redeclare
+  `configuration: ConfigurationReference(configSchema)` in its `types.compose`**,
+  or `getConf` still types against the base factory's schema. `types.compose`
+  **overrides** props rather than intersecting them (`_OverrideProps` in the MST
+  typings), so the redeclaration costs nothing at runtime — same node either
+  way — and buys own-slot narrowing. `showInsertionGlyphsSlot.test.ts` is the
+  worked case, on `LinearMultiSampleVariantDisplay` against
+  `SharedVariantConfigModel`.
 
 Simplifying either of the TrackConfigurationReference quirks requires first
 migrating view-local configs into the session.

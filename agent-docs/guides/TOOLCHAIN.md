@@ -68,3 +68,12 @@ binding-less imports from declaration emit, so it never reaches the entry
 Symptom when you get it wrong: `TS2488 Type 'unknown' must have a
 '[Symbol.iterator]()' method` at an `addToExtensionPoint` callback, because the
 overload fell back to the untyped signature.
+
+# `pnpm autogen` needs a clean tree
+
+`pnpm gendocs` resolves sources through the `@jbrowse/*` workspace links, so in
+a shared worktree it emits `f(everyone's dirty tree)` and then fails the CI
+check, which regenerates from committed source. A temp worktree does not escape
+it either: symlinking the real `node_modules` in makes pnpm's workspace entries
+resolve back to the dirty main checkout. Run `pnpm autogen` on a clean tree and
+commit the output by itself.
