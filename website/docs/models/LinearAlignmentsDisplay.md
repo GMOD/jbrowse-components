@@ -1265,7 +1265,9 @@ type hasGroupHeightOverride = (key: string) => boolean
 
 Key for the paired-end arc / read-cloud colors. Empty when no overlay is drawn,
 or when it shares the reads' scheme and merged into their key — either way its
-legend section drops out of the box.
+legend section drops out of the box. A _partial_ overlap is not resolved here:
+this stays the complete arc key, and `getAlignmentsLegendSections` folds it into
+one deduped list.
 
 ```ts
 type arcLegendItems = () => LegendItem[]

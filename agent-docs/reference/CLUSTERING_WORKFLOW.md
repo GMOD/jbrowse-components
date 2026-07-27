@@ -153,12 +153,12 @@ Clicking a tree node calls `setSubtreeFilter` to collapse/expand that clade.
 |---|---|
 | `plugins/wiggle/src/WiggleRPC/executeClusterScoreMatrix.ts` | Worker clustering for wiggle |
 | `plugins/wiggle/src/WiggleRPC/getScoreMatrix.ts` | Score matrix construction |
-| `plugins/wiggle/src/MultiLinearWiggleDisplay/components/WiggleClusterDialog/` | Dialog (Auto + Manual) |
+| `plugins/wiggle/src/MultiLinearWiggleDisplay/components/WiggleClusterDialog.tsx` | Dialog (Auto + Manual) |
 | `plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts` | Composes TreeSidebarMixin, `hierarchy` view |
 | `plugins/variants/src/VariantRPC/executeClusterGenotypeMatrix.ts` | Worker clustering for variants |
 | `plugins/variants/src/VariantRPC/getGenotypeMatrix.ts` | Dosage matrix construction |
 | `plugins/variants/src/VariantRPC/getPhasedGenotypeMatrix.ts` | Phased haplotype matrix |
-| `plugins/variants/src/shared/components/MultiSampleVariantClusterDialog/` | Dialog (Auto + Manual) |
+| `plugins/variants/src/shared/components/MultiSampleVariantClusterDialog.tsx` | Dialog (Auto + Manual) |
 | `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` | Base model; `pendingClusterTree` + `hierarchy` |
 | `packages/tree-sidebar/src/TreeSidebarMixin.ts` | Shared MST state |
 | `packages/tree-sidebar/src/clusterUtils.ts` | `buildClusteredLayout`, `buildTree`, `applySubtreeFilter` |

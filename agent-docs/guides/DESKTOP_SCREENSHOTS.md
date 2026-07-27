@@ -59,7 +59,8 @@ config the CLI wrote rather than assumed.
 - **It launches through a wrapper script, not `chromeOptions.args`.**
   chromedriver reads every args entry as a switch and re-emits it with a `--`
   prefix, so a bare path arrives as `--/tmp/…/config.json` and the app resolves
-  it against its own cwd (`Session file no longer exists: …/products/jbrowse-desktop/--/tmp/…`).
+  it against its own cwd, in `products/jbrowse-desktop`
+  (`Session file no longer exists: …/--/tmp/…`).
   `createDriver({ launchFile })` writes an `exec`ing `sh` wrapper instead, which
   is the only way to reach the `jbrowse-desktop <file>` argv route. A *local*
   config has no other entry point: every in-app affordance goes through the
