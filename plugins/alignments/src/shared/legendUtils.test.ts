@@ -1,7 +1,12 @@
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import { getArcLegendItems, getReadDisplayLegendItems } from './legendUtils.ts'
+import {
+  getAlignmentsLegendSections,
+  getArcLegendItems,
+  getReadDisplayLegendItems,
+} from './legendUtils.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { LegendItem } from '@jbrowse/core/ui'
 import type { ColorBy, ColorSchemeType } from './types.ts'
 
 function legendFor(
@@ -393,33 +398,79 @@ describe('getArcLegendItems', () => {
       ).map(i => i.label),
     ).toEqual(['Forward strand', 'Reverse strand'])
   })
+})
 
-  // The overlapping case, which is the default one: reads by orientation under
-  // insert-size-and-orientation arcs share every orientation bucket. Those are
-  // the same category in the same palette color, so keying them twice asks the
-  // reader to look twice to learn one thing.
-  test('drops buckets the read key already carries', () => {
+// Reads and arcs are one vocabulary or two, and the box has to say which. The
+// overlapping case is the default one: reads by orientation under
+// insert-size-and-orientation arcs share every orientation bucket.
+describe('getAlignmentsLegendSections', () => {
+  const model = (reads: LegendItem[], arcs: LegendItem[]) => ({
+    legendItems: () => reads,
+    arcLegendTitle: 'Arc colors',
+    arcLegendItems: () => arcs,
+    bezierLegendItems: () => [],
+  })
+  const shown = (sections: ReturnType<typeof getAlignmentsLegendSections>) =>
+    sections
+      .filter(s => s.items.length > 0)
+      .map(s => [s.title, s.items.map(i => i.label)])
+
+  test('merges reads and arcs into one list when they share a color', () => {
     expect(
-      getArcLegendItems(
-        new Set<ReadColorCategory>([
-          'pairLL',
-          'pairRR',
-          'longInsert',
-          'interchrom',
-        ]),
-        makeTestPalette(),
-        new Set<ReadColorCategory>(['pairLL', 'pairRR', 'interchrom']),
-      ).map(i => i.label),
-    ).toEqual(['Long insert'])
+      shown(
+        getAlignmentsLegendSections(
+          model(
+            [
+              { color: '#aaa', label: 'LR - Normal pair orientation' },
+              { color: '#0a0', label: 'LL - Both mates forward strand' },
+            ],
+            [
+              { color: '#aaa', label: 'Normal' },
+              { color: '#0a0', label: 'LL - Both mates forward strand' },
+              { color: '#f00', label: 'Long insert' },
+            ],
+          ),
+        ),
+      ),
+    ).toEqual([
+      [
+        'Read and arc colors',
+        [
+          'LR - Normal pair orientation',
+          'LL - Both mates forward strand',
+          'Long insert',
+        ],
+      ],
+    ])
   })
 
-  test('is empty when the read key already carries every bucket it draws', () => {
-    expect(
-      getArcLegendItems(
-        new Set<ReadColorCategory>(['pairLL', 'pairRR']),
-        makeTestPalette(),
-        new Set<ReadColorCategory>(['pairLL', 'pairRR', 'pairLR']),
+  // The neutral arc slot and the reads' LR slot are the same colorPairLR, so
+  // "Normal" would be that grey a second time under a different word.
+  test('keys a color once, under the label it got first', () => {
+    const [[, labels]] = shown(
+      getAlignmentsLegendSections(
+        model(
+          [{ color: '#aaa', label: 'LR - Normal pair orientation' }],
+          [{ color: '#aaa', label: 'Normal' }],
+        ),
       ),
-    ).toEqual([])
+    ) as [[string, string[]]]
+    expect(labels).toEqual(['LR - Normal pair orientation'])
+  })
+
+  test('keeps them apart when the two vocabularies share nothing', () => {
+    expect(
+      shown(
+        getAlignmentsLegendSections(
+          model(
+            [{ color: '#e00', label: '5mC methylated' }],
+            [{ color: '#f00', label: 'Long insert' }],
+          ),
+        ),
+      ),
+    ).toEqual([
+      ['Read colors', ['5mC methylated']],
+      ['Arc colors', ['Long insert']],
+    ])
   })
 })

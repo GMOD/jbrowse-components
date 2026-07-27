@@ -26,15 +26,47 @@ import type { LegendItem, LegendSection } from '@jbrowse/core/ui'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
+// One row per color. A swatch means one thing in a legend box, so a color that
+// two vocabularies both produce is keyed once, under the first label it got —
+// the arcs' neutral slot and the reads' LR slot are both `colorPairLR`, and
+// "Normal" listed under "LR - Normal pair orientation" is the same grey twice.
+// Color-less rows (headings, notes) are never merged.
+function oneRowPerColor(items: LegendItem[]): LegendItem[] {
+  const seen = new Set<string>()
+  return items.filter(item => {
+    const dup = item.color !== undefined && seen.has(item.color)
+    if (item.color !== undefined) {
+      seen.add(item.color)
+    }
+    return !dup
+  })
+}
+
+// "Arc colors" -> "Read and arc colors", keeping whatever noun the overlay
+// chose for itself.
+function mergedTitle(arcTitle: string) {
+  return `Read and ${arcTitle.charAt(0).toLowerCase()}${arcTitle.slice(1)}`
+}
+
 /**
- * The display's three color vocabularies, each keyed on its own: the read fills,
- * the paired-end arc / read-cloud colors (insert size and orientation, when that
- * differs from what the fills use — else the arc buckets merge into the read key
- * rather than repeating the same swatches), and the linked-read connection
- * curves. The on-screen `FloatingLegend` and the SVG export both build from this
- * one list, so a heading can't appear in one and not the other. Empty sections
- * drop out and titles only appear once more than one survives, so a plain track
- * still shows a single untitled list.
+ * The display's color vocabularies as legend sections: the read fills, the
+ * paired-end arc / read-cloud colors, and the linked-read connection curves.
+ * The on-screen `FloatingLegend` and the SVG export both build from this one
+ * list, so a heading can't appear in one and not the other. Empty sections drop
+ * out and titles only appear once more than one survives, so a plain track still
+ * shows a single untitled list.
+ *
+ * Reads and arcs are **one** section whenever they share a color, which is the
+ * usual case: both classify pairs, and a shared bucket is the same swatch on
+ * both sides. Splitting them there is a false choice between two bad lists — key
+ * both fully and the same four swatches appear under two headings, or subtract
+ * the shared ones and "Arc colors" lists three colors for arcs that are drawn in
+ * seven. Merged and deduped, every drawn color appears exactly once, which is
+ * also the most compact form.
+ *
+ * They stay separate only when the two genuinely disagree (reads by
+ * modification, arcs by insert size): no color is then shared, so neither
+ * failure is available and the headings say something real.
  */
 export function getAlignmentsLegendSections(model: {
   legendItems: () => LegendItem[]
@@ -42,12 +74,22 @@ export function getAlignmentsLegendSections(model: {
   arcLegendItems: () => LegendItem[]
   bezierLegendItems: () => LegendItem[]
 }): LegendSection[] {
+  const reads = model.legendItems()
+  const arcs = model.arcLegendItems()
+  const readColors = new Set(reads.map(i => i.color))
+  const merge = arcs.some(a => readColors.has(a.color))
   return [
-    { id: 'reads', title: 'Read colors', items: model.legendItems() },
+    merge
+      ? {
+          id: 'reads',
+          title: mergedTitle(model.arcLegendTitle),
+          items: oneRowPerColor([...reads, ...arcs]),
+        }
+      : { id: 'reads', title: 'Read colors', items: reads },
     {
       id: 'arcs',
       title: model.arcLegendTitle,
-      items: model.arcLegendItems(),
+      items: merge ? [] : arcs,
     },
     {
       id: 'connections',
@@ -233,24 +275,16 @@ function crossCuttingBuckets(
  * same swatches under two headings. No per-scheme rewording either way: an arc
  * never produces a strand bucket.
  *
- * Two vocabularies can also *partly* overlap, which is the common case: reads
- * by orientation under the default insert-size-and-orientation arcs share every
- * orientation bucket and differ only in the insert-size ones. A category's
- * swatch is a pure function of the category and the palette, so a shared bucket
- * is the identical color under both headings — the reader is asked to look
- * twice to learn one thing. `keyedByReads` drops those, leaving this section to
- * say only what the read key does not.
+ * Always the complete arc key. A partial overlap with the read key is resolved
+ * in `getAlignmentsLegendSections`, by merging the two into one deduped list
+ * rather than by subtracting here — a section that lists three of the seven
+ * colors its own heading names is worse than the repetition it avoids.
  */
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
-  keyedByReads: ReadonlySet<ReadColorCategory> = new Set(),
 ): LegendItem[] {
-  return bucketItems(
-    new Set([...presentCategories].filter(c => !keyedByReads.has(c))),
-    palette,
-    {},
-  )
+  return bucketItems(presentCategories, palette, {})
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and
