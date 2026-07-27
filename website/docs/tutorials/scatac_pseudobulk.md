@@ -5,72 +5,66 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** pseudobulk single-cell ATAC into one coverage BigWig per cell type
-outside JBrowse, then load them all as a single MultiWiggle track that stacks
-one row per file.
+**TL;DR:** pseudobulk outside JBrowse, pooling each cluster's cells into one
+coverage BigWig, then load the whole set as a single MultiWiggle track, which
+draws one row per file.
 
-**Setup:** nothing to read along. Your own data needs cells already clustered,
-and one BigWig per cell type.
+**Setup:** nothing to read along. To build the tracks, a Python or R environment
+for the pseudobulk step, plus a JBrowse instance to load the BigWigs into.
 
-JBrowse doesn't process single-cell data itself. To get the look of the
-gallery's "Single-cell ATAC by cell type (CATlas)" card (one coverage row per
-cell type), you first pseudobulk the data outside JBrowse: group cells by
-cluster or cell-type label, sum their reads into one coverage track per group,
-and save each as a BigWig. Then you load all the BigWigs as a single MultiWiggle
-track, which stacks one row per file.
+One ATAC cell contributes only a few thousand fragments, so a coverage track of
+a single cell is almost entirely zero and no locus reads as open or closed.
+Pseudobulking is the standard answer: take the labels your clustering already
+assigned, pool every fragment belonging to a label into one profile, and each
+cell type comes out as a dense track that looks like a bulk ATAC experiment run
+on that cell type alone. Ten cell types give ten BigWigs, JBrowse stacks them as
+ten rows of one track, and accessibility restricted to one lineage reads as a
+peak present in a single row and flat in the rest.
 
 <Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) across the INS/IGF2 region on 11p15.5, where the Beta cell row shows accessibility over INS. Source data: CATlas (Zhang et al. 2021), catlas.org." src="/img/gallery/scatac_catlas.png" />
 
-This guide assumes you already have clustered scATAC data (a fragments file or a
-BAM plus a per-barcode cell-type label) from a tool like 10x Cell Ranger ATAC,
-ArchR, Signac, or SnapATAC2.
+Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
+Signac, or SnapATAC2. This tutorial starts from what those produce and does
+three things with it:
 
-If you pseudobulk with SnapATAC2 (Python) or ArchR (R), you can compute these
-BigWigs and view them inline in the same session through the
-[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
-[JBrowseR](/docs/jbrowser)).
+- **pseudobulk**: split fragments by label, pool, normalize, and bin each group
+  into a BigWig
+- **load**: point one `MultiWiggleAdapter` at the whole set, so N cell types
+  stay one track with one config, one height, and one shared score axis
+- **read it**: stacked rows, row clustering, and the rendering modes that suit
+  many rows
+
+[Reproduce it end to end](#reproduce-it-end-to-end) runs the whole path on a
+public 5k-PBMC dataset, and the sections before it cover each piece against your
+own data.
 
 ## What you need
 
-Nothing to install to read along: the figures come from hosted CATlas data. To
-build the tracks from your own experiment you need cells already clustered and
-labeled in SnapATAC2 (Python), ArchR or Signac (R), plus one BigWig per cell
-type, which the sections below cover producing.
+Nothing to install to read along: the figures come from hosted CATlas data.
 
-## What a genome browser adds for single cell
-
-Clustering and cell-type labeling happen upstream, in your single-cell analysis.
-A genome browser picks up from there: pseudobulk each cell type into one
-coverage track, and you can read along the genome which open chromatin each type
-carries and at which genes. One row per cell type, lined up against the gene
-models, so a cluster becomes a concrete set of accessible promoters and
-enhancers you can point at.
-
-<Figure caption="CATlas single-cell ATAC over the albumin (ALB) gene on chr4, one accessibility row per cell type. The Hepatocyte row is open across the whole locus while the other 15 cell types stay flat, the cell-type-restricted accessibility that a pseudobulk-by-cell-type track makes visible at a glance." src="/img/scatac/alb_hepatocyte.png" />
-
-## The pseudobulk idea
-
-A scATAC experiment gives a sparse per-cell signal, far too sparse to plot one
-cell at a time. Pseudobulking collapses each group of cells (a cluster or an
-annotated cell type) into a single aggregated coverage profile, which gives you
-a dense, bulk-ATAC-like track per group. With one BigWig per group loaded as
-rows of a single track, you can see at a glance which open chromatin is shared
-across cell types and which is specific to one, all lined up column-by-column at
-any locus.
-
-Two normalization points matter so rows are comparable to each other:
-
-- Groups contain different numbers of cells and different total reads. Normalize
-  each track (CPM / RPKM, or per-cell-count) so a tall peak means "more
-  accessible", not "more cells in this group".
-- Pick a bin size. Smaller bins (10–25 bp) preserve peak shape at the cost of
-  larger files. Larger bins (50–100 bp) are smaller and fine for a zoomed-out
-  overview. 10–25 bp is typical for ATAC.
+To build the tracks you need cells already clustered and labeled, which means
+either a fragments file (or a barcoded BAM) plus a barcode-to-label table, or
+the project object your analysis tool already holds: an `AnnData` in SnapATAC2
+(Python), an `ArchRProject` in ArchR, or a Seurat/Signac object in R. The
+pseudobulk step below runs in that same environment, so the BigWigs it writes
+can also be viewed inline through the
+[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+[JBrowseR](/docs/jbrowser)) without leaving the session.
 
 ## Generating per-group BigWigs
 
 Pick the path that matches where your data already lives. All paths end in one
 `.bw` per cell type.
+
+Two settings decide whether the rows can be compared to each other, and every
+path below has to make both calls:
+
+- **Normalization.** Groups differ in cell count and in total fragments, so
+  normalize each track (CPM / RPKM, or per-cell-count). Without it a tall peak
+  can just mean "more cells in this group".
+- **Bin size.** Smaller bins (10-25bp) preserve ATAC peak shape at the cost of
+  file size; larger bins (50-100bp) are smaller and fine zoomed out. 10-25bp is
+  typical.
 
 ### SnapATAC2 (from an AnnData of fragments)
 
@@ -90,10 +84,18 @@ snap.ex.export_coverage(
     blacklist="hg38-blacklist.bed",  # optional ENCODE blacklist
     out_dir="bw/",
     suffix=".bw",
-    n_jobs=8,
+    n_jobs=2,                # each worker holds a genome-wide coverage vector
 )
-# writes bw/<cell_type>.bw, one per group
+# writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
+
+Keep `n_jobs` low: at the default of 8 the BigWig writer died partway through
+the groups on a 30GB machine, where two workers wrote all of them in about a
+minute.
+
+`groupby` is the whole decision: pass the cluster column (`"leiden"`) to get one
+row per cluster, or the annotated column (`"cell_type"`) to get one row per cell
+type. Nothing else in the workflow changes.
 
 ### ArchR (from an ArchRProject)
 
@@ -183,6 +185,8 @@ In JBrowse, all the per-cell-type BigWigs go into one track: a
 per file. Each subadapter carries a `name` (the row label), an optional `color`,
 and an optional `group` (which seeds the sidebar clustering tree).
 
+<Figure caption="CATlas single-cell ATAC over the albumin (ALB) gene on chr4, one accessibility row per cell type. The Hepatocyte row is open across the whole locus while the other 15 cell types stay flat, the cell-type-restricted accessibility that a pseudobulk-by-cell-type track makes visible at a glance." src="/img/scatac/alb_hepatocyte.png" />
+
 ### Via the UI
 
 From the "Add track" workflow, switch to "Add multi-wiggle track" and paste your
@@ -191,6 +195,26 @@ the `MultiQuantitativeTrack` for you. This is the fastest way to try a set of
 files. Export the session to get the JSON config. On JBrowse Desktop the same
 workflow loads the `.bw` files straight from local disk with no web server
 ([desktop quickstart](/docs/quickstart_desktop)).
+
+### Via the CLI
+
+`jbrowse add-track --multiwig` takes the whole set of BigWigs in place of the
+usual single positional file, and builds the `MultiQuantitativeTrack` from them.
+The row labels come from the filenames, which the pseudobulk step already named
+after the groups:
+
+```bash
+jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
+  --name "scATAC by cell type" --assemblyNames hg38 \
+  --load copy --subDir bw --out /var/www/html/jbrowse2
+```
+
+`--load copy --subDir bw` copies local files in beside `config.json`; drop both
+for BigWigs already served over HTTP. To carry per-row names, colors, and
+groups, pass a `.json` file of subadapter objects (the same objects as the
+config below) instead of the comma list. Either way the subadapters are drawn in
+the order given, so listing them in your analysis tool's cluster order keeps
+related lineages adjacent rather than alphabetized.
 
 ### Via config JSON
 
@@ -265,6 +289,38 @@ immune / …), a `color`, and that URI, the same structure as the example above,
 so you can point a `MultiWiggleAdapter` straight at them without regenerating
 anything.
 
+## Reproduce it end to end
+
+One script runs the whole path on a public dataset,
+[`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh):
+
+```bash
+bash scripts/build_scatac_pseudobulk.sh    # builds ./scatac_pseudobulk_build
+npx --yes serve scatac_pseudobulk_build/jbrowse2
+```
+
+The input is SnapATAC2's annotated release of the 10x 5k-PBMC scATAC dataset,
+which is that tool's
+[standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html) and
+[cell-type annotation](https://scverse.org/SnapATAC2/tutorials/annotation.html)
+tutorials already run: fragments imported, cells QC-filtered and clustered, and
+each cluster labeled by transferring cell types from a matched multiome
+reference. Its `AnnData` therefore carries per-barcode fragments alongside an
+`obs["cell_type"]` call, which is the pair pseudobulking needs, so the script's
+own work is short:
+
+- `export_coverage(groupby="cell_type", bin_size=25, normalization="RPKM")`,
+  which writes one BigWig per cell type into `bw/`
+- a `sources.json` of subadapters, taking each row's label, color, and position
+  from the same object, so the rows keep the colors and the cluster order the
+  single-cell analysis gave them
+- `jbrowse create` plus `add-assembly` for hg38 and a RefSeq gene track, then
+  the one `MultiQuantitativeTrack` those subadapters make up
+
+Everything upstream of `export_coverage` is the part a genome browser does not
+do, and this dataset is a convenient place to skip it. Running it on your own
+experiment means substituting your labeled object at that one call.
+
 ## Rendering options
 
 The display is a `MultiLinearWiggleDisplay`. Its
@@ -332,7 +388,10 @@ Pseudobulk / coverage tools:
   [normalization methods](https://github.com/deeptools/deepTools/wiki/Normalizations)
 - [sinto `filterbarcodes` (split BAM by barcode/label)](https://timoast.github.io/sinto/basic_usage.html)
 
-Reference dataset:
+Reference datasets:
 
 - [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
   · [resource portal](https://www.catlas.org/)
+- [SnapATAC2's 5k PBMC scATAC dataset](https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html),
+  the 10x Genomics experiment the build script pseudobulks, in its clustered and
+  cell-type-annotated form
