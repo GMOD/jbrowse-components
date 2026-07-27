@@ -56,6 +56,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md) — config → MST snapshot → plain object → renderer
 - [DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md) — promotable slots, session-wide defaults
 - [SYNTENY_LOD.md](reference/SYNTENY_LOD.md) — the two PIF tiers and the cost model
+- [PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md) — rGFA vs plain GFA, the two tabix indexes both reduce to, carriage, measured ceilings, prior art
 - [CLUSTERING_WORKFLOW.md](reference/CLUSTERING_WORKFLOW.md) — in-app hierarchical clustering
 - [VIEW_INIT.md](reference/VIEW_INIT.md) — `init` launch spec → afterAttach → state machine
 - [COMPILER_TERNARY_FINDING.md](reference/COMPILER_TERNARY_FINDING.md) — how react-compiler stales a MobX read
@@ -73,9 +74,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [DESKTOP_SCREENSHOTS.md](guides/DESKTOP_SCREENSHOTS.md) — the `desktop-*.png` selenium harness: readiness gates, capture size, what still breaks
 - [DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md) — desktop IPC, preload, plugin loading
 - [REGION_VIEW_LAUNCH.md](guides/REGION_VIEW_LAUNCH.md) — "open view X for this region" entry points (synteny stack, graph subgraph)
-- [PANGENOME_PATHS_HANDOFF.md](guides/PANGENOME_PATHS_HANDOFF.md) — per-haplotype graph paths as a linear track, the indel-glyph passes, `--call` traps
-- [TAFFY_INDEX_GAPS_HANDOFF.md](guides/TAFFY_INDEX_GAPS_HANDOFF.md), a MAF block is indexed on row 0 alone, so a repeat-collapsed block hides its other reference copies. Why the pggb demo moved off taffy to `MafTabixAdapter`
-- [GENERAL_GFA_HANDOFF.md](guides/GENERAL_GFA_HANDOFF.md) — anchoring a plain (pggb/odgi) GFA from its P/W lines instead of rGFA tags (done); the open browse-by-locus index, and what the abandoned `gfa-to-tabix` effort proved before it was removed
+- [PANGENOME_GRAPH_NEXT.md](guides/PANGENOME_GRAPH_NEXT.md) — the graph view's work queue: deterministic layout, pinning the plugin bundle, carriage, and the level-of-detail rework
 
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is
