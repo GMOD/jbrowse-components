@@ -55,19 +55,32 @@ Both plugins are also preconfigured on the public browsers at
 [hg38](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json),
 search for a gene, and right-click it to launch either view.
 
-This session opens the AlphaFold structure of human BRAF (UniProt P15056) in the
-hg38 browser:
+This session opens human TP53 as a connected pair of views: the AlphaFold
+structure of UniProt P04637 beside a genome view of its locus with NCBI RefSeq
+and ClinVar loaded, so hovering a variant highlights the matching residue.
 
-```json live config=/ucsc/hg38/config.json base="https://jbrowse.org/code/jb2/latest/"
+```json live config=test_data/protein3d_config.json
 {
   "views": [
     {
       "type": "ProteinView",
-      "url": "https://alphafold.ebi.ac.uk/files/AF-P15056-F1-model_v6.cif"
+      "uniprotId": "P04637",
+      "transcriptId": "NM_000546.6",
+      "sideBySide": true,
+      "connectedView": {
+        "assembly": "hg38",
+        "loc": "chr17:7,671,000-7,684,500",
+        "tracks": ["hg38-ncbiRefSeq", "clinvar_ncbi_hg38"]
+      }
     }
   ]
 }
 ```
+
+A `ProteinView` with only a structure `url` and no `connectedView` opens as a
+standalone structure: it renders and is interactive, but nothing maps its
+residues to a genome, so no highlight is exchanged. Give it a `connectedView` as
+above for the linked behavior this tutorial describes.
 
 ## Installing the plugins
 
@@ -141,10 +154,13 @@ is where the row's gaps get taken into account.
 ### Sharing a connected view as a URL
 
 A connected view can also be built declaratively as a session-spec URL, useful
-for demo links and embedded apps: pass a UniProt accession and transcript ID (or
-an explicit structure `url`, feature, and sequence) alongside the genome
-location and tracks, and the plugin resolves the structure and alignment. See
-the parameters and example URLs in the
+for demo links and embedded apps. The
+[TP53 example above](#try-it-without-installing-anything) is the short form: a
+UniProt accession plus a transcript ID, and the plugin derives the AlphaFold
+structure, finds the transcript in the `connectedView` tracks at `loc`, and
+translates its CDS to align against the structure. The explicit form takes a
+structure `url`, feature, and protein sequence instead, for a transcript no
+loaded track serves. See the parameters and further example URLs in the
 [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
 
 ## Viewing a multiple sequence alignment
