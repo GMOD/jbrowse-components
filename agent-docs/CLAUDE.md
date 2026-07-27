@@ -56,6 +56,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md) — config → MST snapshot → plain object → renderer
 - [DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md) — promotable slots, session-wide defaults
 - [SYNTENY_LOD.md](reference/SYNTENY_LOD.md) — the two PIF tiers and the cost model
+- [SCREENSHOT_PERF.md](reference/SCREENSHOT_PERF.md) — why heavy screenshot specs take minutes (SwiftShader software rasterization, not app code)
 - [PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md) — rGFA vs plain GFA, the two tabix indexes both reduce to, carriage, measured ceilings, prior art
 - [CLUSTERING_WORKFLOW.md](reference/CLUSTERING_WORKFLOW.md) — in-app hierarchical clustering
 - [VIEW_INIT.md](reference/VIEW_INIT.md) — `init` launch spec → afterAttach → state machine
@@ -70,7 +71,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md) — browser + unit tests, WebGPU CI
 - [TOOLCHAIN.md](guides/TOOLCHAIN.md) — why `typescript` 6.x and `typescript7` coexist
 - [PERF_INSTRUMENTATION.md](guides/PERF_INSTRUMENTATION.md) — diagnosing render / scroll jank
-- [SCREENSHOT_REVIEW_HANDOFF.md](guides/SCREENSHOT_REVIEW_HANDOFF.md) / [SCREENSHOT_CAPTURE_RACE.md](guides/SCREENSHOT_CAPTURE_RACE.md) — website figure pipeline
+- [SCREENSHOT_CAPTURE_RACE.md](guides/SCREENSHOT_CAPTURE_RACE.md) — website figure pipeline capture-race bugs (the screenshot-review backlog itself is worked from `website/scripts/screenshot-review-plan.md`)
 - [DESKTOP_SCREENSHOTS.md](guides/DESKTOP_SCREENSHOTS.md) — the `desktop-*.png` selenium harness: readiness gates, capture size, what still breaks
 - [DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md) — desktop IPC, preload, plugin loading
 - [REGION_VIEW_LAUNCH.md](guides/REGION_VIEW_LAUNCH.md) — "open view X for this region" entry points (synteny stack, graph subgraph)

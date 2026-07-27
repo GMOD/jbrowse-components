@@ -187,7 +187,7 @@ launched view's assemblies, and it still missed that nothing *rendered*.
 
 What caught the remaining bugs was generating the figure
 (`multiway_synteny/ecoli_launch_from_selection`, a `stages` spec; see
-`SCREENSHOT_REVIEW_HANDOFF.md` for the regen loop). Pick the demo window with
+`website/scripts/screenshot-review-plan.md` for the regen loop). Pick the demo window with
 care: the first render landed inside the paa operon island, the one locus where
 three of four strains have no alignment at all, so discovery correctly returned
 a single mate and the multi-panel launch degenerated to the pairwise case it was
