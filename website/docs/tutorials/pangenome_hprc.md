@@ -181,6 +181,7 @@ what the [allele inventory](#the-allele-inventory) holds in each:
 | KIR          | `chr19:54,750,000-54,840,000`  | 42 alleles, longest 79 kb |
 | AMY1         | `chr1:103,690,000-103,780,000` | 19 alleles, longest 94 kb |
 | C4           | `chr6:31,980,000-32,050,000`   | 9 alleles, longest 39 kb  |
+| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 33 segments, up to 176 kb |
 
 Two things the table cannot show, both worth knowing before reading a window as
 empty.
@@ -208,7 +209,13 @@ while a sample row is one haplotype.
 
 <Figure caption="MHC class II in the Sample rows layout, under the RefSeq genes and rGFA segments for the same window. The top row is the GRCh38 backbone; each row below it is one haplotype that donated sequence here, labelled with its HPRC id, and its marks are the alleles it donated, colored by where on the reference they attach." src="/img/pangenome/hprc_mhc_sample_rows.png" />
 
-The four windows above draw 8 to 15 such rows each, out of 464 haplotypes, and
+LPA is the same layout on a locus where the length range is the finding. Its
+KIV-2 repeat sets Lp(a) level, and copy number there is not callable from short
+reads at all:
+
+<Figure caption="The KIV-2 repeat inside LPA in the Sample rows layout. The bubbles lane states the range the graph found across the cohort, 4,283 to 176,236 bp over 33 segments, and each row below is one haplotype's allele, colored by the reference position it attaches to." src="/img/pangenome/hprc_lpa_kiv2.png" />
+
+The windows above draw 8 to 15 such rows each, out of 464 haplotypes, and
 that ratio is the thing to read carefully. A row is the haplotype minigraph took
 the sequence **from**, the same attribution `discoveryRank` and `firstSeenIn`
 carry, not the set of haplotypes carrying the allele. Collapsing is what let the

@@ -1073,8 +1073,8 @@
     "name": "jbrowse-img/variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:06:13.144Z",
-    "hash": "f02919128b5c0fbd5d59757566264b8f9b3b8700"
+    "reviewedAt": "2026-07-27T14:58:21.285Z",
+    "hash": "24381fa906636789fe5d4e2ad2fbc6d00bf88d8e"
   },
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
@@ -1162,10 +1162,10 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "bad",
-    "note": "remove the highlight",
-    "reviewedAt": "2026-07-27T14:29:28.566Z",
-    "hash": "1175e404b9d27a334adb6c06ad6b3f5bee88f81a"
+    "status": "good",
+    "note": "Highlight removed and regenerated. The homozygous drop-out across CDKN2A needs no pointer, and the band spanned the p16INK4a transcript (chr9:21,967,752-21,975,132), which runs 3 kb past the deletion right breakpoint at 21,972,343 and tinted recovered coverage.",
+    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "hash": "a7d1d24feba5e7bf4c02c24d17a8449164bee258"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1430,8 +1430,8 @@
     "name": "jbrowse-img/scatac_multiwiggle",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T13:40:11.011Z",
-    "hash": "241fb195d5e7529ce0efe7131edb60d125905d47"
+    "reviewedAt": "2026-07-27T14:58:19.583Z",
+    "hash": "f2f86f17b747f162b43aafa0b98896fc8fe41c96"
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
@@ -1855,10 +1855,10 @@
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
-    "status": "bad",
-    "note": "this is not a 'useful' screenshot because there is not really any reason a user would make this selection on a regular gene track. maybe a repeat masker track in human dataset",
-    "reviewedAt": "2026-07-27T14:21:40.668Z",
-    "hash": "449ef8e1e8f9e03a36d8095a7266c383c0f3fd5e"
+    "status": "good",
+    "note": "Moved off volvox bedtabix_genes onto UCSC RepeatMasker at 17q21 and regenerated. The menu item has to be one a reader would plausibly pick: a gene track has nothing to partition on, so multi-row gives one row per gene name, whereas rmsk carries repClass and one row per repeat class is what the display exists for.",
+    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "hash": "f438db093cf24f7a7e043ebb7f08821d3e45c70a"
   },
   "pangenome_cactus/boxed_locus_synteny": {
     "name": "pangenome_cactus/boxed_locus_synteny",
@@ -1959,17 +1959,17 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
+    "status": "good",
     "note": "the bezier curves for the connections to rank1 are weird. users also dont necessarily have perspective into the bp length of these features PART DONE, in the plugin, unpublished. First half root-caused and fixed: computeEdgeCurves ran each control point along its own node direction by dist*0.5, and on an anchored layout that distance is mostly the row drop, so an edge to a rank-1 node swung sideways past both endpoints and came back. The two edges meeting at one node then crossed, which is the bowtie the note describes. The extension is now the separation projected onto that tangent, clamped at 0, so a backwards edge gets a straight leader. Proved with a test that tessellates each bubble pair and does a real segment-intersection check: 12 crossing bubbles before, 0 after. Measured against the force-directed layout through the real WASM engine, it is a no-op there (0/144 control points move >1 unit on the pggb subgraph, 7/436 worst 2.1 on the rGFA slice), so the Bandage figures should not change. NEEDS: pnpm betabuild in jbrowse-plugin-graphgenomeview, the esmUrl pin bumped in the three test_data/graphgenomeview configs, then a regen. Second half (bp length) not built: the caption now states that an off-reference node is drawn at a visibility floor and not to scale, and points at the tooltip. A drawn-length channel in the graph view is a feature, not a spec fix. Separately found and NOT fixed: on the rGFA slice projectAlleles splits a multi-rank run into separate alleles, so a rank-2 segment can be placed megabases from the rank-1 segments it attaches to; that is the one long X in pangenome/rgfa_subgraph_launch.",
-    "reviewedAt": "2026-07-27T04:57:19.413Z",
-    "hash": "9dbc5acd88e096559ac184cc17b0124e9307c5b4"
+    "reviewedAt": "2026-07-27T14:58:34.753Z",
+    "hash": "9aa3e0a12a09ba2be19529b86291645844ba68af"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "bad",
-    "note": "can only see 'blue' in the hprc track. may want to use rainbow coloring or alternatively consider deleting or showing the subgraph launch workflow? other graph visuals have now added the rainbow coloring for graph nodes it may be good here. FIXED: the linear segments track above now paints in the graph view's own rank colors, so a segment is the same color in both panels instead of gold-vs-blue. The graph's Stable rank scheme is rank 0 -> rgb(52,152,219), then a ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph max rank; RgfaTabixAdapter exposes the SR tag as the feature's `rank`, so a `color` jexl on the linear segments track reproduces it exactly. Also documented in the tutorial. Worth knowing for the sibling items: only rank 0 has reference coordinates, so a reference LGV can only ever show the blue backbone - the alternate alleles have no linear position to draw at, which is the real reason the correspondence looked weak.",
-    "reviewedAt": "2026-07-27T12:59:55.036Z",
-    "hash": "22a3ac76011910c32485264ce4abf5776fb4166d"
+    "status": "good",
+    "note": "The single long X is gone. projectAlleles now orders a run by distance from its entry anchor and sweeps offsets forward over the run graph, so a member sits where it sits WITHIN its allele instead of where a DFS pop reached it; on the 21-node allele at K12 1,196,361-1,223,579 the old concatenation put graph neighbours 26 kb apart and the edges spanning those gaps drew the X. Published as ae1aa4cabf9e. Three crossed bubbles remain on the test fixture from a separate cause, tracked in bubbleCrossing.test.ts and the handoff: the GFA states some links reverse-complement, and computeEdgeCurves always leaves the from-node last point for the to-node first, so those edges attach to the wrong end.",
+    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "hash": "ccd0e2a0c7e992e7125060b4464724b9823e5e50"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2121,29 +2121,36 @@
   "pangenome/rgfa_strain_paths": {
     "name": "pangenome/rgfa_strain_paths",
     "status": "bad",
-    "note": "this looks very odd.it is a large insertion,try to align the look and feel of deletions with linearalignmentsdisplay/linearmafdisplay at a minimum. dont add legend items for things that are not displayed. could consider deleting FIXED by widening the window 12x, to 200 kb. At 16 kb the frame held ONE bubble, so five stacked full-width boxes with numbers printed in them read as a bar chart rather than as five haplotypes - which is what the note is describing. At 200 kb a row is mostly grey reference path punctuated where that strain diverges, which is the lane shape the note asks for, and the large insertions still carry their bp. Gene lane dropped: at this width it is 190 unlabelled boxes.",
-    "reviewedAt": "2026-07-27T04:55:39.730Z",
-    "hash": "760a6a4ea9c187ca78353bb3299fca106fa98cc5"
+    "note": "this looks very odd. it is a large insertion,try to align the look and feel of deletions with linearalignmentsdisplay/linearmafdisplay at a minimum. dont add legend items for things that are not displayed. could consider deleting FIXED by widening the window 12x, to 200 kb. At 16 kb the frame held ONE bubble, so five stacked full-width boxes with numbers printed in them read as a bar chart rather than as five haplotypes - which is what the note is describing. At 200 kb a row is mostly grey reference path punctuated where that strain diverges, which is the lane shape the note asks for, and the large insertions still carry their bp. Gene lane dropped: at this width it is 190 unlabelled boxes.",
+    "reviewedAt": "2026-07-27T17:37:32.475Z",
+    "hash": "30aa6c9504bd438fe653b200cdb5bf25feb4f76c"
   },
   "display_type_default_badge": {
     "name": "display_type_default_badge",
-    "status": "bad",
-    "note": "the notification icon 'set as the default' may want to have been dismissed",
-    "reviewedAt": "2026-07-27T14:01:32.501Z",
-    "hash": "badcbb82ebb1cfda9e38245b5bdeb44a8a1a2335"
+    "status": "good",
+    "note": "Snackbar hidden and regenerated. The pin raises a Set as the default toast that outlives the click sequence; it is the action being documented, not part of either frame, so .MuiSnackbar-root joined hideSelectors.",
+    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "hash": "076ba586a95bd44a3510bd6eebca39490c72f7ff"
   },
   "pangenome/pggb_locus_graph": {
     "name": "pangenome/pggb_locus_graph",
-    "status": "bad",
-    "note": "it is kind of weird to see the 'rank 1' having coloring the same as the reference, not sure if worth giving it a \"different spectrum\"? rainbow is aesthetically pleasing but just sort of weird potential overlap",
-    "reviewedAt": "2026-07-27T14:27:42.193Z",
-    "hash": "23c946bd59bb3ce9973f54288931ea3860038082"
+    "status": "good",
+    "note": "FIXED in the plugin (renderer/GeometryBuilder.ts, published as ae1aa4cabf9e and pinned in the three test_data/graphgenomeview configs). The reference-position ramp now paints an off-reference node a paler, softer version of the SAME hue as the reference it replaces (45%/72% against 70%/50%) instead of the identical swatch, so the Rank 1 row is no longer a copy of the Reference row. Rank went on lightness rather than on a second hue range, which would have had to mean position and rank at once and could state neither: hue is still position, which is the whole reason the scheme exists and the only thing a linear track can reproduce. referencePositionColor in specs/graph.ts carries the same branch off the feature rank field, so a lane opened on a contributing assembly cannot disagree with the graph beside it.",
+    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "hash": "bb7a07fe8a23131bf80910f1eb4b4814bafc4ced"
   },
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
-    "status": "bad",
-    "note": "potentially add red boxes to highlight the 'view_menu_icon' and potentially a two part screenshot showing the next stage of selecting a linearsynteny view launch or lineargenomeview launch could be useful. also, if we can simplify the menus, that may be valuable. quite \"large\"!",
-    "reviewedAt": "2026-07-27T14:28:59.535Z",
-    "hash": "3bdc26debf20d790038ac2970a73f9e7fd90a9ac"
+    "status": "good",
+    "note": "Two frames now (reviewer: red box on the view menu icon, and a second frame showing what the launch produces). Frame one is the cascade with a box anchored on the graph view menu icon; frame two is the four-band synteny view the synteny entry opens. The K12 linear view was dropped from the session so the menu is not floating over 350px of context it does not need, which is the large complaint. Window moved to chr:4,400,000-4,450,000: at the old ECOLI_WINDOW, IAI39 reaches the subgraph through 8 bp, so the launch opened four panels at four unrelated scales. Every 50 kb window was scored on the smallest span any strain contributes and this one has all five between 38 kb and 69 kb. Also FIXED in the plugin while shooting it: launchSyntenyView passed init.tracks as a flat [trackId], which LinearSyntenyView reads as the level-0 shorthand, so a five-strain launch drew ribbons on the top band only and opened the four below as bare rulers.",
+    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "hash": "587a7f0b6a70f1702df8e9a756d88341ffc18bae"
+  },
+  "pangenome/hprc_lpa_kiv2": {
+    "name": "pangenome/hprc_lpa_kiv2",
+    "status": "good",
+    "note": "NEW. The KIV-2 repeat in LPA, picked out of the bubble index rather than off a locus list: ranking every record in hprc-v2.0-mc-grch38.bubbles.bed.gz for deep traversal at a segment count still worth drawing puts chr6:160,606,991-160,639,012 near the top, 33 segments and 584 paths with alleles reaching 176,236 bp against 32 kb of reference. Copy number there sets Lp(a) and is not callable off short reads. Window runs to 160,525,000 so LPA own start is in frame and the gene track labels it; a window sitting entirely inside one gene draws that label off the left edge and the figure names nothing.",
+    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "hash": "e13f9084062017d37b33f20758c5989d43d25c84"
   }
 }

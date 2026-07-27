@@ -250,6 +250,24 @@ const ECOLI_WINDOW = 'chr:4,050,000-4,100,000'
 const SEGMENT_LABEL = 's1277'
 // ~2x the segment's own span, so its label is a comfortable right-click target
 const SEGMENT_WINDOW = 'chr:4,054,000-4,066,000'
+// The launch-out figure's graph view, pinned so its menu and its callout still
+// resolve to it once the launch has added a second view to the page.
+const LAUNCH_OUT_VIEW = '[data-testid="view-container-launch_out_graph"]'
+
+// A 50 kb K12 window chosen for what the launch produces, not for the graph:
+// the synteny view it opens gets one panel per contributing strain, at the span
+// that strain's own segments cover, so a window where a strain contributes a
+// single small segment opens a panel a few bp wide. ECOLI_WINDOW is one — IAI39
+// reaches it through 8 bp — and the launched view was four panels at four
+// unrelated scales. Scoring every 50 kb window on the smallest span any strain
+// contributes (over the segs/links BEDs the track reads) puts this one near the
+// top: all five between 38 kb and 69 kb, so the panels open comparable.
+const LAUNCH_OUT_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 4400000,
+  end: 4450000,
+}
 
 // The HPRC figures take the other route into the same view: instead of a whole
 // GFA file, a GraphGenomeView carrying `loadedTrackId`/`loadedRegion` — the exact
@@ -293,6 +311,17 @@ const C4_REGION = {
   assemblyName: 'hg38',
   start: 31980000,
   end: 32050000,
+}
+
+// Wide enough to the left that LPA's own start (160,531,482) is in frame, so the
+// gene track labels it: a window sitting entirely inside one gene draws that
+// gene's label off the left edge, and the figure then names nothing.
+const LPA_WINDOW = 'chr6:160,525,000-160,655,000'
+const LPA_REGION = {
+  refName: 'chr6',
+  assemblyName: 'hg38',
+  start: 160525000,
+  end: 160655000,
 }
 
 // MHC class II, the densest window in the tutorial's locus table, and the one
@@ -339,6 +368,18 @@ const MHC_CALLSET_LAYOUT = [
 // bp. Every scheme before it could not — depth and rank are graph quantities,
 // and the old rainbow ramped over node index, which a linear view cannot know.
 //
+// Rank rides on lightness, not on hue: an off-reference segment keeps the hue of
+// the reference it replaces and is painted paler (45%/72% against 70%/50%), so
+// the correspondence survives while a rank row stops being the same swatch as
+// the backbone. On a lane over the REFERENCE that branch never fires — a rank>0
+// segment states its coordinates on its own stable sequence, so it is not in the
+// window at all — and the pair of rows a dense lane draws is the layout packing
+// rank-0 blocks, not rank. It is here for a lane opened on a contributing
+// assembly, where those segments do appear, and so the ramp cannot disagree with
+// the graph beside it. `rank` is what RgfaTabixAdapter puts on the feature; a
+// track carrying none reads `undefined > 0` as false and stays on the reference
+// pair.
+//
 // The domain has to be the graph's loadedRegion, not the linear view's window,
 // when the two differ.
 function referencePositionColor({
@@ -349,7 +390,9 @@ function referencePositionColor({
   end: number
 }) {
   const mid = "(get(feature,'start')+get(feature,'end'))/2"
-  return `jexl:'hsl(' + min(300, max(0, (${mid} - ${start}) / ${end - start} * 300)) + ',70%,50%)'`
+  const hue = `min(300, max(0, (${mid} - ${start}) / ${end - start} * 300))`
+  const rank = "get(feature,'rank')>0 ? '45%,72%' : '70%,50%'"
+  return `jexl:'hsl(' + ${hue} + ',' + (${rank}) + ')'`
 }
 
 // The HPRC segments lane, shared by every figure that carries it so they read
@@ -1093,6 +1136,68 @@ export const graphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
   },
 
+  // The KIV-2 repeat in LPA, picked out of the bubble index rather than off a
+  // locus list. Every record in hprc-v2.0-mc-grch38.bubbles.bed.gz, ranked for a
+  // bubble that is deeply traversed and still few enough segments to follow:
+  // GRCh38 chr6:160,606,991-160,639,012 is 33 segments and 584 recorded paths,
+  // and its alleles reach 176,236 bp against the 32 kb of reference they replace.
+  // The window sits entirely inside LPA (160,531,482-160,664,275), whose KIV-2
+  // copy number is the main determinant of Lp(a) and is not measurable off short
+  // reads at all.
+  //
+  // An EXPANSION, deliberately, and that is a constraint on the picture rather
+  // than a preference. The other standout in the same scan is the CFHR3/CFHR1
+  // deletion at chr1:196,753,088-196,837,771, whose bubble runs from 0 bp — two
+  // named genes a fifth of haplotypes do not carry — and none of the three
+  // displays draw it: sample rows gives a carrier an empty row (a deletion
+  // contributes no segment), the anchored layout draws its edge flat along the
+  // backbone under the backbone, and the callset paints the whole bubble alt for
+  // nearly every haplotype. Extra sequence has somewhere to be drawn; missing
+  // sequence does not. See website/scripts/screenshot-review-plan.md.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_lpa_kiv2',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: LPA_WINDOW,
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
+            },
+            {
+              trackId: 'hprc_minigraph_bubbles',
+              type: 'LinearBasicDisplay',
+              height: 80,
+            },
+            hprcSegmentsLane(LPA_REGION),
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: LPA_REGION,
+          layoutMode: 'samplerows',
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    readySelector:
+      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
+    readyTimeout: 180000,
+    settleMs: 6000,
+    viewportWidth: 1000,
+    // the linear stack plus the graph pane, which sizes itself to its rows
+    viewportHeight: 1045,
+    hideTooltip: true,
+  },
+
   // The two products at one locus, which is the argument the HPRC tutorial
   // closes on ("the matrix for base-level variation across haplotypes, the
   // graph for how the sequence rearranges") and had no picture of.
@@ -1386,6 +1491,21 @@ export const graphSpecs: ScreenshotSpec[] = [
   // offers a linear view of each contributing strain at its own coordinates, and
   // a synteny view of all of them at once.
   //
+  // Two frames, because the menu on its own only shows that the offer exists
+  // (reviewer: "a two part screenshot showing the next stage ... could be
+  // useful"). The second is the synteny launch rather than a per-strain linear
+  // one: it is the entry that makes the whole claim at once — four panels, each
+  // already at that strain's own locus, from the segments' SN/SO tags with
+  // nothing looked up in an alignment first. A per-strain launch opens on
+  // `No tracks active` (showInLinearView only carries the graph's own track
+  // across, and that is configured for the reference alone), so its frame would
+  // be an empty view.
+  //
+  // The graph is the only view in the session. It used to sit under a K12 linear
+  // view, which pushed the cascade into the lower half of a 700px frame and made
+  // the figure "quite `large`!" for a menu — and with a second frame stacked
+  // under it that context would have been paid for twice.
+  //
   // Driven through the view menu by text rather than by canvas coordinates, so
   // nothing here is measured off a previous capture.
   {
@@ -1394,30 +1514,12 @@ export const graphSpecs: ScreenshotSpec[] = [
     url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
       views: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: ECOLI_WINDOW,
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-            {
-              trackId: ECOLI_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              height: 70,
-            },
-          ],
-        },
-        {
-          // pinned so the actions can scope the view menu click to this view
-          // rather than the linear one above it
+          // pinned so the actions and the callout can scope to this view rather
+          // than to whichever view the launch adds beside it
           id: 'launch_out_graph',
           type: 'GraphGenomeView',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
-          loadedRegion: {
-            refName: 'chr',
-            assemblyName: 'K12',
-            start: 4050000,
-            end: 4100000,
-          },
+          loadedRegion: LAUNCH_OUT_REGION,
           layoutMode: 'samplerows',
           colorScheme: 'stable-rank',
         },
@@ -1427,22 +1529,70 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    viewportHeight: 700,
+    // covers the taller second frame (the graph plus the four-panel synteny
+    // view it launches); the menu frame sets its own below
+    viewportHeight: 940,
     hideTooltip: true,
-    actions: [
-      // the graph view's own menu, scoped through its pinned view id, since
-      // both views on the page carry a view_menu_icon
+    stages: [
       {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-launch_out_graph"] [data-testid="view_menu_icon"]',
+        // The graph pane plus the cascade hanging off its menu, and little page
+        // background under them. This is also the viewport stage two ACTS in —
+        // a stage resizes after its own actions — and below ~430 the synteny
+        // item click stops launching anything (verified at 350 and 410: the
+        // debug capture shows the menu dismissed and no view added). Cause not
+        // established; treat 430 as a measured floor rather than a tidy number.
+        viewportHeight: 430,
+        actions: [
+          {
+            type: 'click',
+            selector: `${LAUNCH_OUT_VIEW} [data-testid="view_menu_icon"]`,
+          },
+          { type: 'click', text: 'Launch view' },
+          // expand the per-strain list rather than leaving it a closed submenu
+          // row, which is the half of the menu the figure is about
+          { type: 'hover', text: 'Linear genome view' },
+          { type: 'waitForText', text: 'CFT073 chr:' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'box',
+            // the menu the cascade hangs off, which is otherwise the one thing
+            // in the frame a reader has to find before any of it is reachable
+            anchor: {
+              selector: `${LAUNCH_OUT_VIEW} [data-testid="view_menu_icon"]`,
+            },
+          },
+        ],
       },
-      { type: 'click', text: 'Launch view' },
-      // expand the per-strain list rather than leaving it a closed submenu row,
-      // which is the half of the menu the figure is about
-      { type: 'hover', text: 'Linear genome view' },
-      { type: 'waitForText', text: 'CFT073 chr:' },
-      { type: 'delay', ms: 500 },
+      {
+        // Re-opened from scratch rather than clicked out of the cascade stage
+        // one left standing: the frames differ in height, and the resize that
+        // buys frame one its tight crop lands between the two stages and moves
+        // the menu under it — the synteny row was then clicked at its old
+        // position and nothing launched.
+        closeMenusFirst: true,
+        // stated even though it matches the spec's own: a stage only resizes
+        // when it names a height, so without this the frame keeps the tight
+        // crop stage one left behind and the synteny view lands below it
+        viewportHeight: 940,
+        actions: [
+          {
+            type: 'click',
+            selector: `${LAUNCH_OUT_VIEW} [data-testid="view_menu_icon"]`,
+          },
+          { type: 'click', text: 'Launch view' },
+          { type: 'click', text: 'Linear synteny view' },
+          // the ribbons, not the panels: the panel headers paint long before
+          // the PAF the whole point of the launch is
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="synteny_canvas_done"]',
+            timeout: 120000,
+          },
+          { type: 'delay', ms: 8000 },
+        ],
+      },
     ],
   },
 ]

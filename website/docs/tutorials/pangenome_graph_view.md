@@ -244,7 +244,7 @@ Only loaded assemblies are offered, so the menu never lists a view that cannot
 open, and a location goes into the linear view already beside the graph rather
 than stacking a pane.
 
-<Figure caption="The graph's Launch view menu over a 50 kb K12 window in the sample-rows layout. Each strain's entry names the locus it contributes on its own coordinates, and the synteny entry opens all four as panels against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
+<Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window in the sample-rows layout, opened from the view menu boxed in red. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
 ## Building the rGFA these figures use
 
