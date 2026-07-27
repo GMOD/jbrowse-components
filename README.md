@@ -31,9 +31,8 @@ TypeScript, and @jbrowse/mobx-state-tree.
 
 ## Examples
 
-- [Live demos](https://jbrowse.org/jb2/demos/) are hosted, interactive instances
-- [Gallery](https://jbrowse.org/jb2/gallery/) has screenshots of the views and
-  track types
+- [Gallery](https://jbrowse.org/jb2/gallery/) has screenshots and live,
+  interactive instances of the views and track types
 - [Feature list](https://jbrowse.org/jb2/features/)
 
 ## Contact

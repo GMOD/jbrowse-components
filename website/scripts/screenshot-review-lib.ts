@@ -71,7 +71,7 @@ const markdownFiles = docRoots
   .filter(d => fs.existsSync(d))
   .flatMap(d => walkMarkdown(d))
 
-// gallery.ts is the single source of truth for /gallery/ and /demos/ (see
+// gallery.ts is the single source of truth for /gallery/ (see
 // website/CLAUDE.md); its items reference images via `spec`/`img` fields, not
 // literal "/img/<name>.png" text, so it needs its own scan rather than being
 // added to docRoots.

@@ -13,7 +13,7 @@ coverage, GWAS/Manhattan, and Hi-C data. Data is organized into
 [assemblies](/docs/config_guides/assemblies) (reference genomes) and
 [tracks](/docs/config_guides/tracks) layered on top of them.
 
-**Just want to look? No install needed.** Explore [live demos](/demos/), the
+**Just want to look? No install needed.** Explore the
 [visualization gallery](/gallery/), or real hosted genomes at
 [Genome Hubs](https://genomes.jbrowse.org/).
 

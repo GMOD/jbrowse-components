@@ -303,12 +303,6 @@ export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
           href: pageUrl('gallery'),
           slug: 'gallery',
         },
-        {
-          type: 'link',
-          label: 'Demos',
-          href: pageUrl('demos'),
-          slug: 'demos',
-        },
       ],
     },
   ]

@@ -81,7 +81,7 @@ export default defineConfig({
     },
   ],
   // NOTE: this only applies to Astro's built-in markdown (the `.md` *pages* like
-  // features/gallery/demos — base-URL rewriting only). Docs and blog render
+  // features/gallery — base-URL rewriting only). Docs and blog render
   // through the richer unified pipeline in src/lib/markdown.ts (admonitions,
   // figures, spec-examples, shiki); those extras do NOT work in `.md` pages.
   markdown: {

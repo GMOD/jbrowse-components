@@ -9,6 +9,5 @@ export const navLinks = [
   { path: 'blog', label: 'Blog' },
   { path: 'download', label: 'Download' },
   { path: 'gallery', label: 'Gallery' },
-  { path: 'demos', label: 'Demos' },
   { path: 'contact', label: 'Contact' },
 ]

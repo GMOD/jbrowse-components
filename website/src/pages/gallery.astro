@@ -53,7 +53,6 @@ function thumbSize(file: string) {
 
 // Sections shown as screenshot cards vs. compact link lists: an item appears in
 // the card grid when it has a figure, otherwise in the "more examples" list.
-// `demoOnly` items (entry points / hubs) are shown only on the demos page.
 const sections = gallerySections
   .map(s => ({
     ...s,
@@ -61,11 +60,9 @@ const sections = gallerySections
       const file = itemImg(i)
       // Sized from the thumbnail, which is what the card paints; the full-size
       // original is only ever handed to the lightbox.
-      return file && !i.demoOnly
-        ? [{ item: i, file, thumb: thumbOf(file), size: thumbSize(file) }]
-        : []
+      return file ? [{ item: i, file, thumb: thumbOf(file), size: thumbSize(file) }] : []
     }),
-    links: s.items.filter(i => !itemImg(i) && !i.demoOnly),
+    links: s.items.filter(i => !itemImg(i)),
   }))
   .filter(s => s.cards.length > 0 || s.links.length > 0)
 ---

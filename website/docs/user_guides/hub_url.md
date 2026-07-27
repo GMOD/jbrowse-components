@@ -12,8 +12,8 @@ straight from a link, with no config file to set up first. It is the one-click
 way to share a hub: whoever opens the link lands in JBrowse with the hub's
 assemblies and tracks already available.
 
-The [UCSC GenArk hub import](/demos/#hubs) on the demos page is exactly this: a
-single URL that opens a hub.
+The [UCSC GenArk hub import](/gallery/#hubs) on the gallery page is exactly
+this: a single URL that opens a hub.
 
 ## Basic usage
 
@@ -69,4 +69,4 @@ opened with `config=none` shows only the tracks its own assemblies cover.
   the UI, the CLI, or a config
 - [URL parameter API](/docs/urlparams#huburl) - the full list of launch
   parameters, including `&hubURL=`
-- [Live demo: UCSC GenArk hub import](/demos/#hubs)
+- [Live demo: UCSC GenArk hub import](/gallery/#hubs)

@@ -66,7 +66,7 @@ const files = gallerySections
   .flatMap(s => s.items)
   .flatMap(item => {
     const file = itemImg(item)
-    return file && !item.demoOnly ? [file] : []
+    return file ? [file] : []
   })
 
 const managed = new Set(files)

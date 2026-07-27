@@ -19,8 +19,7 @@ This page is a curated tour, not an exhaustive checklist. For the definitive,
 always-current lists, see the
 [track and display types](/docs/config_guides/tracks) and
 [supported file types](/docs/config_guides/file_types) references, both
-generated directly from the source. For visuals, browse the [gallery](/gallery/)
-and [live demos](/demos/).
+generated directly from the source. For visuals, browse the [gallery](/gallery/).
 
 ## What sets JBrowse apart
 
@@ -191,5 +190,5 @@ views can be packaged as prop-driven components for other applications.
 - **Configuration and callbacks** - drive appearance and behavior through
   configuration, including JEXL callbacks for dynamic coloring and filtering
 
-See the [demos](/demos/) and [gallery](/gallery/) for examples of what JBrowse 2
-can do, or dive into the [user guide](/docs/user_guide) to get started.
+See the [gallery](/gallery/) for examples of what JBrowse 2 can do, or dive
+into the [user guide](/docs/user_guide) to get started.

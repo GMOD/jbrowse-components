@@ -1,13 +1,13 @@
 import { specSessionUrls } from './galleryLinks.generated.ts'
 
-// Single source of truth for the /gallery/ and /demos/ pages. The gallery page
-// renders the screenshot + description for every item that has an `img`; the
-// demos page renders every item as a compact live link. Both build their
-// hyperlinks from CODE_BASE + `session`, so pointing all demos at a different
-// deploy (e.g. a release build instead of a branch preview) is a one-line edit.
+// Single source of truth for the /gallery/ page: a screenshot + description
+// card for every item that has an `img`, and a compact link for the rest.
+// Hyperlinks build from CODE_BASE + `session`, so pointing all cards at a
+// different deploy (e.g. a release build instead of a branch preview) is a
+// one-line edit.
 
 // The hosted app build these sessions open in. Change only this to retarget
-// every live link on both pages.
+// every live link on the page.
 export const CODE_BASE = 'https://jbrowse.org/code/jb2/main/'
 
 export interface GalleryItem {
@@ -32,10 +32,6 @@ export interface GalleryItem {
   // Normally omit this and set `spec` instead; the image path is then `<spec>.png`.
   img?: string
   description?: string
-  // Entry points / hubs that are useful to link from the demos page but aren't
-  // visualization highlights worth featuring in the gallery. These are excluded
-  // from the gallery page and shown only on the demos page.
-  demoOnly?: boolean
 }
 
 export interface GallerySection {
@@ -102,9 +98,7 @@ export function itemGuideHref(item: GalleryItem, baseUrl: string) {
 }
 
 // The single destination an item leads with, and the words for it: the live
-// session when there is one, else the backing doc. Both pages route through this
-// — the demos list uses just the href, the gallery lightbox uses both — so the
-// fallback order and the wording can't diverge between them.
+// session when there is one, else the backing doc.
 export function itemPrimary(item: GalleryItem, baseUrl: string) {
   const live = itemLiveHref(item)
   return live
@@ -487,62 +481,9 @@ export const gallerySections: readonly GallerySection[] = [
         label: 'UCSC GenArk hub import',
         session:
           '?hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCF/019/202/715/GCF_019202715.1/hub.txt&config=none',
-        demoOnly: true,
         description:
           'A UCSC track hub opened from a hubURL parameter alone, no JBrowse config: the assembly and its tracks all come from hub.txt.',
       },
     ],
-  },
-]
-
-export interface ExternalLink {
-  label: string
-  href: string
-}
-
-// Workshop, conference, and publication material. External links, not app
-// sessions, so they live outside gallerySections.
-export const guidedDemos: readonly ExternalLink[] = [
-  {
-    label: '2025 Biocuration workshop',
-    href: 'https://github.com/GMOD/2025-biocuration-tutorial',
-  },
-  {
-    label: '2025 PAG Workshop',
-    href: 'http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2025',
-  },
-  {
-    label: '2024 PAG Workshop',
-    href: 'http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2024',
-  },
-  {
-    label: '2023 ISMB/BOSC lightning talk',
-    href: 'https://docs.google.com/presentation/d/18vdbamIwaCQUVagMD65EILQ35v7p79sJBZr6D0WiX9c/edit?usp=sharing',
-  },
-  {
-    label: '2023 PAG workshop',
-    href: 'http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2023',
-  },
-  {
-    label: '2023 publication figures',
-    href: 'https://jbrowse.org/demos/paper2022/',
-  },
-  {
-    label: '2022 Plant and Animal Genomes',
-    href: 'https://jbrowse.org/demos/pag2022/',
-  },
-  {
-    label: '2021 Biology of Genomes',
-    href: 'https://jbrowse.org/demos/bog2021/',
-  },
-  {
-    label: '2020 Cancer SVs guided demo',
-    href: 'https://jbrowse.org/demos/cancer-demo-2020/',
-  },
-  { label: '2020 ASHG', href: 'https://jbrowse.org/demos/ashg2020/' },
-  { label: '2020 ITCR', href: 'https://jbrowse.org/demos/itcr2020/' },
-  {
-    label: '2020 Biology of Genomes',
-    href: 'https://jbrowse.org/demos/bog2020/',
   },
 ]
