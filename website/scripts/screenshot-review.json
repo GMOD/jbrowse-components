@@ -976,8 +976,8 @@
     "name": "jbrowse-img/1",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:05:58.665Z",
-    "hash": "6efc799c448adbbc6063ef5eff28ae9f4cb6776a"
+    "reviewedAt": "2026-07-27T14:20:51.186Z",
+    "hash": "c7780a392110590f028bfd9f50390fb1789d02e1"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
@@ -1046,8 +1046,8 @@
     "name": "jbrowse-img/alignments_pileup",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T02:00:39.063Z",
-    "hash": "c355b2553ce0461f9dc0b24141aa00a2a4dd9b91"
+    "reviewedAt": "2026-07-27T14:20:49.539Z",
+    "hash": "ada4979513778edf55b1e7657af6ab258fa9400d"
   },
   "hg38_assembly_table": {
     "name": "hg38_assembly_table",
@@ -1080,8 +1080,8 @@
     "name": "jbrowse-img/skbr3_cov",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T11:09:39.427Z",
-    "hash": "cc35d2d237982f4850fabe682c175923edfc33fb"
+    "reviewedAt": "2026-07-27T14:20:53.819Z",
+    "hash": "419b98d76575113ef575813f9ea48137b62d8a49"
   },
   "protein/connected": {
     "name": "protein/connected",
@@ -1444,8 +1444,8 @@
     "name": "jbrowse-img/sv_read_arcs",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-15T03:34:07.029Z",
-    "hash": "445c77355e28c8134c1fddd6087bde3f36496fdd"
+    "reviewedAt": "2026-07-27T14:20:55.230Z",
+    "hash": "a533c6533607a3f5aa15ff6d7c7f9551028ed7b0"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
@@ -1710,10 +1710,10 @@
   },
   "pangenome_cactus/variant_matrix": {
     "name": "pangenome_cactus/variant_matrix",
-    "status": "good",
-    "note": "KEEP, verified interesting: at chr:2,200,000-2,220,000 all four strains carry dense alt, and over the last 6 kb IAI39 goes no-call while its MAF row -- only its -- drops out. One strain leaving the graph's alignment, seen twice in one frame. Checked against the PNG rather than taken from the earlier note.",
-    "reviewedAt": "2026-07-27T01:28:21.337Z",
-    "hash": "7c6011aa4c141b9b491969bb8a307afa5dc5a812"
+    "status": "bad",
+    "note": "consider zooming out more. previous agent notes; KEEP, verified interesting: at chr:2,200,000-2,220,000 all four strains carry dense alt, and over the last 6 kb IAI39 goes no-call while its MAF row -- only its -- drops out. One strain leaving the graph's alignment, seen twice in one frame. Checked against the PNG rather than taken from the earlier note.",
+    "reviewedAt": "2026-07-27T14:21:56.769Z",
+    "hash": "0c4f9a6133d8ffe8cb555a9eb08a0aa710d29aad"
   },
   "sv_cgiab/cdkn2a_tumor_normal_coverage": {
     "name": "sv_cgiab/cdkn2a_tumor_normal_coverage",
@@ -1807,7 +1807,7 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "bad",
-    "note": "the legend arc color boxes are duplicating contents from read color. also, ideally it should only show colors that are visible. FIXED in the display, not the spec. The arc key and the read key are two vocabularies that partly overlap: reads by orientation under the default insert-size-and-orientation arcs share every orientation bucket, and a shared bucket is the same category in the same palette color under both headings. getArcLegendItems now takes the read key's categories and drops them, so the arc section carries only what the read section does not say (here: Normal / Long insert / Short insert) and goes away entirely when it would say nothing new. The existing arcColorsMatchReads merge was the all-or-nothing version of the same rule. On the second half: both sections already list only buckets the renderer actually produced, so a swatch that is hard to spot is a category present in a few reads rather than a category listed on spec. Kept behind the 0.5% diff gate on the first regen (a legend losing four rows is 0.286% of pixels) and forced.",
+    "note": "the legend arc color boxes are duplicating contents from read color. also, ideally it should only show colors that are visible. FIXED in the display, not the spec, and in the second shape after the first was wrong. First pass subtracted the shared buckets from the arc key, which traded the duplication for a worse defect: an \"Arc colors\" heading listing three colors over arcs drawn in seven (reviewer: \"the arcs are green and blue too\"). Both notes are the same underlying thing. The read/arc split is which code path paints a pixel, not a distinction the reader has, and a shared bucket is the same swatch on both sides, so splitting them offers only two bad lists. getAlignmentsLegendSections now merges the two into ONE section whenever they share a color, deduped by color rather than by category (the arcs neutral slot and the reads LR slot are both colorPairLR, so \"Normal\" was the same grey under a second word). One untitled list, nine rows, every drawn color exactly once, and two heading rows saved. They stay separate only when the vocabularies share nothing (reads by modification, arcs by insert size), where the headings say something real. NOT changed: both lists already derive from categories the renderer actually produced, so a swatch that is hard to find is a category present in a few reads rather than one listed on spec; suppressing those would make the legend lie.",
     "reviewedAt": "2026-07-27T13:43:55.272Z",
     "hash": "8b77591beb2189dc67f0fe3cc3fcdbe94cc29b05"
   },
@@ -1855,10 +1855,10 @@
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T05:00:23.953Z",
-    "hash": "23c5bb82fa18ec4bd0d6ad48a9017d5a451a7e0e"
+    "status": "bad",
+    "note": "this is not a 'useful' screenshot because there is not really any reason a user would make this selection on a regular gene track. maybe a repeat masker track in human dataset",
+    "reviewedAt": "2026-07-27T14:21:40.668Z",
+    "hash": "449ef8e1e8f9e03a36d8095a7266c383c0f3fd5e"
   },
   "pangenome_cactus/boxed_locus_synteny": {
     "name": "pangenome_cactus/boxed_locus_synteny",
@@ -2050,10 +2050,10 @@
   },
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
-    "status": "bad",
-    "note": "color bubble track in lineargenomeview differently, confused for orange in the figure FIXED, in test_data/graphgenomeview/hprc.json so all three figures using the bubbles track match: the lane is now grey rgb(130,130,130). The orange was the graph's rank-1 color, from when these panels used the Stable rank scheme; every one of them is on Reference position now, whose ramp sweeps the whole hue circle, so the bar landed mid-ramp and read as a position claim. Achromatic is the only color that ramp cannot mean. hprc_mhc_bandage and hprc_mhc_anchored are recolored with it, and the bandage caption no longer calls the bar orange.",
-    "reviewedAt": "2026-07-27T13:31:01.848Z",
-    "hash": "408d87afbd3566a971c1a74cacca99d90b67071f"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-27T14:22:08.277Z",
+    "hash": "3f77ecb2dacb596636e0b35744f984e1112616d1"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
@@ -2124,5 +2124,12 @@
     "note": "this looks very odd.it is a large insertion,try to align the look and feel of deletions with linearalignmentsdisplay/linearmafdisplay at a minimum. dont add legend items for things that are not displayed. could consider deleting FIXED by widening the window 12x, to 200 kb. At 16 kb the frame held ONE bubble, so five stacked full-width boxes with numbers printed in them read as a bar chart rather than as five haplotypes - which is what the note is describing. At 200 kb a row is mostly grey reference path punctuated where that strain diverges, which is the lane shape the note asks for, and the large insertions still carry their bp. Gene lane dropped: at this width it is 190 unlabelled boxes.",
     "reviewedAt": "2026-07-27T04:55:39.730Z",
     "hash": "760a6a4ea9c187ca78353bb3299fca106fa98cc5"
+  },
+  "display_type_default_badge": {
+    "name": "display_type_default_badge",
+    "status": "bad",
+    "note": "the notification icon 'set as the default' may want to have been dismissed",
+    "reviewedAt": "2026-07-27T14:01:32.501Z",
+    "hash": "badcbb82ebb1cfda9e38245b5bdeb44a8a1a2335"
   }
 }

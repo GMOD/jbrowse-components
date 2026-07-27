@@ -51,7 +51,7 @@ three fixtures (`test_data/graphgenomeview/{config,hprc,ecoli_pangenome}.json`)
 pin it; `test_data/graphgenomeview/README.md` states the rule. The unversioned
 url stays current, which is what the published figures' live links point at.
 
-Currently pinned: `e47796d9cccc`. Bumping it is a one-line diff — regenerate the
+Currently pinned: `a02d972621cb`. Bumping it is a one-line diff — regenerate the
 graph figures in the same commit.
 
 This is what the old failure mode looked like, so it is recognisable if the pin
