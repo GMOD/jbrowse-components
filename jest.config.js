@@ -78,7 +78,7 @@ export default {
     {
       // Pure helpers behind the docs autogeneration scripts
       displayName: 'docs',
-      testMatch: ['<rootDir>/docs/**/*.test.ts'],
+      testMatch: ['<rootDir>/website/scripts/api-docs/**/*.test.ts'],
       testEnvironment: 'node',
       ...baseConfig,
     },
@@ -111,6 +111,8 @@ export default {
         '/cypress/',
         '/demos/',
         '<rootDir>/products/jbrowse-img/',
+        // Own lockfile/test runner (vitest), CI'd separately (blat_proxy job).
+        '<rootDir>/products/aws/',
       ],
       testEnvironment: 'jsdom',
       setupFilesAfterEnv: [

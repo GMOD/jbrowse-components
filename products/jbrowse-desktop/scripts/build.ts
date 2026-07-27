@@ -1,8 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import configFactory from '../../../webpack/config/webpack.config.ts'
-import build from '../../../webpack/scripts/build.ts'
+import configFactory from '../../../config/webpack/config/webpack.config.ts'
+import build from '../../../config/webpack/scripts/build.ts'
 import desktopConfig from './config.ts'
 
 const pkgPath = path.resolve(import.meta.dirname, '../package.json')

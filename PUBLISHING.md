@@ -97,7 +97,7 @@ pnpm announce -- --dry-run                   # local preview, no credentials
 
 Credentials live only in Actions secrets (`BLUESKY_IDENTIFIER`,
 `BLUESKY_APP_PASSWORD`, `MASTODON_ACCESS_TOKEN`, plus AWS creds for
-`jbrowse-newsletter-send`; see `infrastructure/newsletter/`).
+`jbrowse-newsletter-send`; see `products/aws/newsletter/`).
 
 ## Update Embedded Demos
 

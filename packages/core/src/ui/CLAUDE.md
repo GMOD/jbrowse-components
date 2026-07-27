@@ -24,6 +24,6 @@ function, following the existing `modificationFwd` / `modificationRev` pattern.
 
 A JSDoc `#color <group> | <label> | <description>` tag on a color definition
 surfaces it as a swatch row in the website guides (rendered by
-`docs/generateColorDocs.ts` into `<!-- COLOR_TABLE <group> -->` markers). Order
+`website/scripts/api-docs/generateColorDocs.ts` into `<!-- COLOR_TABLE <group> -->` markers). Order
 within a group follows source order. This keeps the prose docs from drifting
 from the actual values.

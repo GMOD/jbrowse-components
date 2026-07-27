@@ -279,7 +279,7 @@ export default defineConfig(
   {
     files: [
       'babel.config.js',
-      'webpack/**/*',
+      'config/webpack/**/*',
       'scripts/**/*',
       'website/scripts/**/*',
       'products/jbrowse-img/**/*',

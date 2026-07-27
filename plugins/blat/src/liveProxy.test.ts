@@ -1,5 +1,5 @@
 /**
- * Live round-trip through the deployed `aws/blat-proxy` Lambda, for both routes.
+ * Live round-trip through the deployed `products/aws/blat-proxy` Lambda, for both routes.
  *
  * Skipped unless JBROWSE_UCSC_PROXY_URL is set to the stage base (e.g.
  * `https://<id>.execute-api.<region>.amazonaws.com/prod`). No apiKey: injecting

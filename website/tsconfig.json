@@ -5,5 +5,12 @@
     "jsxImportSource": "react",
     "noUncheckedIndexedAccess": true
   },
-  "exclude": ["dist", "static/pagefind"]
+  "exclude": [
+    "dist",
+    "static/pagefind",
+    // Own standalone tsconfig previously (not noUncheckedIndexedAccess, jest
+    // globals for its tests); astro check has no jest types and this project's
+    // stricter indexed-access rule was never applied here.
+    "scripts/api-docs"
+  ]
 }

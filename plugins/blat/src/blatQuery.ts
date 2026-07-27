@@ -254,7 +254,7 @@ export class BlatChallengeError extends Error {
 // Those two words made a failed parse of a perfectly good result page report
 // itself as a CAPTCHA, sending the user off to solve one that wasn't there.
 //
-// Duplicated in `aws/blat-proxy/src/routes.ts`, which decides the same thing
+// Duplicated in `products/aws/blat-proxy/src/routes.ts`, which decides the same thing
 // about the same pages server-side. The proxy is a standalone package and cannot
 // import this one, so the copies are deliberate: narrow one and narrow both.
 const CHALLENGE_MARKERS = /turnstile|cf[-_]chl/i
@@ -318,7 +318,7 @@ export const UCSC_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
  * rather than the shared one. A browser cannot call genome.ucsc.edu at all
  * (no CORS headers) and must not carry a key in a public bundle, so it gets the
  * jbrowse.org proxy, which injects the key server-side and meters the budget
- * that every browser user shares (`aws/blat-proxy`).
+ * that every browser user shares (`products/aws/blat-proxy`).
  *
  * Either default is only a default — the dialog's server field overrides it,
  * which is how someone runs their own proxy or their own gfServer.

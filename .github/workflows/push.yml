@@ -188,15 +188,16 @@ jobs:
       - name: Check tutorial build scripts are valid
         run: python3 scripts/check-build-scripts.py
       - name: Check color tables are up to date
-        run: node docs/generateColorDocs.ts --check
+        run: node website/scripts/api-docs/generateColorDocs.ts --check
       - name: Check jexl catalog is up to date
-        run: node docs/generateJexlDocs.ts --check
+        run: node website/scripts/api-docs/generateJexlDocs.ts --check
       - name: Check extension point index is up to date
-        run: node docs/generateExtensionPointDocs.ts --check
+        run: node website/scripts/api-docs/generateExtensionPointDocs.ts --check
       - name: Check file type tables are up to date
-        run: node docs/generateFileTypeDocs.ts --check
+        run: node website/scripts/api-docs/generateFileTypeDocs.ts --check
       - name: Check display foundations table is up to date
-        run: node docs/generateDisplayFoundationDocs.ts --check
+        run:
+          node website/scripts/api-docs/generateDisplayFoundationDocs.ts --check
       - name: Check config/model/api docs are up to date
         # config_guides is included because gendocs also rewrites the marker
         # blocks embedded in the hand-written guides (DISPLAY_TYPES, which needs
@@ -253,14 +254,14 @@ jobs:
           node-version: '24'
       - name: Install deps
         run: npm ci
-        working-directory: infrastructure/newsletter
+        working-directory: products/aws/newsletter
       - name: Typecheck newsletter infrastructure
         run: npm run typecheck
-        working-directory: infrastructure/newsletter
+        working-directory: products/aws/newsletter
 
   # blat-proxy is a standalone pnpm project (its own lockfile + pnpm-workspace.yaml
   # workspace-root marker), not a member of the root workspace, so it installs and
-  # runs independently in aws/blat-proxy.
+  # runs independently in products/aws/blat-proxy.
   blat_proxy:
     name: Test blat-proxy Lambda
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
@@ -271,16 +272,16 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
         with:
-          working-directory: aws/blat-proxy
+          working-directory: products/aws/blat-proxy
       - name: Typecheck
         run: pnpm typecheck
-        working-directory: aws/blat-proxy
+        working-directory: products/aws/blat-proxy
       - name: Test
         run: pnpm test
-        working-directory: aws/blat-proxy
+        working-directory: products/aws/blat-proxy
       - name: Build bundle
         run: pnpm build
-        working-directory: aws/blat-proxy
+        working-directory: products/aws/blat-proxy
 
   spellcheck:
     name: Spell check

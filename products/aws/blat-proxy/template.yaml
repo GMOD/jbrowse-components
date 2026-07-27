@@ -1,0 +1,247 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description:
+  JBrowse BLAT proxy — injects a UCSC apiKey + CORS in front of hgBlat
+
+Parameters:
+  Stage:
+    Type: String
+    Default: prod
+    Description: API Gateway stage name
+  UcscApiKey:
+    Type: String
+    NoEcho: true
+    Description: >-
+      UCSC apiKey (Genome Browser account -> Hub Development -> generate).
+      Passed at deploy time and stored as the function's UCSC_API_KEY env var;
+      bypasses the Cloudflare Turnstile that fronts hgBlat.
+  SpacingMs:
+    Type: Number
+    Default: 15000
+    Description: >-
+      Minimum gap between upstream hgBlat calls, in ms. UCSC allows one every
+      15s per key, and this deployment spends ONE key for every user.
+  DailyMax:
+    Type: Number
+    Default: 4500
+    Description: >-
+      Upstream calls allowed per UTC day. Under UCSC's 5000 on purpose: their
+      day boundary is undocumented, so the headroom absorbs a window that does
+      not line up with UTC.
+  CacheTtlSeconds:
+    Type: Number
+    Default: 86400
+    Description: >-
+      How long an identical query's result is reused. A BLAT hit for a given
+      assembly + sequence is stable, so a cache hit spends no budget at all.
+  MaxConcurrency:
+    Type: Number
+    Default: 5
+    Description: >-
+      Reserved concurrency. At one upstream call per 15s there is nothing for a
+      larger fleet to do but return 429s, and this caps the blast radius of a
+      traffic spike on the rest of the account.
+  ThrottleRateLimit:
+    Type: Number
+    Default: 20
+    Description: >-
+      Requests/second the stage accepts before shedding. Every request that
+      reaches the function costs an invocation and a DynamoDB read even when the
+      budget refuses it, so a flood is cheaper to drop at the API.
+  ThrottleBurstLimit:
+    Type: Number
+    Default: 40
+    Description: Burst allowance above ThrottleRateLimit.
+  DomainName:
+    Type: String
+    Default: ''
+    Description: >-
+      Custom domain to serve from, e.g. api.jbrowse.org. Empty deploys without
+      one, leaving only the generated execute-api URL. Worth setting for any
+      deployment a released client will point at: an execute-api hostname is
+      regenerated if the API is ever recreated, and a URL compiled into a
+      shipped bundle can never be moved.
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: >-
+      ACM certificate for DomainName. Must live in THIS region — an HTTP API
+      custom domain is regional, unlike a CloudFront one.
+  HostedZoneId:
+    Type: String
+    Default: ''
+    Description: Route53 zone to add the DomainName alias record to.
+  BasePath:
+    Type: String
+    Default: ucsc/v1
+    Description: >-
+      Path the API is mounted at under DomainName, so one api.* domain can carry
+      several services. Versioned because clients compile the URL in: a v2 can
+      be mounted alongside while v1 keeps answering released builds.
+
+Conditions:
+  HasCustomDomain: !Not [!Equals [!Ref DomainName, '']]
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs22.x
+    Architectures:
+      - x86_64
+
+Resources:
+  BlatProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jbrowse-blat-proxy
+      CodeUri: dist/
+      Handler: index.handler
+      Description: Proxies BLAT queries to UCSC hgBlat with a server-side apiKey
+      ReservedConcurrentExecutions: !Ref MaxConcurrency
+      Environment:
+        Variables:
+          NODE_ENV: production
+          UCSC_API_KEY: !Ref UcscApiKey
+          BLAT_LIMIT_TABLE: !Ref BlatBudgetTable
+          BLAT_SPACING_MS: !Ref SpacingMs
+          BLAT_DAILY_MAX: !Ref DailyMax
+          BLAT_CACHE_TTL_SECONDS: !Ref CacheTtlSeconds
+      # the budget lives in the table, so the function must be able to write it;
+      # with BLAT_LIMIT_TABLE unset the proxy runs UNMETERED, which is why this
+      # is wired here rather than left to the operator
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BlatBudgetTable
+      Events:
+        BlatQuery:
+          Type: HttpApi
+          Properties:
+            Path: /blat
+            Method: POST
+            ApiId: !Ref BlatProxyApi
+        OptionsRequest:
+          Type: HttpApi
+          Properties:
+            Path: /blat
+            Method: OPTIONS
+            ApiId: !Ref BlatProxyApi
+        # hgPcr (In-Silico PCR) is the same function, deliberately: UCSC's
+        # 1-per-15s / 5000-per-day cap is on the KEY across the Genome Browser
+        # CGIs, not per CGI, so both routes claim from one budget. A separate
+        # deployment would spend twice the cap on one key.
+        IsPcrQuery:
+          Type: HttpApi
+          Properties:
+            Path: /ispcr
+            Method: POST
+            ApiId: !Ref BlatProxyApi
+        IsPcrOptionsRequest:
+          Type: HttpApi
+          Properties:
+            Path: /ispcr
+            Method: OPTIONS
+            ApiId: !Ref BlatProxyApi
+
+  # HTTP API (payload format 2.0) — matches the handler's APIGatewayProxyEventV2
+  # (event.requestContext.http.method). CORS is owned entirely by the Lambda
+  # (index.ts sets the headers and handles the OPTIONS preflight), so no
+  # CorsConfiguration here — that would double the Access-Control-* headers.
+  BlatProxyApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Stage
+      DefaultRouteSettings:
+        ThrottlingRateLimit: !Ref ThrottleRateLimit
+        ThrottlingBurstLimit: !Ref ThrottleBurstLimit
+
+  # api.<domain>/<BasePath>/blat rather than a path on the website's CloudFront
+  # distribution: that one also serves www.jbrowse.org and jbrow.se, and
+  # CloudFront cannot cache a POST anyway, so routing through it would add
+  # coupling and blast radius for nothing. The domain is regional, which is why
+  # the certificate has to be in this region too.
+  BlatProxyDomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Condition: HasCustomDomain
+    Properties:
+      DomainName: !Ref DomainName
+      DomainNameConfigurations:
+        - CertificateArn: !Ref CertificateArn
+          EndpointType: REGIONAL
+
+  # The mapping key is stripped before routing, but the function still sees the
+  # full request path, and routeForPath matches on its last segment — so
+  # /ucsc/v1/ispcr resolves the same as the bare /ispcr a local invoke sends.
+  BlatProxyApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Condition: HasCustomDomain
+    Properties:
+      ApiId: !Ref BlatProxyApi
+      ApiMappingKey: !Ref BasePath
+      DomainName: !Ref BlatProxyDomainName
+      Stage: !Ref Stage
+
+  BlatProxyDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: HasCustomDomain
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt BlatProxyDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt BlatProxyDomainName.RegionalHostedZoneId
+
+  # One table, three kinds of item keyed by prefix: `slot` (the single spacing
+  # lock, rewritten forever), `day#<UTC date>` (the daily counter), and
+  # `cache#<query hash>`. The last two carry `expiresAt` so TTL sweeps them; the
+  # conditional writes in dynamoStore.ts are what make a reservation atomic
+  # across concurrent invocations, which a per-container counter could not be.
+  BlatBudgetTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: jbrowse-blat-proxy-budget
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  BlatProxyFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/jbrowse-blat-proxy
+      RetentionInDays: 7
+
+Outputs:
+  # The URL a client should be pointed at: the custom domain when there is one,
+  # since the execute-api hostname does not survive the API being recreated.
+  BlatProxyApiUrl:
+    Description: Endpoint to point the plugin's BLAT server URL at
+    Value: !If
+      - HasCustomDomain
+      - !Sub https://${DomainName}/${BasePath}/blat
+      - !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
+    Export:
+      Name: JBrowseBlatProxyApiUrl
+  IsPcrProxyApiUrl:
+    Description: Endpoint to point the plugin's isPCR server URL at
+    Value: !If
+      - HasCustomDomain
+      - !Sub https://${DomainName}/${BasePath}/ispcr
+      - !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/ispcr
+    Export:
+      Name: JBrowseIsPcrProxyApiUrl
+  BlatProxyExecuteApiUrl:
+    Description: The generated endpoint, for debugging the API without DNS
+    Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
+  BlatProxyFunctionArn:
+    Description: BLAT proxy Lambda Function ARN
+    Value: !GetAtt BlatProxyFunction.Arn
+    Export:
+      Name: JBrowseBlatProxyFunctionArn

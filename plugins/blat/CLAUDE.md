@@ -15,7 +15,7 @@ generate) bypasses it. The electron CAPTCHA-solve window
 for users with no key. Rate limit is 1 hit/15s and 5000/day, key or not, so
 batch queries into one multi-record FASTA rather than looping.
 
-Browser→UCSC is CORS-blocked, which is why web needs the `aws/blat-proxy` Lambda
+Browser→UCSC is CORS-blocked, which is why web needs the `products/aws/blat-proxy` Lambda
 (injects a shared key, adds CORS) while desktop hits UCSC directly through the
 main-process `blatFetch` bridge.
 
