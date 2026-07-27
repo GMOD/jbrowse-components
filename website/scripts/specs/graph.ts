@@ -261,11 +261,19 @@ export const graphSpecs: ScreenshotSpec[] = [
   // Two disagreeing readouts of the same graph is the opposite of the
   // correspondence this figure is for; pangenome/maf is the MAF's own figure.
   //
-  // Layout left on 'auto'. With no rank tags to anchor to it settles into the
-  // engine's own backbone inference, and that is the one setting whose result
-  // reliably lands inside the view's 600px canvas — asking for 'force'
-  // explicitly draws a taller layout that the auto-fit then clips. It drifts a
-  // few percent between captures, hence the raised diffThreshold.
+  // The graph draws on that same K12 axis rather than force-directed, because
+  // the plugin now does the walk above for itself: `referencePath` names the
+  // path, every node it visits becomes rank 0 at the offset the walk reaches it
+  // at, and the rest become rank 1 (jbrowse-plugin-graphgenomeview
+  // src/GraphGenomeView/pathAnchoring.ts). So the two panels share an axis, not
+  // just a color ramp — the strip's green-to-yellow step is the same step in
+  // the graph's backbone, at the same x. It is also deterministic, so this no
+  // longer needs the raised diffThreshold FMMM jitter forced.
+  //
+  // `referencePath` has to be stated: a general GFA's path names are arbitrary
+  // and nothing in the file marks one as the reference, and a whole-file import
+  // has no region to infer it from either. 'K12' matches on the PanSN sample
+  // name of `K12#1#chr:1004500-1004961`.
   {
     mode: 'url',
     name: 'pangenome/local_subgraph',
@@ -301,12 +309,8 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'GraphGenomeView',
           gfaLocation: { uri: `${DATA}/ecoli_pggb_subgraph.gfa` },
           colorScheme: 'depth',
-          // zoomToFit fits the layout to canvasHeight, and the view measures
-          // that before the linear view above it has laid out — so left to
-          // itself it fits to a canvas taller than the panel it ends up with
-          // and the bottom of the graph is cut off. Pinned to the height the
-          // panel actually gets at this viewport.
-          canvasHeight: 560,
+          layoutMode: 'auto',
+          referencePath: 'K12',
         },
       ],
     }),
@@ -314,11 +318,11 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     allowUnsettled: true,
     settleMs: 8000,
-    diffThreshold: 0.1,
     viewportWidth: 1000,
-    // the graph view draws into the pinned canvasHeight above, so the frame has
-    // to be the linear view plus that plus both headers or the layout is clipped
-    viewportHeight: 1010,
+    // The anchored layout has a pinned aspect ratio — row spacing is a fraction
+    // of the reference span — so the graph pane sizes itself to two rows rather
+    // than to the 600px box FMMM filled. The frame is the linear view plus that.
+    viewportHeight: 640,
     hideTooltip: true,
   },
   // The indexed route on the tutorial's own four-strain graph: the rGFA

@@ -452,16 +452,25 @@ Open **Add → Graph genome view** and load `ecoli_pggb_subgraph.gfa` by file or
 URL. For this demo the hosted copy is at
 `https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_subgraph.gfa`.
 
+No segment in a pggb GFA carries a coordinate, but its paths do: walking one in
+step order gives every node it visits an interval on that path's own sequence.
+Pick which path to walk under **Settings → Reference path** — nothing in a
+general GFA marks one of them as the reference, so the view cannot guess — and
+the **Anchored** and **Sample rows** layouts draw against it, x in K12 bp. A
+graph cut from a track skips the question, since it was cut against an assembly
+already. With neither, the view has no axis to offer and draws force-directed.
+
 Keep the window small, because a pggb graph is fragmented at base resolution:
 between five _E. coli_ strains a few hundred bp already carries a dozen bubbles.
 Node lengths are Bandage-scaled per graph, so a 1 bp SNP allele and a 164 bp
 backbone segment stay on one picture in proportion, the SNP alleles as specks. A
 few hundred bp is what makes that legible, not a limit on what the view loads.
 
-To read the graph beside a linear view of the same locus, project its nodes onto
-the reference. The reference path's name states its span
-(`K12#1#chr:1004500-1004961`, the requested window rounded out to whole nodes by
-`-E`), so walking that path in order gives every node a K12 start and end:
+The same walk outside the browser puts the nodes on a linear track, so the
+segment under the cursor is the same segment in both panels. The reference
+path's name states its span (`K12#1#chr:1004500-1004961`, the requested window
+rounded out to whole nodes by `-E`), so walking it in order gives every node a
+K12 start and end:
 
 ```bash
 python3 scripts/gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
@@ -499,7 +508,7 @@ so the track needs no color configuration and cannot drift from the graph;
 `score`. Nodes the reference path never visits are the alternate alleles: no K12
 position, so they are absent.
 
-<Figure caption="A 561 bp slice of the five-strain graph, 54 nodes over 5 paths, above the same nodes laid on the K12 axis in the same Depth colors. Green is depth 4, yellow depth 5, and the 1 bp teal specks are pggb's per-allele SNP nodes. Green turns yellow at chr:1,004,667, where the fifth path (CFT073) rejoins the shared sequence." src="/img/pangenome/local_subgraph.png" />
+<Figure caption="A slice of the five-strain graph anchored on its K12 path, under a linear view of the same locus. Both panels are on the same axis and in the same Depth colors: the backbone row below is the node strip above, and the step from green to yellow is where the fifth strain rejoins the shared sequence, in both. The alternate alleles hang off the row below the backbone, having no K12 coordinate of their own." src="/img/pangenome/local_subgraph.png" />
 
 ### Build an rGFA with minigraph
 
@@ -622,16 +631,25 @@ the axes mean:
 | **Sample rows** | reference bp   | one row per assembly    |
 | Force-directed  | nothing (FMMM) | nothing                 |
 
-Both reference-anchored modes read the rGFA tags, so neither is available for a
-plain GFA such as the pggb subgraph above. Force-directed is the classic Bandage
-picture, where alternate alleles fall out as bubbles rather than as rows (the
-[MHC figure](/docs/tutorials/pangenome_hprc#open-a-locus-as-a-graph) shows it
-beside a linear view).
+Both reference-anchored modes need a backbone. rGFA states one in its tags; a
+plain GFA such as the pggb subgraph above gets one from its **Reference path**,
+and the rows then mean the same thing in both. Only a GFA with neither leaves
+them greyed out, and there force-directed is the honest picture: the classic
+Bandage one, where alternate alleles fall out as bubbles rather than as rows
+(the [MHC figure](/docs/tutorials/pangenome_hprc#open-a-locus-as-a-graph) shows
+it beside a linear view).
 
 Rank is a property of how the graph was built, not of any genome: at a dense
 locus one rank holds alleles from many different haplotypes, so a rank row means
 nothing biological. **Sample rows** rows by the assembly each allele came from
 instead, so reading across a row says what that strain does to the reference.
+
+What "came from" means depends on the format, and the difference matters when
+reading a row. On rGFA it is the strain that _first contributed_ the sequence,
+because `SR` is build order and nothing in the file records who else carries it.
+On a path GFA every path that visits a segment is stated outright, so a node's
+popup lists every strain that carries it — the row it draws on is the first of
+them.
 
 <Figure caption="The five-strain graph in the Sample rows layout, under the genes and the segments track it was launched from. Row K12 is the reference backbone and each row below it is one strain: a deletion leaves that strain's row empty across the span it removes, and an insertion is a mark where it attaches." src="/img/pangenome/rgfa_sample_rows.png" />
 

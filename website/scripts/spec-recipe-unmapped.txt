@@ -10,7 +10,6 @@ arcColorByType
 autoDiagonalize
 autoscale
 bicolorPivot
-canvasHeight
 cigarMode
 collapseGroupRows
 color
@@ -45,6 +44,7 @@ negColor
 numStdDev
 posColor
 readConnectionsHeight
+referencePath
 renderingMode
 rowHeight
 rowIdentityAutoZoom
