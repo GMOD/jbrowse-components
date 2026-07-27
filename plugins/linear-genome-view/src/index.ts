@@ -75,6 +75,8 @@ export type {
   LayoutRecord,
   LegendItem,
   LegendSection,
+  RenderTransform,
+  RenderTransformInputs,
 } from './BaseLinearDisplay/index.ts'
 
 export {
@@ -124,6 +126,10 @@ export type {
   DisplayPhase,
   DisplayPhaseInputs,
 } from '@jbrowse/render-core/displayPhase'
+export type {
+  ByteEstimate,
+  RegionTooLargeStatus,
+} from './shared/regionTooLargeUtils.ts'
 export {
   HighlightBand,
   HighlightChip,
@@ -144,8 +150,10 @@ export type {
   ExportSvgOptions,
   HighlightType,
   InitState,
+  NavLocation,
   TrackInit,
   TrackLabelMode,
+  VolatileGuide,
 } from './LinearGenomeView/types.ts'
 export {
   SVGTracks,

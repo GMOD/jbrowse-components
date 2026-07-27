@@ -53,6 +53,10 @@ export {
   computeTriangleYScalar,
   viewportMatchesLastDrawn,
 } from './models/renderTransform.ts'
+export type {
+  RenderTransform,
+  RenderTransformInputs,
+} from './models/renderTransform.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'
