@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
@@ -119,10 +120,6 @@ export function unionSources(
   }
   return [...byName.values()]
 }
-
-// Floor a coverage/conservation band can be dragged to before its Y axis and
-// filled histogram stop reading as anything.
-const MIN_BAND_HEIGHT = 20
 
 /**
  * #stateModel LinearMafDisplay
@@ -507,7 +504,10 @@ export default function stateModelFactory(
           setConf(
             self,
             'coverageHeight',
-            Math.max(MIN_BAND_HEIGHT, self.coverageHeight + distance),
+            clampBandHeight(
+              self.coverageHeight,
+              self.coverageHeight + distance,
+            ),
           )
         },
         /**
@@ -573,7 +573,10 @@ export default function stateModelFactory(
           setConf(
             self,
             'conservationHeight',
-            Math.max(MIN_BAND_HEIGHT, self.conservationHeight + distance),
+            clampBandHeight(
+              self.conservationHeight,
+              self.conservationHeight + distance,
+            ),
           )
         },
       }))

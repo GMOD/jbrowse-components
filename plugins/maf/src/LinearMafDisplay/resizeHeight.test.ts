@@ -21,8 +21,9 @@ import stateModelFactory from './stateModel.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Headless harness (mirrors derivedRegionTooLarge.test.ts) for exercising the
-// real resizeHeight action against a large sample set, where the maxRowsHeight
-// canvas cap governs effectiveRowHeight.
+// real drag-resize actions — resizeHeight against a large sample set, where the
+// maxRowsHeight canvas cap governs effectiveRowHeight, and the coverage /
+// conservation band resizes against the shared band-height floor.
 function createTestEnvironment() {
   console.warn = jest.fn()
   console.error = jest.fn()
@@ -189,4 +190,53 @@ test('uncapped: drag still tracks the cursor in both directions', () => {
   const mid = display.height
   display.resizeHeight(-60)
   expect(display.height - mid).toBeCloseTo(-60)
+})
+
+// The bands drag by delta, so the floor has to be expressed in terms of the
+// current height rather than the bare 20px constant — same rule (and same
+// regression) as the alignments coverage/arc/sashimi bands, now shared via
+// clampBandHeight. See LinearAlignmentsDisplay/bandHeight.test.ts.
+describe('resizable band height floor', () => {
+  it('stops a drag from shrinking a default band below 20', () => {
+    const display = setup(10, 15)
+    expect(display.coverageHeight).toBe(45)
+    display.resizeCoverageHeight(-100)
+    expect(display.coverageHeight).toBe(20)
+  })
+
+  it('leaves a band config declared below the floor where it is', () => {
+    const display = setup(10, 15)
+    display.configuration.setSlot('coverageHeight', 5)
+    // the regression: flooring at a bare 20 made this first +1 drag jump the
+    // band up to 20 before it honored the delta
+    display.resizeCoverageHeight(+1)
+    expect(display.coverageHeight).toBe(6)
+  })
+
+  it('still refuses to shrink a below-floor band further', () => {
+    const display = setup(10, 15)
+    display.configuration.setSlot('coverageHeight', 5)
+    display.resizeCoverageHeight(-1)
+    expect(display.coverageHeight).toBe(5)
+  })
+
+  it('restores the 20 floor once a below-floor band is dragged past it', () => {
+    const display = setup(10, 15)
+    display.configuration.setSlot('coverageHeight', 5)
+    display.resizeCoverageHeight(+20)
+    expect(display.coverageHeight).toBe(25)
+    display.resizeCoverageHeight(-100)
+    expect(display.coverageHeight).toBe(20)
+  })
+
+  it('applies the same rule to the conservation band', () => {
+    const display = setup(10, 15)
+    expect(display.conservationHeight).toBe(40)
+    display.resizeConservationHeight(-100)
+    expect(display.conservationHeight).toBe(20)
+
+    display.configuration.setSlot('conservationHeight', 8)
+    display.resizeConservationHeight(+1)
+    expect(display.conservationHeight).toBe(9)
+  })
 })

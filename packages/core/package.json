@@ -112,6 +112,7 @@
     "./util/addRelativeUris": "./src/util/addRelativeUris.ts",
     "./util/analytics": "./src/util/analytics.ts",
     "./util/assemblyConfigUtils": "./src/util/assemblyConfigUtils.ts",
+    "./util/bandHeight": "./src/util/bandHeight.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
@@ -579,6 +580,10 @@
       "./util/assemblyConfigUtils": {
         "types": "./esm/util/assemblyConfigUtils.d.ts",
         "import": "./esm/util/assemblyConfigUtils.js"
+      },
+      "./util/bandHeight": {
+        "types": "./esm/util/bandHeight.d.ts",
+        "import": "./esm/util/bandHeight.js"
       },
       "./util/blockTypes": {
         "types": "./esm/util/blockTypes.d.ts",
@@ -1062,6 +1067,9 @@
         ],
         "util/assemblyConfigUtils": [
           "esm/util/assemblyConfigUtils.d.ts"
+        ],
+        "util/bandHeight": [
+          "esm/util/bandHeight.d.ts"
         ],
         "util/blockTypes": [
           "esm/util/blockTypes.d.ts"
