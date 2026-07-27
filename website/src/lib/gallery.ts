@@ -403,10 +403,10 @@ export const gallerySections: readonly GallerySection[] = [
       // in the label rather than only in the prose.
       {
         label: 'HPRC pangenome locus as a graph',
-        spec: 'pangenome/hprc_mhc_bandage',
+        spec: 'pangenome/hprc_c4_subgraph',
         guide: 'tutorials/pangenome_hprc',
         description:
-          'The HLA class II region of the HPRC release 2 pangenome as a force-directed graph, above lanes of the same window on GRCh38. Both panels are colored by reference position, so the thread winding through the graph runs red to magenta with the segment blocks above it.',
+          'The C4 locus of the HPRC release 2 pangenome as a force-directed graph, above lanes of the same window on GRCh38. Both panels are colored by reference position, so the thread winding through the graph runs red to magenta with the segment blocks above it.',
       },
       {
         label: 'HPRC structural alleles by haplotype',

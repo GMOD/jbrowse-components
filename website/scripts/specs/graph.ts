@@ -269,6 +269,26 @@ const LAUNCH_OUT_REGION = {
   end: 4450000,
 }
 
+// K12's asnW/asnU/asnV cluster: three of the four asn tRNA genes, which are the
+// sites E. coli pathogenicity islands integrate at. Chosen by scanning the
+// segments/links BEDs for a window where one strain contributes a lot and the
+// others contribute nothing — here CFT073 brings 58,692 bp in two segments while
+// IAI39 and NCTC86 reach it through 1 bp each, so the single long row is
+// unambiguous.
+//
+// 8 kb, because the width of this window sets the width of what the launch
+// opens: the launched locus is the widest run of CFT073 segments the subgraph
+// holds, and a wider seed pulls in the yersiniabactin island next door and opens
+// 130 kb, where no gene is wide enough to carry a label.
+const PKS_WINDOW = 'chr:2,056,000-2,064,000'
+const PKS_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 2056000,
+  end: 2064000,
+}
+const PKS_VIEW = '[data-testid="view-container-pks_graph"]'
+
 // The HPRC figures take the other route into the same view: instead of a whole
 // GFA file, a GraphGenomeView carrying `loadedTrackId`/`loadedRegion` — the exact
 // snapshot the "Launch view, then Graph genome view (this region)" menu item
@@ -293,7 +313,7 @@ const MHC_REGION = {
 // So this figure takes the 90 kb MHC class II window (MHC_CLASSII_REGION,
 // below) rather than the 600 kb one that would draw 28 donor rows: measured on
 // both, the wide one is denser and reads worse, because the fit shrinks it off
-// the axis. Density in this view is bounded either way — see hprc_mhc_bandage
+// the axis. Density in this view is bounded either way — see C4_WINDOW below
 // for the force layout's version of the same ceiling.
 
 // C4, for the launch figure, from the tutorial's own table of loci worth a look.
@@ -303,8 +323,22 @@ const MHC_REGION = {
 // the graph records them.
 //
 // 70 kb is a readability choice, not a cap: the region cap is 5 Mb and the node
-// budget 20,000, and this cuts 30 nodes. See hprc_mhc_bandage for why a force
-// layout does not get better by being given more of them.
+// budget 20,000, and this cuts 30 nodes. A wider window makes a force figure
+// worse, measured rather than guessed — the plugin's Bandage WASM run offline
+// over the real subgraphs (agent-docs/reference/PANGENOME_GRAPHS.md records
+// them) gives, fitted to this pane:
+//
+//   60 kb    108 nodes   mean node 62-77 px   ~2% of the canvas inked
+//   1 Mb     449 nodes   mean node 15 px      ~2%
+//   3.5 Mb  1041 nodes   mean node  5 px      ~2%
+//
+// The inked fraction is flat because bandageAutoScale targets a mean drawn node
+// length of 40 FMMM units whatever the node count, so FMMM lays a near-path
+// pangenome graph out as one thread whose length grows with N and whose 2-D
+// coverage does not; zoom-to-fit then shrinks every bubble by the same factor.
+// More nodes buys no density, only smaller features — at 3.5 Mb the loops that
+// carry the figure are 5 px specks. Density comes from the row layouts instead,
+// whose height grows with the data.
 const C4_WINDOW = 'chr6:31,980,000-32,050,000'
 const C4_REGION = {
   refName: 'chr6',
@@ -719,145 +753,6 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportHeight: 465,
     hideTooltip: true,
   },
-  // The same window in the force layout, the Bandage picture the graph is really
-  // about: the backbone winds through the frame and every loop off it is an
-  // alternate allele from the 464 haplotypes. FMMM again, hence diffThreshold.
-  //
-  // 60 kb, and NOT because the view cannot take more. The region cap is 5 Mb and
-  // the node budget 20,000; this window cuts 108 nodes, 0.5% of it. A wider one
-  // makes this figure worse, measured rather than guessed — the plugin's own
-  // Bandage WASM run offline over the real subgraphs (agent-docs
-  // agent-docs/reference/PANGENOME_GRAPHS.md records them) gives, fitted to this
-  // pane:
-  //
-  //   60 kb    108 nodes   mean node 62-77 px   ~2% of the canvas inked
-  //   1 Mb     449 nodes   mean node 15 px      ~2%
-  //   3.5 Mb  1041 nodes   mean node  5 px      ~2%
-  //
-  // The inked fraction is flat because bandageAutoScale targets a mean drawn
-  // node length of 40 FMMM units whatever the node count, so FMMM lays a
-  // near-path pangenome graph out as one thread whose length grows with N and
-  // whose 2-D coverage does not. Zoom-to-fit then shrinks every bubble by the
-  // same factor. So more nodes buys no density, only smaller features: at 3.5 Mb
-  // the loops that carry this figure are 5 px specks. Density in this view comes
-  // from the row layouts instead (hprc_mhc_sample_rows), whose height grows with
-  // the data.
-  //
-  // Colored by reference position rather than by rank, which is what makes the
-  // two panels one picture: the segments lane runs red to magenta left to
-  // right, and the thread winding through the graph runs red to magenta with
-  // it, so a loop's color says where on the reference above it attaches. Rank
-  // said which build step contributed a segment, which is a fact about
-  // minigraph rather than about this locus, and it left the linear lane a
-  // single blue (only rank 0 has an hg38 coordinate at all).
-  //
-  // The bubbles lane is grey, set on the track in hprc.json so every figure
-  // using it matches. It is one object marking where the loops attach, so it
-  // has nothing to ramp over — but the ramp beside it sweeps the whole hue
-  // circle, so any hue it took would read as a position claim. It was the
-  // graph's rank-1 orange, back when these panels used the Stable rank scheme;
-  // under Reference position that orange landed mid-ramp and the bar read as
-  // "this bubble is over there" (reviewer: "confused for orange in the
-  // figure"). Achromatic is the only color the ramp cannot mean.
-  //
-  // No allele lane. Review, three figures over: "the allele inventory i not
-  // sure i like. just want to see graph."
-  //
-  // Heights pinned: left to themselves the lanes take half the frame.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_mhc_bandage',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:32,500,000-32,560,000',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              height: 70,
-            },
-            {
-              trackId: 'hprc_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              height: 90,
-            },
-            hprcSegmentsLane(MHC_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: MHC_REGION,
-          layoutMode: 'force',
-          colorScheme: 'reference-position',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 120000,
-    allowUnsettled: true,
-    settleMs: 8000,
-    viewportWidth: 1000,
-    // 1345 with the allele lane still on it
-    viewportHeight: 1225,
-    hideTooltip: true,
-  },
-
-  // Where the launch actually lives. Both tutorials describe this click path in
-  // prose ("Track menu, then Launch view, then Graph genome view (this
-  // region)") and then show a figure of the result, so the one step a reader has
-  // to find for themselves was the only step with no picture. Driven through the
-  // real menu rather than baked, so the figure also exercises capability
-  // discovery: the item is contributed by the plugin only for a track whose
-  // adapter declares `getSubgraph`, and it lands inside core's shared "Launch
-  // view" submenu beside any other plugin's offers.
-  //
-  // Rows go by testid, not text: the track's name is also its label in the view
-  // behind the menu, and a text match resolves to the first visible match, which
-  // is that label rather than the menu row.
-  {
-    mode: 'url',
-    name: 'pangenome/rgfa_launch_menu',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: ECOLI_WINDOW,
-          tracks: [ECOLI_SEGMENTS_TRACK],
-        },
-      ],
-    }),
-    // a drawn segment label, so the tabix query has come back and the blocks the
-    // menu is about are painted rather than a bare track
-    readyText: SEGMENT_LABEL,
-    readyTimeout: 90000,
-    settleMs: 3000,
-    viewportWidth: 1000,
-    // the track plus the whole open menu. Sized to the menu, not to the track:
-    // at 460 the last rows ran off the bottom edge, which reads as a clipped
-    // screenshot rather than as a menu that continues
-    viewportHeight: 580,
-    hideTooltip: true,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      {
-        type: 'click',
-        selector: '[data-testid="cascading-submenu-launch_view"]',
-      },
-      {
-        type: 'waitForSelector',
-        selector:
-          '[data-testid="cascading-menuitem-graph_genome_view_(this_region)"]',
-      },
-      { type: 'delay', ms: 500 },
-    ],
-  },
-
   // The per-feature entry point, which no figure covered and whose behavior the
   // prose only hinted at ("or right-click a segment for its neighbourhood"). A
   // right-click launches on the segment's own span padded by half its length on
@@ -950,11 +845,11 @@ export const graphSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The anchored counterpart to hprc_mhc_bandage: the same MHC subgraph with x
-  // back on GRCh38, which is the trade the HPRC tutorial spends a paragraph on
-  // and had no picture of. Read as a pair, the two figures are the whole
-  // argument for having both layouts — this one lines up under the linear view
-  // above it, the force one does not and shows the graph's shape instead.
+  // The anchored counterpart to the force layout: an MHC subgraph with x back on
+  // GRCh38, which is the trade the HPRC tutorial spends a paragraph on and had
+  // no picture of. Read against hprc_c4_subgraph, the two are the whole argument
+  // for having both layouts — this one lines up under the linear view above it,
+  // the force one does not and shows the graph's shape instead.
   // layoutMode is left at its 'auto' default, which is this layout whenever the
   // graph declares a rank-0 backbone.
   //
@@ -1008,63 +903,6 @@ export const graphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
   },
 
-  // Sample rows on the human graph, which says something the E. coli figure of
-  // the same layout cannot. There, five strains fill five rows and a row is
-  // simply "what this strain does to K12". Here a dozen haplotypes out of 464
-  // draw a row, and the gap between those numbers is the point the tutorial
-  // makes: a row is the haplotype minigraph took the sequence FROM, the same
-  // attribution firstSeenIn carries, not the set carrying it.
-  //
-  // Window is MHC_CLASSII_REGION, for the row-count ceiling stated there rather
-  // than for what the data offers: a wider one adds rows and then shrinks the
-  // drawing off the linear view's axis.
-  //
-  // The gene lane is compact and longest-isoform: the class II region has
-  // enough RefSeq entries that the default glyph mode stacks them several rows
-  // deep and pushes the graph down the frame.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_mhc_sample_rows',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:32,510,000-32,600,000',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
-            hprcSegmentsLane(MHC_CLASSII_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: MHC_CLASSII_REGION,
-          layoutMode: 'samplerows',
-          colorScheme: 'reference-position',
-        },
-      ],
-    }),
-    // Both: the rows, because they are this layout's whole content and a frame
-    // captured before they paint is a figure of an empty axis, and the toolbar,
-    // because the rows land first and a capture between the two has the graph
-    // drawn under a header with no Layout/Color dropdowns in it.
-    readySelector:
-      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
-    readyTimeout: 90000,
-    settleMs: 4000,
-    viewportWidth: 1000,
-    // the two linear lanes plus the graph's rows, and nothing under them
-    viewportHeight: 1090,
-    hideTooltip: true,
-  },
-
   // The human pangenome at C4, the second locus this graph is worth opening at
   // (see C4_WINDOW) and the one where the picture is a copy-number story rather
   // than an allelic-diversity one.
@@ -1079,8 +917,9 @@ export const graphSpecs: ScreenshotSpec[] = [
   // by extending `RpcMethodTypeWithRenameRegion`, and the hosted bundle now
   // carries that fix (its `GetSubgraph` extends the renaming base class), so this
   // could be switched to the driven form; it stays declarative because a launch
-  // flow buys this particular figure nothing that pangenome/rgfa_launch_menu does
-  // not already document. E. coli was unaffected either way, its assembly refName
+  // flow buys this particular figure nothing that
+  // pangenome/rgfa_segment_neighbourhood does not already document. E. coli was
+  // unaffected either way, its assembly refName
   // `chr` matching the graph's `K12#1#chr`, which is why the driven figures above
   // are on E. coli.
   {
@@ -1308,20 +1147,37 @@ export const graphSpecs: ScreenshotSpec[] = [
   // The correspondence, which is the reason to open the two views together:
   // hovering a node in the graph highlights the reference interval it occupies
   // in every linear view connected to it, and hovering the linear view
-  // highlights the node. Both directions run through the plugin's hoverSync;
-  // this captures the graph-to-linear one, because its result is a band drawn
-  // from real coordinates (`getHighlightCoords`) rather than a color change on
-  // one node.
+  // highlights the node.
   //
-  // The hover target is a bare viewport coordinate because the graph is canvas:
-  // there is no DOM node to select. It is stable here in a way it would not be
-  // on the FMMM layout — sample rows is deterministic, computed from SN/SO/SR,
-  // so the allele sits at the same place every run. `readySelector` waits on the
-  // band itself, so a miss fails the spec instead of silently capturing a figure
-  // with nothing highlighted.
+  // One figure, both directions, because separately they were two nearly
+  // identical pictures of the same window making the same point, and the point
+  // is the reciprocity: the pair says the two views agree whichever end you
+  // touch, which neither frame says alone. They also drew the same review note
+  // twice ("hard to figure out correspondence between linear and graph").
+  //
+  // The directions run through different code, which is why both are worth
+  // capturing. Graph to linear ends in a band drawn from real coordinates
+  // (`getHighlightCoords`); linear to graph goes the other way — an LGV
+  // publishes `{hoverPosition, hoverFeature}` to session.hovered and the graph's
+  // own autorun matches it (hoverSync/lgvHover). Both frames assert the same
+  // `graph-node-highlight` testid, which is what makes this a round trip rather
+  // than a screenshot of a tooltip.
+  //
+  // Frame two hovers a GENE rather than the graph's own segments track on
+  // purpose. A segment feature matches by name, the easy path; a gene supplies
+  // only a coordinate, so it exercises the fallback that finds the backbone
+  // segment covering it — the case that makes the correspondence useful from any
+  // track rather than only from the graph's own.
+  //
+  // A hover figure has no cursor in it, so each frame rings its own target:
+  // without that the reader sees a band appear with nothing saying what caused
+  // it. Frame one's ring is drawn at the same coordinate the hover uses (the
+  // graph is canvas, so there is no element to anchor to — the one case where a
+  // raw x/y is the input being echoed rather than a hand-measurement); frame
+  // two's is anchored to the gene label the hover targets.
   {
     mode: 'url',
-    name: 'pangenome/rgfa_hover_correspondence',
+    name: 'pangenome/rgfa_hover_sync',
     url: ecoliSampleRowsSession(),
     // Readiness is the layout having drawn; the highlight cannot exist yet,
     // because it is the hover below that creates it. Asserting it as an action
@@ -1333,75 +1189,47 @@ export const graphSpecs: ScreenshotSpec[] = [
     // the graph pane sizes itself to its drawing, so this is the two views and
     // nothing under them
     viewportHeight: 745,
-    actions: [
-      { type: 'delay', ms: 3000 },
-      { type: 'hover', from: HOVERED_ALLELE },
+    stages: [
       {
-        type: 'waitForSelector',
-        selector: '[data-testid="graph-node-highlight"]',
+        // The hover target is a bare viewport coordinate because the graph is
+        // canvas. It is stable here in a way it would not be on the FMMM layout
+        // — sample rows is deterministic, computed from SN/SO/SR, so the allele
+        // sits at the same place every run.
+        actions: [
+          { type: 'delay', ms: 3000 },
+          { type: 'hover', from: HOVERED_ALLELE },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="graph-node-highlight"]',
+          },
+          { type: 'delay', ms: 1000 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            x: HOVERED_ALLELE.x,
+            y: HOVERED_ALLELE.y,
+            radius: 18,
+          },
+        ],
       },
-      { type: 'delay', ms: 1000 },
-    ],
-    // A hover figure has no cursor in it, so without this the reader sees a band
-    // appear and cannot tell what produced it. Drawn at the same coordinate the
-    // hover uses, so the ring and the pointer cannot end up in different places
-    // — the one case where a raw x/y annotation is not a hand-measurement, it is
-    // the input being echoed.
-    annotations: [
-      { type: 'circle', x: HOVERED_ALLELE.x, y: HOVERED_ALLELE.y, radius: 18 },
-    ],
-  },
-  // The other direction, which the figure above does not show and the prose only
-  // claimed: hovering the LINEAR view highlights the graph. It is the half a
-  // reader is more likely to use — you arrive at a locus through genes, not
-  // through node ids — and it runs through different code: an LGV publishes
-  // `{hoverPosition, hoverFeature}` to session.hovered, and the graph's own
-  // autorun matches it (hoverSync/lgvHover).
-  //
-  // The target is a gene rather than the graph's own segments track on purpose.
-  // A segment feature matches by name, which is the easy path; a gene supplies
-  // only a coordinate, so this exercises the fallback that finds the backbone
-  // segment covering it — the case that makes the correspondence useful from any
-  // track rather than only from the graph's own.
-  //
-  // Asserted on the same testid as the figure above, which is what makes this a
-  // round trip rather than a screenshot of a tooltip: the band can only appear
-  // if the graph matched a node AND resolved its reference span back.
-  {
-    mode: 'url',
-    name: 'pangenome/rgfa_hover_from_linear',
-    url: ecoliSampleRowsSession(),
-    readySelector: '[data-testid="graph-row-label"]',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 745,
-    actions: [
-      { type: 'delay', ms: 3000 },
-      // by the gene's own rendered label, so nothing here is a viewport
-      // coordinate measured off a previous capture
-      { type: 'hover', selector: '[data-testid="feature-name-csgG"]' },
       {
-        type: 'waitForSelector',
-        selector: '[data-testid="graph-node-highlight"]',
-      },
-      { type: 'delay', ms: 1000 },
-    ],
-    // Review: "it is hard to see from this screenshot the hover is
-    // corresponding to a mouseover on graphgenomeview". A hover figure has no
-    // cursor in it, and this one had no marker either, so the reader saw two
-    // highlights appear with nothing saying which one the mouse caused. Its
-    // sibling rgfa_hover_correspondence has had a ring since it was written;
-    // this direction never got one.
-    //
-    // Anchored to the element the hover action targets rather than drawn at a
-    // measured x/y, so the mark and the input cannot end up in different places.
-    // No arrow across to the graph: what responds there is a node on the canvas,
-    // which has no element to anchor a head to, and the row label is at the
-    // opposite end of the row from the node that lit up.
-    annotations: [
-      {
-        type: 'circle',
-        anchor: { selector: '[data-testid="feature-name-csgG"]' },
+        actions: [
+          // by the gene's own rendered label, so nothing here is a viewport
+          // coordinate measured off a previous capture
+          { type: 'hover', selector: '[data-testid="feature-name-csgG"]' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="graph-node-highlight"]',
+          },
+          { type: 'delay', ms: 1000 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="feature-name-csgG"]' },
+          },
+        ],
       },
     ],
   },
@@ -1416,7 +1244,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   // thing worth showing. Review: "need to be able to just highlight
   // lineargenomeview coords". Hovering a node already draws a band in the
   // linear view, but a hover band lives as long as the pointer does and cannot
-  // be pointed at afterwards; **Highlight this node in the hg38 view** writes
+  // be pointed at afterwards; **Highlight in hg38** writes
   // the same interval into the view's own highlight list, where it stays. The
   // second frame is that highlight, cropped to the linear view so the band is
   // the subject.
@@ -1479,7 +1307,7 @@ export const graphSpecs: ScreenshotSpec[] = [
         // hold the whole segments lane, since the band crosses both lanes
         viewportHeight: 405,
         actions: [
-          { type: 'click', text: 'Highlight this node' },
+          { type: 'click', text: 'Highlight in hg38' },
           { type: 'delay', ms: 1500 },
         ],
       },
@@ -1529,8 +1357,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    // covers the taller second frame (the graph plus the four-panel synteny
-    // view it launches); the menu frame sets its own below
+    // covers the taller second frame (the graph plus the five-panel synteny view
+    // it launches); the menu frame sets its own below. An exact fit: the bottom
+    // panel is the last row, so nothing is drawn under its ruler
     viewportHeight: 940,
     hideTooltip: true,
     stages: [
@@ -1593,6 +1422,83 @@ export const graphSpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 8000 },
         ],
       },
+    ],
+  },
+
+  // The other entry in that menu, and the one that makes the graph's claim
+  // checkable: the graph says CFT073 carries 58,692 bp at K12's asnW/asnU/asnV
+  // tRNA cluster that the reference does not, and clicking `CFT073 chr:…` opens
+  // that sequence on CFT073's own coordinates, where it is the colibactin (pks)
+  // island — clbA to clbS, the genotoxin operon, in a strain isolated from a
+  // pyelonephritis patient.
+  //
+  // Three views, one per corner of the trip. The reference above states where on
+  // K12 this is (the tRNAs, and the segments lane going quiet where CFT073's
+  // sequence has nowhere to sit on the reference axis); the graph states that
+  // something is there and how much; the launched view names it. No alignment is
+  // consulted anywhere in that chain — the coordinates come off the segments'
+  // own SN/SO tags.
+  //
+  // The launched panel carries CFT073's gene track because the launch now brings
+  // the session's annotation for the assembly it opens on; before that it opened
+  // on `No tracks active` and this figure could not have existed.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_strain_launch',
+    url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PKS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 55,
+            },
+          ],
+        },
+        {
+          // pinned so the menu click scopes to the graph rather than to the
+          // linear view above it or the one the launch adds below
+          id: 'pks_graph',
+          type: 'GraphGenomeView',
+          loadedTrackId: ECOLI_SEGMENTS_TRACK,
+          loadedRegion: PKS_REGION,
+          layoutMode: 'samplerows',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: '[data-testid="graph-row-label"]',
+    readyTimeout: 90000,
+    settleMs: 3000,
+    viewportWidth: 1000,
+    // the three views; the graph pane sizes itself to its rows, and the launched
+    // panel's gene track runs two rows deep at this width
+    viewportHeight: 925,
+    hideTooltip: true,
+    actions: [
+      {
+        type: 'click',
+        selector: `${PKS_VIEW} [data-testid="view_menu_icon"]`,
+      },
+      { type: 'click', text: 'Launch view' },
+      { type: 'hover', text: 'Linear genome view' },
+      { type: 'waitForText', text: 'CFT073 chr:' },
+      { type: 'click', text: 'CFT073 chr:' },
+      // a gene of the island itself, so the wait cannot pass on a view that
+      // opened empty — which is exactly what this figure exists to show it does
+      // not do any more. clbK is 6.5 kb, the widest of them, so its label is the
+      // first to render.
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="feature-name-clbK"]',
+        timeout: 120000,
+      },
+      { type: 'delay', ms: 2000 },
     ],
   },
 ]

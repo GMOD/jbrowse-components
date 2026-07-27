@@ -67,7 +67,7 @@
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
     "status": "good",
-    "note": "FIXED: super-compact pileup (featureHeight 1 / spacing 0) so the RNA-seq reads fit without 'Max layout height reached'; plus log coverage scale (scaleType:'log') so the one dominant junction peak stops flattening the histogram behind the arcs (reviewer offered log / different-gene / max-value — log doubles as the documented remedy). Sashimi read-support labels kept on. Documented the Sashimi-arcs menu + Coverage->Scale type->Log scale in alignments_track.md. Regenerated.",
+    "note": "FIXED: super-compact pileup (featureHeight 1 / spacing 0) so the RNA-seq reads fit without 'Max layout height reached'; plus log coverage scale (scaleType:'log') so the one dominant junction peak stops flattening the histogram behind the arcs (reviewer offered log / different-gene / max-value \u2014 log doubles as the documented remedy). Sashimi read-support labels kept on. Documented the Sashimi-arcs menu + Coverage->Scale type->Log scale in alignments_track.md. Regenerated.",
     "reviewedAt": "2026-07-25T16:29:17.856Z",
     "hash": "5b92e8b7d4b5c0ebecaf40945bbfbb6c56d0ff3b"
   },
@@ -179,7 +179,7 @@
   "inverted_duplication": {
     "name": "inverted_duplication",
     "status": "good",
-    "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). readConnectionsHeight 40 -> 200, track height and viewportHeight raised by the same 160 so no pileup row is lost. An arc apex is drawn at its genomic span in px, clamped to the band, so at this zoom every pair (concordant ~400bp upward) was clipped to the 40px ceiling and the band was one flat mass; at 200 the concordant domes resolve below the discordant pairs spanning the duplication. The two evidence callouts moved from raw viewport x/y to an anchor on the pileup track (fracY 0 + dy), so they now sit a fixed distance below the arc band whatever its height, per the rule in website/CLAUDE.md. FIXED in code (arcs/compute.ts): mate-link arc geometry used each mate's inward (gap) edge, understating a pair's radius by both mates' read lengths (~300bp) relative to the TLEN driving its color — a modest, unremarkable-looking arc could be painted long-insert red. Endpoints now use each mate's own outer (5') edge, matching its TLEN span. Regenerated.",
+    "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). readConnectionsHeight 40 -> 200, track height and viewportHeight raised by the same 160 so no pileup row is lost. An arc apex is drawn at its genomic span in px, clamped to the band, so at this zoom every pair (concordant ~400bp upward) was clipped to the 40px ceiling and the band was one flat mass; at 200 the concordant domes resolve below the discordant pairs spanning the duplication. The two evidence callouts moved from raw viewport x/y to an anchor on the pileup track (fracY 0 + dy), so they now sit a fixed distance below the arc band whatever its height, per the rule in website/CLAUDE.md. FIXED in code (arcs/compute.ts): mate-link arc geometry used each mate's inward (gap) edge, understating a pair's radius by both mates' read lengths (~300bp) relative to the TLEN driving its color \u2014 a modest, unremarkable-looking arc could be painted long-insert red. Endpoints now use each mate's own outer (5') edge, matching its TLEN span. Regenerated.",
     "reviewedAt": "2026-07-27T14:30:38.000Z",
     "hash": "f63860f1e2e68b598313ee0fdb71886d1880068d"
   },
@@ -260,7 +260,7 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name — the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
+    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name \u2014 the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
     "reviewedAt": "2026-07-15T03:11:55.433Z",
     "hash": "66134b6ee309d9cf5a7007bf1d0721842a3cd91d"
   },
@@ -636,7 +636,7 @@
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
     "status": "good",
-    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections — Genotypes (cell coloring) vs Population (sidebar row-label coloring) — making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
+    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections \u2014 Genotypes (cell coloring) vs Population (sidebar row-label coloring) \u2014 making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
     "reviewedAt": "2026-06-26T00:00:00.000Z"
   },
   "gwas/locuszoom_ld": {
@@ -649,7 +649,7 @@
   "gwas/manhattan": {
     "name": "gwas/manhattan",
     "status": "good",
-    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md — genome-wide real-world Manhattan.",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md \u2014 genome-wide real-world Manhattan.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "link_to_split_view": {
@@ -687,19 +687,19 @@
   "product_architecture": {
     "name": "product_architecture",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one — the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one \u2014 the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "products_and_plugins": {
     "name": "products_and_plugins",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source — tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source \u2014 tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "protein/structure": {
     "name": "protein/structure",
     "status": "good",
-    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views — structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
+    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views \u2014 structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "no_build_final": {
@@ -773,7 +773,7 @@
   "desktop-session": {
     "name": "desktop-session",
     "status": "good",
-    "note": "resolved: the requested fallback is already implemented — products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
+    "note": "resolved: the requested fallback is already implemented \u2014 products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
     "reviewedAt": "2026-06-14T20:30:00.000Z"
   },
   "multiwig/cluster_dialog": {
@@ -797,7 +797,7 @@
   "variants/cluster_dialog": {
     "name": "variants/cluster_dialog",
     "status": "good",
-    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) — dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
+    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) \u2014 dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
     "reviewedAt": "2026-06-11T14:25:43.428Z"
   },
   "variants/clustered_result": {
@@ -929,13 +929,13 @@
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
     "status": "good",
-    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING — GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision — renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
+    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING \u2014 GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision \u2014 renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
     "status": "good",
-    "note": "resolved: deleted — the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
+    "note": "resolved: deleted \u2014 the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "trio-hapibd-painting": {
@@ -1349,21 +1349,21 @@
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
-    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow — normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
+    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow \u2014 normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
     "reviewedAt": "2026-07-27T01:36:59.480Z",
     "hash": "dcf5af3276ce03f366a974bc5ab1779d502bd06e"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
+    "note": "FIXED: RepeatMasker heightMode fit->grow \u2014 repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
     "reviewedAt": "2026-07-27T01:37:05.667Z",
     "hash": "893243aeadc65f44357c1ddc5eca217c93c301a7"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode grow — normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
+    "note": "FIXED: RepeatMasker heightMode grow \u2014 normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
     "reviewedAt": "2026-07-27T01:37:02.644Z",
     "hash": "d83bfa176ca90aeda7ef59b2af3edf4048922233"
   },
@@ -1384,7 +1384,7 @@
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
     "status": "good",
-    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima’s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima’s D are read off the one combined figure.",
+    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima\u2019s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima\u2019s D are read off the one combined figure.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "qtl/bxd_overview": {
@@ -1494,18 +1494,18 @@
     "status": "good",
     "reviewedAt": "2026-07-26T01:40:00.000Z",
     "hash": "e73775a1c10411593ebd5f68608ad488e5897ed9",
-    "note": "FIXED: one-line callout naming the island — the paa (phenylacetate catabolism) operon, present in K-12 and NCTC86 and absent from the other three. viewportHeight 500 so it sits in empty space below the lanes rather than over one. (Earlier in this pass: the self-alignment lane is hidden via the new Group by... > Hide self-alignment lane option.)"
+    "note": "FIXED: one-line callout naming the island \u2014 the paa (phenylacetate catabolism) operon, present in K-12 and NCTC86 and absent from the other three. viewportHeight 500 so it sits in empty space below the lanes rather than over one. (Earlier in this pass: the self-alignment lane is hidden via the new Group by... > Hide self-alignment lane option.)"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
     "status": "good",
-    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section’s how-to pipeline and reworded the figure-referencing prose.",
+    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section\u2019s how-to pipeline and reworded the figure-referencing prose.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "popgen/ld_decay_2R": {
     "name": "popgen/ld_decay_2R",
     "status": "good",
-    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle — 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
+    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle \u2014 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
     "reviewedAt": "2026-07-11T01:56:16.000Z",
     "hash": ""
   },
@@ -1595,7 +1595,7 @@
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
     "status": "bad",
-    "note": "this screenshot unfortunately is not very interesting. anything better? more 1000 genomes samples might be useful. KEEP, resolved. Three 1000G samples (HG00551/3/4) as a multirowxy MultiQuantitativeTrack over the AMY1 amylase copy-number locus — enough to demonstrate the 'multiple signals, each its own color' recipe cleanly (each sample its own color, copy number varying across the locus). A ton of samples would be flashier but is orthogonal to the recipe being taught (see the multiquantitative_track / cluster figures for the many-sample story). Left as-is.",
+    "note": "this screenshot unfortunately is not very interesting. anything better? more 1000 genomes samples might be useful. KEEP, resolved. Three 1000G samples (HG00551/3/4) as a multirowxy MultiQuantitativeTrack over the AMY1 amylase copy-number locus \u2014 enough to demonstrate the 'multiple signals, each its own color' recipe cleanly (each sample its own color, copy number varying across the locus). A ton of samples would be flashier but is orthogonal to the recipe being taught (see the multiquantitative_track / cluster figures for the many-sample story). Left as-is.",
     "reviewedAt": "2026-07-27T05:02:52.088Z",
     "hash": "5d514720e26b19193c90e843e40ba6276113f824"
   },
@@ -1609,15 +1609,15 @@
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
     "status": "good",
-    "note": "RESOLVED (deleted, moot). The MAPT 17q21.31 figure was already dropped in commit 969c44cc21 — no accessible callset has per-sample inversion genotypes to display (1000G phase3 SV has only a 16kb AC=1 singleton, gnomAD only a 53Mb whole-arm call, HGSVC2 a single merged row), so it was removed rather than padded with a proxy. No spec, no PNG, no doc reference remains; the reviewer's 'too complex / can't see the SV track' concern is addressed by removal.",
+    "note": "RESOLVED (deleted, moot). The MAPT 17q21.31 figure was already dropped in commit 969c44cc21 \u2014 no accessible callset has per-sample inversion genotypes to display (1000G phase3 SV has only a 16kb AC=1 singleton, gnomAD only a 53Mb whole-arm call, HGSVC2 a single merged row), so it was removed rather than padded with a proxy. No spec, no PNG, no doc reference remains; the reviewer's 'too complex / can't see the SV track' concern is addressed by removal.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "a396651fda247fd6b21d13f8ca363f4fb133b561"
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
     "status": "bad",
-    "note": "still dont understand this marker 5593, it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
-    "reviewedAt": "2026-07-27T01:33:10.090Z",
+    "note": "still dont understand this marker 5593, it should be pruple and also it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
+    "reviewedAt": "2026-07-27T18:42:32.753Z",
     "hash": "89fc74a40378a1c6a48387230004e8e238a81815"
   },
   "phylop_ncbi_refseq_tp53": {
@@ -1637,7 +1637,7 @@
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",
     "status": "good",
-    "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) — the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
+    "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) \u2014 the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
     "reviewedAt": "2026-07-20T22:02:04.675Z"
   },
   "pangenome/pav": {
@@ -1656,7 +1656,7 @@
   "pangenome/depth": {
     "name": "pangenome/depth",
     "status": "good",
-    "note": "FIXED (data unblocked + rendered + embedded). Uploaded the odgi-depth bigWig (built in ~/depth_build) to s3://jbrowse.org/demos/ecoli_pangenome/, added the ecoli_pggb_depth QuantitativeTrack to the hosted config.json, invalidated CloudFront, then regenerated. Dropped the useless K12 gene lane (at 4.6Mb the ~4300 genes only trip the too-many-features gate) so the depth curve carries the figure: a solid plateau near 4 (core, all 4 strains) dropping toward 1 over accessory. Embedded as a new <Figure> in pangenome.md Projection 4 (it had a JSON block but no image — the reviewer's 'no image here').",
+    "note": "FIXED (data unblocked + rendered + embedded). Uploaded the odgi-depth bigWig (built in ~/depth_build) to s3://jbrowse.org/demos/ecoli_pangenome/, added the ecoli_pggb_depth QuantitativeTrack to the hosted config.json, invalidated CloudFront, then regenerated. Dropped the useless K12 gene lane (at 4.6Mb the ~4300 genes only trip the too-many-features gate) so the depth curve carries the figure: a solid plateau near 4 (core, all 4 strains) dropping toward 1 over accessory. Embedded as a new <Figure> in pangenome.md Projection 4 (it had a JSON block but no image \u2014 the reviewer's 'no image here').",
     "reviewedAt": "2026-07-20T18:49:10.000Z"
   },
   "multisv_svtype": {
@@ -1711,8 +1711,8 @@
   "pangenome_cactus/variant_matrix": {
     "name": "pangenome_cactus/variant_matrix",
     "status": "bad",
-    "note": "consider zooming out more. previous agent notes; KEEP, verified interesting: at chr:2,200,000-2,220,000 all four strains carry dense alt, and over the last 6 kb IAI39 goes no-call while its MAF row -- only its -- drops out. One strain leaving the graph's alignment, seen twice in one frame. Checked against the PNG rather than taken from the earlier note.",
-    "reviewedAt": "2026-07-27T14:21:56.769Z",
+    "note": "consider zooming out more. it is not very interesting also despite previous agent discussing that it is worth keeping please consider deleting. previous agent notes; KEEP, verified interesting: at chr:2,200,000-2,220,000 all four strains carry dense alt, and over the last 6 kb IAI39 goes no-call while its MAF row -- only its -- drops out. One strain leaving the graph's alignment, seen twice in one frame. Checked against the PNG rather than taken from the earlier note.",
+    "reviewedAt": "2026-07-27T18:43:11.086Z",
     "hash": "0c4f9a6133d8ffe8cb555a9eb08a0aa710d29aad"
   },
   "sv_cgiab/cdkn2a_tumor_normal_coverage": {
@@ -1807,8 +1807,8 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "bad",
-    "note": "the legend arc color boxes are duplicating contents from read color. also, ideally it should only show colors that are visible. FIXED in the display, not the spec, and in the second shape after the first was wrong. First pass subtracted the shared buckets from the arc key, which traded the duplication for a worse defect: an \"Arc colors\" heading listing three colors over arcs drawn in seven (reviewer: \"the arcs are green and blue too\"). Both notes are the same underlying thing. The read/arc split is which code path paints a pixel, not a distinction the reader has, and a shared bucket is the same swatch on both sides, so splitting them offers only two bad lists. getAlignmentsLegendSections now merges the two into ONE section whenever they share a color, deduped by color rather than by category (the arcs neutral slot and the reads LR slot are both colorPairLR, so \"Normal\" was the same grey under a second word). One untitled list, nine rows, every drawn color exactly once, and two heading rows saved. They stay separate only when the vocabularies share nothing (reads by modification, arcs by insert size), where the headings say something real. NOT changed: both lists already derive from categories the renderer actually produced, so a swatch that is hard to find is a category present in a few reads rather than one listed on spec; suppressing those would make the legend lie. Unrelated regen: mate-link arc geometry fix (arcs/compute.ts, see inverted_duplication note) shifted some arc colors/positions in this view; status/legend verdict above is untouched and still needs its own resolution.",
-    "reviewedAt": "2026-07-27T14:30:38.000Z",
+    "note": "there is a one very small red arc, in top right of figure. this is confusing because red corresponds with \"long insert\" so a short arc is confusing.",
+    "reviewedAt": "2026-07-27T18:44:15.083Z",
     "hash": "2f10ea8cc9e70fe716fe2cd404afaaec765a8c88"
   },
   "genomes_synteny/launch_dialog": {
@@ -1952,8 +1952,8 @@
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
-    "status": "bad",
-    "note": "great work. look for further simplifications if possible. it is somewhat surprising that every node in the bandage graph is colored and not just the reference path? FIXED (\"what should we do?\" answered with two lanes, not a recolor). The premise is right and it is structural: RgfaTabixAdapter serves segments by hg38 position and a rank>0 segment has none (it lives on another assembly's refName), so an hg38 lane of that track can only ever be the blue rank-0 backbone. What a reference axis CAN hold is where the orange attaches and how long it is, so the linear panel now has both: hprc_minigraph_bubbles painted in the graph's own rank-1 orange rgb(237,137,44) (set on the track in test_data/graphgenomeview/hprc.json, so every figure using it matches), which is the 64 kb bubble every orange loop in the graph hangs off; and the hprc_minigraph_alleles lane, where each allele is drawn at its anchor and widened to its own bp by the CIGAR in the BED (60,569 / 10,246 / 6,025 bp labelled in frame). Blue and orange now mean the same thing in both panels. readySelector ANDs the pileup's done signal with the graph toolbar's (spelled out, not composed with TOOLBAR_READY, which already opens on body:has). Tutorial gained a paragraph naming the asymmetry instead of leaving the reader to infer it. Deliberately NOT done: recoloring the allele markers to the rank ramp - insertion color comes from theme.palette.insertion, not a track slot, and repurposing it would repaint every alignments figure. CHANGED (not in response to a note, in response to its siblings'): same reference-position ramp in both panels, and the allele-inventory lane dropped per the three 'just want to see graph' notes. The bubbles lane keeps the rank-1 orange, being one object rather than a ramp.",
+    "status": "good",
+    "note": "RETIRED in the figure-paring pass ('pare down our existing list of pangenome screenshots to highlight the more high value examples'). It and hprc_c4_subgraph were both force-directed layouts under the same three lanes; C4 survives because copy number plus the HERV insertion is a locus worth naming, where MHC class II already had two other figures. Its measured window-size analysis (why a force layout does not get better with more nodes) moved to the C4_WINDOW comment in specs/graph.ts.",
     "reviewedAt": "2026-07-27T04:58:46.407Z",
     "hash": "9c150d0552a01987536817842e787b83a42469be"
   },
@@ -1974,7 +1974,7 @@
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
     "status": "good",
-    "note": "FIXED all three asks. (1) Cross-species: hg38 vs mouse mm39 around SHH, not hg38 vs hs1. (2) 'Small segment' was not a refactor — the launch frames on the block under the cursor and the old coordinate landed on a short fragment; aimed at a long chain block, the launched view is now 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to. (3) 'Launch synteny view for this position' is now hovered (so it carries the menu's own highlight) and boxed in red; viewportHeight 540 so the whole menu fits. Coordinate note for next time: the hit-testable pileup row is y 331 at this viewport, the band a few px above it is not.",
+    "note": "FIXED all three asks. (1) Cross-species: hg38 vs mouse mm39 around SHH, not hg38 vs hs1. (2) 'Small segment' was not a refactor \u2014 the launch frames on the block under the cursor and the old coordinate landed on a short fragment; aimed at a long chain block, the launched view is now 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to. (3) 'Launch synteny view for this position' is now hovered (so it carries the menu's own highlight) and boxed in red; viewportHeight 540 so the whole menu fits. Coordinate note for next time: the hit-testable pileup row is y 331 at this viewport, the band a few px above it is not.",
     "reviewedAt": "2026-07-27T01:28:03.953Z",
     "hash": "5259fbfbce90fc4cb86dffecc1e8e319a7bb1e10"
   },
@@ -1988,8 +1988,8 @@
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",
     "status": "bad",
-    "note": "kind of boring screenshot but ok. previous notes RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background.",
-    "reviewedAt": "2026-07-27T01:33:24.108Z",
+    "note": "kind of boring screenshot. consider deleting. previous notes: RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background.",
+    "reviewedAt": "2026-07-27T18:42:13.015Z",
     "hash": "ec9ebd6e2cec845647ab80a28c5bd352d0865744"
   },
   "multiway_synteny/ecoli_launch_from_selection": {
@@ -2053,7 +2053,7 @@
     "status": "good",
     "note": "",
     "reviewedAt": "2026-07-27T14:22:08.277Z",
-    "hash": "3f77ecb2dacb596636e0b35744f984e1112616d1"
+    "hash": "14a935a6b7d9a4ec417102af469966360f0209d6"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
@@ -2071,17 +2071,17 @@
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
-    "status": "bad",
-    "note": " it is somewhat surprising that every node in the bandage graph is colored and not just the reference path?  previous notes: similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot FIXED, two changes. Reference-position colours tie the rows to the segments lane above. And the window went back from 600 kb to the 90 kb class II one: row spacing is 5% of the drawn width and the pane caps at 600 px, so past about a dozen rows the fit shrinks the drawing to the pane HEIGHT and centres it, and the backbone stops sitting under the linear view's axis at all. The wide window was denser and read worse.",
+    "status": "good",
+    "note": "RETIRED in the same pass. Three sample-rows figures on the HPRC graph; this one taught the layout on a window where nothing in particular happens, while pangenome/hprc_lpa_kiv2 teaches it on KIV-2, where the length range is the finding. The tutorial section keeps LPA and the row-count caveat.",
     "reviewedAt": "2026-07-27T04:59:08.928Z",
     "hash": "e6b873ad6a521215e028f9a986b2ee14a1b83882"
   },
   "pangenome/hprc_node_menu": {
     "name": "pangenome/hprc_node_menu",
     "status": "bad",
-    "note": "the rainbow is good. look for further simplifications also. reduce height of each panel for density. make into a single screenshot instead of two screenshots potentially where highlight and right click menu is visible. previous notes: similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. need tobe able to just highlight linaer genome view coords. the lineargenomeview menu item should say launch if that is what it does, and may want to be Launch->Linear genome view submenu FIXED, both halves of the note. The plugin's node menu now offers 'Highlight this node in the hg38 view', which writes the node's reference interval into the linear view's own highlight list where it stays (a hover band lives only as long as the pointer). And the launch item is a verb: 'Open in linear view - around this node on hg38' rather than a bare 'Linear genome view'. It says Open rather than Launch because it scrolls the view beside the graph when there is one and only opens a pane when there is not. The figure is now two frames: the menu, then the band it leaves behind.",
+    "note": "the rainbow is good. look for further simplifications also. reduce height of each panel for density. make into a single screenshot instead of two screenshots potentially where highlight and right click menu is visible. previous notes: similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. need tobe able to just highlight linaer genome view coords. the lineargenomeview menu item should say launch if that is what it does, and may want to be Launch->Linear genome view submenu FIXED, both halves of the note. The plugin's node menu now offers 'Highlight this node in the hg38 view', which writes the node's reference interval into the linear view's own highlight list where it stays (a hover band lives only as long as the pointer). And the launch item is a verb: 'Open in linear view - around this node on hg38' rather than a bare 'Linear genome view'. It says Open rather than Launch because it scrolls the view beside the graph when there is one and only opens a pane when there is not. The figure is now two frames: the menu, then the band it leaves behind. ALSO: menu wording cut ('reducing wordiness of the menus is also very important'). 'Highlight this node in the hg38 view' -> 'Highlight in hg38', 'Open in linear view - around this node on hg38' -> 'Open in hg38 - around this node'; every word dropped restated the context a menu opened on a node is already in.",
     "reviewedAt": "2026-07-27T04:58:23.784Z",
-    "hash": "b7c4df2e7c774eec8d2b5b819d083d8192f5dffa"
+    "hash": "e7f02c1c3e76db8108a0e8bd27d129d6ee3171bf"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
@@ -2099,37 +2099,37 @@
   },
   "pangenome/rgfa_hover_correspondence": {
     "name": "pangenome/rgfa_hover_correspondence",
-    "status": "bad",
-    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot NOT changed this pass. The E. coli figures keep the rank colours (that tutorial teaches rGFA ranks, and the rank-colour match was itself an earlier review fix); the reference-position ramp is demonstrated on the HPRC set instead. The persistent-highlight menu item added for hprc_node_menu is the other answer to 'hard to tell from a static screenshot' and works here too.",
+    "status": "good",
+    "note": "RETIRED into pangenome/rgfa_hover_sync, the same session with both hover directions as two frames. The note is answered by the merge rather than by a re-render: separately the two figures said 'here is a highlight' twice; together they say the two views agree whichever end you touch.",
     "reviewedAt": "2026-07-27T01:34:09.518Z",
     "hash": "3cfc3f382f2aa159d965f6a7c9861b311ca35eaf"
   },
   "pangenome/rgfa_hover_from_linear": {
     "name": "pangenome/rgfa_hover_from_linear",
-    "status": "bad",
-    "note": "similar to other notes ive made, just hard to figure out correspondance between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. it is hard to see from this screenshot the hover (grey) is corresponding to a mouseover on graphgenomeview plugin NOT changed this pass, same reasoning as rgfa_hover_correspondence.",
+    "status": "good",
+    "note": "RETIRED into pangenome/rgfa_hover_sync. See that entry.",
     "reviewedAt": "2026-07-27T01:34:52.987Z",
     "hash": "a9b4823ae0ae02d9c5684d109b29ef635d305c58"
   },
   "pangenome/rgfa_launch_menu": {
     "name": "pangenome/rgfa_launch_menu",
-    "status": "bad",
-    "note": "what is the track type of this rgfa track? FIXED in the caption, which is where the question came from: reviewing the PNG alone there was nothing saying what the track was. The caption now names it - an ordinary FeatureTrack reading two tabix indexes through RgfaTabixAdapter. The prose above the figure already had the JSON.",
+    "status": "good",
+    "note": "RETIRED in the figure-paring pass. pangenome/rgfa_segment_neighbourhood documents the same launch and shows the menu AND the graph it produces, so this was the weaker of two menu-mechanics figures in one tutorial. The track-type question the note asked is answered in the tutorial prose above the surviving figure.",
     "reviewedAt": "2026-07-27T01:35:34.803Z",
     "hash": "947cccb41eeb4ffe5a79efd7bdaaa31b3034a9b3"
   },
   "pangenome/rgfa_strain_paths": {
     "name": "pangenome/rgfa_strain_paths",
     "status": "bad",
-    "note": "this looks very odd. it is a large insertion,try to align the look and feel of deletions with linearalignmentsdisplay/linearmafdisplay at a minimum. dont add legend items for things that are not displayed. could consider deleting FIXED by widening the window 12x, to 200 kb. At 16 kb the frame held ONE bubble, so five stacked full-width boxes with numbers printed in them read as a bar chart rather than as five haplotypes - which is what the note is describing. At 200 kb a row is mostly grey reference path punctuated where that strain diverges, which is the lane shape the note asks for, and the large insertions still carry their bp. Gene lane dropped: at this width it is 190 unlabelled boxes.",
-    "reviewedAt": "2026-07-27T17:37:32.475Z",
+    "note": "i would ideally like to align this more with the look and feel of deletions with linearmafdisplay but if that is not possible we can skip perhaps. in any case, dont add legend items for things that are not displayed. could consider deleting FIXED by widening the window 12x, to 200 kb. At 16 kb the frame held ONE bubble, so five stacked full-width boxes with numbers printed in them read as a bar chart rather than as five haplotypes - which is what the note is describing. At 200 kb a row is mostly grey reference path punctuated where that strain diverges, which is the lane shape the note asks for, and the large insertions still carry their bp. Gene lane dropped: at this width it is 190 unlabelled boxes.",
+    "reviewedAt": "2026-07-27T18:41:07.039Z",
     "hash": "30aa6c9504bd438fe653b200cdb5bf25feb4f76c"
   },
   "display_type_default_badge": {
     "name": "display_type_default_badge",
     "status": "good",
-    "note": "Snackbar hidden and regenerated. The pin raises a Set as the default toast that outlives the click sequence; it is the action being documented, not part of either frame, so .MuiSnackbar-root joined hideSelectors.",
-    "reviewedAt": "2026-07-27T18:30:00.000Z",
+    "note": "",
+    "reviewedAt": "2026-07-27T18:13:21.850Z",
     "hash": "076ba586a95bd44a3510bd6eebca39490c72f7ff"
   },
   "pangenome/pggb_locus_graph": {
@@ -2144,13 +2144,32 @@
     "status": "good",
     "note": "Two frames now (reviewer: red box on the view menu icon, and a second frame showing what the launch produces). Frame one is the cascade with a box anchored on the graph view menu icon; frame two is the four-band synteny view the synteny entry opens. The K12 linear view was dropped from the session so the menu is not floating over 350px of context it does not need, which is the large complaint. Window moved to chr:4,400,000-4,450,000: at the old ECOLI_WINDOW, IAI39 reaches the subgraph through 8 bp, so the launch opened four panels at four unrelated scales. Every 50 kb window was scored on the smallest span any strain contributes and this one has all five between 38 kb and 69 kb. Also FIXED in the plugin while shooting it: launchSyntenyView passed init.tracks as a flat [trackId], which LinearSyntenyView reads as the level-0 shorthand, so a five-strain launch drew ribbons on the top band only and opened the four below as bare rulers.",
     "reviewedAt": "2026-07-27T18:30:00.000Z",
-    "hash": "587a7f0b6a70f1702df8e9a756d88341ffc18bae"
+    "hash": "f2a388ee371e50d22f2c599e7a8805daca3570b5"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
     "status": "good",
     "note": "NEW. The KIV-2 repeat in LPA, picked out of the bubble index rather than off a locus list: ranking every record in hprc-v2.0-mc-grch38.bubbles.bed.gz for deep traversal at a segment count still worth drawing puts chr6:160,606,991-160,639,012 near the top, 33 segments and 584 paths with alleles reaching 176,236 bp against 32 kb of reference. Copy number there sets Lp(a) and is not callable off short reads. Window runs to 160,525,000 so LPA own start is in frame and the gene track labels it; a window sitting entirely inside one gene draws that label off the left edge and the figure names nothing.",
     "reviewedAt": "2026-07-27T18:30:00.000Z",
-    "hash": "e13f9084062017d37b33f20758c5989d43d25c84"
+    "hash": "1be40f16672d0873a955ae3846838416ffca1e38"
+  },
+  "pangenome/rgfa_segment_neighbourhood": {
+    "name": "pangenome/rgfa_segment_neighbourhood",
+    "status": "bad",
+    "note": "this may not be the primary point of the screenshot but i dont necessarily understand the lines that are drawn to the backbone. some only have 1 line and some have 3. how should users interpret these? it should be clear to users ideally. can also try to make back-to-back comparison of backbone linear and bandage force directed modes",
+    "reviewedAt": "2026-07-27T18:41:59.832Z",
+    "hash": "e1b4916662dd5b2af010c9a0f5f7b707bf7c1d8d"
+  },
+  "pangenome/rgfa_strain_launch": {
+    "name": "pangenome/rgfa_strain_launch",
+    "status": "good",
+    "note": "NEW. The third corner of the graph <-> linear <-> synteny trip, and the figure the launch fix made possible. K12 chr:2,056,000-2,064,000 is the asnW/asnU/asnV tRNA cluster, the sites E. coli pathogenicity islands integrate at; the graph gives CFT073 58,692 bp there in two segments while the other strains reach it through a few bp, so one long row is unambiguous. Launch view -> CFT073 opens chr:2,252,539-2,317,207 on CFT073 own coordinates, where its gene track names it clbA-clbS, the colibactin operon. Window chosen by scanning the segs/links BEDs: 8 kb is what keeps the launched locus at 65 kb, narrow enough for the clb genes to carry labels (a wider seed pulls in the yersiniabactin island and opens 130 kb of unlabelled boxes). Before the plugin fix this launch opened on No tracks active.",
+    "hash": "f270c5464058ecffc9c724f5a11c0bdb9af71dc2"
+  },
+  "pangenome/rgfa_hover_sync": {
+    "name": "pangenome/rgfa_hover_sync",
+    "status": "good",
+    "note": "NEW, replacing pangenome/rgfa_hover_correspondence and pangenome/rgfa_hover_from_linear, which were two nearly identical pictures of the same window drawing the same review note twice ('hard to figure out correspondance between linear and graph'). One figure, both directions, so the reciprocity is the subject: frame one hovers the CFT073 allele in the graph and gets a band in the linear view, frame two hovers the gene csgG and gets the backbone segment lit in the graph. Each frame rings its own target, since a hover figure has no cursor in it.",
+    "hash": "ae9d7a687fc53eb061e191e48224245ecd1f3d71"
   }
 }

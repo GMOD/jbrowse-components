@@ -101,15 +101,14 @@ The `uri` is the shared prefix: the adapter resolves `.segs.bed.gz`,
 because that graph calls the reference `GRCh38` while the assembly is `hg38`.
 
 Then **Track menu → Launch view → Graph genome view (this region)** cuts a
-subgraph from the index. Past the size the view will draw, the item greys out
-and names its own limit rather than disappearing.
-
-<Figure caption="Track menu → Launch view → Graph genome view (this region), on the rGFA segments track above (an ordinary FeatureTrack, reading the two tabix indexes through RgfaTabixAdapter). Offered only for a track whose adapter can cut a subgraph." src="/img/pangenome/rgfa_launch_menu.png" />
+subgraph from the index. The item is offered only for a track whose adapter can
+cut one, and past the size the view will draw it greys out and names its own
+limit rather than disappearing.
 
 Right-clicking one segment cuts the graph around that segment instead, padded by
 half its length on each side so it opens with context rather than clipped to its
-own ends. Dragging across the ruler and picking **Graph genome view of
-selection** does the same for a window you choose, with no track menu involved.
+own ends. Dragging across the ruler and picking **Graph genome view (this
+selection)** does the same for a window you choose, with no track menu involved.
 
 <Figure caption="Right-click on backbone segment s1277 (glnA to yihN) → Launch view → Graph genome view (this segment). The launched window is the segment plus half its length on each side: blue rank-0 backbone, three short rank-1 alleles hanging off it, and one rank-2 allele in purple." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
 
@@ -214,17 +213,15 @@ linear view beside it; hover the linear view and the segment under the cursor
 lights up in the graph. Nothing to configure, and it is what makes a rank>0
 allele locatable at all, since those have no reference coordinates.
 
-<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins." src="/img/pangenome/rgfa_hover_correspondence.png" />
-
 The reverse works from any track, not just the graph's own segments. A gene
 gives only a coordinate, and that is enough: rGFA segments do not overlap on a
 stable sequence, so one backbone segment covers it.
 
-<Figure caption="Hovering the gene csgG in the linear view brightens the backbone segment covering it in the graph, and the graph reports that segment's span back as the band across the linear view." src="/img/pangenome/rgfa_hover_from_linear.png" />
+<Figure caption="Top: hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins. Bottom: hovering the gene csgG instead brightens the backbone segment covering it in the graph, and the graph reports that segment's span back as the band across the linear view." src="/img/pangenome/rgfa_hover_sync.png" />
 
-A hover lasts as long as the pointer does. **Right-click a node → Highlight this
-node in the &lt;assembly&gt; view** writes the same interval into the linear
-view's own highlight list instead, where it stays.
+A hover lasts as long as the pointer does. **Right-click a node → Highlight in
+&lt;assembly&gt;** writes the same interval into the linear view's own highlight
+list instead, where it stays.
 
 ## From a node back to a genome
 
@@ -242,9 +239,18 @@ assemblies loaded, the graph's **Launch view** menu gains two ways out:
 
 Only loaded assemblies are offered, so the menu never lists a view that cannot
 open, and a location goes into the linear view already beside the graph rather
-than stacking a pane.
+than stacking a pane. A launched view carries the session's annotation for the
+assembly it opens on, so a strain arrives with its own genes rather than empty.
 
 <Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window in the sample-rows layout, opened from the view menu boxed in red. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
+
+Taking the other entry answers a different question. K12's `asnW`/`asnU`/`asnV`
+tRNA genes are the sites E. coli pathogenicity islands integrate at, and in that
+window the graph gives CFT073 tens of kilobases the reference does not have.
+Clicking that strain's entry opens the sequence on CFT073's own coordinates,
+where its gene track names it: `clbA` to `clbS`, the colibactin island.
+
+<Figure caption="K12 at the asnW/asnU/asnV tRNA cluster, the graph's sample rows below it, and the view the CFT073 entry launches: the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
 
 ## Building the rGFA these figures use
 

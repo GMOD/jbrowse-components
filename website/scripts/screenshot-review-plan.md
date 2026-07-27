@@ -191,7 +191,12 @@ cd website && node scripts/generate-screenshots.ts --force --filter pangenome/
 `betabuild` uploads to the public `s3://jbrowse.org/demos/graphgenomeviewer/`,
 moves the unversioned entry point the published figures' live links resolve, and
 invalidates CloudFront — **ask before running it.** Last published
-`ae1aa4cabf9e` (2026-07-27).
+`90b37e3f1143` (2026-07-27).
+
+A menu label is a published API for the specs: `hprc_node_menu` failed its regen
+on `click target not found: text "Highlight this node"` the moment that item was
+shortened. Grep `scripts/specs/*.ts` for the old text before renaming one, and
+the tutorials too — they quote the labels in prose.
 
 ## Choosing a pangenome locus from the data, not from a locus list
 
@@ -221,8 +226,17 @@ MB).
   the K12 rank-0 segments in a window, BFS the links, and group the rank>0
   segments into connected runs. The largest run is 148 kb at K12
   1,196,217-1,223,579; the densest 50 kb window is 2,030,000-2,080,000, where
-  CFT073 contributes 116 kb at the `asnT`/`asnW`/`asnU`/`asnV` tRNA loci — the
-  classic pathogenicity-island integration sites, and an unused figure.
+  CFT073 contributes 116 kb at the `asnT`/`asnW`/`asnU`/`asnV` tRNA loci, the
+  classic pathogenicity-island integration sites.
+
+  **The seed window's width sets the launched locus's width**, because a launch
+  frames a strain on the widest run of its segments in the subgraph. The 50 kb
+  window opens CFT073 at 131 kb, holding both the yersiniabactin island and the
+  pks island, at a scale where no gene carries a label. Narrowing the seed to
+  the 8 kb `asnW`/`asnU`/`asnV` cluster (2,056,000-2,064,000) drops it to 65 kb,
+  which is the pks island alone with `clbA`-`clbS` legible —
+  `pangenome/rgfa_strain_launch`. Score a candidate on what the launch opens,
+  not on what the seed contains.
 
 ### A deletion has nowhere to be drawn — do not spend a session on this again
 
@@ -246,6 +260,14 @@ channel), not a spec edit.
 
 ## Open plugin work
 
+- **A launch's tracks are the assembly's annotation, and only for the single
+  view.** `launchTracks` scans the session for FeatureTracks on the assembly
+  being opened, which is what makes `pangenome/rgfa_strain_launch` possible (the
+  per-strain launch used to land on `No tracks active`). The synteny launch
+  deliberately does NOT do this — tried, and a gene track per panel costs ~160px
+  of a row that is otherwise a ruler, so on five strains the annotation is most
+  of the viewport and the ribbons are squeezed into the gaps. Don't re-propose
+  it; `collapseEmptyRows` exists for the same reason.
 - **Edges attach to the end the GFA link names.** `computeEdgeCurves` always
   leaves the from-node's last point for the to-node's first, but
   `L s2087 + s378 -` attaches to `s378`'s RIGHT end, so on a reverse-complement
@@ -258,7 +280,3 @@ channel), not a spec edit.
   relative to the reference propagated through the run in `placeOffReference`,
   and `computeEdgeCurves` picking endpoints from those. Then tighten the test
   back to a bare `expect([])`.
-- **A per-strain launch opens on `No tracks active`.** `showInLinearView` only
-  carries the graph's own track across, and that is configured for the reference
-  alone, so `Launch view` → `CFT073 chr:…` lands on an empty view. That is why
-  `rgfa_launch_out_menu`'s second frame is the synteny launch and not a strain.

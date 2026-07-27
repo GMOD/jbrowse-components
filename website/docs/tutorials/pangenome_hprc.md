@@ -129,15 +129,15 @@ on a smaller graph than this one.
 
 The graph draws a window at a time rather than a whole viewport, so the way in
 is to **drag across the ruler** to rubberband one and pick **Graph genome view
-of selection**. That picks a window directly, with no navigating first, and it
-needs no graph track in the view: the item appears whenever the session holds a
-track whose adapter can cut a subgraph. Select more than the view will draw and
-the item greys out and names its own limit, so the size to aim at is something
-you read rather than remember.
+(this selection)**. That picks a window directly, with no navigating first, and
+it needs no graph track in the view: the item appears whenever the session holds
+a track whose adapter can cut a subgraph. Select more than the view will draw
+and the item greys out and names its own limit, so the size to aim at is
+something you read rather than remember.
 
 The subgraph is cut from the same two files the track reads.
 
-<Figure caption="The HLA class II region as a graph, in force-directed layout, under three lanes of the same window. Both panels use the graph's Reference position colors: the segment blocks run red to magenta left to right and the thread in the graph runs with them, so a loop's color says where above it attaches. The grey bar is the bubble those loops hang off, held out of the ramp so it reads as one object rather than as a position." src="/img/pangenome/hprc_mhc_bandage.png" />
+<Figure caption="The C4 locus as a graph, in force-directed layout, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus and the graph below is what that bubble contains. Both panels use the graph's Reference position colors, so the segment blocks and the thread in the graph run red to magenta together and a loop's color says where above it attaches." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 A force layout has no x axis to share with the linear view, so color is the only
 thing that can carry the correspondence. **Reference position** in the **Color**
@@ -195,10 +195,6 @@ holds 2 alleles whose longest is 334 bp, because minigraph merged SMN1 and SMN2
 onto one path. A quiet window here means collapsed or invariant, never checked
 and found nothing.
 
-C4, from the table:
-
-<Figure caption="The C4 locus, small enough that the whole subgraph fits in one picture. The bubbles track reports a single bubble spanning the locus and the graph below is what that one bubble contains: the red end of the thread is the left end of the window in the segments lane, the magenta end the right." src="/img/pangenome/hprc_c4_subgraph.png" />
-
 ### Which haplotype an allele came from
 
 The **Layout** dropdown's third mode, **Sample rows**, keeps x on GRCh38 and
@@ -207,19 +203,16 @@ because rank is build order: at a locus this dense one rank holds alleles from a
 dozen different haplotypes, so an anchored rank row means nothing biological,
 while a sample row is one haplotype.
 
-<Figure caption="MHC class II in the Sample rows layout, under the RefSeq genes and rGFA segments for the same window. The top row is the GRCh38 backbone; each row below it is one haplotype that donated sequence here, labelled with its HPRC id, and its marks are the alleles it donated, colored by where on the reference they attach." src="/img/pangenome/hprc_mhc_sample_rows.png" />
+LPA is where that pays off: its KIV-2 repeat sets Lp(a) level, and copy number
+there is not callable from short reads at all.
 
-LPA is the same layout on a locus where the length range is the finding. Its
-KIV-2 repeat sets Lp(a) level, and copy number there is not callable from short
-reads at all:
+<Figure caption="The KIV-2 repeat inside LPA in the Sample rows layout, under the RefSeq genes and rGFA segments for the same window. The top row is the GRCh38 backbone; each row below it is one haplotype that donated sequence here, labelled with its HPRC id, and its marks are the alleles it donated, colored by the reference position they attach to. The bubbles lane states the length range the graph found across the cohort." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
-<Figure caption="The KIV-2 repeat inside LPA in the Sample rows layout. The bubbles lane states the range the graph found across the cohort, 4,283 to 176,236 bp over 33 segments, and each row below is one haplotype's allele, colored by the reference position it attaches to." src="/img/pangenome/hprc_lpa_kiv2.png" />
-
-The windows above draw 8 to 15 such rows each, out of 464 haplotypes, and
-that ratio is the thing to read carefully. A row is the haplotype minigraph took
-the sequence **from**, the same attribution `discoveryRank` and `firstSeenIn`
-carry, not the set of haplotypes carrying the allele. Collapsing is what let the
-allele be found at all, so carriage stays the callset's job,
+A window like this draws a dozen or so rows out of 464 haplotypes, and that
+ratio is the thing to read carefully. A row is the haplotype minigraph took the
+sequence **from**, the same attribution `discoveryRank` and `firstSeenIn` carry,
+not the set of haplotypes carrying the allele. Collapsing is what let the allele
+be found at all, so carriage stays the callset's job,
 [below](#structure-not-sequence).
 
 ### Hovering one panel highlights the other
@@ -235,10 +228,9 @@ Both directions are pictured in the
 ### From a node back to a coordinate
 
 Hovering says where a node is while the cursor is on it. **Right-click a node**
-for the two answers that outlast the pointer: **Highlight this node in the hg38
-view** marks its reference interval in the linear view beside the graph and
-leaves it there, and **Open in linear view** scrolls that view to it rather than
-opening another pane. The graph's own **Launch view** menu does the same for the
+for the two answers that outlast the pointer: **Highlight in hg38** marks its
+reference interval in the linear view beside the graph and leaves it there, and
+**Open in hg38** scrolls that view to it rather than opening another pane. The graph's own **Launch view** menu does the same for the
 whole window it was cut from.
 
 What you are offered depends on which segment you clicked, because rGFA states
@@ -255,7 +247,7 @@ each segment's source sequence (`SN`) and offset (`SO`):
 Either way the node's haplotype is named, in the tooltip and in the details
 panel a left-click opens.
 
-<Figure caption="Right-clicking one haplotype's allele in the sample-rows layout, then the result of Highlight this node in the hg38 view. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
+<Figure caption="Right-clicking one haplotype's allele in the sample-rows layout, then the result of Highlight in hg38. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
 
 That closes a loop over the lanes above: rubberband a locus into a graph, find
 the loop worth asking about, right-click it to put the linear view on its GRCh38

@@ -452,7 +452,7 @@ uses for an rGFA:
 Now the segments draw as an ordinary track on K12, and **Track menu → Launch
 view → Graph genome view (this region)** cuts a subgraph from the index with no
 `odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
-of selection** does the same for a window you drag.
+(this selection)** does the same for a window you drag.
 
 <Figure caption="A 1 kb window of the pggb graph, cut from the index rather than from a file prepared beforehand. Both panels are colored by reference position, so the segment lane above and the backbone below run through the same hues left to right, and each bubble in the graph sits under the stretch of reference it belongs to." src="/img/pangenome/pggb_locus_graph.png" />
 
