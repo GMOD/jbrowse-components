@@ -376,11 +376,14 @@ graph rather than HPRC.
   own: only cells whose genotype actually carries the allele widen
   (`cellCarriesAlt`), or the marker claims every reference haplotype has the
   sequence.
-- The slot lives in the **shared** schema because the model factory is typed to
-  `SharedVariantConfigModel`, so a slot declared on the subclass is not visible to
-  `getConf`. The matrix display therefore inherits it and ignores it (it lays
-  columns out by feature index, so there is no genomic width to correct); the slot
-  doc says so.
+- The slot lives on `LinearMultiSampleVariantDisplay`'s own schema, where it
+  applies. Getting it there needed one thing: the subclass redeclares
+  `configuration: ConfigurationReference(configSchema)` in its `types.compose`,
+  because the base model factory declares that prop off a param typed to
+  `SharedVariantConfigModel` and `types.compose` **overrides** props rather than
+  intersecting them (`_OverrideProps` in the MST typings). So the redeclaration
+  costs nothing at runtime — same node either way — and buys own-slot narrowing.
+  `showInsertionGlyphsSlot.test.ts` guards both halves.
 - Only one committed figure moved: `hprc2/mhc_clustered` (1.09%), where the 220
   structural alleles now read at up to 5px instead of the 2px SNP floor. Every
   other spec touching this display came back 0.000% — `multisv` uses symbolic

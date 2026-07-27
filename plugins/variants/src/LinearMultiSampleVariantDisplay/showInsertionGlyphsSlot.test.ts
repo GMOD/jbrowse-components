@@ -1,10 +1,10 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 
 import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
-import type matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 import configSchemaFactory from './configSchema.ts'
-import type stateModelFactory from './model.ts'
 
+import type matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
+import type stateModelFactory from './model.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // `showInsertionGlyphs` belongs to this display alone: it widens a cell to say

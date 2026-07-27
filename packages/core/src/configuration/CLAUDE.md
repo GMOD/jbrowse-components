@@ -182,6 +182,31 @@ moving reads. **Generic threading does not rescue this**: inside a generic body
 resolve `ConfigurationSlotName<…<S>>` at all (every named read errors). Don't
 retry it in any form.
 
+**A subclass can reclaim its own slots by redeclaring the prop**, which is the
+escape hatch from that first sentence and does not need the base to move:
+
+```ts
+types.compose(
+  'LinearMultiSampleVariantDisplay',
+  MultiSampleVariantBaseModelF(configSchema, 'regular'), // param: shared type
+  types.model({
+    type: types.literal('LinearMultiSampleVariantDisplay'),
+    configuration: ConfigurationReference(configSchema), // pinned: own type
+  }),
+)
+```
+
+`types.compose` **overrides** props rather than intersecting them
+(`_OverrideProps` in the MST typings), so the subclass's concrete schema wins —
+an intersection would instead give `ConfigRef<Base> & ConfigRef<Sub>`, which
+`ConfigurationSchemaForModel`'s `infer` resolves arbitrarily. Runtime is
+unchanged, since the schema passed in was always the subclass's; only the
+declared type was widened. Shared slots keep narrowing because
+`ConfigurationSlotName` recurses through `GetBase`. So a slot that applies to
+one of two displays sharing a base belongs on that display, not in the shared
+schema — `showInsertionGlyphs` (`plugins/variants`, guarded by
+`showInsertionGlyphsSlot.test.ts`) is the worked example.
+
 Two traps when verifying: a **bogus** slot name proves nothing (it falls through
 `readConfObject`'s loose overload to `any` and always "passes") — test a
 **real** slot name and hover the result; and feeding an opaque type variable
@@ -189,6 +214,24 @@ into `types.union`/`types.reference` compiles with **0 errors but an `any`
 instance**, so a green typecheck is not proof — hover it. Compile-time
 regression guards live in `configTypeNarrowing.test.ts` (checked by
 `pnpm typecheck`, not jest).
+
+## Config writes
+
+Writes narrow off the same lever, through `setConf(self, 'slot', value)` — see
+its jsdoc in `getConf.ts` for why a raw `self.configuration.setSlot('slot', v)`
+typo fails silently at every layer.
+
+The invariant is greppable: **no `configuration.setSlot(` with a literal slot
+name remains in non-test source**. Every surviving `.setSlot(` either writes a
+genuinely dynamic name (`util/tracks.ts`, `promotableDefaults.ts`, the config
+editor's slot facade, the `target.setSlot` copy loop in
+`MultiSampleVariantBaseModel`) or writes a config node that isn't
+`self.configuration` (`loadHubSpec.ts`), so `setConf` doesn't apply. A literal
+slot name turning up in that grep is an unmigrated site, not a judgement call.
+
+Widened factories (wiggle, gccontent, the canvas base) still get no check, since
+`ConfigurationSlotName<any>` is `any`. They use `setConf` anyway for that grep,
+and gain the check for free if ever pinned — don't pin them just to enable it.
 
 ## Frozen tracks + hydration + `ConfigurationReference`
 

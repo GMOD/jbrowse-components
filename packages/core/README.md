@@ -25,6 +25,29 @@ Apache-2.0 © Evolutionary Software Foundation
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### clampBandHeight
+
+Clamp one resize of a drag-resizable band.
+
+The floor is `min(MIN_BAND_HEIGHT, current)`, never the bare constant: a band
+whose config declares it smaller than the floor must stay where it is. Taking
+`Math.max(MIN_BAND_HEIGHT, target)` instead made the _first_ drag on such a band
+jump it up to 20 before honoring the delta. A band at or above the floor is
+unaffected, one below it can still be dragged but never smaller than it already
+is, and one dragged back past the floor regains it.
+
+`ResizeHandle` emits one delta per animation frame, so callers driving a drag
+pass `current + distance` as the target and read `current` inside the action — a
+component computing the target from a rendered height drops every tick that
+lands before React re-renders.
+
+```js
+// type signature
+(current: number, target: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
+
 ### clearPromotedDefaults
 
 Clear every promoted default for this display type, so sibling tracks revert to

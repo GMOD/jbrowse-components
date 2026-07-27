@@ -270,7 +270,11 @@ const LDCanvas = observer(function LDCanvas({
         />
       ) : null}
       {showLegend ? (
-        <LDColorLegend ldMetric={ldMetric} signedLD={signedLD} />
+        <LDColorLegend
+          ldMetric={ldMetric}
+          signedLD={signedLD}
+          idSuffix={model.id}
+        />
       ) : null}
       <LDStatusBar model={model} />
       {useGenomicPositions ? (

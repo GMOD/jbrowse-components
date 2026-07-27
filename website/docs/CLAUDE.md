@@ -7,8 +7,8 @@ the source instead.
 
 ## Auto-generated — do not hand-edit
 
-| Path(s)                                                    | Regenerate with              | Source of truth                                                                                  |
-| ---------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| Path(s)                                                    | Regenerate with              | Source of truth                                                                                                      |
+| ---------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `config/*.md` (config schema API)                          | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`website/scripts/api-docs/generateConfigDocs.ts`)                    |
 | `models/*.md` (state model API)                            | `pnpm autogen` (repo root)   | MST model definitions in source (`website/scripts/api-docs/generateStateModelDocs.ts`)                               |
 | `api/*.md` (plugin-export API)                             | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`website/scripts/api-docs/generateApiDocs.ts`)                                  |
@@ -16,9 +16,9 @@ the source instead.
 | file-type tables between `<!-- FILE_TYPES … -->`           | `pnpm autogen` (repo root)   | `#fileFormat`-tagged adapter configSchemas (`website/scripts/api-docs/generateFileTypeDocs.ts`)                      |
 | the track/display table between `<!-- DISPLAY_TYPES … -->` | `pnpm autogen` (repo root)   | `new DisplayType({name, trackType})` registrations (`website/scripts/api-docs/generateFileTypeDocs.ts`)              |
 | gotcha callouts between `<!-- GOTCHA … -->`                | `pnpm autogen` (repo root)   | `#gotcha`-tagged `#config` blocks in source (`website/scripts/api-docs/generateFileTypeDocs.ts`)                     |
-| `user_guide.md`, `config_guide.md`, `developer_guide.md`   | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                              |
-| `jbrowse-img.md` (@jbrowse/img static-export tool)         | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                         |
-| `cli.md` (@jbrowse/cli command reference)                  | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                         |
+| `user_guide.md`, `config_guide.md`, `developer_guide.md`   | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                                                  |
+| `jbrowse-img.md` (@jbrowse/img static-export tool)         | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                                             |
+| `cli.md` (@jbrowse/cli command reference)                  | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                                             |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`

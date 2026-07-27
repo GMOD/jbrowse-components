@@ -58,8 +58,8 @@ This bug only surfaces in the packaged Electron `file://` context because:
 
 ## Suggested fix
 
-Change `output.publicPath` in `config/webpack/config/webpack.config.ts` from `'auto'`
-to `'./'`. With `publicPath: './'`:
+Change `output.publicPath` in `config/webpack/config/webpack.config.ts` from
+`'auto'` to `'./'`. With `publicPath: './'`:
 
 - `HtmlWebpackPlugin` injects `<script src="static/js/main.js">` (relative,
   already the case).
@@ -272,9 +272,9 @@ just because we are testing our local zip file build or what?
 
 1. Stop the browser from opening on pnpm start
 
-config/webpack/scripts/start.ts:56 has open: true. For jbrowse-web that's the right
-default (you want a browser tab); for desktop you want Electron to be the only
-client. I'd make it environment-gated:
+config/webpack/scripts/start.ts:56 has open: true. For jbrowse-web that's the
+right default (you want a browser tab); for desktop you want Electron to be the
+only client. I'd make it environment-gated:
 
 Searched for 1 pattern, read 1 file (ctrl+o to expand) ⎿  Interrupted · What
 should Claude do instead?

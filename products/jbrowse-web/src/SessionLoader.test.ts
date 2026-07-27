@@ -273,12 +273,10 @@ describe('SessionLoader', () => {
     it('a plugin that fails to load does not fail the config load', async () => {
       const error = new Error('404 not found')
       const definition = { name: 'Gone', url: 'https://example.com/gone.js' }
-      jest
-        .mocked(loadPluginRecords)
-        .mockResolvedValueOnce({
-          records: [],
-          failures: [{ definition, error }],
-        })
+      jest.mocked(loadPluginRecords).mockResolvedValueOnce({
+        records: [],
+        failures: [{ definition, error }],
+      })
       const loader = SessionLoader.create({ initialTimestamp: Date.now() })
       await loader.loadConfigAndPlugins({
         assemblies: [],

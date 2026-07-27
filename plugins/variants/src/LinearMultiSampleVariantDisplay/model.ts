@@ -1,7 +1,4 @@
-import {
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -10,11 +7,11 @@ import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
-import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type {
   VariantRenderingBackend,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
+import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
