@@ -22,7 +22,7 @@ Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 
 Picking it from **Display types** shows the rows right away.
 
-<Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on a BED track, listing the multi-row display beside the default feature display. Any feature track can be switched over this way." />
+<Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track, listing the multi-row display beside the default feature display. Any feature track can be switched over this way." />
 
 By default it splits on the `name` column. To split on a column of your own, set
 [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)

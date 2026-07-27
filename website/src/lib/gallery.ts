@@ -146,13 +146,6 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Grape, peach, and cacao stacked in one synteny view from MCScan gene pairs, one track per adjacent pair of genomes, auto-diagonalized and colored by the genome shared between both tracks.',
       },
-      {
-        label: 'hg19 vs hg38 dotplot',
-        spec: 'gallery/hg19_vs_hg38',
-        guide: 'user_guides/dotplot_view',
-        description:
-          'The hg19 to hg38 liftOver chain as a whole-genome dotplot. Homologous chromosomes line up down the diagonal, and the off-diagonal specks are segments the two assemblies place differently. Both chrom.sizes and the chain load straight from UCSC.',
-      },
     ],
   },
   {

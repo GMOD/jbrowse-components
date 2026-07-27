@@ -1,5 +1,6 @@
 import {
   DEMO_CONFIG,
+  HG38_RMSK_TRACK,
   lgvSession,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
@@ -53,32 +54,6 @@ const COOKBOOK_MULTIWIG_TRACK = {
   },
 }
 
-// UCSC RepeatMasker for hg38 (jb2hubs golden-path build), a BedTabix whose
-// `#`-header exposes a `repClass` column (SINE/LINE/LTR/DNA/Simple_repeat/
-// Low_complexity/…). Wired as a session track for the color-by-category recipe,
-// which colors each repeat by that class — a track with real categorical
-// variety, unlike a gene model's handful of CDS/exon/gene types.
-const COOKBOOK_RMSK_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'cookbook_rmsk',
-  name: 'RepeatMasker',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BedTabixAdapter',
-    bedGzLocation: {
-      uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      indexType: 'CSI',
-      location: {
-        uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi',
-        locationType: 'UriLocation',
-      },
-    },
-  },
-}
-
 // The exact lookup-table recipe taught in docs/cookbook.md, kept in one place so
 // the figure and the recipe text can't drift.
 const RMSK_CLASS_COLOR =
@@ -125,14 +100,14 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cookbook_color_by_type',
     url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [COOKBOOK_RMSK_TRACK],
+      sessionTracks: [HG38_RMSK_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr17:45,700,000-45,750,000',
           tracks: [
-            { trackId: 'cookbook_rmsk', height: 380, color: RMSK_CLASS_COLOR },
+            { trackId: 'rmsk_hg38_ucsc', height: 380, color: RMSK_CLASS_COLOR },
           ],
         },
       ],

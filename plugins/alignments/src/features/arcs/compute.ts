@@ -8,7 +8,7 @@ import {
 import {
   connectionEndpointBps,
   featurizeSA,
-  readTrailingBp,
+  readLeadingBp,
 } from '@jbrowse/cigar-utils'
 
 import {
@@ -425,12 +425,13 @@ interface ArcChainContext {
   canonicalRefName: (refName: string) => string
 }
 
-// A lone read whose mate is mapped elsewhere: connect its 3' (read-trailing)
-// edge to the recorded mate position. Only PNEXT (the mate's leftmost/5' base)
-// is known off-screen — the mate's CIGAR/length isn't — so for a forward-strand
-// mate the endpoint lands at its 5' edge rather than its true 3' end (off by one
-// read length). Negligible at arc-view zoom; exact resolution would need the
-// off-screen mate's alignment.
+// A lone read whose mate is mapped elsewhere: connect its own outer (5') edge —
+// the true fragment boundary TLEN measures from — to the recorded mate
+// position. Only PNEXT (the mate's leftmost/5' base) is known off-screen — the
+// mate's CIGAR/length isn't — so for a forward-strand mate the endpoint lands
+// at its 5' edge rather than its true 3' end (off by one read length).
+// Negligible at arc-view zoom; exact resolution would need the off-screen
+// mate's alignment.
 function mateArc(entry: ReadEntry, ctx: ArcChainContext): PendingArc {
   const { data, readIdx, refName } = entry
   const flags = data.readFlags[readIdx]!
@@ -440,7 +441,7 @@ function mateArc(entry: ReadEntry, ctx: ArcChainContext): PendingArc {
   const mateRef = data.readNextRefs?.[readIdx] ?? ''
   return {
     p1Ref: refName,
-    p1Bp: readTrailingBp(strand, start, end),
+    p1Bp: readLeadingBp(strand, start, end),
     p1Strand: strand,
     p2Ref: mateRef ? ctx.canonicalRefName(mateRef) : refName,
     p2Bp: data.readNextPositions?.[readIdx] ?? 0,
@@ -565,29 +566,44 @@ function unpairedChainArcs(
   return arcs
 }
 
+// A mate's own outer (5', read-leading) edge — the fragment boundary TLEN is
+// measured from, as opposed to connectionEndpointBps' read-trailing edge (built
+// for split-junction/bezier connectors, which want the facing GAP between two
+// drawn segments). Using the gap edges for a mate-link arc understated its span
+// by both mates' own lengths, so the dome's width silently disagreed with the
+// TLEN driving its color (a pair could look unremarkably small yet be painted
+// long-insert, or vice versa).
+function pairOuterBp(entry: ReadEntry) {
+  const { data, readIdx } = entry
+  return readLeadingBp(
+    data.readStrands[readIdx]!,
+    data.readPositions[readIdx * 2]!,
+    data.readPositions[readIdx * 2 + 1]!,
+  )
+}
+
 // Build a pending arc from one resolved connection. Split junctions carry no
 // template length / pair orientation (so read cloud draws a dashed line at the gap
 // span rather than collapsing |0| to the baseline); the mate link sources both
 // from its first read's primary. Endpoints: a split junction joins the first
 // segment's read-trailing (3') edge to the next segment's read-leading (5')
 // edge — the inversion breakpoint, not the far edge of the reverse segment — and
-// the mate link joins each read's 3' end.
+// the mate link joins each read's own outer (5') edge, matching its TLEN span.
 function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
   const { e1, e2, isSplit } = c
   const { bp1, s1, bp2, s2 } = connectionEndpoints(c)
-  const endpoints = {
-    p1Ref: e1.refName,
-    p1Bp: bp1,
-    p1Strand: s1,
-    p2Ref: e2.refName,
-    p2Bp: bp2,
-    p2Strand: s2,
-  }
+  const p1Ref = e1.refName
+  const p2Ref = e2.refName
   return isSplit
-    ? { ...endpoints, isSplit: true }
+    ? { p1Ref, p1Bp: bp1, p1Strand: s1, p2Ref, p2Bp: bp2, p2Strand: s2, isSplit }
     : {
-        ...endpoints,
-        isSplit: false,
+        p1Ref,
+        p1Bp: pairOuterBp(e1),
+        p1Strand: s1,
+        p2Ref,
+        p2Bp: pairOuterBp(e2),
+        p2Strand: s2,
+        isSplit,
         pairOrientationNum: e1.data.readPairOrientations[e1.readIdx]!,
         tlen: e1.data.readInsertSizes[e1.readIdx]!,
       }

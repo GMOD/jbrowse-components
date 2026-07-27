@@ -7,14 +7,11 @@ description:
 ---
 
 JBrowse 2 is a pluggable, open-source genome browser that runs on the web, on
-the desktop, and embedded in your own app. It offers linear, circular, dotplot,
-synteny, and spreadsheet views, with track types for alignments, variants,
-coverage, GWAS/Manhattan, and Hi-C data. Data is organized into
+the desktop, and embedded in your own app. Data is organized into
 [assemblies](/docs/config_guides/assemblies) (reference genomes) and
 [tracks](/docs/config_guides/tracks) layered on top of them.
 
-**Just want to look? No install needed.** Explore the
-[visualization gallery](/gallery/), or real hosted genomes at
+See the [visualization gallery](/gallery/), or hosted genomes at
 [Genome Hubs](https://genomes.jbrowse.org/).
 
 ## Run JBrowse

@@ -141,6 +141,32 @@ export const HG38_NCBI_GENE_TRACK = {
   },
 }
 
+// UCSC RepeatMasker for hg38 (jb2hubs golden-path build) as a session track: a
+// BedTabix whose `#`-header exposes a `repClass` column (SINE/LINE/LTR/DNA/
+// Simple_repeat/Low_complexity/…). The repo's one feature track with real
+// categorical variety, so it backs both the color-by-category recipe and the
+// multi-row figures, where `repClass` is what a row is split on.
+export const HG38_RMSK_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'rmsk_hg38_ucsc',
+  name: 'RepeatMasker',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    bedGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'CSI',
+      location: {
+        uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+}
+
 // GENCODE v48 promoter windows (UCSC hub build, jbrowse.org/ucsc/hg38) as a
 // session track, for figures that want promoter context without the full
 // ENCODE cCRE/chromatin-state tracks.

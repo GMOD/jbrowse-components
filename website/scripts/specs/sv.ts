@@ -1214,11 +1214,10 @@ export const svSpecs: ScreenshotSpec[] = [
           // loads (vs the whole ±60kb overview) while still showing CDKN2A and
           // flanking single-copy-loss context
           loc: 'chr9:21,930,000-21,990,000',
-          // highlight band over CDKN2A so the eye lands on the deleted driver
-          // rather than hunting for it among the neighboring genes (reviewer) —
-          // same device as the KRAS gain figure below. Spans the p16INK4a
-          // transcript (NM_000077), which is what the gene track draws here.
-          highlight: ['chr9:21,967,752-21,975,132'],
+          // No highlight band: the drop-out is the figure and needs no pointer,
+          // and a band over the p16INK4a transcript (chr9:21,967,752-21,975,132,
+          // what the gene track draws here) runs 3kb past the deletion's right
+          // breakpoint at 21,972,343, tinting recovered coverage.
           // offset track labels onto their own line so the long track names
           // (fine-scale coverage / PacBio HiFi reads) don't overlap the data
           trackLabels: 'offset',

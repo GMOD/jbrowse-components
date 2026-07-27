@@ -169,7 +169,9 @@ describe('computeArcsFromPileupData', () => {
     expect(result.arcs.length).toBe(1)
     expect(result.arcs[0]!.p1.refName).toBe('chr1')
     expect(result.arcs[0]!.p2.refName).toBe('chr1')
-    expect(result.arcs[0]!.p1.bp).toBe(1100)
+    // p1 is the read's own outer (5') edge (1000), not its inner 3' edge
+    // (1100) — matching the TLEN span, not the gap between the reads.
+    expect(result.arcs[0]!.p1.bp).toBe(1000)
     expect(result.arcs[0]!.p2.bp).toBe(2000)
   })
 
@@ -402,11 +404,12 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: true,
     })
 
-    // Both endpoints leave the read's 3' edge (1500): one reaches the mate
-    // (2000), the other the supplementary block's 5' edge (3000).
-    const p2s = result.arcs.map(a => a.p2.bp).sort((a, b) => a - b)
-    expect(result.arcs.every(a => a.p1.bp === 1500)).toBe(true)
-    expect(p2s).toEqual([2000, 3000])
+    // The mate link uses the read's own outer (5') edge (1000), matching its
+    // TLEN span; the split junction still leaves from its 3' edge (1500) to
+    // the supplementary block's 5' edge (3000).
+    const byP2 = new Map(result.arcs.map(a => [a.p2.bp, a.p1.bp]))
+    expect(byP2.get(2000)).toBe(1000)
+    expect(byP2.get(3000)).toBe(1500)
   })
 
   test('malformed SA tag entries are skipped, not emitted as NaN arcs', () => {
@@ -485,8 +488,9 @@ describe('computeArcsFromPileupData', () => {
     })
 
     expect(result.arcs.length).toBe(1)
-    expect(result.arcs[0]!.p1.bp).toBe(1100)
-    expect(result.arcs[0]!.p2.bp).toBe(5100)
+    // Each mate's own outer (5') edge (1000, 5000), not its inner 3' edge.
+    expect(result.arcs[0]!.p1.bp).toBe(1000)
+    expect(result.arcs[0]!.p2.bp).toBe(5000)
   })
 
   test('orientation coloring: RL gives colorType 6', () => {
@@ -1105,7 +1109,9 @@ describe('computeArcsFromPileupData', () => {
     // insert-size default (0) the global hasPaired branch would have produced.
     expect(arcs[0]!.colorType).toBe(7)
     // arc[1] = the read1↔read2 mate link, still colored by pair semantics.
-    expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1200, 5000])
+    // Each mate's own outer edge: fwd read1's start (1000), rev read2's end
+    // (5200).
+    expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1000, 5200])
   })
 
   test('mate-unmapped paired split read still draws its split junction', () => {
@@ -1196,8 +1202,9 @@ describe('computeArcsFromPileupData', () => {
     expect(pairs).toContainEqual([9200, 5000])
     // ...never the direct A→C join (1200→5000) the old branch produced...
     expect(pairs).not.toContainEqual([1200, 5000])
-    // ...plus the mate link A↔D (fwd 3' end 1200 → reverse mate's 5500).
-    expect(pairs).toContainEqual([1200, 5500])
+    // ...plus the mate link A↔D, each mate's own outer edge (fwd A's start
+    // 1000 → rev D's end 5700), not the gap between them.
+    expect(pairs).toContainEqual([1000, 5700])
     expect(withLongRange).toHaveLength(3)
 
     // With long-range off, B can't be drawn and A/C are not read-adjacent, so no
@@ -1212,7 +1219,7 @@ describe('computeArcsFromPileupData', () => {
       },
     ).arcs
     expect(withoutLongRange.map(a => [a.p1.bp, a.p2.bp])).toEqual([
-      [1200, 5500],
+      [1000, 5700],
     ])
   })
 

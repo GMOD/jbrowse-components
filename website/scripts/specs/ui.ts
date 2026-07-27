@@ -1,5 +1,6 @@
 import {
   DEMO_CONFIG,
+  HG38_RMSK_TRACK,
   VOLVOX,
   cascadeBoxes,
   dismissMenus,
@@ -1521,7 +1522,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     // geometry settle before the click sequence
     settleMs: 8000,
     hideTooltip: true,
-    hideSelectors: ['.MuiTooltip-popper'],
+    // the pin raises a "Set as the default" snackbar that outlives the click
+    // sequence; it is the action being documented, not part of either frame
+    hideSelectors: ['.MuiTooltip-popper', '.MuiSnackbar-root'],
     stages: [
       {
         // top frame: the badge in the track selector, circled
@@ -1752,23 +1755,36 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
   },
 
-  // The "Display types" submenu on a plain BED feature track, with the
-  // multi-row display boxed: the multi-row user guide's answer to "where do I
-  // turn this on". Deliberately shot on a track still in its DEFAULT display,
-  // so the figure shows the switch being available rather than already made.
-  // Local volvox data, so no remote-fetch timeout.
+  // The "Display types" submenu, with the multi-row display boxed: the
+  // multi-row user guide's answer to "where do I turn this on". Deliberately
+  // shot on a track still in its DEFAULT display, so the figure shows the
+  // switch being available rather than already made.
+  //
+  // Shot on UCSC RepeatMasker rather than a gene track, because the menu item
+  // has to be one a reader would plausibly pick. A gene track has nothing to
+  // partition on — every feature is a gene, so multi-row gives one row per gene
+  // name — whereas rmsk carries `repClass`, and one row per repeat class is the
+  // thing this display exists for. Same 17q21 window as cookbook_color_by_type,
+  // dense enough that rows read behind the menu.
   {
     mode: 'url',
     name: 'multirow/display_types_menu',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1-50000',
-      tracks: ['bedtabix_genes'],
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [HG38_RMSK_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:45,700,000-45,750,000',
+          tracks: ['rmsk_hg38_ucsc'],
+        },
+      ],
     }),
-    readyText: 'ctgA',
+    readyText: 'RepeatMasker',
+    readyTimeout: 60000,
     viewportWidth: 1000,
     viewportHeight: 560,
-    settleMs: 4000,
+    settleMs: 6000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       ...menuCascade(['Display types', 'Multi-row feature display (painting)']),

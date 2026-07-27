@@ -54,9 +54,9 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "good",
-    "note": "FIXED in code: the arc/cloud legend section now MERGES into the read-colors key whenever the overlay paints from the reads own scheme (arcColorsMatchReads in LinearAlignmentsDisplay/model.ts maps arc mode -> its equivalent read scheme), so the same swatches are no longer listed twice under two headings; the single merged list is untitled. When the two schemes genuinely differ the overlay keeps its own section, and its heading is now named after the overlay drawn (Read cloud colors vs Arc colors), so cloud mode is no longer called arcs. Regenerated.",
-    "reviewedAt": "2026-07-26T06:12:17.113Z",
-    "hash": "0a45a27dc4022239cf460c92d7b717321c54a400"
+    "note": "FIXED in code: the arc/cloud legend section now MERGES into the read-colors key whenever the overlay paints from the reads own scheme (arcColorsMatchReads in LinearAlignmentsDisplay/model.ts maps arc mode -> its equivalent read scheme), so the same swatches are no longer listed twice under two headings; the single merged list is untitled. When the two schemes genuinely differ the overlay keeps its own section, and its heading is now named after the overlay drawn (Read cloud colors vs Arc colors), so cloud mode is no longer called arcs. Regenerated. FIXED in code (arcs/compute.ts): mate-link arc endpoints now use each mate's own outer (5') edge instead of the inward gap edge, so a pair's geometric radius matches the TLEN driving its long/short-insert color instead of understating it by both mates' read lengths. Regenerated.",
+    "reviewedAt": "2026-07-27T14:30:38.000Z",
+    "hash": "450b7832a27676e77edeec72ec191ebd6fd91702"
   },
   "dotplot": {
     "name": "dotplot",
@@ -179,9 +179,9 @@
   "inverted_duplication": {
     "name": "inverted_duplication",
     "status": "good",
-    "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). readConnectionsHeight 40 -> 200, track height and viewportHeight raised by the same 160 so no pileup row is lost. An arc apex is drawn at its genomic span in px, clamped to the band, so at this zoom every pair (concordant ~400bp upward) was clipped to the 40px ceiling and the band was one flat mass; at 200 the concordant domes resolve below the discordant pairs spanning the duplication. The two evidence callouts moved from raw viewport x/y to an anchor on the pileup track (fracY 0 + dy), so they now sit a fixed distance below the arc band whatever its height, per the rule in website/CLAUDE.md.",
-    "reviewedAt": "2026-07-27T13:45:08.352Z",
-    "hash": "936f3cbc487810143d96d97533a9bc1fb4b9d642"
+    "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). readConnectionsHeight 40 -> 200, track height and viewportHeight raised by the same 160 so no pileup row is lost. An arc apex is drawn at its genomic span in px, clamped to the band, so at this zoom every pair (concordant ~400bp upward) was clipped to the 40px ceiling and the band was one flat mass; at 200 the concordant domes resolve below the discordant pairs spanning the duplication. The two evidence callouts moved from raw viewport x/y to an anchor on the pileup track (fracY 0 + dy), so they now sit a fixed distance below the arc band whatever its height, per the rule in website/CLAUDE.md. FIXED in code (arcs/compute.ts): mate-link arc geometry used each mate's inward (gap) edge, understating a pair's radius by both mates' read lengths (~300bp) relative to the TLEN driving its color — a modest, unremarkable-looking arc could be painted long-insert red. Endpoints now use each mate's own outer (5') edge, matching its TLEN span. Regenerated.",
+    "reviewedAt": "2026-07-27T14:30:38.000Z",
+    "hash": "f63860f1e2e68b598313ee0fdb71886d1880068d"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -1162,10 +1162,10 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T12:51:48.854Z",
-    "hash": "498ebb4bf77bea3cc57ffa1e850fb45dd43da3ea"
+    "status": "bad",
+    "note": "remove the highlight",
+    "reviewedAt": "2026-07-27T14:29:28.566Z",
+    "hash": "1175e404b9d27a334adb6c06ad6b3f5bee88f81a"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1670,8 +1670,8 @@
     "name": "scatac/alb_hepatocyte",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-21T18:11:49.163Z",
-    "hash": "5e7aa630c68fa235c83fe60730be91b0687caadb"
+    "reviewedAt": "2026-07-27T14:29:32.191Z",
+    "hash": "0809ad34c49228dbdf1857a003a119fbb2f021bb"
   },
   "pangenome_cactus/depth": {
     "name": "pangenome_cactus/depth",
@@ -1807,9 +1807,9 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "bad",
-    "note": "the legend arc color boxes are duplicating contents from read color. also, ideally it should only show colors that are visible. FIXED in the display, not the spec, and in the second shape after the first was wrong. First pass subtracted the shared buckets from the arc key, which traded the duplication for a worse defect: an \"Arc colors\" heading listing three colors over arcs drawn in seven (reviewer: \"the arcs are green and blue too\"). Both notes are the same underlying thing. The read/arc split is which code path paints a pixel, not a distinction the reader has, and a shared bucket is the same swatch on both sides, so splitting them offers only two bad lists. getAlignmentsLegendSections now merges the two into ONE section whenever they share a color, deduped by color rather than by category (the arcs neutral slot and the reads LR slot are both colorPairLR, so \"Normal\" was the same grey under a second word). One untitled list, nine rows, every drawn color exactly once, and two heading rows saved. They stay separate only when the vocabularies share nothing (reads by modification, arcs by insert size), where the headings say something real. NOT changed: both lists already derive from categories the renderer actually produced, so a swatch that is hard to find is a category present in a few reads rather than one listed on spec; suppressing those would make the legend lie.",
-    "reviewedAt": "2026-07-27T13:43:55.272Z",
-    "hash": "8b77591beb2189dc67f0fe3cc3fcdbe94cc29b05"
+    "note": "the legend arc color boxes are duplicating contents from read color. also, ideally it should only show colors that are visible. FIXED in the display, not the spec, and in the second shape after the first was wrong. First pass subtracted the shared buckets from the arc key, which traded the duplication for a worse defect: an \"Arc colors\" heading listing three colors over arcs drawn in seven (reviewer: \"the arcs are green and blue too\"). Both notes are the same underlying thing. The read/arc split is which code path paints a pixel, not a distinction the reader has, and a shared bucket is the same swatch on both sides, so splitting them offers only two bad lists. getAlignmentsLegendSections now merges the two into ONE section whenever they share a color, deduped by color rather than by category (the arcs neutral slot and the reads LR slot are both colorPairLR, so \"Normal\" was the same grey under a second word). One untitled list, nine rows, every drawn color exactly once, and two heading rows saved. They stay separate only when the vocabularies share nothing (reads by modification, arcs by insert size), where the headings say something real. NOT changed: both lists already derive from categories the renderer actually produced, so a swatch that is hard to find is a category present in a few reads rather than one listed on spec; suppressing those would make the legend lie. Unrelated regen: mate-link arc geometry fix (arcs/compute.ts, see inverted_duplication note) shifted some arc colors/positions in this view; status/legend verdict above is untouched and still needs its own resolution.",
+    "reviewedAt": "2026-07-27T14:30:38.000Z",
+    "hash": "2f10ea8cc9e70fe716fe2cd404afaaec765a8c88"
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
@@ -2131,5 +2131,19 @@
     "note": "the notification icon 'set as the default' may want to have been dismissed",
     "reviewedAt": "2026-07-27T14:01:32.501Z",
     "hash": "badcbb82ebb1cfda9e38245b5bdeb44a8a1a2335"
+  },
+  "pangenome/pggb_locus_graph": {
+    "name": "pangenome/pggb_locus_graph",
+    "status": "bad",
+    "note": "it is kind of weird to see the 'rank 1' having coloring the same as the reference, not sure if worth giving it a \"different spectrum\"? rainbow is aesthetically pleasing but just sort of weird potential overlap",
+    "reviewedAt": "2026-07-27T14:27:42.193Z",
+    "hash": "23c946bd59bb3ce9973f54288931ea3860038082"
+  },
+  "pangenome/rgfa_launch_out_menu": {
+    "name": "pangenome/rgfa_launch_out_menu",
+    "status": "bad",
+    "note": "potentially add red boxes to highlight the 'view_menu_icon' and potentially a two part screenshot showing the next stage of selecting a linearsynteny view launch or lineargenomeview launch could be useful. also, if we can simplify the menus, that may be valuable. quite \"large\"!",
+    "reviewedAt": "2026-07-27T14:28:59.535Z",
+    "hash": "3bdc26debf20d790038ac2970a73f9e7fd90a9ac"
   }
 }
