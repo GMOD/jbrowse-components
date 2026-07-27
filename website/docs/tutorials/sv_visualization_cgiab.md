@@ -45,8 +45,8 @@ You will need:
 - A Linux machine with HTTP access (either a public URL or `http://localhost`)
 - Approximately 1 TB of free disk space to build the tracks from the raw reads,
   or ~1.5 TB to run the full reproduce pipeline below (the BAM/CRAM files are
-  large). See [Loading less than all of it](#loading-less-than-all-of-it) to
-  avoid both.
+  large); each figure below also has its own live link, so you don't have to
+  build the instance to see the results.
 - At least 32 GB of RAM for the minimap2 alignment step (you can downsize the
   machine after data prep is done, and a 2 GB instance is sufficient to host the
   finished site)
