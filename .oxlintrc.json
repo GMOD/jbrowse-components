@@ -143,9 +143,6 @@
     "products/*/examples-site/astro.config.mjs",
     "products/*/examples-site/**/*.astro",
     "products/examples-site-shared/**/*.astro",
-    // Own tsconfig (dom lib, no noUncheckedIndexedAccess) — oxlint's
-    // type-aware pass is single-project against the root tsconfig, which
-    // reports different (spurious) results against this project's types.
     "website/scripts/api-docs",
     "benchmarks",
     "auth_test_utils",
