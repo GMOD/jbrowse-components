@@ -106,6 +106,10 @@ const DEVICE_SCALE_FACTOR = 2
 // the run reports the spec's viewportHeight as stale. ~50 CSS px is below what
 // reads as a framing choice and above the few px of margin every capture has.
 const SLACK_WARN_PX = 100
+// CSS px of page below the viewport, past which the capture is cutting off
+// content rather than framing it. A few px is normal rounding; a clipped track
+// row is tens.
+const CLIP_WARN_PX = 8
 const diffThreshold = optNum(values['diff-threshold']) ?? DEFAULT_DIFF_THRESHOLD
 const externalPort = optNum(values.port)
 const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
@@ -529,7 +533,37 @@ async function shoot(
   await assertSamePageAsReady(page, spec)
   const clip = spec.crop
   await page.screenshot(clip ? { path: file, clip } : { path: file })
+  if (!clip) {
+    clippedPx.set(
+      spec.name,
+      Math.max(clippedPx.get(spec.name) ?? 0, await overflowPx(page)),
+    )
+  }
 }
+
+// CSS px of page laid out below the bottom of the viewport, i.e. content the
+// capture cut off. The inverse of trailingBackgroundPx: too little viewport
+// rather than too much. It cannot be recovered from the PNG — a clipped figure
+// and one that happens to end flush with its last track look identical — so it
+// has to be read from the live page, and a `crop` spec frames deliberately.
+//
+// Measured off the view containers, not `documentElement.scrollHeight`: the app
+// fills the window and its overflow is absorbed by inner scroll containers, so
+// the document itself never reports being taller than the viewport even when a
+// track's rows are visibly cut in half.
+async function overflowPx(page: Page) {
+  return page.evaluate(() =>
+    Math.max(
+      0,
+      ...Array.from(
+        document.querySelectorAll('[data-testid^="view-container-"]'),
+        el => el.getBoundingClientRect().bottom - window.innerHeight,
+      ),
+    ),
+  )
+}
+
+const clippedPx = new Map<string, number>()
 
 // Wait for the browser to actually rasterize the current DOM before capturing.
 // A single rAF callback fires *before* paint, so a freshly-composited layer —
@@ -1210,6 +1244,18 @@ async function main() {
       suppressed.map(
         ({ name, frac }) =>
           `• ${name}.png: ${(frac * 100).toFixed(3)}% differs, over the ${(diffThreshold * 100).toFixed(3)}% default`,
+      ),
+    )
+  }
+  const clipped = [...clippedPx]
+    .filter(([, px]) => px > CLIP_WARN_PX)
+    .sort((a, b) => b[1] - a[1])
+  if (clipped.length > 0) {
+    printReport(
+      `CONTENT CLIPPED BELOW THE FOLD (${clipped.length}) — the capture cut these off; raise the spec's viewportHeight by about this much`,
+      clipped.map(
+        ([name, px]) =>
+          `• ${name}.png: ${px} css px of page below the viewport`,
       ),
     )
   }

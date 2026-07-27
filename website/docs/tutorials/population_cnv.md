@@ -149,12 +149,17 @@ static hosting.
 adapter is duck-typed, the display, the clustering and the settings above are
 unchanged.
 
+The plugin is in **beta** and not in the
+[plugin store](/docs/user_guides/plugin_store) yet, but the built bundle is
+hosted, so it loads from any config today (see
+[configuring plugins](/docs/config_guides/plugins)):
+
 ```json
 {
   "plugins": [
     {
       "name": "Zarr",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-zarr/latest/dist/jbrowse-plugin-zarr.umd.production.min.js"
+      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
     }
   ],
   "tracks": [

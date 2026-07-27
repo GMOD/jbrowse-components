@@ -125,22 +125,6 @@ sharing one slot (arcs vs read cloud) stay independent.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## makeSlotsValueDisplayTypeDefaultControl
-
-Per-value control over a _group_ of slots: "make this exact combination of slot
-values the session default". `active` reflects whether this exact combination is
-the current default; `toggle` flips it (set/clear, non-destructive). Each row of
-a preset radio group (e.g. a feature-height preset = height + spacing + mode)
-gets its own independent control. The base builder the single-value /
-promote-current wrappers below delegate to.
-
-```js
-// type signature
-(self: PromotableDisplay, entries: PromotableEntry[]) => DisplayTypeDefaultControl
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ## openPromotableDisplays
 
 Every display on an open track, across all open views — the reach of anything
@@ -153,7 +137,8 @@ N open tracks" undercounted it, and — the real bug — the share/export bake
 neither baked its inherited values nor flagged it `ignorePromotedDefaults`, so a
 shared session containing a breakpoint-split or synteny view rendered
 differently for the recipient. `LGVSyntenyDisplay` (a promotable adopter) is
-only ever reached through this branch.
+only ever reached through this branch. See `hasChildViews` for the one composite
+shape the recursion does not cover.
 
 Views that show no tracks at all (e.g. dotplot) drop out via the structural
 guards. In practice a track has one display (`replaceDisplay` swaps in place,
@@ -172,6 +157,17 @@ track's display without relying on multiple-per-track.
 Given a configuration model (an instance of a ConfigurationSchema), read the
 configuration value at the given path. Use this when you hold the configuration
 model directly, e.g. an entry from `session.tracks`.
+
+Wants a **live config node**, not a snapshot of one, and passing a snapshot is a
+type error. Slots are built with `types.stripDefault`, so a slot sitting at its
+default is absent from a snapshot — "unset" and "at its default" are
+indistinguishable there, and a read off one reports a default as missing.
+
+That is enforced in the types only, deliberately: it can't be a runtime check.
+`generateHierarchy` reads slots straight off the **un-hydrated frozen** entries
+of `jbrowse.tracks` on purpose, because hydrating every track to answer the
+track selector is what `types.frozen` exists to avoid — and those reads are
+indistinguishable at runtime from the broken spelling.
 
 ```js
 // type signature

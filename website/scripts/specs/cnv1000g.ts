@@ -95,9 +95,9 @@ const CLUSTERED_READY =
   '[data-testid="multi-wiggle-display-done"][data-clustered="true"]'
 
 // The tutorial's own config: hg38, the 2504-sample Zarr store in test_data,
-// RefSeq genes and the SV map. It loads jbrowse-plugin-zarr from the plugin
-// store, so the figure below only renders once that plugin is published (the
-// same arrangement as the protein3d figures).
+// RefSeq genes and the SV map. It loads jbrowse-plugin-zarr from its published
+// beta bundle at jbrowse.org/demos/zarr/, the same arrangement as
+// graphgenomeviewer, so the figures below need network for the plugin itself.
 const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 
 export const cnv1000gSpecs: ScreenshotSpec[] = [

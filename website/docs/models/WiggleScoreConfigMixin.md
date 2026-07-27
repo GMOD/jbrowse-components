@@ -39,6 +39,7 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | [minScoreBound](#getter-minscorebound)               | Getters    | WiggleScoreConfigMixin |                                                                                                                                                                         |
 | [maxScoreBound](#getter-maxscorebound)               | Getters    | WiggleScoreConfigMixin |                                                                                                                                                                         |
 | [hasResolution](#getter-hasresolution)               | Getters    | WiggleScoreConfigMixin |                                                                                                                                                                         |
+| [isCacheValid](#method-iscachevalid)                 | Methods    | WiggleScoreConfigMixin | Strict zoom equality: see adr-008.                                                                                                                                      |
 | [toggleCrossHatches](#action-togglecrosshatches)     | Actions    | WiggleScoreConfigMixin |                                                                                                                                                                         |
 | [setResolution](#action-setresolution)               | Actions    | WiggleScoreConfigMixin |                                                                                                                                                                         |
 | [setLoadedBpPerPx](#action-setloadedbpperpx)         | Actions    | WiggleScoreConfigMixin |                                                                                                                                                                         |
@@ -53,7 +54,6 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | [setScatterPointSize](#action-setscatterpointsize)   | Actions    | WiggleScoreConfigMixin |                                                                                                                                                                         |
 | [setLineWidth](#action-setlinewidth)                 | Actions    | WiggleScoreConfigMixin |                                                                                                                                                                         |
 | [setAutoscale](#action-setautoscale)                 | Actions    | WiggleScoreConfigMixin |                                                                                                                                                                         |
-| [isCacheValid](#action-iscachevalid)                 | Actions    | WiggleScoreConfigMixin | Strict zoom equality: see adr-008.                                                                                                                                      |
 
 <details>
 <summary>WiggleScoreConfigMixin - Properties</summary>
@@ -99,6 +99,21 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 </details>
 
 <details>
+<summary>WiggleScoreConfigMixin - Methods</summary>
+
+#### method: isCacheValid
+
+Strict zoom equality: see adr-008. A view, not an action, so the `view.bpPerPx`
+read below actually registers as a dependency of whoever calls it (see
+MultiRegionDisplayMixin's hook block).
+
+```ts
+type isCacheValid = (_displayedRegionIndex: number) => boolean
+```
+
+</details>
+
+<details>
 <summary>WiggleScoreConfigMixin - Actions</summary>
 
 #### action: setPosColor
@@ -109,14 +124,6 @@ same way.
 
 ```ts
 type setPosColor = (color?: string | undefined) => void
-```
-
-#### action: isCacheValid
-
-Strict zoom equality: see adr-008.
-
-```ts
-type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 </details>

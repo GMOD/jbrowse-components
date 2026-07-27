@@ -207,6 +207,17 @@ const MHC_REGION = {
   end: 32560000,
 }
 
+// The tutorial's own MHC class II window, used only by the sample-rows figure so
+// its donor-row count is the one that table would predict. Wider than MHC_REGION
+// because rows are what that layout draws: the 60 kb above contributes 6, this
+// 90 kb contributes 12.
+const MHC_SAMPLE_ROWS_REGION = {
+  refName: 'chr6',
+  assemblyName: 'hg38',
+  start: 32510000,
+  end: 32600000,
+}
+
 // C4, for the launch figure, from the tutorial's own table of loci worth a look.
 // 70 kb fits under the view's 100 kb cap, so the visible region is launchable
 // without zooming first, and the window is dense in the way the picture needs:
@@ -741,23 +752,81 @@ export const graphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
   },
 
+  // Sample rows on the human graph, which says something the E. coli figure of
+  // the same layout cannot. There, five strains fill five rows and a row is
+  // simply "what this strain does to K12". Here 12 haplotypes out of 464 draw a
+  // row, and the gap between those numbers is the point the tutorial makes: a
+  // row is the haplotype minigraph took the sequence FROM, the same attribution
+  // firstSeenIn carries, not the set carrying it.
+  //
+  // The window is the tutorial's own MHC class II row (MHC_SAMPLE_ROWS_REGION)
+  // rather than the 60 kb MHC_REGION the force/anchored pair uses, so the row
+  // count in the caption is the one its table would predict. Counted off the
+  // index, not by eye:
+  // `tabix hprc-v2.0-mc-grch38.links.bed.gz 'GRCh38#0#chr6:32510000-32600000'`
+  // has 12 distinct non-GRCh38 sample prefixes.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_mhc_sample_rows',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,510,000-32,600,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+            {
+              trackId: SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              height: 90,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: MHC_SAMPLE_ROWS_REGION,
+          layoutMode: 'samplerows',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    // the row labels, not just the toolbar: this layout's whole content is its
+    // rows, and a frame captured before they paint is a figure of an empty axis
+    readySelector: '[data-testid="graph-row-label"]',
+    readyTimeout: 90000,
+    settleMs: 4000,
+    viewportWidth: 1000,
+    // the two linear lanes plus 13 graph rows (backbone + 12 donors); the graph
+    // pane sizes itself to its drawing, so this is the two views and nothing
+    // under them
+    viewportHeight: 1120,
+    hideTooltip: true,
+  },
+
   // The human pangenome at C4, the second locus this graph is worth opening at
   // (see C4_WINDOW) and the one where the picture is a copy-number story rather
   // than an allelic-diversity one.
   //
-  // Declarative rather than menu-driven, and only because of what the deployed
-  // plugin bundle predates. Writing this figure as a launch is what found the
-  // bug: the menu passes the *assembly's* canonical refName, which for this hg38
+  // Declarative rather than menu-driven, which is now a free choice rather than
+  // a forced one. Writing this figure as a launch is what found the bug: the
+  // menu passes the *assembly's* canonical refName, which for this hg38
   // (`hg38.prefix.fa.gz`, and every GRCh38 FASTA on jbrowse.org) is the bare `6`,
   // while the graph's stable names are `GRCh38#0#chr6`, and the plugin's
   // `GetSubgraph` RPC did no refName renaming, so the launch resolved nothing and
   // opened a view reading "0 nodes, 0 edges" with no error. Fixed in the plugin
-  // by extending `RpcMethodTypeWithRenameRegion` (verified locally: the same
-  // menu-driven launch draws 30 nodes / 36 edges, matching this figure), but the
-  // hosted bundle still has to be redeployed. Switch this spec to the driven form
-  // once it is. E. coli is unaffected either way, its assembly refName `chr`
-  // matching the graph's `K12#1#chr`, which is why the driven figures above are on
-  // E. coli.
+  // by extending `RpcMethodTypeWithRenameRegion`, and the hosted bundle now
+  // carries that fix (its `GetSubgraph` extends the renaming base class), so this
+  // could be switched to the driven form; it stays declarative because a launch
+  // flow buys this particular figure nothing that pangenome/rgfa_launch_menu does
+  // not already document. E. coli was unaffected either way, its assembly refName
+  // `chr` matching the graph's `K12#1#chr`, which is why the driven figures above
+  // are on E. coli.
   {
     mode: 'url',
     name: 'pangenome/hprc_c4_subgraph',

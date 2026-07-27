@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "Zarr",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-zarr/latest/dist/jbrowse-plugin-zarr.umd.production.min.js"
+      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
     }
   ],
   "assemblies": [

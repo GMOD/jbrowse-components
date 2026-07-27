@@ -9,6 +9,7 @@ alpha
 arcColorByType
 autoDiagonalize
 autoscale
+bicolorPivot
 canvasHeight
 cigarMode
 collapseGroupRows
@@ -40,7 +41,9 @@ linkedReads
 loadedRegion
 loadedTrackId
 minAlignmentLength
+negColor
 numStdDev
+posColor
 readConnectionsHeight
 renderingMode
 rowHeight

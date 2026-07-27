@@ -125,11 +125,11 @@ export const gallerySections: readonly GallerySection[] = [
           'Grape against peach from a minimap2 PAF. The dotplot pans and zooms like any other view, and drag-selecting a block opens that region as a linear synteny view.',
       },
       {
-        label: 'Synteny blocks and gene anchors',
+        label: 'Gene-level synteny',
         spec: 'linear_synteny_gallery',
         guide: 'tutorials/synteny_visualization',
         description:
-          'Peach Pp05 against grape chr2 with MCScan anchors. The per-gene ribbons connect the two panels, and the same anchors appear as strand-colored blocks in each panel: red collinear, blue inverted.',
+          'Peach against grape from a set of matching gene pairs computed by MCScan. Each pair is drawn as a ribbon between the two panels, and the same data appears as blocks colored red for same strand and blue for inverted.',
       },
       {
         label: 'Human vs mouse synteny',
@@ -139,18 +139,18 @@ export const gallerySections: readonly GallerySection[] = [
           'Whole-genome liftOver chains between human (hs1) and mouse (mm39), auto-diagonalized so one genome reorders to match the other, and colored by query chromosome to follow where each one lands.',
       },
       {
-        label: 'GRCh38 vs T2T-CHM13 at TNNT3',
+        label: 'hg38 vs CHM13 liftOver alignment',
         spec: 'synteny_hg38_hs1_tnnt3',
         guide: 'tutorials/genomes_synteny',
         description:
-          'The UCSC hg38 to T2T-CHM13 liftOver chain colored by strand. The one reverse-strand block is a segment the two assemblies place on opposite sides of the gene, the rearrangement from Fig 5C of the T2T human variation paper.',
+          'The UCSC chain at TNNT3, colored by strand. The one reverse-strand block is a segment the two assemblies place on opposite sides of the gene, the rearrangement from Fig 5C of the T2T human variation paper.',
       },
       {
         label: 'Multi-way synteny',
         spec: 'multiway_synteny/grape_peach_cacao',
         guide: 'tutorials/multiway_synteny',
         description:
-          'Grape, peach, and cacao stacked in one synteny view with MCScan anchors, one track per adjacent pair, auto-diagonalized and colored by the genome shared between both pairs.',
+          'Grape, peach, and cacao stacked in one synteny view from MCScan gene pairs, one track per adjacent pair of genomes, auto-diagonalized and colored by the genome shared between both tracks.',
       },
       {
         label: 'hg19 vs hg38 dotplot',
@@ -184,7 +184,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'multisv',
         guide: 'tutorials/sv_multisamples',
         description:
-          'One row per sample straight from a multi-sample VCF, colored by genotype. Carriers of a chr19 inversion appear as a solid block across the 1000 Genomes SV callset.',
+          'One row per sample straight from a multi-sample VCF, colored by genotype. Carriers of a large inversion appear as a solid block across the 1000 Genomes SV callset.',
       },
       {
         label: 'Pair orientation coloring',
@@ -198,7 +198,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'sv_cgiab/translocation_breakpoint_split',
         guide: 'tutorials/sv_visualization_cgiab',
         description:
-          'A C-GIAB cancer benchmark translocation between chr3 and chr13, one chromosome per panel. Black splines connect tumor PacBio HiFi reads that map partway to each side, the read-level evidence for the call.',
+          'A C-GIAB cancer benchmark translocation between two chromosomes, one per panel. Black splines connect tumor PacBio HiFi reads that map partway to each side, the read-level evidence for the call.',
       },
       {
         label: 'Read cloud',
@@ -246,7 +246,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'gallery/nanopore_methylation',
         guide: 'tutorials/methylation',
         description:
-          'Human nanopore reads over a chr20 CpG island: red CpGs where the 5mC call is methylated, blue where it is not. The calls come straight from the CRAM modification tags, with no bedMethyl track involved.',
+          'Human nanopore reads over a CpG island: red CpGs where the 5mC call is methylated, blue where it is not. The calls come straight from the CRAM modification tags, with no bedMethyl track involved.',
       },
       {
         label: 'Bisulfite read coloring',
@@ -300,14 +300,14 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'qtl/bxd_tyrp1_locus',
         guide: 'tutorials/bxd_qtl',
         description:
-          'A BXD mouse coat-color QTL scan over chr4 with the strain haplotype painting below it. Sorting the rows by genotype at the peak over Tyrp1 separates the mixed block into B (red) above D (blue), directly under the Manhattan peak.',
+          'A BXD mouse coat-color QTL scan with the strain haplotype painting below it. Sorting the rows by genotype at the peak over Tyrp1 separates the mixed block into B (red) above D (blue), directly under the Manhattan peak.',
       },
       {
         label: 'Population genomics (Fst, π)',
         spec: 'popgen/fst_in2lt_2L',
         guide: 'tutorials/population_genomics',
         description:
-          'Every Drosophila dm6 chromosome arm at once: the In(2L)t inversion extent on top, Fst between inverted and standard lines in the middle, and whole-panel nucleotide diversity (π) below. Fst is elevated across the whole left arm of chr2 and low elsewhere.',
+          'Every Drosophila dm6 chromosome arm at once: the In(2L)t inversion extent on top, Fst between inverted and standard lines in the middle, and whole-panel nucleotide diversity (π) below. Fst is elevated across the whole inverted arm and low elsewhere.',
       },
     ],
   },
@@ -355,7 +355,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'hic_track',
         guide: 'user_guides/hic_track',
         description:
-          'A Hi-C contact matrix over chr8 with the RefSeq gene track above. JBrowse reads the .hic file in place over HTTP range requests and picks the binning resolution from the zoom level. The track menu steps that resolution and sets the color ramp.',
+          'A Hi-C contact matrix with the RefSeq gene track above. JBrowse reads the .hic file in place over HTTP range requests and picks the binning resolution from the zoom level. The track menu steps that resolution and sets the color ramp.',
       },
     ],
   },

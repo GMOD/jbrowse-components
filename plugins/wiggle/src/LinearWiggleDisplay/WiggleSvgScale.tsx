@@ -47,9 +47,10 @@ export default observer(function WiggleSvgScale({
   // Single-wiggle density always draws from posColor (the config doc for
   // `color` says so), so with bicolor off there is only one side to describe
   // and the plain [min, max] text stays the honest legend.
-  const ramp = isDensityMode && useBicolor
-    ? { posColor, negColor, pivot: bicolorPivot }
-    : undefined
+  const ramp =
+    isDensityMode && useBicolor
+      ? { posColor, negColor, pivot: bicolorPivot }
+      : undefined
   return !domain ? null : isDensityMode ? (
     <ScoreLegend
       domain={domain}

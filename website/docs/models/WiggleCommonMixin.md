@@ -23,9 +23,8 @@ instead.
 | [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles  | WiggleCommonMixin                                   |                                                                                                                                                                         |
 | [featureUnderMouse](#volatile-featureundermouse)             | Volatiles  | WiggleCommonMixin                                   |                                                                                                                                                                         |
 | [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters    | WiggleCommonMixin                                   | Source names to include when computing the autoscale domain; `undefined` means every fetched source.                                                                    |
-| [visibleScoreStats](#getter-visiblescorestats)               | Getters    | WiggleCommonMixin                                   | The visible feature arrays plus their min/max/mean/stddev, walked once.                                                                                                 |
+| [visibleScoreStats](#getter-visiblescorestats)               | Getters    | WiggleCommonMixin                                   | The visible feature arrays plus their min/max/mean/stddev, walked once per domain recompute rather than once per autoscale input.                                       |
 | [visibleScoreRange](#getter-visiblescorerange)               | Getters    | WiggleCommonMixin                                   |                                                                                                                                                                         |
-| [dataRange](#getter-datarange)                               | Getters    | WiggleCommonMixin                                   | The true, unclipped `[min, max]` of the visible data.                                                                                                                   |
 | [domain](#getter-domain)                                     | Getters    | WiggleCommonMixin                                   |                                                                                                                                                                         |
 | [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    | WiggleCommonMixin                                   |                                                                                                                                                                         |
 | [setFeatureUnderMouse](#action-setfeatureundermouse)         | Actions    | WiggleCommonMixin                                   |                                                                                                                                                                         |
@@ -49,6 +48,7 @@ instead.
 | [minScoreBound](#getter-minscorebound)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
 | [maxScoreBound](#getter-maxscorebound)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
 | [hasResolution](#getter-hasresolution)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
+| [isCacheValid](#method-iscachevalid)                         | Methods    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) | Strict zoom equality: see adr-008.                                                                                                                                      |
 | [toggleCrossHatches](#action-togglecrosshatches)             | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
 | [setResolution](#action-setresolution)                       | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
 | [setLoadedBpPerPx](#action-setloadedbpperpx)                 | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
@@ -63,7 +63,6 @@ instead.
 | [setScatterPointSize](#action-setscatterpointsize)           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
 | [setLineWidth](#action-setlinewidth)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
 | [setAutoscale](#action-setautoscale)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                         |
-| [isCacheValid](#action-iscachevalid)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) | Strict zoom equality: see adr-008.                                                                                                                                      |
 
 <details>
 <summary>WiggleCommonMixin - Volatiles</summary>
@@ -91,9 +90,8 @@ type autoscaleSourceNames = Set<string> | undefined
 
 #### getter: visibleScoreStats
 
-The visible feature arrays plus their min/max/mean/stddev, walked once.
-`visibleScoreRange` and `dataRange` both derive from this so the score arrays
-aren't scanned twice per domain recompute.
+The visible feature arrays plus their min/max/mean/stddev, walked once per
+domain recompute rather than once per autoscale input.
 
 ```ts
 type visibleScoreStats =
@@ -102,16 +100,6 @@ type visibleScoreStats =
       stats: ScoreStats | undefined
     }
   | undefined
-```
-
-#### getter: dataRange
-
-The true, unclipped `[min, max]` of the visible data. The displayed `domain` may
-clip this (localpercentile/localsd/fixed bounds), so the score legend compares
-the two to flag clipped signal.
-
-```ts
-type dataRange = [number, number] | undefined
 ```
 
 </details>
@@ -182,6 +170,18 @@ its most-specific definition.
 | <span id="getter-maxscorebound">maxScoreBound</span>       | `number \| undefined` |
 | <span id="getter-hasresolution">hasResolution</span>       | `boolean`             |
 
+**Methods**
+
+#### method: isCacheValid
+
+Strict zoom equality: see adr-008. A view, not an action, so the `view.bpPerPx`
+read below actually registers as a dependency of whoever calls it (see
+MultiRegionDisplayMixin's hook block).
+
+```ts
+type isCacheValid = (_displayedRegionIndex: number) => boolean
+```
+
 **Actions**
 
 #### action: setPosColor
@@ -192,14 +192,6 @@ same way.
 
 ```ts
 type setPosColor = (color?: string | undefined) => void
-```
-
-#### action: isCacheValid
-
-Strict zoom equality: see adr-008.
-
-```ts
-type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 | Member                                                           | Type                                     |

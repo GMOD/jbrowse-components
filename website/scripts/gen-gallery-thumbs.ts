@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url'
 
 import sharp from 'sharp'
 
-import { isFile, walkFiles } from './check-utils.ts'
 import { gallerySections, itemImg } from '../src/lib/gallery.ts'
+import { isFile, walkFiles } from './check-utils.ts'
 
 // Builds the /gallery/ card thumbnails (static/img/gallery-thumbs/<path>) from
 // the committed figures. `pnpm dev`, `pnpm build` and `pnpm index` all run this
@@ -83,8 +83,7 @@ for (const file of files) {
     // Rebuild only when the figure is newer than its thumbnail. A regen of all
     // 42 is 15s, which every `pnpm dev` would otherwise pay; this makes the
     // warm case free, and a fresh clone's checkout mtimes just build it once.
-    const fresh =
-      isFile(out) && statSync(out).mtimeMs >= statSync(src).mtimeMs
+    const fresh = isFile(out) && statSync(out).mtimeMs >= statSync(src).mtimeMs
     if (!fresh) {
       const png = await sharp(src)
         .resize({ ...BOX, fit: 'inside', withoutEnlargement: true })
@@ -97,7 +96,9 @@ for (const file of files) {
   } else {
     // gallery.astro would fail its own thumbnail read on this, but that is a
     // build-time crash with no name attached; say which item is wrong.
-    console.error(`✗ ${file} is referenced by a gallery item but not in static/img`)
+    console.error(
+      `✗ ${file} is referenced by a gallery item but not in static/img`,
+    )
     missing++
   }
 }

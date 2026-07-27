@@ -22,57 +22,60 @@ clear.
 
 ## Members
 
-| Member                                                                 | Kind      | Defined by                                    | Description                                                                                                                                                                                                                                  |
-| ---------------------------------------------------------------------- | --------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [features](#volatile-features)                                         | Volatiles | ArcFetchModel                                 |                                                                                                                                                                                                                                              |
-| [loadedRegionSignature](#volatile-loadedregionsignature)               | Volatiles | ArcFetchModel                                 | signature of the static-block region set `features` were fetched for; the `dataCurrent`/`svgReady` freshness axis (see regionSignature.ts)                                                                                                   |
-| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters   | ArcFetchModel                                 |                                                                                                                                                                                                                                              |
-| [dataCurrent](#getter-datacurrent)                                     | Getters   | ArcFetchModel                                 | fresh only when `features` were fetched for the current static-block set; overrides GlobalFetchMixin's default so `svgReady` can resolve on load                                                                                             |
-| [displayPhase](#getter-displayphase)                                   | Getters   | ArcFetchModel                                 | The same mutually-exclusive visual state every GPU display exposes, over the same shared `computeDisplayPhase` — arc just has no `renderError` phase, having no GPU backend.                                                                 |
-| [setFeatures](#action-setfeatures)                                     | Actions   | ArcFetchModel                                 |                                                                                                                                                                                                                                              |
-| [reload](#action-reload)                                               | Actions   | ArcFetchModel                                 | Arc's fetch trigger gates on `!dataCurrent`, so bumping `reloadCounter` alone can't refetch: the signature still matches the current blocks.                                                                                                 |
-| [reloadCounter](#volatile-reloadcounter)                               | Volatiles | [GlobalFetchMixin](../globalfetchmixin)       | Bumped by `reload()` to retrigger a global display's fetch autorun.                                                                                                                                                                          |
-| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                 | Getters   | [GlobalFetchMixin](../globalfetchmixin)       | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                 |
-| [svgReady](#getter-svgready)                                           | Getters   | [GlobalFetchMixin](../globalfetchmixin)       | Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate.                                                                                                                                           |
-| [forceLoadTrack](#volatile-forceloadtrack)                             | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                              |
-| [byteEstimate](#volatile-byteestimate)                                 | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | Last byte estimate reported for this display, with the adapter's own `fetchSizeLimit` and `alwaysRender` flag.                                                                                                                               |
-| [measuredSpanBp](#volatile-measuredspanbp)                             | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | The span the current `byteEstimate` was measured over, so the derived gate can rescale it to the span on screen now.                                                                                                                         |
-| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                     | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                        |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The composing display's configured `fetchSizeLimit`, read straight from its config.                                                                                                                                                          |
-| [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate) | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                         |
-| [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)                 | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                              |
-| [configForceLoad](#getter-configforceload)                             | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                            |
-| [resolvedAdapterByteLimit](#getter-resolvedadapterbytelimit)           | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The adapter's byte budget, preferring one the estimate computed dynamically over the static `fetchSizeLimit` slot.                                                                                                                           |
-| [byteGateExempt](#getter-bytegateexempt)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | True when nothing may gate, on either axis and in both the worker and the banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen resolution), the declarative `forceLoad` slot, or the force-load button.             |
-| [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan)   | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored estimate from the span it was measured over (`measuredSpanBp`).                                                              |
-| [gateByteLimit](#getter-gatebytelimit)                                 | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                             |
-| [tooLargeStatus](#getter-toolargestatus)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in.                                                                 |
-| [regionTooLarge](#getter-regiontoolarge)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The verdict the whole mixin exists to produce: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips.                                                       |
-| [regionTooLargeReason](#getter-regiontoolargereason)                   | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                     |
-| [setByteEstimate](#action-setbyteestimate)                             | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Commits the byte estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                                        |
-| [clearByteEstimate](#action-clearbyteestimate)                         | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Drops the cached estimate.                                                                                                                                                                                                                   |
-| [setForceLoadTrack](#action-setforceloadtrack)                         | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                   |
-| [forceLoad](#action-forceload)                                         | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                     |
-| [activeStopToken](#volatile-activestoptoken)                           | Volatiles | [FetchMixin](../fetchmixin)                   | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                    |
-| [fetchGeneration](#volatile-fetchgeneration)                           | Volatiles | [FetchMixin](../fetchmixin)                   | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                             |
-| [error](#volatile-error)                                               | Volatiles | [FetchMixin](../fetchmixin)                   | last non-abort fetch error, or undefined                                                                                                                                                                                                     |
-| [statusMessage](#volatile-statusmessage)                               | Volatiles | [FetchMixin](../fetchmixin)                   | work-in-progress status string                                                                                                                                                                                                               |
-| [statusProgress](#volatile-statusprogress)                             | Volatiles | [FetchMixin](../fetchmixin)                   | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate                                                                                                                           |
-| [fetchCanceled](#volatile-fetchcanceled)                               | Volatiles | [FetchMixin](../fetchmixin)                   | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                   |
-| [regionStatuses](#volatile-regionstatuses)                             | Volatiles | [FetchMixin](../fetchmixin)                   | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                               |
-| [isLoading](#getter-isloading)                                         | Getters   | [FetchMixin](../fetchmixin)                   | true while a fetch is active                                                                                                                                                                                                                 |
-| [makeStatusCallback](#method-makestatuscallback)                       | Methods   | [FetchMixin](../fetchmixin)                   | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. |
-| [makeRegionStatusCallback](#method-makeregionstatuscallback)           | Methods   | [FetchMixin](../fetchmixin)                   | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                             |
-| [setError](#action-seterror)                                           | Actions   | [FetchMixin](../fetchmixin)                   |                                                                                                                                                                                                                                              |
-| [setStatusMessage](#action-setstatusmessage)                           | Actions   | [FetchMixin](../fetchmixin)                   | Unthrottled: a display writing a phase label by hand must see every write land.                                                                                                                                                              |
-| [throttleStatus](#action-throttlestatus)                               | Actions   | [FetchMixin](../fetchmixin)                   | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                         |
-| [resetStatus](#action-resetstatus)                                     | Actions   | [FetchMixin](../fetchmixin)                   | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                 |
-| [stopActiveFetch](#action-stopactivefetch)                             | Actions   | [FetchMixin](../fetchmixin)                   | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                     |
-| [setRegionStatus](#action-setregionstatus)                             | Actions   | [FetchMixin](../fetchmixin)                   | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                    |
-| [cancelFetch](#action-cancelfetch)                                     | Actions   | [FetchMixin](../fetchmixin)                   | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight).                                                                                                 |
-| [cancelFetchByUser](#action-cancelfetchbyuser)                         | Actions   | [FetchMixin](../fetchmixin)                   | User-initiated cancel from the loading overlay.                                                                                                                                                                                              |
-| [beforeDestroy](#action-beforedestroy)                                 | Actions   | [FetchMixin](../fetchmixin)                   | Release an in-flight fetch's stop token on teardown.                                                                                                                                                                                         |
-| [runFetch](#action-runfetch)                                           | Actions   | [FetchMixin](../fetchmixin)                   | Run a cancel-safe fetch (cancels any prior).                                                                                                                                                                                                 |
+| Member                                                               | Kind      | Defined by                                    | Description                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [features](#volatile-features)                                       | Volatiles | ArcFetchModel                                 |                                                                                                                                                                                                                                                   |
+| [loadedRegionSignature](#volatile-loadedregionsignature)             | Volatiles | ArcFetchModel                                 | signature of the static-block region set `features` were fetched for; the `dataCurrent`/`svgReady` freshness axis (see regionSignature.ts)                                                                                                        |
+| [byteGateEnabled](#getter-bytegateenabled)                           | Getters   | ArcFetchModel                                 |                                                                                                                                                                                                                                                   |
+| [dataCurrent](#getter-datacurrent)                                   | Getters   | ArcFetchModel                                 | fresh only when `features` were fetched for the current static-block set; overrides GlobalFetchMixin's default so `svgReady` can resolve on load                                                                                                  |
+| [displayPhase](#getter-displayphase)                                 | Getters   | ArcFetchModel                                 | The same mutually-exclusive visual state every GPU display exposes, over the same shared `computeDisplayPhase` — arc just has no `renderError` phase, having no GPU backend.                                                                      |
+| [setFeatures](#action-setfeatures)                                   | Actions   | ArcFetchModel                                 |                                                                                                                                                                                                                                                   |
+| [reload](#action-reload)                                             | Actions   | ArcFetchModel                                 | Arc's fetch trigger gates on `!dataCurrent`, so bumping `reloadCounter` alone can't refetch: the signature still matches the current blocks.                                                                                                      |
+| [reloadCounter](#volatile-reloadcounter)                             | Volatiles | [GlobalFetchMixin](../globalfetchmixin)       | Bumped by `reload()` to retrigger a global display's fetch autorun.                                                                                                                                                                               |
+| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)               | Getters   | [GlobalFetchMixin](../globalfetchmixin)       | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                      |
+| [svgReady](#getter-svgready)                                         | Getters   | [GlobalFetchMixin](../globalfetchmixin)       | Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate.                                                                                                                                                |
+| [forceLoadTrack](#volatile-forceloadtrack)                           | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                                   |
+| [byteEstimate](#volatile-byteestimate)                               | Volatiles | [RegionTooLargeMixin](../regiontoolargemixin) | The last byte measurement for this display: the estimated bytes **and the span they cover**, which is what lets the derived gate rescale them to the span on screen now.                                                                          |
+| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                   | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                             |
+| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)         | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The composing display's configured `fetchSizeLimit`, read straight from its config.                                                                                                                                                               |
+| [densityTooLarge](#getter-densitytoolarge)                           | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Second (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                             |
+| [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                                   |
+| [configForceLoad](#getter-configforceload)                           | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                 |
+| [gateVisibleBp](#getter-gatevisiblebp)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The span on screen, or undefined before the view is measured.                                                                                                                                                                                     |
+| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled) | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`).                     |
+| [byteGateExempt](#getter-bytegateexempt)                             | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button.                                                                                                     |
+| [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan) | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers.                                                                                              |
+| [gateByteLimit](#getter-gatebytelimit)                               | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                  |
+| [gateActive](#getter-gateactive)                                     | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and wider than the `AUTO_FORCE_LOAD_BP` force-load floor.                                                                            |
+| [tooLargeStatus](#getter-toolargestatus)                             | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text). |
+| [regionTooLarge](#getter-regiontoolarge)                             | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) |                                                                                                                                                                                                                                                   |
+| [regionTooLargeReason](#getter-regiontoolargereason)                 | Getters   | [RegionTooLargeMixin](../regiontoolargemixin) | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                          |
+| [resolvedByteLimit](#method-resolvedbytelimit)                       | Methods   | [RegionTooLargeMixin](../regiontoolargemixin) | The byte budget a fetch RPC enforces worker-side, short-circuiting an over-budget region before it downloads any features.                                                                                                                        |
+| [setByteEstimate](#action-setbyteestimate)                           | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Commits a byte measurement: the estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                              |
+| [clearByteEstimate](#action-clearbyteestimate)                       | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Drops the cached estimate.                                                                                                                                                                                                                        |
+| [setForceLoadTrack](#action-setforceloadtrack)                       | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                        |
+| [forceLoad](#action-forceload)                                       | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                          |
+| [byteGateBlocksFetch](#action-bytegateblocksfetch)                   | Actions   | [RegionTooLargeMixin](../regiontoolargemixin) | The entire pre-flight gate for one fetch: measure the region set, commit the estimate with the span it covers, and answer whether the caller must abandon the fetch — either superseded mid-measure, or over budget.                              |
+| [activeStopToken](#volatile-activestoptoken)                         | Volatiles | [FetchMixin](../fetchmixin)                   | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                         |
+| [fetchGeneration](#volatile-fetchgeneration)                         | Volatiles | [FetchMixin](../fetchmixin)                   | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                  |
+| [error](#volatile-error)                                             | Volatiles | [FetchMixin](../fetchmixin)                   | last non-abort fetch error, or undefined                                                                                                                                                                                                          |
+| [statusMessage](#volatile-statusmessage)                             | Volatiles | [FetchMixin](../fetchmixin)                   | work-in-progress status string                                                                                                                                                                                                                    |
+| [statusProgress](#volatile-statusprogress)                           | Volatiles | [FetchMixin](../fetchmixin)                   | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate                                                                                                                                |
+| [fetchCanceled](#volatile-fetchcanceled)                             | Volatiles | [FetchMixin](../fetchmixin)                   | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                        |
+| [regionStatuses](#volatile-regionstatuses)                           | Volatiles | [FetchMixin](../fetchmixin)                   | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                                    |
+| [isLoading](#getter-isloading)                                       | Getters   | [FetchMixin](../fetchmixin)                   | true while a fetch is active                                                                                                                                                                                                                      |
+| [makeStatusCallback](#method-makestatuscallback)                     | Methods   | [FetchMixin](../fetchmixin)                   | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op.      |
+| [makeRegionStatusCallback](#method-makeregionstatuscallback)         | Methods   | [FetchMixin](../fetchmixin)                   | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                                  |
+| [setError](#action-seterror)                                         | Actions   | [FetchMixin](../fetchmixin)                   |                                                                                                                                                                                                                                                   |
+| [setStatusMessage](#action-setstatusmessage)                         | Actions   | [FetchMixin](../fetchmixin)                   | Unthrottled: a display writing a phase label by hand must see every write land.                                                                                                                                                                   |
+| [throttleStatus](#action-throttlestatus)                             | Actions   | [FetchMixin](../fetchmixin)                   | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                              |
+| [resetStatus](#action-resetstatus)                                   | Actions   | [FetchMixin](../fetchmixin)                   | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                      |
+| [stopActiveFetch](#action-stopactivefetch)                           | Actions   | [FetchMixin](../fetchmixin)                   | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                          |
+| [setRegionStatus](#action-setregionstatus)                           | Actions   | [FetchMixin](../fetchmixin)                   | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                         |
+| [cancelFetch](#action-cancelfetch)                                   | Actions   | [FetchMixin](../fetchmixin)                   | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight).                                                                                                      |
+| [cancelFetchByUser](#action-cancelfetchbyuser)                       | Actions   | [FetchMixin](../fetchmixin)                   | User-initiated cancel from the loading overlay.                                                                                                                                                                                                   |
+| [beforeDestroy](#action-beforedestroy)                               | Actions   | [FetchMixin](../fetchmixin)                   | Release an in-flight fetch's stop token on teardown.                                                                                                                                                                                              |
+| [runFetch](#action-runfetch)                                         | Actions   | [FetchMixin](../fetchmixin)                   | Run a cancel-safe fetch (cancels any prior).                                                                                                                                                                                                      |
 
 <details>
 <summary>ArcFetchModel - Volatiles</summary>
@@ -129,9 +132,9 @@ type displayPhase = DisplayPhase
 <details>
 <summary>ArcFetchModel - Getters (other undocumented members)</summary>
 
-| Member                                                                             | Type      |
-| ---------------------------------------------------------------------------------- | --------- |
-| <span id="getter-derivedregiontoolargeenabled">derivedRegionTooLargeEnabled</span> | `boolean` |
+| Member                                                   | Type      |
+| -------------------------------------------------------- | --------- |
+| <span id="getter-bytegateenabled">byteGateEnabled</span> | `boolean` |
 
 </details>
 
@@ -245,29 +248,19 @@ forceLoadTrack: false
 
 #### volatile: byteEstimate
 
-Last byte estimate reported for this display, with the adapter's own
-`fetchSizeLimit` and `alwaysRender` flag. Its `bytes` covers `measuredSpanBp`,
-not the span on screen now. Survives `clearAllRpcData` so an ordinary viewport
-change doesn't flicker the banner; only chromosome navigation drops it.
+The last byte measurement for this display: the estimated bytes **and the span
+they cover**, which is what lets the derived gate rescale them to the span on
+screen now. One volatile rather than two, because the pair is a single
+measurement — written together by `setByteEstimate`, dropped together by
+`clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so an
+ordinary viewport change doesn't flicker the banner; only chromosome navigation
+drops it. Ignored unless `derivedRegionTooLargeEnabled`.
 
 ```ts
 // type signature
-type byteEstimate = RegionByteEstimate | undefined
+type byteEstimate = ByteEstimate | undefined
 // code
-byteEstimate: undefined as RegionByteEstimate | undefined
-```
-
-#### volatile: measuredSpanBp
-
-The span the current `byteEstimate` was measured over, so the derived gate can
-rescale it to the span on screen now. Written by `setByteEstimate`; ignored
-unless `derivedRegionTooLargeEnabled`.
-
-```ts
-// type signature
-type measuredSpanBp = number | undefined
-// code
-measuredSpanBp: undefined as number | undefined
+byteEstimate: undefined as ByteEstimate | undefined
 ```
 
 **Getters**
@@ -297,26 +290,29 @@ valid where it fires. A display with a bespoke source can still override it.
 type configuredFetchSizeLimit = number
 ```
 
-#### getter: densityTooLargeForDerivedGate
+#### getter: densityTooLarge
 
-Extra (non-byte) too-large axis folded into the derived verdict — canvas
+Second (non-byte) too-large axis folded into the derived verdict — canvas
 overrides it with its feature-density gate. Byte-only derived displays leave it
 false.
 
 ```ts
-type densityTooLargeForDerivedGate = boolean
+type densityTooLarge = boolean
 ```
 
 #### getter: adapterFetchSizeLimit
 
 The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
 declares none); `resolveByteLimit` prefers it over the display config. Read on
-the main thread rather than trusted only from the estimate: the three adapters
-that attach one (BAM/CRAM/VCF) just echo this same static slot back across the
-worker boundary, and a display whose adapter never attaches it would otherwise
-silently ignore a configured limit. `byteEstimate.fetchSizeLimit` still wins
-where present, so an adapter that computes a limit dynamically keeps the last
-word.
+the main thread, and only here — the estimate that crosses the worker boundary
+carries bytes and nothing else, so the banner and the worker budget have no
+second spelling of "the adapter's limit" to disagree about.
+
+A slot **path off the live config**, not a read off `self.adapterConfig`: that
+getter is a snapshot, which by design omits slots sitting at their default, so a
+BAM's declared 5 Mb read back as `undefined` in every config that doesn't
+restate it. Resolved values come from a config node — see CONFIG_PATTERN.md
+§"Reading a slot: node, not snapshot".
 
 ```ts
 type adapterFetchSizeLimit = number | undefined
@@ -335,25 +331,39 @@ per-display wiring.
 type configForceLoad = boolean
 ```
 
-#### getter: resolvedAdapterByteLimit
+#### getter: gateVisibleBp
 
-The adapter's byte budget, preferring one the estimate computed dynamically over
-the static `fetchSizeLimit` slot. One getter, because the banner, the force-load
-baseline and the canvas worker budget each spelling "the adapter's limit" for
-itself is how the worker ends up rejecting a region the banner considers fine —
-a silently blank display with nothing to refetch it.
+The span on screen, or undefined before the view is measured. The gate's only
+read of its container: `visibleBp` reads `view.width`, which throws before
+measurement and a bare getter must never throw, so the pre-init guard lives here
+once rather than at each reader.
 
 ```ts
-type resolvedAdapterByteLimit = number | undefined
+type gateVisibleBp = number | undefined
+```
+
+#### getter: derivedRegionTooLargeEnabled
+
+Whether the derived, self-releasing gate is live at all — the union of the two
+ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte
+check folded into its own feature RPC (`gateFoldedIntoFetch`). Additive, never
+an override, so a gate mixin's opt-in doesn't hinge on which side of
+`.compose()` it lands on. False for the non-byte displays (wiggle, manhattan,
+sequence, synteny), which therefore never evaluate the LGV-only `tooLargeStatus`
+getters.
+
+```ts
+type derivedRegionTooLargeEnabled = boolean
 ```
 
 #### getter: byteGateExempt
 
 True when nothing may gate, on either axis and in both the worker and the
-banner: a self-summarizing adapter (BigWig/HiC cap what they return at screen
-resolution), the declarative `forceLoad` slot, or the force-load button. One
-boolean is the whole force-load mechanism — there is no per-region ceiling to
-carry, expire, or reconcile between the two axes.
+banner: the declarative `forceLoad` slot, or the force-load button. One boolean
+is the whole force-load mechanism — there is no per-region ceiling to carry,
+expire, or reconcile between the two axes. A self-summarizing adapter (BigWig,
+HiC, sequence) needs no term here: it reports no byte estimate at all, which
+already keeps the byte axis out of the verdict.
 
 ```ts
 type byteGateExempt = boolean
@@ -362,11 +372,11 @@ type byteGateExempt = boolean
 #### getter: estimatedBytesForVisibleSpan
 
 How many bytes we estimate a fetch of the span on screen right now would pull,
-obtained by rescaling the stored estimate from the span it was measured over
-(`measuredSpanBp`). Rescaling is what makes the derived verdict a pure function
-of the current view and lets it self-release on zoom-in — without it a large
-zoomed-out estimate stays above the limit forever and gates refetch. Only
-meaningful when `derivedRegionTooLargeEnabled`.
+obtained by rescaling the stored measurement from the span it covers. Rescaling
+is what makes the derived verdict a pure function of the current view and lets
+it self-release on zoom-in — without it a large zoomed-out estimate stays above
+the limit forever and gates refetch. Only meaningful when
+`derivedRegionTooLargeEnabled`.
 
 ```ts
 type estimatedBytesForVisibleSpan = number | undefined
@@ -375,36 +385,43 @@ type estimatedBytesForVisibleSpan = number | undefined
 #### getter: gateByteLimit
 
 The byte budget the gate enforces: the adapter's limit, else the display config.
-Also what canvas hands the worker, so the two can't gate against different
-numbers. Force-load doesn't raise this — it exempts the track outright via
-`byteGateExempt`.
+Also what `resolvedByteLimit()` hands the worker, so the two can't gate against
+different numbers. Force-load doesn't raise this — it exempts the track outright
+via `byteGateExempt`.
 
 ```ts
 type gateByteLimit = number
 ```
 
+#### getter: gateActive
+
+Whether anything may gate at this moment: the display opted in, nothing exempts
+it, and the view is measured and wider than the `AUTO_FORCE_LOAD_BP` force-load
+floor.
+
+The single home of that question. Everything downstream reads it instead of
+restating it: the verdict, the pre-flight (no estimate RPC when nothing could
+act on it), and the worker budgets, which go undefined together here rather than
+each re-deriving the floor. The floor used to be spelled out in three places at
+three layers, which is a standing invitation for them to disagree.
+
+```ts
+type gateActive = boolean
+```
+
 #### getter: tooLargeStatus
 
-Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then
-bytes-over-limit, then the density axis), fed the scaled estimate so the byte
-gate self-releases on zoom-in. Same helper as every other gating path so the
-banner text can't drift.
+The verdict the whole mixin exists to produce, with the banner text: true when
+the estimated download for the span on screen exceeds the resolved byte budget,
+or when the display's own density axis trips (bytes take precedence for the
+text). Derived from the rescaled estimate, so it releases itself on zoom-in;
+false whenever `gateActive` is false.
+
+The fetch autoruns hold off while `regionTooLarge` is true, and `DisplayChrome`
+renders the banner from `regionTooLargeReason`.
 
 ```ts
 type tooLargeStatus = RegionTooLargeStatus
-```
-
-#### getter: regionTooLarge
-
-The verdict the whole mixin exists to produce: true when the estimated download
-for the span on screen exceeds the resolved byte budget, or when the display's
-own density axis trips. Derived, so it releases itself on zoom-in. Always false
-for a display that hasn't opted in via `derivedRegionTooLargeEnabled`. The fetch
-autoruns hold off while it is true, and `DisplayChrome` renders the banner from
-it.
-
-```ts
-type regionTooLarge = boolean
 ```
 
 #### getter: regionTooLargeReason
@@ -416,23 +433,39 @@ features". Empty string when the region isn't too large.
 type regionTooLargeReason = string
 ```
 
+| Member                                                 | Type      |
+| ------------------------------------------------------ | --------- |
+| <span id="getter-regiontoolarge">regionTooLarge</span> | `boolean` |
+
+**Methods**
+
+#### method: resolvedByteLimit
+
+The byte budget a fetch RPC enforces worker-side, short-circuiting an
+over-budget region before it downloads any features. Undefined (unlimited) when
+nothing gates; otherwise the very number the banner compares against, so the
+worker can't reject a region the banner then calls fine. Lives here, not on the
+canvas gate that consumes it, because both its terms are this mixin's — canvas
+owns only the density axis.
+
+```ts
+type resolvedByteLimit = () => number | undefined
+```
+
 **Actions**
 
 #### action: setByteEstimate
 
-Commits the byte estimate together with the span it covers, so the derived gate
-can rescale it to the span on screen. `measuredSpanBp` must be the `visibleBp`
-captured when the measurement was _requested_, not read at commit time: a view
-that zoomed during the in-flight fetch would otherwise anchor the estimate to
-the wrong span, and since `FetchVisibleRegions` skips while `regionTooLarge`
-holds, an over-anchored estimate wedges the banner with no refetch to correct
-it. Harmless for non-gated displays (they ignore it).
+Commits a byte measurement: the estimate together with the span it covers, so
+the derived gate can rescale it to the span on screen. `measuredSpanBp` must be
+the `visibleBp` captured when the measurement was _requested_, not read at
+commit time: a view that zoomed during the in-flight fetch would otherwise
+anchor the estimate to a span it never covered, and since `FetchVisibleRegions`
+skips while `regionTooLarge` holds, an over-anchored estimate wedges the banner
+with no refetch to correct it. Harmless for non-gated displays (they ignore it).
 
 ```ts
-type setByteEstimate = (
-  estimate: RegionByteEstimate,
-  measuredSpanBp: number,
-) => void
+type setByteEstimate = (estimate: ByteEstimate) => void
 ```
 
 #### action: clearByteEstimate
@@ -469,6 +502,32 @@ override `reload()` to do the actual refetch.
 
 ```ts
 type forceLoad = () => void
+```
+
+#### action: byteGateBlocksFetch
+
+The entire pre-flight gate for one fetch: measure the region set, commit the
+estimate with the span it covers, and answer whether the caller must abandon the
+fetch — either superseded mid-measure, or over budget.
+
+Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin family,
+LD and arc from their own global fetches) calls this and returns on true.
+Sequencing the steps at a call site is what used to go wrong: the span is read
+here, _before_ the await, so the estimate is anchored to the span it actually
+covers — a re-read afterwards would pin it to whatever a mid-fetch zoom left on
+screen, and since the fetch autoruns skip while `regionTooLarge` holds, an
+over-anchored estimate wedges the banner with no refetch to correct it.
+
+```ts
+type byteGateBlocksFetch = (
+  regions: {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+  }[],
+  ctx: { isStale: () => boolean },
+) => Promise<boolean>
 ```
 
 </details>

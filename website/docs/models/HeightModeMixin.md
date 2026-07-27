@@ -41,8 +41,8 @@ computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
 #### getter: heightMode
 
 The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel
-slot: getConf walks the customized-track -> session-default -> `fixed` cascade
-and never returns the `inherit` sentinel.
+slot: resolveConf walks the customized-track -> session-default -> `fixed`
+cascade and never returns the `inherit` sentinel.
 
 ```ts
 type heightMode = 'fixed' | 'grow' | 'fit'

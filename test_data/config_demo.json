@@ -194,6 +194,14 @@
           "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01413.qm2.CN.1k.bw",
           "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01414.qm2.CN.1k.bw"
         ]
+      },
+      "displayDefaults": {
+        "defaultRendering": "multirowdensity",
+        "bicolorPivot": 2,
+        "minScore": 0,
+        "maxScore": 4,
+        "posColor": "#b2182b",
+        "negColor": "#2166ac"
       }
     },
     {

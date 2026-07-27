@@ -73,7 +73,7 @@ test('labels the pivot where it actually falls, not at the middle', () => {
   expect(texts.map(t => t.textContent)).toEqual(['0', '2', '6'])
   // pivot 2 of 0..6 sits a third along the 110px bar, not at 55
   const [left, pivot] = texts
-  expect(Number(pivot!.getAttribute('x')) - Number(left!.getAttribute('x'))).toBeCloseTo(
-    110 / 3,
-  )
+  expect(
+    Number(pivot!.getAttribute('x')) - Number(left!.getAttribute('x')),
+  ).toBeCloseTo(110 / 3)
 })

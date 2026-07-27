@@ -12,8 +12,9 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 //
 // The graph-view figures (the Bandage force-directed and rGFA anchored subgraph
 // pictures) moved out with the GraphGenomeView, which is now the third-party
-// jbrowse-plugin-graphgenomeview and no longer bundled in jbrowse-web. Those
-// figures are hand-curated in static/img/pangenome and carry no live link.
+// jbrowse-plugin-graphgenomeview and no longer bundled in jbrowse-web. They live
+// in specs/graph.ts, which loads that plugin by esmUrl from a fixture config, so
+// they are generated and live-linkable like everything else here.
 const CONFIG = encodeURIComponent(
   'https://jbrowse.org/demos/ecoli_pangenome/config.json',
 )
