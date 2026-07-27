@@ -220,8 +220,6 @@ on K12 and pick the matrix display (one column per variant, one row per sample):
 }
 ```
 
-<Figure caption="The graph's pangenome variants on K12, one row per non-reference strain and one column per variant vg deconstruct called, with the MAF alignment below and the K12 gene lane above. IAI39 goes no-call (yellow) over the right-hand end of the window, and the MAF row underneath it drops out across the same stretch: that is one strain leaving the alignment, seen twice." src="/img/pangenome_cactus/variant_matrix.png" />
-
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display and clustering samples by
 genotype.

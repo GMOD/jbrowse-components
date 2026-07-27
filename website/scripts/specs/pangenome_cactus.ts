@@ -66,68 +66,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Projection 2: the graph's pangenome variants as a multi-sample genotype
-  // lane, with the MAF alignment stacked below as the base-level view the
-  // variants were decomposed from, and the K12 gene lane above for context.
-  {
-    mode: 'url',
-    name: 'pangenome_cactus/variant_matrix',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          // Scored from the VCF, not chosen by eye: 20 kb windows ranked on
-          // "every strain carries alt calls, some strain carries no-calls, no
-          // empty 2 kb sub-window" put chr:2,200,000-2,220,000 first — 1,337
-          // sub-100bp records, 21-60% alt in all four strains, and IAI39
-          // no-call over the last 6 kb, where the MAF row below it drops out
-          // too. The old window (995,000-1,015,000) had none of that: NCTC86
-          // was reference at 574 of 582 calls, nothing was a no-call, and 6 kb
-          // of it held only one top-level bubble, so the filtered lane went
-          // blank across it and read as a rendering hole.
-          loc: 'chr:2,200,000-2,220,000',
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
-            {
-              // NOT the matrix display: the matrix packs every variant into an
-              // equal-width column, which with only four strains spends the
-              // whole lane on four fat bands and throws away where the variants
-              // actually are. This display keeps them on genomic coordinates, so
-              // they line up with the gene lane above and the MAF below.
-              trackId: 'ecoli_cactus_variants',
-              type: 'LinearMultiSampleVariantDisplay',
-              height: 200,
-              // 1,341 records over 1,000 px trips the "too many features"
-              // gate, which guards against huge downloads; this window is a
-              // 30 kB tabix read.
-              forceLoad: true,
-              // Cactus's VCF is nested like pggb's: alongside the decomposed
-              // SNPs it emits top-level bubbles carrying a different allele per
-              // strain, so most of their genotypes are "other alt" and one
-              // record paints kilobases of flat dark red over the SNPs
-              // underneath. `alleleLength` rather than end-start because the
-              // four big records here are INSERTIONS (the largest 47 kb of alt
-              // against 1 bp of reference), which end-start scores as 1.
-              jexlFilters: ['jexl:alleleLength(feature) < 100'],
-            },
-            { trackId: 'ecoli_cactus_maf', type: 'LinearMafDisplay' },
-          ],
-        },
-      ],
-    }),
-    readyText: '2,204,000',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 760,
-    settleMs: 15000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-
   // Projection 3: the graph's whole-genome alignment (the HAL) projected onto K12
   // as a MAF. Coverage band on top, one row per strain (K12 first), colored where
   // each differs from K12. A shared-backbone window, so mismatches read as SNP

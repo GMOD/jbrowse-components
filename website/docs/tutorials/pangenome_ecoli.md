@@ -167,8 +167,6 @@ its genomic position:
 Stack the MAF alignment (below) in the same window and each variant row sits
 above the per-strain alignment it was decomposed from.
 
-<Figure caption="The graph's pangenome variants on the K12 reference across the colanic-acid cluster (wca/wz), one row per strain, with the MAF alignment stacked below and the K12 gene lane above. Each column is a variant the graph called, colored by that strain's genotype (see the legend); a run of the same color across rows is a stretch those strains share." src="/img/pangenome/pangenome_variants.png" />
-
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and
 clustering samples by genotype.

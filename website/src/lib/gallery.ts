@@ -416,16 +416,17 @@ export const gallerySections: readonly GallerySection[] = [
           'Structural alleles across the HPRC release 2 haplotypes, one row each, clustered by genotype under the HLA class II genes they fall in. Haplotypes sharing whole sets of insertions and deletions form solid blocks, with no HLA typing involved.',
       },
       {
-        // One card for the pggb tutorial, not two. Its odgi presence/absence
-        // figure was a card of its own, but a second card for the same tutorial
-        // and the same five strains reads as a second dataset; the genotype
-        // matrix is the stronger picture of what the graph yields, and the
-        // presence/absence projection is a click away in the tutorial.
+        // One card for the pggb tutorial, not two, and the presence/absence
+        // projection is the one it keeps: the genotype matrix that held this
+        // slot was retired in review ("kind of boring screenshot"), and it was
+        // also the same dense blue matrix the Minigraph-Cactus tutorial drew of
+        // the same strains. Presence/absence is a picture no other card in this
+        // section shows.
         label: 'E. coli pangenome (pggb)',
-        spec: 'pangenome/pangenome_variants',
+        spec: 'pangenome/pav',
         guide: 'tutorials/pangenome_ecoli',
         description:
-          "A pggb pangenome graph projected onto the K12 reference: the graph's variants with one row per strain, each column colored by that strain's genotype, with the MAF alignment below and the K12 genes above.",
+          'A pggb pangenome graph projected onto the K12 reference as per-strain presence, one row per non-reference strain across the whole chromosome, dropping to zero over the stretches that strain does not carry.',
       },
       {
         // Was pangenome_cactus/synteny, a five-row halSynteny stack of the same

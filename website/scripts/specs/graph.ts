@@ -130,9 +130,7 @@ const PGGB_SEGMENTS_SESSION_TRACK = {
   },
 }
 
-// The colanic-acid cluster, the same locus pangenome/pangenome_variants reads
-// through the graph's VCF, so the two figures are one place seen two ways. It
-// is where the graph is busiest in this stretch: `tabix ecoli_pggb.links.bed.gz
+// The colanic-acid cluster, where the graph is busiest in this stretch: `tabix ecoli_pggb.links.bed.gz
 // 'K12#1#chr:2120000-2123000'` returns 175 link endpoints on a non-K12 stable
 // sequence, against 24 at the ycbF/pyrD window the local_subgraph figure uses.
 const PGGB_LOCUS = {

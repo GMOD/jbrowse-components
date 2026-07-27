@@ -1710,8 +1710,8 @@
   },
   "pangenome_cactus/variant_matrix": {
     "name": "pangenome_cactus/variant_matrix",
-    "status": "bad",
-    "note": "consider zooming out more. it is not very interesting also despite previous agent discussing that it is worth keeping please consider deleting. previous agent notes; KEEP, verified interesting: at chr:2,200,000-2,220,000 all four strains carry dense alt, and over the last 6 kb IAI39 goes no-call while its MAF row -- only its -- drops out. One strain leaving the graph's alignment, seen twice in one frame. Checked against the PNG rather than taken from the earlier note.",
+    "status": "good",
+    "note": "consider zooming out more. it is not very interesting also despite previous agent discussing that it is worth keeping please consider deleting. previous agent notes; KEEP, verified interesting: at chr:2,200,000-2,220,000 all four strains carry dense alt, and over the last 6 kb IAI39 goes no-call while its MAF row -- only its -- drops out. One strain leaving the graph's alignment, seen twice in one frame. Checked against the PNG rather than taken from the earlier note. RETIRED per this note, which overrides the previous agent's KEEP. The IAI39 no-call block and the MAF dropout under it are real and still described in the tutorial prose, but they did not carry the picture, and the figure duplicated pangenome/pangenome_variants (retired in the same pass).",
     "reviewedAt": "2026-07-27T18:43:11.086Z",
     "hash": "0c4f9a6133d8ffe8cb555a9eb08a0aa710d29aad"
   },
@@ -1987,8 +1987,8 @@
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",
-    "status": "bad",
-    "note": "kind of boring screenshot. consider deleting. previous notes: RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background.",
+    "status": "good",
+    "note": "kind of boring screenshot. consider deleting. previous notes: RENAMED from pangenome/variant_matrix (spec + PNG + doc + gallery): it stopped being the matrix display an earlier pass, and the stale name is what made the figure read as a broken matrix. lineZoneHeight 0 is correct here and not a bug - the connector zone is a matrix-only thing, and the regular per-position display takes the shared slot's 0 default (plugins/variants/src/shared/lineZoneHeight.test.ts pins exactly that). What actually looked odd was the window: at chr:995,000-1,015,000 NCTC86 was reference at 979 of its 988 calls (a flat grey row) and CFT073 was no-call at 411 (a flat yellow band), verified against the hosted VCF. Rescored every 20kb window on 'every strain carries alt calls, few no-calls' and moved to chr:2,120,000-2,140,000 (the colanic-acid wca/wz cluster): ~1,000 sub-100bp records, 43-57% alt per strain, under 2% no-call, so all four rows carry structure. Viewport trimmed 740->700 so the MAF's five rows fit without empty background. RETIRED per this note ('kind of boring screenshot. consider deleting'). It was also the same dense blue genotype matrix pangenome_cactus/variant_matrix drew of the same five strains, so the two tutorials were showing one picture twice. The track JSON and the prose for that projection stay on the page; the pggb gallery card moves to pangenome/pav, which is a projection no other card shows.",
     "reviewedAt": "2026-07-27T18:42:13.015Z",
     "hash": "ec9ebd6e2cec845647ab80a28c5bd352d0865744"
   },
