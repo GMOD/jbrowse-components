@@ -161,13 +161,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0, 0.36],
   },
   pangenome_ecoli: {
-    // The pggb genotype matrix, framed like the Minigraph-Cactus card below so
-    // the two pipelines' cards differ by their projection, not their framing.
-    // The hand-made thumb it replaces was a full-window capture of a window
-    // (chr:1,000,000..1,010,000) no spec renders any more, so nothing could
-    // regenerate it.
-    src: 'pangenome/pangenome_variants.png',
-    band: [0.4, 0.7],
+    // Per-strain presence/absence, the projection that replaced the genotype
+    // matrix on this card (see gallery.ts). Framed past the app chrome and
+    // coordinate ruler, row labels kept on the left.
+    src: 'pangenome/pav.png',
+    band: [0.29, 1],
     position: 'left',
   },
   genomes_synteny: {
