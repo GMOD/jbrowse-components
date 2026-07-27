@@ -31,8 +31,9 @@ These are [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates over the
 and published as the [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG)
 track hub, whose `trackDb` lists all 2504 samples across 26 populations. That
 hub serves bigBed heat maps for the UCSC browser. The files above are the lab's
-raw per-sample bigWig estimates, re-hosted unmodified on `jbrowse.org` so these
-examples load without a download. **If you use them, cite
+raw per-sample bigWig estimates, re-hosted unmodified on `jbrowse.org`. The
+lab's own download share for those is offline, so the copies above are what
+these examples use. **If you use them, cite
 [Shen and Kidd 2020](https://doi.org/10.3390/genes11020141).**
 
 QuicK-mer2 counts k-mers that occur exactly once in the reference, which is what
