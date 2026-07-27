@@ -206,16 +206,13 @@ export const gallerySpecs: ScreenshotSpec[] = [
   },
   // Bare-config gallery cards: each opens the config's own defaultSession (no
   // session spec), the same view the /gallery/ link opens.
-  {
-    mode: 'url',
-    name: 'gallery/gwas_bmi_fto',
-    // taller crop so the FTO gene track below the Manhattan plot is visible (the
-    // GWAS peak sits over an FTO intron — the point of the figure)
-    url: '?config=test_data%2Fgwas%2Flocuszoom_ld.json',
-    readyTimeout: 90000,
-    settleMs: 10000,
-    viewportHeight: 640,
-  },
+  //
+  // gallery/gwas_bmi_fto was retired here. It opened the LD config's own
+  // defaultSession over GIANT BMI at FTO, and the card now takes
+  // gwas/locuszoom_ld instead: a bare-config capture carries the config's
+  // timestamped session name in its title bar, and the SLE/STAT4 window is the
+  // stronger picture anyway (a dense signal with a red high-r² cluster over
+  // labelled genes, against a sparse cloud over an unlabelled gene lane).
   {
     mode: 'url',
     name: 'gallery/hg19_vs_hg38',

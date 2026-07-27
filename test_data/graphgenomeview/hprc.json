@@ -38,7 +38,7 @@
         "assemblyNameToPanSN": { "hg38": "GRCh38" }
       },
       "displayDefaults": {
-        "color": "rgb(237,137,44)"
+        "color": "rgb(130,130,130)"
       }
     },
     {

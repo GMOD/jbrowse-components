@@ -137,7 +137,7 @@ you read rather than remember.
 
 The subgraph is cut from the same two files the track reads.
 
-<Figure caption="The HLA class II region as a graph, in force-directed layout, under three lanes of the same window. Both panels use the graph's Reference position colors: the segment blocks run red to magenta left to right and the thread in the graph runs with them, so a loop's color says where above it attaches. The orange bar is the bubble those loops hang off." src="/img/pangenome/hprc_mhc_bandage.png" />
+<Figure caption="The HLA class II region as a graph, in force-directed layout, under three lanes of the same window. Both panels use the graph's Reference position colors: the segment blocks run red to magenta left to right and the thread in the graph runs with them, so a loop's color says where above it attaches. The grey bar is the bubble those loops hang off, held out of the ramp so it reads as one object rather than as a position." src="/img/pangenome/hprc_mhc_bandage.png" />
 
 A force layout has no x axis to share with the linear view, so color is the only
 thing that can carry the correspondence. **Reference position** in the **Color**

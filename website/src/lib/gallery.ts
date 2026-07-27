@@ -271,10 +271,10 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'GWAS with LD coloring',
-        spec: 'gallery/gwas_bmi_fto',
+        spec: 'gwas/locuszoom_ld',
         guide: 'user_guides/gwas_track',
         description:
-          'A GIANT BMI Manhattan plot at the FTO locus with LocusZoom-style LD coloring. Points shade by r² to an index SNP, read from a PLINK .ld file beside the summary statistics, and a right-click re-anchors the index to any other point.',
+          'An SLE GWAS at the STAT4 locus, with points shaded by r² to the lead SNP from a PLINK .ld file beside the summary statistics.',
       },
       {
         label: 'More GWAS examples (Storybook) ↗',

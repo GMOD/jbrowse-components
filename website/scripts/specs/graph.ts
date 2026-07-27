@@ -708,9 +708,14 @@ export const graphSpecs: ScreenshotSpec[] = [
   // minigraph rather than about this locus, and it left the linear lane a
   // single blue (only rank 0 has an hg38 coordinate at all).
   //
-  // The bubbles lane stays in the graph's rank-1 orange, set on the track in
-  // hprc.json: it is one object, marking where the loops attach, so it has
-  // nothing to ramp over.
+  // The bubbles lane is grey, set on the track in hprc.json so every figure
+  // using it matches. It is one object marking where the loops attach, so it
+  // has nothing to ramp over — but the ramp beside it sweeps the whole hue
+  // circle, so any hue it took would read as a position claim. It was the
+  // graph's rank-1 orange, back when these panels used the Stable rank scheme;
+  // under Reference position that orange landed mid-ramp and the bar read as
+  // "this bubble is over there" (reviewer: "confused for orange in the
+  // figure"). Achromatic is the only color the ramp cannot mean.
   //
   // No allele lane. Review, three figures over: "the allele inventory i not
   // sure i like. just want to see graph."

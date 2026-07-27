@@ -133,8 +133,8 @@
     "name": "cnv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T15:50:26.093Z",
-    "hash": "13cb3a3838155fe2fac47fac23e097c036f2fac3"
+    "reviewedAt": "2026-07-27T13:42:59.593Z",
+    "hash": "7f1f4809ea08a48ba23142f1e85c764178a900ce"
   },
   "smalldel": {
     "name": "smalldel",
@@ -153,8 +153,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:13:25.643Z",
-    "hash": "d8c94a70684357bebbca2664c77460cca9b5bb7a"
+    "reviewedAt": "2026-07-27T13:45:13.693Z",
+    "hash": "07550fa936c96adcf0a9175baef09294c8f90619"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -178,10 +178,10 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "bad",
+    "status": "good",
     "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). readConnectionsHeight 40 -> 200, track height and viewportHeight raised by the same 160 so no pileup row is lost. An arc apex is drawn at its genomic span in px, clamped to the band, so at this zoom every pair (concordant ~400bp upward) was clipped to the 40px ceiling and the band was one flat mass; at 200 the concordant domes resolve below the discordant pairs spanning the duplication. The two evidence callouts moved from raw viewport x/y to an anchor on the pileup track (fracY 0 + dy), so they now sit a fixed distance below the arc band whatever its height, per the rule in website/CLAUDE.md.",
-    "reviewedAt": "2026-07-27T12:49:44.676Z",
-    "hash": "645f3499bb4c22bf1660407d763c3b49e6840c30"
+    "reviewedAt": "2026-07-27T13:45:08.352Z",
+    "hash": "936f3cbc487810143d96d97533a9bc1fb4b9d642"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -642,9 +642,9 @@
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:11:35.352Z",
-    "hash": "c0a4566ed4c80d98c19e68bd4c50f5a84148355d"
+    "note": "put this in gallery",
+    "reviewedAt": "2026-07-27T13:45:08.259Z",
+    "hash": "9fadcc34d28d78136e030832fe9ef760c350fc01"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
@@ -1252,10 +1252,10 @@
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:10:41.274Z",
-    "hash": "1fad7d154a6b5c80e52d74d40f7d881609e738c0"
+    "status": "bad",
+    "note": "delete and use gwas/locuszoom_ld  instead in gallery, can potentially put this on the gwas user guide if it helps but the other screenshot is more gallery worthy DONE as asked. The gallery card now takes gwas/locuszoom_ld, and this spec and its PNG are gone. Not added to the gwas user guide: that page already carries gwas/locuszoom_ld as its LD figure, so this would have been the same thing twice. Two reasons it was the weaker card, for the record: it is a bare-config capture, so the config's timestamped session name sits in the title bar, and the SLE/STAT4 window is simply a better picture (a dense signal with a red high-r2 cluster over labelled genes, against a sparse cloud over an unlabelled gene lane).",
+    "reviewedAt": "2026-07-27T13:44:59.438Z",
+    "hash": "50bdc9c33c51a3839ab4ed252066212a019b37a3"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
@@ -1575,8 +1575,8 @@
     "name": "feature_height_default",
     "status": "good",
     "note": "FIXED: viewportHeight 760 -> 660, trimming 100px off both frames as asked. MUI reflows the Read-height submenu upward to stay inside the shorter viewport (all rows through \"Fit read height to display\" still visible) and the pin circle anchors to the live element, so it followed. Regenerated + verified.",
-    "reviewedAt": "2026-07-19T21:10:09.123Z",
-    "hash": "d13b18bc2e80aa6a933cc01830bf2a9f5992a2ea"
+    "reviewedAt": "2026-07-27T13:43:01.476Z",
+    "hash": "6f69de8b18273d5506d0434df949b45b85cba83f"
   },
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
@@ -1807,9 +1807,9 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "bad",
-    "note": "increase  linezoneheight and height of browser to match as a result DONE (spec only, PNG still to regenerate). Same readConnectionsHeight 200 and viewportHeight +160 as the doc figure. This one is heightMode grow, so the track follows the taller band on its own; the grown stack lands near 770px, still under GROW_MAX_HEIGHT 800, past which grow would stop following the content and crop the discordant cluster the card is for.",
-    "reviewedAt": "2026-07-27T12:49:32.182Z",
-    "hash": "3b27d160c05c3d11b914aea9ed3d5da55e44de30"
+    "note": "the legend arc color boxes are duplicating contents from read color. also, ideally it should only show colors that are visible. FIXED in the display, not the spec. The arc key and the read key are two vocabularies that partly overlap: reads by orientation under the default insert-size-and-orientation arcs share every orientation bucket, and a shared bucket is the same category in the same palette color under both headings. getArcLegendItems now takes the read key's categories and drops them, so the arc section carries only what the read section does not say (here: Normal / Long insert / Short insert) and goes away entirely when it would say nothing new. The existing arcColorsMatchReads merge was the all-or-nothing version of the same rule. On the second half: both sections already list only buckets the renderer actually produced, so a swatch that is hard to spot is a category present in a few reads rather than a category listed on spec. Kept behind the 0.5% diff gate on the first regen (a legend losing four rows is 0.286% of pixels) and forced.",
+    "reviewedAt": "2026-07-27T13:43:55.272Z",
+    "hash": "8b77591beb2189dc67f0fe3cc3fcdbe94cc29b05"
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
@@ -2051,8 +2051,8 @@
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
     "status": "bad",
-    "note": "If the nodes were rainbow colored in exact same way in lineargenomeview and bandage graph it might help show correspondance FIXED, and it is the fix the note asked for. The graph view now has a Reference position colour scheme (new in the plugin, renderer/GeometryBuilder.ts): hue ramps over the region the subgraph was cut from, red at its start to magenta at its end, and a node with no reference coordinate of its own takes the hue of the backbone it branches from. It is a function of two stated numbers and a midpoint, which is what lets a linear track reproduce it exactly in a colour jexl, so the segments lane and the Bandage thread paint the same bp the same colour. Rainbow-by-node-index could not do this: a linear view has no way to know the graph's node order.",
-    "reviewedAt": "2026-07-27T12:50:38.843Z",
+    "note": "color bubble track in lineargenomeview differently, confused for orange in the figure FIXED, in test_data/graphgenomeview/hprc.json so all three figures using the bubbles track match: the lane is now grey rgb(130,130,130). The orange was the graph's rank-1 color, from when these panels used the Stable rank scheme; every one of them is on Reference position now, whose ramp sweeps the whole hue circle, so the bar landed mid-ramp and read as a position claim. Achromatic is the only color that ramp cannot mean. hprc_mhc_bandage and hprc_mhc_anchored are recolored with it, and the bandage caption no longer calls the bar orange.",
+    "reviewedAt": "2026-07-27T13:31:01.848Z",
     "hash": "408d87afbd3566a971c1a74cacca99d90b67071f"
   },
   "pangenome/hprc_graph_vs_callset": {
