@@ -432,6 +432,9 @@ export const svSpecs: ScreenshotSpec[] = [
           track: 'HG02768.final',
           locus: '1:39,658,200',
           fracY: 0,
+          // in off the track's left edge, so the pill's border clears the app
+          // frame rather than being clipped by it
+          dx: 50,
           dy: 360,
         },
         text: 'Green (LL), navy (RR), and magenta split reads flag the inverted segment.',
@@ -444,6 +447,9 @@ export const svSpecs: ScreenshotSpec[] = [
           track: 'HG02768.final',
           locus: '1:39,658,200',
           fracY: 0,
+          // in off the track's left edge, so the pill's border clears the app
+          // frame rather than being clipped by it
+          dx: 50,
           dy: 530,
         },
         text: 'Elevated coverage and arcs mark the duplicated copy.',
