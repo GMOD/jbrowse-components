@@ -109,6 +109,23 @@ obvious. If a caption needs a paragraph of gene/pathway prose to be
 intelligible, the figure itself isn't a clear enough highlight; fix the figure
 (zoom, labels, in-view highlights), not the caption.
 
+**Card titles and captions, rules stated in review.** These are what a copy pass
+over `src/lib/gallery.ts` was corrected against, so new cards should start here
+rather than rediscover them:
+
+- Name the dataset when the dataset is the draw (`hg19 vs hg38 dotplot`,
+  `E. coli all-vs-all`). A little biology in a title is fine.
+- **No numerals in a title.** `ChromHMM states for 127 epigenomes` and
+  `Cohort copy number (1104 tumors)` were both rejected on this. The count goes
+  in the description, where it is a fact rather than a boast.
+- No biology lessons in descriptions. The rejected example packed rs4988235,
+  "-13910 C>T" and "the variant behind lactase persistence" into one sentence.
+- Keep it dry. No "fan", "flanks", "lift off", "hangs off", "salt-and-pepper".
+- No JBrowse vocabulary in a title: "mode", "split view", "display".
+  `Tumor/normal split view` was called out as meaningless to a reader.
+- Don't over-specify coordinates ("Peach Pp05 against grape chr2" was too much).
+- Short. 32 characters was accepted, 46 is on the long side.
+
 **On-image `annotations` text stays at the bare minimum** — a label, not a
 paragraph. A callout drawn into the PNG covers the tracks underneath it, can't
 be re-flowed or translated, and goes stale silently. Give it the one phrase that

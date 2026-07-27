@@ -385,3 +385,46 @@ graph rather than HPRC.
   structural alleles now read at up to 5px instead of the 2px SNP floor. Every
   other spec touching this display came back 0.000% — `multisv` uses symbolic
   ALTs, which carry no measurable length, and the matrix specs ignore the slot.
+
+## Gallery cards hide their live links behind the guide link
+
+`website/src/pages/gallery.astro:120-140` renders the guide link **or** the live
+link, never both. 16 of the 44 items set `guide:`, so those cards only show
+"Read the guide", and "Open in JBrowse" is reachable only by clicking the image
+into the lightbox. That is most of why the gallery reads as pointing at
+reference pages rather than at a browser you can drive. Showing both is a few
+lines and needs no new docs.
+
+While in there, two duplicate-capability pairs are still standing, left alone
+pending a decision to cut one of each:
+
+- `Clustered copy-number heatmap` (1000 Genomes) against `TCGA-BRCA cohort copy
+  number`. The 1000G card also still points its `guide:` at
+  `user_guides/multiquantitative_track`, written before
+  `tutorials/population_cnv` existed, which is now the better destination.
+- `Variants called from a pangenome graph` against `Presence/absence by strain
+  (PAV)`, the same five-strain E. coli data, adjacent in one section.
+
+## 1000 Genomes CNV tutorial, follow-ups
+
+`website/docs/tutorials/population_cnv.md` and `website/scripts/specs/cnv1000g.ts`
+are shipped and the Zarr plugin is published (see
+`key_pattern_signal_matrix_zarr_format`). What was scoped but not built:
+
+- `scripts/build_signal_zarr.ts --whole-genome` holds the full base matrix in
+  memory. Fine for the two-window repo fixture, not for a genome-wide store.
+- A QuicK-mer2 how-to section, wanted for reader confidence rather than as a
+  requirement. Honest scope is one sample against the published k-mer index,
+  since building the index is a heavyweight prerequisite. Worth offering the
+  long-read depth callers that emit per-base depth BigWigs as the modern path
+  for a reader's own data (HiFiCNV or sawfish for PacBio, Spectre for ONT),
+  because their output drops into the same track and the same clustering.
+  Verify every command against upstream rather than writing from memory.
+- The combined depth-plus-bubbles figure. `test_data/graphgenomeview/hprc.json`
+  is already hg38 and already holds `hprc_minigraph_bubbles`, so adding the
+  QuicK-mer2 track there gives one config that shows depth, nested bubbles and
+  the SV VCF at one locus, plus a `GraphGenomeView` panel for the
+  force-directed picture (copy `pangenome/hprc_mhc_bandage` in
+  `website/scripts/specs/graph.ts`, and budget for its `readyTimeout: 120000` /
+  `diffThreshold: 0.1`). It has to be a config track: 104 BigWig URLs do not fit
+  in a session-spec URL.

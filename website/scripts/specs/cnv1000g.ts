@@ -11,7 +11,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The locus was picked by measurement, not reputation: over 104 samples the
 // CCL3L1/CCL4L1 window carries every integer copy-number level from 0 to 10,
 // the widest spread of the dozen textbook multiallelic loci probed (AMY1 0-4,
-// LPA 2-8, HP 2-7, UGT2B17 0-2). See agent-docs/HANDOFF-1000G-CNV-GALLERY.md.
+// LPA 2-8, HP 2-7, UGT2B17 0-2). Do not re-pick it by reputation.
 const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 
 // The 1000 Genomes phase 3 integrated SV map, lifted to GRCh38, already in
