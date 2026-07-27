@@ -24,10 +24,11 @@ A numeric value (integer or decimal), e.g. a pixel height or a score threshold.
 
 ## maybeNumber
 
-A number or unset. Leaving it unset is a distinct third state: the slot defers
-to a higher-tier default (the display-type or session default) instead of
-pinning a value, the same way [`maybeBoolean`](#maybeboolean) works for
-booleans.
+A number or unset. Leaving it unset is a distinct third state: the slot follows
+the display-type default (see
+[defaults for all tracks](/docs/user_guides/display_defaults)) instead of giving
+the track a value of its own, the same way [`maybeBoolean`](#maybeboolean) works
+for booleans.
 
 ## integer
 
@@ -40,9 +41,11 @@ A whole number.
 ## maybeBoolean
 
 `true`, `false`, or unset. Leaving it unset is a distinct third state: the slot
-defers to a higher-tier default (the display-type or session default) instead of
-pinning a value. Setting `true`/`false` pins the track either way. Used where
-"follow the app default" must be distinguishable from an explicit off.
+follows the display-type default (see
+[defaults for all tracks](/docs/user_guides/display_defaults)) instead of giving
+the track a value of its own. Setting `true`/`false` customizes the track either
+way. Used where "follow the default" must be distinguishable from an explicit
+off.
 
 ## fileLocation
 
@@ -71,10 +74,10 @@ One value from a fixed set. The allowed values are listed next to the slot, e.g.
 ## maybeStringEnum
 
 One value from a fixed set, or unset. Leaving it unset is a distinct extra
-state, exactly as with [`maybeBoolean`](#maybeboolean): the slot defers to a
-higher-tier default (the display-type or session default) instead of pinning a
-value. Used for settings you can make the default for every track of a type,
-e.g. a display's `heightMode` or `displayMode`.
+state, exactly as with [`maybeBoolean`](#maybeboolean): the slot follows the
+display-type default instead of giving the track a value of its own. Used for
+settings you can make the default for every track of a type, e.g. a display's
+`heightMode` or `displayMode`.
 
 ## color
 

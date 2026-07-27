@@ -203,13 +203,14 @@ your edits and revert to the underlying config.
 
 ### Pinning a setting as your default
 
-Many track-menu settings (color-by scheme, feature height mode, soft-clipping,
-group-by, and more) carry a small **pin** next to them. Clicking the pin
-promotes that setting as the default for every track of the same type in your
-session, not just the one track. Pinned defaults ride along in the session, so
-they travel with a shared session link, and every track a default affects is
-badged in the track selector. Click the pin again (or **Follow default** on a
-track) to un-pin and revert to the underlying configuration.
+Many track-menu settings (color-by scheme, read and feature height,
+soft-clipping, and more) carry a small **pin** next to them. Clicking the pin
+makes that value the default for every track of the same type, not just the one
+track, and clicking it again clears the default. Every open track a default
+affects is badged in the track selector. See
+[defaults for all tracks](/docs/user_guides/display_defaults) for the whole
+system: what follows a default, what keeps its own value, and where the defaults
+are kept.
 
 The [display settings tutorial](/docs/tutorials/display_settings) covers the
 same settings from the other direction: as persistent defaults in `config.json`,

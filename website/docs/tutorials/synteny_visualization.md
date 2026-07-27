@@ -155,7 +155,7 @@ are colored:
 - Query and Mapping quality color by query sequence name and by PAF MAPQ,
   respectively.
 
-The synteny settings also include a **Fade by identity** toggle, which modulates
+The synteny settings also include an **Identity fade** toggle, which modulates
 ribbon opacity by identity independently of the color mode so low-identity
 regions fade out.
 

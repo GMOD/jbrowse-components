@@ -24,7 +24,7 @@ GRCh38 and T2T-CHM13 lay out differently.
 ## Opening a liftOver track
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org), then in the
-track selector find **Pairwise alignments** > **liftOver** and turn on **hg38 to
+track selector find **Pairwise alignments** → **liftOver** and turn on **hg38 to
 Human (hs1) liftOver**. Type `TNNT3` into the location box to navigate to the
 gene; the hosted config ships a name index, so gene symbols work without any
 setup.
@@ -69,10 +69,10 @@ track is on. See
 
 Both live on the synteny view's **View options** button:
 
-- **Show...** > **Show curved lines** draws each ribbon as a curve instead of a
+- **Show...** → **Show curved lines** draws each ribbon as a curve instead of a
   straight shear, so a block that lands far from where it started is easier to
   follow across the gap.
-- **CIGAR display mode** > **Transparent indels** stops painting the insertions
+- **CIGAR display mode** → **Transparent indels** stops painting the insertions
   and deletions inside each block, leaving them as see-through gaps. With strand
   coloring on, that keeps color meaning only one thing.
 
@@ -90,7 +90,7 @@ Colored by strand, that segment is the one off-color ribbon in the view.
 
 ## Trying other pairs
 
-The same click-path works for any liftOver track under **Pairwise alignments** >
+The same click-path works for any liftOver track under **Pairwise alignments** →
 **liftOver**. The one thing that changes is how much of the chain survives: a
 close comparison like hs1 or panTro6 gives long collinear blocks, while a
 distant one gives short scattered ones, and the CIGAR option matters more the

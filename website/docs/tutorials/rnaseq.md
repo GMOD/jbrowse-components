@@ -40,7 +40,7 @@ The more reads that stack up over a region, the more highly expressed it is. The
 coverage histogram along the top of the track is JBrowse's running per-position
 read count, so tall coverage flags a highly-transcribed gene.
 
-Pick **Read height** > **Compact** in the track menu to pack the full read stack
+Pick **Read height** → **Compact** in the track menu to pack the full read stack
 into view:
 
 <Figure caption="Compact read height packing the full read stack over a gene. Coverage depth broadly tracks expression level." src="/img/rnaseq/compact_stacked.png" />

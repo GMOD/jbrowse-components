@@ -366,7 +366,7 @@ combined data table and circular overview of the SV calls.
 
 Clicking the chord that connects chr3 and chr13 launches a breakpoint split
 view. Opening the tumor PacBio HiFi reads on each panel and setting **Read
-height** > **Compact** highlights the supporting split reads as black splines
+height** → **Compact** highlights the supporting split reads as black splines
 connecting the two chromosomes.
 
 <Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
@@ -385,7 +385,7 @@ CUZD1 gene.
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The SVTYPE column reports a DEL. Clicking the row's location link opens it in the linear genome view below, drawn as the <DEL> ALT allele above the NCBI RefSeq gene track." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Opening the gene annotations and the tumor PacBio HiFi reads, setting **Read
-height** > **Compact** and applying **Sort by base pair** (both from the track
+height** → **Compact** and **Sort by...** → **Base pair** (both from the track
 menu) with the deletion centered shows the deletion (enabling the **center
 line** from the view menu is helpful for aligning the breakpoint precisely under
 the center of the view).
