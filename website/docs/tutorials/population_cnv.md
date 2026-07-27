@@ -27,12 +27,18 @@ second half packs the same values into one Zarr store.
 | `https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/<POP>/<SAMPLE>.qm2.CN.1k.bw` | one individual's copy number, 1kb bins |
 
 These are [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates over the
-30x 1000 Genomes panel, published by the Kidd lab as
-[KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) (whose `trackDb` lists
-all 2504 samples across 26 populations). QuicK-mer2 counts k-mers that occur
-exactly once in the reference, which is what makes it read _paralogs_ apart
-instead of collapsing a gene family into one averaged pile. That property is the
-whole reason this tutorial has anything to show.
+30x 1000 Genomes panel, produced by the Kidd lab at the University of Michigan
+and published as the [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG)
+track hub, whose `trackDb` lists all 2504 samples across 26 populations. That
+hub serves bigBed heat maps for the UCSC browser. The files above are the lab's
+raw per-sample bigWig estimates, re-hosted unmodified on `jbrowse.org` so these
+examples load without a download. **If you use them, cite
+[Shen and Kidd 2020](https://doi.org/10.3390/genes11020141).**
+
+QuicK-mer2 counts k-mers that occur exactly once in the reference, which is what
+makes it read _paralogs_ apart instead of collapsing a gene family into one
+averaged pile. That property is the whole reason this tutorial has anything to
+show.
 
 ## Load it
 
@@ -264,10 +270,13 @@ converter over it, so nothing above depends on a hand-written sample list.
 
 ## References
 
-- Shen and Kidd,
-  [Rapid, paralog-sensitive CNV analysis of 2457 human genomes using QuicK-mer2](https://doi.org/10.3390/genes11020141),
-  Genes 2020
-- [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG), the copy-number track
-  hub these files come from
+- Shen F and Kidd JM,
+  [Rapid, Paralog-Sensitive CNV Analysis of 2457 Human Genomes Using QuicK-mer2](https://doi.org/10.3390/genes11020141),
+  Genes 2020, 11(2):141. **The citation for the copy-number data used throughout
+  this page.**
+- [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG), the Kidd lab track
+  hub these files come from, and
+  [KiddLab/QuicK-mer2](https://github.com/KiddLab/QuicK-mer2), the caller that
+  produced them
 - [1000 Genomes phase 3 integrated SV map](https://doi.org/10.1038/nature15394)
 - [Zarr v3 specification](https://zarr-specs.readthedocs.io/en/latest/v3/core/index.html)
