@@ -104,13 +104,15 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               trackId: 'ecoli_pggb_variants',
               type: 'LinearMultiSampleVariantDisplay',
               height: 160,
-              // pggb's VCF is NESTED: alongside the SNPs it emits top-level
-              // bubble records thousands of bp wide (LV=0), and at this locus
-              // one of them is 7,094 bp with a different allele in all four
-              // strains (GT 1/2/3/4). Three of those are "other alt", so the
-              // record painted 7 kb of flat dark red across three rows and
-              // buried every SNP under it. Filtering to <100 bp keeps the
+              // pggb's VCF is NESTED: alongside the SNPs it emits bubble
+              // records hundreds to thousands of bp wide, which paint over the
+              // fine layer decomposed from them. 178 of the file's 174,439
+              // records span a kilobase or more; two in this window exceed
+              // 100 bp (widest 429 bp at chr:2,139,331), and the MAF figure's
+              // window carries a 20,639 bp one. Filtering to <100 bp keeps the
               // decomposed SNP layer, which is what the figure is about.
+              // (An earlier revision cited a 7,094 bp record here; that was the
+              // pre-IAI39 four-strain VCF and no longer reproduces.)
               jexlFilters: [
                 "jexl:get(feature,'end')-get(feature,'start') < 100",
               ],

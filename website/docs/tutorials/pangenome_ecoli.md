@@ -162,15 +162,35 @@ its genomic position:
 }
 ```
 
-Stack the MAF alignment (below) under the same window and each band of shared or
-absent genotype sits directly above the per-strain alignment it was decomposed
-from, so the variant rows can be checked rather than taken on faith.
+Stack the MAF alignment (below) in the same window and each variant row sits
+above the per-strain alignment it was decomposed from.
 
 <Figure caption="The graph's pangenome variants on the K12 reference across the colanic-acid cluster (wca/wz), one row per strain, with the MAF alignment stacked below and the K12 gene lane above. Each column is a variant the graph called, colored by that strain's genotype (see the legend); a run of the same color across rows is a stretch those strains share." src="/img/pangenome/pangenome_variants.png" />
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and
 clustering samples by genotype.
+
+### Two tiers in one file
+
+A graph VCF is nested, which an ordinary callset is not. pggb decomposes a snarl
+tree, so each record carries `LV` (its level, `0` at the top) and `PS` (its
+parent), and the file holds both a bubble and the variants inside it. Of the
+174,439 records here, 30,508 sit inside another one, and **178 span a kilobase
+or more of K12**, 142 of those carrying three or more distinct alternate
+alleles.
+
+Those wide records draw over the fine layer decomposed from them: one record in
+the MAF window below spans 20,639 bp at `chr:4,567,270`, painting a flat block
+across the rows that carry it and hiding every SNP underneath. Both figures on
+this page filter them out, with
+
+```
+jexl:get(feature,'end')-get(feature,'start') < 100
+```
+
+from **Edit filters** in the track menu. Invert that to read the bubble tier
+instead, or filter on `LV` to pick a level of the snarl tree directly.
 
 ## Whole-genome alignment (MAF) projection
 
@@ -270,10 +290,20 @@ K12:
 
 Zoomed out, the track is the pangenome's core/accessory landscape along K12: a
 plateau near the strain count, dropping over the accessory stretches the variant
-and MAF projections zoom into. Collapsed repeats can push a window above the
-strain count, so read the signal as relative, not an exact genome tally.
+and MAF projections zoom into.
 
 <Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near 5 (every strain traverses the graph there, so the sequence is core) and drops toward 1 over the accessory stretches private to fewer strains." src="/img/pangenome/depth.png" />
+
+Both extremes are worth opening. Ten stretches of 5 kb or more, 157 kb in all,
+sit at depth 1 because no other strain traverses them, the largest being
+`chr:262,500-297,500`, then `chr:2,755,500-2,778,000` and
+`chr:1,196,000-1,211,500`. Those are K12's private sequence, and the gene lane
+names what is in them.
+
+The peaks go the other way: depth reaches 10 at `chr:4,167,000-4,170,500` and
+`chr:3,942,000-3,946,500`, twice the strain count, because those are rRNA
+operons the graph collapses into a single path each strain then walks twice. So
+read the signal as relative, not an exact genome tally.
 
 ### Per-strain presence
 
@@ -330,7 +360,10 @@ done
 ```
 
 Where the aggregate curve dips, this track shows _which_ strain is missing: one
-row falls to 0 over its own accessory stretch while the others hold at 1.
+row falls to 0 over its own accessory stretch while the others hold at 1. Over
+the whole chromosome, CFT073 is absent from 14.0% of the windows, IAI39 11.6%,
+Sakai 10.3% and NCTC86 5.8%; the windows where all four rows are absent at once
+are the K12-private islands the depth track bottoms out over.
 
 <Figure caption="odgi pav over the same K12 windows, one row per non-K12 strain, near 1 where that strain is present and 0 over its own accessory stretches. The gap patterns differ per strain, so a single dip in the aggregate depth curve resolves into which strain accounts for it." src="/img/pangenome/pav.png" />
 
@@ -348,7 +381,8 @@ do, but its horizontal axis is the graph's node order (the "pangenome
 sequence"), not any genome's coordinates. Sequence every strain walks is a
 filled column across all rows; accessory sequence is a gap in the rows that skip
 it. That is the graph's real structure, but no gene is numbered in node order,
-so a locus can even sit left-to-right of where it falls on any chromosome.
+and the axis counts pangenome bases rather than reference ones, so a locus takes
+up more of it wherever the other strains carry sequence K12 lacks.
 
 The four JBrowse projections keep the one-row-per-strain idea and throw the
 node-order axis away, re-drawing everything on K12's coordinates:
@@ -360,7 +394,10 @@ node-order axis away, re-drawing everything on K12's coordinates:
 - the **variant track** is the points where the rows branch, one column each.
 
 Node order is what you trade away; a reference coordinate beside the genes is
-what you get for it.
+what you get for it. The
+[Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus#compared-to-odgi-viz)
+measures that trade on the same five strains, marking one 100 kb window on both
+axes to show how much wider it is on the graph's.
 
 ## The graph itself: a local subgraph
 
@@ -394,10 +431,11 @@ none of this.
 
 The four projections above flatten the graph onto K12. JBrowse can also draw the
 graph _as a graph_, a Bandage-style 2-D view of one locus. The whole-genome
-graph is far too large to lay out (500k nodes here, millions for a vertebrate
-pangenome), so you cut a window out of it first and open that subgraph. Three
-odgi commands do it: `extract -E` takes every node between the first and last in
-the range, `sort -O` compacts the node ids, `view -g` writes GFA:
+graph is far too large to lay out (606k nodes and 814k links here, millions for
+a vertebrate pangenome), so you cut a window out of it first and open that
+subgraph. Three odgi commands do it: `extract -E` takes every node between the
+first and last in the range, `sort -O` compacts the node ids, `view -g` writes
+GFA:
 
 ```bash
 # resolve the graph on the host, since a /data/*.og glob can't expand in docker
@@ -431,10 +469,35 @@ python3 scripts/gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
 tabix -p bed ecoli_pggb_subgraph_nodes.bed.gz
 ```
 
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_subgraph_nodes",
+  "name": "pggb subgraph: nodes on K12, colored by depth",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_pggb_subgraph_nodes.bed.gz",
+    "columnNames": [
+      "chrom",
+      "start",
+      "end",
+      "name",
+      "depth",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb"
+    ]
+  }
+}
+```
+
 The BED's `itemRgb` is the view's own viridis Depth ramp sampled the same way,
-so an ordinary feature track needs no color configuration and cannot drift from
-the graph. Nodes the reference path never visits are the alternate alleles: no
-K12 position, so they are absent.
+so the track needs no color configuration and cannot drift from the graph;
+`columnNames` only makes the tooltip say `depth` where it would otherwise say
+`score`. Nodes the reference path never visits are the alternate alleles: no K12
+position, so they are absent.
 
 <Figure caption="A 561 bp slice of the five-strain graph, 54 nodes over 5 paths, above the same nodes laid on the K12 axis in the same Depth colors. Green is depth 4, yellow depth 5, and the 1 bp teal specks are pggb's per-allele SNP nodes. Green turns yellow at chr:1,004,667, where the fifth path (CFT073) rejoins the shared sequence." src="/img/pangenome/local_subgraph.png" />
 
@@ -574,8 +637,8 @@ instead, so reading across a row says what that strain does to the reference.
 
 Both anchored layouts draw an allele across **the reference it replaces, never
 its own sequence length**: an insertion consumes no reference, so it draws as a
-mark where it attaches, with its size in the tooltip. Getting length onto the
-glyph instead takes a separate channel, which the next two tracks use.
+mark where it attaches, with its size in the tooltip. The next two tracks put
+the allele's own length on the glyph instead.
 
 ### Hovering one panel highlights the other
 
