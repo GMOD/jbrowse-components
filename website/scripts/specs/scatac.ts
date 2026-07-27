@@ -43,4 +43,42 @@ export const scatacSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     viewportHeight: 680,
   },
+  // The output of scripts/build_scatac_pseudobulk.sh, hosted: SnapATAC2's
+  // annotated 5k PBMC dataset pseudobulked to 12 per-cell-type BigWigs, with
+  // each row keeping the color and the cluster order the single-cell object
+  // gave it. CD8A is the marker that separates them: the CD8 rows (and MAIT,
+  // which is also CD8-positive) carry the peaks while B cells and monocytes
+  // stay flat, so the figure shows the tutorial's own pipeline rather than a
+  // second atlas.
+  {
+    mode: 'url',
+    name: 'scatac/pbmc5k_cd8a',
+    url: sessionSpec('test_data/config_demo.json', {
+      views: [
+        {
+          assembly: 'hg38',
+          loc: 'chr2:86,780,000-86,820,000',
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              type: 'LinearBasicDisplay',
+              displayMode: 'compact',
+              showOnlyGenes: true,
+              height: 80,
+            },
+            {
+              trackId: 'pbmc5k_scatac_pseudobulk_hg38',
+              type: 'MultiLinearWiggleDisplay',
+              height: 400,
+            },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 120000,
+    settleMs: 15000,
+    // 12 rows plus the gene track: the pDC row sits at the bottom edge below this
+    viewportHeight: 780,
+  },
 ]

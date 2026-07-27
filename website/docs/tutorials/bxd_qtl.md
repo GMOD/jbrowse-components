@@ -37,8 +37,6 @@ through the [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser) in R), so you can run the scan and view the peak in
 one Python or R session.
 
-<Figure src="/img/qtl/bxd_overview.png" caption="Whole chr4. Top: the BXD coat-color QTL scan, peaking at ~80 Mb. Bottom: the 198-strain painting (blue = B, red = D, grey = het, blank = unknown), rows sorted by each strain's genotype at the peak. Directly under the peak the strains split into a red block over a blue block, the B/D contrast the scan is scoring."/>
-
 ## What you need
 
 - `python3` with `pandas`, `numpy`, and `scipy`

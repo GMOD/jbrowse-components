@@ -1,4 +1,5 @@
 import {
+  colorShortInsertArc,
   methylated5hmC,
   methylated5mC,
   unmethylated5mC,
@@ -20,24 +21,33 @@ import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ColorPalette } from '../LinearAlignmentsDisplay/shaders/colors.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem, LegendSection } from '@jbrowse/core/ui'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
-// One row per color. A swatch means one thing in a legend box, so a color that
-// two vocabularies both produce is keyed once, under the first label it got —
-// the arcs' neutral slot and the reads' LR slot are both `colorPairLR`, and
-// "Normal" listed under "LR - Normal pair orientation" is the same grey twice.
-// Color-less rows (headings, notes) are never merged.
+// One row per color AND one row per label. A swatch means one thing in a legend
+// box, so a color that two vocabularies both produce is keyed once, under the
+// first label it got — the arcs' neutral slot and the reads' LR slot are both
+// `colorPairLR`, and "Normal" listed under "LR - Normal pair orientation" is the
+// same grey twice. The label rule covers the mirror case: short insert is the
+// one bucket the reads and the arc curves paint in *different* colors (pale fill
+// vs. saturated stroke), so keying by color alone lists "Short insert" twice.
+// The reads' swatch comes first and wins, since a pileup fill is what most of
+// the frame shows. Color-less rows (headings, notes) are never merged.
 function oneRowPerColor(items: LegendItem[]): LegendItem[] {
-  const seen = new Set<string>()
+  const seenColors = new Set<string>()
+  const seenLabels = new Set<string>()
   return items.filter(item => {
-    const dup = item.color !== undefined && seen.has(item.color)
+    const dup =
+      (item.color !== undefined && seenColors.has(item.color)) ||
+      seenLabels.has(item.label)
     if (item.color !== undefined) {
-      seen.add(item.color)
+      seenColors.add(item.color)
     }
+    seenLabels.add(item.label)
     return !dup
   })
 }
@@ -245,11 +255,12 @@ function bucketItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   overrides: Partial<Record<SwatchCategory, string>>,
+  swatchOverrides: Partial<Record<SwatchCategory, string>> = {},
 ): LegendItem[] {
   return CATEGORY_LEGEND.filter(({ category }) =>
     presentCategories.has(category),
   ).map(({ category, label }) => ({
-    color: categorySwatchColor(category, palette),
+    color: swatchOverrides[category] ?? categorySwatchColor(category, palette),
     label: overrides[category] ?? label,
   }))
 }
@@ -264,6 +275,20 @@ function crossCuttingBuckets(
     palette,
     categoryLabelOverrides(colorBy),
   )
+}
+
+// Short insert is the one bucket whose arc swatch is not the read swatch: a 1px
+// arc curve in the pale pileup fill (colorShortInsert #ffc0cb) is invisible over
+// the band, so the curves stroke the saturated variant (colorShortInsertArc,
+// arcColorPalette index 2) instead. Read cloud paints filled endpoint squares
+// from arcMarkerColorPalette, which is the pale fill again — same as the reads —
+// so only the curve mode overrides. Read straight from the theme constant, as
+// the arc palette does: arc colors are not part of the theme-overridable render
+// palette, so resolving this through `palette` would key a color no arc draws.
+function arcSwatches(
+  mode: ReadConnectionsMode,
+): Partial<Record<SwatchCategory, string>> {
+  return mode === 'arc' ? { shortInsert: colorShortInsertArc } : {}
 }
 
 /**
@@ -283,8 +308,9 @@ function crossCuttingBuckets(
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
+  mode: ReadConnectionsMode,
 ): LegendItem[] {
-  return bucketItems(presentCategories, palette, {})
+  return bucketItems(presentCategories, palette, {}, arcSwatches(mode))
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and

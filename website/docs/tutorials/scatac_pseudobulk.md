@@ -299,6 +299,8 @@ bash scripts/build_scatac_pseudobulk.sh    # builds ./scatac_pseudobulk_build
 npx --yes serve scatac_pseudobulk_build/jbrowse2
 ```
 
+<Figure caption="What the script produces, over CD8A: 12 per-cell-type BigWigs from the 10x 5k PBMC dataset as one MultiQuantitativeTrack, each row keeping the color and the cluster order the single-cell object gave it. The CD8 Memory, CD8 Naive, and MAIT rows carry the accessibility here while the B cell and monocyte rows stay flat." src="/img/scatac/pbmc5k_cd8a.png" />
+
 The input is SnapATAC2's annotated release of the 10x 5k-PBMC scATAC dataset,
 which is that tool's
 [standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html) and

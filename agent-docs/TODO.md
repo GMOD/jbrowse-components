@@ -243,3 +243,9 @@ pending a decision to cut one: `Clustered copy-number heatmap` (1000 Genomes)
 against `TCGA-BRCA cohort copy number`. The 1000G card also still points its
 `guide:` at `user_guides/multiquantitative_track`, written before
 `tutorials/population_cnv` existed, which is now the better destination.
+
+## multi-row
+
+in our tutorial we should link "Track 1: chromosome painting
+
+The painting is a multi-row feature display: one row per strain..." to an actual e.g. config guide or autogen guide or something page currently links to chromhmm

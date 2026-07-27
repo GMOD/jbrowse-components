@@ -3881,6 +3881,134 @@
     },
     {
       "type": "MultiQuantitativeTrack",
+      "trackId": "pbmc5k_scatac_pseudobulk_hg38",
+      "name": "Single-cell ATAC pseudobulk by cell type (10x 5k PBMC, SnapATAC2)",
+      "category": ["Single cell", "Chromatin accessibility"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Memory",
+            "group": "T cell",
+            "color": "#1f77b4",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Memory.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Naive",
+            "group": "T cell",
+            "color": "#ff7f0e",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Naive.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Memory",
+            "group": "T cell",
+            "color": "#279e68",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Naive",
+            "group": "T cell",
+            "color": "#d62728",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD14 Mono",
+            "group": "Myeloid",
+            "color": "#aa40fc",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD16 Mono",
+            "group": "Myeloid",
+            "color": "#8c564b",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD16_Mono.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "MAIT",
+            "group": "T cell",
+            "color": "#e377c2",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/MAIT.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Memory B",
+            "group": "B cell",
+            "color": "#b5bd61",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Memory_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "NK",
+            "color": "#17becf",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/NK.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Naive B",
+            "group": "B cell",
+            "color": "#aec7e8",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "cDC",
+            "group": "Myeloid",
+            "color": "#ffbb78",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/cDC.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "pDC",
+            "group": "Myeloid",
+            "color": "#98df8a",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/pDC.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "displayId": "pbmc5k_scatac_pseudobulk_hg38-MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowxy",
+          "height": 400
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
       "trackId": "microarray_multi_groups",
       "name": "MultiWig (groups)",
       "category": ["ENCODE bigWigs"],

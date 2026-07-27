@@ -1,3 +1,5 @@
+import { colorShortInsertArc } from '@jbrowse/core/ui/theme'
+
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
   getAlignmentsLegendSections,
@@ -6,6 +8,7 @@ import {
 } from './legendUtils.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { ColorBy, ColorSchemeType } from './types.ts'
 
@@ -384,9 +387,24 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['splitInversion', 'longInsert']),
         makeTestPalette(),
+        'arc',
       ).map(i => i.label),
     ).toEqual(['Long insert', 'Split-read inversion'])
-    expect(getArcLegendItems(new Set(), makeTestPalette())).toEqual([])
+    expect(getArcLegendItems(new Set(), makeTestPalette(), 'arc')).toEqual([])
+  })
+
+  // The curves stroke colorShortInsertArc, not the pale pileup fill; keying the
+  // fill left the one arc in a frame looking like the long-insert red beside it.
+  test('keys short insert in the color the curves stroke', () => {
+    const swatch = (mode: ReadConnectionsMode) =>
+      getArcLegendItems(
+        new Set<ReadColorCategory>(['shortInsert']),
+        makeTestPalette(),
+        mode,
+      )[0]!.color
+    expect(swatch('arc')).toBe(colorShortInsertArc)
+    // read cloud fills endpoint squares from the pale marker palette instead
+    expect(swatch('cloud')).not.toBe(colorShortInsertArc)
   })
 
   test('takes no per-scheme rewording — an arc never produces a strand bucket', () => {
@@ -395,6 +413,7 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['fwdStrand', 'revStrand']),
         makeTestPalette(),
+        'arc',
       ).map(i => i.label),
     ).toEqual(['Forward strand', 'Reverse strand'])
   })
@@ -456,6 +475,26 @@ describe('getAlignmentsLegendSections', () => {
       ),
     ) as [[string, string[]]]
     expect(labels).toEqual(['LR - Normal pair orientation'])
+  })
+
+  // Short insert is the one bucket the two vocabularies paint differently (pale
+  // read fill vs. saturated arc stroke), so a color-only rule lists it twice.
+  test('keys a label once, in the reads own color', () => {
+    const [[, items]] = shown(
+      getAlignmentsLegendSections(
+        model(
+          [
+            { color: '#aaa', label: 'LR - Normal pair orientation' },
+            { color: '#ffc0cb', label: 'Short insert' },
+          ],
+          [
+            { color: '#aaa', label: 'Normal' },
+            { color: '#ff3a8c', label: 'Short insert' },
+          ],
+        ),
+      ),
+    ) as [[string, string[]]]
+    expect(items).toEqual(['LR - Normal pair orientation', 'Short insert'])
   })
 
   test('keeps them apart when the two vocabularies share nothing', () => {

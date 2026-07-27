@@ -194,7 +194,7 @@ export function optimizePng(file: string) {
       'pngquant',
       [
         '--nofs',
-        '--quality=70-90',
+        '--quality=90-100',
         '--skip-if-larger',
         '--force',
         '--ext',

@@ -1251,7 +1251,11 @@ export default function stateModelFactory(
         arcLegendItems() {
           return this.arcColorsMatchReads
             ? []
-            : getArcLegendItems(this.arcLegendCategories, this.colorPalette)
+            : getArcLegendItems(
+                this.arcLegendCategories,
+                this.colorPalette,
+                self.readConnections,
+              )
         },
 
         /**
