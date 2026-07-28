@@ -1,5 +1,5 @@
 ---
-title: Copy number across a population (1000 Genomes)
+title: CNV across a population (1000 Genomes)
 description:
   Read k-mer depth copy number for every individual in the 1000 Genomes panel,
   and see the structure a symbolic-allele callset cannot hold
