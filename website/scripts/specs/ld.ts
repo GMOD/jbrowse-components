@@ -41,8 +41,11 @@ const LCT_TRACK = {
       type: 'LDDisplay',
       showLDTriangle: true,
       showLegend: true,
+      showRecombination: true,
       minorAlleleFrequencyFilter: 0.35,
-      height: 460,
+      // 460 for the triangle (unchanged) + 50 for the recombination zone
+      // showRecombination adds above it
+      height: 510,
     },
   ],
 }
@@ -101,18 +104,20 @@ export const ldSpecs: ScreenshotSpec[] = [
     })}&sessionName=Screenshot`,
     readyText: 'variants shown',
     readyTimeout: 180000,
-    // gene(60) + clinvar(70) + ld(460) + 3 headers + ruler/overview, with room
-    // for the triangle to reach its base
-    viewportHeight: 900,
+    // gene(60) + clinvar(70) + ld(510, incl. the recombination zone) + 3
+    // headers + ruler/overview, with room for the triangle to reach its base
+    viewportHeight: 950,
     settleMs: 14000,
     annotations: [
       {
         type: 'text',
         // bottom-left, in the triangle's empty long-range corner: clear of the
         // banded LCT/MCM6 locus (highlight starts ~x=650) and, unlike the old
-        // y=245, clear of the ClinVar track header it used to cover
+        // y=245, clear of the ClinVar track header it used to cover. Shifted
+        // down 50px from the pre-recombination-track value to track the
+        // triangle, which the recombination zone now pushes down by that much.
         x: 40,
-        y: 700,
+        y: 750,
         maxWidth: 300,
         fontSize: 16,
         text: 'rs4988235 swept — and dragged this whole block with it',
