@@ -250,34 +250,15 @@ in our tutorial we should link "Track 1: chromosome painting
 
 The painting is a multi-row feature display: one row per strain..." to an actual e.g. config guide or autogen guide or something page currently links to chromhmm
 
-## title of articles
-
-Automatically get titles of articles from markdown links
 
 ## lai
 
 unclear coloring. some pink shades, what are those
 
-## scripts in tutorials
-
-often unclear where those tutorials are. do they need a zip file download for 'everything user needs'? e.g. Reproduce it end to end#
-
-Both scripts below live in the jbrowse-components repo, so run them from a checkout (git clone it first, or download the single file you want from the links). that is likely not what a 'normal tutorial user' may want our git repo is huge
-
 ## tutorial 'setup'
 
 Can be in a prerequsites section, doesnt need special sentence e.g. dont need "Setup: nothing to read along. Your own data needs long reads carrying MM/ML tags, which modern basecallers write by default."
 
-## tutorial "Pangenome graph view"
-
-if it is not truly a tutorial, move to user guide or something
-
-
-
-
-## delete figure:
-
-The same tracks zoomed to the AT1G12930 to AT1G12935 boundary, with reads tall enough to follow one at a time. Each aggregate bar is now a single cytosine. Reads that span the boundary carry no marks on the left and pick up red as soon as they enter the element, in all three contexts. Open this view in JBrowse ↗
 
 ## consider rehosting
 
@@ -308,12 +289,6 @@ TBI cannot index a chromosome longer than 512 Mb, which some plant genomes excee
 first  animal genomes can be large too, and (b) we can add a csiUrl:true for shorthand
 
 
-## show couple lines of output file and command that created it
-
-https://jbrowse.org/jb2-staging/docs/config/plinkldadapter/
-
-consider also making it tabix only?
-
 ## autogen docs
 
 related links to bottom.
@@ -326,9 +301,9 @@ kind of hard to 'read'. we may want to expand the <details> by default also
 
 https://jbrowse.org/jb2-staging/docs/config_guides/assemblies/
 
-## rename
+## ~~rename~~ ✓
 
-CNV tutorials can just say CNV not "Copy number"
+~~CNV tutorials can just say CNV not "Copy number"~~
 
 ## generally review and improve
 
